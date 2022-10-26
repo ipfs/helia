@@ -61,6 +61,8 @@ Finalize "Pomegranate" execution plan. ("Pomegranate" is the temporary codename 
 - Users can add and get files.
 - Packaging, publishing, testing, CI/CD, etc. are all set up.
 
+Tracking issue: https://github.com/ipfs/pomegranate/issues/2
+
 #### Q2
 
 After "Pomegranate" is functional and users can adopt it, Protocol Labs EngRes ceases maintaining the legacy js-ipfs project.
