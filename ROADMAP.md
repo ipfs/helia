@@ -7,7 +7,8 @@ Our goal is a high-quality implementation of the IPFS protocol in TypeScript/Jav
 ```
 Date: 2022-10-26
 Status: Draft
-Notes: Internal stakeholders have not yet aligned on this roadmap. Please add any feedback or questions in the PR.
+Notes: Maintainers have aligned on this roadmap. Please add any feedback or questions in:
+https://github.com/ipfs/pomegranate/issues/5
 ```
 
 ## Table of Contents <!-- omit in toc -->
