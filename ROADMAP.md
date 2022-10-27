@@ -54,6 +54,8 @@ https://github.com/ipfs/pomegranate/issues/5
 
 **Why:** Extra hands are needed for designing, planning, and executing on IPFS-in-JS. Even if we outsource development, help is needed to review and guide the development work.
 
+Tracking issue: https://github.com/ipfs/pomegranate/issues/6
+
 ## 2023
 
 ### Early Q1 (January)
