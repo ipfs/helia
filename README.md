@@ -15,7 +15,7 @@ This project is pre-alpha and is planned for development in late 2022, with an i
 
 ## Name
 
-This project has not yet been named. "Pomegranate" is a temporary codename. Please [propose a name, and/or vote for a name idea here](https://github.com/ipfs/pomegranate/issues/3).
+This project has not yet been named. It will [not](https://github.com/ipfs/ipfs/issues/470) be named IPFS. "Pomegranate" is a temporary codename. Please [propose a name, and/or vote for a name idea here](https://github.com/ipfs/pomegranate/issues/3).
 
 ## Background
 
