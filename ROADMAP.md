@@ -40,7 +40,7 @@ https://github.com/ipfs/pomegranate/issues/5
 **Problem to solve:** Currently, very few know the direction for IPFS-in-JS and how they can best help. This affects project resourcing, recruiting, and IPFS adoption in general.
 
 **Done state:**
-- Present and share the IPFS Camp 2022 presentation. ([Tracking Issue](https://github.com/ipfs/pomegranate/issues/7))
+- Present and share the IPFS Camp 2022 presentation. (Done: [State of IPFS in JS](https://www.youtube.com/watch?v=4BPah-xItxA), [slides](https://github.com/achingbrain/state-of-ipfs-in-js-2022-talk))
 - Write and publish a blog post. (Done: [State of IPFS in JS](https://blog.ipfs.tech/state-of-ipfs-in-js/))
 - Hold a community vote and communication about a name for the new IPFS-in-JS implementation. ([Tracking Issue](https://github.com/ipfs/pomegranate/issues/3))
 
