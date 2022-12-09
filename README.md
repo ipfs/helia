@@ -15,7 +15,7 @@ This project is pre-alpha and is planned for development in late 2022, with an i
 
 ## Name
 
-Helia (HEE-lee-ah) is the Latin spelling of Ἡλιη -- in Greek mythology, one of the Heliades: the daughters of the sun god Helios. When their brother Phaethon died trying to drive the sun chariot across the sky, their tears of mourning fell to earth as amber, which is yellow (sort of), and so is JavaScript. They were then turned into popular trees and, well, JavaScript is quite popular.
+Helia (HEE-lee-ah) is the Latin spelling of Ἡλιη -- in Greek mythology, one of the Heliades: the daughters of the sun god Helios. When their brother Phaethon died trying to drive the sun chariot across the sky, their tears of mourning fell to earth as amber, which is yellow (sort of), and so is JavaScript. They were then turned into [poplar](https://en.wiktionary.org/wiki/poplar) trees and, well, JavaScript is quite popular.
 
 In Oct–Dec 2022, IP Stewards [sought](https://github.com/ipfs/pomegranate/issues/3) community input for the name of this project. After considering 20 suggestions and holding a couple of polls, the name **Helia** was chosen. Here's [why it's not named IPFS](https://github.com/ipfs/ipfs/issues/470).
 
