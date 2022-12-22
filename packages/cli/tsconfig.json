@@ -1,0 +1,27 @@
+{
+  "extends": "aegir/src/config/tsconfig.aegir.json",
+  "compilerOptions": {
+    "outDir": "dist"
+  },
+  "include": [
+    "src",
+    "test"
+  ],
+  "references": [
+    {
+      "path": "../helia"
+    },
+    {
+      "path": "../interface"
+    },
+    {
+      "path": "../rpc-client"
+    },
+    {
+      "path": "../rpc-server"
+    },
+    {
+      "path": "../unixfs"
+    }
+  ]
+}
