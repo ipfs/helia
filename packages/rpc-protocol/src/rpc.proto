@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+message RPCCallRequest {
+    string resource = 1;
+    string method = 2;
+    string authorization = 3;
+    bytes options = 4;
+}
+
+message RPCCallResponse {
+  RPCCallResponseType type = 1;
+  optional bytes message = 2;
+  optional string error_name = 3;
+  optional string error_message = 4;
+  optional string error_stack = 5;
+  optional string error_code = 6;
+}
+
+enum RPCCallResponseType {
+  message = 0;
+  error = 1;
+}
