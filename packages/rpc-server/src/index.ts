@@ -92,8 +92,8 @@ export async function createHeliaGrpcServer (config: GRPCServerConfig): Promise<
               isRevoked: async ucan => false,
               requiredCapabilities: [{
                 capability: {
-                  with: { scheme: "service", hierPart: request.resource },
-                  can: { namespace: "service", segments: [ request.method ] }
+                  with: { scheme: 'service', hierPart: request.resource },
+                  can: { namespace: 'service', segments: [request.method] }
                 },
                 rootIssuer: config.ownerDID
               }]
