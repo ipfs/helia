@@ -22,6 +22,7 @@ import type { Helia, FileSystem } from '@helia/interface'
 import type { Libp2p } from '@libp2p/interface-libp2p'
 import type { Blockstore } from 'interface-blockstore'
 import type { AbortOptions } from '@libp2p/interfaces'
+import type { Datastore } from 'interface-datastore'
 
 export interface CatOptions extends AbortOptions {
   offset?: number
@@ -47,6 +48,11 @@ export interface HeliaInit {
    * The blockstore is where blocks are stored
    */
   blockstore: Blockstore
+
+  /**
+   * The datastore is where data is stored
+   */
+  datastore: Datastore
 
   /**
    * Helia supports multiple filesystem implementations

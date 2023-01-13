@@ -139,12 +139,12 @@
   },
   "dependencies": {
     "@helia/interface": "~0.0.0",
-    "interface-blockstore": "^3.0.2",
-    "ipfs-unixfs-exporter": "^9.0.2",
-    "multiformats": "^10.0.3"
+    "interface-blockstore": "^4.0.0",
+    "ipfs-unixfs-exporter": "^10.0.0",
+    "multiformats": "^11.0.0"
   },
   "devDependencies": {
-    "aegir": "^37.7.5"
+    "aegir": "^38.0.0"
   },
   "typedoc": {
     "entryPoint": "./src/index.ts"

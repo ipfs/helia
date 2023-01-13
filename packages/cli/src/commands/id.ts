@@ -5,6 +5,7 @@ interface IdArgs {
 }
 
 export const id: Command<IdArgs> = {
+  command: 'id',
   description: 'Print information out this Helia node',
   example: '$ helia id',
   offline: true,

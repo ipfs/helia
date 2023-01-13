@@ -9,23 +9,17 @@ import { Command, commands } from './commands/index.js'
 import { InvalidParametersError } from '@helia/interface/errors'
 import { printHelp } from './utils/print-help.js'
 import { findHelia } from './utils/find-helia.js'
-import stripJsonComments from 'strip-json-comments'
+import kleur from 'kleur'
 import type { Helia } from '@helia/interface'
 import type { Libp2p } from '@libp2p/interface-libp2p'
+import type { ParseArgsConfig } from 'node:util'
 
 /**
  * Typedef for the Helia config file
  */
 export interface HeliaConfig {
-  peerId: {
-    publicKey: string
-    privateKey: string
-  }
-  grpc: {
-    address: string
-    serverKey: string
-  }
-  blocks: string
+  blockstore: string
+  datastore: string
   libp2p: {
     addresses: {
       listen: string[]
@@ -35,102 +29,132 @@ export interface HeliaConfig {
   }
 }
 
-interface RootConfig {
+export interface RootArgs {
+  positionals: string[]
   directory: string
   help: boolean
+  rpcAddress: string
 }
 
-const root: Command<RootConfig> = {
-  description: `Helia is an IPFS implementation in JavaScript
-
-Subcommands:
-
-${Object.entries(commands).map(([key, command]) => `  ${key}\t${command.description}`).sort().join('\n')}`,
+const root: Command<RootArgs> = {
+  command: 'helia',
+  description: `${kleur.bold('Helia')} is an ${kleur.cyan('IPFS')} implementation in ${kleur.yellow('JavaScript')}`,
+  subcommands: commands,
   options: {
     directory: {
-      description: 'The directory to load config from',
+      description: 'The Helia directory',
       type: 'string',
       default: path.join(os.homedir(), '.helia')
     },
     help: {
       description: 'Show help text',
       type: 'boolean'
+    },
+    rpcAddress: {
+      description: 'The multiaddr of the Helia node',
+      type: 'string',
+      default: path.join(os.homedir(), '.helia', 'rpc.sock')
     }
   },
   async execute () {}
 }
 
-async function main () {
-  const command = parseArgs({
+function config (options: any): ParseArgsConfig {
+  return {
     allowPositionals: true,
     strict: true,
-    options: root.options
-  })
+    options
+  }
+}
 
-  // @ts-expect-error wat
-  const configDir = command.values.directory
+async function main (): Promise<void> {
+  const rootCommandArgs = parseArgs(config(root.options))
+  const configDir = rootCommandArgs.values.directory
 
-  if (configDir == null) {
+  if (configDir == null || typeof configDir !== 'string') {
     throw new InvalidParametersError('No config directory specified')
   }
 
+  if (typeof rootCommandArgs.values.rpcAddress !== 'string') {
+    throw new InvalidParametersError('No RPC address specified')
+  }
+
   if (!fs.existsSync(configDir)) {
+    const init = commands.find(command => command.command === 'init')
+
+    if (init == null) {
+      throw new Error('Could not find init command')
+    }
+
     // run the init command
     const parsed = parseArgs({
       allowPositionals: true,
       strict: true,
-      options: commands.init.options
+      options: init.options
     })
-    await commands.init.execute({
+    await init.execute({
       ...parsed.values,
       positionals: parsed.positionals.slice(1),
       stdin: process.stdin,
       stdout: process.stdout,
       stderr: process.stderr
     })
+
+    if (rootCommandArgs.positionals[0] === 'init') {
+      // if init was specified explicitly we can bail because we just ran init
+      return
+    }
   }
 
-  if (command.positionals.length > 0) {
-    const subCommand = command.positionals[0]
+  if (rootCommandArgs.positionals.length > 0) {
+    const search: Command<any> = root
+    let subCommand: Command<any> | undefined
 
-    if (commands[subCommand] != null) {
-      const com = commands[subCommand]
+    for (let i = 0; i < rootCommandArgs.positionals.length; i++) {
+      const positional = rootCommandArgs.positionals[i]
 
-      // @ts-expect-error wat
-      if (command.values.help === true) {
-        printHelp(com, process.stdout)
-      } else {
-        const config = JSON.parse(stripJsonComments(fs.readFileSync(path.join(configDir, 'config.json'), 'utf-8')))
+      if (search.subcommands == null) {
+        break
+      }
 
-        const opts = parseArgs({
-          allowPositionals: true,
-          strict: true,
-          options: com.options
-        })
+      const sub = search.subcommands.find(c => c.command === positional)
 
-        let helia: Helia
-        let libp2p: Libp2p | undefined
+      if (sub != null) {
+        subCommand = sub
+      }
+    }
 
-        if (subCommand !== 'daemon') {
-          const res = await findHelia(config, com.offline)
-          helia = res.helia
-          libp2p = res.libp2p
-        }
+    if (subCommand == null) {
+      throw new Error('Command not found')
+    }
 
-        await commands[subCommand].execute({
-          ...opts.values,
-          positionals: opts.positionals.slice(1),
-          // @ts-expect-error wat
-          helia,
-          stdin: process.stdin,
-          stdout: process.stdout,
-          stderr: process.stderr,
-          config
-        })
+    if (rootCommandArgs.values.help === true) {
+      printHelp(subCommand, process.stdout)
+    } else {
+      const subCommandArgs = parseArgs(config(subCommand.options))
 
-        if (libp2p != null) {
-          await libp2p.stop()
-        }
+      let helia: Helia | undefined
+      let libp2p: Libp2p | undefined
+
+      if (subCommand.command !== 'daemon' && subCommand.command !== 'status') {
+        const res = await findHelia(configDir, rootCommandArgs.values.rpcAddress, subCommand.offline)
+        helia = res.helia
+        libp2p = res.libp2p
+      }
+
+      await subCommand.execute({
+        ...rootCommandArgs.values,
+        ...subCommandArgs.values,
+        positionals: subCommandArgs.positionals.slice(1),
+        helia,
+        stdin: process.stdin,
+        stdout: process.stdout,
+        stderr: process.stderr,
+        directory: configDir
+      })
+
+      if (libp2p != null) {
+        await libp2p.stop()
       }
 
       return

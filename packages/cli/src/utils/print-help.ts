@@ -1,25 +1,47 @@
 import type { Command } from '../commands/index.js'
+import * as format from './format.js'
+import type { Formatable } from './format.js'
+import kleur from 'kleur'
 
 export function printHelp (command: Command<any>, stdout: NodeJS.WriteStream): void {
-  stdout.write('\n')
-  stdout.write(`${command.description}\n`)
-  stdout.write('\n')
+  const items: Formatable[] = [
+    format.header(command.description)
+  ]
 
   if (command.example != null) {
-    stdout.write('Example:\n')
-    stdout.write('\n')
-    stdout.write(`${command.example}\n`)
-    stdout.write('\n')
+    items.push(
+      format.subheader('Example:'),
+      format.paragraph(command.example)
+    )
   }
 
-  const options = Object.entries(command.options ?? {})
-
-  if (options.length > 0) {
-    stdout.write('Options:\n')
-
-    Object.entries(command.options ?? {}).forEach(([key, option]) => {
-      stdout.write(`  --${key}\t${option.description}\n`)
-    })
-    stdout.write('\n')
+  if (command.subcommands != null) {
+    items.push(
+      format.subheader('Subcommands:'),
+      format.table(
+        command.subcommands.map(command => format.row(
+          `  ${command.command}`,
+          kleur.white(command.description)
+        ))
+      )
+    )
   }
+
+  if (command.options != null) {
+    items.push(
+      format.subheader('Options:'),
+      format.table(
+        Object.entries(command.options).map(([key, option]) => format.row(
+          `  --${key}`,
+          kleur.white(option.description),
+          option.default != null ? kleur.grey(`[default: ${option.default}]`) : ''
+        ))
+      )
+    )
+  }
+
+  format.formatter(
+    stdout,
+    items
+  )
 }

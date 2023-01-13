@@ -6,6 +6,7 @@ import type { Multiaddr } from '@multiformats/multiaddr'
 export interface HeliaRpcClientConfig {
   multiaddr: Multiaddr
   libp2p: Libp2p
+  user: string
   authorization: string
 }
 

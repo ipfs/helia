@@ -140,12 +140,12 @@
   "dependencies": {
     "@helia/interface": "~0.0.0",
     "@helia/rpc-protocol": "~0.0.0",
-    "@libp2p/peer-id": "^1.1.18",
+    "@libp2p/peer-id": "^2.0.0",
     "@multiformats/multiaddr": "^11.1.4",
     "it-pb-stream": "^2.0.3"
   },
   "devDependencies": {
-    "aegir": "^37.7.5"
+    "aegir": "^38.0.0"
   },
   "typedoc": {
     "entryPoint": "./src/index.ts"

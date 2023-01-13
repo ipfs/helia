@@ -4,9 +4,10 @@ import path from 'node:path'
 import fs from 'node:fs/promises'
 import { createEd25519PeerId, createRSAPeerId, createSecp256k1PeerId } from '@libp2p/peer-id-factory'
 import { InvalidParametersError } from '@helia/interface/errors'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { EdKeypair } from '@ucans/ucans'
 import type { PeerId } from '@libp2p/interface-peer-id'
+import { logger } from '@libp2p/logger'
+
+const log = logger('helia:cli:commands:init')
 
 interface InitArgs {
   positionals?: string[]
@@ -16,10 +17,15 @@ interface InitArgs {
   directory: string
   directoryMode: string
   configFileMode: string
+  publicKeyMode: string
+  privateKeyMode: string
 }
 
 export const init: Command<InitArgs> = {
+  command: 'init',
+  offline: true,
   description: 'Initialize the node',
+  example: '$ helia init',
   options: {
     keyType: {
       description: 'The key type, valid options are "ed25519", "secp256k1" or "rsa"',
@@ -54,46 +60,65 @@ export const init: Command<InitArgs> = {
       description: 'If the config file does not exist, create it with this mode',
       type: 'string',
       default: '0600'
+    },
+    privateKeyMode: {
+      description: 'If the config file does not exist, create it with this mode',
+      type: 'string',
+      default: '0600'
+    },
+    publicKeyMode: {
+      description: 'If the config file does not exist, create it with this mode',
+      type: 'string',
+      default: '0644'
     }
   },
-  async execute ({ keyType, bits, directory, directoryMode, configFileMode, port, stdout }) {
-    const configFile = path.join(directory, 'config.json')
-    const key = await generateKey(keyType, bits)
+  async execute ({ keyType, bits, directory, directoryMode, configFileMode, privateKeyMode, publicKeyMode, port, stdout }) {
+    try {
+      await fs.readdir(directory)
+      // don't init if we are already inited
+      throw new InvalidParametersError(`Cowardly refusing to reinitialize Helia at ${directory}`)
+    } catch (err: any) {
+      if (err.code !== 'ENOENT') {
+        throw err
+      }
+    }
 
-    if (key.publicKey == null || key.privateKey == null) {
+    const configFile = path.join(directory, 'config.json')
+    const peerId = await generateKey(keyType, bits)
+
+    if (peerId.publicKey == null || peerId.privateKey == null) {
       throw new InvalidParametersError('Generated PeerId had missing components')
     }
 
-    const serverKeyPair = await EdKeypair.create({
-      exportable: true
-    })
-    const serverKey = await serverKeyPair.export('base64url')
-
+    log('create helia dir %s', directory)
     await fs.mkdir(directory, {
       recursive: true,
       mode: parseInt(directoryMode, 8)
     })
 
-    await fs.writeFile(configFile, `
+    const publicKeyPath = path.join(directory, 'peer.pub')
+    log('create public key %s', publicKeyPath)
+    await fs.writeFile(publicKeyPath, peerId.publicKey, {
+      mode: parseInt(publicKeyMode, 8),
+      flag: 'ax'
+    })
+
+    const privateKeyPath = path.join(directory, 'peer.key')
+    log('create private key %s', privateKeyPath)
+    await fs.writeFile(privateKeyPath, peerId.privateKey, {
+      mode: parseInt(privateKeyMode, 8),
+      flag: 'ax'
+    })
+
+    const configFilePath = path.join(directory, 'config.json')
+    log('create config file %s', configFilePath)
+    await fs.writeFile(configFilePath, `
 {
-  // Configuration for the gRPC API
-  "grpc": {
-    // A multiaddr that specifies the TCP port the gRPC server is listening on
-    "address": "/ip4/127.0.0.1/tcp/${port}/ws/p2p/${key.toString()}",
-
-    // The server key used to create ucans for operation permissions - note this is separate
-    // to the peerId to let you rotate the server key while keeping the same peerId
-    "serverKey": "${serverKey}"
-  },
-
-  // The private key portion of the node's PeerId as a base64url encoded string
-  "peerId": {
-    "publicKey": "${uint8ArrayToString(key.publicKey, 'base64url')}",
-    "privateKey": "${uint8ArrayToString(key.privateKey, 'base64url')}"
-  },
-
   // Where blocks are stored
-  "blocks": "${path.join(directory, 'blocks')}",
+  "blockstore": "${path.join(directory, 'blocks')}",
+
+  // Where data is stored
+  "datastore": "${path.join(directory, 'data')}",
 
   // libp2p configuration
   "libp2p": {
@@ -101,18 +126,8 @@ export const init: Command<InitArgs> = {
       "listen": [
         "/ip4/0.0.0.0/tcp/0",
         "/ip4/0.0.0.0/tcp/0/ws",
-
-        // this is the gRPC port
-        "/ip4/0.0.0.0/tcp/${port}/ws"
-      ],
-      "announce": [],
-      "noAnnounce": [
-        // this is the gRPC port
-        "/ip4/0.0.0.0/tcp/${port}/ws"
+        "/unix${directory}/rpc.sock"
       ]
-    },
-    "identify": {
-
     }
   }
 }

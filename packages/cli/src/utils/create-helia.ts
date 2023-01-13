@@ -6,7 +6,6 @@ import { BlockstoreDatastoreAdapter } from 'blockstore-datastore-adapter'
 import { unixfs } from '@helia/unixfs'
 import { createLibp2p } from 'libp2p'
 import { peerIdFromKeys } from '@libp2p/peer-id'
-import { fromString as uint8ArrayFromString } from 'uint8arrays'
 import { tcp } from '@libp2p/tcp'
 import { webSockets } from '@libp2p/websockets'
 import { noise } from '@chainsafe/libp2p-noise'
@@ -14,21 +13,29 @@ import { yamux } from '@chainsafe/libp2p-yamux'
 import { mplex } from '@libp2p/mplex'
 import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 import { kadDHT } from '@libp2p/kad-dht'
+import stripJsonComments from 'strip-json-comments'
+import fs from 'node:fs'
+import path from 'node:path'
 
-export async function createHelia (config: HeliaConfig, offline: boolean = false): Promise<Helia> {
+export async function createHelia (configDir: string, offline: boolean = false): Promise<Helia> {
+  const config: HeliaConfig = JSON.parse(stripJsonComments(fs.readFileSync(path.join(configDir, 'config.json'), 'utf-8')))
   const peerId = await peerIdFromKeys(
-    uint8ArrayFromString(config.peerId.publicKey, 'base64url'),
-    uint8ArrayFromString(config.peerId.privateKey, 'base64url')
+    fs.readFileSync(path.join(configDir, 'peer.pub')),
+    fs.readFileSync(path.join(configDir, 'peer.key'))
   )
 
+  const datastore = new FsDatastore(config.datastore)
+
   return await createHeliaNode({
-    blockstore: new BlockstoreDatastoreAdapter(new FsDatastore(config.blocks)),
+    blockstore: new BlockstoreDatastoreAdapter(new FsDatastore(config.blockstore)),
+    datastore,
     filesystems: [
       unixfs()
     ],
     libp2p: await createLibp2p({
       start: !offline,
       peerId,
+      datastore,
       addresses: config.libp2p.addresses,
       identify: {
         host: {

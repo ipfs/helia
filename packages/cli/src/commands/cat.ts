@@ -8,6 +8,7 @@ interface CatArgs {
 }
 
 export const cat: Command<CatArgs> = {
+  command: 'cat',
   description: 'Fetch and cat an IPFS path referencing a file',
   example: '$ helia cat <CID>',
   offline: true,

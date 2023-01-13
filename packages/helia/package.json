@@ -141,14 +141,14 @@
     "@helia/interface": "~0.0.0",
     "@libp2p/interface-libp2p": "^1.0.0",
     "@ucans/ucans": "^0.11.0-alpha",
-    "interface-blockstore": "^3.0.2",
-    "interface-datastore": "^3.0.2",
-    "ipfs-bitswap": "^14.0.0",
+    "interface-blockstore": "^4.0.0",
+    "interface-datastore": "^7.0.3",
+    "ipfs-bitswap": "^15.0.0",
     "merge-options": "^3.0.4",
-    "multiformats": "^10.0.3"
+    "multiformats": "^11.0.0"
   },
   "devDependencies": {
-    "aegir": "^37.7.5"
+    "aegir": "^38.0.0"
   },
   "typedoc": {
     "entryPoint": "./src/index.ts"

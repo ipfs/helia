@@ -4,9 +4,9 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import type { Source } from 'it-stream-types'
 import type { Pushable } from 'it-pushable'
 import type { Uint8ArrayList } from 'uint8arraylist'
-import type { GRPCServerConfig, Service } from '../index.js'
+import type { RPCServerConfig, Service } from '../index.js'
 
-export function createId (config: GRPCServerConfig): Service {
+export function createId (config: RPCServerConfig): Service {
   return {
     insecure: true,
     async handle (options: Uint8Array, input: Source<Uint8Array | Uint8ArrayList>, output: Pushable<Uint8Array | Uint8ArrayList>, signal: AbortSignal): Promise<void> {
@@ -23,7 +23,7 @@ export function createId (config: GRPCServerConfig): Service {
           message: IdResponse.encode({
             ...result,
             peerId: result.peerId.toString(),
-            serverDid: config.serviceDID,
+            serverDid: config.serverDid,
             multiaddrs: result.multiaddrs.map(ma => ma.toString())
           })
         })

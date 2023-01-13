@@ -13,10 +13,9 @@ import * as ucans from '@ucans/ucans'
 
 const log = logger('helia:grpc-server')
 
-export interface GRPCServerConfig {
+export interface RPCServerConfig {
   helia: Helia
-  serviceDID: string
-  ownerDID: string
+  serverDid: string
 }
 
 export interface UnaryResponse<ResponseType> {
@@ -35,7 +34,7 @@ class RPCError extends HeliaError {
   }
 }
 
-export async function createHeliaGrpcServer (config: GRPCServerConfig): Promise<void> {
+export async function createHeliaRpcServer (config: RPCServerConfig): Promise<void> {
   const { helia } = config
 
   const services: Record<string, Service> = {
@@ -88,14 +87,14 @@ export async function createHeliaGrpcServer (config: GRPCServerConfig): Promise<
           if (service.insecure == null) {
             // authorize request
             const result = await ucans.verify(request.authorization, {
-              audience: config.serviceDID,
+              audience: request.user,
               isRevoked: async ucan => false,
               requiredCapabilities: [{
                 capability: {
                   with: { scheme: 'service', hierPart: request.resource },
                   can: { namespace: 'service', segments: [request.method] }
                 },
-                rootIssuer: config.ownerDID
+                rootIssuer: config.serverDid
               }]
             })
 

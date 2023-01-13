@@ -8,6 +8,7 @@ import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Codec } from 'protons-runtime'
 
 export interface RPCCallRequest {
+  user: string
   resource: string
   method: string
   authorization: string
@@ -24,23 +25,28 @@ export namespace RPCCallRequest {
           w.fork()
         }
 
-        if (opts.writeDefaults === true || obj.resource !== '') {
+        if (opts.writeDefaults === true || obj.user !== '') {
           w.uint32(10)
+          w.string(obj.user)
+        }
+
+        if (opts.writeDefaults === true || obj.resource !== '') {
+          w.uint32(18)
           w.string(obj.resource)
         }
 
         if (opts.writeDefaults === true || obj.method !== '') {
-          w.uint32(18)
+          w.uint32(26)
           w.string(obj.method)
         }
 
         if (opts.writeDefaults === true || obj.authorization !== '') {
-          w.uint32(26)
+          w.uint32(34)
           w.string(obj.authorization)
         }
 
         if (opts.writeDefaults === true || (obj.options != null && obj.options.byteLength > 0)) {
-          w.uint32(34)
+          w.uint32(42)
           w.bytes(obj.options)
         }
 
@@ -49,6 +55,7 @@ export namespace RPCCallRequest {
         }
       }, (reader, length) => {
         const obj: any = {
+          user: '',
           resource: '',
           method: '',
           authorization: '',
@@ -62,15 +69,18 @@ export namespace RPCCallRequest {
 
           switch (tag >>> 3) {
             case 1:
-              obj.resource = reader.string()
+              obj.user = reader.string()
               break
             case 2:
-              obj.method = reader.string()
+              obj.resource = reader.string()
               break
             case 3:
-              obj.authorization = reader.string()
+              obj.method = reader.string()
               break
             case 4:
+              obj.authorization = reader.string()
+              break
+            case 5:
               obj.options = reader.bytes()
               break
             default:
@@ -209,7 +219,7 @@ enum __RPCCallResponseTypeValues {
 }
 
 export namespace RPCCallResponseType {
-  export const codec = () => {
+  export const codec = (): Codec<RPCCallResponseType> => {
     return enumeration<RPCCallResponseType>(__RPCCallResponseTypeValues)
   }
 }

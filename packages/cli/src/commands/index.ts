@@ -2,9 +2,9 @@ import { cat } from './cat.js'
 import { init } from './init.js'
 import { daemon } from './daemon.js'
 import { id } from './id.js'
+import { status } from './status.js'
 import type { Helia } from '@helia/interface'
 import type { ParseArgsConfig } from 'node:util'
-import type { HeliaConfig } from '../index.js'
 
 /**
  * Extends the internal node type to add a description to the options
@@ -44,9 +44,7 @@ export interface ParseArgsOptionConfig {
   description: string
 }
 
-interface ParseArgsOptionsConfig {
-  [longOption: string]: ParseArgsOptionConfig
-}
+type ParseArgsOptionsConfig = Record<string, ParseArgsOptionConfig>
 
 export interface CommandOptions extends ParseArgsConfig {
   /**
@@ -55,7 +53,12 @@ export interface CommandOptions extends ParseArgsConfig {
   options?: ParseArgsOptionsConfig
 }
 
-export interface Command<T> {
+export interface Command<T = {}> {
+  /**
+   * The command name
+   */
+  command: string
+
   /**
    * Used to generate help text
    */
@@ -80,19 +83,25 @@ export interface Command<T> {
    * Run the command
    */
   execute: (ctx: Context & T) => Promise<void>
+
+  /**
+   * Subcommands of the current command
+   */
+  subcommands?: Array<Command<any>>
 }
 
 export interface Context {
   helia: Helia
-  config: HeliaConfig
+  directory: string
   stdin: NodeJS.ReadStream
   stdout: NodeJS.WriteStream
   stderr: NodeJS.WriteStream
 }
 
-export const commands: Record<string, Command<any>> = {
+export const commands: Array<Command<any>> = [
   cat,
   init,
   daemon,
-  id
-}
+  id,
+  status
+]

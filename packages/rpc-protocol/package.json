@@ -152,13 +152,6 @@
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
     "build": "aegir build",
-    "test": "aegir test",
-    "test:chrome": "aegir test -t browser --cov",
-    "test:chrome-webworker": "aegir test -t webworker",
-    "test:firefox": "aegir test -t browser -- --browser firefox",
-    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
-    "test:node": "aegir test -t node --cov",
-    "test:electron-main": "aegir test -t electron-main",
     "release": "aegir release",
     "generate": "protons src/*.proto"
   },
@@ -166,7 +159,7 @@
     "protons-runtime": "^4.0.1"
   },
   "devDependencies": {
-    "aegir": "^37.7.5",
+    "aegir": "^38.0.0",
     "protons": "^6.0.1"
   },
   "typedoc": {
