@@ -156,7 +156,8 @@
     "generate": "protons src/*.proto"
   },
   "dependencies": {
-    "protons-runtime": "^4.0.1"
+    "protons-runtime": "^4.0.1",
+    "uint8arraylist": "^2.4.3"
   },
   "devDependencies": {
     "aegir": "^38.0.0",

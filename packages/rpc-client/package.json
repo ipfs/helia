@@ -140,8 +140,9 @@
   "dependencies": {
     "@helia/interface": "~0.0.0",
     "@helia/rpc-protocol": "~0.0.0",
+    "@libp2p/interface-libp2p": "^1.1.0",
     "@libp2p/peer-id": "^2.0.0",
-    "@multiformats/multiaddr": "^11.1.4",
+    "@multiformats/multiaddr": "^11.1.5",
     "it-pb-stream": "^2.0.3"
   },
   "devDependencies": {

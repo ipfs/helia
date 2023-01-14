@@ -10,7 +10,6 @@
 ## Table of contents <!-- omit in toc -->
 
 - [Install](#install)
-  - [Browser `<script>` tag](#browser-script-tag)
 - [API Docs](#api-docs)
 - [License](#license)
 - [Contribute](#contribute)
@@ -19,14 +18,6 @@
 
 ```console
 $ npm i @helia/interface
-```
-
-### Browser `<script>` tag
-
-Loading this module through a script tag will make it's exports available as `HeliaInterface` in the global namespace.
-
-```html
-<script src="https://unpkg.com/@helia/interface/dist/index.min.js"></script>
 ```
 
 ## API Docs

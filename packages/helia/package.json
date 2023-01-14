@@ -139,8 +139,8 @@
   },
   "dependencies": {
     "@helia/interface": "~0.0.0",
-    "@libp2p/interface-libp2p": "^1.0.0",
-    "@ucans/ucans": "^0.11.0-alpha",
+    "@libp2p/interface-libp2p": "^1.1.0",
+    "@libp2p/interfaces": "^3.2.0",
     "interface-blockstore": "^4.0.0",
     "interface-datastore": "^7.0.3",
     "ipfs-bitswap": "^15.0.0",

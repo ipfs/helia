@@ -11,6 +11,7 @@ import { webSockets } from '@libp2p/websockets'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { mplex } from '@libp2p/mplex'
+import { prometheusMetrics } from '@libp2p/prometheus-metrics'
 import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 import { kadDHT } from '@libp2p/kad-dht'
 import stripJsonComments from 'strip-json-comments'
@@ -54,7 +55,8 @@ export async function createHelia (configDir: string, offline: boolean = false):
         mplex()
       ],
       pubsub: gossipsub(),
-      dht: kadDHT()
+      dht: kadDHT(),
+      metrics: prometheusMetrics()
     })
   })
 }
