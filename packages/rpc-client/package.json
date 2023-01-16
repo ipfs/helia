@@ -143,7 +143,8 @@
     "@libp2p/interface-libp2p": "^1.1.0",
     "@libp2p/peer-id": "^2.0.0",
     "@multiformats/multiaddr": "^11.1.5",
-    "it-pb-stream": "^2.0.3"
+    "it-pb-stream": "^2.0.3",
+    "multiformats": "^11.0.0"
   },
   "devDependencies": {
     "aegir": "^38.0.0"

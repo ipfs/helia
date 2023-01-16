@@ -1,11 +1,18 @@
 import type { Command } from './index.js'
-import os from 'node:os'
 import path from 'node:path'
 import fs from 'node:fs/promises'
 import { createEd25519PeerId, createRSAPeerId, createSecp256k1PeerId } from '@libp2p/peer-id-factory'
 import { InvalidParametersError } from '@helia/interface/errors'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { logger } from '@libp2p/logger'
+import { createLibp2p } from 'libp2p'
+import { FsDatastore } from 'datastore-fs'
+import { noise } from '@chainsafe/libp2p-noise'
+import { tcp } from '@libp2p/tcp'
+import { yamux } from '@chainsafe/libp2p-yamux'
+import { findHeliaDir } from '../utils/find-helia-dir.js'
+import { randomBytes } from '@libp2p/crypto'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 
 const log = logger('helia:cli:commands:init')
 
@@ -18,8 +25,14 @@ interface InitArgs {
   directoryMode: string
   configFileMode: string
   publicKeyMode: string
-  privateKeyMode: string
+  keychainPassword: string
+  keychainSalt: string
+  storePassword: boolean
 }
+
+// NIST SP 800-132
+const NIST_MINIMUM_SALT_LENGTH = 128 / 8
+const SALT_LENGTH = Math.ceil(NIST_MINIMUM_SALT_LENGTH / 3) * 3 // no base64 padding
 
 export const init: Command<InitArgs> = {
   command: 'init',
@@ -39,40 +52,44 @@ export const init: Command<InitArgs> = {
       short: 'b',
       default: '2048'
     },
-    port: {
-      description: 'Where to listen for incoming gRPC connections',
-      type: 'string',
-      short: 'p',
-      default: '49832'
-    },
     directory: {
-      description: 'The directory to store config in',
+      description: 'The directory to store data in',
       type: 'string',
       short: 'd',
-      default: path.join(os.homedir(), '.helia')
+      default: findHeliaDir()
     },
     directoryMode: {
-      description: 'If the config file directory does not exist, create it with this mode',
+      description: 'Create the data directory with this mode',
       type: 'string',
       default: '0700'
     },
     configFileMode: {
-      description: 'If the config file does not exist, create it with this mode',
-      type: 'string',
-      default: '0600'
-    },
-    privateKeyMode: {
-      description: 'If the config file does not exist, create it with this mode',
+      description: 'Create the config file with this mode',
       type: 'string',
       default: '0600'
     },
     publicKeyMode: {
-      description: 'If the config file does not exist, create it with this mode',
+      description: 'Create the public key file with this mode',
       type: 'string',
       default: '0644'
+    },
+    keychainPassword: {
+      description: 'The libp2p keychain will use a key derived from this password for encryption operations',
+      type: 'string',
+      default: uint8ArrayToString(randomBytes(20), 'base64')
+    },
+    keychainSalt: {
+      description: 'The libp2p keychain will use use this salt when deriving the key from the password',
+      type: 'string',
+      default: uint8ArrayToString(randomBytes(SALT_LENGTH), 'base64')
+    },
+    storePassword: {
+      description: 'If true, store the password used to derive the key used by the libp2p keychain in the config file',
+      type: 'boolean',
+      default: true
     }
   },
-  async execute ({ keyType, bits, directory, directoryMode, configFileMode, privateKeyMode, publicKeyMode, port, stdout }) {
+  async execute ({ keyType, bits, directory, directoryMode, configFileMode, publicKeyMode, stdout, keychainPassword, keychainSalt, storePassword }) {
     try {
       await fs.readdir(directory)
       // don't init if we are already inited
@@ -83,7 +100,18 @@ export const init: Command<InitArgs> = {
       }
     }
 
-    const configFile = path.join(directory, 'config.json')
+    const configFilePath = path.join(directory, 'helia.json')
+
+    try {
+      await fs.access(configFilePath)
+      // don't init if we are already inited
+      throw new InvalidParametersError(`Cowardly refusing to overwrite Helia config file at ${configFilePath}`)
+    } catch (err: any) {
+      if (err.code !== 'ENOENT') {
+        throw err
+      }
+    }
+
     const peerId = await generateKey(keyType, bits)
 
     if (peerId.publicKey == null || peerId.privateKey == null) {
@@ -96,21 +124,41 @@ export const init: Command<InitArgs> = {
       mode: parseInt(directoryMode, 8)
     })
 
+    const datastorePath = path.join(directory, 'data')
+
+    // create a dial-only libp2p node configured with the datastore in the helia
+    // directory - this will store the peer id securely in the keychain
+    const node = await createLibp2p({
+      peerId,
+      datastore: new FsDatastore(datastorePath, {
+        createIfMissing: true
+      }),
+      transports: [
+        tcp()
+      ],
+      connectionEncryption: [
+        noise()
+      ],
+      streamMuxers: [
+        yamux()
+      ],
+      keychain: {
+        pass: keychainPassword,
+        dek: {
+          salt: keychainSalt
+        }
+      }
+    })
+    await node.stop()
+
+    // now write the public key from the PeerId out for use by the RPC client
     const publicKeyPath = path.join(directory, 'peer.pub')
     log('create public key %s', publicKeyPath)
-    await fs.writeFile(publicKeyPath, peerId.publicKey, {
+    await fs.writeFile(publicKeyPath, peerId.toString() + '\n', {
       mode: parseInt(publicKeyMode, 8),
       flag: 'ax'
     })
 
-    const privateKeyPath = path.join(directory, 'peer.key')
-    log('create private key %s', privateKeyPath)
-    await fs.writeFile(privateKeyPath, peerId.privateKey, {
-      mode: parseInt(privateKeyMode, 8),
-      flag: 'ax'
-    })
-
-    const configFilePath = path.join(directory, 'config.json')
     log('create config file %s', configFilePath)
     await fs.writeFile(configFilePath, `
 {
@@ -118,7 +166,7 @@ export const init: Command<InitArgs> = {
   "blockstore": "${path.join(directory, 'blocks')}",
 
   // Where data is stored
-  "datastore": "${path.join(directory, 'data')}",
+  "datastore": "${datastorePath}",
 
   // libp2p configuration
   "libp2p": {
@@ -126,8 +174,20 @@ export const init: Command<InitArgs> = {
       "listen": [
         "/ip4/0.0.0.0/tcp/0",
         "/ip4/0.0.0.0/tcp/0/ws",
+
+        // this is the rpc socket
+        "/unix${directory}/rpc.sock"
+      ],
+      "noAnnounce": [
+        // do not announce the rpc socket to the outside world
         "/unix${directory}/rpc.sock"
       ]
+    },
+    "keychain": {
+      "salt": "${keychainSalt}"${storePassword
+? `,
+      "password": "${keychainPassword}"`
+: ''}
     }
   }
 }
@@ -136,7 +196,7 @@ export const init: Command<InitArgs> = {
       flag: 'ax'
     })
 
-    stdout.write(`Wrote config file to ${configFile}\n`)
+    stdout.write(`Wrote config file to ${configFilePath}\n`)
   }
 }
 

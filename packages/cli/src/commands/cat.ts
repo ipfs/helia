@@ -1,4 +1,3 @@
-import { CID } from 'multiformats'
 import type { Command } from './index.js'
 
 interface CatArgs {
@@ -27,15 +26,6 @@ export const cat: Command<CatArgs> = {
   async execute ({ positionals, offset, length, helia, stdout }) {
     if (positionals == null || positionals.length === 0) {
       throw new TypeError('Missing positionals')
-    }
-
-    const cid = CID.parse(positionals[0])
-
-    for await (const buf of helia.cat(cid, {
-      offset: offset == null ? undefined : parseInt(offset),
-      length: length == null ? undefined : parseInt(length)
-    })) {
-      stdout.write(buf)
     }
   }
 }

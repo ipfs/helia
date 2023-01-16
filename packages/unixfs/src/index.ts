@@ -1,5 +1,6 @@
-import type { FileSystem, CatOptions } from '@helia/interface'
+import type { CatOptions, Helia } from '@helia/interface'
 import { exporter } from 'ipfs-unixfs-exporter'
+import { ImportCandidate, importer, ImportResult, UserImporterOptions } from 'ipfs-unixfs-importer'
 import type { CID } from 'multiformats'
 import type { Blockstore } from 'interface-blockstore'
 import { NotAFileError, NoContentError } from '@helia/interface/errors'
@@ -14,6 +15,10 @@ class UnixFS {
 
   constructor (components: UnixFSComponents) {
     this.components = components
+  }
+
+  async * add (source: ImportCandidate, options?: UserImporterOptions): AsyncGenerator<ImportResult> {
+    yield * importer(source, this.components.blockstore, options)
   }
 
   cat (cid: CID, options: CatOptions = {}): ReadableStream<Uint8Array> {
@@ -51,8 +56,6 @@ class UnixFS {
   }
 }
 
-export function unixfs () {
-  return function createUnixfs (components: UnixFSComponents): FileSystem {
-    return new UnixFS(components)
-  }
+export function unixfs (helia: Helia): UnixFS {
+  return new UnixFS(helia)
 }

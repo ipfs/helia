@@ -161,8 +161,8 @@
     "helia": "~0.0.0",
     "kleur": "^4.1.5",
     "libp2p": "0.42.0",
-    "multiformats": "^11.0.0",
-    "strip-json-comments": "^5.0.0"
+    "strip-json-comments": "^5.0.0",
+    "uint8arrays": "^4.0.3"
   },
   "devDependencies": {
     "aegir": "^38.0.0"

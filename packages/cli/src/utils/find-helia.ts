@@ -65,7 +65,8 @@ export async function findOnlineHelia (configDir: string, rpcAddress: string): P
         user: `${process.env.USER}`,
         authorization: 'sshh'
       })
-    } catch {
+    } catch (err: any) {
+      log('could not create helia rpc client', err)
       await libp2p.stop()
     }
 

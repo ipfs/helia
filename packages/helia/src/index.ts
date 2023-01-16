@@ -15,10 +15,9 @@
  * ```
  */
 
-import { createCat } from './commands/cat.js'
 import { createId } from './commands/id.js'
 import { createBitswap } from 'ipfs-bitswap'
-import type { Helia, FileSystem } from '@helia/interface'
+import type { Helia } from '@helia/interface'
 import type { Libp2p } from '@libp2p/interface-libp2p'
 import type { Blockstore } from 'interface-blockstore'
 import type { AbortOptions } from '@libp2p/interfaces'
@@ -32,7 +31,7 @@ export interface CatOptions extends AbortOptions {
 export interface HeliaComponents {
   libp2p: Libp2p
   blockstore: Blockstore
-  filesystems: FileSystem[]
+  datastore: Datastore
 }
 
 /**
@@ -53,11 +52,6 @@ export interface HeliaInit {
    * The datastore is where data is stored
    */
   datastore: Datastore
-
-  /**
-   * Helia supports multiple filesystem implementations
-   */
-  filesystems: Array<(components: HeliaComponents) => FileSystem>
 }
 
 /**
@@ -74,17 +68,15 @@ export async function createHelia (init: HeliaInit): Promise<Helia> {
   const components: HeliaComponents = {
     libp2p: init.libp2p,
     blockstore,
-    filesystems: []
+    datastore: init.datastore
   }
-
-  components.filesystems = init.filesystems.map(fs => fs(components))
 
   const helia: Helia = {
     libp2p: init.libp2p,
     blockstore,
+    datastore: init.datastore,
 
-    id: createId(components),
-    cat: createCat(components)
+    id: createId(components)
   }
 
   return helia

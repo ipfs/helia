@@ -13,6 +13,7 @@ import kleur from 'kleur'
 import type { Helia } from '@helia/interface'
 import type { Libp2p } from '@libp2p/interface-libp2p'
 import type { ParseArgsConfig } from 'node:util'
+import { findHeliaDir } from './utils/find-helia-dir.js'
 
 /**
  * Typedef for the Helia config file
@@ -25,6 +26,10 @@ export interface HeliaConfig {
       listen: string[]
       announce: string[]
       noAnnounce: string[]
+    }
+    keychain: {
+      salt: string
+      password?: string
     }
   }
 }
@@ -42,14 +47,11 @@ const root: Command<RootArgs> = {
   subcommands: commands,
   options: {
     directory: {
-      description: 'The Helia directory',
+      description: 'The directory used by Helia to store config and data',
       type: 'string',
-      default: path.join(os.homedir(), '.helia')
+      default: findHeliaDir()
     },
-    help: {
-      description: 'Show help text',
-      type: 'boolean'
-    },
+
     rpcAddress: {
       description: 'The multiaddr of the Helia node',
       type: 'string',
@@ -63,7 +65,13 @@ function config (options: any): ParseArgsConfig {
   return {
     allowPositionals: true,
     strict: true,
-    options
+    options: {
+      help: {
+        description: 'Show help text',
+        type: 'boolean'
+      },
+      ...options
+    }
   }
 }
 
@@ -79,6 +87,11 @@ async function main (): Promise<void> {
     throw new InvalidParametersError('No RPC address specified')
   }
 
+  if (rootCommandArgs.values.help === true) {
+    printHelp(root, process.stdout)
+    return
+  }
+
   if (!fs.existsSync(configDir)) {
     const init = commands.find(command => command.command === 'init')
 
@@ -87,11 +100,13 @@ async function main (): Promise<void> {
     }
 
     // run the init command
-    const parsed = parseArgs({
-      allowPositionals: true,
-      strict: true,
-      options: init.options
-    })
+    const parsed = parseArgs(config(init.options))
+
+    if (parsed.values.help === true) {
+      printHelp(init, process.stdout)
+      return
+    }
+
     await init.execute({
       ...parsed.values,
       positionals: parsed.positionals.slice(1),
@@ -128,37 +143,33 @@ async function main (): Promise<void> {
       throw new Error('Command not found')
     }
 
-    if (rootCommandArgs.values.help === true) {
-      printHelp(subCommand, process.stdout)
-    } else {
-      const subCommandArgs = parseArgs(config(subCommand.options))
+    const subCommandArgs = parseArgs(config(subCommand.options))
 
-      let helia: Helia | undefined
-      let libp2p: Libp2p | undefined
+    let helia: Helia | undefined
+    let libp2p: Libp2p | undefined
 
-      if (subCommand.command !== 'daemon' && subCommand.command !== 'status') {
-        const res = await findHelia(configDir, rootCommandArgs.values.rpcAddress, subCommand.offline)
-        helia = res.helia
-        libp2p = res.libp2p
-      }
-
-      await subCommand.execute({
-        ...rootCommandArgs.values,
-        ...subCommandArgs.values,
-        positionals: subCommandArgs.positionals.slice(1),
-        helia,
-        stdin: process.stdin,
-        stdout: process.stdout,
-        stderr: process.stderr,
-        directory: configDir
-      })
-
-      if (libp2p != null) {
-        await libp2p.stop()
-      }
-
-      return
+    if (subCommand.command !== 'daemon' && subCommand.command !== 'status') {
+      const res = await findHelia(configDir, rootCommandArgs.values.rpcAddress, subCommand.offline)
+      helia = res.helia
+      libp2p = res.libp2p
     }
+
+    await subCommand.execute({
+      ...rootCommandArgs.values,
+      ...subCommandArgs.values,
+      positionals: subCommandArgs.positionals.slice(1),
+      helia,
+      stdin: process.stdin,
+      stdout: process.stdout,
+      stderr: process.stderr,
+      directory: configDir
+    })
+
+    if (libp2p != null) {
+      await libp2p.stop()
+    }
+
+    return
   }
 
   // no command specified, print help

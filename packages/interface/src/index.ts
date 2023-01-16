@@ -16,15 +16,10 @@
 
 import type { Libp2p } from '@libp2p/interface-libp2p'
 import type { Blockstore } from 'interface-blockstore'
-import type { CID } from 'multiformats/cid'
-import type { ReadableStream } from 'node:stream/web'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Multiaddr } from '@multiformats/multiaddr'
-
-export interface FileSystem {
-  cat: (cid: CID, options?: CatOptions) => ReadableStream<Uint8Array>
-}
+import type { Datastore } from 'interface-datastore'
 
 /**
  * The API presented by a Helia node.
@@ -47,13 +42,6 @@ export interface Helia {
   id: (options?: IdOptions) => Promise<IdResponse>
 
   /**
-   * The cat method reads files sequentially, returning the bytes as a stream.
-   *
-   * If the passed CID does not resolve to a file, an error will be thrown.
-   */
-  cat: (cid: CID, options?: CatOptions) => ReadableStream<Uint8Array>
-
-  /**
    * The underlying libp2p node
    */
   libp2p: Libp2p
@@ -62,6 +50,11 @@ export interface Helia {
    * Where the blocks are stored
    */
   blockstore: Blockstore
+
+  /**
+   * A key/value store
+   */
+  datastore: Datastore
 }
 
 export interface CatOptions extends AbortOptions {

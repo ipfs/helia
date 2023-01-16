@@ -2,14 +2,17 @@ import type { Helia } from '@helia/interface'
 import { HeliaError } from '@helia/interface/errors'
 import { createId } from './handlers/id.js'
 import { logger } from '@libp2p/logger'
-import type { Source } from 'it-stream-types'
-import type { Pushable } from 'it-pushable'
+import type { Duplex, Sink, Source } from 'it-stream-types'
 import { HELIA_RPC_PROTOCOL } from '@helia/rpc-protocol'
 import { RPCCallRequest, RPCCallResponseType, RPCCallResponse } from '@helia/rpc-protocol/rpc'
 import { decode, encode } from 'it-length-prefixed'
 import { pushable } from 'it-pushable'
 import type { Uint8ArrayList } from 'uint8arraylist'
 import * as ucans from '@ucans/ucans'
+import { createDelete } from './handlers/blockstore/delete.js'
+import { createGet } from './handlers/blockstore/get.js'
+import { createHas } from './handlers/blockstore/has.js'
+import { createPut } from './handlers/blockstore/put.js'
 
 const log = logger('helia:grpc-server')
 
@@ -25,7 +28,7 @@ export interface UnaryResponse<ResponseType> {
 
 export interface Service {
   insecure?: true
-  handle: (options: Uint8Array, source: Source<Uint8Array | Uint8ArrayList>, sink: Pushable<Uint8Array | Uint8ArrayList>, signal: AbortSignal) => Promise<void>
+  handle: (options: Uint8Array, stream: Duplex<Uint8Array | Uint8ArrayList>, signal: AbortSignal) => Promise<void>
 }
 
 class RPCError extends HeliaError {
@@ -38,6 +41,10 @@ export async function createHeliaRpcServer (config: RPCServerConfig): Promise<vo
   const { helia } = config
 
   const services: Record<string, Service> = {
+    '/blockstore/delete': createDelete(config),
+    '/blockstore/get': createGet(config),
+    '/blockstore/has': createHas(config),
+    '/blockstore/put': createPut(config),
     '/id': createId(config)
   }
 
@@ -115,7 +122,24 @@ export async function createHeliaRpcServer (config: RPCServerConfig): Promise<vo
             }
           }
 
-          service.handle(request.options, inputStream, outputStream, controller.signal)
+          const sink: Sink<Uint8ArrayList | Uint8Array> = async (source: Source<Uint8ArrayList | Uint8Array>) => {
+            try {
+              for await (const buf of source) {
+                outputStream.push(buf)
+              }
+            } catch (err: any) {
+              outputStream.push(RPCCallResponse.encode({
+                type: RPCCallResponseType.error,
+                errorName: err.name,
+                errorMessage: err.message,
+                errorStack: err.stack,
+                errorCode: err.code
+              }))
+              outputStream.end()
+            }
+          }
+
+          service.handle(request.options, { source: inputStream, sink }, controller.signal)
             .then(() => {
               log.error('handler succeeded for %s %s', request.method, request.resource)
             })

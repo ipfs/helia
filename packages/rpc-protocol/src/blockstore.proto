@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+message PutOptions {
+
+}
+
+message PutRequest {
+  bytes cid = 1;
+  bytes block = 2;
+}
+
+message PutResponse {
+
+}
+
+message GetOptions {
+
+}
+
+message GetRequest {
+  bytes cid = 1;
+}
+
+message GetResponse {
+  bytes block = 1;
+}
+
+message HasOptions {
+
+}
+
+message HasRequest {
+  bytes cid = 1;
+}
+
+message HasResponse {
+  bool has = 1;
+}
+
+message DeleteOptions {
+
+}
+
+message DeleteRequest {
+  bytes cid = 1;
+}
+
+message DeleteResponse {
+
+}

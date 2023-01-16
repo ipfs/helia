@@ -3,9 +3,7 @@ import type { HeliaConfig } from '../index.js'
 import { createHelia as createHeliaNode } from 'helia'
 import { FsDatastore } from 'datastore-fs'
 import { BlockstoreDatastoreAdapter } from 'blockstore-datastore-adapter'
-import { unixfs } from '@helia/unixfs'
 import { createLibp2p } from 'libp2p'
-import { peerIdFromKeys } from '@libp2p/peer-id'
 import { tcp } from '@libp2p/tcp'
 import { webSockets } from '@libp2p/websockets'
 import { noise } from '@chainsafe/libp2p-noise'
@@ -17,30 +15,38 @@ import { kadDHT } from '@libp2p/kad-dht'
 import stripJsonComments from 'strip-json-comments'
 import fs from 'node:fs'
 import path from 'node:path'
+import * as readline from 'node:readline/promises'
 
 export async function createHelia (configDir: string, offline: boolean = false): Promise<Helia> {
-  const config: HeliaConfig = JSON.parse(stripJsonComments(fs.readFileSync(path.join(configDir, 'config.json'), 'utf-8')))
-  const peerId = await peerIdFromKeys(
-    fs.readFileSync(path.join(configDir, 'peer.pub')),
-    fs.readFileSync(path.join(configDir, 'peer.key'))
-  )
-
+  const config: HeliaConfig = JSON.parse(stripJsonComments(fs.readFileSync(path.join(configDir, 'helia.json'), 'utf-8')))
   const datastore = new FsDatastore(config.datastore)
+
+  let password = config.libp2p.keychain.password
+
+  if (config.libp2p.keychain.password == null) {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    })
+    password = await rl.question('Enter libp2p keychain password: ')
+  }
 
   return await createHeliaNode({
     blockstore: new BlockstoreDatastoreAdapter(new FsDatastore(config.blockstore)),
     datastore,
-    filesystems: [
-      unixfs()
-    ],
     libp2p: await createLibp2p({
       start: !offline,
-      peerId,
       datastore,
       addresses: config.libp2p.addresses,
       identify: {
         host: {
           agentVersion: 'helia/0.0.0'
+        }
+      },
+      keychain: {
+        pass: password,
+        dek: {
+          salt: config.libp2p.keychain.salt
         }
       },
       transports: [

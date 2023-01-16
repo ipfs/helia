@@ -54,6 +54,10 @@
     "./rpc": {
       "types": "./dist/src/rpc.d.ts",
       "import": "./dist/src/rpc.js"
+    },
+    "./blockstore": {
+      "types": "./dist/src/blockstore.d.ts",
+      "import": "./dist/src/blockstore.js"
     }
   },
   "eslintConfig": {

@@ -1,3 +1,4 @@
+import { add } from './add.js'
 import { cat } from './cat.js'
 import { init } from './init.js'
 import { daemon } from './daemon.js'
@@ -99,6 +100,7 @@ export interface Context {
 }
 
 export const commands: Array<Command<any>> = [
+  add,
   cat,
   init,
   daemon,
