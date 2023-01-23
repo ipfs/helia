@@ -1,8 +1,10 @@
-<h3 align="center">An implementation of IPFS in JavaScript.</h3>
+# Helia — an implementation of IPFS in JavaScript
 
 ### Project status
 
-This project is pre-alpha and is planned for development in late 2022, with an initial "v1" release in [late Q1 2023](/ROADMAP.md#late-q1-march). The project will be built in the open. Community contributors are welcome.
+This project is pre-alpha and is currently in development. An initial v1 release is planned for [late Q1 2023](/ROADMAP.md#late-q1-march). Helia is being built in the open; community contributors are welcome!
+
+The core of IPFS is the [Files API](https://github.com/ipfs/js-ipfs/blob/master/docs/core-api/FILES.md), which will likewise be implemented in Helia. For more info about Helia, please see the [Roadmap](https://github.com/ipfs/helia/issues/5) and the [Manifesto](MANIFESTO.md).
 
 ## Table of Contents <!-- omit in toc -->
 
@@ -27,11 +29,11 @@ For more information, see the [State of IPFS in JS (blog post)](https://blog.ipf
 
 ## Roadmap
 
-The roadmap can be found here: https://github.com/ipfs/pomegranate/issues/5
+Please find and comment on [the Roadmap here](https://github.com/ipfs/pomegranate/issues/5).
 
 ## Contribute
 
-This IPFS implementation in JavaScript is a work in progress. [Here are some ways you can help](https://blog.ipfs.tech/state-of-ipfs-in-js/#%F0%9F%A4%9D-ways-you-can-help).
+This IPFS implementation in JavaScript is a work in progress. [Here are some ways you can help](https://blog.ipfs.tech/state-of-ipfs-in-js/#%F0%9F%A4%9D-ways-you-can-help)!
  
 ## License
 
