@@ -6,6 +6,8 @@ This project is pre-alpha and is currently in development. An initial v1 release
 
 The core of IPFS is the [Files API](https://github.com/ipfs/js-ipfs/blob/master/docs/core-api/FILES.md), which will likewise be implemented in Helia. For more info about Helia, please see the [Roadmap](https://github.com/ipfs/helia/issues/5) and the [Manifesto](MANIFESTO.md).
 
+We are also sharing about the progress so far, and discussing how you can get involved, at [Helia Demo Day](https://lu.ma/helia) every couple weeks. We'd love to see you there!
+
 ## Table of Contents <!-- omit in toc -->
 
 - [Name](#name)
