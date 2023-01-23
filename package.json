@@ -39,7 +39,7 @@
     "release": "npm run docs:no-publish && lerna run --concurrency 1 release && npm run docs"
   },
   "dependencies": {
-    "aegir": "^37.7.6",
+    "aegir": "^38.1.0",
     "lerna": "^6.1.0",
     "rimraf": "^4.1.1"
   },
