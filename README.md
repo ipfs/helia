@@ -31,7 +31,7 @@ For more information, see the [State of IPFS in JS (blog post)](https://blog.ipf
 
 ## Roadmap
 
-Please find and comment on [the Roadmap here](https://github.com/ipfs/pomegranate/issues/5).
+Please find and comment on [the Roadmap here](https://github.com/ipfs/helia/issues/5).
 
 ## Contribute
 
