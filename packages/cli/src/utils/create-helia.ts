@@ -31,7 +31,7 @@ export async function createHelia (configDir: string, offline: boolean = false):
     password = await rl.question('Enter libp2p keychain password: ')
   }
 
-  return await createHeliaNode({
+  return createHeliaNode({
     blockstore: new BlockstoreDatastoreAdapter(new FsDatastore(config.blockstore)),
     datastore,
     libp2p: await createLibp2p({

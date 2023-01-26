@@ -30,7 +30,7 @@ export const add: Command<AddArgs> = {
         for await (const result of fs.add({
           path: input
         }, options)) {
-          stdout.write(result.cid.toString() + '\n')
+          stdout.write(`${result.cid.toString()}'\n'`)
         }
       }
     }

@@ -1,3 +1,6 @@
+import { unixfs } from '@helia/unixfs'
+import { CID } from 'multiformats'
+
 import type { Command } from './index.js'
 
 interface CatArgs {
@@ -27,5 +30,20 @@ export const cat: Command<CatArgs> = {
     if (positionals == null || positionals.length === 0) {
       throw new TypeError('Missing positionals')
     }
+    if (offset != null && !Number.isInteger(offset)) {
+      throw new TypeError('Invalid offset')
+    }
+    if (length != null && !Number.isInteger(length)) {
+      throw new TypeError('Invalid length')
+    }
+    const options = {
+      offset: offset != null ? Number(offset) : undefined,
+      length: length != null ? Number(length) : undefined
+    }
+
+    const fs = unixfs(helia)
+    const cid = CID.parse(positionals[0])
+    const result = await fs.cat(cid, options)
+    stdout.write(result.toString())
   }
 }
