@@ -1,5 +1,5 @@
 {
-  "name": "helia-monorepo",
+  "name": "helia",
   "version": "0.0.0",
   "description": "An implementation of IPFS in JavaScript",
   "license": "Apache-2.0 OR MIT",
@@ -41,7 +41,7 @@
     "release:rc": "aegir release-rc"
   },
   "dependencies": {
-    "aegir": "^38.0.0"
+    "aegir": "^38.1.0"
   },
   "workspaces": [
     "packages/*"

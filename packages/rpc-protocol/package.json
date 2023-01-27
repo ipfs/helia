@@ -168,7 +168,7 @@
     "uint8arraylist": "^2.4.3"
   },
   "devDependencies": {
-    "aegir": "^38.0.0",
+    "aegir": "^38.1.0",
     "protons": "^6.0.1"
   },
   "typedoc": {
