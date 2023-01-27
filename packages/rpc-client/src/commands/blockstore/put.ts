@@ -12,7 +12,7 @@ export function createBlockstorePut (config: HeliaRpcMethodConfig): Helia['block
 
     const stream = pbStream(duplex)
     stream.writePB({
-      resource: '/blockstore/has',
+      resource: '/blockstore/put',
       method: 'INVOKE',
       authorization: config.authorization,
       options: PutOptions.encode({

@@ -26,6 +26,21 @@ import type { Datastore } from 'interface-datastore'
  */
 export interface Helia {
   /**
+   * The underlying libp2p node
+   */
+  libp2p: Libp2p
+
+  /**
+   * Where the blocks are stored
+   */
+  blockstore: Blockstore
+
+  /**
+   * A key/value store
+   */
+  datastore: Datastore
+
+  /**
    * Returns information about this node
    *
    * @example
@@ -42,19 +57,9 @@ export interface Helia {
   id: (options?: IdOptions) => Promise<IdResponse>
 
   /**
-   * The underlying libp2p node
+   * Stops the Helia node
    */
-  libp2p: Libp2p
-
-  /**
-   * Where the blocks are stored
-   */
-  blockstore: Blockstore
-
-  /**
-   * A key/value store
-   */
-  datastore: Datastore
+  stop: () => Promise<void>
 }
 
 export interface CatOptions extends AbortOptions {

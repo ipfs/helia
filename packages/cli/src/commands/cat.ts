@@ -35,7 +35,7 @@ export const cat: Command<CatArgs> = {
       length: length != null ? Number(length) : undefined
     })
 
-    if (entry.type !== 'file') {
+    if (entry.type !== 'file' && entry.type !== 'raw') {
       throw new Error('UnixFS path was not a file')
     }
 

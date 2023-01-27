@@ -19,8 +19,6 @@ import * as readline from 'node:readline/promises'
 
 export async function createHelia (configDir: string, offline: boolean = false): Promise<Helia> {
   const config: HeliaConfig = JSON.parse(stripJsonComments(fs.readFileSync(path.join(configDir, 'helia.json'), 'utf-8')))
-  const datastore = new FsDatastore(config.datastore)
-
   let password = config.libp2p.keychain.password
 
   if (config.libp2p.keychain.password == null) {
@@ -31,8 +29,18 @@ export async function createHelia (configDir: string, offline: boolean = false):
     password = await rl.question('Enter libp2p keychain password: ')
   }
 
+  const datastore = new FsDatastore(config.datastore, {
+    createIfMissing: true
+  })
+  await datastore.open()
+
+  const blockstore = new BlockstoreDatastoreAdapter(new FsDatastore(config.blockstore, {
+    createIfMissing: true
+  }))
+  await blockstore.open()
+
   return await createHeliaNode({
-    blockstore: new BlockstoreDatastoreAdapter(new FsDatastore(config.blockstore)),
+    blockstore,
     datastore,
     libp2p: await createLibp2p({
       start: !offline,

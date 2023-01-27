@@ -17,6 +17,7 @@
 
 import { createId } from './commands/id.js'
 import { createBitswap } from 'ipfs-bitswap'
+import { BlockStorage } from './utils/block-storage.js'
 import type { Helia } from '@helia/interface'
 import type { Libp2p } from '@libp2p/interface-libp2p'
 import type { Blockstore } from 'interface-blockstore'
@@ -61,22 +62,27 @@ export interface HeliaInit {
  * @returns {Promise<Helia>}
  */
 export async function createHelia (init: HeliaInit): Promise<Helia> {
-  const blockstore = createBitswap(init.libp2p, init.blockstore, {
+  const bitswap = createBitswap(init.libp2p, init.blockstore, {
 
   })
+  bitswap.start()
 
   const components: HeliaComponents = {
     libp2p: init.libp2p,
-    blockstore,
+    blockstore: new BlockStorage(init.blockstore, bitswap),
     datastore: init.datastore
   }
 
   const helia: Helia = {
     libp2p: init.libp2p,
-    blockstore,
+    blockstore: components.blockstore,
     datastore: init.datastore,
 
-    id: createId(components)
+    id: createId(components),
+
+    stop: async () => {
+      bitswap.stop()
+    }
   }
 
   return helia

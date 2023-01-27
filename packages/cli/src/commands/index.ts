@@ -4,6 +4,7 @@ import { init } from './init.js'
 import { daemon } from './daemon.js'
 import { id } from './id.js'
 import { status } from './status.js'
+import { stat } from './stat.js'
 import type { Helia } from '@helia/interface'
 import type { ParseArgsConfig } from 'node:util'
 import { rpc } from './rpc/index.js'
@@ -117,5 +118,6 @@ export const commands: Array<Command<any>> = [
   daemon,
   id,
   status,
-  rpc
+  rpc,
+  stat
 ]
