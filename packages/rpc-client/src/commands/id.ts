@@ -4,19 +4,17 @@ import { IdOptions, IdResponse } from '@helia/rpc-protocol/root'
 import { HELIA_RPC_PROTOCOL, RPCError } from '@helia/rpc-protocol'
 import type { Helia } from '@helia/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
-import type { HeliaRpcClientConfig } from '../index.js'
+import type { HeliaRpcMethodConfig } from '../index.js'
 import { pbStream } from 'it-pb-stream'
 
-export function createId (config: HeliaRpcClientConfig): Helia['id'] {
+export function createId (config: HeliaRpcMethodConfig): Helia['id'] {
   const id: Helia['id'] = async (options = {}) => {
     const duplex = await config.libp2p.dialProtocol(config.multiaddr, HELIA_RPC_PROTOCOL)
 
     const stream = pbStream(duplex)
     stream.writePB({
       resource: '/id',
-      method: 'GET',
-      user: config.user,
-      authorization: config.authorization,
+      method: 'INVOKE',
       options: IdOptions.encode({
         ...options,
         peerId: options.peerId != null ? options.peerId.toString() : undefined

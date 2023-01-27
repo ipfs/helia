@@ -1,7 +1,7 @@
 {
   "name": "@helia/rpc-protocol",
   "version": "0.0.0",
-  "description": "gRPC protocol for use by @helia/rpc-client and @helia/rpc-server",
+  "description": "RPC protocol for use by @helia/rpc-client and @helia/rpc-server",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/master/packages/rpc-protocol#readme",
   "repository": {
@@ -47,6 +47,14 @@
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
     },
+    "./authorization": {
+      "types": "./dist/src/authorization.d.ts",
+      "import": "./dist/src/authorization.js"
+    },
+    "./blockstore": {
+      "types": "./dist/src/blockstore.d.ts",
+      "import": "./dist/src/blockstore.js"
+    },
     "./root": {
       "types": "./dist/src/root.d.ts",
       "import": "./dist/src/root.js"
@@ -54,10 +62,6 @@
     "./rpc": {
       "types": "./dist/src/rpc.d.ts",
       "import": "./dist/src/rpc.js"
-    },
-    "./blockstore": {
-      "types": "./dist/src/blockstore.d.ts",
-      "import": "./dist/src/blockstore.js"
     }
   },
   "eslintConfig": {

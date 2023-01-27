@@ -1,11 +1,10 @@
 syntax = "proto3";
 
 message RPCCallRequest {
-    string user = 1;
-    string resource = 2;
-    string method = 3;
-    string authorization = 4;
-    bytes options = 5;
+    string resource = 1;
+    string method = 2;
+    optional string authorization = 3;
+    optional bytes options = 4;
 }
 
 message RPCCallResponse {

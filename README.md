@@ -24,7 +24,7 @@
 - [`/packages/helia`](./packages/helia) An implementation of IPFS in JavaScript
 - [`/packages/interface`](./packages/interface) The Helia API
 - [`/packages/rpc-client`](./packages/rpc-client) An implementation of IPFS in JavaScript
-- [`/packages/rpc-protocol`](./packages/rpc-protocol) gRPC protocol for use by @helia/rpc-client and @helia/rpc-server
+- [`/packages/rpc-protocol`](./packages/rpc-protocol) RPC protocol for use by @helia/rpc-client and @helia/rpc-server
 - [`/packages/rpc-server`](./packages/rpc-server) An implementation of IPFS in JavaScript
 - [`/packages/unixfs`](./packages/unixfs) A Helia-compatible wrapper for UnixFS
 

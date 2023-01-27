@@ -6,11 +6,10 @@ message IdOptions {
 
 message IdResponse {
     string peer_id = 1;
-    string server_did = 2;
-    repeated string multiaddrs = 3;
-    string agent_version = 4;
-    string protocol_version = 5;
-    repeated string protocols = 6;
+    repeated string multiaddrs = 2;
+    string agent_version = 3;
+    string protocol_version = 4;
+    repeated string protocols = 5;
 }
 
 message CatOptions {

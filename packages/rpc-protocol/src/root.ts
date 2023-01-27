@@ -2,6 +2,7 @@
 /* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
+/* eslint-disable @typescript-eslint/no-empty-interface */
 
 import { encodeMessage, decodeMessage, message } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -65,7 +66,6 @@ export namespace IdOptions {
 
 export interface IdResponse {
   peerId: string
-  serverDid: string
   multiaddrs: string[]
   agentVersion: string
   protocolVersion: string
@@ -87,31 +87,26 @@ export namespace IdResponse {
           w.string(obj.peerId)
         }
 
-        if (opts.writeDefaults === true || obj.serverDid !== '') {
-          w.uint32(18)
-          w.string(obj.serverDid)
-        }
-
         if (obj.multiaddrs != null) {
           for (const value of obj.multiaddrs) {
-            w.uint32(26)
+            w.uint32(18)
             w.string(value)
           }
         }
 
         if (opts.writeDefaults === true || obj.agentVersion !== '') {
-          w.uint32(34)
+          w.uint32(26)
           w.string(obj.agentVersion)
         }
 
         if (opts.writeDefaults === true || obj.protocolVersion !== '') {
-          w.uint32(42)
+          w.uint32(34)
           w.string(obj.protocolVersion)
         }
 
         if (obj.protocols != null) {
           for (const value of obj.protocols) {
-            w.uint32(50)
+            w.uint32(42)
             w.string(value)
           }
         }
@@ -122,7 +117,6 @@ export namespace IdResponse {
       }, (reader, length) => {
         const obj: any = {
           peerId: '',
-          serverDid: '',
           multiaddrs: [],
           agentVersion: '',
           protocolVersion: '',
@@ -139,18 +133,15 @@ export namespace IdResponse {
               obj.peerId = reader.string()
               break
             case 2:
-              obj.serverDid = reader.string()
-              break
-            case 3:
               obj.multiaddrs.push(reader.string())
               break
-            case 4:
+            case 3:
               obj.agentVersion = reader.string()
               break
-            case 5:
+            case 4:
               obj.protocolVersion = reader.string()
               break
-            case 6:
+            case 5:
               obj.protocols.push(reader.string())
               break
             default:

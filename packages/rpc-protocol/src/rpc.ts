@@ -2,17 +2,17 @@
 /* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
+/* eslint-disable @typescript-eslint/no-empty-interface */
 
 import { encodeMessage, decodeMessage, message, enumeration } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Codec } from 'protons-runtime'
 
 export interface RPCCallRequest {
-  user: string
   resource: string
   method: string
-  authorization: string
-  options: Uint8Array
+  authorization?: string
+  options?: Uint8Array
 }
 
 export namespace RPCCallRequest {
@@ -25,28 +25,23 @@ export namespace RPCCallRequest {
           w.fork()
         }
 
-        if (opts.writeDefaults === true || obj.user !== '') {
-          w.uint32(10)
-          w.string(obj.user)
-        }
-
         if (opts.writeDefaults === true || obj.resource !== '') {
-          w.uint32(18)
+          w.uint32(10)
           w.string(obj.resource)
         }
 
         if (opts.writeDefaults === true || obj.method !== '') {
-          w.uint32(26)
+          w.uint32(18)
           w.string(obj.method)
         }
 
-        if (opts.writeDefaults === true || obj.authorization !== '') {
-          w.uint32(34)
+        if (obj.authorization != null) {
+          w.uint32(26)
           w.string(obj.authorization)
         }
 
-        if (opts.writeDefaults === true || (obj.options != null && obj.options.byteLength > 0)) {
-          w.uint32(42)
+        if (obj.options != null) {
+          w.uint32(34)
           w.bytes(obj.options)
         }
 
@@ -55,11 +50,8 @@ export namespace RPCCallRequest {
         }
       }, (reader, length) => {
         const obj: any = {
-          user: '',
           resource: '',
-          method: '',
-          authorization: '',
-          options: new Uint8Array(0)
+          method: ''
         }
 
         const end = length == null ? reader.len : reader.pos + length
@@ -69,18 +61,15 @@ export namespace RPCCallRequest {
 
           switch (tag >>> 3) {
             case 1:
-              obj.user = reader.string()
-              break
-            case 2:
               obj.resource = reader.string()
               break
-            case 3:
+            case 2:
               obj.method = reader.string()
               break
-            case 4:
+            case 3:
               obj.authorization = reader.string()
               break
-            case 5:
+            case 4:
               obj.options = reader.bytes()
               break
             default:

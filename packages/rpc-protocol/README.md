@@ -5,7 +5,7 @@
 [![codecov](https://img.shields.io/codecov/c/github/ipfs/helia.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia)
 [![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/js-test-and-release.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/js-test-and-release.yml?query=branch%3Amain)
 
-> gRPC protocol for use by @helia/rpc-client and @helia/rpc-server
+> RPC protocol for use by @helia/rpc-client and @helia/rpc-server
 
 ## Table of contents <!-- omit in toc -->
 

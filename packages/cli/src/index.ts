@@ -3,7 +3,6 @@
 
 import { parseArgs } from 'node:util'
 import path from 'node:path'
-import os from 'os'
 import fs from 'node:fs'
 import { Command, commands } from './commands/index.js'
 import { InvalidParametersError } from '@helia/interface/errors'
@@ -12,8 +11,8 @@ import { findHelia } from './utils/find-helia.js'
 import kleur from 'kleur'
 import type { Helia } from '@helia/interface'
 import type { Libp2p } from '@libp2p/interface-libp2p'
-import type { ParseArgsConfig } from 'node:util'
 import { findHeliaDir } from './utils/find-helia-dir.js'
+import { config } from './utils/config.js'
 
 /**
  * Typedef for the Helia config file
@@ -32,6 +31,13 @@ export interface HeliaConfig {
       password?: string
     }
   }
+  rpc: {
+    datastore: string
+    keychain: {
+      salt: string
+      password?: string
+    }
+  }
 }
 
 export interface RootArgs {
@@ -39,6 +45,7 @@ export interface RootArgs {
   directory: string
   help: boolean
   rpcAddress: string
+  user: string
 }
 
 const root: Command<RootArgs> = {
@@ -51,28 +58,18 @@ const root: Command<RootArgs> = {
       type: 'string',
       default: findHeliaDir()
     },
-
     rpcAddress: {
       description: 'The multiaddr of the Helia node',
       type: 'string',
-      default: path.join(os.homedir(), '.helia', 'rpc.sock')
+      default: path.join(findHeliaDir(), 'rpc.sock')
+    },
+    user: {
+      description: 'The name of the RPC user',
+      type: 'string',
+      default: process.env.USER
     }
   },
   async execute () {}
-}
-
-function config (options: any): ParseArgsConfig {
-  return {
-    allowPositionals: true,
-    strict: true,
-    options: {
-      help: {
-        description: 'Show help text',
-        type: 'boolean'
-      },
-      ...options
-    }
-  }
 }
 
 async function main (): Promise<void> {
@@ -87,7 +84,11 @@ async function main (): Promise<void> {
     throw new InvalidParametersError('No RPC address specified')
   }
 
-  if (rootCommandArgs.values.help === true) {
+  if (typeof rootCommandArgs.values.user !== 'string') {
+    throw new InvalidParametersError('No RPC user specified')
+  }
+
+  if (rootCommandArgs.values.help === true && rootCommandArgs.positionals.length === 0) {
     printHelp(root, process.stdout)
     return
   }
@@ -122,19 +123,20 @@ async function main (): Promise<void> {
   }
 
   if (rootCommandArgs.positionals.length > 0) {
-    const search: Command<any> = root
-    let subCommand: Command<any> | undefined
+    let subCommand: Command<any> = root
+    let subCommandDepth = 0
 
     for (let i = 0; i < rootCommandArgs.positionals.length; i++) {
       const positional = rootCommandArgs.positionals[i]
 
-      if (search.subcommands == null) {
+      if (subCommand.subcommands == null) {
         break
       }
 
-      const sub = search.subcommands.find(c => c.command === positional)
+      const sub = subCommand.subcommands.find(c => c.command === positional)
 
       if (sub != null) {
+        subCommandDepth++
         subCommand = sub
       }
     }
@@ -145,11 +147,16 @@ async function main (): Promise<void> {
 
     const subCommandArgs = parseArgs(config(subCommand.options))
 
+    if (subCommandArgs.values.help === true) {
+      printHelp(subCommand, process.stdout)
+      return
+    }
+
     let helia: Helia | undefined
     let libp2p: Libp2p | undefined
 
     if (subCommand.command !== 'daemon' && subCommand.command !== 'status') {
-      const res = await findHelia(configDir, rootCommandArgs.values.rpcAddress, subCommand.offline)
+      const res = await findHelia(configDir, rootCommandArgs.values.rpcAddress, rootCommandArgs.values.user, subCommand.offline, subCommand.online)
       helia = res.helia
       libp2p = res.libp2p
     }
@@ -157,7 +164,7 @@ async function main (): Promise<void> {
     await subCommand.execute({
       ...rootCommandArgs.values,
       ...subCommandArgs.values,
-      positionals: subCommandArgs.positionals.slice(1),
+      positionals: subCommandArgs.positionals.slice(subCommandDepth),
       helia,
       stdin: process.stdin,
       stdout: process.stdout,

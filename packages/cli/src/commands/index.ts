@@ -6,6 +6,7 @@ import { id } from './id.js'
 import { status } from './status.js'
 import type { Helia } from '@helia/interface'
 import type { ParseArgsConfig } from 'node:util'
+import { rpc } from './rpc/index.js'
 
 /**
  * Extends the internal node type to add a description to the options
@@ -43,6 +44,11 @@ export interface ParseArgsOptionConfig {
    * A description used to generate help text
    */
   description: string
+
+  /**
+   * If specified the value must be in this list
+   */
+  valid?: string[]
 }
 
 type ParseArgsOptionsConfig = Record<string, ParseArgsOptionConfig>
@@ -71,9 +77,14 @@ export interface Command<T = {}> {
   example?: string
 
   /**
-   * Specify if this command can be run offline
+   * Specify if this command can be run offline (default true)
    */
   offline?: boolean
+
+  /**
+   * Specify if this command can be run online (default true)
+   */
+  online?: boolean
 
   /**
    * Configuration for the command
@@ -105,5 +116,6 @@ export const commands: Array<Command<any>> = [
   init,
   daemon,
   id,
-  status
+  status,
+  rpc
 ]

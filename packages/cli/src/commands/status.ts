@@ -10,8 +10,7 @@ export const status: Command<RootArgs> = {
   command: 'status',
   description: 'Report the status of the Helia daemon',
   example: '$ helia status',
-  offline: true,
-  async execute ({ directory, rpcAddress, stdout }) {
+  async execute ({ directory, rpcAddress, stdout, user }) {
     // socket file?
     const socketFilePath = rpcAddress
 
@@ -20,7 +19,7 @@ export const status: Command<RootArgs> = {
 
       const {
         helia, libp2p
-      } = await findOnlineHelia(directory, rpcAddress)
+      } = await findOnlineHelia(directory, rpcAddress, user)
 
       if (libp2p != null) {
         await libp2p.stop()

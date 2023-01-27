@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+message GetOptions {
+
+}
+
+message GetRequest {
+    string user = 1;
+}
+
+message GetResponse {
+    string authorization = 1;
+}

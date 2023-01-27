@@ -5,14 +5,13 @@ import { createEd25519PeerId, createRSAPeerId, createSecp256k1PeerId } from '@li
 import { InvalidParametersError } from '@helia/interface/errors'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { logger } from '@libp2p/logger'
-import { createLibp2p } from 'libp2p'
 import { FsDatastore } from 'datastore-fs'
-import { noise } from '@chainsafe/libp2p-noise'
-import { tcp } from '@libp2p/tcp'
-import { yamux } from '@chainsafe/libp2p-yamux'
 import { findHeliaDir } from '../utils/find-helia-dir.js'
 import { randomBytes } from '@libp2p/crypto'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { KeyChain } from '@libp2p/keychain'
+import { loadRpcKeychain } from './rpc/utils.js'
+import type { KeyType } from '@libp2p/interface-keychain'
 
 const log = logger('helia:cli:commands:init')
 
@@ -28,6 +27,11 @@ interface InitArgs {
   keychainPassword: string
   keychainSalt: string
   storePassword: boolean
+  rpcKeychainPassword: string
+  rpcKeychainSalt: string
+  storeRpcPassword: boolean
+  rpcUser: string
+  rpcUserKeyType: KeyType
 }
 
 // NIST SP 800-132
@@ -36,7 +40,7 @@ const SALT_LENGTH = Math.ceil(NIST_MINIMUM_SALT_LENGTH / 3) * 3 // no base64 pad
 
 export const init: Command<InitArgs> = {
   command: 'init',
-  offline: true,
+  online: false,
   description: 'Initialize the node',
   example: '$ helia init',
   options: {
@@ -87,9 +91,35 @@ export const init: Command<InitArgs> = {
       description: 'If true, store the password used to derive the key used by the libp2p keychain in the config file',
       type: 'boolean',
       default: true
+    },
+    rpcKeychainPassword: {
+      description: 'The RPC server keychain will use a key derived from this password for encryption operations',
+      type: 'string',
+      default: uint8ArrayToString(randomBytes(20), 'base64')
+    },
+    rpcKeychainSalt: {
+      description: 'The RPC server keychain will use use this salt when deriving the key from the password',
+      type: 'string',
+      default: uint8ArrayToString(randomBytes(SALT_LENGTH), 'base64')
+    },
+    storeRpcPassword: {
+      description: 'If true, store the password used to derive the key used by the RPC server keychain in the config file',
+      type: 'boolean',
+      default: true
+    },
+    rpcUser: {
+      description: 'The default RPC user',
+      type: 'string',
+      default: process.env.USER
+    },
+    rpcUserKeyType: {
+      description: 'The default RPC user key tupe',
+      type: 'string',
+      default: 'Ed25519',
+      valid: ['RSA', 'Ed25519', 'secp256k1']
     }
   },
-  async execute ({ keyType, bits, directory, directoryMode, configFileMode, publicKeyMode, stdout, keychainPassword, keychainSalt, storePassword }) {
+  async execute ({ keyType, bits, directory, directoryMode, configFileMode, publicKeyMode, stdout, keychainPassword, keychainSalt, storePassword, rpcKeychainPassword, rpcKeychainSalt, storeRpcPassword, rpcUser, rpcUserKeyType }) {
     try {
       await fs.readdir(directory)
       // don't init if we are already inited
@@ -125,31 +155,27 @@ export const init: Command<InitArgs> = {
     })
 
     const datastorePath = path.join(directory, 'data')
+    const rpcDatastorePath = path.join(directory, 'rpc')
 
     // create a dial-only libp2p node configured with the datastore in the helia
     // directory - this will store the peer id securely in the keychain
-    const node = await createLibp2p({
-      peerId,
-      datastore: new FsDatastore(datastorePath, {
-        createIfMissing: true
-      }),
-      transports: [
-        tcp()
-      ],
-      connectionEncryption: [
-        noise()
-      ],
-      streamMuxers: [
-        yamux()
-      ],
-      keychain: {
-        pass: keychainPassword,
-        dek: {
-          salt: keychainSalt
-        }
+    const datastore = new FsDatastore(datastorePath, {
+      createIfMissing: true
+    })
+    await datastore.open()
+    const keychain = new KeyChain({
+      datastore
+    }, {
+      pass: keychainPassword,
+      dek: {
+        keyLength: 512 / 8,
+        iterationCount: 10000,
+        hash: 'sha2-512',
+        salt: keychainSalt
       }
     })
-    await node.stop()
+    await keychain.importPeer('self', peerId)
+    await datastore.close()
 
     // now write the public key from the PeerId out for use by the RPC client
     const publicKeyPath = path.join(directory, 'peer.pub')
@@ -189,12 +215,25 @@ export const init: Command<InitArgs> = {
       "password": "${keychainPassword}"`
 : ''}
     }
+  },
+  "rpc": {
+    "datastore": "${rpcDatastorePath}",
+    "keychain": {
+      "salt": "${rpcKeychainSalt}"${storeRpcPassword
+? `,
+      "password": "${rpcKeychainPassword}"`
+: ''}
+    }
   }
 }
 `, {
       mode: parseInt(configFileMode, 8),
       flag: 'ax'
     })
+
+    // create an rpc key for the first user
+    const rpcKeychain = await loadRpcKeychain(directory)
+    await rpcKeychain.createKey(`rpc-user-${rpcUser}`, rpcUserKeyType)
 
     stdout.write(`Wrote config file to ${configFilePath}\n`)
   }

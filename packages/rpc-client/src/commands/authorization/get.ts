@@ -1,26 +1,27 @@
 import { RPCCallRequest, RPCCallResponse, RPCCallResponseType } from '@helia/rpc-protocol/rpc'
-import { GetOptions, GetRequest, GetResponse } from '@helia/rpc-protocol/blockstore'
+import { GetOptions, GetRequest, GetResponse } from '@helia/rpc-protocol/authorization'
 import { HELIA_RPC_PROTOCOL, RPCError } from '@helia/rpc-protocol'
-import type { Helia } from '@helia/interface'
-import type { HeliaRpcMethodConfig } from '../../index.js'
+import type { HeliaRpcClientConfig } from '../../index.js'
 import { pbStream } from 'it-pb-stream'
-import type { CID } from 'multiformats/cid'
 
-export function createBlockstoreGet (config: HeliaRpcMethodConfig): Helia['blockstore']['get'] {
-  const get: Helia['blockstore']['get'] = async (cid: CID, options = {}) => {
+export function createAuthorizationGet (config: HeliaRpcClientConfig): (user: string, options?: any) => Promise<string> {
+  const get = async (user: string, options = {}): Promise<string> => {
     const duplex = await config.libp2p.dialProtocol(config.multiaddr, HELIA_RPC_PROTOCOL)
+
+    if (config.libp2p.peerId.publicKey == null || config.libp2p.peerId.privateKey == null) {
+      throw new Error('Public key component missing')
+    }
 
     const stream = pbStream(duplex)
     stream.writePB({
-      resource: '/blockstore/get',
+      resource: '/authorization/get',
       method: 'INVOKE',
-      authorization: config.authorization,
       options: GetOptions.encode({
         ...options
       })
     }, RPCCallRequest)
     stream.writePB({
-      cid: cid.bytes
+      user
     }, GetRequest)
     const response = await stream.readPB(RPCCallResponse)
 
@@ -33,7 +34,7 @@ export function createBlockstoreGet (config: HeliaRpcMethodConfig): Helia['block
 
       const message = GetResponse.decode(response.message)
 
-      return message.block
+      return message.authorization
     }
 
     throw new RPCError(response)

@@ -1,73 +1,57 @@
 import type { Command } from './index.js'
 import { createHelia } from '../utils/create-helia.js'
 import { createHeliaRpcServer } from '@helia/rpc-server'
-import { EdKeypair } from '@ucans/ucans'
 import fs from 'node:fs'
 import path from 'node:path'
 import os from 'node:os'
-import { importKey } from '@libp2p/crypto/keys'
-import { peerIdFromKeys } from '@libp2p/peer-id'
 import { logger } from '@libp2p/logger'
+import { loadRpcKeychain } from './rpc/utils.js'
 
 const log = logger('helia:cli:commands:daemon')
 
 interface DaemonArgs {
   positionals?: string[]
+  authorizationValiditySeconds: number
 }
 
 export const daemon: Command<DaemonArgs> = {
   command: 'daemon',
   description: 'Starts a Helia daemon',
   example: '$ helia daemon',
-  async execute ({ directory, stdout }) {
+  online: false,
+  options: {
+    authorizationValiditySeconds: {
+      description: 'How many seconds a request authorization token is valid for',
+      type: 'string',
+      default: '5'
+    }
+  },
+  async execute ({ directory, stdout, authorizationValiditySeconds }) {
     const lockfilePath = path.join(directory, 'helia.pid')
     checkPidFile(lockfilePath)
 
+    const rpcSocketFilePath = path.join(directory, 'rpc.sock')
+    checkRpcSocketFile(rpcSocketFilePath)
+
     const helia = await createHelia(directory)
-
-    const keyName = 'rpc-server-key'
-    const keyPassword = 'temporary-password'
-    let pem: string
-
-    try {
-      pem = await helia.libp2p.keychain.exportKey(keyName, keyPassword)
-      log('loaded rpc server key from libp2p keystore')
-    } catch (err: any) {
-      if (err.code !== 'ERR_NOT_FOUND') {
-        throw err
-      }
-
-      log('creating rpc server key and storing in libp2p keystore')
-      await helia.libp2p.keychain.createKey(keyName, 'Ed25519')
-      pem = await helia.libp2p.keychain.exportKey(keyName, keyPassword)
-    }
-
-    log('reading rpc server key as peer id')
-    const privateKey = await importKey(pem, keyPassword)
-    const peerId = await peerIdFromKeys(privateKey.public.bytes, privateKey.bytes)
-
-    if (peerId.privateKey == null || peerId.publicKey == null) {
-      throw new Error('Private key missing')
-    }
-
-    const key = new EdKeypair(
-      peerId.privateKey.subarray(4),
-      peerId.publicKey.subarray(4),
-      false
-    )
 
     await createHeliaRpcServer({
       helia,
-      serverDid: key.did()
+      users: await loadRpcKeychain(directory),
+      authorizationValiditySeconds: Number(authorizationValiditySeconds)
     })
 
     const id = await helia.id()
 
     stdout.write(`${id.agentVersion} is running\n`)
 
-    id.multiaddrs.forEach(ma => {
-      stdout.write(`${ma.toString()}\n`)
-    })
+    if (id.multiaddrs.length > 0) {
+      stdout.write('Listening on:\n')
+
+      id.multiaddrs.forEach(ma => {
+        stdout.write(`  ${ma.toString()}\n`)
+      })
+    }
 
     fs.writeFileSync(lockfilePath, process.pid.toString())
   }
@@ -101,5 +85,12 @@ function checkPidFile (pidFilePath: string): void {
     } else {
       throw err
     }
+  }
+}
+
+function checkRpcSocketFile (rpcSocketFilePath: string): void {
+  if (fs.existsSync(rpcSocketFilePath)) {
+    log('Removing stale rpc socket file')
+    fs.rmSync(rpcSocketFilePath)
   }
 }

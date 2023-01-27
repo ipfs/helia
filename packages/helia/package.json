@@ -140,12 +140,12 @@
   "dependencies": {
     "@helia/interface": "~0.0.0",
     "@libp2p/interface-libp2p": "^1.1.0",
-    "@libp2p/interfaces": "^3.2.0",
+    "@libp2p/interfaces": "^3.3.1",
     "interface-blockstore": "^4.0.0",
     "interface-datastore": "^7.0.3",
     "ipfs-bitswap": "^15.0.0",
     "merge-options": "^3.0.4",
-    "multiformats": "^11.0.0"
+    "multiformats": "^11.0.1"
   },
   "devDependencies": {
     "aegir": "^38.0.0"

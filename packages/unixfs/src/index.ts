@@ -17,7 +17,7 @@ class UnixFS {
     this.components = components
   }
 
-  async * add (source: ImportCandidate, options?: UserImporterOptions): AsyncGenerator<ImportResult> {
+  async * add (source: AsyncIterable<ImportCandidate> | Iterable<ImportCandidate> | ImportCandidate, options?: UserImporterOptions): AsyncGenerator<ImportResult> {
     yield * importer(source, this.components.blockstore, options)
   }
 
