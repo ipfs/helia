@@ -29,7 +29,7 @@ class UnixFS {
       async start (controller) {
         const result = await exporter(cid, blockstore)
 
-        if (result.type !== 'file') {
+        if (result.type !== 'file' && result.type !== 'raw') {
           throw new NotAFileError()
         }
 

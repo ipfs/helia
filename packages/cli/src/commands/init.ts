@@ -9,7 +9,7 @@ import { FsDatastore } from 'datastore-fs'
 import { findHeliaDir } from '../utils/find-helia-dir.js'
 import { randomBytes } from '@libp2p/crypto'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { KeyChain } from '@libp2p/keychain'
+import { DefaultKeyChain } from '@libp2p/keychain'
 import { loadRpcKeychain } from './rpc/utils.js'
 import type { KeyType } from '@libp2p/interface-keychain'
 
@@ -163,7 +163,7 @@ export const init: Command<InitArgs> = {
       createIfMissing: true
     })
     await datastore.open()
-    const keychain = new KeyChain({
+    const keychain = new DefaultKeyChain({
       datastore
     }, {
       pass: keychainPassword,

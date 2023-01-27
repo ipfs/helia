@@ -11,7 +11,7 @@
 
 - [Structure](#structure)
 - [Project status](#project-status)
-- [What's in a name?](#whats-in-a-name)
+- [Name](#name)
 - [Background](#background)
 - [Roadmap](#roadmap)
 - [API Docs](#api-docs)
@@ -36,7 +36,7 @@ The core of IPFS is the [Files API](https://github.com/ipfs/js-ipfs/blob/master/
 
 We are also sharing about the progress so far, and discussing how you can get involved, at [Helia Demo Day](https://lu.ma/helia) every couple weeks. We'd love to see you there!
 
-## What's in a name?
+## Name
 
 Helia (*HEE-lee-ah*) is the Latin spelling of Ἡλιη -- in Greek mythology, one of the [Heliades](https://www.wikidata.org/wiki/Q12656412): the daughters of the sun god Helios. When their brother Phaethon died trying to drive the sun chariot across the sky, their tears of mourning fell to earth as amber, which is yellow (sort of), and so is JavaScript. They were then turned into [poplar](https://en.wiktionary.org/wiki/poplar) trees and, well, JavaScript is quite popular.
 

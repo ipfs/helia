@@ -4,7 +4,7 @@ import stripJsonComments from 'strip-json-comments'
 import fs from 'node:fs'
 import path from 'node:path'
 import * as readline from 'node:readline/promises'
-import { KeyChain as DefaultKeyChain } from '@libp2p/keychain'
+import { DefaultKeyChain } from '@libp2p/keychain'
 import type { KeyChain } from '@libp2p/interface-keychain'
 
 export async function loadRpcKeychain (configDir: string): Promise<KeyChain> {

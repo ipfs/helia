@@ -16,6 +16,8 @@ import stripJsonComments from 'strip-json-comments'
 import fs from 'node:fs'
 import path from 'node:path'
 import * as readline from 'node:readline/promises'
+import { ShardingDatastore } from 'datastore-core'
+import { NextToLast } from 'datastore-core/shard'
 
 export async function createHelia (configDir: string, offline: boolean = false): Promise<Helia> {
   const config: HeliaConfig = JSON.parse(stripJsonComments(fs.readFileSync(path.join(configDir, 'helia.json'), 'utf-8')))
@@ -34,9 +36,12 @@ export async function createHelia (configDir: string, offline: boolean = false):
   })
   await datastore.open()
 
-  const blockstore = new BlockstoreDatastoreAdapter(new FsDatastore(config.blockstore, {
-    createIfMissing: true
-  }))
+  const blockstore = new BlockstoreDatastoreAdapter(
+    new ShardingDatastore(
+      new FsDatastore(config.blockstore),
+      new NextToLast(2)
+    )
+  )
   await blockstore.open()
 
   return await createHeliaNode({
