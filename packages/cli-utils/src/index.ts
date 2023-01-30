@@ -141,7 +141,8 @@ export interface HeliaConfig {
     keychain: {
       salt: string
       password?: string
-    }
+    },
+    bootstrap: string[]
   }
   rpc: {
     datastore: string

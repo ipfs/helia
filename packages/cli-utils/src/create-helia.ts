@@ -12,6 +12,7 @@ import { mplex } from '@libp2p/mplex'
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
 import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 import { kadDHT } from '@libp2p/kad-dht'
+import { bootstrap } from '@libp2p/bootstrap'
 import stripJsonComments from 'strip-json-comments'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -72,6 +73,11 @@ export async function createHelia (configDir: string, offline: boolean = false):
       streamMuxers: [
         yamux(),
         mplex()
+      ],
+      peerDiscovery: [
+        bootstrap({
+          list: config.libp2p.bootstrap
+        })
       ],
       pubsub: gossipsub(),
       dht: kadDHT(),
