@@ -1,12 +1,12 @@
 import type { Libp2p } from '@libp2p/interface-libp2p'
-import type { IdResponse } from '@helia/interface'
+import type { InfoResponse } from '@helia/interface'
 
-interface IdComponents {
+interface InfoComponents {
   libp2p: Libp2p
 }
 
-export function createId (components: IdComponents) {
-  return async function id (): Promise<IdResponse> {
+export function createInfo (components: InfoComponents) {
+  return async function info (): Promise<InfoResponse> {
     return {
       peerId: components.libp2p.peerId,
       multiaddrs: components.libp2p.getMultiaddrs(),

@@ -1,6 +1,6 @@
 import type { Helia } from '@helia/interface'
 import { HeliaError } from '@helia/interface/errors'
-import { createId } from './handlers/id.js'
+import { createInfo } from './handlers/info.js'
 import { logger } from '@libp2p/logger'
 import { HELIA_RPC_PROTOCOL } from '@helia/rpc-protocol'
 import { RPCCallRequest, RPCCallResponseType, RPCCallResponse } from '@helia/rpc-protocol/rpc'
@@ -68,7 +68,7 @@ export async function createHeliaRpcServer (config: RPCServerConfig): Promise<vo
     '/blockstore/get': createGet(config),
     '/blockstore/has': createHas(config),
     '/blockstore/put': createPut(config),
-    '/id': createId(config)
+    '/info': createInfo(config)
   }
 
   await helia.libp2p.handle(HELIA_RPC_PROTOCOL, ({ stream, connection }) => {

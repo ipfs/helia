@@ -15,7 +15,7 @@
  * ```
  */
 
-import { createId } from './commands/id.js'
+import { createInfo } from './commands/info.js'
 import { createBitswap } from 'ipfs-bitswap'
 import { BlockStorage } from './utils/block-storage.js'
 import type { Helia } from '@helia/interface'
@@ -78,7 +78,7 @@ export async function createHelia (init: HeliaInit): Promise<Helia> {
     blockstore: components.blockstore,
     datastore: init.datastore,
 
-    id: createId(components),
+    info: createInfo(components),
 
     stop: async () => {
       bitswap.stop()

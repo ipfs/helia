@@ -8,16 +8,16 @@ import { encodeMessage, decodeMessage, message } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Codec } from 'protons-runtime'
 
-export interface IdOptions {
+export interface InfoOptions {
   peerId?: string
 }
 
-export namespace IdOptions {
-  let _codec: Codec<IdOptions>
+export namespace InfoOptions {
+  let _codec: Codec<InfoOptions>
 
-  export const codec = (): Codec<IdOptions> => {
+  export const codec = (): Codec<InfoOptions> => {
     if (_codec == null) {
-      _codec = message<IdOptions>((obj, w, opts = {}) => {
+      _codec = message<InfoOptions>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
           w.fork()
         }
@@ -55,16 +55,16 @@ export namespace IdOptions {
     return _codec
   }
 
-  export const encode = (obj: IdOptions): Uint8Array => {
-    return encodeMessage(obj, IdOptions.codec())
+  export const encode = (obj: InfoOptions): Uint8Array => {
+    return encodeMessage(obj, InfoOptions.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): IdOptions => {
-    return decodeMessage(buf, IdOptions.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList): InfoOptions => {
+    return decodeMessage(buf, InfoOptions.codec())
   }
 }
 
-export interface IdResponse {
+export interface InfoResponse {
   peerId: string
   multiaddrs: string[]
   agentVersion: string
@@ -72,12 +72,12 @@ export interface IdResponse {
   protocols: string[]
 }
 
-export namespace IdResponse {
-  let _codec: Codec<IdResponse>
+export namespace InfoResponse {
+  let _codec: Codec<InfoResponse>
 
-  export const codec = (): Codec<IdResponse> => {
+  export const codec = (): Codec<InfoResponse> => {
     if (_codec == null) {
-      _codec = message<IdResponse>((obj, w, opts = {}) => {
+      _codec = message<InfoResponse>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
           w.fork()
         }
@@ -157,147 +157,11 @@ export namespace IdResponse {
     return _codec
   }
 
-  export const encode = (obj: IdResponse): Uint8Array => {
-    return encodeMessage(obj, IdResponse.codec())
+  export const encode = (obj: InfoResponse): Uint8Array => {
+    return encodeMessage(obj, InfoResponse.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): IdResponse => {
-    return decodeMessage(buf, IdResponse.codec())
-  }
-}
-
-export interface CatOptions {
-  cid: string
-  offset: number
-  length: number
-}
-
-export namespace CatOptions {
-  let _codec: Codec<CatOptions>
-
-  export const codec = (): Codec<CatOptions> => {
-    if (_codec == null) {
-      _codec = message<CatOptions>((obj, w, opts = {}) => {
-        if (opts.lengthDelimited !== false) {
-          w.fork()
-        }
-
-        if (opts.writeDefaults === true || obj.cid !== '') {
-          w.uint32(10)
-          w.string(obj.cid)
-        }
-
-        if (opts.writeDefaults === true || obj.offset !== 0) {
-          w.uint32(16)
-          w.int32(obj.offset)
-        }
-
-        if (opts.writeDefaults === true || obj.length !== 0) {
-          w.uint32(24)
-          w.int32(obj.length)
-        }
-
-        if (opts.lengthDelimited !== false) {
-          w.ldelim()
-        }
-      }, (reader, length) => {
-        const obj: any = {
-          cid: '',
-          offset: 0,
-          length: 0
-        }
-
-        const end = length == null ? reader.len : reader.pos + length
-
-        while (reader.pos < end) {
-          const tag = reader.uint32()
-
-          switch (tag >>> 3) {
-            case 1:
-              obj.cid = reader.string()
-              break
-            case 2:
-              obj.offset = reader.int32()
-              break
-            case 3:
-              obj.length = reader.int32()
-              break
-            default:
-              reader.skipType(tag & 7)
-              break
-          }
-        }
-
-        return obj
-      })
-    }
-
-    return _codec
-  }
-
-  export const encode = (obj: CatOptions): Uint8Array => {
-    return encodeMessage(obj, CatOptions.codec())
-  }
-
-  export const decode = (buf: Uint8Array | Uint8ArrayList): CatOptions => {
-    return decodeMessage(buf, CatOptions.codec())
-  }
-}
-
-export interface CatResponse {
-  bytes: Uint8Array
-}
-
-export namespace CatResponse {
-  let _codec: Codec<CatResponse>
-
-  export const codec = (): Codec<CatResponse> => {
-    if (_codec == null) {
-      _codec = message<CatResponse>((obj, w, opts = {}) => {
-        if (opts.lengthDelimited !== false) {
-          w.fork()
-        }
-
-        if (opts.writeDefaults === true || (obj.bytes != null && obj.bytes.byteLength > 0)) {
-          w.uint32(10)
-          w.bytes(obj.bytes)
-        }
-
-        if (opts.lengthDelimited !== false) {
-          w.ldelim()
-        }
-      }, (reader, length) => {
-        const obj: any = {
-          bytes: new Uint8Array(0)
-        }
-
-        const end = length == null ? reader.len : reader.pos + length
-
-        while (reader.pos < end) {
-          const tag = reader.uint32()
-
-          switch (tag >>> 3) {
-            case 1:
-              obj.bytes = reader.bytes()
-              break
-            default:
-              reader.skipType(tag & 7)
-              break
-          }
-        }
-
-        return obj
-      })
-    }
-
-    return _codec
-  }
-
-  export const encode = (obj: CatResponse): Uint8Array => {
-    return encodeMessage(obj, CatResponse.codec())
-  }
-
-  export const decode = (buf: Uint8Array | Uint8ArrayList): CatResponse => {
-    return decodeMessage(buf, CatResponse.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList): InfoResponse => {
+    return decodeMessage(buf, InfoResponse.codec())
   }
 }

@@ -1,3 +1,5 @@
+/* eslint max-depth: ["error", 5] */
+
 import { RPCCallRequest, RPCCallResponse, RPCCallResponseType } from '@helia/rpc-protocol/rpc'
 import { GetOptions, GetRequest, GetResponse, GetResponseType } from '@helia/rpc-protocol/blockstore'
 import { HELIA_RPC_PROTOCOL, RPCError } from '@helia/rpc-protocol'

@@ -1,5 +1,5 @@
 import type { Helia } from '@helia/interface'
-import { createId } from './commands/id.js'
+import { createInfo } from './commands/info.js'
 import type { Libp2p } from '@libp2p/interface-libp2p'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import { createBlockstoreDelete } from './commands/blockstore/delete.js'
@@ -31,7 +31,7 @@ export async function createHeliaRpcClient (config: HeliaRpcClientConfig): Promi
   }
 
   return {
-    id: createId(methodConfig),
+    info: createInfo(methodConfig),
     // @ts-expect-error incomplete implementation
     blockstore: {
       delete: createBlockstoreDelete(methodConfig),

@@ -1,23 +1,13 @@
 syntax = "proto3";
 
-message IdOptions {
+message InfoOptions {
     optional string peer_id = 1;
 }
 
-message IdResponse {
+message InfoResponse {
     string peer_id = 1;
     repeated string multiaddrs = 2;
     string agent_version = 3;
     string protocol_version = 4;
     repeated string protocols = 5;
-}
-
-message CatOptions {
-    string cid = 1;
-    int32 offset = 2;
-    int32 length = 3;
-}
-
-message CatResponse {
-    bytes bytes = 1;
 }

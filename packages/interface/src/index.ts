@@ -49,12 +49,12 @@ export interface Helia {
    * import { createHelia } from 'helia'
    *
    * const node = await createHelia()
-   * const id = await node.id()
+   * const id = await node.info()
    * console.info(id)
    * // { peerId: PeerId(12D3Foo), ... }
    * ```
    */
-  id: (options?: IdOptions) => Promise<IdResponse>
+  info: (options?: InfoOptions) => Promise<InfoResponse>
 
   /**
    * Stops the Helia node
@@ -67,11 +67,11 @@ export interface CatOptions extends AbortOptions {
   length?: number
 }
 
-export interface IdOptions extends AbortOptions {
+export interface InfoOptions extends AbortOptions {
   peerId?: PeerId
 }
 
-export interface IdResponse {
+export interface InfoResponse {
   peerId: PeerId
   multiaddrs: Multiaddr[]
   agentVersion: string

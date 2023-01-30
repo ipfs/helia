@@ -41,14 +41,14 @@ export const daemon: Command<DaemonArgs> = {
       authorizationValiditySeconds: Number(authorizationValiditySeconds)
     })
 
-    const id = await helia.id()
+    const info = await helia.info()
 
-    stdout.write(`${id.agentVersion} is running\n`)
+    stdout.write(`${info.agentVersion} is running\n`)
 
-    if (id.multiaddrs.length > 0) {
+    if (info.multiaddrs.length > 0) {
       stdout.write('Listening on:\n')
 
-      id.multiaddrs.forEach(ma => {
+      info.multiaddrs.forEach(ma => {
         stdout.write(`  ${ma.toString()}\n`)
       })
     }

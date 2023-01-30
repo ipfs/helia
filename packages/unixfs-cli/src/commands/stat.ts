@@ -25,7 +25,7 @@ export const stat: Command<StatArgs> = {
       throw new TypeError('Missing positionals')
     }
 
-    let progress: (evt: Event) => void | undefined
+    let progress: undefined | ((evt: Event) => void)
 
     if (explain === true) {
       progress = (evt: Event) => {
