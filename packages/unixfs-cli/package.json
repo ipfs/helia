@@ -1,9 +1,9 @@
 {
-  "name": "@helia/rpc-protocol",
+  "name": "@helia/unixfs-cli",
   "version": "0.0.0",
-  "description": "RPC protocol for use by @helia/rpc-client and @helia/rpc-server",
+  "description": "Run unixfs commands against a Helia node on the CLI",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/ipfs/helia/tree/master/packages/rpc-protocol#readme",
+  "homepage": "https://github.com/ipfs/helia/tree/master/packages/unixfs-cli#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ipfs/helia.git"
@@ -18,24 +18,11 @@
     "node": ">=16.0.0",
     "npm": ">=7.0.0"
   },
+  "bin": {
+    "unixfs": "./dist/src/index.js"
+  },
   "type": "module",
   "types": "./dist/src/index.d.ts",
-  "typesVersions": {
-    "*": {
-      "*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ],
-      "src/*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ]
-    }
-  },
   "files": [
     "src",
     "dist",
@@ -46,22 +33,6 @@
     ".": {
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
-    },
-    "./authorization": {
-      "types": "./dist/src/authorization.d.ts",
-      "import": "./dist/src/authorization.js"
-    },
-    "./blockstore": {
-      "types": "./dist/src/blockstore.d.ts",
-      "import": "./dist/src/blockstore.js"
-    },
-    "./root": {
-      "types": "./dist/src/root.d.ts",
-      "import": "./dist/src/root.js"
-    },
-    "./rpc": {
-      "types": "./dist/src/rpc.d.ts",
-      "import": "./dist/src/rpc.js"
     }
   },
   "eslintConfig": {
@@ -158,18 +129,26 @@
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
-    "dep-check": "aegir dep-check -i protons",
+    "dep-check": "aegir dep-check",
     "build": "aegir build",
-    "release": "aegir release",
-    "generate": "protons src/*.proto"
+    "test": "aegir test",
+    "test:node": "aegir test -t node --cov",
+    "release": "aegir release"
   },
   "dependencies": {
-    "protons-runtime": "^4.0.1",
-    "uint8arraylist": "^2.4.3"
+    "@helia/cli-utils": "~0.0.0",
+    "@helia/unixfs": "~0.0.0",
+    "@libp2p/interfaces": "^3.3.1",
+    "ipfs-unixfs": "^9.0.0",
+    "ipfs-unixfs-exporter": "^10.0.0",
+    "ipfs-unixfs-importer": "^12.0.0",
+    "it-glob": "^2.0.0",
+    "it-merge": "^2.0.0",
+    "kleur": "^4.1.5",
+    "multiformats": "^11.0.1"
   },
   "devDependencies": {
-    "aegir": "^38.1.0",
-    "protons": "^6.0.1"
+    "aegir": "^38.1.0"
   },
   "typedoc": {
     "entryPoint": "./src/index.ts"

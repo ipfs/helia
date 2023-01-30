@@ -21,8 +21,16 @@ message GetRequest {
   bytes cid = 1;
 }
 
+enum GetResponseType {
+  PROGRESS = 0;
+  RESULT = 1;
+}
+
 message GetResponse {
-  bytes block = 1;
+  GetResponseType type = 1;
+  optional bytes block = 2;
+  optional string progress_event_type = 3;
+  map<string, string> progress_event_data = 4;
 }
 
 message HasOptions {

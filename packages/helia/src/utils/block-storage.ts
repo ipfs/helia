@@ -6,6 +6,11 @@ import type { Blockstore, KeyQuery, Query } from 'interface-blockstore'
 import type { IPFSBitswap } from 'ipfs-bitswap'
 import type { CID } from 'multiformats/cid'
 import type { AbortOptions } from '@libp2p/interfaces'
+import { CustomEvent } from '@libp2p/interfaces/events'
+
+export interface BlockStorageOptions extends AbortOptions {
+  progress?: (evt: Event) => void
+}
 
 /**
  * BlockStorage is a hybrid block datastore. It stores data in a local
@@ -69,10 +74,22 @@ export class BlockStorage extends BaseBlockstore implements Blockstore {
   /**
    * Get a block by cid
    */
-  async get (cid: CID, options: AbortOptions = {}): Promise<Uint8Array> {
+  async get (cid: CID, options: BlockStorageOptions = {}): Promise<Uint8Array> {
     if (!(await this.has(cid)) && this.bitswap.isStarted()) {
+      if (options.progress != null) {
+        options.progress(new CustomEvent<CID>('fetchFromBitswap', {
+          detail: cid
+        }))
+      }
+
       return await this.bitswap.get(cid, options)
     } else {
+      if (options.progress != null) {
+        options.progress(new CustomEvent<CID>('fetchFromBlockstore', {
+          detail: cid
+        }))
+      }
+
       return await this.child.get(cid, options)
     }
   }
@@ -83,15 +100,27 @@ export class BlockStorage extends BaseBlockstore implements Blockstore {
    * @param {AsyncIterable<CID> | Iterable<CID>} cids
    * @param {AbortOptions} [options]
    */
-  async * getMany (cids: AsyncIterable<CID> | Iterable<CID>, options: AbortOptions = {}): AsyncGenerator<Uint8Array, void, undefined> {
+  async * getMany (cids: AsyncIterable<CID> | Iterable<CID>, options: BlockStorageOptions = {}): AsyncGenerator<Uint8Array, void, undefined> {
     const getFromBitswap = pushable<CID>({ objectMode: true })
     const getFromChild = pushable<CID>({ objectMode: true })
 
     void Promise.resolve().then(async () => {
       for await (const cid of cids) {
         if (!(await this.has(cid)) && this.bitswap.isStarted()) {
+          if (options.progress != null) {
+            options.progress(new CustomEvent<CID>('fetchFromBitswap', {
+              detail: cid
+            }))
+          }
+
           getFromBitswap.push(cid)
         } else {
+          if (options.progress != null) {
+            options.progress(new CustomEvent<CID>('fetchFromBlockstore', {
+              detail: cid
+            }))
+          }
+
           getFromChild.push(cid)
         }
       }

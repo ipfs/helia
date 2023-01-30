@@ -156,8 +156,7 @@
     "@libp2p/interfaces": "^3.3.1",
     "@multiformats/multiaddr": "^11.1.5",
     "interface-blockstore": "^4.0.0",
-    "interface-datastore": "^7.0.3",
-    "multiformats": "^11.0.1"
+    "interface-datastore": "^7.0.3"
   },
   "devDependencies": {
     "aegir": "^38.1.0"

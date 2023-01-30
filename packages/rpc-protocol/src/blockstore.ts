@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
-import { encodeMessage, decodeMessage, message } from 'protons-runtime'
+import { encodeMessage, decodeMessage, message, enumeration } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Codec } from 'protons-runtime'
 
@@ -272,11 +272,97 @@ export namespace GetRequest {
   }
 }
 
+export enum GetResponseType {
+  PROGRESS = 'PROGRESS',
+  RESULT = 'RESULT'
+}
+
+enum __GetResponseTypeValues {
+  PROGRESS = 0,
+  RESULT = 1
+}
+
+export namespace GetResponseType {
+  export const codec = (): Codec<GetResponseType> => {
+    return enumeration<GetResponseType>(__GetResponseTypeValues)
+  }
+}
 export interface GetResponse {
-  block: Uint8Array
+  type: GetResponseType
+  block?: Uint8Array
+  progressEventType?: string
+  progressEventData: Map<string, string>
 }
 
 export namespace GetResponse {
+  export interface GetResponse$progressEventDataEntry {
+    key: string
+    value: string
+  }
+
+  export namespace GetResponse$progressEventDataEntry {
+    let _codec: Codec<GetResponse$progressEventDataEntry>
+
+    export const codec = (): Codec<GetResponse$progressEventDataEntry> => {
+      if (_codec == null) {
+        _codec = message<GetResponse$progressEventDataEntry>((obj, w, opts = {}) => {
+          if (opts.lengthDelimited !== false) {
+            w.fork()
+          }
+
+          if (opts.writeDefaults === true || obj.key !== '') {
+            w.uint32(10)
+            w.string(obj.key)
+          }
+
+          if (opts.writeDefaults === true || obj.value !== '') {
+            w.uint32(18)
+            w.string(obj.value)
+          }
+
+          if (opts.lengthDelimited !== false) {
+            w.ldelim()
+          }
+        }, (reader, length) => {
+          const obj: any = {
+            key: '',
+            value: ''
+          }
+
+          const end = length == null ? reader.len : reader.pos + length
+
+          while (reader.pos < end) {
+            const tag = reader.uint32()
+
+            switch (tag >>> 3) {
+              case 1:
+                obj.key = reader.string()
+                break
+              case 2:
+                obj.value = reader.string()
+                break
+              default:
+                reader.skipType(tag & 7)
+                break
+            }
+          }
+
+          return obj
+        })
+      }
+
+      return _codec
+    }
+
+    export const encode = (obj: GetResponse$progressEventDataEntry): Uint8Array => {
+      return encodeMessage(obj, GetResponse$progressEventDataEntry.codec())
+    }
+
+    export const decode = (buf: Uint8Array | Uint8ArrayList): GetResponse$progressEventDataEntry => {
+      return decodeMessage(buf, GetResponse$progressEventDataEntry.codec())
+    }
+  }
+
   let _codec: Codec<GetResponse>
 
   export const codec = (): Codec<GetResponse> => {
@@ -286,9 +372,28 @@ export namespace GetResponse {
           w.fork()
         }
 
-        if (opts.writeDefaults === true || (obj.block != null && obj.block.byteLength > 0)) {
-          w.uint32(10)
+        if (opts.writeDefaults === true || (obj.type != null && __GetResponseTypeValues[obj.type] !== 0)) {
+          w.uint32(8)
+          GetResponseType.codec().encode(obj.type, w)
+        }
+
+        if (obj.block != null) {
+          w.uint32(18)
           w.bytes(obj.block)
+        }
+
+        if (obj.progressEventType != null) {
+          w.uint32(26)
+          w.string(obj.progressEventType)
+        }
+
+        if (obj.progressEventData != null && obj.progressEventData.size !== 0) {
+          for (const [key, value] of obj.progressEventData.entries()) {
+            w.uint32(34)
+            GetResponse.GetResponse$progressEventDataEntry.codec().encode({ key, value }, w, {
+              writeDefaults: true
+            })
+          }
         }
 
         if (opts.lengthDelimited !== false) {
@@ -296,7 +401,8 @@ export namespace GetResponse {
         }
       }, (reader, length) => {
         const obj: any = {
-          block: new Uint8Array(0)
+          type: GetResponseType.PROGRESS,
+          progressEventData: new Map<string, string>()
         }
 
         const end = length == null ? reader.len : reader.pos + length
@@ -306,8 +412,19 @@ export namespace GetResponse {
 
           switch (tag >>> 3) {
             case 1:
+              obj.type = GetResponseType.codec().decode(reader)
+              break
+            case 2:
               obj.block = reader.bytes()
               break
+            case 3:
+              obj.progressEventType = reader.string()
+              break
+            case 4: {
+              const entry = GetResponse.GetResponse$progressEventDataEntry.codec().decode(reader, reader.uint32())
+              obj.progressEventData.set(entry.key, entry.value)
+              break
+            }
             default:
               reader.skipType(tag & 7)
               break
