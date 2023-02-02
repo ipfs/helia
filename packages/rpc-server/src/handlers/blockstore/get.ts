@@ -1,9 +1,9 @@
-import { GetOptions, GetRequest, GetResponse, GetResponseType } from '@helia/rpc-protocol/blockstore'
-import { RPCCallResponse, RPCCallResponseType } from '@helia/rpc-protocol/rpc'
+import { GetOptions, GetRequest, GetResponse } from '@helia/rpc-protocol/blockstore'
+import { RPCCallMessage, RPCCallMessageType } from '@helia/rpc-protocol/rpc'
 import type { RPCServerConfig, Service } from '../../index.js'
 import { CID } from 'multiformats/cid'
 
-export function createGet (config: RPCServerConfig): Service {
+export function createBlockstoreGet (config: RPCServerConfig): Service {
   return {
     async handle ({ options, stream, signal }): Promise<void> {
       const opts = GetOptions.decode(options)
@@ -12,30 +12,16 @@ export function createGet (config: RPCServerConfig): Service {
 
       const block = await config.helia.blockstore.get(cid, {
         signal,
-        ...opts,
-        // @ts-expect-error progress is not in the interface yet
-        progress: (evt) => {
-          stream.writePB({
-            type: RPCCallResponseType.message,
-            message: GetResponse.encode({
-              type: GetResponseType.PROGRESS,
-              progressEventType: evt.type,
-              progressEventData: new Map()
-            })
-          },
-          RPCCallResponse)
-        }
+        ...opts
       })
 
       stream.writePB({
-        type: RPCCallResponseType.message,
+        type: RPCCallMessageType.RPC_CALL_MESSAGE,
         message: GetResponse.encode({
-          type: GetResponseType.RESULT,
-          block,
-          progressEventData: new Map()
+          block
         })
       },
-      RPCCallResponse)
+      RPCCallMessage)
     }
   }
 }

@@ -139,13 +139,28 @@
   },
   "dependencies": {
     "@helia/interface": "~0.0.0",
-    "interface-blockstore": "^4.0.0",
+    "@ipld/dag-pb": "^4.0.0",
+    "@libp2p/interfaces": "^3.3.1",
+    "@libp2p/logger": "^2.0.5",
+    "@multiformats/murmur3": "^2.1.2",
+    "hamt-sharding": "^3.0.2",
+    "interface-blockstore": "^4.0.1",
+    "ipfs-unixfs": "^9.0.0",
     "ipfs-unixfs-exporter": "^10.0.0",
     "ipfs-unixfs-importer": "^12.0.0",
+    "it-last": "^2.0.0",
+    "it-pipe": "^2.0.5",
+    "merge-options": "^3.0.4",
     "multiformats": "^11.0.1"
   },
   "devDependencies": {
-    "aegir": "^38.1.0"
+    "aegir": "^38.1.0",
+    "blockstore-core": "^3.0.0",
+    "delay": "^5.0.0",
+    "it-all": "^2.0.0",
+    "it-drain": "^2.0.0",
+    "it-to-buffer": "^3.0.0",
+    "uint8arrays": "^4.0.3"
   },
   "typedoc": {
     "entryPoint": "./src/index.ts"

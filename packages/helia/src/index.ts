@@ -82,6 +82,7 @@ export async function createHelia (init: HeliaInit): Promise<Helia> {
 
     stop: async () => {
       bitswap.stop()
+      await init.libp2p.stop()
     }
   }
 

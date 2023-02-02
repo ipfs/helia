@@ -45,7 +45,7 @@ export async function createHelia (configDir: string, offline: boolean = false):
   )
   await blockstore.open()
 
-  return await createHeliaNode({
+  const helia = await createHeliaNode({
     blockstore,
     datastore,
     libp2p: await createLibp2p({
@@ -84,4 +84,6 @@ export async function createHelia (configDir: string, offline: boolean = false):
       metrics: prometheusMetrics()
     })
   })
+
+  return helia
 }

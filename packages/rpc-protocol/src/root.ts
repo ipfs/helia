@@ -5,8 +5,8 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
 import { encodeMessage, decodeMessage, message } from 'protons-runtime'
-import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Codec } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface InfoOptions {
   peerId?: string
@@ -55,7 +55,7 @@ export namespace InfoOptions {
     return _codec
   }
 
-  export const encode = (obj: InfoOptions): Uint8Array => {
+  export const encode = (obj: Partial<InfoOptions>): Uint8Array => {
     return encodeMessage(obj, InfoOptions.codec())
   }
 
@@ -82,9 +82,9 @@ export namespace InfoResponse {
           w.fork()
         }
 
-        if (opts.writeDefaults === true || obj.peerId !== '') {
+        if (opts.writeDefaults === true || (obj.peerId != null && obj.peerId !== '')) {
           w.uint32(10)
-          w.string(obj.peerId)
+          w.string(obj.peerId ?? '')
         }
 
         if (obj.multiaddrs != null) {
@@ -94,14 +94,14 @@ export namespace InfoResponse {
           }
         }
 
-        if (opts.writeDefaults === true || obj.agentVersion !== '') {
+        if (opts.writeDefaults === true || (obj.agentVersion != null && obj.agentVersion !== '')) {
           w.uint32(26)
-          w.string(obj.agentVersion)
+          w.string(obj.agentVersion ?? '')
         }
 
-        if (opts.writeDefaults === true || obj.protocolVersion !== '') {
+        if (opts.writeDefaults === true || (obj.protocolVersion != null && obj.protocolVersion !== '')) {
           w.uint32(34)
-          w.string(obj.protocolVersion)
+          w.string(obj.protocolVersion ?? '')
         }
 
         if (obj.protocols != null) {
@@ -157,7 +157,7 @@ export namespace InfoResponse {
     return _codec
   }
 
-  export const encode = (obj: InfoResponse): Uint8Array => {
+  export const encode = (obj: Partial<InfoResponse>): Uint8Array => {
     return encodeMessage(obj, InfoResponse.codec())
   }
 

@@ -16,6 +16,12 @@ export class NotAFileError extends HeliaError {
   }
 }
 
+export class NotADirectoryError extends HeliaError {
+  constructor (message = 'not a directory') {
+    super(message, 'NotAFileError', 'ERR_NOT_DIRECTORY')
+  }
+}
+
 export class NoContentError extends HeliaError {
   constructor (message = 'no content') {
     super(message, 'NoContentError', 'ERR_NO_CONTENT')

@@ -43,6 +43,7 @@
   "dependencies": {
     "aegir": "^38.1.0"
   },
+  "type": "module",
   "workspaces": [
     "packages/*"
   ]

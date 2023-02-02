@@ -1,21 +1,16 @@
 import type { Helia } from '@helia/interface'
 import { HeliaError } from '@helia/interface/errors'
-import { createInfo } from './handlers/info.js'
 import { logger } from '@libp2p/logger'
 import { HELIA_RPC_PROTOCOL } from '@helia/rpc-protocol'
-import { RPCCallRequest, RPCCallResponseType, RPCCallResponse } from '@helia/rpc-protocol/rpc'
+import { RPCCallRequest, RPCCallError, RPCCallMessageType, RPCCallMessage } from '@helia/rpc-protocol/rpc'
 import * as ucans from '@ucans/ucans'
-import { createDelete } from './handlers/blockstore/delete.js'
-import { createGet } from './handlers/blockstore/get.js'
-import { createHas } from './handlers/blockstore/has.js'
-import { createPut } from './handlers/blockstore/put.js'
 import { pbStream, ProtobufStream } from 'it-pb-stream'
-import { createAuthorizationGet } from './handlers/authorization/get.js'
 import { EdKeypair } from '@ucans/ucans'
 import type { KeyChain } from '@libp2p/interface-keychain'
 import { base58btc } from 'multiformats/bases/base58'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import type { PeerId } from '@libp2p/interface-peer-id'
+import { createServices } from './handlers/index.js'
 
 const log = logger('helia:rpc-server')
 
@@ -62,14 +57,7 @@ export async function createHeliaRpcServer (config: RPCServerConfig): Promise<vo
     false
   )
 
-  const services: Record<string, Service> = {
-    '/authorization/get': createAuthorizationGet(config),
-    '/blockstore/delete': createDelete(config),
-    '/blockstore/get': createGet(config),
-    '/blockstore/has': createHas(config),
-    '/blockstore/put': createPut(config),
-    '/info': createInfo(config)
-  }
+  const services = createServices(config)
 
   await helia.libp2p.handle(HELIA_RPC_PROTOCOL, ({ stream, connection }) => {
     const controller = new AbortController()
@@ -129,19 +117,27 @@ export async function createHeliaRpcServer (config: RPCServerConfig): Promise<vo
         await service.handle({
           peerId: connection.remotePeer,
           options: request.options ?? new Uint8Array(),
-          stream: pb,
-          signal: controller.signal
+          signal: controller.signal,
+          stream: pb
         })
         log('handler succeeded for %s %s', request.method, request.resource)
+
+        pb.writePB({
+          type: RPCCallMessageType.RPC_CALL_DONE
+        }, RPCCallMessage)
       } catch (err: any) {
         log.error('handler failed', err)
         pb.writePB({
-          type: RPCCallResponseType.error,
-          errorName: err.name,
-          errorMessage: err.message,
-          errorStack: err.stack,
-          errorCode: err.code
-        }, RPCCallResponse)
+          type: RPCCallMessageType.RPC_CALL_ERROR,
+          message: RPCCallError.encode({
+            name: err.name,
+            message: err.message,
+            stack: err.stack,
+            code: err.code
+          })
+        }, RPCCallMessage)
+      } finally {
+        stream.closeWrite()
       }
     })
   })

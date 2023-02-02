@@ -1,5 +1,5 @@
 import { GetRequest, GetResponse } from '@helia/rpc-protocol/authorization'
-import { RPCCallResponse, RPCCallResponseType } from '@helia/rpc-protocol/rpc'
+import { RPCCallMessage, RPCCallMessageType } from '@helia/rpc-protocol/rpc'
 import type { RPCServerConfig, Service } from '../../index.js'
 import * as ucans from '@ucans/ucans'
 import { base58btc } from 'multiformats/bases/base58'
@@ -45,7 +45,23 @@ export function createAuthorizationGet (config: RPCServerConfig): Service {
         lifetimeInSeconds: config.authorizationValiditySeconds,
         capabilities: [
           {
+            with: { scheme: 'helia-rpc', hierPart: '/blockstore/batch' },
+            can: { namespace: 'helia-rpc', segments: ['INVOKE'] }
+          },
+          {
+            with: { scheme: 'helia-rpc', hierPart: '/blockstore/close' },
+            can: { namespace: 'helia-rpc', segments: ['INVOKE'] }
+          },
+          {
+            with: { scheme: 'helia-rpc', hierPart: '/blockstore/delete-many' },
+            can: { namespace: 'helia-rpc', segments: ['INVOKE'] }
+          },
+          {
             with: { scheme: 'helia-rpc', hierPart: '/blockstore/delete' },
+            can: { namespace: 'helia-rpc', segments: ['INVOKE'] }
+          },
+          {
+            with: { scheme: 'helia-rpc', hierPart: '/blockstore/get-many' },
             can: { namespace: 'helia-rpc', segments: ['INVOKE'] }
           },
           {
@@ -57,19 +73,31 @@ export function createAuthorizationGet (config: RPCServerConfig): Service {
             can: { namespace: 'helia-rpc', segments: ['INVOKE'] }
           },
           {
+            with: { scheme: 'helia-rpc', hierPart: '/blockstore/put-many' },
+            can: { namespace: 'helia-rpc', segments: ['INVOKE'] }
+          },
+          {
             with: { scheme: 'helia-rpc', hierPart: '/blockstore/put' },
+            can: { namespace: 'helia-rpc', segments: ['INVOKE'] }
+          },
+          {
+            with: { scheme: 'helia-rpc', hierPart: '/blockstore/query-keys' },
+            can: { namespace: 'helia-rpc', segments: ['INVOKE'] }
+          },
+          {
+            with: { scheme: 'helia-rpc', hierPart: '/blockstore/query' },
             can: { namespace: 'helia-rpc', segments: ['INVOKE'] }
           }
         ]
       })
 
       stream.writePB({
-        type: RPCCallResponseType.message,
+        type: RPCCallMessageType.RPC_CALL_MESSAGE,
         message: GetResponse.encode({
           authorization: ucans.encode(ucan)
         })
       },
-      RPCCallResponse)
+      RPCCallMessage)
     }
   }
 }

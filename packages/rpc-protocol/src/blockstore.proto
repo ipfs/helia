@@ -1,5 +1,34 @@
 syntax = "proto3";
 
+message Pair {
+  bytes cid = 1;
+  bytes block = 2;
+}
+
+message OpenOptions {
+
+}
+
+message OpenRequest {
+
+}
+
+message OpenResponse {
+
+}
+
+message CloseOptions {
+
+}
+
+message CloseRequest {
+
+}
+
+message CloseResponse {
+
+}
+
 message PutOptions {
 
 }
@@ -21,16 +50,8 @@ message GetRequest {
   bytes cid = 1;
 }
 
-enum GetResponseType {
-  PROGRESS = 0;
-  RESULT = 1;
-}
-
 message GetResponse {
-  GetResponseType type = 1;
-  optional bytes block = 2;
-  optional string progress_event_type = 3;
-  map<string, string> progress_event_data = 4;
+  bytes block = 2;
 }
 
 message HasOptions {
@@ -55,4 +76,95 @@ message DeleteRequest {
 
 message DeleteResponse {
 
+}
+
+message PutManyOptions {
+
+}
+
+message PutManyRequest {
+  bytes cid = 1;
+  bytes block = 2;
+}
+
+message PutManyResponse {
+  bytes cid = 1;
+  bytes block = 2;
+}
+
+message GetManyOptions {
+
+}
+
+message GetManyRequest {
+  bytes cid = 1;
+}
+
+message GetManyResponse {
+  bytes block = 1;
+}
+
+message DeleteManyOptions {
+
+}
+
+message DeleteManyRequest {
+  bytes cid = 1;
+}
+
+message DeleteManyResponse {
+  bytes cid = 1;
+}
+
+message BatchOptions {
+
+}
+
+enum BatchRequestType {
+  BATCH_REQUEST_PUT = 0;
+  BATCH_REQUEST_DELETE = 1;
+  BATCH_REQUEST_COMMIT = 2;
+}
+
+message BatchRequest {
+  BatchRequestType type = 1;
+  bytes message = 2;
+}
+
+message BatchRequestPut {
+  bytes cid = 1;
+  bytes block = 2;
+}
+
+message BatchRequestDelete {
+  bytes cid = 1;
+}
+
+message BatchResponse {
+
+}
+
+message QueryOptions {
+
+}
+
+message QueryRequest {
+
+}
+
+message QueryResponse {
+  bytes key = 1;
+  bytes value = 2;
+}
+
+message QueryKeysOptions {
+
+}
+
+message QueryKeysRequest {
+
+}
+
+message QueryKeysResponse {
+  bytes key = 1;
 }

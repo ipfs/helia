@@ -1,9 +1,9 @@
 import { PutOptions, PutRequest, PutResponse } from '@helia/rpc-protocol/blockstore'
-import { RPCCallResponse, RPCCallResponseType } from '@helia/rpc-protocol/rpc'
+import { RPCCallMessage, RPCCallMessageType } from '@helia/rpc-protocol/rpc'
 import type { RPCServerConfig, Service } from '../../index.js'
 import { CID } from 'multiformats/cid'
 
-export function createPut (config: RPCServerConfig): Service {
+export function createBlockstorePut (config: RPCServerConfig): Service {
   return {
     async handle ({ options, stream, signal }): Promise<void> {
       const opts = PutOptions.decode(options)
@@ -16,11 +16,11 @@ export function createPut (config: RPCServerConfig): Service {
       })
 
       stream.writePB({
-        type: RPCCallResponseType.message,
+        type: RPCCallMessageType.RPC_CALL_MESSAGE,
         message: PutResponse.encode({
         })
       },
-      RPCCallResponse)
+      RPCCallMessage)
     }
   }
 }

@@ -5,8 +5,8 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
 import { encodeMessage, decodeMessage, message } from 'protons-runtime'
-import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Codec } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface GetOptions {}
 
@@ -45,7 +45,7 @@ export namespace GetOptions {
     return _codec
   }
 
-  export const encode = (obj: GetOptions): Uint8Array => {
+  export const encode = (obj: Partial<GetOptions>): Uint8Array => {
     return encodeMessage(obj, GetOptions.codec())
   }
 
@@ -68,9 +68,9 @@ export namespace GetRequest {
           w.fork()
         }
 
-        if (opts.writeDefaults === true || obj.user !== '') {
+        if (opts.writeDefaults === true || (obj.user != null && obj.user !== '')) {
           w.uint32(10)
-          w.string(obj.user)
+          w.string(obj.user ?? '')
         }
 
         if (opts.lengthDelimited !== false) {
@@ -103,7 +103,7 @@ export namespace GetRequest {
     return _codec
   }
 
-  export const encode = (obj: GetRequest): Uint8Array => {
+  export const encode = (obj: Partial<GetRequest>): Uint8Array => {
     return encodeMessage(obj, GetRequest.codec())
   }
 
@@ -126,9 +126,9 @@ export namespace GetResponse {
           w.fork()
         }
 
-        if (opts.writeDefaults === true || obj.authorization !== '') {
+        if (opts.writeDefaults === true || (obj.authorization != null && obj.authorization !== '')) {
           w.uint32(10)
-          w.string(obj.authorization)
+          w.string(obj.authorization ?? '')
         }
 
         if (opts.lengthDelimited !== false) {
@@ -161,7 +161,7 @@ export namespace GetResponse {
     return _codec
   }
 
-  export const encode = (obj: GetResponse): Uint8Array => {
+  export const encode = (obj: Partial<GetResponse>): Uint8Array => {
     return encodeMessage(obj, GetResponse.codec())
   }
 

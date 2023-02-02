@@ -1,0 +1,164 @@
+syntax = "proto3";
+
+message OpenOptions {
+
+}
+
+message OpenRequest {
+
+}
+
+message OpenResponse {
+
+}
+
+message CloseOptions {
+
+}
+
+message CloseRequest {
+
+}
+
+message CloseResponse {
+
+}
+
+message PutOptions {
+
+}
+
+message PutRequest {
+  string key = 1;
+  bytes value = 2;
+}
+
+message PutResponse {
+
+}
+
+message GetOptions {
+
+}
+
+message GetRequest {
+  string key = 1;
+}
+
+enum GetResponseType {
+  GET_PROGRESS = 0;
+  GET_RESULT = 1;
+}
+
+message GetResponse {
+  GetResponseType type = 1;
+  optional bytes value = 2;
+  optional string progress_event_type = 3;
+  map<string, string> progress_event_data = 4;
+}
+
+message HasOptions {
+
+}
+
+message HasRequest {
+  string key = 1;
+}
+
+message HasResponse {
+  bool has = 1;
+}
+
+message DeleteOptions {
+
+}
+
+message DeleteRequest {
+  string key = 1;
+}
+
+message DeleteResponse {
+
+}
+
+message PutManyOptions {
+
+}
+
+message PutManyRequest {
+  string key = 1;
+  bytes value = 2;
+}
+
+message PutManyResponse {
+  string key = 1;
+  bytes value = 2;
+}
+
+message GetManyOptions {
+
+}
+
+message GetManyRequest {
+  string key = 1;
+}
+
+enum GetManyResponseType {
+  GET_MANY_PROGRESS = 0;
+  GET_MANY_RESULT = 1;
+}
+
+message GetManyResponse {
+  GetManyResponseType type = 1;
+  optional bytes value = 2;
+  optional string progress_event_type = 3;
+  map<string, string> progress_event_data = 4;
+}
+
+message DeleteManyOptions {
+
+}
+
+message DeleteManyRequest {
+  string key = 1;
+}
+
+message DeleteManyResponse {
+  string key = 1;
+}
+
+message BatchOptions {
+
+}
+
+message BatchRequest {
+
+}
+
+message BatchResponse {
+  string id = 1;
+}
+
+message QueryOptions {
+
+}
+
+message QueryRequest {
+
+}
+
+message QueryResponse {
+
+}
+
+message QueryKeysOptions {
+
+}
+
+message QueryKeysRequest {
+
+}
+
+message QueryKeysResponse {
+
+}

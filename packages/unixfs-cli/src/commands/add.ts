@@ -24,8 +24,8 @@ export const add: Command<AddArgs> = {
     }
     const fs = unixfs(helia)
 
-    for await (const result of fs.add(parsePositionals(positionals), options)) {
-      stdout.write(result.cid.toString() + '\n')
+    for await (const result of fs.addStream(parsePositionals(positionals), options)) {
+      stdout.write(`${result.cid}\n`)
     }
   }
 }

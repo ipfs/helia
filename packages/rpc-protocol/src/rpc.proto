@@ -1,22 +1,32 @@
 syntax = "proto3";
 
 message RPCCallRequest {
-    string resource = 1;
-    string method = 2;
-    optional string authorization = 3;
-    optional bytes options = 4;
+  string resource = 1;
+  string method = 2;
+  string authorization = 3;
+  bytes options = 4;
 }
 
-message RPCCallResponse {
-  RPCCallResponseType type = 1;
-  optional bytes message = 2;
-  optional string error_name = 3;
-  optional string error_message = 4;
-  optional string error_stack = 5;
-  optional string error_code = 6;
+enum RPCCallMessageType {
+  RPC_CALL_DONE = 0;
+  RPC_CALL_ERROR = 1;
+  RPC_CALL_MESSAGE = 2;
+  RPC_CALL_PROGRESS = 3;
 }
 
-enum RPCCallResponseType {
-  message = 0;
-  error = 1;
+message RPCCallMessage {
+  RPCCallMessageType type = 1;
+  bytes message = 2;
+}
+
+message RPCCallError {
+  optional string name = 1;
+  optional string message = 2;
+  optional string stack = 3;
+  optional string code = 4;
+}
+
+message RPCCallProgress {
+  string event = 1;
+  map<string, string> data = 4;
 }

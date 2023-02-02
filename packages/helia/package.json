@@ -142,7 +142,7 @@
     "@libp2p/interface-libp2p": "^1.1.0",
     "@libp2p/interfaces": "^3.3.1",
     "blockstore-core": "^3.0.0",
-    "interface-blockstore": "^4.0.0",
+    "interface-blockstore": "^4.0.1",
     "interface-datastore": "^7.0.3",
     "ipfs-bitswap": "^15.0.0",
     "it-filter": "^2.0.0",

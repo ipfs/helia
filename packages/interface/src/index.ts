@@ -62,11 +62,6 @@ export interface Helia {
   stop: () => Promise<void>
 }
 
-export interface CatOptions extends AbortOptions {
-  offset?: number
-  length?: number
-}
-
 export interface InfoOptions extends AbortOptions {
   peerId?: PeerId
 }
