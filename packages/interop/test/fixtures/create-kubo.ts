@@ -3,12 +3,12 @@
 import * as goIpfs from 'go-ipfs'
 import { Controller, createController } from 'ipfsd-ctl'
 import * as kuboRpcClient from 'kubo-rpc-client'
-import { isNode } from 'wherearewe'
+import { isElectronMain, isNode } from 'wherearewe'
 
 export async function createKuboNode (): Promise<Controller> {
   const controller = await createController({
     kuboRpcModule: kuboRpcClient,
-    ipfsBin: isNode ? goIpfs.path() : undefined,
+    ipfsBin: isNode || isElectronMain ? goIpfs.path() : undefined,
     test: true,
     endpoint: process.env.IPFSD_SERVER,
     ipfsOptions: {
