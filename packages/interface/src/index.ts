@@ -63,13 +63,36 @@ export interface Helia {
 }
 
 export interface InfoOptions extends AbortOptions {
+  /**
+   * If passed, return information about this PeerId, defaults
+   * to the ID of the current node.
+   */
   peerId?: PeerId
 }
 
 export interface InfoResponse {
+  /**
+   * The ID of the peer this info is about
+   */
   peerId: PeerId
+
+  /**
+   * The multiaddrs the peer is listening on
+   */
   multiaddrs: Multiaddr[]
+
+  /**
+   * The peer's reported agent version
+   */
   agentVersion: string
+
+  /**
+   * The peer's reported protocol version
+   */
   protocolVersion: string
+
+  /**
+   * The protocols the peer supports
+   */
   protocols: string[]
 }
