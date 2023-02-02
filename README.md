@@ -20,16 +20,9 @@
 
 ## Structure
 
-- [`/packages/cli-utils`](./packages/cli-utils) Common code for Helia CLI tools
 - [`/packages/helia`](./packages/helia) An implementation of IPFS in JavaScript
-- [`/packages/helia-cli`](./packages/helia-cli) Run a Helia node on the cli
 - [`/packages/interface`](./packages/interface) The Helia API
 - [`/packages/interop`](./packages/interop) Interop tests for Helia
-- [`/packages/rpc-client`](./packages/rpc-client) An implementation of IPFS in JavaScript
-- [`/packages/rpc-protocol`](./packages/rpc-protocol) RPC protocol for use by @helia/rpc-client and @helia/rpc-server
-- [`/packages/rpc-server`](./packages/rpc-server) An implementation of IPFS in JavaScript
-- [`/packages/unixfs`](./packages/unixfs) A Helia-compatible wrapper for UnixFS
-- [`/packages/unixfs-cli`](./packages/unixfs-cli) Run unixfs commands against a Helia node on the CLI
 
 ## Project status
 
