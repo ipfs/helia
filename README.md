@@ -1,3 +1,5 @@
+<img src="./assets/helia.png" width="300" height="300" alt="helia logo" style="display: block; margin: auto">
+
 # helia <!-- omit in toc -->
 
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
