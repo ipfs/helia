@@ -10,7 +10,7 @@ import { sha256 } from 'multiformats/hashes/sha2'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
 
-describe('files', () => {
+describe('blockstore', () => {
   let helia: Helia
   let kubo: Controller
 
