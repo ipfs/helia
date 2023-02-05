@@ -15,8 +15,8 @@
     "ipfs"
   ],
   "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=7.0.0"
+    "node": ">=18",
+    "npm": ">=9"
   },
   "private": true,
   "scripts": {
