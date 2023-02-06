@@ -6,7 +6,7 @@ import * as kuboRpcClient from 'kubo-rpc-client'
 import { isElectronMain, isNode } from 'wherearewe'
 
 export async function createKuboNode (): Promise<Controller> {
-  const controller = await createController({
+  return await createController({
     kuboRpcModule: kuboRpcClient,
     ipfsBin: isNode || isElectronMain ? goIpfs.path() : undefined,
     test: true,
@@ -22,6 +22,4 @@ export async function createKuboNode (): Promise<Controller> {
       }
     }
   })
-
-  return controller
 }
