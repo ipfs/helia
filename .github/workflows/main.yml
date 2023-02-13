@@ -140,16 +140,13 @@ jobs:
       - uses: ipfs/aegir/actions/cache-node-modules@master
       - if: ${{ steps.release.outputs.release_created }}
         name: Run release version
-        run: npm publish
+        run: npm run --if-present release
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - if: ${{ steps.release.outputs.release_created }}
-        name: Publish docs
-        run: npm run --if-present docs
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - if: ${{ !steps.release.outputs.release_created }}
         name: Run release rc
         run: |
-            npm version `node -p -e "require('./package.json').version"`-`git rev-parse --short HEAD` --no-git-tag-version
-            npm publish --tag next
+            npm run --if-present release:rc
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
