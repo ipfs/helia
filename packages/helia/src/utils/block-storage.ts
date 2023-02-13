@@ -14,7 +14,7 @@ export interface BlockStorageOptions extends AbortOptions {
 }
 
 /**
- * BlockStorage is a hybrid blocktore that puts/gets blocks from a configured
+ * BlockStorage is a hybrid blockstore that puts/gets blocks from a configured
  * blockstore (that may be on disk, s3, or something else). If the blocks are
  * not present Bitswap will be used to fetch them from network peers.
  */
