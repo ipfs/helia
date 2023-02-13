@@ -144,6 +144,7 @@
     "blockstore-core": "^3.0.0",
     "interface-blockstore": "^4.0.1",
     "interface-datastore": "^7.0.3",
+    "interface-store": "^3.0.4",
     "ipfs-bitswap": "^16.0.0",
     "it-filter": "^2.0.0",
     "it-merge": "^2.0.0",
@@ -151,7 +152,12 @@
     "multiformats": "^11.0.1"
   },
   "devDependencies": {
-    "aegir": "^38.1.0"
+    "@chainsafe/libp2p-noise": "^11.0.0",
+    "@chainsafe/libp2p-yamux": "^3.0.5",
+    "@libp2p/websockets": "^5.0.3",
+    "aegir": "^38.1.0",
+    "datastore-core": "^8.0.4",
+    "libp2p": "^0.42.2"
   },
   "typedoc": {
     "entryPoint": "./src/index.ts"
