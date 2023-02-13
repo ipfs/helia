@@ -5,8 +5,6 @@ interface InfoComponents {
   libp2p: Libp2p
 }
 
-
-
 export function createInfo (components: InfoComponents) {
   return async function info (): Promise<InfoResponse> {
     return {
