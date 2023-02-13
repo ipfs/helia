@@ -26,11 +26,6 @@ export async function createHeliaNode (init?: Partial<HeliaInit>): Promise<Helia
       yamux()
     ],
     datastore,
-    identify: {
-      host: {
-        agentVersion: 'helia/0.0.0'
-      }
-    },
     nat: {
       enabled: false
     },

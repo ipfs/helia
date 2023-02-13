@@ -153,11 +153,11 @@
     "it-to-buffer": "^3.0.0",
     "kubo-rpc-client": "^3.0.0",
     "libp2p": "^0.42.2",
-    "multiformats": "^11.0.1",
-    "wherearewe": "^2.0.1"
+    "multiformats": "^11.0.1"
   },
   "browser": {
     "./dist/test/fixtures/create-helia.js": "./dist/test/fixtures/create-helia.browser.js",
+    "./dist/test/fixtures/create-kubo.js": "./dist/test/fixtures/create-kubo.browser.js",
     "go-ipfs": false
   },
   "private": true,
