@@ -42,7 +42,7 @@ In Oct–Dec 2022, IP Stewards [sought](https://github.com/ipfs/pomegranate/issu
 
 ## Background
 
-This project aims to build a lean, modular, and modern implementation of IPFS, the Interplanetary File System.
+This project aims to build a lean, modular, and modern implementation of IPFS, the InterPlanetary File System.
 
 For more information, see the [State of IPFS in JS (blog post)](https://blog.ipfs.tech/state-of-ipfs-in-js/).
 
