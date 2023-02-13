@@ -7,6 +7,7 @@ import type { IPFSBitswap } from 'ipfs-bitswap'
 import type { CID } from 'multiformats/cid'
 import type { AbortOptions } from '@libp2p/interfaces'
 import { CustomEvent } from '@libp2p/interfaces/events'
+import type { AwaitIterable } from 'interface-store'
 
 export interface BlockStorageOptions extends AbortOptions {
   progress?: (evt: Event) => void
@@ -61,7 +62,7 @@ export class BlockStorage extends BaseBlockstore implements Blockstore {
   /**
    * Put a multiple blocks to the underlying datastore
    */
-  async * putMany (blocks: AsyncIterable<{ key: CID, value: Uint8Array }> | Iterable<{ key: CID, value: Uint8Array }>, options: AbortOptions = {}): AsyncGenerator<{ key: CID, value: Uint8Array }, void, undefined> {
+  async * putMany (blocks: AwaitIterable<{ key: CID, value: Uint8Array }>, options: AbortOptions = {}): AsyncGenerator<{ key: CID, value: Uint8Array }, void, undefined> {
     const missingBlocks = filter(blocks, async ({ key }) => { return !(await this.has(key)) })
 
     if (this.bitswap.isStarted()) {
@@ -96,11 +97,8 @@ export class BlockStorage extends BaseBlockstore implements Blockstore {
 
   /**
    * Get multiple blocks back from an array of cids
-   *
-   * @param {AsyncIterable<CID> | Iterable<CID>} cids
-   * @param {AbortOptions} [options]
    */
-  async * getMany (cids: AsyncIterable<CID> | Iterable<CID>, options: BlockStorageOptions = {}): AsyncGenerator<Uint8Array, void, undefined> {
+  async * getMany (cids: AwaitIterable<CID>, options: BlockStorageOptions = {}): AsyncGenerator<Uint8Array, void, undefined> {
     const getFromBitswap = pushable<CID>({ objectMode: true })
     const getFromChild = pushable<CID>({ objectMode: true })
 
@@ -147,7 +145,7 @@ export class BlockStorage extends BaseBlockstore implements Blockstore {
   /**
    * Delete multiple blocks from the blockstore
    */
-  async * deleteMany (cids: AsyncIterable<CID> | Iterable<CID>, options: AbortOptions = {}): AsyncGenerator<CID, void, undefined> {
+  async * deleteMany (cids: AwaitIterable<CID>, options: AbortOptions = {}): AsyncGenerator<CID, void, undefined> {
     yield * this.child.deleteMany(cids, options)
   }
 
