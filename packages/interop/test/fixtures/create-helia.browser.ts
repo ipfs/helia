@@ -1,4 +1,4 @@
-import { createHelia } from 'helia'
+import { createHelia, HeliaInit } from 'helia'
 import { createLibp2p } from 'libp2p'
 import { webSockets } from '@libp2p/websockets'
 import { all } from '@libp2p/websockets/filters'
@@ -8,7 +8,7 @@ import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import type { Helia } from '@helia/interface'
 
-export async function createHeliaNode (): Promise<Helia> {
+export async function createHeliaNode (init?: Partial<HeliaInit>): Promise<Helia> {
   const blockstore = new MemoryBlockstore()
   const datastore = new MemoryDatastore()
 
@@ -42,7 +42,8 @@ export async function createHeliaNode (): Promise<Helia> {
   const helia = await createHelia({
     libp2p,
     blockstore,
-    datastore
+    datastore,
+    ...init
   })
 
   return helia

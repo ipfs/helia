@@ -55,6 +55,7 @@ describe('hashes', () => {
       rawLeaves: true,
       hashAlg: 'sha3-512'
     })
+    expect(cid.multihash.code).to.equal(sha3512.code)
     const output = await helia.blockstore.get(cid)
 
     expect(output).to.equalBytes(input)

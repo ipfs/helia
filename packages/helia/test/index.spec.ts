@@ -37,12 +37,18 @@ describe('helia', () => {
   })
 
   it('stops and starts', async () => {
-    await expect(helia.info()).to.eventually.have.property('protocols')
+    const startedInfo = await helia.info()
+
+    expect(startedInfo).to.have.property('status', 'running')
+    expect(startedInfo).to.have.property('protocols')
       .with.property('length').that.is.greaterThan(0)
 
     await helia.stop()
 
-    await expect(helia.info()).to.eventually.have.property('protocols')
+    const stoppedInfo = await helia.info()
+
+    expect(stoppedInfo).to.have.property('status', 'stopped')
+    expect(stoppedInfo).to.have.property('protocols')
       .with.lengthOf(0)
   })
 

@@ -6,7 +6,6 @@ import type { Blockstore, KeyQuery, Query } from 'interface-blockstore'
 import type { Bitswap } from 'ipfs-bitswap'
 import type { CID } from 'multiformats/cid'
 import type { AbortOptions } from '@libp2p/interfaces'
-import { CustomEvent } from '@libp2p/interfaces/events'
 import type { AwaitIterable } from 'interface-store'
 
 export interface BlockStorageOptions extends AbortOptions {
@@ -77,20 +76,8 @@ export class BlockStorage extends BaseBlockstore implements Blockstore {
    */
   async get (cid: CID, options: BlockStorageOptions = {}): Promise<Uint8Array> {
     if (!(await this.has(cid)) && this.bitswap.isStarted()) {
-      if (options.progress != null) {
-        options.progress(new CustomEvent<CID>('fetchFromBitswap', {
-          detail: cid
-        }))
-      }
-
       return await this.bitswap.get(cid, options)
     } else {
-      if (options.progress != null) {
-        options.progress(new CustomEvent<CID>('fetchFromBlockstore', {
-          detail: cid
-        }))
-      }
-
       return await this.child.get(cid, options)
     }
   }
@@ -105,20 +92,8 @@ export class BlockStorage extends BaseBlockstore implements Blockstore {
     void Promise.resolve().then(async () => {
       for await (const cid of cids) {
         if (!(await this.has(cid)) && this.bitswap.isStarted()) {
-          if (options.progress != null) {
-            options.progress(new CustomEvent<CID>('fetchFromBitswap', {
-              detail: cid
-            }))
-          }
-
           getFromBitswap.push(cid)
         } else {
-          if (options.progress != null) {
-            options.progress(new CustomEvent<CID>('fetchFromBlockstore', {
-              detail: cid
-            }))
-          }
-
           getFromChild.push(cid)
         }
       }

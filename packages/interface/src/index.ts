@@ -100,4 +100,9 @@ export interface InfoResponse {
    * The protocols the peer supports
    */
   protocols: string[]
+
+  /**
+   * The status of the node
+   */
+  status: 'running' | 'stopped'
 }

@@ -5,6 +5,8 @@ interface InfoComponents {
   libp2p: Libp2p
 }
 
+
+
 export function createInfo (components: InfoComponents) {
   return async function info (): Promise<InfoResponse> {
     return {
@@ -12,7 +14,8 @@ export function createInfo (components: InfoComponents) {
       multiaddrs: components.libp2p.getMultiaddrs(),
       agentVersion: components.libp2p.identifyService.host.agentVersion,
       protocolVersion: components.libp2p.identifyService.host.protocolVersion,
-      protocols: components.libp2p.getProtocols()
+      protocols: components.libp2p.getProtocols(),
+      status: components.libp2p.isStarted() ? 'running' : 'stopped'
     }
   }
 }
