@@ -57,6 +57,11 @@ export interface Helia {
   info: (options?: InfoOptions) => Promise<InfoResponse>
 
   /**
+   * Starts the Helia node
+   */
+  start: () => Promise<void>
+
+  /**
    * Stops the Helia node
    */
   stop: () => Promise<void>

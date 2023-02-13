@@ -42,12 +42,6 @@ export interface CatOptions extends AbortOptions {
   length?: number
 }
 
-export interface HeliaComponents {
-  libp2p: Libp2p
-  blockstore: Blockstore
-  datastore: Datastore
-}
-
 /**
  * Options used to create a Helia node.
  */
@@ -103,7 +97,7 @@ export async function createHelia (init: HeliaInit): Promise<Helia> {
   })
   bitswap.start()
 
-  const components: HeliaComponents = {
+  const components = {
     libp2p: init.libp2p,
     blockstore: new BlockStorage(init.blockstore, bitswap),
     datastore: init.datastore
@@ -115,6 +109,11 @@ export async function createHelia (init: HeliaInit): Promise<Helia> {
     datastore: init.datastore,
 
     info: createInfo(components),
+
+    start: async () => {
+      bitswap.start()
+      await init.libp2p.start()
+    },
 
     stop: async () => {
       bitswap.stop()
