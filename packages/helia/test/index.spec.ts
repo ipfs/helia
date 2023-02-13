@@ -72,4 +72,28 @@ describe('helia', () => {
   it('should have a libp2p', async () => {
     expect(helia).to.have.property('libp2p').that.is.ok()
   })
+
+  it('allows creating offline node', async () => {
+    const helia = await createHelia({
+      start: false,
+      datastore: new MemoryDatastore(),
+      blockstore: new MemoryBlockstore(),
+      libp2p: await createLibp2p({
+        start: false,
+        transports: [
+          webSockets()
+        ],
+        connectionEncryption: [
+          noise()
+        ],
+        streamMuxers: [
+          yamux()
+        ]
+      })
+    })
+
+    const info = await helia.info()
+
+    expect(info).to.have.property('status', 'stopped')
+  })
 })

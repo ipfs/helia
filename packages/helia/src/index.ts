@@ -25,24 +25,12 @@
  * ```
  */
 
-import { createInfo } from './commands/info.js'
-import { createBitswap } from 'ipfs-bitswap'
-import { BlockStorage } from './utils/block-storage.js'
 import type { Helia } from '@helia/interface'
 import type { Libp2p } from '@libp2p/interface-libp2p'
 import type { Blockstore } from 'interface-blockstore'
-import type { AbortOptions } from '@libp2p/interfaces'
 import type { Datastore } from 'interface-datastore'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
-import { sha256, sha512 } from 'multiformats/hashes/sha2'
-import { identity } from 'multiformats/hashes/identity'
-import { createStart } from './commands/start.js'
-import { createStop } from './commands/stop.js'
-
-export interface CatOptions extends AbortOptions {
-  offset?: number
-  length?: number
-}
+import { HeliaImpl } from './helia.js'
 
 /**
  * Options used to create a Helia node.
@@ -69,52 +57,22 @@ export interface HeliaInit {
    * pass appropriate MultihashHashers here.
    */
   hashers?: MultihashHasher[]
+
+  /**
+   * Pass `false` to not start the helia node
+   */
+  start?: boolean
 }
 
 /**
  * Create and return a Helia node
  */
 export async function createHelia (init: HeliaInit): Promise<Helia> {
-  const hashers: MultihashHasher[] = [
-    sha256,
-    sha512,
-    identity,
-    ...(init.hashers ?? [])
-  ]
+  const helia = new HeliaImpl(init)
 
-  const bitswap = createBitswap(init.libp2p, init.blockstore, {
-    hashLoader: {
-      getHasher: async (codecOrName: string | number) => {
-        const hasher = hashers.find(hasher => {
-          return hasher.code === codecOrName || hasher.name === codecOrName
-        })
-
-        if (hasher != null) {
-          return await Promise.resolve(hasher)
-        }
-
-        throw new Error(`Could not load hasher for code/name "${codecOrName}"`)
-      }
-    }
-  })
-
-  const components = {
-    libp2p: init.libp2p,
-    blockstore: new BlockStorage(init.blockstore, bitswap),
-    datastore: init.datastore,
-    bitswap
+  if (init.start !== false) {
+    await helia.start()
   }
-
-  const helia: Helia = {
-    libp2p: init.libp2p,
-    blockstore: components.blockstore,
-    datastore: init.datastore,
-    info: createInfo(components),
-    start: createStart(components),
-    stop: createStop(components)
-  }
-
-  await helia.start()
 
   return helia
 }
