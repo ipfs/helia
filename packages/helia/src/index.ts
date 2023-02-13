@@ -36,6 +36,8 @@ import type { Datastore } from 'interface-datastore'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 import { sha256, sha512 } from 'multiformats/hashes/sha2'
 import { identity } from 'multiformats/hashes/identity'
+import { createStart } from './commands/start.js'
+import { createStop } from './commands/stop.js'
 
 export interface CatOptions extends AbortOptions {
   offset?: number
@@ -95,31 +97,24 @@ export async function createHelia (init: HeliaInit): Promise<Helia> {
       }
     }
   })
-  bitswap.start()
 
   const components = {
     libp2p: init.libp2p,
     blockstore: new BlockStorage(init.blockstore, bitswap),
-    datastore: init.datastore
+    datastore: init.datastore,
+    bitswap
   }
 
   const helia: Helia = {
     libp2p: init.libp2p,
     blockstore: components.blockstore,
     datastore: init.datastore,
-
     info: createInfo(components),
-
-    start: async () => {
-      bitswap.start()
-      await init.libp2p.start()
-    },
-
-    stop: async () => {
-      bitswap.stop()
-      await init.libp2p.stop()
-    }
+    start: createStart(components),
+    stop: createStop(components)
   }
+
+  await helia.start()
 
   return helia
 }

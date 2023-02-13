@@ -3,7 +3,7 @@ import merge from 'it-merge'
 import { pushable } from 'it-pushable'
 import filter from 'it-filter'
 import type { Blockstore, KeyQuery, Query } from 'interface-blockstore'
-import type { IPFSBitswap } from 'ipfs-bitswap'
+import type { Bitswap } from 'ipfs-bitswap'
 import type { CID } from 'multiformats/cid'
 import type { AbortOptions } from '@libp2p/interfaces'
 import { CustomEvent } from '@libp2p/interfaces/events'
@@ -20,12 +20,12 @@ export interface BlockStorageOptions extends AbortOptions {
  */
 export class BlockStorage extends BaseBlockstore implements Blockstore {
   private readonly child: Blockstore
-  private readonly bitswap: IPFSBitswap
+  private readonly bitswap: Bitswap
 
   /**
    * Create a new BlockStorage
    */
-  constructor (blockstore: Blockstore, bitswap: IPFSBitswap) {
+  constructor (blockstore: Blockstore, bitswap: Bitswap) {
     super()
 
     this.child = blockstore

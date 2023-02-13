@@ -144,7 +144,7 @@
     "blockstore-core": "^3.0.0",
     "interface-blockstore": "^4.0.1",
     "interface-datastore": "^7.0.3",
-    "ipfs-bitswap": "^15.0.0",
+    "ipfs-bitswap": "^16.0.0",
     "it-filter": "^2.0.0",
     "it-merge": "^2.0.0",
     "it-pushable": "^3.1.2",

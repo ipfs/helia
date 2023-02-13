@@ -54,4 +54,16 @@ describe('helia', () => {
     expect(info).to.have.property('agentVersion').that.is.a('string')
     expect(info).to.have.property('protocolVersion').that.is.a('string')
   })
+
+  it('should have a blockstore', async () => {
+    expect(helia).to.have.property('blockstore').that.is.ok()
+  })
+
+  it('should have a datastore', async () => {
+    expect(helia).to.have.property('datastore').that.is.ok()
+  })
+
+  it('should have a libp2p', async () => {
+    expect(helia).to.have.property('libp2p').that.is.ok()
+  })
 })

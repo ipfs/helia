@@ -143,6 +143,7 @@
     "@helia/interface": "~0.0.0",
     "@libp2p/tcp": "^6.1.2",
     "@libp2p/websockets": "^5.0.3",
+    "@multiformats/sha3": "^2.0.15",
     "aegir": "^38.1.0",
     "blockstore-core": "^3.0.0",
     "datastore-core": "^8.0.4",
