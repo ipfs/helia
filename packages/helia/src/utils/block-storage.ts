@@ -13,9 +13,9 @@ export interface BlockStorageOptions extends AbortOptions {
 }
 
 /**
- * BlockStorage is a hybrid block datastore. It stores data in a local
- * datastore and may retrieve data from a remote Exchange.
- * It uses an internal `datastore.Datastore` instance to store values.
+ * BlockStorage is a hybrid blocktore that puts/gets blocks from a configured
+ * blockstore (that may be on disk, s3, or something else). If the blocks are
+ * not present Bitswap will be used to fetch them from network peers.
  */
 export class BlockStorage extends BaseBlockstore implements Blockstore {
   private readonly child: Blockstore
