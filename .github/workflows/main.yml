@@ -124,7 +124,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     needs: [test-node, test-chrome, test-chrome-webworker, test-firefox, test-firefox-webworker, test-electron-main, test-electron-renderer]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - uses: GoogleCloudPlatform/release-please-action@v2
         id: release
