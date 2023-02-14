@@ -15,10 +15,10 @@
 
 ## Table of contents <!-- omit in toc -->
 
-- - [Structure](#structure)
-  - [API Docs](#api-docs)
-  - [License](#license)
-  - [Contribute](#contribute)
+- [Structure](#structure)
+- [API Docs](#api-docs)
+- [License](#license)
+- [Contribute](#contribute)
 
 ## Structure
 
