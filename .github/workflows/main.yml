@@ -131,7 +131,6 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           release-type: node
-          bump-minor-pre-major: true
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
