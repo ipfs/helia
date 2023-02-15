@@ -155,8 +155,7 @@
     "test:firefox": "aegir test -t browser -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
     "test:node": "aegir test -t node --cov",
-    "test:electron-main": "aegir test -t electron-main",
-    "release": "aegir release"
+    "test:electron-main": "aegir test -t electron-main"
   },
   "devDependencies": {
     "@chainsafe/libp2p-gossipsub": "^6.1.0",
