@@ -1,0 +1,167 @@
+{
+  "name": "@helia/unixfs",
+  "version": "0.0.0",
+  "description": "A Helia-compatible wrapper for UnixFS",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/ipfs/helia-unixfs#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ipfs/helia-unixfs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ipfs/helia-unixfs/issues"
+  },
+  "keywords": [
+    "IPFS"
+  ],
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module"
+    }
+  },
+  "release": {
+    "branches": [
+      "main"
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "preset": "conventionalcommits",
+          "releaseRules": [
+            {
+              "breaking": true,
+              "release": "major"
+            },
+            {
+              "revert": true,
+              "release": "patch"
+            },
+            {
+              "type": "feat",
+              "release": "minor"
+            },
+            {
+              "type": "fix",
+              "release": "patch"
+            },
+            {
+              "type": "docs",
+              "release": "patch"
+            },
+            {
+              "type": "test",
+              "release": "patch"
+            },
+            {
+              "type": "deps",
+              "release": "patch"
+            },
+            {
+              "scope": "no-release",
+              "release": false
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "conventionalcommits",
+          "presetConfig": {
+            "types": [
+              {
+                "type": "feat",
+                "section": "Features"
+              },
+              {
+                "type": "fix",
+                "section": "Bug Fixes"
+              },
+              {
+                "type": "chore",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "docs",
+                "section": "Documentation"
+              },
+              {
+                "type": "deps",
+                "section": "Dependencies"
+              },
+              {
+                "type": "test",
+                "section": "Tests"
+              }
+            ]
+          }
+        }
+      ],
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+      "@semantic-release/git"
+    ]
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "build": "aegir build",
+    "docs": "aegir docs",
+    "test": "aegir test",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main",
+    "release": "aegir release"
+  },
+  "dependencies": {
+    "@helia/interface": "next",
+    "@ipld/dag-pb": "^4.0.0",
+    "@libp2p/interfaces": "^3.3.1",
+    "@libp2p/logger": "^2.0.5",
+    "@multiformats/murmur3": "^2.1.2",
+    "hamt-sharding": "^3.0.2",
+    "interface-blockstore": "^4.0.1",
+    "ipfs-unixfs": "^11.0.0",
+    "ipfs-unixfs-exporter": "^12.0.0",
+    "ipfs-unixfs-importer": "^14.0.0",
+    "it-last": "^2.0.0",
+    "it-pipe": "^2.0.5",
+    "merge-options": "^3.0.4",
+    "multiformats": "^11.0.1"
+  },
+  "devDependencies": {
+    "aegir": "^38.1.0",
+    "blockstore-core": "^3.0.0",
+    "delay": "^5.0.0",
+    "it-all": "^2.0.0",
+    "it-drain": "^2.0.0",
+    "it-first": "^2.0.0",
+    "it-to-buffer": "^3.0.0",
+    "uint8arrays": "^4.0.3"
+  }
+}

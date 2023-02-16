@@ -1,19 +1,26 @@
+<p align="center">
+  <a href="https://github.com/ipfs/helia" title="Helia">
+    <img src="https://raw.githubusercontent.com/ipfs/helia/main/assets/helia.png" alt="Helia logo" width="300" />
+  </a>
+</p>
+
 # @helia/unixfs <!-- omit in toc -->
 
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
-[![codecov](https://img.shields.io/codecov/c/github/ipfs/helia.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia)
-[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/js-test-and-release.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/js-test-and-release.yml?query=branch%3Amain)
+[![codecov](https://img.shields.io/codecov/c/github/ipfs/helia-unixfs.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia-unixfs)
+[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia-unixfs/js-test-and-release.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia-unixfs/actions/workflows/js-test-and-release.yml?query=branch%3Amain)
 
 > A Helia-compatible wrapper for UnixFS
 
 ## Table of contents <!-- omit in toc -->
 
-- [Install](#install)
-  - [Browser `<script>` tag](#browser-script-tag)
-- [API Docs](#api-docs)
-- [License](#license)
-- [Contribute](#contribute)
+- - [Install](#install)
+    - [Browser `<script>` tag](#browser-script-tag)
+- [@helia/unixfs <!-- omit in toc -->](#heliaunixfs----omit-in-toc---)
+  - [API Docs](#api-docs)
+  - [License](#license)
+  - [Contribute](#contribute)
 
 ## Install
 
@@ -29,9 +36,22 @@ Loading this module through a script tag will make it's exports available as `He
 <script src="https://unpkg.com/@helia/unixfs/dist/index.min.js"></script>
 ```
 
+<p align="center">
+  <a href="https://github.com/ipfs/helia" title="Helia">
+    <img src="https://raw.githubusercontent.com/ipfs/helia/main/assets/helia.png" alt="Helia logo" width="300" />
+  </a>
+</p>
+
+# @helia/unixfs <!-- omit in toc -->
+
+[![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
+[![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
+[![codecov](https://img.shields.io/codecov/c/github/ipfs/helia-unixfs.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia-unixfs)
+[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia-unixfs/js-test-and-release.yml?branch=master\&style=flat-square)](https://github.com/ipfs/helia-unixfs/actions/workflows/js-test-and-release.yml?query=branch%3Amaster)
+
 ## API Docs
 
-- <https://ipfs.github.io/helia/modules/_helia_unixfs.html>
+- <https://ipfs.github.io/helia-unixfs>
 
 ## License
 
@@ -42,7 +62,7 @@ Licensed under either of
 
 ## Contribute
 
-Contributions welcome! Please check out [the issues](https://github.com/ipfs/helia/issues).
+Contributions welcome! Please check out [the issues](https://github.com/ipfs/helia-unixfs/issues).
 
 Also see our [contributing document](https://github.com/ipfs/community/blob/master/CONTRIBUTING_JS.md) for more information on how we work, and about contributing in general.
 
