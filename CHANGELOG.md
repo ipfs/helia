@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/ipfs/helia-unixfs/compare/v1.0.0...v1.0.1) (2023-02-17)
+
+
+### Bug Fixes
+
+* update unixfs importer ([f6edeca](https://github.com/ipfs/helia-unixfs/commit/f6edeca471da4aaa2171b0b3f2d2ea91d527a00e))
+
 ## 1.0.0 (2023-02-16)
 
 
