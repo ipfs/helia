@@ -63,10 +63,8 @@ export async function chmod (cid: CID, mode: number, blockstore: Blockstore, opt
           }
         }
       },
-      // @ts-expect-error we account for the incompatible source type with our custom dag builder below
       (source) => importer(source, blockstore, {
         ...opts,
-        pin: false,
         dagBuilder: async function * (source, block) {
           for await (const entry of source) {
             yield async function () {
@@ -87,7 +85,7 @@ export async function chmod (cid: CID, mode: number, blockstore: Blockstore, opt
 
               return {
                 cid: updatedCid,
-                size: buf.length,
+                size: BigInt(buf.length),
                 path: entry.path,
                 unixfs
               }

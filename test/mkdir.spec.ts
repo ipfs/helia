@@ -7,7 +7,7 @@ import { unixfs, UnixFS } from '../src/index.js'
 import { MemoryBlockstore } from 'blockstore-core'
 import type { CID } from 'multiformats/cid'
 import type { Mtime } from 'ipfs-unixfs'
-import { importContent } from 'ipfs-unixfs-importer'
+import { importDirectory } from 'ipfs-unixfs-importer'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 
 describe('mkdir', () => {
@@ -21,10 +21,10 @@ describe('mkdir', () => {
 
     fs = unixfs({ blockstore })
 
-    const imported = await importContent({ path: 'empty' }, blockstore)
+    const imported = await importDirectory({ path: 'empty' }, blockstore)
     emptyDirCid = imported.cid
 
-    const importedV0 = await importContent({ path: 'empty' }, blockstore, {
+    const importedV0 = await importDirectory({ path: 'empty' }, blockstore, {
       cidVersion: 0
     })
     emptyDirCidV0 = importedV0.cid

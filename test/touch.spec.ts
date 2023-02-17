@@ -6,7 +6,7 @@ import { unixfs, UnixFS } from '../src/index.js'
 import { MemoryBlockstore } from 'blockstore-core'
 import type { CID } from 'multiformats/cid'
 import delay from 'delay'
-import { importContent, importBytes } from 'ipfs-unixfs-importer'
+import { importDirectory, importBytes, importFile } from 'ipfs-unixfs-importer'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 
 describe('.files.touch', () => {
@@ -19,7 +19,7 @@ describe('.files.touch', () => {
 
     fs = unixfs({ blockstore })
 
-    const imported = await importContent({ path: 'empty' }, blockstore)
+    const imported = await importDirectory({ path: 'empty' }, blockstore)
     emptyDirCid = imported.cid
   })
 
@@ -43,7 +43,7 @@ describe('.files.touch', () => {
     const mtime = new Date()
     const seconds = BigInt(Math.floor(mtime.getTime() / 1000))
 
-    const { cid } = await importContent({
+    const { cid } = await importFile({
       content: Uint8Array.from([0, 1, 2, 3, 4]),
       mtime: {
         secs: seconds

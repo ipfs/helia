@@ -6,7 +6,7 @@ import { unixfs, UnixFS } from '../src/index.js'
 import { MemoryBlockstore } from 'blockstore-core'
 import type { CID } from 'multiformats/cid'
 import * as dagPb from '@ipld/dag-pb'
-import { importContent, importBytes } from 'ipfs-unixfs-importer'
+import { importDirectory, importBytes, importFile } from 'ipfs-unixfs-importer'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 
 const smallFile = Uint8Array.from(new Array(13).fill(0).map(() => Math.random() * 100))
@@ -24,7 +24,7 @@ describe('stat', function () {
 
     fs = unixfs({ blockstore })
 
-    const imported = await importContent({ path: 'empty' }, blockstore)
+    const imported = await importDirectory({ path: 'empty' }, blockstore)
     emptyDirCid = imported.cid
   })
 
@@ -100,7 +100,7 @@ describe('stat', function () {
 
   it('should stat file with mode', async () => {
     const mode = 0o644
-    const { cid } = await importContent({
+    const { cid } = await importFile({
       content: smallFile,
       mode
     }, blockstore)
@@ -115,7 +115,7 @@ describe('stat', function () {
       secs: 5n,
       nsecs: 0
     }
-    const { cid } = await importContent({
+    const { cid } = await importFile({
       content: smallFile,
       mtime
     }, blockstore)

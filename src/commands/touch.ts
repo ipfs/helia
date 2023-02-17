@@ -67,10 +67,8 @@ export async function touch (cid: CID, blockstore: Blockstore, options: Partial<
           }
         }
       },
-      // @ts-expect-error we account for the incompatible source type with our custom dag builder below
       (source) => importer(source, blockstore, {
         ...opts,
-        pin: false,
         dagBuilder: async function * (source, block) {
           for await (const entry of source) {
             yield async function () {
@@ -91,7 +89,7 @@ export async function touch (cid: CID, blockstore: Blockstore, options: Partial<
 
               return {
                 cid: updatedCid,
-                size: buf.length,
+                size: BigInt(buf.length),
                 path: entry.path,
                 unixfs
               }

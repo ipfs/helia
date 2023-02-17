@@ -148,7 +148,7 @@
     "interface-blockstore": "^4.0.1",
     "ipfs-unixfs": "^11.0.0",
     "ipfs-unixfs-exporter": "^12.0.0",
-    "ipfs-unixfs-importer": "^14.0.0",
+    "ipfs-unixfs-importer": "^14.0.1",
     "it-last": "^2.0.0",
     "it-pipe": "^2.0.5",
     "merge-options": "^3.0.4",

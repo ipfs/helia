@@ -5,7 +5,7 @@ import type { Blockstore } from 'interface-blockstore'
 import { MemoryBlockstore } from 'blockstore-core'
 import { UnixFS, unixfs } from '../src/index.js'
 import type { CID } from 'multiformats/cid'
-import { importContent, importBytes } from 'ipfs-unixfs-importer'
+import { importDirectory, importBytes } from 'ipfs-unixfs-importer'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 
 const smallFile = Uint8Array.from(new Array(13).fill(0).map(() => Math.random() * 100))
@@ -20,7 +20,7 @@ describe('chmod', () => {
 
     fs = unixfs({ blockstore })
 
-    const imported = await importContent({ path: 'empty' }, blockstore)
+    const imported = await importDirectory({ path: 'empty' }, blockstore)
     emptyDirCid = imported.cid
   })
 

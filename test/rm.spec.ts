@@ -5,7 +5,7 @@ import type { Blockstore } from 'interface-blockstore'
 import { unixfs, UnixFS } from '../src/index.js'
 import { MemoryBlockstore } from 'blockstore-core'
 import type { CID } from 'multiformats/cid'
-import { importContent, importBytes, importer } from 'ipfs-unixfs-importer'
+import { importDirectory, importBytes, importer } from 'ipfs-unixfs-importer'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 import last from 'it-last'
 import { createSubshardedDirectory } from './fixtures/create-subsharded-directory.js'
@@ -22,7 +22,7 @@ describe('rm', () => {
 
     fs = unixfs({ blockstore })
 
-    const imported = await importContent({ path: 'empty' }, blockstore)
+    const imported = await importDirectory({ path: 'empty' }, blockstore)
     emptyDirCid = imported.cid
   })
 
