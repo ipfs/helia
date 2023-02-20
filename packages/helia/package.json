@@ -156,6 +156,7 @@
     "multiformats": "^11.0.1",
     "p-defer": "^4.0.0",
     "p-queue": "^7.3.4",
+    "progress-events": "^1.0.0",
     "uint8arrays": "^4.0.3"
   },
   "devDependencies": {
