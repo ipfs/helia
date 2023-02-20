@@ -21,6 +21,8 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Datastore } from 'interface-datastore'
 import type { Pins } from './pins.js'
+import type { ProgressEvent, ProgressOptions } from 'progress-events'
+import type { CID } from 'multiformats/cid'
 
 /**
  * The API presented by a Helia node.
@@ -78,7 +80,10 @@ export interface Helia {
   gc: (options?: GCOptions) => Promise<void>
 }
 
-export interface GCOptions extends AbortOptions {
+export type GcEvents =
+  ProgressEvent<'helia:gc:deleted', CID>
+
+export interface GCOptions extends AbortOptions, ProgressOptions<GcEvents> {
 
 }
 

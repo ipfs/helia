@@ -11,6 +11,7 @@ import type { Pins } from '@helia/interface/pins'
 import { PinsImpl } from './pins.js'
 import { assertDatastoreVersionIsCurrent } from './utils/datastore-version.js'
 import drain from 'it-drain'
+import { CustomProgressEvent } from 'progress-events'
 
 export class HeliaImpl implements Helia {
   public libp2p: Libp2p
@@ -74,19 +75,22 @@ export class HeliaImpl implements Helia {
     }
   }
 
-  async gc (options?: GCOptions): Promise<void> {
+  async gc (options: GCOptions = {}): Promise<void> {
     const releaseLock = await this.blockstore.lock.writeLock()
 
     try {
       const helia = this
+      const blockstore = this.blockstore.unwrap()
 
-      await drain(this.blockstore.deleteMany((async function * () {
-        for await (const cid of helia.blockstore.queryKeys({})) {
+      await drain(blockstore.deleteMany((async function * () {
+        for await (const cid of blockstore.queryKeys({})) {
           if (await helia.pins.isPinned(cid, options)) {
             continue
           }
 
           yield cid
+
+          options.onProgress?.(new CustomProgressEvent('helia:gc:deleted', cid))
         }
       }())))
     } finally {

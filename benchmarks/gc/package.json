@@ -1,0 +1,36 @@
+{
+  "name": "benchmarks-gc",
+  "version": "1.0.0",
+  "main": "index.js",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "clean": "aegir clean",
+    "build": "aegir build --bundle false",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "start": "npm run build && node --max_old_space_size=16384 dist/src/index.js"
+  },
+  "devDependencies": {
+    "@chainsafe/libp2p-noise": "^11.0.0",
+    "@chainsafe/libp2p-yamux": "^3.0.5",
+    "@ipld/dag-pb": "^4.0.2",
+    "@libp2p/websockets": "^5.0.3",
+    "@types/benchmark": "^2.1.2",
+    "aegir": "^38.1.5",
+    "benchmark": "^2.1.4",
+    "blockstore-datastore-adapter": "^5.0.0",
+    "datastore-core": "^8.0.4",
+    "datastore-fs": "^8.0.0",
+    "datastore-level": "^9.0.4",
+    "go-ipfs": "^0.18.1",
+    "helia": "~0.0.0",
+    "ipfs-core": "^0.18.0",
+    "ipfsd-ctl": "^13.0.0",
+    "it-all": "^2.0.0",
+    "it-drain": "^2.0.0",
+    "kubo-rpc-client": "^3.0.1",
+    "libp2p": "^0.42.2",
+    "multiformats": "^11.0.1"
+  }
+}

@@ -48,6 +48,14 @@ const rawWalker: DAGWalker = {
   }
 }
 
+function toDSKey (cid: CID): Key {
+  if (cid.version === 0) {
+    cid = cid.toV1()
+  }
+
+  return new Key(`${DATASTORE_PIN_PREFIX}${cid.toString(DATASTORE_ENCODING)}`)
+}
+
 export class PinsImpl implements Pins {
   private readonly datastore: Datastore
   private readonly blockstore: Blockstore
@@ -64,7 +72,7 @@ export class PinsImpl implements Pins {
   }
 
   async add (cid: CID<unknown, number, number, Version>, options: AddOptions = {}): Promise<Pin> {
-    const pinKey = new Key(`${DATASTORE_PIN_PREFIX}${cid.toString(DATASTORE_ENCODING)}`)
+    const pinKey = toDSKey(cid)
 
     if (await this.datastore.has(pinKey)) {
       throw new Error('Already pinned')
@@ -184,8 +192,7 @@ export class PinsImpl implements Pins {
   }
 
   async rm (cid: CID<unknown, number, number, Version>, options: RmOptions = {}): Promise<Pin> {
-    const pinKey = new Key(`${DATASTORE_PIN_PREFIX}${cid.toString(DATASTORE_ENCODING)}`)
-
+    const pinKey = toDSKey(cid)
     const buf = await this.datastore.get(pinKey, options)
     const pin = cborg.decode(buf)
 
