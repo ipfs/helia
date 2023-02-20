@@ -44,7 +44,7 @@ As of early 2023, this project is pre-alpha and is currently in development.  Th
 Please find and comment on [the Roadmap here](https://github.com/ipfs/helia/issues/5).
 
 ## Get involved
-* We are sharing about the progress at periodic [Helia Demos](https://lu.ma/helia-demo).  This is a good place to find out the latest and learn of ways to get involved.  We'd love to see you there!
+* We are sharing about the progress at periodic [Helia Demos](https://lu.ma/helia).  This is a good place to find out the latest and learn of ways to get involved.  We'd love to see you there!
 * Pick up one of the [issues](https://github.com/ipfs/helia/issues).
 * Come chat in Filecoin Slack #ip-js.  (Yes, we should bridge this to other chat enviornments.  Please comment [here](https://github.com/ipfs/helia/issues/33) if you'd like this.)
 
