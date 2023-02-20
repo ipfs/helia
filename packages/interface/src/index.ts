@@ -20,6 +20,7 @@ import type { AbortOptions } from '@libp2p/interfaces'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Datastore } from 'interface-datastore'
+import type { Pins } from './pins.js'
 
 /**
  * The API presented by a Helia node.
@@ -39,6 +40,11 @@ export interface Helia {
    * A key/value store
    */
   datastore: Datastore
+
+  /**
+   * Pinning operations for blocks in the blockstore
+   */
+  pins: Pins
 
   /**
    * Returns information about this node
@@ -65,6 +71,15 @@ export interface Helia {
    * Stops the Helia node
    */
   stop: () => Promise<void>
+
+  /**
+   * Remove any unpinned blocks from the blockstore
+   */
+  gc: (options?: GCOptions) => Promise<void>
+}
+
+export interface GCOptions extends AbortOptions {
+
 }
 
 export interface InfoOptions extends AbortOptions {

@@ -1,6 +1,5 @@
-import type { Helia, InfoResponse } from '@helia/interface'
+import type { GCOptions, Helia, InfoResponse } from '@helia/interface'
 import type { Libp2p } from '@libp2p/interface-libp2p'
-import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import { identity } from 'multiformats/hashes/identity'
 import { sha256, sha512 } from 'multiformats/hashes/sha2'
@@ -8,11 +7,16 @@ import type { MultihashHasher } from 'multiformats/hashes/interface'
 import type { HeliaInit } from '.'
 import { Bitswap, createBitswap } from 'ipfs-bitswap'
 import { BlockStorage } from './storage.js'
+import type { Pins } from '@helia/interface/pins'
+import { PinsImpl } from './pins.js'
+import { assertDatastoreVersionIsCurrent } from './utils/datastore-version.js'
+import drain from 'it-drain'
 
 export class HeliaImpl implements Helia {
   public libp2p: Libp2p
-  public blockstore: Blockstore
+  public blockstore: BlockStorage
   public datastore: Datastore
+  public pins: Pins
 
   #bitswap: Bitswap
 
@@ -23,6 +27,8 @@ export class HeliaImpl implements Helia {
       identity,
       ...(init.hashers ?? [])
     ]
+
+    this.pins = new PinsImpl(init.datastore, init.blockstore, init.dagWalkers ?? [])
 
     this.#bitswap = createBitswap(init.libp2p, init.blockstore, {
       hashLoader: {
@@ -41,11 +47,13 @@ export class HeliaImpl implements Helia {
     })
 
     this.libp2p = init.libp2p
-    this.blockstore = new BlockStorage(init.blockstore, this.#bitswap)
+    this.blockstore = new BlockStorage(init.blockstore, this.#bitswap, this.pins)
     this.datastore = init.datastore
   }
 
   async start (): Promise<void> {
+    await assertDatastoreVersionIsCurrent(this.datastore)
+
     this.#bitswap.start()
     await this.libp2p.start()
   }
@@ -63,6 +71,26 @@ export class HeliaImpl implements Helia {
       protocolVersion: this.libp2p.identifyService.host.protocolVersion,
       protocols: this.libp2p.getProtocols(),
       status: this.libp2p.isStarted() ? 'running' : 'stopped'
+    }
+  }
+
+  async gc (options?: GCOptions): Promise<void> {
+    const releaseLock = await this.blockstore.lock.writeLock()
+
+    try {
+      const helia = this
+
+      await drain(this.blockstore.deleteMany((async function * () {
+        for await (const cid of helia.blockstore.queryKeys({})) {
+          if (await helia.pins.isPinned(cid, options)) {
+            continue
+          }
+
+          yield cid
+        }
+      }())))
+    } finally {
+      releaseLock()
     }
   }
 }

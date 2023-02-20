@@ -29,8 +29,17 @@ import type { Helia } from '@helia/interface'
 import type { Libp2p } from '@libp2p/interface-libp2p'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
+import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 import { HeliaImpl } from './helia.js'
+
+/**
+ * DAGWalkers take a block and yield CIDs encoded in that block
+ */
+export interface DAGWalker {
+  codec: number
+  walk: (block: Uint8Array) => AsyncGenerator<CID, void, undefined>
+}
 
 /**
  * Options used to create a Helia node.
@@ -57,6 +66,13 @@ export interface HeliaInit {
    * pass appropriate MultihashHashers here.
    */
   hashers?: MultihashHasher[]
+
+  /**
+   * In order to pin CIDs that correspond to a DAG, it's necessary to know
+   * how to traverse that DAG.  DAGWalkers take a block and yield any CIDs
+   * encoded within that block.
+   */
+  dagWalkers?: DAGWalker[]
 
   /**
    * Pass `false` to not start the helia node
