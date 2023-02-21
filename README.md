@@ -4,8 +4,7 @@
   </a>
 </p>
 
-<!-- TOC ignore:true -->
-# helia
+# helia <!-- omit in toc -->
 
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
@@ -14,23 +13,17 @@
 
 > An implementation of IPFS in JavaScript
 
-<!-- TOC ignore:true -->
-## Table of contents
+## Table of contents <!-- omit in toc -->
 
-<!-- TOC -->
-
-    - [Purpose and goals](#purpose-and-goals)
-    - [Project status](#project-status)
-    - [Roadmap](#roadmap)
-    - [Get involved](#get-involved)
-    - [API Docs](#api-docs)
-    - [Structure](#structure)
-    - [Name](#name)
-    - [License](#license)
-    - [Contribute](#contribute)
-
-<!-- /TOC -->
-
+- [Purpose and goals](#purpose-and-goals)
+- [Project status](#project-status)
+- [Roadmap](#roadmap)
+- [Get involved](#get-involved)
+- [API Docs](#api-docs)
+- [Structure](#structure)
+- [Name](#name)
+- [License](#license)
+- [Contribute](#contribute)
 ## Purpose and goals
 A lean, modular, and modern implementation of IPFS for the prolific JS and browser environments.
 
