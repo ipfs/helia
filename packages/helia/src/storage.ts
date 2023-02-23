@@ -74,7 +74,7 @@ export class BlockStorage extends BaseBlockstore implements Blockstore {
     const releaseLock = await this.lock.writeLock()
 
     try {
-      const missingBlocks = filter(blocks, async ({ key }) => { return !(await this.has(key)) })
+      const missingBlocks = filter(blocks, async ({ key }) => { return !(await this.child.has(key)) })
 
       if (this.bitswap.isStarted()) {
         yield * this.bitswap.putMany(missingBlocks, options)

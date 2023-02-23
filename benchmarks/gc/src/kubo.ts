@@ -12,15 +12,22 @@ export async function createKuboBenchmark (): Promise<GcBenchmark> {
     type: 'go',
     test: true,
     ipfsBin: goIpfs.path(),
-    ipfsHttpModule: goRpcClient
+    ipfsHttpModule: goRpcClient,
+    ipfsOptions: {
+      init: {
+        emptyRepo: true
+      }
+    }
   })
 
   return {
     async gc () {
       await drain(controller.api.repo.gc())
     },
-    async putBlock (cid, block) {
-      await controller.api.block.put(block)
+    async putBlocks (blocks) {
+      for (const { value } of blocks) {
+        await controller.api.block.put(value)
+      }
     },
     async pin (cid) {
       await controller.api.pin.add(cid)
@@ -37,6 +44,29 @@ export async function createKuboBenchmark (): Promise<GcBenchmark> {
         }
 
         await controller.api.pin.rm(pin.cid)
+      }
+
+      return pins.length
+    },
+    isPinned: async (cid) => {
+      const result = await all(controller.api.pin.ls({
+        paths: cid
+      }))
+
+      const isPinned = result[0].type.includes('direct') || result[0].type.includes('indirect') || result[0].type.includes('recursive')
+
+      if (!isPinned) {
+        console.info(result)
+      }
+
+      return isPinned
+    },
+    hasBlock: async (cid) => {
+      try {
+        await controller.api.block.get(cid)
+        return true
+      } catch {
+        return false
       }
     }
   }

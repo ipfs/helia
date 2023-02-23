@@ -15,15 +15,20 @@ export async function createIpfsBenchmark (): Promise<GcBenchmark> {
       }
     },
     repo: repoPath,
-    start: false
+    start: false,
+    init: {
+      emptyRepo: true
+    }
   })
 
   return {
     async gc () {
       await drain(ipfs.repo.gc())
     },
-    async putBlock (cid, block) {
-      await ipfs.block.put(block)
+    async putBlocks (blocks) {
+      for (const { value } of blocks) {
+        await ipfs.block.put(value)
+      }
     },
     async pin (cid) {
       await ipfs.pin.add(cid)
@@ -40,6 +45,23 @@ export async function createIpfsBenchmark (): Promise<GcBenchmark> {
         }
 
         await ipfs.pin.rm(pin.cid)
+      }
+
+      return pins.length
+    },
+    isPinned: async (cid) => {
+      const result = await all(ipfs.pin.ls({
+        paths: cid
+      }))
+
+      return result[0].type.includes('direct') || result[0].type.includes('indirect') || result[0].type.includes('recursive')
+    },
+    hasBlock: async (cid) => {
+      try {
+        await ipfs.block.get(cid)
+        return true
+      } catch {
+        return false
       }
     }
   }

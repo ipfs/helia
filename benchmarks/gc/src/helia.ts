@@ -13,6 +13,7 @@ import { BlockstoreDatastoreAdapter } from 'blockstore-datastore-adapter'
 import { ShardingDatastore } from 'datastore-core/sharding'
 import { NextToLast } from 'datastore-core/shard'
 import { FsDatastore } from 'datastore-fs'
+import drain from 'it-drain'
 
 const dagPbWalker: DAGWalker = {
   codec: dagPb.code,
@@ -57,8 +58,8 @@ export async function createHeliaBenchmark (): Promise<GcBenchmark> {
     async gc () {
       await helia.gc()
     },
-    async putBlock (cid, block) {
-      await helia.blockstore.put(cid, block)
+    async putBlocks (blocks) {
+      await drain(helia.blockstore.putMany(blocks))
     },
     async pin (cid) {
       await helia.pins.add(cid)
@@ -72,6 +73,14 @@ export async function createHeliaBenchmark (): Promise<GcBenchmark> {
       for (const pin of pins) {
         await helia.pins.rm(pin.cid)
       }
+
+      return pins.length
+    },
+    isPinned: (cid) => {
+      return helia.pins.isPinned(cid)
+    },
+    hasBlock: (cid) => {
+      return helia.blockstore.has(cid)
     }
   }
 }
