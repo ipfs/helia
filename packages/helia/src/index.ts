@@ -48,17 +48,17 @@ export interface HeliaInit {
   /**
    * A libp2p node is required to perform network operations
    */
-  libp2p: Libp2p
+  libp2p?: Libp2p
 
   /**
    * The blockstore is where blocks are stored
    */
-  blockstore: Blockstore
+  blockstore?: Blockstore
 
   /**
    * The datastore is where data is stored
    */
-  datastore: Datastore
+  datastore?: Datastore
 
   /**
    * By default sha256, sha512 and identity hashes are supported for
@@ -83,7 +83,7 @@ export interface HeliaInit {
 /**
  * Create and return a Helia node
  */
-export async function createHelia (init: HeliaInit): Promise<Helia> {
+export async function createHelia (init: HeliaInit = {}): Promise<Helia> {
   const helia = new HeliaImpl(init)
 
   if (init.start !== false) {

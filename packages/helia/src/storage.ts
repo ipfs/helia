@@ -23,13 +23,13 @@ export interface BlockStorageOptions extends AbortOptions {
 export class BlockStorage extends BaseBlockstore implements Blockstore {
   public lock: Mortice
   private readonly child: Blockstore
-  private readonly bitswap: Bitswap
+  private readonly bitswap?: Bitswap
   private readonly pins: Pins
 
   /**
    * Create a new BlockStorage
    */
-  constructor (blockstore: Blockstore, bitswap: Bitswap, pins: Pins) {
+  constructor (blockstore: Blockstore, pins: Pins, bitswap?: Bitswap) {
     super()
 
     this.child = blockstore
@@ -54,10 +54,10 @@ export class BlockStorage extends BaseBlockstore implements Blockstore {
    * Put a block to the underlying datastore
    */
   async put (cid: CID, block: Uint8Array, options: AbortOptions = {}): Promise<void> {
-    const releaseLock = await this.lock.writeLock()
+    const releaseLock = await this.lock.readLock()
 
     try {
-      if (this.bitswap.isStarted()) {
+      if (this.bitswap?.isStarted() === true) {
         await this.bitswap.put(cid, block, options)
       } else {
         await this.child.put(cid, block, options)
@@ -71,16 +71,16 @@ export class BlockStorage extends BaseBlockstore implements Blockstore {
    * Put a multiple blocks to the underlying datastore
    */
   async * putMany (blocks: AwaitIterable<{ key: CID, value: Uint8Array }>, options: AbortOptions = {}): AsyncGenerator<{ key: CID, value: Uint8Array }, void, undefined> {
-    const releaseLock = await this.lock.writeLock()
+    const releaseLock = await this.lock.readLock()
 
     try {
-      const missingBlocks = filter(blocks, async ({ key }) => { return !(await this.child.has(key)) })
+      const missingBlocks = filter(blocks, async ({ key }) => {
+        return !(await this.child.has(key))
+      })
 
-      if (this.bitswap.isStarted()) {
-        yield * this.bitswap.putMany(missingBlocks, options)
-      } else {
-        yield * this.child.putMany(missingBlocks, options)
-      }
+      const store = this.bitswap?.isStarted() === true ? this.bitswap : this.child
+
+      yield * store.putMany(missingBlocks, options)
     } finally {
       releaseLock()
     }
@@ -93,8 +93,8 @@ export class BlockStorage extends BaseBlockstore implements Blockstore {
     const releaseLock = await this.lock.readLock()
 
     try {
-      if (!(await this.has(cid)) && this.bitswap.isStarted()) {
-        return await this.bitswap.get(cid, options)
+      if (!(await this.has(cid)) && this.bitswap?.isStarted() === true) {
+        return await this.bitswap?.get(cid, options)
       } else {
         return await this.child.get(cid, options)
       }
@@ -115,7 +115,7 @@ export class BlockStorage extends BaseBlockstore implements Blockstore {
 
       void Promise.resolve().then(async () => {
         for await (const cid of cids) {
-          if (!(await this.has(cid)) && this.bitswap.isStarted()) {
+          if (!(await this.has(cid)) && this.bitswap?.isStarted() === true) {
             getFromBitswap.push(cid)
           } else {
             getFromChild.push(cid)
@@ -128,10 +128,15 @@ export class BlockStorage extends BaseBlockstore implements Blockstore {
         getFromBitswap.throw(err)
       })
 
-      yield * merge(
-        this.bitswap.getMany(getFromBitswap, options),
+      const streams = [
         this.child.getMany(getFromChild, options)
-      )
+      ]
+
+      if (this.bitswap?.isStarted() === true) {
+        streams.push(this.bitswap.getMany(getFromBitswap, options))
+      }
+
+      yield * merge(...streams)
     } finally {
       releaseLock()
     }
