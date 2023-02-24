@@ -1,3 +1,15 @@
+## [1.0.2](https://github.com/ipfs/helia-unixfs/compare/v1.0.1...v1.0.2) (2023-02-24)
+
+
+### Bug Fixes
+
+* add methods to import data ([#3](https://github.com/ipfs/helia-unixfs/issues/3)) ([917a564](https://github.com/ipfs/helia-unixfs/commit/917a564c0d990dfd35d4615436fc8e3609c72a76))
+
+
+### Tests
+
+* move test file data to fixtures ([1b76084](https://github.com/ipfs/helia-unixfs/commit/1b760847a18b7b7c1e3fa8c871fd75acb298480b))
+
 ## [1.0.1](https://github.com/ipfs/helia-unixfs/compare/v1.0.0...v1.0.1) (2023-02-17)
 
 
