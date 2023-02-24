@@ -1,4 +1,4 @@
-import type { GCOptions, Helia, InfoResponse } from '@helia/interface'
+import type { GCOptions, Helia } from '@helia/interface'
 import type { Libp2p } from '@libp2p/interface-libp2p'
 import type { Datastore } from 'interface-datastore'
 import { identity } from 'multiformats/hashes/identity'
@@ -12,6 +12,8 @@ import { PinsImpl } from './pins.js'
 import { assertDatastoreVersionIsCurrent } from './utils/datastore-version.js'
 import drain from 'it-drain'
 import { CustomProgressEvent } from 'progress-events'
+import { MemoryDatastore } from 'datastore-core'
+import { MemoryBlockstore } from 'blockstore-core'
 
 export class HeliaImpl implements Helia {
   public libp2p: Libp2p
@@ -19,7 +21,7 @@ export class HeliaImpl implements Helia {
   public datastore: Datastore
   public pins: Pins
 
-  #bitswap: Bitswap
+  #bitswap?: Bitswap
 
   constructor (init: HeliaInit) {
     const hashers: MultihashHasher[] = [
@@ -29,50 +31,65 @@ export class HeliaImpl implements Helia {
       ...(init.hashers ?? [])
     ]
 
-    this.pins = new PinsImpl(init.datastore, init.blockstore, init.dagWalkers ?? [])
+    const datastore = init.datastore ?? new MemoryDatastore()
+    const blockstore = init.blockstore ?? new MemoryBlockstore()
 
-    this.#bitswap = createBitswap(init.libp2p, init.blockstore, {
-      hashLoader: {
-        getHasher: async (codecOrName: string | number) => {
-          const hasher = hashers.find(hasher => {
-            return hasher.code === codecOrName || hasher.name === codecOrName
-          })
+    // @ts-expect-error incomplete libp2p implementation
+    const libp2p = init.libp2p ?? new Proxy<Libp2p>({}, {
+      get (_, prop) {
+        const noop = (): void => {}
+        const noops = ['start', 'stop']
 
-          if (hasher != null) {
-            return await Promise.resolve(hasher)
-          }
-
-          throw new Error(`Could not load hasher for code/name "${codecOrName}"`)
+        if (noops.includes(prop.toString())) {
+          return noop
         }
+
+        if (prop === 'isProxy') {
+          return true
+        }
+
+        throw new Error('Please configure Helia with a libp2p instance')
+      },
+      set () {
+        throw new Error('Please configure Helia with a libp2p instance')
       }
     })
 
-    this.libp2p = init.libp2p
-    this.blockstore = new BlockStorage(init.blockstore, this.#bitswap, this.pins)
-    this.datastore = init.datastore
+    this.pins = new PinsImpl(datastore, blockstore, init.dagWalkers ?? [])
+
+    if (init.libp2p != null) {
+      this.#bitswap = createBitswap(libp2p, blockstore, {
+        hashLoader: {
+          getHasher: async (codecOrName: string | number) => {
+            const hasher = hashers.find(hasher => {
+              return hasher.code === codecOrName || hasher.name === codecOrName
+            })
+
+            if (hasher != null) {
+              return await Promise.resolve(hasher)
+            }
+
+            throw new Error(`Could not load hasher for code/name "${codecOrName}"`)
+          }
+        }
+      })
+    }
+
+    this.libp2p = libp2p
+    this.blockstore = new BlockStorage(blockstore, this.pins, this.#bitswap)
+    this.datastore = datastore
   }
 
   async start (): Promise<void> {
     await assertDatastoreVersionIsCurrent(this.datastore)
 
-    this.#bitswap.start()
+    this.#bitswap?.start()
     await this.libp2p.start()
   }
 
   async stop (): Promise<void> {
-    this.#bitswap.stop()
+    this.#bitswap?.stop()
     await this.libp2p.stop()
-  }
-
-  async info (): Promise<InfoResponse> {
-    return {
-      peerId: this.libp2p.peerId,
-      multiaddrs: this.libp2p.getMultiaddrs(),
-      agentVersion: this.libp2p.identifyService.host.agentVersion,
-      protocolVersion: this.libp2p.identifyService.host.protocolVersion,
-      protocols: this.libp2p.getProtocols(),
-      status: this.libp2p.isStarted() ? 'running' : 'stopped'
-    }
   }
 
   async gc (options: GCOptions = {}): Promise<void> {
