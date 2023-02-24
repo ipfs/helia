@@ -47,9 +47,9 @@
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
     },
-    "./errors": {
-      "types": "./dist/src/errors.d.ts",
-      "import": "./dist/src/errors.js"
+    "./pins": {
+      "types": "./dist/src/pins.d.ts",
+      "import": "./dist/src/pins.js"
     }
   },
   "eslintConfig": {
@@ -156,7 +156,9 @@
     "@libp2p/interfaces": "^3.3.1",
     "@multiformats/multiaddr": "^11.1.5",
     "interface-blockstore": "^4.0.1",
-    "interface-datastore": "^7.0.3"
+    "interface-datastore": "^7.0.3",
+    "multiformats": "^11.0.1",
+    "progress-events": "^1.0.0"
   },
   "devDependencies": {
     "aegir": "^38.1.0"
