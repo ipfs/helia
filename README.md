@@ -26,6 +26,7 @@
 - [Contribute](#contribute)
 
 ## Purpose and goals
+
 A lean, modular, and modern implementation of IPFS for the prolific JS and browser environments.
 
 See the [Manifesto](./MANIFESTO.md) and the [State of IPFS in JS blog post frpom 202210](https://blog.ipfs.tech/state-of-ipfs-in-js/) for more info.
@@ -35,9 +36,11 @@ See the [Manifesto](./MANIFESTO.md) and the [State of IPFS in JS blog post frpom
 As of early 2023, this project is pre-alpha and is currently in development.  These initial building blocks are in development now; have a look at this repo's PR(s).  An initial v1 release is planned for [late Q1 2023](/ROADMAP.md#late-q1-march). 
 
 ## Roadmap
+
 Please find and comment on [the Roadmap here](https://github.com/ipfs/helia/issues/5).
 
 ## Get involved
+
 * We are sharing about the progress at periodic [Helia Demos](https://lu.ma/helia).  This is a good place to find out the latest and learn of ways to get involved.  We'd love to see you there!
 * Pick up one of the [issues](https://github.com/ipfs/helia/issues).
 * Come chat in Filecoin Slack #ip-js.  (Yes, we should bridge this to other chat enviornments.  Please comment [here](https://github.com/ipfs/helia/issues/33) if you'd like this.)
