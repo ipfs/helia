@@ -9,8 +9,7 @@ import { importDirectory, importBytes, importer } from 'ipfs-unixfs-importer'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 import last from 'it-last'
 import { createSubshardedDirectory } from './fixtures/create-subsharded-directory.js'
-
-const smallFile = Uint8Array.from(new Array(13).fill(0).map(() => Math.random() * 100))
+import { smallFile } from './fixtures/files.js'
 
 describe('rm', () => {
   let blockstore: Blockstore

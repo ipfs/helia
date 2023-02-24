@@ -7,8 +7,7 @@ import { UnixFS, unixfs } from '../src/index.js'
 import type { CID } from 'multiformats/cid'
 import { importDirectory, importBytes } from 'ipfs-unixfs-importer'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
-
-const smallFile = Uint8Array.from(new Array(13).fill(0).map(() => Math.random() * 100))
+import { smallFile } from './fixtures/files.js'
 
 describe('chmod', () => {
   let blockstore: Blockstore

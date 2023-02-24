@@ -8,9 +8,7 @@ import type { CID } from 'multiformats/cid'
 import * as dagPb from '@ipld/dag-pb'
 import { importDirectory, importBytes, importFile } from 'ipfs-unixfs-importer'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
-
-const smallFile = Uint8Array.from(new Array(13).fill(0).map(() => Math.random() * 100))
-const largeFile = Uint8Array.from(new Array(490668).fill(0).map(() => Math.random() * 100))
+import { largeFile, smallFile } from './fixtures/files.js'
 
 describe('stat', function () {
   this.timeout(120 * 1000)

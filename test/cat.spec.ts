@@ -9,8 +9,7 @@ import toBuffer from 'it-to-buffer'
 import drain from 'it-drain'
 import { importDirectory, importBytes } from 'ipfs-unixfs-importer'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
-
-const smallFile = Uint8Array.from(new Array(13).fill(0).map(() => Math.random() * 100))
+import { smallFile } from './fixtures/files.js'
 
 describe('cat', () => {
   let blockstore: Blockstore
