@@ -8,8 +8,15 @@ import PQueue from 'p-queue'
 import type { AbortOptions } from '@libp2p/interfaces'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import defer from 'p-defer'
-import * as raw from 'multiformats/codecs/raw'
 import type { DAGWalker } from './index.js'
+import { cborWalker, dagPbWalker, jsonWalker, rawWalker } from './utils/dag-walkers.js'
+
+const DEFAULT_DAG_WALKERS = [
+  rawWalker,
+  dagPbWalker,
+  cborWalker,
+  jsonWalker
+]
 
 interface DatastorePin {
   /**
@@ -38,16 +45,6 @@ interface WalkDagOptions extends AbortOptions {
   depth: number
 }
 
-/**
- * Dag walker for raw CIDs
- */
-const rawWalker: DAGWalker = {
-  codec: raw.code,
-  async * walk (block) {
-    // no embedded CIDs in a raw block
-  }
-}
-
 function toDSKey (cid: CID): Key {
   if (cid.version === 0) {
     cid = cid.toV1()
@@ -66,7 +63,7 @@ export class PinsImpl implements Pins {
     this.blockstore = blockstore
     this.dagWalkers = {}
 
-    ;[...dagWalkers, rawWalker].forEach(dagWalker => {
+    ;[...DEFAULT_DAG_WALKERS, ...dagWalkers].forEach(dagWalker => {
       this.dagWalkers[dagWalker.codec] = dagWalker
     })
   }
