@@ -8,6 +8,8 @@ import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { createHelia } from '../src/index.js'
 import type { Helia } from '@helia/interface'
+import { CID } from 'multiformats/cid'
+import { Key } from 'interface-datastore'
 
 describe('helia', () => {
   let helia: Helia
@@ -37,28 +39,11 @@ describe('helia', () => {
   })
 
   it('stops and starts', async () => {
-    const startedInfo = await helia.info()
-
-    expect(startedInfo).to.have.property('status', 'running')
-    expect(startedInfo).to.have.property('protocols')
-      .with.property('length').that.is.greaterThan(0)
+    expect(helia.libp2p.isStarted()).to.be.true()
 
     await helia.stop()
 
-    const stoppedInfo = await helia.info()
-
-    expect(stoppedInfo).to.have.property('status', 'stopped')
-    expect(stoppedInfo).to.have.property('protocols')
-      .with.lengthOf(0)
-  })
-
-  it('returns node information', async () => {
-    const info = await helia.info()
-
-    expect(info).to.have.property('peerId').that.is.ok()
-    expect(info).to.have.property('multiaddrs').that.is.an('array')
-    expect(info).to.have.property('agentVersion').that.is.a('string')
-    expect(info).to.have.property('protocolVersion').that.is.a('string')
+    expect(helia.libp2p.isStarted()).to.be.false()
   })
 
   it('should have a blockstore', async () => {
@@ -92,8 +77,23 @@ describe('helia', () => {
       })
     })
 
-    const info = await helia.info()
+    expect(helia.libp2p.isStarted()).to.be.false()
+  })
 
-    expect(info).to.have.property('status', 'stopped')
+  it('does not require any constructor args', async () => {
+    const helia = await createHelia()
+
+    const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
+    const block = Uint8Array.from([0, 1, 2, 3])
+    await helia.blockstore.put(cid, block)
+    await expect(helia.blockstore.has(cid)).to.eventually.be.true()
+
+    const key = new Key(`/${cid.toString()}`)
+    await helia.datastore.put(key, block)
+    await expect(helia.datastore.has(key)).to.eventually.be.true()
+
+    expect(() => {
+      helia.libp2p.isStarted()
+    }).to.throw('Please configure Helia with a libp2p instance')
   })
 })
