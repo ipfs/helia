@@ -24,6 +24,7 @@
 - [Name](#name)
 - [License](#license)
 - [Contribute](#contribute)
+
 ## Purpose and goals
 A lean, modular, and modern implementation of IPFS for the prolific JS and browser environments.
 
