@@ -81,7 +81,8 @@ export interface Helia {
 }
 
 export type GcEvents =
-  ProgressEvent<'helia:gc:deleted', CID>
+  ProgressEvent<'helia:gc:deleted', CID> |
+  ProgressEvent<'helia:gc:error', Error>
 
 export interface GCOptions extends AbortOptions, ProgressOptions<GcEvents> {
 

@@ -7,7 +7,7 @@ import { webSockets } from '@libp2p/websockets'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { createHelia } from '../src/index.js'
-import type { Helia } from '@helia/interface'
+import type { GcEvents, Helia } from '@helia/interface'
 import * as raw from 'multiformats/codecs/raw'
 import { createBlock } from './fixtures/create-block.js'
 import * as dagPb from '@ipld/dag-pb'
@@ -167,5 +167,30 @@ describe('gc', () => {
 
     await expect(helia.blockstore.has(cid)).to.eventually.be.true()
     await expect(helia.blockstore.has(doomed)).to.eventually.be.false()
+  })
+
+  it('can garbage collect around a CID that causes an error', async () => {
+    const cid = await createBlock(0x10, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
+
+    await expect(helia.blockstore.has(cid)).to.eventually.be.true('did not have cid')
+
+    const events: GcEvents[] = []
+
+    // make the datastore break in some way
+    helia.datastore.has = async () => {
+      throw new Error('Urk!')
+    }
+
+    await helia.gc({
+      onProgress: (evt) => {
+        events.push(evt)
+      }
+    })
+
+    await expect(helia.blockstore.has(cid)).to.eventually.be.true('did not keep cid')
+
+    const errorEvents = events.filter(e => e.type === 'helia:gc:error')
+    expect(errorEvents).to.have.lengthOf(1)
+    expect(errorEvents[0].detail.toString()).to.include('Urk!')
   })
 })

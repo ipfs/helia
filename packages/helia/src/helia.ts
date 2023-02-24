@@ -1,6 +1,7 @@
 import type { GCOptions, Helia, InfoResponse } from '@helia/interface'
 import type { Libp2p } from '@libp2p/interface-libp2p'
 import type { Datastore } from 'interface-datastore'
+import type { CID } from 'multiformats/cid'
 import { identity } from 'multiformats/hashes/identity'
 import { sha256, sha512 } from 'multiformats/hashes/sha2'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
@@ -12,6 +13,9 @@ import { PinsImpl } from './pins.js'
 import { assertDatastoreVersionIsCurrent } from './utils/datastore-version.js'
 import drain from 'it-drain'
 import { CustomProgressEvent } from 'progress-events'
+import { logger } from '@libp2p/logger'
+
+const log = logger('helia')
 
 export class HeliaImpl implements Helia {
   public libp2p: Libp2p
@@ -82,19 +86,28 @@ export class HeliaImpl implements Helia {
       const helia = this
       const blockstore = this.blockstore.unwrap()
 
+      log('gc start')
+
       await drain(blockstore.deleteMany((async function * () {
         for await (const cid of blockstore.queryKeys({})) {
-          if (await helia.pins.isPinned(cid, options)) {
-            continue
+          try {
+            if (await helia.pins.isPinned(cid, options)) {
+              continue
+            }
+
+            yield cid
+
+            options.onProgress?.(new CustomProgressEvent<CID>('helia:gc:deleted', cid))
+          } catch (err) {
+            log.error('Error during gc', err)
+            options.onProgress?.(new CustomProgressEvent<Error>('helia:gc:error', err))
           }
-
-          yield cid
-
-          options.onProgress?.(new CustomProgressEvent('helia:gc:deleted', cid))
         }
       }())))
     } finally {
       releaseLock()
     }
+
+    log('gc finished')
   }
 }
