@@ -96,6 +96,7 @@ export const recreateInitialHamtLevel = async (links: PBLink[]): Promise<Bucket<
         }, bucket, pos)
 
         bucket._putObjectAt(pos, subBucket)
+        return
       }
 
       await bucket.put(linkName.substring(2), {
@@ -126,6 +127,7 @@ export const addLinksToHamtBucket = async (blockstore: Blockstore, links: PBLink
         bucket._putObjectAt(pos, subBucket)
 
         await addLinksToHamtBucket(blockstore, node.Links, subBucket, rootBucket, options)
+        return
       }
 
       await rootBucket.put(linkName.substring(2), {
@@ -218,7 +220,7 @@ export const generatePath = async (root: Directory, name: string, blockstore: Bl
     // found subshard
     log(`Found subshard ${segment.prefix}`)
     const block = await blockstore.get(link.Hash)
-    const node = dagPB.decode(block)
+    const node = segment.node = dagPB.decode(block)
 
     // subshard hasn't been loaded, descend to the next level of the HAMT
     if (path[i + 1] == null) {
@@ -247,8 +249,6 @@ export const generatePath = async (root: Directory, name: string, blockstore: Bl
 
     // add intermediate links to bucket
     await addLinksToHamtBucket(blockstore, node.Links, segment.bucket, rootBucket, options)
-
-    segment.node = node
   }
 
   await rootBucket.put(name, true)

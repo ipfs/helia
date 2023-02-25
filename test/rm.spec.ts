@@ -174,7 +174,7 @@ describe('rm', () => {
     expect(containingDirCid).to.eql(importerCid)
   })
 
-  it.skip('results in the same hash as a sharded directory created by the importer when removing a subshard', async function () {
+  it('results in the same hash as a sharded directory created by the importer when removing a subshard', async function () {
     let {
       containingDirCid,
       fileName,
@@ -195,7 +195,7 @@ describe('rm', () => {
     expect(containingDirCid).to.eql(importerCid)
   })
 
-  it.skip('results in the same hash as a sharded directory created by the importer when removing a subshard of a subshard', async function () {
+  it('results in the same hash as a sharded directory created by the importer when removing a subshard of a subshard', async function () {
     let {
       containingDirCid,
       fileName,
