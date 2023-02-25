@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/ipfs/helia-unixfs/compare/v1.0.2...v1.0.3) (2023-02-25)
+
+
+### Bug Fixes
+
+* enable last shard tests ([#4](https://github.com/ipfs/helia-unixfs/issues/4)) ([9774460](https://github.com/ipfs/helia-unixfs/commit/97744606d6da2e61a1aefa6af8f0f3b68f8827ab))
+
 ## [1.0.2](https://github.com/ipfs/helia-unixfs/compare/v1.0.1...v1.0.2) (2023-02-24)
 
 
