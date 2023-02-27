@@ -139,7 +139,6 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@helia/interface": "next",
     "@ipld/dag-pb": "^4.0.0",
     "@libp2p/interfaces": "^3.3.1",
     "@libp2p/logger": "^2.0.5",
@@ -152,7 +151,8 @@
     "it-last": "^2.0.0",
     "it-pipe": "^2.0.5",
     "merge-options": "^3.0.4",
-    "multiformats": "^11.0.1"
+    "multiformats": "^11.0.1",
+    "sparse-array": "^1.3.2"
   },
   "devDependencies": {
     "aegir": "^38.1.0",

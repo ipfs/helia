@@ -6,7 +6,6 @@ import { unixfs, UnixFS } from '../src/index.js'
 import { MemoryBlockstore } from 'blockstore-core'
 import type { CID } from 'multiformats/cid'
 import delay from 'delay'
-import { importDirectory, importBytes, importFile } from 'ipfs-unixfs-importer'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 
 describe('.files.touch', () => {
@@ -19,12 +18,11 @@ describe('.files.touch', () => {
 
     fs = unixfs({ blockstore })
 
-    const imported = await importDirectory({ path: 'empty' }, blockstore)
-    emptyDirCid = imported.cid
+    emptyDirCid = await fs.addDirectory()
   })
 
   it('should have default mtime', async () => {
-    const { cid } = await importBytes(Uint8Array.from([0, 1, 2, 3, 4]), blockstore)
+    const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
 
     await expect(fs.stat(cid)).to.eventually.have.property('mtime')
       .that.is.undefined()
@@ -43,12 +41,12 @@ describe('.files.touch', () => {
     const mtime = new Date()
     const seconds = BigInt(Math.floor(mtime.getTime() / 1000))
 
-    const { cid } = await importFile({
+    const cid = await fs.addFile({
       content: Uint8Array.from([0, 1, 2, 3, 4]),
       mtime: {
         secs: seconds
       }
-    }, blockstore)
+    })
 
     await delay(2000)
     const updatedCid = await fs.touch(cid)
@@ -83,7 +81,7 @@ describe('.files.touch', () => {
     const mtime = new Date()
     const seconds = Math.floor(mtime.getTime() / 1000)
 
-    const { cid } = await importBytes(Uint8Array.from([0, 1, 2, 3, 4]), blockstore)
+    const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
     const dirCid = await fs.cp(cid, emptyDirCid, path)
 
     await delay(2000)

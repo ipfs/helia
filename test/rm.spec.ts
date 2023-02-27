@@ -5,7 +5,7 @@ import type { Blockstore } from 'interface-blockstore'
 import { unixfs, UnixFS } from '../src/index.js'
 import { MemoryBlockstore } from 'blockstore-core'
 import type { CID } from 'multiformats/cid'
-import { importDirectory, importBytes, importer } from 'ipfs-unixfs-importer'
+import { importer } from 'ipfs-unixfs-importer'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 import last from 'it-last'
 import { createSubshardedDirectory } from './fixtures/create-subsharded-directory.js'
@@ -21,8 +21,7 @@ describe('rm', () => {
 
     fs = unixfs({ blockstore })
 
-    const imported = await importDirectory({ path: 'empty' }, blockstore)
-    emptyDirCid = imported.cid
+    emptyDirCid = await fs.addDirectory()
   })
 
   it('refuses to remove files without arguments', async () => {
@@ -32,7 +31,7 @@ describe('rm', () => {
 
   it('removes a file', async () => {
     const path = 'foo'
-    const { cid: fileCid } = await importBytes(smallFile, blockstore)
+    const fileCid = await fs.addBytes(smallFile)
     const dirCid = await fs.cp(fileCid, emptyDirCid, path)
     const updatedDirCid = await fs.rm(dirCid, path)
 
@@ -88,6 +87,8 @@ describe('rm', () => {
       path: dirName
     })).to.eventually.be.rejected
       .with.property('code', 'ERR_DOES_NOT_EXIST')
+
+    expect(updatedContainingDirCid.toString()).to.equal(shardedDirCid.toString(), 'adding and removing a file from a sharded directory did not result in the original sharded CID')
   })
 
   it('results in the same hash as a sharded directory created by the importer when removing a file and removing the file means the root node is below the shard threshold', async function () {
@@ -110,26 +111,26 @@ describe('rm', () => {
     await expect(fs.stat(importerCid)).to.eventually.have.nested.property('unixfs.type', 'directory')
 
     // create the same shard with unixfs command
-    const { cid: fileCid } = await importBytes(Uint8Array.from([0, 1, 2, 3, 4]), blockstore)
-    let containingDirCid = await fs.cp(fileCid, emptyDirCid, 'file-1.txt', {
+    const fileCid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
+    const containingDirCid = await fs.cp(fileCid, emptyDirCid, 'file-1.txt', {
       shardSplitThresholdBytes
     })
 
     await expect(fs.stat(containingDirCid)).to.eventually.have.nested.property('unixfs.type', 'directory')
 
-    containingDirCid = await fs.cp(fileCid, containingDirCid, 'file-2.txt', {
+    const dirWithFileCid = await fs.cp(fileCid, containingDirCid, 'file-2.txt', {
       shardSplitThresholdBytes
     })
 
-    await expect(fs.stat(containingDirCid)).to.eventually.have.nested.property('unixfs.type', 'hamt-sharded-directory')
+    await expect(fs.stat(dirWithFileCid)).to.eventually.have.nested.property('unixfs.type', 'hamt-sharded-directory')
 
-    containingDirCid = await fs.rm(containingDirCid, 'file-2.txt', {
+    const dirWithoutFileCid = await fs.rm(dirWithFileCid, 'file-2.txt', {
       shardSplitThresholdBytes
     })
 
-    await expect(fs.stat(containingDirCid)).to.eventually.have.nested.property('unixfs.type', 'directory')
+    await expect(fs.stat(dirWithoutFileCid)).to.eventually.have.nested.property('unixfs.type', 'directory')
 
-    expect(containingDirCid).to.eql(importerCid)
+    expect(dirWithoutFileCid).to.eql(importerCid)
   })
 
   it('results in the same hash as a sharded directory created by the importer when removing a file', async function () {
@@ -152,7 +153,7 @@ describe('rm', () => {
     await expect(fs.stat(importerCid)).to.eventually.have.nested.property('unixfs.type', 'hamt-sharded-directory')
 
     // create the same shard with unixfs command
-    const { cid: fileCid } = await importBytes(Uint8Array.from([0, 1, 2, 3, 4]), blockstore)
+    const fileCid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
     let containingDirCid = await fs.cp(fileCid, emptyDirCid, 'file-1.txt', {
       shardSplitThresholdBytes
     })
@@ -175,7 +176,7 @@ describe('rm', () => {
   })
 
   it('results in the same hash as a sharded directory created by the importer when removing a subshard', async function () {
-    let {
+    const {
       containingDirCid,
       fileName,
       importerCid
@@ -185,14 +186,15 @@ describe('rm', () => {
       .to.eventually.have.nested.property('unixfs.type', 'hamt-sharded-directory')
 
     // remove the file that caused the subshard to be created and the CID should be the same as the importer
-    containingDirCid = await fs.rm(containingDirCid, fileName, {
+    const finalDirCid = await fs.rm(containingDirCid, fileName, {
       shardSplitThresholdBytes: 1
     })
 
-    await expect(fs.stat(containingDirCid))
+    // should still be a shard
+    await expect(fs.stat(finalDirCid))
       .to.eventually.have.nested.property('unixfs.type', 'hamt-sharded-directory')
 
-    expect(containingDirCid).to.eql(importerCid)
+    expect(finalDirCid).to.eql(importerCid, 'removing a file from the imported dir not result in the same CID')
   })
 
   it('results in the same hash as a sharded directory created by the importer when removing a subshard of a subshard', async function () {

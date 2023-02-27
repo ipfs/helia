@@ -1,8 +1,4 @@
 import * as dagPB from '@ipld/dag-pb'
-import {
-  Bucket,
-  createHAMT
-} from 'hamt-sharding'
 import { DirSharded } from './dir-sharded.js'
 import { logger } from '@libp2p/logger'
 import { UnixFS } from 'ipfs-unixfs'
@@ -13,129 +9,21 @@ import {
   hamtHashFn,
   hamtBucketBits
 } from './hamt-constants.js'
-import type { PBLink, PBNode } from '@ipld/dag-pb/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { Mtime } from 'ipfs-unixfs'
-import type { Directory } from './cid-to-directory.js'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { ImportResult } from 'ipfs-unixfs-importer'
 import { persist } from './persist.js'
+import { InfiniteHash, wrapHash } from './consumable-hash.js'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+// @ts-expect-error no types
+import SparseArray from 'sparse-array'
+import type { PersistOptions } from './persist.js'
 
 const log = logger('helia:unixfs:commands:utils:hamt-utils')
 
-export interface UpdateHamtResult {
-  node: PBNode
-  cid: CID
-  size: number
-}
-
 export interface UpdateHamtDirectoryOptions extends AbortOptions {
   cidVersion: Version
-}
-
-export const updateHamtDirectory = async (pbNode: PBNode, blockstore: Blockstore, bucket: Bucket<any>, options: UpdateHamtDirectoryOptions): Promise<UpdateHamtResult> => {
-  if (pbNode.Data == null) {
-    throw new Error('Could not update HAMT directory because parent had no data')
-  }
-
-  // update parent with new bit field
-  const node = UnixFS.unmarshal(pbNode.Data)
-  const dir = new UnixFS({
-    type: 'hamt-sharded-directory',
-    data: Uint8Array.from(bucket._children.bitField().reverse()),
-    fanout: BigInt(bucket.tableSize()),
-    hashType: hamtHashCode,
-    mode: node.mode,
-    mtime: node.mtime
-  })
-
-  const updatedPbNode = {
-    Data: dir.marshal(),
-    Links: pbNode.Links
-  }
-
-  const buf = dagPB.encode(dagPB.prepare(updatedPbNode))
-  const cid = await persist(buf, blockstore, options)
-
-  return {
-    node: updatedPbNode,
-    cid,
-    size: pbNode.Links.reduce((sum, link) => sum + (link.Tsize ?? 0), buf.byteLength)
-  }
-}
-
-export const recreateHamtLevel = async (blockstore: Blockstore, links: PBLink[], rootBucket: Bucket<any>, parentBucket: Bucket<any>, positionAtParent: number, options: AbortOptions): Promise<Bucket<any>> => {
-  // recreate this level of the HAMT
-  const bucket = new Bucket({
-    hash: rootBucket._options.hash,
-    bits: rootBucket._options.bits
-  }, parentBucket, positionAtParent)
-  parentBucket._putObjectAt(positionAtParent, bucket)
-
-  await addLinksToHamtBucket(blockstore, links, bucket, rootBucket, options)
-
-  return bucket
-}
-
-export const recreateInitialHamtLevel = async (links: PBLink[]): Promise<Bucket<any>> => {
-  const bucket = createHAMT<any>({
-    hashFn: hamtHashFn,
-    bits: hamtBucketBits
-  })
-
-  // populate sub bucket but do not recurse as we do not want to load the whole shard
-  await Promise.all(
-    links.map(async link => {
-      const linkName = (link.Name ?? '')
-
-      if (linkName.length === 2) {
-        const pos = parseInt(linkName, 16)
-        const subBucket = new Bucket({
-          hash: bucket._options.hash,
-          bits: bucket._options.bits
-        }, bucket, pos)
-
-        bucket._putObjectAt(pos, subBucket)
-        return
-      }
-
-      await bucket.put(linkName.substring(2), {
-        size: link.Tsize,
-        cid: link.Hash
-      })
-    })
-  )
-
-  return bucket
-}
-
-export const addLinksToHamtBucket = async (blockstore: Blockstore, links: PBLink[], bucket: Bucket<any>, rootBucket: Bucket<any>, options: AbortOptions): Promise<void> => {
-  await Promise.all(
-    links.map(async link => {
-      const linkName = (link.Name ?? '')
-
-      if (linkName.length === 2) {
-        log('Populating sub bucket', linkName)
-        const pos = parseInt(linkName, 16)
-        const block = await blockstore.get(link.Hash, options)
-        const node = dagPB.decode(block)
-
-        const subBucket = new Bucket({
-          hash: rootBucket._options.hash,
-          bits: rootBucket._options.bits
-        }, bucket, pos)
-        bucket._putObjectAt(pos, subBucket)
-
-        await addLinksToHamtBucket(blockstore, node.Links, subBucket, rootBucket, options)
-        return
-      }
-
-      await rootBucket.put(linkName.substring(2), {
-        size: link.Tsize,
-        cid: link.Hash
-      })
-    })
-  )
 }
 
 export const toPrefix = (position: number): string => {
@@ -144,118 +32,6 @@ export const toPrefix = (position: number): string => {
     .toUpperCase()
     .padStart(2, '0')
     .substring(0, 2)
-}
-
-export interface HamtPathSegment {
-  bucket?: Bucket<any>
-  prefix?: string
-  node?: PBNode
-  cid?: CID
-  size?: number
-}
-
-export const generatePath = async (root: Directory, name: string, blockstore: Blockstore, options: AbortOptions): Promise<HamtPathSegment[]> => {
-  // start at the root bucket and descend, loading nodes as we go
-  const rootBucket = await recreateInitialHamtLevel(root.node.Links)
-  const position = await rootBucket._findNewBucketAndPos(name)
-  const path: HamtPathSegment[] = [{
-    bucket: position.bucket,
-    prefix: toPrefix(position.pos)
-  }]
-  let currentBucket = position.bucket
-
-  while (currentBucket !== rootBucket) {
-    path.push({
-      bucket: currentBucket,
-      prefix: toPrefix(currentBucket._posAtParent)
-    })
-
-    if (currentBucket._parent == null) {
-      break
-    }
-
-    currentBucket = currentBucket._parent
-  }
-
-  // add the root bucket to the path
-  path.push({
-    bucket: rootBucket,
-    node: root.node
-  })
-
-  path.reverse()
-
-  // load PbNode for each path segment
-  for (let i = 1; i < path.length; i++) {
-    const segment = path[i]
-    const previousSegment = path[i - 1]
-
-    if (previousSegment.node == null) {
-      throw new Error('Could not generate HAMT path')
-    }
-
-    // find prefix in links
-    const link = previousSegment.node.Links
-      .filter(link => (link.Name ?? '').substring(0, 2) === segment.prefix)
-      .pop()
-
-    // entry was not in shard
-    if (link == null) {
-      // reached bottom of tree, file will be added to the current bucket
-      log(`Link ${segment.prefix}${name} will be added`)
-      // return path
-      continue
-    }
-
-    const linkName = link.Name ?? ''
-
-    // found entry
-    if (linkName === `${segment.prefix}${name}`) {
-      log(`Link ${segment.prefix}${name} will be replaced`)
-      // file already existed, file will be added to the current bucket
-      // return path
-      continue
-    }
-
-    // found subshard
-    log(`Found subshard ${segment.prefix}`)
-    const block = await blockstore.get(link.Hash)
-    const node = segment.node = dagPB.decode(block)
-
-    // subshard hasn't been loaded, descend to the next level of the HAMT
-    if (path[i + 1] == null) {
-      log(`Loaded new subshard ${segment.prefix}`)
-
-      if (segment.bucket == null || segment.prefix == null) {
-        throw new Error('Shard was invalid')
-      }
-
-      await recreateHamtLevel(blockstore, node.Links, rootBucket, segment.bucket, parseInt(segment.prefix, 16), options)
-      const position = await rootBucket._findNewBucketAndPos(name)
-
-      // i--
-      path.push({
-        bucket: position.bucket,
-        prefix: toPrefix(position.pos),
-        node
-      })
-
-      continue
-    }
-
-    if (segment.bucket == null) {
-      throw new Error('Shard was invalid')
-    }
-
-    // add intermediate links to bucket
-    await addLinksToHamtBucket(blockstore, node.Links, segment.bucket, rootBucket, options)
-  }
-
-  await rootBucket.put(name, true)
-
-  path.reverse()
-
-  return path
 }
 
 export interface CreateShardOptions {
@@ -291,4 +67,142 @@ export const createShard = async (blockstore: Blockstore, contents: Array<{ name
   }
 
   return res
+}
+
+export interface HAMTPath {
+  prefix: string
+  children: SparseArray
+  node: dagPB.PBNode
+}
+
+export const updateShardedDirectory = async (path: HAMTPath[], blockstore: Blockstore, options: PersistOptions): Promise<{ cid: CID, node: dagPB.PBNode }> => {
+  // persist any metadata on the shard root
+  const shardRoot = UnixFS.unmarshal(path[0].node.Data ?? new Uint8Array(0))
+
+  // this is always the same
+  const fanout = BigInt(Math.pow(2, hamtBucketBits))
+
+  // start from the leaf and ascend to the root
+  path.reverse()
+
+  let cid: CID | undefined
+  let node: dagPB.PBNode | undefined
+
+  for (let i = 0; i < path.length; i++) {
+    const isRoot = i === path.length - 1
+    const segment = path[i]
+
+    // go-ipfs uses little endian, that's why we have to
+    // reverse the bit field before storing it
+    const data = Uint8Array.from(segment.children.bitField().reverse())
+    const dir = new UnixFS({
+      type: 'hamt-sharded-directory',
+      data,
+      fanout,
+      hashType: hamtHashCode
+    })
+
+    if (isRoot) {
+      dir.mtime = shardRoot.mtime
+      dir.mode = shardRoot.mode
+    }
+
+    node = {
+      Data: dir.marshal(),
+      Links: segment.node.Links
+    }
+
+    const block = dagPB.encode(dagPB.prepare(node))
+
+    cid = await persist(block, blockstore, options)
+
+    if (!isRoot) {
+      // update link in parent sub-shard
+      const nextSegment = path[i + 1]
+
+      if (nextSegment == null) {
+        throw new Error('Was not operating on shard root but also had no parent?')
+      }
+
+      log('updating link in parent sub-shard with prefix %s', nextSegment.prefix)
+
+      nextSegment.node.Links = nextSegment.node.Links.filter(l => l.Name !== nextSegment.prefix)
+      nextSegment.node.Links.push({
+        Name: nextSegment.prefix,
+        Hash: cid,
+        Tsize: segment.node.Links.reduce((acc, curr) => acc + (curr.Tsize ?? 0), block.byteLength)
+      })
+    }
+  }
+
+  if (cid == null || node == null) {
+    throw new Error('Noting persisted')
+  }
+
+  return { cid, node }
+}
+
+export const recreateShardedDirectory = async (cid: CID, fileName: string, blockstore: Blockstore, options: AbortOptions): Promise<{ path: HAMTPath[], hash: InfiniteHash }> => {
+  const wrapped = wrapHash(hamtHashFn)
+  const hash = wrapped(uint8ArrayFromString(fileName))
+  const path: HAMTPath[] = []
+
+  // descend the HAMT, loading each layer as we head towards the target child
+  while (true) {
+    const block = await blockstore.get(cid, options)
+    const node = dagPB.decode(block)
+    const children = new SparseArray()
+    const index = await hash.take(hamtBucketBits)
+    const prefix = toPrefix(index)
+
+    path.push({
+      prefix,
+      children,
+      node
+    })
+
+    let childLink: dagPB.PBLink | undefined
+
+    // update sparsearray child layout - the bitfield is used as the data field for the
+    // intermediate DAG node so this is required to generate consistent hashes
+    for (const link of node.Links) {
+      const linkName = link.Name ?? ''
+
+      if (linkName.length < 2) {
+        throw new Error('Invalid HAMT - link name was too short')
+      }
+
+      const position = parseInt(linkName.substring(0, 2), 16)
+      children.set(position, true)
+
+      // we found the child we are looking for
+      if (linkName.startsWith(prefix)) {
+        childLink = link
+      }
+    }
+
+    if (childLink == null) {
+      log('no link found with prefix %s for %s', prefix, fileName)
+      // hash.untake(hamtBucketBits)
+      break
+    }
+
+    const linkName = childLink.Name ?? ''
+
+    if (linkName.length < 2) {
+      throw new Error('Invalid HAMT - link name was too short')
+    }
+
+    if (linkName.length === 2) {
+      // found sub-shard
+      cid = childLink.Hash
+      log('descend into sub-shard with prefix %s', linkName)
+
+      continue
+    }
+
+    break
+  }
+
+  return { path, hash }
 }

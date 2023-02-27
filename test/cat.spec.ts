@@ -7,7 +7,6 @@ import { unixfs, UnixFS } from '../src/index.js'
 import { MemoryBlockstore } from 'blockstore-core'
 import toBuffer from 'it-to-buffer'
 import drain from 'it-drain'
-import { importDirectory, importBytes } from 'ipfs-unixfs-importer'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 import { smallFile } from './fixtures/files.js'
 
@@ -21,12 +20,11 @@ describe('cat', () => {
 
     fs = unixfs({ blockstore })
 
-    const imported = await importDirectory({ path: 'empty' }, blockstore)
-    emptyDirCid = imported.cid
+    emptyDirCid = await fs.addDirectory()
   })
 
   it('reads a small file', async () => {
-    const { cid } = await importBytes(smallFile, blockstore)
+    const cid = await fs.addBytes(smallFile)
     const bytes = await toBuffer(fs.cat(cid))
 
     expect(bytes).to.equalBytes(smallFile)
@@ -34,7 +32,7 @@ describe('cat', () => {
 
   it('reads a file with an offset', async () => {
     const offset = 10
-    const { cid } = await importBytes(smallFile, blockstore)
+    const cid = await fs.addBytes(smallFile)
     const bytes = await toBuffer(fs.cat(cid, {
       offset
     }))
@@ -44,7 +42,7 @@ describe('cat', () => {
 
   it('reads a file with a length', async () => {
     const length = 10
-    const { cid } = await importBytes(smallFile, blockstore)
+    const cid = await fs.addBytes(smallFile)
     const bytes = await toBuffer(fs.cat(cid, {
       length
     }))
@@ -55,7 +53,7 @@ describe('cat', () => {
   it('reads a file with an offset and a length', async () => {
     const offset = 2
     const length = 5
-    const { cid } = await importBytes(smallFile, blockstore)
+    const cid = await fs.addBytes(smallFile)
     const bytes = await toBuffer(fs.cat(cid, {
       offset,
       length
@@ -70,9 +68,8 @@ describe('cat', () => {
   })
 
   it('reads file from inside a sharded directory', async () => {
-    const content = Uint8Array.from([0, 1, 2, 3, 4])
     const dirCid = await createShardedDirectory(blockstore)
-    const { cid: fileCid } = await importBytes(content, blockstore)
+    const fileCid = await fs.addBytes(smallFile)
     const path = 'new-file.txt'
 
     const updatedCid = await fs.cp(fileCid, dirCid, path)
@@ -81,6 +78,6 @@ describe('cat', () => {
       path
     }))
 
-    expect(bytes).to.deep.equal(content)
+    expect(bytes).to.deep.equal(smallFile)
   })
 })

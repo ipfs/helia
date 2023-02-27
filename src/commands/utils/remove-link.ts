@@ -4,10 +4,9 @@ import type { CID, Version } from 'multiformats/cid'
 import { logger } from '@libp2p/logger'
 import { UnixFS } from 'ipfs-unixfs'
 import {
-  generatePath,
-  HamtPathSegment,
-  updateHamtDirectory,
-  UpdateHamtDirectoryOptions
+  recreateShardedDirectory,
+  UpdateHamtDirectoryOptions,
+  updateShardedDirectory
 } from './hamt-utils.js'
 import type { PBNode } from '@ipld/dag-pb'
 import type { Blockstore } from 'interface-blockstore'
@@ -77,131 +76,60 @@ const removeFromDirectory = async (parent: Directory, name: string, blockstore: 
 }
 
 const removeFromShardedDirectory = async (parent: Directory, name: string, blockstore: Blockstore, options: UpdateHamtDirectoryOptions): Promise<{ cid: CID, node: PBNode }> => {
-  const path = await generatePath(parent, name, blockstore, options)
+  const { path } = await recreateShardedDirectory(parent.cid, name, blockstore, options)
+  const finalSegment = path[path.length - 1]
 
-  // remove file from root bucket
-  const rootBucket = path[path.length - 1].bucket
-
-  if (rootBucket == null) {
-    throw new Error('Could not generate HAMT path')
+  if (finalSegment == null) {
+    throw new Error('Invalid HAMT, could not generate path')
   }
 
-  await rootBucket.del(name)
+  const linkName = finalSegment.node.Links.filter(l => (l.Name ?? '').substring(2) === name).map(l => l.Name).pop()
 
-  // update all nodes in the shard path
-  return await updateShard(path, name, blockstore, options)
-}
+  if (linkName == null) {
+    throw new Error('File not found')
+  }
 
-/**
- * The `path` param is a list of HAMT path segments starting with th
- */
-const updateShard = async (path: HamtPathSegment[], name: string, blockstore: Blockstore, options: UpdateHamtDirectoryOptions): Promise<{ node: PBNode, cid: CID }> => {
-  const fileName = `${path[0].prefix}${name}`
+  const prefix = linkName.substring(0, 2)
+  const index = parseInt(prefix, 16)
 
-  // skip first path segment as it is the file to remove
-  for (let i = 1; i < path.length; i++) {
-    const lastPrefix = path[i - 1].prefix
-    const segment = path[i]
+  // remove the file from the shard
+  finalSegment.node.Links = finalSegment.node.Links.filter(link => link.Name !== linkName)
+  finalSegment.children.unset(index)
 
-    if (segment.node == null) {
-      throw new InvalidParametersError('Path segment had no associated PBNode')
-    }
+  if (finalSegment.node.Links.length === 1) {
+    // replace the subshard with the last remaining file in the parent
+    while (true) {
+      if (path.length === 1) {
+        break
+      }
 
-    const link = segment.node.Links
-      .find(link => (link.Name ?? '').substring(0, 2) === lastPrefix)
+      const segment = path[path.length - 1]
 
-    if (link == null) {
-      throw new InvalidParametersError(`No link found with prefix ${lastPrefix} for file ${name}`)
-    }
+      if (segment == null || segment.node.Links.length > 1) {
+        break
+      }
 
-    if (link.Name == null) {
-      throw new InvalidParametersError(`${lastPrefix} link had no name`)
-    }
+      // remove final segment
+      path.pop()
 
-    if (link.Name === fileName) {
-      log(`removing existing link ${link.Name}`)
+      const nextSegment = path[path.length - 1]
 
-      const links = segment.node.Links.filter((nodeLink) => {
-        return nodeLink.Name !== link.Name
+      if (nextSegment == null) {
+        break
+      }
+
+      const link = segment.node.Links[0]
+
+      nextSegment.node.Links = nextSegment.node.Links.filter(l => !(l.Name ?? '').startsWith(nextSegment.prefix))
+      nextSegment.node.Links.push({
+        Hash: link.Hash,
+        Name: `${nextSegment.prefix}${(link.Name ?? '').substring(2)}`,
+        Tsize: link.Tsize
       })
-
-      if (segment.bucket == null) {
-        throw new Error('Segment bucket was missing')
-      }
-
-      await segment.bucket.del(name)
-
-      const result = await updateHamtDirectory({
-        Data: segment.node.Data,
-        Links: links
-      }, blockstore, segment.bucket, options)
-
-      segment.node = result.node
-      segment.cid = result.cid
-      segment.size = result.size
-    }
-
-    if (link.Name === lastPrefix) {
-      log(`updating subshard with prefix ${lastPrefix}`)
-
-      const lastSegment = path[i - 1]
-
-      if (lastSegment.node?.Links.length === 1) {
-        log(`removing subshard for ${lastPrefix}`)
-
-        // convert subshard back to normal file entry
-        const link = lastSegment.node.Links[0]
-        link.Name = `${lastPrefix}${(link.Name ?? '').substring(2)}`
-
-        // remove existing prefix
-        segment.node.Links = segment.node.Links.filter((link) => {
-          return link.Name !== lastPrefix
-        })
-
-        // add new child
-        segment.node.Links.push(link)
-      } else {
-        // replace subshard entry
-        log(`replacing subshard for ${lastPrefix}`)
-
-        // remove existing prefix
-        segment.node.Links = segment.node.Links.filter((link) => {
-          return link.Name !== lastPrefix
-        })
-
-        if (lastSegment.cid == null) {
-          throw new Error('Did not persist previous segment')
-        }
-
-        // add new child
-        segment.node.Links.push({
-          Name: lastPrefix,
-          Hash: lastSegment.cid,
-          Tsize: lastSegment.size
-        })
-      }
-
-      if (segment.bucket == null) {
-        throw new Error('Segment bucket was missing')
-      }
-
-      const result = await updateHamtDirectory(segment.node, blockstore, segment.bucket, options)
-      segment.node = result.node
-      segment.cid = result.cid
-      segment.size = result.size
     }
   }
 
-  const rootSegment = path[path.length - 1]
-
-  if (rootSegment == null || rootSegment.cid == null || rootSegment.node == null) {
-    throw new InvalidParametersError('Failed to update shard')
-  }
-
-  return {
-    cid: rootSegment.cid,
-    node: rootSegment.node
-  }
+  return await updateShardedDirectory(path, blockstore, options)
 }
 
 const convertToFlatDirectory = async (parent: Directory, blockstore: Blockstore, options: RmLinkOptions): Promise<RemoveLinkResult> => {

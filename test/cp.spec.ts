@@ -8,9 +8,9 @@ import type { Blockstore } from 'interface-blockstore'
 import { unixfs, UnixFS } from '../src/index.js'
 import { MemoryBlockstore } from 'blockstore-core'
 import toBuffer from 'it-to-buffer'
-import { importDirectory, importBytes } from 'ipfs-unixfs-importer'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 import first from 'it-first'
+import { createSubshardedDirectory } from './fixtures/create-subsharded-directory.js'
 
 describe('cp', () => {
   let blockstore: Blockstore
@@ -22,8 +22,7 @@ describe('cp', () => {
 
     fs = unixfs({ blockstore })
 
-    const imported = await importDirectory({ path: 'empty' }, blockstore)
-    emptyDirCid = imported.cid
+    emptyDirCid = await fs.addDirectory()
   })
 
   it('refuses to copy files without a source', async () => {
@@ -48,7 +47,7 @@ describe('cp', () => {
 
   it('refuses to copy files to an unreadable node', async () => {
     const hash = identity.digest(uint8ArrayFromString('derp'))
-    const { cid: source } = await importBytes(Uint8Array.from([0, 1, 3, 4]), blockstore)
+    const source = await fs.addBytes(Uint8Array.from([0, 1, 3, 4]))
     const target = CID.createV1(identity.code, hash)
 
     await expect(fs.cp(source, target, 'foo')).to.eventually.be.rejected
@@ -65,7 +64,7 @@ describe('cp', () => {
 
   it('refuses to copy files to an existing file', async () => {
     const path = 'path'
-    const { cid: source } = await importBytes(Uint8Array.from([0, 1, 3, 4]), blockstore)
+    const source = await fs.addBytes(Uint8Array.from([0, 1, 3, 4]))
     const target = await fs.cp(source, emptyDirCid, path)
 
     await expect(fs.cp(source, target, path)).to.eventually.be.rejected
@@ -80,7 +79,7 @@ describe('cp', () => {
   it('copies a file to new location', async () => {
     const data = Uint8Array.from([0, 1, 3, 4])
     const path = 'path'
-    const { cid: source } = await importBytes(data, blockstore)
+    const source = await fs.addBytes(data)
     const dirCid = await fs.cp(source, emptyDirCid, path)
 
     const bytes = await toBuffer(fs.cat(dirCid, {
@@ -134,7 +133,7 @@ describe('cp', () => {
   it('copies a file from a normal directory to a sharded directory', async () => {
     const shardedDirCid = await createShardedDirectory(blockstore)
     const path = `file-${Math.random()}.txt`
-    const { cid: fileCid } = await importBytes(Uint8Array.from([0, 1, 2, 3]), blockstore, {
+    const fileCid = await fs.addBytes(Uint8Array.from([0, 1, 3, 4]), {
       rawLeaves: false
     })
 
@@ -165,5 +164,19 @@ describe('cp', () => {
     await expect(fs.cp(file.cid, shardedDirCid, file.name, {
       force: true
     })).to.eventually.be.ok()
+  })
+
+  it('copies a file to a sharded directory that creates a subshard', async () => {
+    const {
+      containingDirCid,
+      fileName,
+      importerCid
+    } = await createSubshardedDirectory(blockstore)
+
+    // adding a file to the importer CID should result in the shard with a subshard
+    const fileCid = CID.parse('bafkreiaixnpf23vkyecj5xqispjq5ubcwgsntnnurw2bjby7khe4wnjihu')
+    const finalDirCid = await fs.cp(fileCid, importerCid, fileName)
+
+    expect(finalDirCid).to.eql(containingDirCid, 'adding a file to the imported dir did not result in the same CID')
   })
 })

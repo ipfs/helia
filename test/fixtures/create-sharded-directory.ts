@@ -9,7 +9,7 @@ export async function createShardedDirectory (blockstore: Blockstore, files = 10
     for (let i = 0; i < files; i++) {
       yield {
         path: `./file-${i}`,
-        content: Uint8Array.from([0, 1, 2, 3, 4, 5, i])
+        content: Uint8Array.from([0, 1, 2, 3, 4])
       }
     }
   }()), blockstore, {

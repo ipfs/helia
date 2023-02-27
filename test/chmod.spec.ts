@@ -5,7 +5,6 @@ import type { Blockstore } from 'interface-blockstore'
 import { MemoryBlockstore } from 'blockstore-core'
 import { UnixFS, unixfs } from '../src/index.js'
 import type { CID } from 'multiformats/cid'
-import { importDirectory, importBytes } from 'ipfs-unixfs-importer'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 import { smallFile } from './fixtures/files.js'
 
@@ -19,12 +18,11 @@ describe('chmod', () => {
 
     fs = unixfs({ blockstore })
 
-    const imported = await importDirectory({ path: 'empty' }, blockstore)
-    emptyDirCid = imported.cid
+    emptyDirCid = await fs.addDirectory()
   })
 
   it('should update the mode for a raw node', async () => {
-    const { cid } = await importBytes(smallFile, blockstore)
+    const cid = await fs.addBytes(smallFile)
     const originalMode = (await fs.stat(cid)).mode
     const updatedCid = await fs.chmod(cid, 0o777)
 
@@ -34,7 +32,7 @@ describe('chmod', () => {
   })
 
   it('should update the mode for a file', async () => {
-    const { cid } = await importBytes(smallFile, blockstore, {
+    const cid = await fs.addBytes(smallFile, {
       rawLeaves: false
     })
     const originalMode = (await fs.stat(cid)).mode
@@ -65,7 +63,7 @@ describe('chmod', () => {
 
   it('should update mode recursively', async () => {
     const path = 'path'
-    const { cid } = await importBytes(smallFile, blockstore)
+    const cid = await fs.addBytes(smallFile)
     const dirCid = await fs.cp(cid, emptyDirCid, path)
     const originalMode = (await fs.stat(dirCid, {
       path

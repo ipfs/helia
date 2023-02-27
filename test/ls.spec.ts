@@ -6,7 +6,6 @@ import all from 'it-all'
 import type { Blockstore } from 'interface-blockstore'
 import { unixfs, UnixFS } from '../src/index.js'
 import { MemoryBlockstore } from 'blockstore-core'
-import { importDirectory, importBytes } from 'ipfs-unixfs-importer'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 
 describe('ls', () => {
@@ -19,8 +18,7 @@ describe('ls', () => {
 
     fs = unixfs({ blockstore })
 
-    const imported = await importDirectory({ path: 'empty' }, blockstore)
-    emptyDirCid = imported.cid
+    emptyDirCid = await fs.addDirectory()
   })
 
   it('should require a path', async () => {
@@ -31,7 +29,7 @@ describe('ls', () => {
   it('lists files in a directory', async () => {
     const path = 'path'
     const data = Uint8Array.from([0, 1, 2, 3])
-    const { cid: fileCid } = await importBytes(data, blockstore)
+    const fileCid = await fs.addBytes(data)
     const dirCid = await fs.cp(fileCid, emptyDirCid, path)
     const files = await all(fs.ls(dirCid))
 
@@ -46,7 +44,7 @@ describe('ls', () => {
   it('lists a file', async () => {
     const path = 'path'
     const data = Uint8Array.from([0, 1, 2, 3])
-    const { cid: fileCid } = await importBytes(data, blockstore, {
+    const fileCid = await fs.addBytes(data, {
       rawLeaves: false
     })
     const dirCid = await fs.cp(fileCid, emptyDirCid, path)
@@ -64,7 +62,7 @@ describe('ls', () => {
   it('lists a raw node', async () => {
     const path = 'path'
     const data = Uint8Array.from([0, 1, 2, 3])
-    const { cid: fileCid } = await importBytes(data, blockstore)
+    const fileCid = await fs.addBytes(data)
     const dirCid = await fs.cp(fileCid, emptyDirCid, path)
     const files = await all(fs.ls(dirCid, {
       path
@@ -109,7 +107,7 @@ describe('ls', () => {
     const dirName = `subdir-${Math.random()}`
     const fileName = `small-file-${Math.random()}.txt`
 
-    const { cid: fileCid } = await importBytes(Uint8Array.from([0, 1, 2, 3]), blockstore)
+    const fileCid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
     const containingDirectoryCid = await fs.cp(fileCid, emptyDirCid, fileName)
     const updatedShardCid = await fs.cp(containingDirectoryCid, shardedDirCid, dirName)
 

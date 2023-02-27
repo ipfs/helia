@@ -8,7 +8,7 @@ import { cidToDirectory } from './cid-to-directory.js'
 import { cidToPBLink } from './cid-to-pblink.js'
 import type { Blockstore } from 'interface-blockstore'
 
-const log = logger('helia:unixfs:components:utils:add-link')
+const log = logger('helia:unixfs:components:utils:resolve')
 
 export interface Segment {
   name: string
@@ -33,11 +33,11 @@ export interface ResolveResult {
 }
 
 export async function resolve (cid: CID, path: string | undefined, blockstore: Blockstore, options: AbortOptions): Promise<ResolveResult> {
-  log('resolve "%s" under %c', path, cid)
-
   if (path == null || path === '') {
     return { cid }
   }
+
+  log('resolve "%s" under %c', path, cid)
 
   const parts = path.split('/').filter(Boolean)
   const segments: Segment[] = [{
@@ -49,6 +49,8 @@ export async function resolve (cid: CID, path: string | undefined, blockstore: B
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i]
     const result = await exporter(cid, blockstore, options)
+
+    log('resolving "%s"', part, result)
 
     if (result.type === 'file') {
       if (i < parts.length - 1) {
@@ -62,6 +64,7 @@ export async function resolve (cid: CID, path: string | undefined, blockstore: B
       for await (const entry of result.content()) {
         if (entry.name === part) {
           dirCid = entry.cid
+          break
         }
       }
 
@@ -80,6 +83,8 @@ export async function resolve (cid: CID, path: string | undefined, blockstore: B
       throw new InvalidParametersError('Could not resolve path')
     }
   }
+
+  log('resolved %s to %c', path, cid)
 
   return {
     cid,

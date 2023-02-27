@@ -6,7 +6,6 @@ import { unixfs, UnixFS } from '../src/index.js'
 import { MemoryBlockstore } from 'blockstore-core'
 import type { CID } from 'multiformats/cid'
 import * as dagPb from '@ipld/dag-pb'
-import { importDirectory, importBytes, importFile } from 'ipfs-unixfs-importer'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 import { largeFile, smallFile } from './fixtures/files.js'
 
@@ -22,8 +21,7 @@ describe('stat', function () {
 
     fs = unixfs({ blockstore })
 
-    const imported = await importDirectory({ path: 'empty' }, blockstore)
-    emptyDirCid = imported.cid
+    emptyDirCid = await fs.addDirectory()
   })
 
   it('stats an empty directory', async () => {
@@ -36,7 +34,7 @@ describe('stat', function () {
   })
 
   it('computes how much of the DAG is local', async () => {
-    const { cid: largeFileCid } = await importBytes(largeFile, blockstore)
+    const largeFileCid = await fs.addBytes(largeFile)
     const block = await blockstore.get(largeFileCid)
     const node = dagPb.decode(block)
 
@@ -61,7 +59,7 @@ describe('stat', function () {
   })
 
   it('stats a raw node', async () => {
-    const { cid: fileCid } = await importBytes(smallFile, blockstore)
+    const fileCid = await fs.addBytes(smallFile)
 
     await expect(fs.stat(fileCid)).to.eventually.include({
       fileSize: BigInt(smallFile.length),
@@ -72,7 +70,7 @@ describe('stat', function () {
   })
 
   it('stats a small file', async () => {
-    const { cid: fileCid } = await importBytes(smallFile, blockstore, {
+    const fileCid = await fs.addBytes(smallFile, {
       cidVersion: 0,
       rawLeaves: false
     })
@@ -86,7 +84,7 @@ describe('stat', function () {
   })
 
   it('stats a large file', async () => {
-    const { cid } = await importBytes(largeFile, blockstore)
+    const cid = await fs.addBytes(largeFile)
 
     await expect(fs.stat(cid)).to.eventually.include({
       fileSize: BigInt(largeFile.length),
@@ -98,10 +96,10 @@ describe('stat', function () {
 
   it('should stat file with mode', async () => {
     const mode = 0o644
-    const { cid } = await importFile({
+    const cid = await fs.addFile({
       content: smallFile,
       mode
-    }, blockstore)
+    })
 
     await expect(fs.stat(cid)).to.eventually.include({
       mode
@@ -113,10 +111,10 @@ describe('stat', function () {
       secs: 5n,
       nsecs: 0
     }
-    const { cid } = await importFile({
+    const cid = await fs.addFile({
       content: smallFile,
       mtime
-    }, blockstore)
+    })
 
     await expect(fs.stat(cid)).to.eventually.deep.include({
       mtime
@@ -186,7 +184,7 @@ describe('stat', function () {
 
   it('stats a file inside a sharded directory', async () => {
     const shardedDirCid = await createShardedDirectory(blockstore)
-    const { cid: fileCid } = await importBytes(Uint8Array.from([0, 1, 2, 3]), blockstore, {
+    const fileCid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3]), {
       rawLeaves: false
     })
     const fileName = `small-file-${Math.random()}.txt`

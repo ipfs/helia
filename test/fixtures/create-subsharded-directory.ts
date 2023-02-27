@@ -1,6 +1,6 @@
 import type { Blockstore } from 'interface-blockstore'
-import { importBytes, importer } from 'ipfs-unixfs-importer'
-import { CID } from 'multiformats/cid'
+import { importer } from 'ipfs-unixfs-importer'
+import type { CID } from 'multiformats/cid'
 import { unixfs } from '../../src/index.js'
 import * as dagPb from '@ipld/dag-pb'
 import last from 'it-last'
@@ -11,9 +11,8 @@ export async function createSubshardedDirectory (blockstore: Blockstore, depth: 
   fileName: string
 }> {
   const fs = unixfs({ blockstore })
-
-  const { cid: fileCid } = await importBytes(Uint8Array.from([0, 1, 2, 3, 4]), blockstore)
-  let containingDirCid = CID.parse('bafybeiczsscdsbs7ffqz55asqdf3smv6klcw3gofszvwlyarci47bgf354')
+  const fileCid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
+  let containingDirCid = await fs.addDirectory()
   let fileName: string | undefined
   let count = 0
 
