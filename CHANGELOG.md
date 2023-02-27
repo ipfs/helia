@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/ipfs/helia-unixfs/compare/v1.0.3...v1.0.4) (2023-02-27)
+
+
+### Bug Fixes
+
+* simplify shard handling ([#5](https://github.com/ipfs/helia-unixfs/issues/5)) ([52d4786](https://github.com/ipfs/helia-unixfs/commit/52d4786831c3b2b60322de562b752ecfbc8791bb))
+
 ## [1.0.3](https://github.com/ipfs/helia-unixfs/compare/v1.0.2...v1.0.3) (2023-02-25)
 
 

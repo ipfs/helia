@@ -1,6 +1,6 @@
 {
   "name": "@helia/unixfs",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A Helia-compatible wrapper for UnixFS",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia-unixfs#readme",
