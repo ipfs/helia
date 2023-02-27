@@ -6,7 +6,7 @@
  * @example
  *
  * ```typescript
- * import { gossipsub } from '@chainsafe/libp2p'
+ * import { gossipsub } from '@chainsafe/libp2p-gossipsub'
  * import { kadDHT } from '@libp2p/kad-dht'
  * import { createLibp2p } from 'libp2p'
  * import { createHelia } from 'helia'
@@ -31,7 +31,7 @@
  *   //.. other options
  * })
  * const name = ipns(helia, [
- *   dht(helia)
+ *   dht(helia),
  *   pubsub(helia)
  * ])
  *
