@@ -11,10 +11,12 @@ All three implementations use on-disk block/datastores to ensure a reasonable ba
 
 Warning! It can take a long time with realistic pinset sizes - on the order of a whole day.
 
+You can speed things up by removing js-ipfs from the `impls` array.
+
 To run:
 
 1. Add `benchmarks/*` to the `workspaces` entry in the root `package.json` of this repo
-3. Run
+2. Run
     ```console
     $ npm run reset
     $ npm i
