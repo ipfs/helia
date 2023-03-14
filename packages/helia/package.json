@@ -147,7 +147,7 @@
     "cborg": "^1.10.0",
     "datastore-core": "^8.0.4",
     "interface-blockstore": "^4.0.1",
-    "interface-datastore": "^7.0.3",
+    "interface-datastore": "^8.0.0",
     "interface-store": "^3.0.4",
     "ipfs-bitswap": "^16.0.0",
     "it-all": "^2.0.0",
