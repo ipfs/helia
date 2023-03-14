@@ -1,3 +1,10 @@
+## [1.0.5](https://github.com/ipfs/helia-unixfs/compare/v1.0.4...v1.0.5) (2023-03-14)
+
+
+### Bug Fixes
+
+* align defaults with filecoin ([#6](https://github.com/ipfs/helia-unixfs/issues/6)) ([a6bd198](https://github.com/ipfs/helia-unixfs/commit/a6bd1983bd7baac21af3de6fa269219f52664cde))
+
 ## [1.0.4](https://github.com/ipfs/helia-unixfs/compare/v1.0.3...v1.0.4) (2023-02-27)
 
 
