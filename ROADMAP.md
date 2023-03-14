@@ -6,7 +6,7 @@ Our goal is a high-quality implementation of the IPFS protocol in TypeScript/Jav
 
 ```
 Created: 2022-10-26
-Updated: 2022-01-10
+Updated: 2023-03-07
 Status: Draft
 Notes: Maintainers have aligned on this roadmap. Please add any feedback or questions in:
 https://github.com/ipfs/helia/issues/5
@@ -56,7 +56,13 @@ Tracking issue: https://github.com/ipfs/helia/issues/2
 
 #### Drive Adoption
 
-After Helia is functional and users can adopt it, Protocol Labs EngRes ceases maintaining the legacy js-ipfs project.
+After Helia is functional and users can adopt it, Protocol Labs EngRes ceases maintaining the legacy js-ipfs project.  Issue for tracking js-ipfs deprecation with roadsigns to Helia: to be created.
+
+Port over examples from js-ipfs-examples to helia-examples to help with onramping: https://github.com/ipfs/helia/issues/29
+
+Demonstrate a practical example of Helia in a service worker as a fallback for HTTP gateways: https://github.com/ipfs/in-web-browsers/issues/207
+
+Setup mechanism for measuring adoption: https://github.com/ipfs/helia/issues/41
 
 ### Q3
 
