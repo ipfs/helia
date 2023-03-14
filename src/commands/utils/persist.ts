@@ -1,7 +1,7 @@
 import { CID } from 'multiformats/cid'
 import * as dagPb from '@ipld/dag-pb'
 import { sha256 } from 'multiformats/hashes/sha2'
-import type { Blockstore } from 'interface-blockstore'
+import type { Blockstore } from 'ipfs-unixfs-importer'
 import type { BlockCodec } from 'multiformats/codecs/interface'
 import type { Version as CIDVersion } from 'multiformats/cid'
 

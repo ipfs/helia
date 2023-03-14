@@ -38,12 +38,12 @@ describe('stat', function () {
     const block = await blockstore.get(largeFileCid)
     const node = dagPb.decode(block)
 
-    expect(node.Links).to.have.lengthOf(2)
+    expect(node.Links).to.have.lengthOf(5)
 
     await expect(fs.stat(largeFileCid)).to.eventually.include({
-      fileSize: 490668n,
-      blocks: 3,
-      localDagSize: 490776n
+      fileSize: 5242880n,
+      blocks: 6,
+      localDagSize: 5243139n
     })
 
     // remove one of the blocks so we now have an incomplete DAG
@@ -51,10 +51,10 @@ describe('stat', function () {
 
     // block count and local file/dag sizes should be smaller
     await expect(fs.stat(largeFileCid)).to.eventually.include({
-      fileSize: 490668n,
-      blocks: 2,
-      localFileSize: 228524n,
-      localDagSize: 228632n
+      fileSize: 5242880n,
+      blocks: 5,
+      localFileSize: 4194304n,
+      localDagSize: 4194563n
     })
   })
 
@@ -88,8 +88,8 @@ describe('stat', function () {
 
     await expect(fs.stat(cid)).to.eventually.include({
       fileSize: BigInt(largeFile.length),
-      dagSize: 490682n,
-      blocks: 3,
+      dagSize: 5242907n,
+      blocks: 6,
       type: 'file'
     })
   })
