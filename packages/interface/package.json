@@ -155,7 +155,7 @@
     "@libp2p/interface-peer-id": "^2.0.1",
     "@libp2p/interfaces": "^3.3.1",
     "@multiformats/multiaddr": "^11.1.5",
-    "interface-blockstore": "^4.0.1",
+    "interface-blockstore": "^5.0.0",
     "interface-datastore": "^7.0.3",
     "multiformats": "^11.0.1",
     "progress-events": "^1.0.0"
