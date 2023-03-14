@@ -47,6 +47,10 @@
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
     },
+    "./blocks": {
+      "types": "./dist/src/blocks.d.ts",
+      "import": "./dist/src/blocks.js"
+    },
     "./pins": {
       "types": "./dist/src/pins.d.ts",
       "import": "./dist/src/pins.js"
@@ -154,9 +158,8 @@
     "@libp2p/interface-libp2p": "^1.1.0",
     "@libp2p/interface-peer-id": "^2.0.1",
     "@libp2p/interfaces": "^3.3.1",
-    "@multiformats/multiaddr": "^11.1.5",
-    "interface-blockstore": "^4.0.1",
-    "interface-datastore": "^7.0.3",
+    "interface-datastore": "^8.0.0",
+    "ipfs-bitswap": "^17.0.0",
     "multiformats": "^11.0.1",
     "progress-events": "^1.0.0"
   },

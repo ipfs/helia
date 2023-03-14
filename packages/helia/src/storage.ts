@@ -1,8 +1,6 @@
-import { BaseBlockstore } from 'blockstore-core'
-import merge from 'it-merge'
-import { pushable } from 'it-pushable'
 import filter from 'it-filter'
-import type { Blockstore, KeyQuery, Query } from 'interface-blockstore'
+import type { Blockstore } from 'interface-blockstore'
+import type { Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents } from '@helia/interface/blocks'
 import type { Bitswap } from 'ipfs-bitswap'
 import type { CID } from 'multiformats/cid'
 import type { AbortOptions } from '@libp2p/interfaces'
@@ -10,8 +8,15 @@ import type { AwaitIterable } from 'interface-store'
 import type { Mortice } from 'mortice'
 import createMortice from 'mortice'
 import type { Pins } from '@helia/interface/pins'
+import forEach from 'it-foreach'
+import { CustomProgressEvent, ProgressOptions } from 'progress-events'
 
-export interface BlockStorageOptions extends AbortOptions {
+export interface BlockStorageInit {
+  holdGcLock?: boolean
+  bitswap?: Bitswap
+}
+
+export interface GetOptions extends AbortOptions {
   progress?: (evt: Event) => void
 }
 
@@ -20,7 +25,7 @@ export interface BlockStorageOptions extends AbortOptions {
  * blockstore (that may be on disk, s3, or something else). If the blocks are
  * not present Bitswap will be used to fetch them from network peers.
  */
-export class BlockStorage extends BaseBlockstore implements Blockstore {
+export class BlockStorage implements Blocks {
   public lock: Mortice
   private readonly child: Blockstore
   private readonly bitswap?: Bitswap
@@ -29,21 +34,13 @@ export class BlockStorage extends BaseBlockstore implements Blockstore {
   /**
    * Create a new BlockStorage
    */
-  constructor (blockstore: Blockstore, pins: Pins, bitswap?: Bitswap) {
-    super()
-
+  constructor (blockstore: Blockstore, pins: Pins, options: BlockStorageInit = {}) {
     this.child = blockstore
-    this.bitswap = bitswap
+    this.bitswap = options.bitswap
     this.pins = pins
-    this.lock = createMortice()
-  }
-
-  async open (): Promise<void> {
-    await this.child.open()
-  }
-
-  async close (): Promise<void> {
-    await this.child.close()
+    this.lock = createMortice({
+      singleProcess: options.holdGcLock
+    })
   }
 
   unwrap (): Blockstore {
@@ -53,15 +50,22 @@ export class BlockStorage extends BaseBlockstore implements Blockstore {
   /**
    * Put a block to the underlying datastore
    */
-  async put (cid: CID, block: Uint8Array, options: AbortOptions = {}): Promise<void> {
+  async put (cid: CID, block: Uint8Array, options: AbortOptions & ProgressOptions<PutBlockProgressEvents> = {}): Promise<void> {
     const releaseLock = await this.lock.readLock()
 
     try {
-      if (this.bitswap?.isStarted() === true) {
-        await this.bitswap.put(cid, block, options)
-      } else {
-        await this.child.put(cid, block, options)
+      if (await this.child.has(cid)) {
+        options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:duplicate', cid))
+        return
       }
+
+      if (this.bitswap?.isStarted() === true) {
+        options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:bitswap:notify', cid))
+        this.bitswap.notify(cid, block, options)
+      }
+
+      options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:blockstore:put', cid))
+      await this.child.put(cid, block, options)
     } finally {
       releaseLock()
     }
@@ -70,17 +74,27 @@ export class BlockStorage extends BaseBlockstore implements Blockstore {
   /**
    * Put a multiple blocks to the underlying datastore
    */
-  async * putMany (blocks: AwaitIterable<{ key: CID, value: Uint8Array }>, options: AbortOptions = {}): AsyncGenerator<{ key: CID, value: Uint8Array }, void, undefined> {
+  async * putMany (blocks: AwaitIterable<{ cid: CID, block: Uint8Array }>, options: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents> = {}): AsyncIterable<Pair> {
     const releaseLock = await this.lock.readLock()
 
     try {
-      const missingBlocks = filter(blocks, async ({ key }) => {
-        return !(await this.child.has(key))
+      const missingBlocks = filter(blocks, async ({ cid }) => {
+        const has = await this.child.has(cid)
+
+        if (has) {
+          options.onProgress?.(new CustomProgressEvent<CID>('blocks:put-many:duplicate', cid))
+        }
+
+        return !has
       })
 
-      const store = this.bitswap?.isStarted() === true ? this.bitswap : this.child
+      const notifyEach = forEach(missingBlocks, ({ cid, block }) => {
+        options.onProgress?.(new CustomProgressEvent<CID>('blocks:put-many:bitswap:notify', cid))
+        this.bitswap?.notify(cid, block, options)
+      })
 
-      yield * store.putMany(missingBlocks, options)
+      options.onProgress?.(new CustomProgressEvent('blocks:put-many:blockstore:put-many'))
+      yield * this.child.putMany(notifyEach, options)
     } finally {
       releaseLock()
     }
@@ -89,54 +103,43 @@ export class BlockStorage extends BaseBlockstore implements Blockstore {
   /**
    * Get a block by cid
    */
-  async get (cid: CID, options: BlockStorageOptions = {}): Promise<Uint8Array> {
+  async get (cid: CID, options: AbortOptions & ProgressOptions<GetBlockProgressEvents> = {}): Promise<Uint8Array> {
     const releaseLock = await this.lock.readLock()
 
     try {
-      if (!(await this.has(cid)) && this.bitswap?.isStarted() === true) {
-        return await this.bitswap?.get(cid, options)
-      } else {
-        return await this.child.get(cid, options)
+      if (this.bitswap?.isStarted() != null && !(await this.child.has(cid))) {
+        options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:bitswap:get', cid))
+        const block = await this.bitswap.want(cid, options)
+
+        options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:blockstore:put', cid))
+        await this.child.put(cid, block, options)
+
+        return block
       }
+
+      options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:blockstore:get', cid))
+      return await this.child.get(cid, options)
     } finally {
       releaseLock()
     }
   }
 
   /**
-   * Get multiple blocks back from an array of cids
+   * Get multiple blocks back from an (async) iterable of cids
    */
-  async * getMany (cids: AwaitIterable<CID>, options: BlockStorageOptions = {}): AsyncGenerator<Uint8Array, void, undefined> {
+  async * getMany (cids: AwaitIterable<CID>, options: AbortOptions & ProgressOptions<GetManyBlocksProgressEvents> = {}): AsyncIterable<Uint8Array> {
     const releaseLock = await this.lock.readLock()
 
     try {
-      const getFromBitswap = pushable<CID>({ objectMode: true })
-      const getFromChild = pushable<CID>({ objectMode: true })
-
-      void Promise.resolve().then(async () => {
-        for await (const cid of cids) {
-          if (!(await this.has(cid)) && this.bitswap?.isStarted() === true) {
-            getFromBitswap.push(cid)
-          } else {
-            getFromChild.push(cid)
-          }
+      options.onProgress?.(new CustomProgressEvent('blocks:get-many:blockstore:get-many'))
+      yield * this.child.getMany(forEach(cids, async (cid) => {
+        if (this.bitswap?.isStarted() === true && !(await this.child.has(cid))) {
+          options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:bitswap:get', cid))
+          const block = await this.bitswap.want(cid, options)
+          options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:blockstore:put', cid))
+          await this.child.put(cid, block, options)
         }
-
-        getFromBitswap.end()
-        getFromChild.end()
-      }).catch(err => {
-        getFromBitswap.throw(err)
-      })
-
-      const streams = [
-        this.child.getMany(getFromChild, options)
-      ]
-
-      if (this.bitswap?.isStarted() === true) {
-        streams.push(this.bitswap.getMany(getFromBitswap, options))
-      }
-
-      yield * merge(...streams)
+      }))
     } finally {
       releaseLock()
     }
@@ -145,7 +148,7 @@ export class BlockStorage extends BaseBlockstore implements Blockstore {
   /**
    * Delete a block from the blockstore
    */
-  async delete (cid: CID, options: AbortOptions = {}): Promise<void> {
+  async delete (cid: CID, options: AbortOptions & ProgressOptions<DeleteBlockProgressEvents> = {}): Promise<void> {
     const releaseLock = await this.lock.writeLock()
 
     try {
@@ -153,6 +156,7 @@ export class BlockStorage extends BaseBlockstore implements Blockstore {
         throw new Error('CID was pinned')
       }
 
+      options.onProgress?.(new CustomProgressEvent<CID>('blocks:delete:blockstore:delete', cid))
       await this.child.delete(cid, options)
     } finally {
       releaseLock()
@@ -162,12 +166,13 @@ export class BlockStorage extends BaseBlockstore implements Blockstore {
   /**
    * Delete multiple blocks from the blockstore
    */
-  async * deleteMany (cids: AwaitIterable<CID>, options: AbortOptions = {}): AsyncGenerator<CID, void, undefined> {
+  async * deleteMany (cids: AwaitIterable<CID>, options: AbortOptions & ProgressOptions<DeleteManyBlocksProgressEvents> = {}): AsyncIterable<CID> {
     const releaseLock = await this.lock.writeLock()
 
     try {
       const storage = this
 
+      options.onProgress?.(new CustomProgressEvent('blocks:delete-many:blockstore:delete-many'))
       yield * this.child.deleteMany((async function * () {
         for await (const cid of cids) {
           if (await storage.pins.isPinned(cid)) {
@@ -187,26 +192,6 @@ export class BlockStorage extends BaseBlockstore implements Blockstore {
 
     try {
       return await this.child.has(cid, options)
-    } finally {
-      releaseLock()
-    }
-  }
-
-  async * query (q: Query, options: AbortOptions = {}): AsyncGenerator<{ key: CID, value: Uint8Array }, void, undefined> {
-    const releaseLock = await this.lock.readLock()
-
-    try {
-      yield * this.child.query(q, options)
-    } finally {
-      releaseLock()
-    }
-  }
-
-  async * queryKeys (q: KeyQuery, options: AbortOptions = {}): AsyncGenerator<CID, void, undefined> {
-    const releaseLock = await this.lock.readLock()
-
-    try {
-      yield * this.child.queryKeys(q, options)
     } finally {
       releaseLock()
     }
