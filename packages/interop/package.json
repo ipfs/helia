@@ -146,7 +146,7 @@
     "@multiformats/sha3": "^2.0.15",
     "aegir": "^38.1.0",
     "blockstore-core": "^3.0.0",
-    "datastore-core": "^8.0.4",
+    "datastore-core": "^9.0.2",
     "go-ipfs": "^0.18.1",
     "helia": "~0.0.0",
     "ipfsd-ctl": "^13.0.0",
