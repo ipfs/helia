@@ -17,7 +17,6 @@
 
 - [Install](#install)
   - [Browser `<script>` tag](#browser-script-tag)
-- [API Docs](#api-docs)
 - [License](#license)
 - [Contribute](#contribute)
 
@@ -34,10 +33,6 @@ Loading this module through a script tag will make it's exports available as `He
 ```html
 <script src="https://unpkg.com/@helia/ipns-interop/dist/index.min.js"></script>
 ```
-
-## API Docs
-
-- <https://ipfs.github.io/helia-ipns/modules/_helia_ipns_interop.html>
 
 ## License
 

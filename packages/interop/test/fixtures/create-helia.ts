@@ -30,9 +30,6 @@ export async function createHeliaNode (config: Libp2pOptions = {}): Promise<Heli
     nat: {
       enabled: false
     },
-    relay: {
-      enabled: false
-    },
     ...config
   })
 

@@ -20,22 +20,6 @@
   },
   "type": "module",
   "types": "./dist/src/index.d.ts",
-  "typesVersions": {
-    "*": {
-      "*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ],
-      "src/*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ]
-    }
-  },
   "files": [
     "src",
     "dist",
@@ -46,10 +30,6 @@
     ".": {
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
-    },
-    "./routing": {
-      "types": "./dist/src/routing/index.d.ts",
-      "import": "./dist/src/routing/index.js"
     }
   },
   "eslintConfig": {
@@ -63,7 +43,6 @@
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
     "build": "aegir build",
-    "docs": "aegir docs",
     "test": "aegir test",
     "test:chrome": "aegir test -t browser --cov",
     "test:chrome-webworker": "aegir test -t webworker",
@@ -79,14 +58,14 @@
     "@helia/interface": "next",
     "@helia/ipns": "^1.0.0",
     "@libp2p/interface-peer-id": "^2.0.1",
-    "@libp2p/kad-dht": "^7.0.0",
+    "@libp2p/kad-dht": "^8.0.0",
     "@libp2p/peer-id": "^2.0.1",
     "@libp2p/peer-id-factory": "^2.0.1",
     "@libp2p/tcp": "^6.1.2",
     "@libp2p/websockets": "^5.0.3",
     "aegir": "^38.1.0",
-    "blockstore-core": "^3.0.0",
-    "datastore-core": "^8.0.4",
+    "blockstore-core": "^4.0.1",
+    "datastore-core": "^9.0.3",
     "go-ipfs": "^0.18.1",
     "helia": "next",
     "ipfsd-ctl": "^13.0.0",
@@ -95,7 +74,7 @@
     "it-last": "^2.0.0",
     "it-map": "^2.0.0",
     "kubo-rpc-client": "^3.0.0",
-    "libp2p": "^0.42.2",
+    "libp2p": "next",
     "merge-options": "^3.0.4",
     "multiformats": "^11.0.1",
     "uint8arrays": "^4.0.3",

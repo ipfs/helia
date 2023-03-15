@@ -41,9 +41,6 @@ export async function createHeliaNode (): Promise<Helia> {
     datastore,
     nat: {
       enabled: false
-    },
-    relay: {
-      enabled: false
     }
   })
 
