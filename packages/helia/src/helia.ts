@@ -59,8 +59,6 @@ export class HeliaImpl implements Helia {
       }
     })
 
-    this.pins = new PinsImpl(datastore, blockstore, init.dagWalkers ?? [])
-
     if (init.libp2p != null) {
       this.#bitswap = createBitswap(libp2p, blockstore, {
         hashLoader: {
@@ -79,21 +77,26 @@ export class HeliaImpl implements Helia {
       })
     }
 
+    this.pins = new PinsImpl(datastore, blockstore, init.dagWalkers ?? [])
+
     this.libp2p = libp2p
-    this.blockstore = new BlockStorage(blockstore, this.pins, this.#bitswap)
+    this.blockstore = new BlockStorage(blockstore, this.pins, {
+      bitswap: this.#bitswap,
+      holdGcLock: init.holdGcLock
+    })
     this.datastore = datastore
   }
 
   async start (): Promise<void> {
     await assertDatastoreVersionIsCurrent(this.datastore)
 
-    this.#bitswap?.start()
+    await this.#bitswap?.start()
     await this.libp2p.start()
   }
 
   async stop (): Promise<void> {
-    this.#bitswap?.stop()
     await this.libp2p.stop()
+    await this.#bitswap?.stop()
   }
 
   async gc (options: GCOptions = {}): Promise<void> {
@@ -106,7 +109,7 @@ export class HeliaImpl implements Helia {
       log('gc start')
 
       await drain(blockstore.deleteMany((async function * () {
-        for await (const cid of blockstore.queryKeys({})) {
+        for await (const { cid } of blockstore.getAll()) {
           try {
             if (await helia.pins.isPinned(cid, options)) {
               continue

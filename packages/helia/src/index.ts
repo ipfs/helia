@@ -75,9 +75,26 @@ export interface HeliaInit {
   dagWalkers?: DAGWalker[]
 
   /**
-   * Pass `false` to not start the helia node
+   * Pass `false` to not start the Helia node
    */
   start?: boolean
+
+  /**
+   * Garbage collection requires preventing blockstore writes during searches
+   * for unpinned blocks as DAGs are typically pinned after they've been
+   * imported - without locking this could lead to the deletion of blocks while
+   * they are being added to the blockstore.
+   *
+   * By default this lock is held on the main process (e.g. node cluster's
+   * primary process, the renderer thread in browsers) and other processes will
+   * contact the main process for access (worker processes in node cluster,
+   * webworkers in the browser).
+   *
+   * If Helia is being run wholly in a non-primary process, with no other process
+   * expected to access the blockstore (e.g. being run in the background in a
+   * webworker), pass true here to hold the gc lock in this process.
+   */
+  holdGcLock?: boolean
 }
 
 /**

@@ -9,7 +9,7 @@ import { yamux } from '@chainsafe/libp2p-yamux'
 import { createHelia } from '../src/index.js'
 import type { GcEvents, Helia } from '@helia/interface'
 import * as raw from 'multiformats/codecs/raw'
-import { createBlock } from './fixtures/create-block.js'
+import { createAndPutBlock } from './fixtures/create-block.js'
 import * as dagPb from '@ipld/dag-pb'
 import * as dagCbor from '@ipld/dag-cbor'
 import * as dagJson from '@ipld/dag-json'
@@ -42,16 +42,16 @@ describe('gc', () => {
   })
 
   it('pins a dag-pb node and does not garbage collect it or it\'s children', async () => {
-    const child1 = await createBlock(dagPb.code, dagPb.encode({
+    const child1 = await createAndPutBlock(dagPb.code, dagPb.encode({
       Data: Uint8Array.from([0, 1, 2, 3]),
       Links: []
     }), helia.blockstore)
-    const child2 = await createBlock(dagPb.code, dagPb.encode({
+    const child2 = await createAndPutBlock(dagPb.code, dagPb.encode({
       Data: Uint8Array.from([4, 5, 6, 7]),
       Links: []
     }), helia.blockstore)
 
-    const node = await createBlock(dagPb.code, dagPb.encode({
+    const node = await createAndPutBlock(dagPb.code, dagPb.encode({
       Links: [{
         Hash: child1,
         Name: 'child1'
@@ -64,7 +64,7 @@ describe('gc', () => {
     await helia.pins.add(node)
 
     // this block will be garbage collected
-    const doomed = await createBlock(dagPb.code, dagPb.encode({
+    const doomed = await createAndPutBlock(dagPb.code, dagPb.encode({
       Data: Uint8Array.from([8, 9, 0, 1]),
       Links: []
     }), helia.blockstore)
@@ -83,14 +83,14 @@ describe('gc', () => {
   })
 
   it('pins a dag-cbor node and does not garbage collect it or it\'s children', async () => {
-    const child1 = await createBlock(dagCbor.code, dagCbor.encode({
+    const child1 = await createAndPutBlock(dagCbor.code, dagCbor.encode({
       foo: 'bar'
     }), helia.blockstore)
-    const child2 = await createBlock(dagCbor.code, dagCbor.encode({
+    const child2 = await createAndPutBlock(dagCbor.code, dagCbor.encode({
       baz: 'qux'
     }), helia.blockstore)
 
-    const node = await createBlock(dagCbor.code, dagCbor.encode({
+    const node = await createAndPutBlock(dagCbor.code, dagCbor.encode({
       children: [
         child1,
         child2
@@ -100,7 +100,7 @@ describe('gc', () => {
     await helia.pins.add(node)
 
     // this block will be garbage collected
-    const doomed = await createBlock(dagCbor.code, dagJson.encode({
+    const doomed = await createAndPutBlock(dagCbor.code, dagJson.encode({
       quux: 'garply'
     }), helia.blockstore)
 
@@ -118,14 +118,14 @@ describe('gc', () => {
   })
 
   it('pins a dag-json node and does not garbage collect it or it\'s children', async () => {
-    const child1 = await createBlock(dagJson.code, dagJson.encode({
+    const child1 = await createAndPutBlock(dagJson.code, dagJson.encode({
       foo: 'bar'
     }), helia.blockstore)
-    const child2 = await createBlock(dagJson.code, dagJson.encode({
+    const child2 = await createAndPutBlock(dagJson.code, dagJson.encode({
       baz: 'qux'
     }), helia.blockstore)
 
-    const node = await createBlock(dagJson.code, dagJson.encode({
+    const node = await createAndPutBlock(dagJson.code, dagJson.encode({
       children: [
         child1,
         child2
@@ -135,7 +135,7 @@ describe('gc', () => {
     await helia.pins.add(node)
 
     // this block will be garbage collected
-    const doomed = await createBlock(dagJson.code, dagJson.encode({
+    const doomed = await createAndPutBlock(dagJson.code, dagJson.encode({
       quux: 'garply'
     }), helia.blockstore)
 
@@ -153,12 +153,12 @@ describe('gc', () => {
   })
 
   it('pins a raw node and does not garbage collect it', async () => {
-    const cid = await createBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
+    const cid = await createAndPutBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
 
     await helia.pins.add(cid)
 
     // this block will be garbage collected
-    const doomed = await createBlock(raw.code, Uint8Array.from([4, 5, 6, 7]), helia.blockstore)
+    const doomed = await createAndPutBlock(raw.code, Uint8Array.from([4, 5, 6, 7]), helia.blockstore)
 
     await expect(helia.blockstore.has(cid)).to.eventually.be.true()
     await expect(helia.blockstore.has(doomed)).to.eventually.be.true()
@@ -170,7 +170,7 @@ describe('gc', () => {
   })
 
   it('can garbage collect around a CID that causes an error', async () => {
-    const cid = await createBlock(0x10, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
+    const cid = await createAndPutBlock(0x10, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
 
     await expect(helia.blockstore.has(cid)).to.eventually.be.true('did not have cid')
 

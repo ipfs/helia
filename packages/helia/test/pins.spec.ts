@@ -10,7 +10,7 @@ import { createHelia } from '../src/index.js'
 import type { Helia } from '@helia/interface'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
-import { createBlock } from './fixtures/create-block.js'
+import { createAndPutBlock } from './fixtures/create-block.js'
 import all from 'it-all'
 
 describe('pins', () => {
@@ -41,7 +41,7 @@ describe('pins', () => {
   })
 
   it('pins a block', async () => {
-    const cidV1 = await createBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
+    const cidV1 = await createAndPutBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
     const cidV0 = CID.createV0(cidV1.multihash)
 
     await helia.pins.add(cidV1)
@@ -51,7 +51,7 @@ describe('pins', () => {
   })
 
   it('unpins a block', async () => {
-    const cidV1 = await createBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
+    const cidV1 = await createAndPutBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
     const cidV0 = CID.createV0(cidV1.multihash)
 
     await helia.pins.add(cidV1)
@@ -66,7 +66,7 @@ describe('pins', () => {
   })
 
   it('does not delete a pinned block', async () => {
-    const cid = await createBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
+    const cid = await createAndPutBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
 
     await helia.pins.add(cid)
 
@@ -75,7 +75,7 @@ describe('pins', () => {
   })
 
   it('lists pins created with default args', async () => {
-    const cidV1 = await createBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
+    const cidV1 = await createAndPutBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
 
     await helia.pins.add(cidV1)
 
@@ -88,7 +88,7 @@ describe('pins', () => {
   })
 
   it('lists pins with depth', async () => {
-    const cidV1 = await createBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
+    const cidV1 = await createAndPutBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
 
     await helia.pins.add(cidV1, {
       depth: 5
@@ -102,7 +102,7 @@ describe('pins', () => {
   })
 
   it('lists pins with metadata', async () => {
-    const cidV1 = await createBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
+    const cidV1 = await createAndPutBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
     const metadata = {
       foo: 'bar',
       baz: 5,
@@ -121,8 +121,8 @@ describe('pins', () => {
   })
 
   it('lists pins directly', async () => {
-    const cid1 = await createBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
-    const cid2 = await createBlock(raw.code, Uint8Array.from([4, 5, 6, 7]), helia.blockstore)
+    const cid1 = await createAndPutBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
+    const cid2 = await createAndPutBlock(raw.code, Uint8Array.from([4, 5, 6, 7]), helia.blockstore)
 
     await helia.pins.add(cid1)
     await helia.pins.add(cid2)

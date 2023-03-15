@@ -1,7 +1,7 @@
-import type { Blockstore } from 'interface-blockstore'
+import type { Blocks } from '@helia/interface/blocks'
 import type { CID } from 'multiformats/cid'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
-import { createBlock } from './create-block.js'
+import { createAndPutBlock } from './create-block.js'
 
 export interface DAGNode {
   cid: CID
@@ -58,16 +58,16 @@ export interface DAGNode {
  * }
  * ```
  */
-export async function createDag (codec: number, blockstore: Blockstore, depth: number, children: number): Promise<Record<string, DAGNode>> {
+export async function createDag (codec: number, blocks: Blocks, depth: number, children: number): Promise<Record<string, DAGNode>> {
   const dag: Record<string, DAGNode> = {}
-  const root = await createBlock(codec, uint8arrayFromString('level-0'), blockstore)
+  const root = await createAndPutBlock(codec, uint8arrayFromString('level-0'), blocks)
 
-  await addChildren(root, 'level', 0, 0, depth, children, dag, codec, blockstore)
+  await addChildren(root, 'level', 0, 0, depth, children, dag, codec, blocks)
 
   return dag
 }
 
-async function addChildren (cid: CID, name: string, level: number, index: number, depth: number, children: number, dag: Record<string, DAGNode>, codec: number, blockstore: Blockstore): Promise<void> {
+async function addChildren (cid: CID, name: string, level: number, index: number, depth: number, children: number, dag: Record<string, DAGNode>, codec: number, blocks: Blocks): Promise<void> {
   if (depth === 0) {
     return
   }
@@ -81,10 +81,10 @@ async function addChildren (cid: CID, name: string, level: number, index: number
   }
 
   for (let i = 0; i < children; i++) {
-    const subChild = await createBlock(codec, uint8arrayFromString(`${name}-${i}`), blockstore)
+    const subChild = await createAndPutBlock(codec, uint8arrayFromString(`${name}-${i}`), blocks)
 
     dag[name].links.push(subChild)
 
-    await addChildren(subChild, name, level + 1, index + i, depth - 1, children, dag, codec, blockstore)
+    await addChildren(subChild, name, level + 1, index + i, depth - 1, children, dag, codec, blocks)
   }
 }
