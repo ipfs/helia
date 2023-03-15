@@ -2,7 +2,8 @@ import type { AbortOptions } from '@libp2p/interfaces'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 import type { CID } from 'multiformats/cid'
 import type { BitswapNotifyProgressEvents, BitswapWantProgressEvents } from 'ipfs-bitswap'
-import type { AwaitIterable } from './index.js'
+import type { AwaitIterable, Await } from './index.js'
+import type { Blockstore } from 'interface-blockstore'
 
 export interface Pair {
   cid: CID
@@ -42,7 +43,7 @@ export type DeleteBlockProgressEvents =
 export type DeleteManyBlocksProgressEvents =
   ProgressEvent<'blocks:delete-many:blockstore:delete-many'>
 
-export interface Blocks {
+export interface Blocks extends Blockstore {
   /**
    * Check for the existence of a value for the passed key
    *
@@ -57,7 +58,7 @@ export interface Blocks {
    * }
    *```
    */
-  has: (key: CID, options?: AbortOptions) => Promise<boolean>
+  has: (key: CID, options?: AbortOptions) => Await<boolean>
 
   /**
    * Store the passed block under the passed CID
@@ -68,7 +69,7 @@ export interface Blocks {
    * await store.put(CID('bafyfoo'), new Uint8Array([0, 1, 2, 3]))
    * ```
    */
-  put: (key: CID, val: Uint8Array, options?: AbortOptions & ProgressOptions<PutBlockProgressEvents>) => Promise<void>
+  put: (key: CID, val: Uint8Array, options?: AbortOptions & ProgressOptions<PutBlockProgressEvents>) => Await<void>
 
   /**
    * Store the given key/value pairs
@@ -85,7 +86,7 @@ export interface Blocks {
   putMany: (
     source: AwaitIterable<Pair>,
     options?: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents>
-  ) => AsyncIterable<Pair>
+  ) => AwaitIterable<Pair>
 
   /**
    * Retrieve the value stored under the given key
@@ -97,7 +98,7 @@ export interface Blocks {
    * // => got content: datastore
    * ```
    */
-  get: (key: CID, options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>) => Promise<Uint8Array>
+  get: (key: CID, options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>) => Await<Uint8Array>
 
   /**
    * Retrieve values for the passed keys
@@ -113,7 +114,7 @@ export interface Blocks {
   getMany: (
     source: AwaitIterable<CID>,
     options?: AbortOptions & ProgressOptions<GetManyBlocksProgressEvents>
-  ) => AsyncIterable<Uint8Array>
+  ) => AwaitIterable<Uint8Array>
 
   /**
    * Retrieve all blocks in the blockstore
@@ -128,7 +129,7 @@ export interface Blocks {
    */
   getAll: (
     options?: AbortOptions & ProgressOptions<GetAllBlocksProgressEvents>
-  ) => AsyncIterable<Pair>
+  ) => AwaitIterable<Pair>
 
   /**
    * Remove the record for the passed key
@@ -140,7 +141,7 @@ export interface Blocks {
    * console.log('deleted awesome content :(')
    * ```
    */
-  delete: (key: CID, options?: AbortOptions & ProgressOptions<DeleteBlockProgressEvents>) => Promise<void>
+  delete: (key: CID, options?: AbortOptions & ProgressOptions<DeleteBlockProgressEvents>) => Await<void>
 
   /**
    * Remove values for the passed keys
@@ -158,5 +159,5 @@ export interface Blocks {
   deleteMany: (
     source: AwaitIterable<CID>,
     options?: AbortOptions & ProgressOptions<DeleteManyBlocksProgressEvents>
-  ) => AsyncIterable<CID>
+  ) => AwaitIterable<CID>
 }
