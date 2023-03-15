@@ -1,3 +1,15 @@
+## [@helia/unixfs-v1.1.0](https://github.com/ipfs/helia-unixfs/compare/@helia/unixfs-v1.0.5...@helia/unixfs-v1.1.0) (2023-03-15)
+
+
+### Features
+
+* expose progress events from importer, blockstore and bitswap ([#13](https://github.com/ipfs/helia-unixfs/issues/13)) ([de78f4d](https://github.com/ipfs/helia-unixfs/commit/de78f4d03ebafe9ed9a2dfcbfb7a516fa215585c))
+
+
+### Trivial Changes
+
+* add interop test suite ([#12](https://github.com/ipfs/helia-unixfs/issues/12)) ([3ad5f5d](https://github.com/ipfs/helia-unixfs/commit/3ad5f5d8199a5596aa333916d4a240584bc0842a))
+
 ## [1.0.5](https://github.com/ipfs/helia-unixfs/compare/v1.0.4...v1.0.5) (2023-03-14)
 
 
