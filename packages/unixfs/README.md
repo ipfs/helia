@@ -4,30 +4,40 @@
   </a>
 </p>
 
-# @helia/ipns <!-- omit in toc -->
+# @helia/unixfs <!-- omit in toc -->
 
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
-[![codecov](https://img.shields.io/codecov/c/github/ipfs/helia-ipns.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia-ipns)
-[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia-ipns/js-test-and-release.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia-ipns/actions/workflows/js-test-and-release.yml?query=branch%3Amain)
+[![codecov](https://img.shields.io/codecov/c/github/ipfs/helia-unixfs.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia-unixfs)
+[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia-unixfs/js-test-and-release.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia-unixfs/actions/workflows/js-test-and-release.yml?query=branch%3Amain)
 
-> An implementation of Unixfs for Helia
+> A Helia-compatible wrapper for UnixFS
 
 ## Table of contents <!-- omit in toc -->
 
-- [Structure](#structure)
+- [Install](#install)
+  - [Browser `<script>` tag](#browser-script-tag)
 - [API Docs](#api-docs)
 - [License](#license)
 - [Contribute](#contribute)
 
-## Structure
+## Install
 
-- [`/packages/interop`](./packages/interop) Interop tests for @helia/unixfs
-- [`/packages/unixfs`](./packages/unixfs) A Helia-compatible wrapper for UnixFS
+```console
+$ npm i @helia/unixfs
+```
+
+### Browser `<script>` tag
+
+Loading this module through a script tag will make it's exports available as `HeliaUnixfs` in the global namespace.
+
+```html
+<script src="https://unpkg.com/@helia/unixfs/dist/index.min.js"></script>
+```
 
 ## API Docs
 
-- <https://ipfs.github.io/helia-unixfs>
+- <https://ipfs.github.io/helia-unixfs/modules/_helia_unixfs.html>
 
 ## License
 
