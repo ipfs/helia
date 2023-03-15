@@ -9,11 +9,9 @@ import all from 'it-all'
 import os from 'node:os'
 import path from 'node:path'
 import { LevelDatastore } from 'datastore-level'
-import { BlockstoreDatastoreAdapter } from 'blockstore-datastore-adapter'
-import { ShardingDatastore } from 'datastore-core/sharding'
-import { NextToLast } from 'datastore-core/shard'
-import { FsDatastore } from 'datastore-fs'
+import { FsBlockstore } from 'blockstore-fs'
 import drain from 'it-drain'
+import map from 'it-map'
 
 const dagPbWalker: DAGWalker = {
   codec: dagPb.code,
@@ -28,14 +26,7 @@ export async function createHeliaBenchmark (): Promise<GcBenchmark> {
   const repoPath = path.join(os.tmpdir(), `helia-${Math.random()}`)
 
   const helia = await createHelia({
-    blockstore: new BlockstoreDatastoreAdapter(
-      new ShardingDatastore(
-        new FsDatastore(`${repoPath}/blocks`, {
-          extension: '.data'
-        }),
-        new NextToLast(2)
-      )
-    ),
+    blockstore: new FsBlockstore(`${repoPath}/blocks`),
     datastore: new LevelDatastore(`${repoPath}/data`),
     libp2p: await createLibp2p({
       transports: [
@@ -59,7 +50,7 @@ export async function createHeliaBenchmark (): Promise<GcBenchmark> {
       await helia.gc()
     },
     async putBlocks (blocks) {
-      await drain(helia.blockstore.putMany(blocks))
+      await drain(helia.blockstore.putMany(map(blocks, ({ key, value }) => ({ cid: key, block: value }))))
     },
     async pin (cid) {
       await helia.pins.add(cid)
