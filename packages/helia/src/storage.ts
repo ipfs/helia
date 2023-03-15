@@ -1,6 +1,6 @@
 import filter from 'it-filter'
 import type { Blockstore } from 'interface-blockstore'
-import type { Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents } from '@helia/interface/blocks'
+import type { Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents } from '@helia/interface/blocks'
 import type { Bitswap } from 'ipfs-bitswap'
 import type { CID } from 'multiformats/cid'
 import type { AbortOptions } from '@libp2p/interfaces'
@@ -192,6 +192,17 @@ export class BlockStorage implements Blocks {
 
     try {
       return await this.child.has(cid, options)
+    } finally {
+      releaseLock()
+    }
+  }
+
+  async * getAll (options: AbortOptions & ProgressOptions<GetAllBlocksProgressEvents> = {}): AsyncIterable<Pair> {
+    const releaseLock = await this.lock.readLock()
+
+    try {
+      options.onProgress?.(new CustomProgressEvent('blocks:get-all:blockstore:get-many'))
+      yield * this.child.getAll(options)
     } finally {
       releaseLock()
     }

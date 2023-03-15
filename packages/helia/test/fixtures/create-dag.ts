@@ -1,4 +1,4 @@
-import type { Blocks } from '@helia/interface/blocks'
+import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { createAndPutBlock } from './create-block.js'
@@ -58,7 +58,7 @@ export interface DAGNode {
  * }
  * ```
  */
-export async function createDag (codec: number, blocks: Blocks, depth: number, children: number): Promise<Record<string, DAGNode>> {
+export async function createDag (codec: number, blocks: Blockstore, depth: number, children: number): Promise<Record<string, DAGNode>> {
   const dag: Record<string, DAGNode> = {}
   const root = await createAndPutBlock(codec, uint8arrayFromString('level-0'), blocks)
 
@@ -67,7 +67,7 @@ export async function createDag (codec: number, blocks: Blocks, depth: number, c
   return dag
 }
 
-async function addChildren (cid: CID, name: string, level: number, index: number, depth: number, children: number, dag: Record<string, DAGNode>, codec: number, blocks: Blocks): Promise<void> {
+async function addChildren (cid: CID, name: string, level: number, index: number, depth: number, children: number, dag: Record<string, DAGNode>, codec: number, blocks: Blockstore): Promise<void> {
   if (depth === 0) {
     return
   }

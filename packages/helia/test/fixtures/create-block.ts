@@ -1,4 +1,4 @@
-import type { Blocks } from '@helia/interface/blocks'
+import type { Blockstore } from 'interface-blockstore'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 
@@ -9,7 +9,7 @@ export async function createBlock <Codec extends number> (codec: Codec, block: U
   return { cid, block }
 }
 
-export async function createAndPutBlock <Codec extends number> (codec: Codec, block: Uint8Array, blockstore: Blocks): Promise<CID<unknown, Codec, 18>> {
+export async function createAndPutBlock <Codec extends number> (codec: Codec, block: Uint8Array, blockstore: Blockstore): Promise<CID<unknown, Codec, 18>> {
   const result = await createBlock(codec, block)
 
   await blockstore.put(result.cid, block)
