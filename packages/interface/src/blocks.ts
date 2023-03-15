@@ -33,6 +33,9 @@ export type GetManyBlocksProgressEvents =
   ProgressEvent<'blocks:get-many:blockstore:put', CID> |
   BitswapWantProgressEvents
 
+export type GetAllBlocksProgressEvents =
+  ProgressEvent<'blocks:get-all:blockstore:get-many'>
+
 export type DeleteBlockProgressEvents =
   ProgressEvent<'blocks:delete:blockstore:delete', CID>
 
@@ -41,62 +44,38 @@ export type DeleteManyBlocksProgressEvents =
 
 export interface Blocks {
   /**
-   * Store the passed block under the passed CID
-   *
-   * @example
-   *
-   * ```js
-   * await store.put([{ key: new Key('awesome'), value: new Uint8Array([0, 1, 2, 3]) }])
-   * ```
-   */
-  put: (key: CID, val: Uint8Array, options?: AbortOptions & ProgressOptions<PutBlockProgressEvents>) => Promise<void>
-
-  /**
-   * Retrieve the value stored under the given key
-   *
-   * @example
-   * ```js
-   * const value = await store.get(new Key('awesome'))
-   * console.log('got content: %s', value.toString('utf8'))
-   * // => got content: datastore
-   * ```
-   */
-  get: (key: CID, options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>) => Promise<Uint8Array>
-
-  /**
    * Check for the existence of a value for the passed key
    *
    * @example
    * ```js
-   *const exists = await store.has(new Key('awesome'))
+   * const exists = await store.has(CID('bafyfoo'))
    *
-   *if (exists) {
-   *  console.log('it is there')
-   *} else {
-   *  console.log('it is not there')
-   *}
+   * if (exists) {
+   *   console.log('it is there')
+   * } else {
+   *   console.log('it is not there')
+   * }
    *```
    */
   has: (key: CID, options?: AbortOptions) => Promise<boolean>
 
   /**
-   * Remove the record for the passed key
+   * Store the passed block under the passed CID
    *
    * @example
    *
    * ```js
-   * await store.delete(new Key('awesome'))
-   * console.log('deleted awesome content :(')
+   * await store.put(CID('bafyfoo'), new Uint8Array([0, 1, 2, 3]))
    * ```
    */
-  delete: (key: CID, options?: AbortOptions & ProgressOptions<DeleteBlockProgressEvents>) => Promise<void>
+  put: (key: CID, val: Uint8Array, options?: AbortOptions & ProgressOptions<PutBlockProgressEvents>) => Promise<void>
 
   /**
    * Store the given key/value pairs
    *
    * @example
    * ```js
-   * const source = [{ key: new Key('awesome'), value: new Uint8Array([0, 1, 2, 3]) }]
+   * const source = [{ cid: CID('bafyfoo'), block: new Uint8Array([0, 1, 2, 3]) }]
    *
    * for await (const { key, value } of store.putMany(source)) {
    *   console.info(`put content for key ${key}`)
@@ -109,11 +88,23 @@ export interface Blocks {
   ) => AsyncIterable<Pair>
 
   /**
+   * Retrieve the value stored under the given key
+   *
+   * @example
+   * ```js
+   * const value = await store.get(CID('bafyfoo'))
+   * console.log('got content: %s', value.toString('utf8'))
+   * // => got content: datastore
+   * ```
+   */
+  get: (key: CID, options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>) => Promise<Uint8Array>
+
+  /**
    * Retrieve values for the passed keys
    *
    * @example
    * ```js
-   * for await (const value of store.getMany([new Key('awesome')])) {
+   * for await (const value of store.getMany([CID('bafyfoo')])) {
    *   console.log('got content:', new TextDecoder('utf8').decode(value))
    *   // => got content: datastore
    * }
@@ -125,12 +116,39 @@ export interface Blocks {
   ) => AsyncIterable<Uint8Array>
 
   /**
+   * Retrieve all blocks in the blockstore
+   *
+   * @example
+   * ```js
+   * for await (const value of store.getAll()) {
+   *   console.log('got content:', new TextDecoder('utf8').decode(value))
+   *   // => got content: datastore
+   * }
+   * ```
+   */
+  getAll: (
+    options?: AbortOptions & ProgressOptions<GetAllBlocksProgressEvents>
+  ) => AsyncIterable<Pair>
+
+  /**
+   * Remove the record for the passed key
+   *
+   * @example
+   *
+   * ```js
+   * await store.delete(CID('bafyfoo'))
+   * console.log('deleted awesome content :(')
+   * ```
+   */
+  delete: (key: CID, options?: AbortOptions & ProgressOptions<DeleteBlockProgressEvents>) => Promise<void>
+
+  /**
    * Remove values for the passed keys
    *
    * @example
    *
    * ```js
-   * const source = [new Key('awesome')]
+   * const source = [CID('bafyfoo')]
    *
    * for await (const key of store.deleteMany(source)) {
    *   console.log(`deleted content with key ${key}`)
