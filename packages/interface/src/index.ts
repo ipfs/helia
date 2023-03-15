@@ -23,7 +23,7 @@ import type { ProgressEvent, ProgressOptions } from 'progress-events'
 import type { CID } from 'multiformats/cid'
 import type { Blocks } from './blocks.js'
 
-export type AwaitIterable<T> = Iterable<T> | AsyncIterable<T>
+export type { Await, AwaitIterable } from 'interface-store'
 
 /**
  * The API presented by a Helia node.
