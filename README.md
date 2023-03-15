@@ -4,12 +4,12 @@
   </a>
 </p>
 
-# @helia/ipns <!-- omit in toc -->
+# @helia/unixfs <!-- omit in toc -->
 
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
-[![codecov](https://img.shields.io/codecov/c/github/ipfs/helia-ipns.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia-ipns)
-[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia-ipns/js-test-and-release.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia-ipns/actions/workflows/js-test-and-release.yml?query=branch%3Amain)
+[![codecov](https://img.shields.io/codecov/c/github/ipfs/helia-unixfs.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia-unixfs)
+[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia-unixfs/js-test-and-release.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia-unixfs/actions/workflows/js-test-and-release.yml?query=branch%3Amain)
 
 > An implementation of Unixfs for Helia
 
