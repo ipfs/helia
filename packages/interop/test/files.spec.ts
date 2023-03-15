@@ -5,31 +5,31 @@ import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import type { Helia } from '@helia/interface'
 import type { Controller } from 'ipfsd-ctl'
-import { UnixFS, unixfs } from '@helia/unixfs'
+import { AddOptions, UnixFS, unixfs } from '@helia/unixfs'
 import { balanced } from 'ipfs-unixfs-importer/layout'
 import { fixedSize } from 'ipfs-unixfs-importer/chunker'
-import type { FileCandidate, ImporterOptions } from 'ipfs-unixfs-importer'
+import type { FileCandidate } from 'ipfs-unixfs-importer'
 import type { CID } from 'multiformats/cid'
-import type { AddOptions } from 'ipfs-core-types/src/root.js'
+import type { AddOptions as KuboAddOptions } from 'ipfs-core-types/src/root.js'
 
 describe('unixfs interop', () => {
   let helia: Helia
   let unixFs: UnixFS
   let kubo: Controller
 
-  async function importToHelia (data: FileCandidate, opts?: Partial<ImporterOptions>): Promise<CID> {
+  async function importToHelia (data: FileCandidate, opts?: Partial<AddOptions>): Promise<CID> {
     const cid = await unixFs.addFile(data, opts)
 
     return cid
   }
 
-  async function importToKubo (data: FileCandidate, opts?: AddOptions): Promise<CID> {
+  async function importToKubo (data: FileCandidate, opts?: KuboAddOptions): Promise<CID> {
     const result = await kubo.api.add(data.content, opts)
 
     return result.cid
   }
 
-  async function expectSameCid (data: () => FileCandidate, heliaOpts: Partial<ImporterOptions> = {}, kuboOpts: AddOptions = {}): Promise<void> {
+  async function expectSameCid (data: () => FileCandidate, heliaOpts: Partial<AddOptions> = {}, kuboOpts: KuboAddOptions = {}): Promise<void> {
     const heliaCid = await importToHelia(data(), {
       // these are the default kubo options
       cidVersion: 0,

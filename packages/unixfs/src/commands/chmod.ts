@@ -36,7 +36,7 @@ export async function chmod (cid: CID, mode: number, blockstore: Blocks, options
     // but do not reimport files, only manipulate dag-pb nodes
     const root = await pipe(
       async function * () {
-        for await (const entry of recursive(resolved.cid, blockstore)) {
+        for await (const entry of recursive(resolved.cid, blockstore, options)) {
           let metadata: UnixFS
           let links: PBLink[] = []
 
@@ -63,6 +63,7 @@ export async function chmod (cid: CID, mode: number, blockstore: Blocks, options
           }
         }
       },
+      // @ts-expect-error cannot combine progress types
       (source) => importer(source, blockstore, {
         ...opts,
         dagBuilder: async function * (source, block) {

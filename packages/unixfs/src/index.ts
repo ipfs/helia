@@ -32,7 +32,7 @@
  */
 
 import type { CID, Version } from 'multiformats/cid'
-import type { Blocks } from '@helia/interface/blocks'
+import type { Blocks, GetBlockProgressEvents, PutBlockProgressEvents } from '@helia/interface/blocks'
 import type { AbortOptions } from '@libp2p/interfaces'
 import { addAll, addBytes, addByteStream, addDirectory, addFile } from './commands/add.js'
 import { cat } from './commands/cat.js'
@@ -45,16 +45,24 @@ import { touch } from './commands/touch.js'
 import { chmod } from './commands/chmod.js'
 import type { UnixFSEntry } from 'ipfs-unixfs-exporter'
 import { ls } from './commands/ls.js'
-import type { ByteStream, DirectoryCandidate, FileCandidate, ImportCandidateStream, ImporterOptions, ImportResult } from 'ipfs-unixfs-importer'
+import type { ByteStream, DirectoryCandidate, FileCandidate, ImportCandidateStream, ImporterOptions, ImportProgressEvents, ImportResult } from 'ipfs-unixfs-importer'
+import type { ProgressOptions } from 'progress-events'
 
 export interface UnixFSComponents {
   blockstore: Blocks
 }
 
+export type AddEvents = PutBlockProgressEvents
+| ImportProgressEvents
+
+export interface AddOptions extends AbortOptions, Omit<ImporterOptions, 'onProgress'>, ProgressOptions<AddEvents> {
+
+}
+
 /**
  * Options to pass to the cat command
  */
-export interface CatOptions extends AbortOptions {
+export interface CatOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents> {
   /**
    * Start reading the file at this offset
    */
@@ -74,7 +82,7 @@ export interface CatOptions extends AbortOptions {
 /**
  * Options to pass to the chmod command
  */
-export interface ChmodOptions extends AbortOptions {
+export interface ChmodOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents | PutBlockProgressEvents> {
   /**
    * If the target of the operation is a directory and this is true,
    * apply the new mode to all directory contents
@@ -96,7 +104,7 @@ export interface ChmodOptions extends AbortOptions {
 /**
  * Options to pass to the cp command
  */
-export interface CpOptions extends AbortOptions {
+export interface CpOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents | PutBlockProgressEvents> {
   /**
    * If true, allow overwriting existing directory entries (default: false)
    */
@@ -112,7 +120,7 @@ export interface CpOptions extends AbortOptions {
 /**
  * Options to pass to the ls command
  */
-export interface LsOptions extends AbortOptions {
+export interface LsOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents> {
   /**
    * Optional path to list subdirectory contents if the target CID resolves to
    * a directory
@@ -133,7 +141,7 @@ export interface LsOptions extends AbortOptions {
 /**
  * Options to pass to the mkdir command
  */
-export interface MkdirOptions extends AbortOptions {
+export interface MkdirOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents | PutBlockProgressEvents> {
   /**
    * The CID version to create the new directory with - defaults to the same
    * version as the containing directory
@@ -165,7 +173,7 @@ export interface MkdirOptions extends AbortOptions {
 /**
  * Options to pass to the rm command
  */
-export interface RmOptions extends AbortOptions {
+export interface RmOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents | PutBlockProgressEvents> {
   /**
    * DAGs with a root block larger than this value will be sharded. Blocks
    * smaller than this value will be regular UnixFS directories.
@@ -176,7 +184,7 @@ export interface RmOptions extends AbortOptions {
 /**
  * Options to pass to the stat command
  */
-export interface StatOptions extends AbortOptions {
+export interface StatOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents> {
   /**
    * An optional path to allow statting paths inside directories
    */
@@ -292,7 +300,7 @@ export interface UnixFS {
    * }
    * ```
    */
-  addAll: (source: ImportCandidateStream, options?: Partial<ImporterOptions>) => AsyncIterable<ImportResult>
+  addAll: (source: ImportCandidateStream, options?: Partial<AddOptions>) => AsyncIterable<ImportResult>
 
   /**
    * Add a single `Uint8Array` to your Helia node as a file.
@@ -305,7 +313,7 @@ export interface UnixFS {
    * console.info(cid)
    * ```
    */
-  addBytes: (bytes: Uint8Array, options?: Partial<ImporterOptions>) => Promise<CID>
+  addBytes: (bytes: Uint8Array, options?: Partial<AddOptions>) => Promise<CID>
 
   /**
    * Add a stream of `Uint8Array` to your Helia node as a file.
@@ -321,7 +329,7 @@ export interface UnixFS {
    * console.info(cid)
    * ```
    */
-  addByteStream: (bytes: ByteStream, options?: Partial<ImporterOptions>) => Promise<CID>
+  addByteStream: (bytes: ByteStream, options?: Partial<AddOptions>) => Promise<CID>
 
   /**
    * Add a file to your Helia node with optional metadata.
@@ -342,7 +350,7 @@ export interface UnixFS {
    * console.info(cid)
    * ```
    */
-  addFile: (file: FileCandidate, options?: Partial<ImporterOptions>) => Promise<CID>
+  addFile: (file: FileCandidate, options?: Partial<AddOptions>) => Promise<CID>
 
   /**
    * Add a directory to your Helia node.
@@ -355,7 +363,7 @@ export interface UnixFS {
    * console.info(cid)
    * ```
    */
-  addDirectory: (dir?: Partial<DirectoryCandidate>, options?: Partial<ImporterOptions>) => Promise<CID>
+  addDirectory: (dir?: Partial<DirectoryCandidate>, options?: Partial<AddOptions>) => Promise<CID>
 
   /**
    * Retrieve the contents of a file from your Helia node.
@@ -368,7 +376,7 @@ export interface UnixFS {
    * }
    * ```
    */
-  cat: (cid: CID, options?: Partial<CatOptions>) => AsyncIterable<Uint8Array>
+  cat: (cid: CID, options?: Partial<CatOptions> & ProgressOptions<GetBlockProgressEvents>) => AsyncIterable<Uint8Array>
 
   /**
    * Change the permissions on a file or directory in a DAG
@@ -415,7 +423,7 @@ export interface UnixFS {
    * }
    * ```
    */
-  ls: (cid: CID, options?: Partial<LsOptions>) => AsyncIterable<UnixFSEntry>
+  ls: (cid: CID, options?: Partial<LsOptions> & ProgressOptions<GetBlockProgressEvents>) => AsyncIterable<UnixFSEntry>
 
   /**
    * Make a new directory under an existing directory.
@@ -489,23 +497,23 @@ class DefaultUnixFS implements UnixFS {
     this.components = components
   }
 
-  async * addAll (source: ImportCandidateStream, options: Partial<ImporterOptions> = {}): AsyncIterable<ImportResult> {
+  async * addAll (source: ImportCandidateStream, options: Partial<AddOptions> = {}): AsyncIterable<ImportResult> {
     yield * addAll(source, this.components.blockstore, options)
   }
 
-  async addBytes (bytes: Uint8Array, options: Partial<ImporterOptions> = {}): Promise<CID> {
+  async addBytes (bytes: Uint8Array, options: Partial<AddOptions> = {}): Promise<CID> {
     return await addBytes(bytes, this.components.blockstore, options)
   }
 
-  async addByteStream (bytes: ByteStream, options: Partial<ImporterOptions> = {}): Promise<CID> {
+  async addByteStream (bytes: ByteStream, options: Partial<AddOptions> = {}): Promise<CID> {
     return await addByteStream(bytes, this.components.blockstore, options)
   }
 
-  async addFile (file: FileCandidate, options: Partial<ImporterOptions> = {}): Promise<CID> {
+  async addFile (file: FileCandidate, options: Partial<AddOptions> = {}): Promise<CID> {
     return await addFile(file, this.components.blockstore, options)
   }
 
-  async addDirectory (dir: Partial<DirectoryCandidate> = {}, options: Partial<ImporterOptions> = {}): Promise<CID> {
+  async addDirectory (dir: Partial<DirectoryCandidate> = {}, options: Partial<AddOptions> = {}): Promise<CID> {
     return await addDirectory(dir, this.components.blockstore, options)
   }
 
