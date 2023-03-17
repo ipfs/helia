@@ -67,6 +67,7 @@ export async function touch (cid: CID, blockstore: Blocks, options: Partial<Touc
           }
         }
       },
+      // @ts-expect-error blockstore types are incompatible
       (source) => importer(source, blockstore, {
         ...opts,
         dagBuilder: async function * (source, block) {

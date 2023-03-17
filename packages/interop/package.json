@@ -64,7 +64,7 @@
     "go-ipfs": "^0.18.1",
     "helia": "next",
     "ipfs-core-types": "^0.14.0",
-    "ipfs-unixfs-importer": "^15.0.1",
+    "ipfs-unixfs-importer": "^15.1.0",
     "ipfsd-ctl": "^13.0.0",
     "it-to-buffer": "^3.0.1",
     "kubo-rpc-client": "^3.0.0",

@@ -43,9 +43,9 @@ import { rm } from './commands/rm.js'
 import { stat } from './commands/stat.js'
 import { touch } from './commands/touch.js'
 import { chmod } from './commands/chmod.js'
-import type { UnixFSEntry } from 'ipfs-unixfs-exporter'
+import type { ExporterProgressEvents, UnixFSEntry } from 'ipfs-unixfs-exporter'
 import { ls } from './commands/ls.js'
-import type { ByteStream, DirectoryCandidate, FileCandidate, ImportCandidateStream, ImporterOptions, ImportProgressEvents, ImportResult } from 'ipfs-unixfs-importer'
+import type { ByteStream, DirectoryCandidate, FileCandidate, ImportCandidateStream, ImporterOptions, ImporterProgressEvents, ImportResult } from 'ipfs-unixfs-importer'
 import type { ProgressOptions } from 'progress-events'
 
 export interface UnixFSComponents {
@@ -53,16 +53,19 @@ export interface UnixFSComponents {
 }
 
 export type AddEvents = PutBlockProgressEvents
-| ImportProgressEvents
+| ImporterProgressEvents
 
 export interface AddOptions extends AbortOptions, Omit<ImporterOptions, 'onProgress'>, ProgressOptions<AddEvents> {
 
 }
 
+export type GetEvents = GetBlockProgressEvents
+| ExporterProgressEvents
+
 /**
  * Options to pass to the cat command
  */
-export interface CatOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents> {
+export interface CatOptions extends AbortOptions, ProgressOptions<GetEvents> {
   /**
    * Start reading the file at this offset
    */
@@ -82,7 +85,7 @@ export interface CatOptions extends AbortOptions, ProgressOptions<GetBlockProgre
 /**
  * Options to pass to the chmod command
  */
-export interface ChmodOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents | PutBlockProgressEvents> {
+export interface ChmodOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents> {
   /**
    * If the target of the operation is a directory and this is true,
    * apply the new mode to all directory contents
@@ -104,7 +107,7 @@ export interface ChmodOptions extends AbortOptions, ProgressOptions<GetBlockProg
 /**
  * Options to pass to the cp command
  */
-export interface CpOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents | PutBlockProgressEvents> {
+export interface CpOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents> {
   /**
    * If true, allow overwriting existing directory entries (default: false)
    */
@@ -120,7 +123,7 @@ export interface CpOptions extends AbortOptions, ProgressOptions<GetBlockProgres
 /**
  * Options to pass to the ls command
  */
-export interface LsOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents> {
+export interface LsOptions extends AbortOptions, ProgressOptions<GetEvents> {
   /**
    * Optional path to list subdirectory contents if the target CID resolves to
    * a directory
@@ -141,7 +144,7 @@ export interface LsOptions extends AbortOptions, ProgressOptions<GetBlockProgres
 /**
  * Options to pass to the mkdir command
  */
-export interface MkdirOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents | PutBlockProgressEvents> {
+export interface MkdirOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents> {
   /**
    * The CID version to create the new directory with - defaults to the same
    * version as the containing directory
@@ -173,7 +176,7 @@ export interface MkdirOptions extends AbortOptions, ProgressOptions<GetBlockProg
 /**
  * Options to pass to the rm command
  */
-export interface RmOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents | PutBlockProgressEvents> {
+export interface RmOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents> {
   /**
    * DAGs with a root block larger than this value will be sharded. Blocks
    * smaller than this value will be regular UnixFS directories.
@@ -184,7 +187,7 @@ export interface RmOptions extends AbortOptions, ProgressOptions<GetBlockProgres
 /**
  * Options to pass to the stat command
  */
-export interface StatOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents> {
+export interface StatOptions extends AbortOptions, ProgressOptions<GetEvents> {
   /**
    * An optional path to allow statting paths inside directories
    */
@@ -251,7 +254,7 @@ export interface UnixFSStats {
 /**
  * Options to pass to the touch command
  */
-export interface TouchOptions extends AbortOptions {
+export interface TouchOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents> {
   /**
    * Optional mtime to set on the DAG root, defaults to the current time
    */
@@ -376,7 +379,7 @@ export interface UnixFS {
    * }
    * ```
    */
-  cat: (cid: CID, options?: Partial<CatOptions> & ProgressOptions<GetBlockProgressEvents>) => AsyncIterable<Uint8Array>
+  cat: (cid: CID, options?: Partial<CatOptions>) => AsyncIterable<Uint8Array>
 
   /**
    * Change the permissions on a file or directory in a DAG
@@ -423,7 +426,7 @@ export interface UnixFS {
    * }
    * ```
    */
-  ls: (cid: CID, options?: Partial<LsOptions> & ProgressOptions<GetBlockProgressEvents>) => AsyncIterable<UnixFSEntry>
+  ls: (cid: CID, options?: Partial<LsOptions>) => AsyncIterable<UnixFSEntry>
 
   /**
    * Make a new directory under an existing directory.

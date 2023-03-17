@@ -25,8 +25,5 @@ export async function * cat (cid: CID, blockstore: Blocks, options: Partial<CatO
     throw new NoContentError()
   }
 
-  yield * result.content({
-    offset: opts.offset,
-    length: opts.length
-  })
+  yield * result.content(opts)
 }
