@@ -1,3 +1,10 @@
+## [@helia/unixfs-v1.2.0](https://github.com/ipfs/helia-unixfs/compare/@helia/unixfs-v1.1.0...@helia/unixfs-v1.2.0) (2023-03-17)
+
+
+### Features
+
+* expose unixfs progress events in types ([#14](https://github.com/ipfs/helia-unixfs/issues/14)) ([36cf3b2](https://github.com/ipfs/helia-unixfs/commit/36cf3b2143276a59b685ceb58299c4f881545fee))
+
 ## [@helia/unixfs-v1.1.0](https://github.com/ipfs/helia-unixfs/compare/@helia/unixfs-v1.0.5...@helia/unixfs-v1.1.0) (2023-03-15)
 
 
