@@ -28,7 +28,7 @@
     "it-drain": "^2.0.0",
     "it-map": "^2.0.1",
     "kubo-rpc-client": "^3.0.1",
-    "libp2p": "next",
+    "libp2p": "^0.43.0",
     "multiformats": "^11.0.1",
     "tinybench": "^2.4.0"
   }
