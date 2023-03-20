@@ -169,7 +169,7 @@
     "@libp2p/websockets": "^5.0.3",
     "aegir": "^38.1.0",
     "delay": "^5.0.0",
-    "libp2p": "next",
+    "libp2p": "^0.43.0",
     "sinon": "^15.0.2",
     "sinon-ts": "^1.0.0"
   },
