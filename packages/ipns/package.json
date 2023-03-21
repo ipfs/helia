@@ -168,7 +168,7 @@
     "@libp2p/record": "^3.0.0",
     "hashlru": "^2.3.0",
     "interface-datastore": "^8.0.0",
-    "ipns": "^5.0.1",
+    "ipns": "^6.0.0",
     "is-ipfs": "^8.0.1",
     "multiformats": "^11.0.1",
     "p-queue": "^7.3.0",
