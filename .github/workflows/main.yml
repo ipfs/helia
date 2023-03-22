@@ -131,7 +131,19 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           release-type: node
+          manifest-file: .release-please-manifest.json
+          config-file: .release-please.json
+          changelog-types: |
+            [
+              { "type": "feat", "section": "Features", "hidden": false },
+              { "type": "fix", "section": "Bug Fixes", "hidden": false },
+              { "type": "chore", "section": "Trivial Changes", "hidden": false },
+              { "type": "docs", "section": "Documentation", "hidden": false },
+              { "type": "deps", "section": "Dependencies", "hidden": false }
+            ]
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v2
         with:
           node-version: lts/*
