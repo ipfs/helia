@@ -1,6 +1,6 @@
 {
   "name": "helia",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "An implementation of IPFS in JavaScript",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/master/packages/helia#readme",
@@ -52,7 +52,7 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@helia/interface": "~0.0.0",
+    "@helia/interface": "^0.1.0",
     "@ipld/dag-pb": "^4.0.2",
     "@libp2p/interface-libp2p": "^1.1.0",
     "@libp2p/interfaces": "^3.3.1",

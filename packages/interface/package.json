@@ -1,6 +1,6 @@
 {
   "name": "@helia/interface",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "The Helia API",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/master/packages/interface#readme",
