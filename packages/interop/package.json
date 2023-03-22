@@ -61,7 +61,7 @@
     "aegir": "^38.1.0",
     "blockstore-core": "^4.0.1",
     "datastore-core": "^9.0.3",
-    "go-ipfs": "^0.18.1",
+    "go-ipfs": "^0.19.0",
     "helia": "next",
     "ipfs-core-types": "^0.14.0",
     "ipfs-unixfs-importer": "^15.1.0",
