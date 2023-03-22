@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.0.1](https://www.github.com/ipfs/helia/compare/v1.0.0...v1.0.1) (2023-03-22)
+
+
+### Trivial Changes
+
+* update release please config ([cff3aa3](https://www.github.com/ipfs/helia/commit/cff3aa309541fd7af10eb046dcfe5e28f2a7267e))
+
 ## 1.0.0 (2023-03-20)
 
 
