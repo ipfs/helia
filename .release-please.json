@@ -1,9 +1,0 @@
-{
-  "plugins": ["node-workspace"],
-  "group-pull-request-title-pattern": "chore: release ${component}",
-  "bootstrap-sha": "671660469dcb2ce06f6390f9fbe72b1db232ac5b",
-  "packages": {
-    "packages/helia": {},
-    "packages/interface": {}
-  }
-}
