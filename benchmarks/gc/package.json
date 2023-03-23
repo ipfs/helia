@@ -21,7 +21,7 @@
     "datastore-level": "^10.0.1",
     "execa": "^7.0.0",
     "go-ipfs": "^0.18.1",
-    "helia": "~0.0.0",
+    "helia": "^1.0.0",
     "ipfs-core": "^0.18.0",
     "ipfsd-ctl": "^13.0.0",
     "it-all": "^2.0.0",
