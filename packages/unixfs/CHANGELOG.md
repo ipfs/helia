@@ -1,3 +1,10 @@
+## [@helia/unixfs-v1.2.1](https://github.com/ipfs/helia-unixfs/compare/@helia/unixfs-v1.2.0...@helia/unixfs-v1.2.1) (2023-03-23)
+
+
+### Dependencies
+
+* update helia deps to v1 ([#16](https://github.com/ipfs/helia-unixfs/issues/16)) ([7497590](https://github.com/ipfs/helia-unixfs/commit/74975903ec619a4662e5bfa9546997641e9f8e8c))
+
 ## [@helia/unixfs-v1.2.0](https://github.com/ipfs/helia-unixfs/compare/@helia/unixfs-v1.1.0...@helia/unixfs-v1.2.0) (2023-03-17)
 
 
