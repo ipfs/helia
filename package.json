@@ -36,9 +36,7 @@
     "docs": "NODE_OPTIONS=--max_old_space_size=4096 aegir docs",
     "docs:no-publish": "npm run docs -- --publish false",
     "dep-check": "aegir run dep-check",
-    "release": "npm run docs:no-publish && npm run release:npm && npm run docs",
-    "release:npm": "aegir exec npm -- publish",
-    "release:rc": "aegir release-rc"
+    "release": "npm run docs:no-publish && aegir run release && npm run docs"
   },
   "dependencies": {
     "aegir": "^38.1.0"
