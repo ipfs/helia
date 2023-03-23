@@ -74,7 +74,7 @@
     "@libp2p/interfaces": "^3.3.1",
     "interface-blockstore": "^5.0.0",
     "interface-datastore": "^8.0.0",
-    "interface-store": "^4.0.0",
+    "interface-store": "^5.0.1",
     "ipfs-bitswap": "^17.0.0",
     "multiformats": "^11.0.1",
     "progress-events": "^1.0.0"
