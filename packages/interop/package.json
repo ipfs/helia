@@ -54,7 +54,7 @@
   "devDependencies": {
     "@chainsafe/libp2p-noise": "^11.0.0",
     "@chainsafe/libp2p-yamux": "^3.0.5",
-    "@helia/interface": "^0.1.0",
+    "@helia/interface": "*",
     "@libp2p/tcp": "^6.1.2",
     "@libp2p/websockets": "^5.0.3",
     "@multiformats/sha3": "^2.0.15",
@@ -62,7 +62,7 @@
     "blockstore-core": "^4.0.0",
     "datastore-core": "^9.0.0",
     "go-ipfs": "^0.19.0",
-    "helia": "^0.1.0",
+    "helia": "*",
     "ipfsd-ctl": "^13.0.0",
     "it-to-buffer": "^3.0.0",
     "kubo-rpc-client": "^3.0.0",
