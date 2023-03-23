@@ -14,5 +14,6 @@ export async function connect (helia: Helia, kubo: Controller, protocol: string)
       break
     } catch { }
   }
-  expect(connected).to.be.true('could not connect hHlia to Kubo')
+
+  expect(connected).to.be.true('could not connect Helia to Kubo')
 }

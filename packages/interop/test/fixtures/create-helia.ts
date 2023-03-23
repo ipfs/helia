@@ -14,7 +14,7 @@ export async function createHeliaNode (config: Libp2pOptions = {}): Promise<Heli
   const libp2p = await createLibp2p({
     addresses: {
       listen: [
-        '/ip4/0.0.0.0/tcp/0'
+        '/ip4/127.0.0.1/tcp/0'
       ]
     },
     transports: [

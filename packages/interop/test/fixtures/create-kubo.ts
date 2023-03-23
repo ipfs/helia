@@ -16,8 +16,8 @@ export async function createKuboNode (options: ControllerOptions<'go'> = {}): Pr
       config: {
         Addresses: {
           Swarm: [
-            '/ip4/0.0.0.0/tcp/4001',
-            '/ip4/0.0.0.0/tcp/4002/ws'
+            '/ip4/127.0.0.1/tcp/4001',
+            '/ip4/127.0.0.1/tcp/4002/ws'
           ]
         }
       }
