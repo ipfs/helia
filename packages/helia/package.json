@@ -138,7 +138,7 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@helia/interface": "next",
+    "@helia/interface": "^1.0.0",
     "@ipld/dag-pb": "^4.0.2",
     "@libp2p/interface-libp2p": "^1.1.0",
     "@libp2p/interfaces": "^3.3.1",
