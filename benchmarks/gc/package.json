@@ -17,7 +17,7 @@
     "@ipld/dag-pb": "^4.0.2",
     "@libp2p/websockets": "^5.0.3",
     "aegir": "^38.1.5",
-    "blockstore-fs": "^1.0.0",
+    "blockstore-fs": "^1.0.1",
     "datastore-level": "^10.0.1",
     "execa": "^7.0.0",
     "go-ipfs": "^0.18.1",

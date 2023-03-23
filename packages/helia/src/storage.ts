@@ -50,13 +50,13 @@ export class BlockStorage implements Blocks {
   /**
    * Put a block to the underlying datastore
    */
-  async put (cid: CID, block: Uint8Array, options: AbortOptions & ProgressOptions<PutBlockProgressEvents> = {}): Promise<void> {
+  async put (cid: CID, block: Uint8Array, options: AbortOptions & ProgressOptions<PutBlockProgressEvents> = {}): Promise<CID> {
     const releaseLock = await this.lock.readLock()
 
     try {
       if (await this.child.has(cid)) {
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:duplicate', cid))
-        return
+        return cid
       }
 
       if (this.bitswap?.isStarted() === true) {
@@ -65,7 +65,8 @@ export class BlockStorage implements Blocks {
       }
 
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:blockstore:put', cid))
-      await this.child.put(cid, block, options)
+
+      return await this.child.put(cid, block, options)
     } finally {
       releaseLock()
     }
@@ -74,7 +75,7 @@ export class BlockStorage implements Blocks {
   /**
    * Put a multiple blocks to the underlying datastore
    */
-  async * putMany (blocks: AwaitIterable<{ cid: CID, block: Uint8Array }>, options: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents> = {}): AsyncIterable<Pair> {
+  async * putMany (blocks: AwaitIterable<{ cid: CID, block: Uint8Array }>, options: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents> = {}): AsyncIterable<CID> {
     const releaseLock = await this.lock.readLock()
 
     try {
@@ -127,7 +128,7 @@ export class BlockStorage implements Blocks {
   /**
    * Get multiple blocks back from an (async) iterable of cids
    */
-  async * getMany (cids: AwaitIterable<CID>, options: AbortOptions & ProgressOptions<GetManyBlocksProgressEvents> = {}): AsyncIterable<Uint8Array> {
+  async * getMany (cids: AwaitIterable<CID>, options: AbortOptions & ProgressOptions<GetManyBlocksProgressEvents> = {}): AsyncIterable<Pair> {
     const releaseLock = await this.lock.readLock()
 
     try {

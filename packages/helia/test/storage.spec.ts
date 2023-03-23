@@ -77,7 +77,7 @@ describe('storage', () => {
       }
     }()))
 
-    expect(retrieved).to.deep.equal(new Array(count).fill(0).map((_, i) => blocks[i].block))
+    expect(retrieved).to.deep.equal(new Array(count).fill(0).map((_, i) => blocks[i]))
   })
 
   it('puts a block into the blockstore', async () => {
@@ -108,11 +108,11 @@ describe('storage', () => {
     bitswap.isStarted.returns(true)
     bitswap.want.withArgs(cid).resolves(block)
 
-    await expect(blockstore.has(cid)).to.eventually.be.false()
+    expect(await blockstore.has(cid)).to.be.false()
 
     const returned = await storage.get(cid)
 
-    await expect(blockstore.has(cid)).to.eventually.be.true()
+    expect(await blockstore.has(cid)).to.be.true()
     expect(returned).to.equalBytes(block)
     expect(bitswap.want.called).to.be.true()
   })
@@ -126,7 +126,7 @@ describe('storage', () => {
       const { cid, block } = blocks[i]
       bitswap.want.withArgs(cid).resolves(block)
 
-      await expect(blockstore.has(cid)).to.eventually.be.false()
+      expect(await blockstore.has(cid)).to.be.false()
     }
 
     const retrieved = await all(storage.getMany(async function * () {
@@ -136,12 +136,12 @@ describe('storage', () => {
       }
     }()))
 
-    expect(retrieved).to.deep.equal(new Array(count).fill(0).map((_, i) => blocks[i].block))
+    expect(retrieved).to.deep.equal(new Array(count).fill(0).map((_, i) => blocks[i]))
 
     for (let i = 0; i < count; i++) {
       const { cid } = blocks[i]
       expect(bitswap.want.calledWith(cid)).to.be.true()
-      await expect(blockstore.has(cid)).to.eventually.be.true()
+      expect(await blockstore.has(cid)).to.be.true()
     }
   })
 
@@ -169,10 +169,10 @@ describe('storage', () => {
       }
     }()))
 
-    expect(retrieved).to.deep.equal(new Array(count).fill(0).map((_, i) => blocks[i].block))
+    expect(retrieved).to.deep.equal(new Array(count).fill(0).map((_, i) => blocks[i]))
 
     for (let i = 0; i < count; i++) {
-      await expect(blockstore.has(blocks[i].cid)).to.eventually.be.true()
+      expect(await blockstore.has(blocks[i].cid)).to.be.true()
     }
   })
 })

@@ -86,11 +86,11 @@ describe('helia', () => {
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
     const block = Uint8Array.from([0, 1, 2, 3])
     await helia.blockstore.put(cid, block)
-    await expect(helia.blockstore.has(cid)).to.eventually.be.true()
+    expect(await helia.blockstore.has(cid)).to.be.true()
 
     const key = new Key(`/${cid.toString()}`)
     await helia.datastore.put(key, block)
-    await expect(helia.datastore.has(key)).to.eventually.be.true()
+    expect(await helia.datastore.has(key)).to.be.true()
 
     expect(() => {
       helia.libp2p.isStarted()
