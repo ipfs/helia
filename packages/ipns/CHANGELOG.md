@@ -1,3 +1,10 @@
+## [@helia/ipns-v1.1.0](https://github.com/ipfs/helia-ipns/compare/@helia/ipns-v1.0.1...@helia/ipns-v1.1.0) (2023-03-29)
+
+
+### Features
+
+* allow publish/resolve using only local datastore ([#15](https://github.com/ipfs/helia-ipns/issues/15)) ([43e32a2](https://github.com/ipfs/helia-ipns/commit/43e32a20f44fffd533531a57e6d60883cebc55ca))
+
 ## [@helia/ipns-v1.0.1](https://github.com/ipfs/helia-ipns/compare/@helia/ipns-v1.0.0...@helia/ipns-v1.0.1) (2023-03-21)
 
 
