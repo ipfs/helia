@@ -2,21 +2,25 @@
 
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
-import type { IPNS } from '../src/index.js'
+import type { IPNS, IPNSRouting } from '../src/index.js'
 import { ipns } from '../src/index.js'
 import { CID } from 'multiformats/cid'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import Sinon from 'sinon'
+import { StubbedInstance, stubInterface } from 'sinon-ts'
 
 const cid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
 
 describe('publish', () => {
   let name: IPNS
+  let routing: StubbedInstance<IPNSRouting>
 
-  before(async () => {
+  beforeEach(async () => {
     const datastore = new MemoryDatastore()
+    routing = stubInterface<IPNSRouting>()
+    routing.get.throws(new Error('Not found'))
 
-    name = ipns({ datastore })
+    name = ipns({ datastore }, [routing])
   })
 
   it('should publish an IPNS record with the default params', async function () {
@@ -36,6 +40,15 @@ describe('publish', () => {
 
     expect(ipnsEntry).to.have.property('sequence', 1n)
     expect(ipnsEntry).to.have.property('ttl', BigInt(lifetime) * 100000n)
+  })
+
+  it('should publish a record offline', async () => {
+    const key = await createEd25519PeerId()
+    await name.publish(key, cid, {
+      offline: true
+    })
+
+    expect(routing.put.called).to.be.false()
   })
 
   it('should emit progress events', async function () {

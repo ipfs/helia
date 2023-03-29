@@ -104,21 +104,33 @@ export type RepublishProgressEvents =
 
 export interface PublishOptions extends AbortOptions, ProgressOptions<PublishProgressEvents | IPNSRoutingEvents> {
   /**
-   * Time duration of the record in ms
+   * Time duration of the record in ms (default: 24hrs)
    */
   lifetime?: number
+
+  /**
+   * Only publish to a local datastore (default: false)
+   */
+  offline?: boolean
 }
 
 export interface ResolveOptions extends AbortOptions, ProgressOptions<ResolveProgressEvents | IPNSRoutingEvents> {
   /**
-   * do not use cached entries
+   * Do not query the network for the IPNS record (default: false)
+   */
+  offline?: boolean
+}
+
+export interface ResolveDNSOptions extends ResolveOptions {
+  /**
+   * Do not use cached DNS entries (default: false)
    */
   nocache?: boolean
 }
 
 export interface RepublishOptions extends AbortOptions, ProgressOptions<RepublishProgressEvents | IPNSRoutingEvents> {
   /**
-   * The republish interval in ms (default: 24hrs)
+   * The republish interval in ms (default: 23hrs)
    */
   interval?: number
 }
@@ -140,7 +152,7 @@ export interface IPNS {
   /**
    * Resolve a CID from a dns-link style IPNS record
    */
-  resolveDns: (domain: string, options?: ResolveOptions) => Promise<CID>
+  resolveDns: (domain: string, options?: ResolveDNSOptions) => Promise<CID>
 
   /**
    * Periodically republish all IPNS records found in the datastore
@@ -192,8 +204,10 @@ class DefaultIPNS implements IPNS {
 
       await this.localStore.put(routingKey, marshaledRecord, options)
 
-      // publish record to routing
-      await Promise.all(this.routers.map(async r => { await r.put(routingKey, marshaledRecord, options) }))
+      if (options.offline !== true) {
+        // publish record to routing
+        await Promise.all(this.routers.map(async r => { await r.put(routingKey, marshaledRecord, options) }))
+      }
 
       return record
     } catch (err: any) {
@@ -207,13 +221,13 @@ class DefaultIPNS implements IPNS {
     const record = await this.#findIpnsRecord(routingKey, options)
     const str = uint8ArrayToString(record.value)
 
-    return await this.#resolve(str)
+    return await this.#resolve(str, options)
   }
 
-  async resolveDns (domain: string, options: ResolveOptions = {}): Promise<CID> {
+  async resolveDns (domain: string, options: ResolveDNSOptions = {}): Promise<CID> {
     const dnslink = await resolveDnslink(domain, options)
 
-    return await this.#resolve(dnslink)
+    return await this.#resolve(dnslink, options)
   }
 
   republish (options: RepublishOptions = {}): void {
@@ -252,14 +266,14 @@ class DefaultIPNS implements IPNS {
     }, options.interval ?? DEFAULT_REPUBLISH_INTERVAL_MS)
   }
 
-  async #resolve (ipfsPath: string): Promise<CID> {
+  async #resolve (ipfsPath: string, options: ResolveOptions = {}): Promise<CID> {
     const parts = ipfsPath.split('/')
 
     if (parts.length === 3) {
       const scheme = parts[1]
 
       if (scheme === 'ipns') {
-        return await this.resolve(peerIdFromString(parts[2]))
+        return await this.resolve(peerIdFromString(parts[2]), options)
       } else if (scheme === 'ipfs') {
         return CID.parse(parts[2])
       }
@@ -269,11 +283,17 @@ class DefaultIPNS implements IPNS {
     throw new Error('Invalid value')
   }
 
-  async #findIpnsRecord (routingKey: Uint8Array, options: AbortOptions): Promise<IPNSEntry> {
-    const routers = [
+  async #findIpnsRecord (routingKey: Uint8Array, options: ResolveOptions = {}): Promise<IPNSEntry> {
+    let routers = [
       this.localStore,
       ...this.routers
     ]
+
+    if (options.offline === true) {
+      routers = [
+        this.localStore
+      ]
+    }
 
     const unmarshaledRecord = await Promise.any(
       routers.map(async (router) => {
