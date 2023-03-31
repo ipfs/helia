@@ -64,7 +64,7 @@
     "go-ipfs": "^0.19.0",
     "helia": "^1.0.0",
     "ipfsd-ctl": "^13.0.0",
-    "it-to-buffer": "^3.0.0",
+    "it-to-buffer": "^4.0.1",
     "kubo-rpc-client": "^3.0.0",
     "libp2p": "^0.43.0",
     "multiformats": "^11.0.1"
