@@ -153,7 +153,7 @@
     "it-all": "^2.0.0",
     "it-drain": "^2.0.0",
     "it-filter": "^2.0.0",
-    "it-foreach": "^1.0.1",
+    "it-foreach": "^2.0.2",
     "mortice": "^3.0.1",
     "multiformats": "^11.0.1",
     "p-defer": "^4.0.0",
