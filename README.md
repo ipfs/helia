@@ -34,7 +34,7 @@ See the [Manifesto](./MANIFESTO.md) and the [State of IPFS in JS blog post from 
 
 ## Getting Started
 
-Helia ships with an [examples repo](https://github.com/ipfs-examples/helia-examples#examples), which covers a wide variety of use cases. If you feel something has been missed, follow the [contribution guide](https://github.com/ipfs-examples/helia-examples#contributing) and create a PR to the examples repo.
+Check out the [Helia examples repo](https://github.com/ipfs-examples/helia-examples#examples), which covers a wide variety of use cases. If you feel something has been missed, follow the [contribution guide](https://github.com/ipfs-examples/helia-examples#contributing) and create a PR to the examples repo.
 
 Helia embraces the modular approach and encourages you to bring your own implementations of interfacing libraries to suit your needs. Helia also ships supplemental libraries and tooling compatible with Helia:
 
