@@ -27,6 +27,10 @@ The core of Helia will be very focused on use as a library: just [js-libp2p], a 
 
 A "get you started" bundle with some common components will be provided but users are very much encouraged to roll their own version of Helia to suit their use case.
 
+> **Note**
+>
+> An implementation of IPNS compatible with helia can be installed from npm [`@helia/ipns`](https://github.com/ipfs/helia-ipns)
+
 ## BYO Filesystem
 
 The default filesystem for IPFS is [UnixFS](https://github.com/ipfs/specs/blob/main/UNIXFS.md), but UnixFS has several limitations. Support for some common Unix file attributes such as mode (permission bits) and `mtime` landed in UnixFSv1.5, but this has yet to make it to [kubo].
@@ -34,6 +38,10 @@ The default filesystem for IPFS is [UnixFS](https://github.com/ipfs/specs/blob/m
 Several features are still missing from 1.5, such as arbitrary metadata (extended attributes) or versioning, but they have been implemented by other filesystems such as [WNFS](https://guide.fission.codes/developers/webnative/file-system-wnfs).
 
 That these missing features are being implemented by other filesystems is incredibly exciting and will unlock new use cases that are not possible today, so Helia will not bless any one filesystem as the One True Implementation, instead it will present an abstraction of posix filesystem operations (`ls`, `cat`, etc) as an API but the underlying filesystem(s) will be configurable.
+
+> **Note**
+>
+> An implementation of unixFS compatible with helia can be installed from npm [`@helia/unixfs`](https://github.com/ipfs/helia-unixfs).
 
 ## JavaScript first
 
