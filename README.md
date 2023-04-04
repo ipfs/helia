@@ -16,6 +16,7 @@
 ## Table of contents <!-- omit in toc -->
 
 - [Purpose and goals](#purpose-and-goals)
+- [Getting Started](#getting-started)
 - [Project status](#project-status)
 - [Roadmap](#roadmap)
 - [Get involved](#get-involved)
@@ -31,9 +32,20 @@ A lean, modular, and modern implementation of IPFS for the prolific JS and brows
 
 See the [Manifesto](./MANIFESTO.md) and the [State of IPFS in JS blog post from October 2022](https://blog.ipfs.tech/state-of-ipfs-in-js/) for more info.
 
+## Getting Started
+
+Helia ships with an [examples repo](https://github.com/ipfs-examples/helia-examples#examples), which covers a wide variety of use cases. If you feel something has been missed, follow the [contribution guide](https://github.com/ipfs-examples/helia-examples#contributing) and create a PR to the examples repo.
+
+Helia embraces the modular approach and encourages you to bring your own implementations of interfacing libraries to suit your needs. Helia also ships supplemental libraries and tooling compatible with Helia:
+
+- [`@helia/UnixFS`](https://github.com/ipfs/helia-unixfs)
+- [`@helia/ipns`](https://github.com/ipfs/helia-ipns)
+
+These libraries are by no means the "one true implementation", instead these are meant to configurable as per your needs.
+
 ## Project status
 
-As of early 2023, this project is pre-alpha and is currently in development.  These initial building blocks are in development now; have a look at this repo's PR(s).  An initial v1 release is planned for [late Q1 2023](/ROADMAP.md#late-q1-march). 
+As of early 2023, this project is pre-alpha and is currently in development.  These initial building blocks are in development now; have a look at this repo's PR(s).  An initial v1 release is planned for [late Q1 2023](/ROADMAP.md#late-q1-march).
 
 ## Roadmap
 
