@@ -1,3 +1,11 @@
+## [helia-v1.0.1](https://github.com/ipfs/helia/compare/helia-v1.0.0...helia-v1.0.1) (2023-04-05)
+
+
+### Dependencies
+
+* bump it-all from 2.0.1 to 3.0.1 ([#72](https://github.com/ipfs/helia/issues/72)) ([e7ce5bc](https://github.com/ipfs/helia/commit/e7ce5bc0e0db0a6b41920a3c36b95eeea1863183))
+* bump it-foreach from 1.0.1 to 2.0.2 ([#75](https://github.com/ipfs/helia/issues/75)) ([6f5f059](https://github.com/ipfs/helia/commit/6f5f0592edd44257092d0b70dd364096864495bf))
+
 ## helia-v1.0.0 (2023-03-23)
 
 
