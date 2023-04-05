@@ -1,3 +1,10 @@
+## [helia-v1.0.3](https://github.com/ipfs/helia/compare/helia-v1.0.2...helia-v1.0.3) (2023-04-05)
+
+
+### Dependencies
+
+* bump it-filter from 2.0.2 to 3.0.1 ([#74](https://github.com/ipfs/helia/issues/74)) ([3402724](https://github.com/ipfs/helia/commit/340272484df47d2f70f870d375ebb4235fb165a0))
+
 ## [helia-v1.0.2](https://github.com/ipfs/helia/compare/helia-v1.0.1...helia-v1.0.2) (2023-04-05)
 
 
