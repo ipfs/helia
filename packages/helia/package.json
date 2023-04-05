@@ -150,7 +150,7 @@
     "interface-datastore": "^8.0.0",
     "interface-store": "^5.0.1",
     "ipfs-bitswap": "^17.0.0",
-    "it-all": "^2.0.0",
+    "it-all": "^3.0.1",
     "it-drain": "^2.0.0",
     "it-filter": "^2.0.0",
     "it-foreach": "^2.0.2",
