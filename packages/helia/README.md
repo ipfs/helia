@@ -4,7 +4,7 @@
   </a>
 </p>
 
-# helia <!-- omit in toc -->
+# [helia](https://github.com/ipfs/helia) <!-- omit in toc -->
 
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)

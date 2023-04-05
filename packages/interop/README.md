@@ -4,7 +4,7 @@
   </a>
 </p>
 
-# @helia/interop <!-- omit in toc -->
+# [@helia/interop](https://github.com/ipfs/helia/tree/main/packages/interop) <!-- omit in toc -->
 
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
