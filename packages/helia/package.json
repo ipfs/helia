@@ -152,7 +152,7 @@
     "ipfs-bitswap": "^17.0.0",
     "it-all": "^3.0.1",
     "it-drain": "^3.0.1",
-    "it-filter": "^2.0.0",
+    "it-filter": "^3.0.1",
     "it-foreach": "^2.0.2",
     "mortice": "^3.0.1",
     "multiformats": "^11.0.1",
