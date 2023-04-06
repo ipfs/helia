@@ -21,6 +21,7 @@
 - [🛣️ Roadmap](#️-roadmap)
 - [👫 Get involved](#-get-involved)
   - [🤲 Contribute](#-contribute)
+- [🛍️ Notable Consumers/Users](#️-notable-consumersusers)
 - [🌞 Name](#-name)
 - [🪪 License](#-license)
 
@@ -74,6 +75,12 @@ Please be aware that all interactions related to this repo are subject to the IP
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
 
 [![](https://cdn.rawgit.com/jbenet/contribute-ipfs-gif/master/img/contribute.gif)](https://github.com/ipfs/community/blob/master/CONTRIBUTING.md)
+
+## 🛍️ Notable Consumers/Users
+
+*<YOUR LOGO HERE>*
+
+Helia is in its early days.  If you're using Helia in production or have a novel usecase, we'd love to hear.  Please open an issue so we can learn more!
 
 ## 🌞 Name
 
