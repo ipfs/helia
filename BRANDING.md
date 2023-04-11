@@ -17,4 +17,4 @@ Various links related to Helia's branding:
 * [Google drive folder with various assets](https://drive.google.com/drive/folders/1VBRtofco3Gw09VlE9pgCwOGFRwLS6er5?usp=sharing)
   * [Logos](https://drive.google.com/drive/folders/13tcoTQ6YnAF9u-zYkJShUwCVQ9HXBi75?usp=share_link)
   * [Fonts](https://drive.google.com/drive/folders/1GPWn-Y3eSXm1grh4Xr2scAQ6HSM5XwHz?usp=share_link)
-  * [Google Presenetation Slide Template](https://docs.google.com/presentation/d/17bgytPXyHGksqFKs9iQT063CCpQMdxH4dt79VH70DrI/edit)
+  * [Google Presentation Slide Template](https://docs.google.com/presentation/d/17bgytPXyHGksqFKs9iQT063CCpQMdxH4dt79VH70DrI/edit)
