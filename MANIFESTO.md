@@ -22,7 +22,7 @@ For example:
 - Other applications may be deployed in extremely adversarial environments, and should limit the number of dependencies (throughout the dependency tree) to reduce the opportunities for supply chain attacks
 - The user should not have to include the code for features their application does not use
 
-The core of Helia will be very focused on use as a library: just [js-libp2p], a [datastore], and a [blockstore] that transparently uses [js-bitswap] to load any requested blocks not already in the blockstore from the network.
+The core of Helia will be very focused on use as a library: just [js-libp2p], a [datastore], and a [blockstore] that transparently uses [js-bitswap] to load any requested blocks not already in the blockstore from the network and/or to transfer them to network peers.
 
 Users are very much encouraged to bundle extra components with their version of Helia to suit their use case.
 
