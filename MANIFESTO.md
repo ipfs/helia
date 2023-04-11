@@ -39,7 +39,7 @@ The default filesystem for IPFS is [UnixFS](https://github.com/ipfs/specs/blob/m
 
 Several features are still missing from 1.5, such as arbitrary metadata (extended attributes) or versioning, but they have been implemented by other filesystems such as [WNFS](https://guide.fission.codes/developers/webnative/file-system-wnfs).
 
-That these missing features are being implemented by other filesystems is incredibly exciting and will unlock new use cases that are not possible today, so Helia will not bless any one filesystem as the One True Implementation, instead it will present an abstraction of posix filesystem operations (`ls`, `cat`, etc) as an API but the underlying filesystem(s) will be configurable.
+That these missing features are being implemented by other filesystems is incredibly exciting and will unlock new use cases that are not possible today, so Helia will not bless any one filesystem as the One True Implementation, instead it is intended to provide the features required to implement these file systems in a network-aware way that allows pulling data from and sending data to peers.
 
 Currently available filesystems are:
 
