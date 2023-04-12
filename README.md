@@ -29,7 +29,7 @@
 
 A lean, modular, and modern implementation of IPFS for the prolific JS and browser environments.
 
-See the [Manifesto](./MANIFESTO.md) and the [State of IPFS in JS blog post from October 2022](https://blog.ipfs.tech/state-of-ipfs-in-js/) for more info.
+See the [Manifesto](./MANIFESTO.md), the [FAQ](./FAQ.md), and the [State of IPFS in JS blog post from October 2022](https://blog.ipfs.tech/state-of-ipfs-in-js/) for more info.
 
 ## 🏃‍♀️ Getting Started
 
