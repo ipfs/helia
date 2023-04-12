@@ -54,7 +54,7 @@ describe('unixfs bitswap interop', () => {
 
     const bytes = await toBuffer(kubo.api.cat(cid))
 
-    expect(bytes).to.equalBytes(await toBuffer(input))
+    expect(bytes).to.equalBytes(toBuffer(input))
   })
 
   it('should add a large file to kubo and fetch it from helia', async () => {
@@ -77,6 +77,6 @@ describe('unixfs bitswap interop', () => {
 
     const bytes = await toBuffer(unixFs.cat(cid))
 
-    expect(bytes).to.equalBytes(await toBuffer(input))
+    expect(bytes).to.equalBytes(toBuffer(input))
   })
 })
