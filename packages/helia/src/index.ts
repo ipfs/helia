@@ -32,6 +32,7 @@ import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 import { HeliaImpl } from './helia.js'
+import type { Bitswap } from 'ipfs-bitswap'
 
 /**
  * DAGWalkers take a block and yield CIDs encoded in that block
@@ -49,6 +50,11 @@ export interface HeliaInit {
    * A libp2p node is required to perform network operations
    */
   libp2p?: Libp2p
+
+  /**
+   * An optional custom bitswap implementation
+   */
+  bitswap?: Bitswap
 
   /**
    * The blockstore is where blocks are stored
