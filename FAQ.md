@@ -11,7 +11,7 @@
 
 ### 👩‍👧 What is the relationship of Helia to js-ipfs?
 
-[IPFS] is a set of protocols that define a way to implement a distributed file system. Historically it's also been the name of two applications that implement those protocols in Go ([Kubo]) and JavaScript ([js-ipfs]).
+[IPFS] is a suite of specifications and tools that concern data addressing and transfer. Historically it's also been the name of two applications that implement those protocols in Go ([Kubo]) and JavaScript ([js-ipfs]).
 
 With [Filecoin] development, [Protocol Labs] found that progress towards the goal of "one protocol multiple implementations" was smoother when implementations did not contain the word "Filecoin" as by including that term, people consciously or unconsciously assume that one project is somehow "blessed", favoured or otherwise more important than another.
 
@@ -23,11 +23,13 @@ The result of this is Helia - a new implementation of IPFS in JavaScript that is
 
 It shares some internal components with js-ipfs - [libp2p], [bitswap] etc but has a [redesigned API](https://ipfs.github.io/helia/interfaces/_helia_interface.Helia.html) that will enable the next generation of distributed applications.
 
-js-ipfs is being retired in favour of Helia - read more about the [thought processes](./MANIFESTO.md) that informed the design, check out the [examples](https://github.com/ipfs-examples/helia-examples) and start porting your application today!
+[js-ipfs is being retired in favour of Helia](https://github.com/ipfs/js-ipfs/issues/4336).  Read more about the [thought processes](./MANIFESTO.md) that informed Helia's design, check out the [examples](https://github.com/ipfs-examples/helia-examples) and start porting your application today!
 
 ### 🤝 How does Helia guarantee compatibility with Kubo and other IPFS implementations?
 
-Each Helia component has an interop suite that tests compatibility with other IPFS implementations.
+Each Helia component has an interop suite that tests compatibility with other IPFS implementations.  These tests run during CI as part of each PR and before a release.
+
+Initially they test compatibility with Kubo but if you maintain another IPFS implementation please open an issue or a PR to get added to the test matrix.
 
 See:
 
@@ -41,11 +43,11 @@ Other modules should implement an interop suite which can be linked to from here
 
 For the areas that have been benchmarked, very favourably.
 
-There is a [benchmarking suite](./benchmarks) in this repository which will be extended to cover most functional areas.
+There is a [benchmarking suite](./benchmarks) in this repository which will be extended to cover most functional areas such as [data transfer](https://github.com/ipfs/helia/issues/88).
 
 #### Garbage collection
 
-Helia uses reference counting for garbage collection, this has proven to be much more scalable than the approaches taken by js-ipfs or Kubo.
+Helia uses reference counting for garbage collection.  This has proven to be much more scalable than the approaches taken by js-ipfs or Kubo.
 
 Please see [#36](https://github.com/ipfs/helia/pull/36#issuecomment-1441403221) for graphs and discussion of the results.
 
