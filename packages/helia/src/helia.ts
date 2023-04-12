@@ -60,7 +60,7 @@ export class HeliaImpl implements Helia {
     })
 
     if (init.libp2p != null) {
-      this.#bitswap = createBitswap(libp2p, blockstore, {
+      this.#bitswap = init.bitswap ?? createBitswap(libp2p, blockstore, {
         hashLoader: {
           getHasher: async (codecOrName: string | number) => {
             const hasher = hashers.find(hasher => {
