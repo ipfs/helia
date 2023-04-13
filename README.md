@@ -59,8 +59,9 @@ graph TD;
       Libp2p-->IPNI;
       Libp2p-->Reframe;
     end
+    Blockstore-->BlockStorage["File system/IDB/S3/etc"]
+    Datastore-->DataStorage["Level/S3/IDB/etc"]
     Bitswap-->Network;
-
     DHT-->Network;
     PubSub-->Network;
     IPNI-->Network;
