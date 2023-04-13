@@ -6,7 +6,7 @@ Helia aims to be a next generation IPFS implementation that takes the learnings 
 
 - [🧱 Modular](#-modular)
 - [📁 BYO Filesystem](#-byo-filesystem)
-- [🥇 JavaScript first](#-javascript-first)
+- [⚗️ Isomorphic JavaScript](#️-isomorphic-javascript)
   - [🚀 (runtime-specific code where it makes sense)](#-runtime-specific-code-where-it-makes-sense)
 - [📜 ESM and TypeScript](#-esm-and-typescript)
 - [⛔ Non-goals](#-non-goals)
@@ -47,7 +47,7 @@ Currently available filesystems are:
 
 We hope there will be more soon!
 
-## 🥇 JavaScript first
+## ⚗️ Isomorphic JavaScript
 
 In the beginning there were Node.js [streams](https://nodejs.org/api/stream.html#readable-streams). Then there were [pull streams](https://www.npmjs.com/package/pull-stream). And finally, browsers have [native streams too](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
 
