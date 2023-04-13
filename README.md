@@ -46,17 +46,21 @@ Check out the [Helia examples repo](https://github.com/ipfs-examples/helia-examp
 graph TD;
     User["User or application"]-->IPNS["@helia/ipns"];
     User-->UnixFS["@helia/unixfs"];
-    IPNS-->Helia;
-    UnixFS-->Helia;
-    Helia-->Datastore;
-    Helia-->Blockstore;
-    Helia-->Libp2p;
-    Blockstore-->Bitswap;
+    User-->Libp2p;
+    User-->Datastore;
+    User-->Blockstore;
+    UnixFS-->Blockstore;
+    IPNS-->Datastore;
+    subgraph ide1 [Helia]
+      Datastore
+      Blockstore-->Bitswap;
+      Libp2p-->DHT;
+      Libp2p-->PubSub;
+      Libp2p-->IPNI;
+      Libp2p-->Reframe;
+    end
     Bitswap-->Network;
-    Libp2p-->DHT;
-    Libp2p-->PubSub;
-    Libp2p-->IPNI;
-    Libp2p-->Reframe;
+
     DHT-->Network;
     PubSub-->Network;
     IPNI-->Network;
