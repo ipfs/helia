@@ -51,7 +51,7 @@ graph TD;
     User-->Blockstore;
     UnixFS-->Blockstore;
     IPNS-->Datastore;
-    subgraph ide1 [Helia]
+    subgraph helia [Helia]
       Datastore
       Blockstore-->Bitswap;
       Libp2p-->DHT;
