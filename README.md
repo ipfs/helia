@@ -52,10 +52,15 @@ graph TD;
     Helia-->Blockstore;
     Helia-->Libp2p;
     Blockstore-->Bitswap;
+    Bitswap-->Network;
     Libp2p-->DHT;
     Libp2p-->PubSub;
     Libp2p-->IPNI;
     Libp2p-->Reframe;
+    DHT-->Network;
+    PubSub-->Network;
+    IPNI-->Network;
+    Reframe-->Network;
 ```
 
 ## 🏭 Code Structure
