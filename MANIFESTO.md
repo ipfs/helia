@@ -8,6 +8,7 @@ Helia aims to be a next generation IPFS implementation that takes the learnings 
 - [📁 BYO Filesystem](#-byo-filesystem)
 - [⚗️ Isomorphic JavaScript](#️-isomorphic-javascript)
   - [🚀 (runtime-specific code where it makes sense)](#-runtime-specific-code-where-it-makes-sense)
+- [Observability](#observability)
 - [📜 ESM and TypeScript](#-esm-and-typescript)
 - [⛔ Non-goals](#-non-goals)
   - [🌐 Networking](#-networking)
@@ -60,6 +61,18 @@ This also makes it easier to support other runtimes like [deno](https://deno.lan
 ### 🚀 (runtime-specific code where it makes sense)
 
 Some things are just faster in Node.js. The ability to run native code should not be underestimated so where the JS implementation of an algorithm is a proven performance bottleneck and a native version exists, it should be used.
+
+## Observability
+
+An IPFS implementation typically contains a lot of moving parts all of which must move in perfect synchronicity for an operation to be successful.
+
+When things do not go smoothly it's not always clear in which part of the system the fault has occurred.
+
+Helia aims to alleviate some of this pain by exposing comprehensive progress handlers that give insight into specific calls and the components that are interacted with.
+
+For example catting a file might involve requesting blocks from the blockstore, adding them to your bitswap want list, making DHT queries to find providers of that block, connecting to the provider and finally pulling the block down - any of these can go wrong but the user should be able to pinpoint where the problem lays.
+
+In addition to this standard tools such as [Prometheus](https://prometheus.io/) should be usable with many metrics exposed to allow deep introspection of node behaviour and the debugging and isolatino of performance bottlenecks.
 
 ## 📜 ESM and TypeScript
 
