@@ -51,13 +51,7 @@ export async function createKuboBenchmark (): Promise<GcBenchmark> {
         paths: cid
       }))
 
-      const isPinned = result[0].type.includes('direct') || result[0].type.includes('indirect') || result[0].type.includes('recursive')
-
-      if (!isPinned) {
-        console.info(result)
-      }
-
-      return isPinned
+      return result[0].type.includes('direct') || result[0].type.includes('indirect') || result[0].type.includes('recursive')
     },
     hasBlock: async (cid) => {
       try {
