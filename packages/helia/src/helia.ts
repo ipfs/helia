@@ -40,7 +40,7 @@ export class HeliaImpl implements Helia {
 
     // @ts-expect-error incomplete libp2p implementation
     const libp2p = init.libp2p ?? new Proxy<Libp2p>({}, {
-      get (_, prop) {
+      get (_, prop): true | (() => void) {
         const noop = (): void => {}
         const noops = ['start', 'stop']
 
@@ -54,7 +54,7 @@ export class HeliaImpl implements Helia {
 
         throw new Error('Please configure Helia with a libp2p instance')
       },
-      set () {
+      set (): never {
         throw new Error('Please configure Helia with a libp2p instance')
       }
     })
@@ -62,13 +62,13 @@ export class HeliaImpl implements Helia {
     if (init.libp2p != null) {
       this.#bitswap = createBitswap(libp2p, blockstore, {
         hashLoader: {
-          getHasher: async (codecOrName: string | number) => {
+          getHasher: async (codecOrName: string | number): Promise<MultihashHasher<number>> => {
             const hasher = hashers.find(hasher => {
               return hasher.code === codecOrName || hasher.name === codecOrName
             })
 
             if (hasher != null) {
-              return await Promise.resolve(hasher)
+              return hasher
             }
 
             throw new Error(`Could not load hasher for code/name "${codecOrName}"`)
@@ -108,7 +108,7 @@ export class HeliaImpl implements Helia {
 
       log('gc start')
 
-      await drain(blockstore.deleteMany((async function * () {
+      await drain(blockstore.deleteMany((async function * (): AsyncGenerator<CID> {
         for await (const { cid } of blockstore.getAll()) {
           try {
             if (await helia.pins.isPinned(cid, options)) {

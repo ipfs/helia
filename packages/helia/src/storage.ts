@@ -79,7 +79,7 @@ export class BlockStorage implements Blocks {
     const releaseLock = await this.lock.readLock()
 
     try {
-      const missingBlocks = filter(blocks, async ({ cid }) => {
+      const missingBlocks = filter(blocks, async ({ cid }): Promise<boolean> => {
         const has = await this.child.has(cid)
 
         if (has) {
@@ -89,7 +89,7 @@ export class BlockStorage implements Blocks {
         return !has
       })
 
-      const notifyEach = forEach(missingBlocks, ({ cid, block }) => {
+      const notifyEach = forEach(missingBlocks, ({ cid, block }): void => {
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:put-many:bitswap:notify', cid))
         this.bitswap?.notify(cid, block, options)
       })
@@ -119,6 +119,7 @@ export class BlockStorage implements Blocks {
       }
 
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:blockstore:get', cid))
+
       return await this.child.get(cid, options)
     } finally {
       releaseLock()
@@ -133,7 +134,7 @@ export class BlockStorage implements Blocks {
 
     try {
       options.onProgress?.(new CustomProgressEvent('blocks:get-many:blockstore:get-many'))
-      yield * this.child.getMany(forEach(cids, async (cid) => {
+      yield * this.child.getMany(forEach(cids, async (cid): Promise<void> => {
         if (this.bitswap?.isStarted() === true && !(await this.child.has(cid))) {
           options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:bitswap:get', cid))
           const block = await this.bitswap.want(cid, options)
@@ -174,7 +175,7 @@ export class BlockStorage implements Blocks {
       const storage = this
 
       options.onProgress?.(new CustomProgressEvent('blocks:delete-many:blockstore:delete-many'))
-      yield * this.child.deleteMany((async function * () {
+      yield * this.child.deleteMany((async function * (): AsyncIterable<CID> {
         for await (const cid of cids) {
           if (await storage.pins.isPinned(cid)) {
             throw new Error('CID was pinned')
