@@ -175,7 +175,7 @@ export class BlockStorage implements Blocks {
       const storage = this
 
       options.onProgress?.(new CustomProgressEvent('blocks:delete-many:blockstore:delete-many'))
-      yield * this.child.deleteMany((async function * (): AsyncIterable<CID> {
+      yield * this.child.deleteMany((async function * (): AsyncGenerator<CID> {
         for await (const cid of cids) {
           if (await storage.pins.isPinned(cid)) {
             throw new Error('CID was pinned')
