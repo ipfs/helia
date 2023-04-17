@@ -85,8 +85,8 @@ export class PinsImpl implements Pins {
     const queue = new PQueue({
       concurrency: DAG_WALK_QUEUE_CONCURRENCY
     })
-    void queue.add(async () => {
-      await this.#walkDag(cid, queue, (pinnedBlock) => {
+    void queue.add(async (): Promise<void> => {
+      await this.#walkDag(cid, queue, (pinnedBlock): void => {
         // do not update pinned block if this block is already pinned by this CID
         if (pinnedBlock.pinnedBy.find(c => uint8ArrayEquals(c, cid.bytes)) != null) {
           return
@@ -103,7 +103,7 @@ export class PinsImpl implements Pins {
     // if a job in the queue errors, throw that error
     const deferred = defer()
 
-    queue.on('error', (err) => {
+    queue.on('error', (err): void => {
       queue.clear()
       deferred.reject(err)
     })
@@ -199,8 +199,8 @@ export class PinsImpl implements Pins {
     const queue = new PQueue({
       concurrency: DAG_WALK_QUEUE_CONCURRENCY
     })
-    void queue.add(async () => {
-      await this.#walkDag(cid, queue, (pinnedBlock) => {
+    void queue.add(async (): Promise<void> => {
+      await this.#walkDag(cid, queue, (pinnedBlock): void => {
         pinnedBlock.pinCount--
         pinnedBlock.pinnedBy = pinnedBlock.pinnedBy.filter(c => uint8ArrayEquals(c, cid.bytes))
       }, {
