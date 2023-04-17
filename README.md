@@ -16,6 +16,7 @@
 - [🥅 Purpose and goals](#-purpose-and-goals)
 - [🏃‍♀️ Getting Started](#️-getting-started)
 - [📒 API Docs](#-api-docs)
+- [📐 System diagram](#-system-diagram)
 - [🏭 Code Structure](#-code-structure)
 - [📣 Project status](#-project-status)
 - [🛣️ Roadmap](#️-roadmap)
@@ -38,6 +39,34 @@ Check out the [Helia examples repo](https://github.com/ipfs-examples/helia-examp
 ## 📒 API Docs
 
 - https://ipfs.github.io/helia
+
+## 📐 System diagram
+
+```mermaid
+graph TD;
+    User["User or application"]-->IPNS["@helia/ipns"];
+    User-->UnixFS["@helia/unixfs"];
+    User-->Libp2p;
+    User-->Datastore;
+    User-->Blockstore;
+    UnixFS-->Blockstore;
+    IPNS-->Datastore;
+    subgraph helia [Helia]
+      Datastore
+      Blockstore-->Bitswap;
+      Libp2p-->DHT;
+      Libp2p-->PubSub;
+      Libp2p-->IPNI;
+      Libp2p-->Reframe;
+    end
+    Blockstore-->BlockStorage["File system/IDB/S3/etc"]
+    Datastore-->DataStorage["Level/S3/IDB/etc"]
+    Bitswap-->Network;
+    DHT-->Network;
+    PubSub-->Network;
+    IPNI-->Network;
+    Reframe-->Network;
+```
 
 ## 🏭 Code Structure
 Helia embraces a modular approach and encourages users to bring their own implementations of interfacing libraries to suit their needs. Helia also ships supplemental libraries and tools including:
