@@ -11,6 +11,18 @@
 [![codecov](https://img.shields.io/codecov/c/github/ipfs/helia.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia)
 [![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
 
+## Usage
+
+```
+import { createHelia } from 'helia';
+
+const ipfs = await createHelia();
+
+const myImmutableAddress = ipfs.add(JSON.stringify({ foo: "bar" }));
+
+console.log(ipfs.get(myImmutableAddress));
+```
+
 ## Table of contents <!-- omit in toc -->
 
 - [🥅 Purpose and goals](#-purpose-and-goals)
