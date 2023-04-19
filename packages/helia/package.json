@@ -166,7 +166,7 @@
     "@chainsafe/libp2p-yamux": "^3.0.5",
     "@ipld/dag-cbor": "^9.0.0",
     "@ipld/dag-json": "^10.0.1",
-    "@libp2p/websockets": "^5.0.3",
+    "@libp2p/websockets": "^6.0.0",
     "aegir": "^38.1.0",
     "delay": "^5.0.0",
     "libp2p": "^0.44.0",
