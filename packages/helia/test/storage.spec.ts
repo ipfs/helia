@@ -4,7 +4,7 @@ import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import { BlockStorage } from '../src/storage.js'
-import type { Blockstore } from 'interface-blockstore'
+import type { Blockstore, Pair } from 'interface-blockstore'
 import type { Bitswap } from 'ipfs-bitswap'
 import { StubbedInstance, stubInterface } from 'sinon-ts'
 import type { Pins } from '@helia/interface/pins'
@@ -143,6 +143,39 @@ describe('storage', () => {
       expect(bitswap.want.calledWith(cid)).to.be.true()
       expect(await blockstore.has(cid)).to.be.true()
     }
+  })
+
+  it.only('gets many blocks from bitswap when they are not in the blockstore and does not block.', async () => {
+    bitswap.isStarted.returns(true)
+
+    const count = 5
+
+    for (let i = 0; i < count; i++) {
+      const { cid, block } = blocks[i]
+      bitswap.want.withArgs(cid).resolves(block)
+
+      expect(await blockstore.has(cid)).to.be.false()
+    }
+
+    const cidsGenerator = async function* (): AsyncGenerator<CID> {
+      for (let i = 0; i < count; i++) {
+        yield blocks[i].cid
+        await delay(10)
+      }
+    }
+
+    const getFirstEntry = async (asyncIterableInstance: AsyncIterable<Pair>) => {
+      for await (const entry of asyncIterableInstance) {
+        return entry;
+      }
+    }
+    const retrieved = await storage.getMany(cidsGenerator())
+    const firstEntryFromRetrieved = await getFirstEntry(retrieved)
+
+    const retrieved2 = await storage.get(blocks[0].cid)
+    console.log(firstEntryFromRetrieved?.block, retrieved2)
+
+    expect(firstEntryFromRetrieved?.block).to.deep.equal(retrieved2)
   })
 
   it('gets some blocks from bitswap when they are not in the blockstore', async () => {
