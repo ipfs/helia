@@ -4,11 +4,11 @@ This will discuss what is required to implement an in browser helia node using l
 
 ## DataStore and BlockStore
 
-The datastore is used to hold important information relating to peers and DHT records. If you do not define how you want to store it, it will use one in memory.
+The datastore is used to hold important information relating to peers and DHT records. If you do not define how you want to store it, it will use one in memory as defined here https://github.com/ipfs/helia/blob/main/packages/helia/src/storage.ts#L28
 
 Blockstore is used to hold the blocks on ipfs you want to store locally
 
-```    
+```js    
 import { createLibp2p } from "libp2p";
 import { MemoryDatastore } from "datastore-core";
 import { MemoryBlockstore } from "blockstore-core";
@@ -31,7 +31,7 @@ const heliaNode = await createHelia({
 ## Transports
 
 Transports define the method in which we connect to different nodes on the network. When implementing Helia its important to know a couple things. 
-1. Where Helia will be run (Browser (Firefox, Chrome, Safari), Node)
+1. Browsers (Firefox, Chrome, Safari), JS runtimes (e.g. node, deno, bun)
 2. Which nodes likely have data you need
 
 The first point is important since tcp is not available in browser for example. It can only be used when running in Nodejs. If you are running in browser, WebTransports are not available in Safari but it is coming to Firefox. https://caniuse.com/webtransport
@@ -45,7 +45,7 @@ Helia implements libp2p to communicate which supports the following
 6. QUIC
 
 To use a specific transport, you just need to import it and define it in the config. Let's quickly define the Webtransport and webSockets.
-```
+```js
 import { createLibp2p } from "libp2p";
 import { webSockets } from "@libp2p/websockets";
 import { webTransport } from "@libp2p/webtransport";
@@ -62,7 +62,7 @@ This allows our node to relay traffic to other nodes that you may wish not to be
 
 **TO BE FILLED IN**
 
-```
+```js
 import { createLibp2p } from "libp2p";
 import { mplex } from "@libp2p/mplex";
 
@@ -76,7 +76,7 @@ const libp2p = await createLibp2p({
 
 It allows multiple conversations on the same line by giving it a unique identifier.
 
-```
+```js
 import { createLibp2p } from "libp2p";
 import { mplex } from "@libp2p/mplex";
 
@@ -90,7 +90,7 @@ const libp2p = await createLibp2p({
 
 Libp2p uses noise to encrypt the connections between peers
 
-```
+```js
 import { createLibp2p } from "libp2p";
 import { noise } from "@chainsafe/libp2p-noise";
 
@@ -104,7 +104,7 @@ const libp2p = await createLibp2p({
 
 Libp2p is based on the Kademlia DHT. We need to give it a way to access and validate the DHT.
 
-```
+```js
 import { createLibp2p } from "libp2p";
 import { kadDHT } from "@libp2p/kad-dht";
 import { ipnsValidator, ipnsSelector } from "@helia/ipns";
@@ -126,7 +126,7 @@ const libp2p = await createLibp2p({
 
 IPNI works alongside the DHT to improve content discoverablility and even allows content retrievability on filecoin which communicates under Graphsync, a different protocol.
 
-```
+```js
 import { createLibp2p } from "libp2p";
 import { ipniContentRouting } from "@libp2p/ipni-content-routing";
 
@@ -140,24 +140,22 @@ const libp2p = await createLibp2p({
 
 Peer discovery allows us to boostrap our node with some initial peers. Here you can add your own peers to speed up the querying time for data hosted on your own nodes.
 
-
-
-```
+```js
 import { createLibp2p } from "libp2p";
 
 const libp2p = await createLibp2p({
     ... // placeholder for remaining config
     peerDiscovery: [
-            bootstrap({
-                list: [
-                    "/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
-                    "/dnsaddr/bootstrap.libp2p.io/p2p/QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb",
-                    "/dnsaddr/bootstrap.libp2p.io/p2p/QmZa1sAxajnQjVM8WjWXoMbmPd7NsWhfKsPkErzpm9wGkp",
-                    "/dnsaddr/bootstrap.libp2p.io/p2p/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa",
-                    "/dnsaddr/bootstrap.libp2p.io/p2p/QmcZf59bWwK5XFi76CZX8cbJ4BhTzzA3gU1ZjYZcYW3dwt",
-                ],
-            }),
-        ],
+        bootstrap({
+            list: [
+                "/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
+                "/dnsaddr/bootstrap.libp2p.io/p2p/QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb",
+                "/dnsaddr/bootstrap.libp2p.io/p2p/QmZa1sAxajnQjVM8WjWXoMbmPd7NsWhfKsPkErzpm9wGkp",
+                "/dnsaddr/bootstrap.libp2p.io/p2p/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa",
+                "/dnsaddr/bootstrap.libp2p.io/p2p/QmcZf59bWwK5XFi76CZX8cbJ4BhTzzA3gU1ZjYZcYW3dwt",
+            ],
+        }),
+    ],
 })
 ```
 
@@ -165,8 +163,7 @@ const libp2p = await createLibp2p({
 
 Connection filters allow you to filter out certain peers to prevent connections. This might be useful since their are a wide variety of peers you might not want to communicate with. In this example, we will filter out ipv6 and local ipv4 addresses to make our node not so active and prevent unneccessary connections. When a node is started it will also have its local address as its peer. When we request peers from another peer it will return their local address which off course we cannot dial. This is the reason we do not bother and just filter out those address.
 
-
-```
+```js
 import { createLibp2p } from "libp2p";
 
 const libp2p = await createLibp2p({
@@ -190,7 +187,7 @@ const libp2p = await createLibp2p({
 In the below example, we will want to load IPNS and IPFS since we will be resolving some IPNS names and fetching content as well. 
 
 You will also want to wait a couple seconds to generate all the peers and establish connection to network before trying to access content
-```
+```js
 
 import { createLibp2p } from "libp2p";
 import { createHelia } from "helia";
