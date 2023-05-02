@@ -23,8 +23,8 @@
  * ```
  */
 
-import { CID } from 'multiformats/cid'
 import * as codec from '@ipld/dag-json'
+import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import type { Blocks, GetBlockProgressEvents, PutBlockProgressEvents } from '@helia/interface/blocks'
 import type { AbortOptions } from '@libp2p/interfaces'
