@@ -22,15 +22,15 @@
  */
 
 import { CID } from 'multiformats/cid'
-import type { Blocks, GetBlockProgressEvents, PutBlockProgressEvents } from '@helia/interface/blocks'
-import type { AbortOptions } from '@libp2p/interfaces'
-import type { ProgressOptions } from 'progress-events'
-import { sha256 } from 'multiformats/hashes/sha2'
 import * as raw from 'multiformats/codecs/raw'
+import { sha256 } from 'multiformats/hashes/sha2'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import type { Blocks, GetBlockProgressEvents, PutBlockProgressEvents } from '@helia/interface/blocks'
+import type { AbortOptions } from '@libp2p/interfaces'
 import type { BlockCodec } from 'multiformats/codecs/interface'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
+import type { ProgressOptions } from 'progress-events'
 
 export interface StringsComponents {
   blockstore: Blocks
@@ -46,8 +46,8 @@ export interface GetOptions extends AbortOptions, ProgressOptions<GetBlockProgre
 }
 
 /**
- * The UnixFS interface provides familiar filesystem operations to make working with
- * UnixFS DAGs simple and intuitive.
+ * The Strings interface provides a simple and intuitive way to add/get strings
+ * with your Helia node and is a great place to start learning about IPFS.
  */
 export interface Strings {
   /**

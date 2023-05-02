@@ -1,9 +1,11 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import type { Blockstore } from 'interface-blockstore'
-import { strings, Strings } from '../src/index.js'
 import { MemoryBlockstore } from 'blockstore-core'
+import * as json from 'multiformats/codecs/json'
+import { identity } from 'multiformats/hashes/identity'
+import { strings, type Strings } from '../src/index.js'
+import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 
 describe('get', () => {
@@ -18,9 +20,27 @@ describe('get', () => {
     cid = await str.add('hello world')
   })
 
-  it('adds a string', async () => {
+  it('gets a string', async () => {
     const string = await str.get(cid)
 
     expect(`${string}`).to.equal('hello world')
+  })
+
+  it('gets a string with a non-default hashing algorithm', async () => {
+    const input = 'hello world'
+    const cid = await str.add(input, {
+      hasher: identity
+    })
+
+    await expect(str.get(cid)).to.eventually.equal(input)
+  })
+
+  it('gets a string with a non-default block codec', async () => {
+    const input = 'hello world'
+    const cid = await str.add(input, {
+      codec: json
+    })
+
+    await expect(str.get(cid)).to.eventually.equal(input)
   })
 })

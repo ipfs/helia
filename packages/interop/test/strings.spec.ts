@@ -1,14 +1,14 @@
 /* eslint-env mocha */
 
+import { strings, type Strings, type AddOptions } from '@helia/strings'
 import { expect } from 'aegir/chai'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import type { Helia } from '@helia/interface'
-import type { Controller } from 'ipfsd-ctl'
-import { strings, Strings, AddOptions } from '@helia/strings'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { PutOptions as KuboAddOptions } from 'ipfs-core-types/src/block/index.js'
+import type { Controller } from 'ipfsd-ctl'
 
 describe('strings interop', () => {
   let helia: Helia
