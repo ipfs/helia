@@ -57,7 +57,7 @@
     "@helia/interface": "^1.0.0",
     "@helia/strings": "~0.0.0",
     "@libp2p/tcp": "^6.1.2",
-    "@libp2p/websockets": "^5.0.3",
+    "@libp2p/websockets": "^6.0.1",
     "aegir": "^39.0.3",
     "blockstore-core": "^4.0.1",
     "datastore-core": "^9.0.3",
