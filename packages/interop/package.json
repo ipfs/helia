@@ -1,0 +1,82 @@
+{
+  "name": "@helia/json-interop",
+  "version": "0.0.0",
+  "description": "Interop tests for @helia/json",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/ipfs/helia-json/tree/master/packages/interop#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ipfs/helia-json.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ipfs/helia-json/issues"
+  },
+  "keywords": [
+    "IPFS"
+  ],
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module"
+    }
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "build": "aegir build",
+    "test": "aegir test",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main"
+  },
+  "devDependencies": {
+    "@chainsafe/libp2p-noise": "^11.0.0",
+    "@chainsafe/libp2p-yamux": "^4.0.1",
+    "@helia/interface": "^1.0.0",
+    "@helia/json": "~0.0.0",
+    "@libp2p/tcp": "^7.0.1",
+    "@libp2p/websockets": "^6.0.1",
+    "aegir": "^39.0.3",
+    "blockstore-core": "^4.0.1",
+    "datastore-core": "^9.0.3",
+    "go-ipfs": "^0.19.0",
+    "helia": "^1.0.0",
+    "ipfs-core-types": "^0.14.0",
+    "ipfsd-ctl": "^13.0.0",
+    "kubo-rpc-client": "^3.0.0",
+    "libp2p": "^0.44.0",
+    "merge-options": "^3.0.4",
+    "multiformats": "^11.0.2",
+    "wherearewe": "^2.0.1"
+  },
+  "browser": {
+    "./dist/test/fixtures/create-helia.js": "./dist/test/fixtures/create-helia.browser.js",
+    "go-ipfs": false
+  },
+  "private": true,
+  "typedoc": {
+    "entryPoint": "./src/index.ts"
+  }
+}
