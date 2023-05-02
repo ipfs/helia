@@ -11,7 +11,7 @@
 [![codecov](https://img.shields.io/codecov/c/github/ipfs/helia-strings.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia-strings)
 [![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia-strings/js-test-and-release.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia-strings/actions/workflows/js-test-and-release.yml?query=branch%3Amain)
 
-> Interop tests for @helia/unixfs
+> Interop tests for @helia/strings
 
 ## Table of contents <!-- omit in toc -->
 
@@ -24,20 +24,20 @@
 ## Install
 
 ```console
-$ npm i @helia/unixfs-interop
+$ npm i @helia/strings-interop
 ```
 
 ### Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `HeliaUnixfsInterop` in the global namespace.
+Loading this module through a script tag will make it's exports available as `HeliaStringsInterop` in the global namespace.
 
 ```html
-<script src="https://unpkg.com/@helia/unixfs-interop/dist/index.min.js"></script>
+<script src="https://unpkg.com/@helia/strings-interop/dist/index.min.js"></script>
 ```
 
 ## API Docs
 
-- <https://ipfs.github.io/helia-strings/modules/_helia_unixfs_interop.html>
+- <https://ipfs.github.io/helia-strings/modules/_helia_strings_interop.html>
 
 ## License
 

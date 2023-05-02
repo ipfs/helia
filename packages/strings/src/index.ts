@@ -63,7 +63,7 @@ export interface Strings {
    * const cid = await str.add('hello world')
    *
    * console.info(cid)
-   * // CID(QmFoo)
+   * // CID(bafkreifzjut3te2nhyekklss27nh3k72ysco7y32koao5eei66wof36n5e)
    * ```
    */
   add: (str: string, options?: Partial<AddOptions>) => Promise<CID>
@@ -79,7 +79,7 @@ export interface Strings {
    * import { CID } from 'multiformats/cid'
    *
    * const str = strings(helia)
-   * const cid = CID.parse('')
+   * const cid = CID.parse('bafkreifzjut3te2nhyekklss27nh3k72ysco7y32koao5eei66wof36n5e')
    * const string = await str.get(cid)
    *
    * console.info(string)

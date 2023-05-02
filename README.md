@@ -22,7 +22,7 @@
 
 ## Structure
 
-- [`/packages/interop`](./packages/interop) Interop tests for @helia/unixfs
+- [`/packages/interop`](./packages/interop) Interop tests for @helia/strings
 - [`/packages/strings`](./packages/strings) Add/get IPLD blocks containing strings with your Helia node
 
 ## API Docs
