@@ -1,7 +1,7 @@
 {
-  "name": "@helia/unixfs-interop",
+  "name": "@helia/strings-interop",
   "version": "0.0.0",
-  "description": "Interop tests for @helia/unixfs",
+  "description": "Interop tests for @helia/strings",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia-strings/tree/master/packages/interop#readme",
   "repository": {
