@@ -15,12 +15,11 @@
 
 ## Table of contents <!-- omit in toc -->
 
-- - [Install](#install)
-    - [Browser `<script>` tag](#browser-script-tag)
-- [@helia/dag-json <!-- omit in toc -->](#heliadag-json----omit-in-toc---)
-  - [API Docs](#api-docs)
-  - [License](#license)
-  - [Contribute](#contribute)
+- [Install](#install)
+  - [Browser `<script>` tag](#browser-script-tag)
+- [API Docs](#api-docs)
+- [License](#license)
+- [Contribute](#contribute)
 
 ## Install
 
