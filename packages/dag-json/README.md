@@ -11,7 +11,7 @@
 [![codecov](https://img.shields.io/codecov/c/github/ipfs/helia-dag-json.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia-dag-json)
 [![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia-dag-json/js-test-and-release.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia-dag-json/actions/workflows/js-test-and-release.yml?query=branch%3Amain)
 
-> Add/get IPLD blocks containing json with your Helia node
+> Add/get IPLD blocks containing dag-json with your Helia node
 
 ## Table of contents <!-- omit in toc -->
 
