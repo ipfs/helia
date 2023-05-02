@@ -53,7 +53,7 @@
   },
   "devDependencies": {
     "@chainsafe/libp2p-noise": "^11.0.0",
-    "@chainsafe/libp2p-yamux": "^3.0.5",
+    "@chainsafe/libp2p-yamux": "^4.0.1",
     "@helia/interface": "^1.0.0",
     "@helia/strings": "~0.0.0",
     "@libp2p/tcp": "^6.1.2",
