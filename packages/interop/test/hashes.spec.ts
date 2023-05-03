@@ -1,15 +1,15 @@
 /* eslint-env mocha */
 
+import { sha3512 } from '@multiformats/sha3'
 import { expect } from 'aegir/chai'
+import toBuffer from 'it-to-buffer'
+import { CID } from 'multiformats/cid'
+import * as raw from 'multiformats/codecs/raw'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import type { Helia } from '@helia/interface'
 import type { Controller } from 'ipfsd-ctl'
-import toBuffer from 'it-to-buffer'
-import { CID } from 'multiformats/cid'
-import * as raw from 'multiformats/codecs/raw'
 // @ts-expect-error type config is broken
-import { sha3512 } from '@multiformats/sha3'
 
 describe('hashes', () => {
   let helia: Helia
