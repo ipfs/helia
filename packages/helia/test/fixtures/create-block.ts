@@ -1,6 +1,6 @@
-import type { Blockstore } from 'interface-blockstore'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
+import type { Blockstore } from 'interface-blockstore'
 
 export async function createBlock <Codec extends number> (codec: Codec, block: Uint8Array): Promise<{ cid: CID<unknown, Codec, 18>, block: Uint8Array }> {
   const mh = await sha256.digest(block)

@@ -1,7 +1,7 @@
-import type { ProgressEvent, ProgressOptions } from 'progress-events'
-import type { CID } from 'multiformats/cid'
-import type { BitswapNotifyProgressEvents, BitswapWantProgressEvents } from 'ipfs-bitswap'
 import type { Blockstore } from 'interface-blockstore'
+import type { BitswapNotifyProgressEvents, BitswapWantProgressEvents } from 'ipfs-bitswap'
+import type { CID } from 'multiformats/cid'
+import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
 export interface Pair {
   cid: CID

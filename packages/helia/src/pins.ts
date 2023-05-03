@@ -1,15 +1,15 @@
-import type { AddOptions, IsPinnedOptions, LsOptions, Pin, Pins, RmOptions } from '@helia/interface/pins'
-import { Datastore, Key } from 'interface-datastore'
-import { CID, Version } from 'multiformats/cid'
 import * as cborg from 'cborg'
+import { type Datastore, Key } from 'interface-datastore'
 import { base36 } from 'multiformats/bases/base36'
-import type { Blockstore } from 'interface-blockstore'
-import PQueue from 'p-queue'
-import type { AbortOptions } from '@libp2p/interfaces'
-import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import { CID, type Version } from 'multiformats/cid'
 import defer from 'p-defer'
-import type { DAGWalker } from './index.js'
+import PQueue from 'p-queue'
+import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { cborWalker, dagPbWalker, jsonWalker, rawWalker } from './utils/dag-walkers.js'
+import type { DAGWalker } from './index.js'
+import type { AddOptions, IsPinnedOptions, LsOptions, Pin, Pins, RmOptions } from '@helia/interface/pins'
+import type { AbortOptions } from '@libp2p/interfaces'
+import type { Blockstore } from 'interface-blockstore'
 
 const DEFAULT_DAG_WALKERS = [
   rawWalker,
@@ -233,6 +233,6 @@ export class PinsImpl implements Pins {
   async isPinned (cid: CID, options: IsPinnedOptions = {}): Promise<boolean> {
     const blockKey = new Key(`${DATASTORE_BLOCK_PREFIX}${DATASTORE_ENCODING.encode(cid.multihash.bytes)}`)
 
-    return await this.datastore.has(blockKey, options)
+    return this.datastore.has(blockKey, options)
   }
 }

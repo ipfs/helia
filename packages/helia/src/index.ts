@@ -25,13 +25,13 @@
  * ```
  */
 
+import { HeliaImpl } from './helia.js'
 import type { Helia } from '@helia/interface'
 import type { Libp2p } from '@libp2p/interface-libp2p'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
-import { HeliaImpl } from './helia.js'
 
 /**
  * DAGWalkers take a block and yield CIDs encoded in that block
