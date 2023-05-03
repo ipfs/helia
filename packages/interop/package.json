@@ -55,7 +55,7 @@
     "@chainsafe/libp2p-noise": "^11.0.0",
     "@chainsafe/libp2p-yamux": "^3.0.5",
     "@helia/interface": "^1.0.0",
-    "@libp2p/tcp": "^6.1.2",
+    "@libp2p/tcp": "^7.0.1",
     "@libp2p/websockets": "^5.0.3",
     "@multiformats/sha3": "^2.0.15",
     "aegir": "^39.0.4",
