@@ -13,7 +13,7 @@
 
 ## 🌟 Usage
 
-A quick overview of how to get data in and out of your Helia node.
+A quick overview of how to get different types of data in and out of your Helia node.
 
 ### 🪢 Strings
 
