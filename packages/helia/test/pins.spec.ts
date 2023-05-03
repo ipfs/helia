@@ -1,17 +1,17 @@
 /* eslint-env mocha */
+import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@chainsafe/libp2p-yamux'
+import { webSockets } from '@libp2p/websockets'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
+import all from 'it-all'
 import { createLibp2p } from 'libp2p'
-import { webSockets } from '@libp2p/websockets'
-import { noise } from '@chainsafe/libp2p-noise'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { createHelia } from '../src/index.js'
-import type { Helia } from '@helia/interface'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
+import { createHelia } from '../src/index.js'
 import { createAndPutBlock } from './fixtures/create-block.js'
-import all from 'it-all'
+import type { Helia } from '@helia/interface'
 
 describe('pins', () => {
   let helia: Helia

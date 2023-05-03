@@ -1,10 +1,10 @@
-import { createHelia, HeliaInit } from 'helia'
-import { createLibp2p } from 'libp2p'
-import { tcp } from '@libp2p/tcp'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { tcp } from '@libp2p/tcp'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
+import { createHelia, type HeliaInit } from 'helia'
+import { createLibp2p } from 'libp2p'
 import type { Helia } from '@helia/interface'
 
 export async function createHeliaNode (init?: Partial<HeliaInit>): Promise<Helia> {

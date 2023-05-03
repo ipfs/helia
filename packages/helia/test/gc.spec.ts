@@ -1,18 +1,18 @@
 /* eslint-env mocha */
+import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@chainsafe/libp2p-yamux'
+import * as dagCbor from '@ipld/dag-cbor'
+import * as dagJson from '@ipld/dag-json'
+import * as dagPb from '@ipld/dag-pb'
+import { webSockets } from '@libp2p/websockets'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import { createLibp2p } from 'libp2p'
-import { webSockets } from '@libp2p/websockets'
-import { noise } from '@chainsafe/libp2p-noise'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { createHelia } from '../src/index.js'
-import type { GcEvents, Helia } from '@helia/interface'
 import * as raw from 'multiformats/codecs/raw'
+import { createHelia } from '../src/index.js'
 import { createAndPutBlock } from './fixtures/create-block.js'
-import * as dagPb from '@ipld/dag-pb'
-import * as dagCbor from '@ipld/dag-cbor'
-import * as dagJson from '@ipld/dag-json'
+import type { GcEvents, Helia } from '@helia/interface'
 
 describe('gc', () => {
   let helia: Helia

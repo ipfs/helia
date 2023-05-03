@@ -1,7 +1,7 @@
-import type { Blockstore } from 'interface-blockstore'
-import type { CID } from 'multiformats/cid'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { createAndPutBlock } from './create-block.js'
+import type { Blockstore } from 'interface-blockstore'
+import type { CID } from 'multiformats/cid'
 
 export interface DAGNode {
   cid: CID
