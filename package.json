@@ -38,7 +38,7 @@
     "dep-check": "aegir run dep-check",
     "release": "npm run docs:no-publish && aegir run release && npm run docs"
   },
-  "dependencies": {
+  "devDependencies": {
     "aegir": "^39.0.4"
   },
   "type": "module",
