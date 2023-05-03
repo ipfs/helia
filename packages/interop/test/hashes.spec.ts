@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+// @ts-expect-error type config is broken
 import { sha3512 } from '@multiformats/sha3'
 import { expect } from 'aegir/chai'
 import toBuffer from 'it-to-buffer'
@@ -9,7 +10,6 @@ import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import type { Helia } from '@helia/interface'
 import type { Controller } from 'ipfsd-ctl'
-// @ts-expect-error type config is broken
 
 describe('hashes', () => {
   let helia: Helia
