@@ -1,3 +1,20 @@
+## [helia-v1.0.4](https://github.com/ipfs/helia/compare/helia-v1.0.3...helia-v1.0.4) (2023-05-04)
+
+
+### Bug Fixes
+
+* **types:** Add missing types ([#95](https://github.com/ipfs/helia/issues/95)) ([e858b8d](https://github.com/ipfs/helia/commit/e858b8dbbff548b42dde225db674f0edd1990ed3))
+
+
+### Dependencies
+
+* **dev:** bump libp2p from 0.43.4 to 0.44.0 ([#96](https://github.com/ipfs/helia/issues/96)) ([6e37d9f](https://github.com/ipfs/helia/commit/6e37d9f8be58955c5ddc5472fe3adb4bd9a0459c))
+
+
+### Trivial Changes
+
+* bump aegir from 38.1.8 to 39.0.4 ([#111](https://github.com/ipfs/helia/issues/111)) ([2156568](https://github.com/ipfs/helia/commit/215656870cb821dd6be2f8054dc39932ba25af14))
+
 ## [helia-v1.0.3](https://github.com/ipfs/helia/compare/helia-v1.0.2...helia-v1.0.3) (2023-04-05)
 
 
