@@ -1,3 +1,10 @@
+## [@helia/ipns-v1.1.1](https://github.com/ipfs/helia-ipns/compare/@helia/ipns-v1.1.0...@helia/ipns-v1.1.1) (2023-05-05)
+
+
+### Bug Fixes
+
+* use the content routing api for get/put operations ([#34](https://github.com/ipfs/helia-ipns/issues/34)) ([55208cc](https://github.com/ipfs/helia-ipns/commit/55208ccfdc4f3a799736f29e614910cbd8375a9d))
+
 ## [@helia/ipns-v1.1.0](https://github.com/ipfs/helia-ipns/compare/@helia/ipns-v1.0.1...@helia/ipns-v1.1.0) (2023-03-29)
 
 
