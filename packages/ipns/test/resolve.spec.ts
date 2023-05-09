@@ -8,15 +8,21 @@ import { CID } from 'multiformats/cid'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import Sinon from 'sinon'
 import { StubbedInstance, stubInterface } from 'sinon-ts'
+import { create, marshal, peerIdToRoutingKey } from 'ipns'
+import { Datastore, Key } from 'interface-datastore'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { Libp2pRecord } from '@libp2p/record'
 
 const cid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
 
 describe('resolve', () => {
   let name: IPNS
   let routing: StubbedInstance<IPNSRouting>
+  let datastore: Datastore
 
   beforeEach(async () => {
-    const datastore = new MemoryDatastore()
+    datastore = new MemoryDatastore()
     routing = stubInterface<IPNSRouting>()
     routing.get.throws(new Error('Not found'))
 
@@ -97,5 +103,49 @@ describe('resolve', () => {
     })
 
     expect(onProgress).to.have.property('called', true)
+  })
+
+  it('should cache a record', async function () {
+    const peerId = await createEd25519PeerId()
+    const routingKey = peerIdToRoutingKey(peerId)
+    const dhtKey = new Key('/dht/record/' + uint8ArrayToString(routingKey, 'base32'), false)
+
+    expect(datastore.has(dhtKey)).to.be.false('already had record')
+
+    const bytes = uint8ArrayFromString(`/ipfs/${cid.toString()}`)
+    const record = await create(peerId, bytes, 0n, 60000)
+    const marshalledRecord = marshal(record)
+
+    routing.get.withArgs(routingKey).resolves(marshalledRecord)
+
+    const result = await name.resolve(peerId)
+    expect(result.toString()).to.equal(cid.toString(), 'incorrect record resolved')
+
+    expect(datastore.has(dhtKey)).to.be.true('did not cache record locally')
+  })
+
+  it('should cache the most recent record', async function () {
+    const peerId = await createEd25519PeerId()
+    const routingKey = peerIdToRoutingKey(peerId)
+    const dhtKey = new Key('/dht/record/' + uint8ArrayToString(routingKey, 'base32'), false)
+
+    const marshalledRecordA = marshal(await create(peerId, uint8ArrayFromString(`/ipfs/${cid.toString()}`), 0n, 60000))
+    const marshalledRecordB = marshal(await create(peerId, uint8ArrayFromString(`/ipfs/${cid.toString()}`), 10n, 60000))
+
+    // records should not match
+    expect(marshalledRecordA).to.not.equalBytes(marshalledRecordB)
+
+    // cache has older record
+    await datastore.put(dhtKey, marshalledRecordA)
+    routing.get.withArgs(routingKey).resolves(marshalledRecordB)
+
+    const result = await name.resolve(peerId)
+    expect(result.toString()).to.equal(cid.toString(), 'incorrect record resolved')
+
+    const cached = await datastore.get(dhtKey)
+    const record = Libp2pRecord.deserialize(cached)
+
+    // should have cached the updated record
+    expect(record.value).to.equalBytes(marshalledRecordB)
   })
 })

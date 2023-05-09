@@ -25,12 +25,12 @@ export interface LocalStore extends IPNSRouting {
  */
 export function localStore (datastore: Datastore): LocalStore {
   return {
-    async put (routingKey: Uint8Array, marshaledRecord: Uint8Array, options: PutOptions = {}) {
+    async put (routingKey: Uint8Array, marshalledRecord: Uint8Array, options: PutOptions = {}) {
       try {
         const key = dhtRoutingKey(routingKey)
 
         // Marshal to libp2p record as the DHT does
-        const record = new Libp2pRecord(routingKey, marshaledRecord, new Date())
+        const record = new Libp2pRecord(routingKey, marshalledRecord, new Date())
 
         options.onProgress?.(new CustomProgressEvent('ipns:routing:datastore:put'))
         await datastore.put(key, record.serialize(), options)

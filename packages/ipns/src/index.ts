@@ -68,6 +68,7 @@ import { create, marshal, peerIdToRoutingKey, unmarshal } from 'ipns'
 import type { IPNSEntry } from 'ipns'
 import type { IPNSRouting, IPNSRoutingEvents } from './routing/index.js'
 import { ipnsValidator } from 'ipns/validator'
+import { ipnsSelector } from 'ipns/selector'
 import { CID } from 'multiformats/cid'
 import { resolveDnslink } from './utils/resolve-dns-link.js'
 import { logger } from '@libp2p/logger'
@@ -78,6 +79,7 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import type { Datastore } from 'interface-datastore'
 import { localStore, LocalStore } from './routing/local-store.js'
+import { CodeError } from '@libp2p/interfaces/errors'
 
 const log = logger('helia:ipns')
 
@@ -295,16 +297,30 @@ class DefaultIPNS implements IPNS {
       ]
     }
 
-    const unmarshaledRecord = await Promise.any(
-      routers.map(async (router) => {
-        const unmarshaledRecord = await router.get(routingKey, options)
-        await ipnsValidator(routingKey, unmarshaledRecord)
+    const records: Uint8Array[] = []
 
-        return unmarshaledRecord
+    await Promise.all(
+      routers.map(async (router) => {
+        try {
+          const record = await router.get(routingKey, options)
+          await ipnsValidator(routingKey, record)
+
+          records.push(record)
+        } catch (err) {
+          log.error('error finding IPNS record', err)
+        }
       })
     )
 
-    return unmarshal(unmarshaledRecord)
+    if (records.length === 0) {
+      throw new CodeError('Could not find record for routing key', 'ERR_NOT_FOUND')
+    }
+
+    const record = records[ipnsSelector(routingKey, records)]
+
+    await this.localStore.put(routingKey, record, options)
+
+    return unmarshal(record)
   }
 }
 
