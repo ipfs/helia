@@ -1,3 +1,10 @@
+## [@helia/ipns-v1.1.2](https://github.com/ipfs/helia-ipns/compare/@helia/ipns-v1.1.1...@helia/ipns-v1.1.2) (2023-05-09)
+
+
+### Bug Fixes
+
+* cache IPNS entries after resolving ([#35](https://github.com/ipfs/helia-ipns/issues/35)) ([704b413](https://github.com/ipfs/helia-ipns/commit/704b41355768b3e8723560c5f7ed3d7c12b58c3b)), closes [#20](https://github.com/ipfs/helia-ipns/issues/20)
+
 ## [@helia/ipns-v1.1.1](https://github.com/ipfs/helia-ipns/compare/@helia/ipns-v1.1.0...@helia/ipns-v1.1.1) (2023-05-05)
 
 
