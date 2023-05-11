@@ -4,10 +4,10 @@ import * as dagPb from '@ipld/dag-pb'
 import * as cborg from 'cborg'
 import { Type, Token } from 'cborg'
 import * as cborgJson from 'cborg/json'
-import type { DAGWalker } from '../index.js'
-import * as raw from 'multiformats/codecs/raw'
 import { CID } from 'multiformats'
 import { base64 } from 'multiformats/bases/base64'
+import * as raw from 'multiformats/codecs/raw'
+import type { DAGWalker } from '../index.js'
 
 /**
  * Dag walker for dag-pb CIDs

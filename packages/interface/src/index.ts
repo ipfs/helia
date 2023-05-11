@@ -14,14 +14,14 @@
  * ```
  */
 
-import type { Libp2p } from '@libp2p/interface-libp2p'
-import type { AbortOptions } from '@libp2p/interfaces'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Datastore } from 'interface-datastore'
-import type { Pins } from './pins.js'
-import type { ProgressEvent, ProgressOptions } from 'progress-events'
-import type { CID } from 'multiformats/cid'
 import type { Blocks } from './blocks.js'
+import type { Pins } from './pins.js'
+import type { Libp2p } from '@libp2p/interface-libp2p'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { AbortOptions } from '@libp2p/interfaces'
+import type { Datastore } from 'interface-datastore'
+import type { CID } from 'multiformats/cid'
+import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
 export type { Await, AwaitIterable } from 'interface-store'
 

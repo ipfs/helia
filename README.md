@@ -11,8 +11,114 @@
 [![codecov](https://img.shields.io/codecov/c/github/ipfs/helia.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia)
 [![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
 
+## 🌟 Usage
+
+A quick overview of how to get different types of data in and out of your Helia
+node.
+
+### 🪢 Strings
+
+You can use the [@helia/strings](https://www.npmjs.com/package/@helia/strings)
+module to easily add and get strings from your Helia node:
+
+```js
+import { createHelia } from 'helia'
+import { strings } from '@helia/strings'
+
+const helia = await createHelia()
+const s = strings(helia)
+
+const myImmutableAddress = await s.add('hello world')
+
+console.log(await s.get(myImmutableAddress))
+// hello world
+```
+
+### 🌃 JSON
+
+The [@helia/json](https://www.npmjs.com/package/@helia/json) module lets you add
+or get plain JS objects:
+
+```js
+import { createHelia } from 'helia'
+import { json } from '@helia/json'
+
+const helia = await createHelia()
+const j = json(helia)
+
+const myImmutableAddress = await j.add({ hello: 'world' })
+
+console.log(await j.get(myImmutableAddress))
+// { hello: 'world' }
+```
+
+### 🌠 DAG-JSON
+
+The [@helia/dag-json](https://www.npmjs.com/package/@helia/dag-json) allows you
+to store references to linked objects as
+[CIDs](https://docs.ipfs.tech/concepts/content-addressing):
+
+```js
+import { createHelia } from 'helia'
+import { dagJson } from '@helia/dag-json'
+
+const helia = await createHelia()
+const d = dagJson(helia)
+
+const object1 = { hello: 'world' }
+const myImmutableAddress1 = await d.add(object1)
+
+const object2 = { link: myImmutableAddress1 }
+const myImmutableAddress2 = await d.add(object2)
+
+const retrievedObject = await d.get(myImmutableAddress2)
+console.log(retrievedObject)
+// { link: CID(baguqeerasor...) }
+
+console.log(await d.get(retrievedObject.link))
+// { hello: 'world' }
+```
+
+### 🌌 DAG-CBOR
+
+[@helia/dag-cbor](https://www.npmjs.com/package/@helia/dag-json) works in a
+similar way to `@helia/dag-json` but stores objects using
+[Concise Binary Object Representation](https://cbor.io/):
+
+```js
+import { createHelia } from 'helia'
+import { dagCbor } from '@helia/dag-cbor'
+
+const helia = await createHelia()
+const d = dagJson(helia)
+
+const object1 = { hello: 'world' }
+const myImmutableAddress1 = await d.add(object1)
+
+const object2 = { link: myImmutableAddress1 }
+const myImmutableAddress2 = await d.add(object2)
+
+const retrievedObject = await d.get(myImmutableAddress2)
+console.log(retrievedObject)
+// { link: CID(baguqeerasor...) }
+
+console.log(await d.get(retrievedObject.link))
+// { hello: 'world' }
+```
+
+### 🐾 Next steps
+
+Check out the [helia-examples](https://github.com/ipfs-examples/helia-examples)
+repo for how to do mostly anything with your Helia node.
+
 ## Table of contents <!-- omit in toc -->
 
+- [🌟 Usage](#-usage)
+  - [🪢 Strings](#-strings)
+  - [🌃 JSON](#-json)
+  - [🌠 DAG-JSON](#-dag-json)
+  - [🌌 DAG-CBOR](#-dag-cbor)
+  - [🐾 Next steps](#-next-steps)
 - [🥅 Purpose and goals](#-purpose-and-goals)
 - [🏃‍♀️ Getting Started](#️-getting-started)
 - [📒 API Docs](#-api-docs)
@@ -73,6 +179,10 @@ Helia embraces a modular approach and encourages users to bring their own implem
 
 - [`@helia/UnixFS`](https://github.com/ipfs/helia-unixfs)
 - [`@helia/ipns`](https://github.com/ipfs/helia-ipns)
+- [`@helia/strings`](https://github.com/ipfs/helia-strings)
+- [`@helia/json`](https://github.com/ipfs/helia-json)
+- [`@helia/dag-json`](https://github.com/ipfs/helia-dag-json)
+- [`@helia/dag-cbor`](https://github.com/ipfs/helia-dag-cbor)
 
 These libraries are by no means the "one true implementation", but instead instead provide optionality depending on one's needs.
 
