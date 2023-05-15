@@ -60,7 +60,7 @@ const libp2p = await createLibp2p({
 
 This allows our node to relay traffic to other nodes that you may wish not to be connected directly to the public. Not really helpful in the browser but can be implemented via:
 
-**TO BE FILLED IN**
+**TO DO**
 
 ```js
 import { createLibp2p } from "libp2p";
