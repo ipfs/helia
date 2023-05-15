@@ -224,6 +224,7 @@ export const createHeliaClient = async () => {
                 }
                 return true;
             },
+        },
         contentRouters: [ipniContentRouting("https://cid.contact")],
         dht: kadDHT({
             validators: {
