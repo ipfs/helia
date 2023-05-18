@@ -1,15 +1,15 @@
 /* eslint-env mocha */
+import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@chainsafe/libp2p-yamux'
+import { webSockets } from '@libp2p/websockets'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import { createLibp2p } from 'libp2p'
-import { webSockets } from '@libp2p/websockets'
-import { noise } from '@chainsafe/libp2p-noise'
-import { yamux } from '@chainsafe/libp2p-yamux'
 import { createHelia } from '../src/index.js'
-import type { Helia } from '@helia/interface'
+import { createDag, type DAGNode } from './fixtures/create-dag.js'
 import { dagWalker } from './fixtures/dag-walker.js'
-import { createDag, DAGNode } from './fixtures/create-dag.js'
+import type { Helia } from '@helia/interface'
 
 describe('pins (recursive)', () => {
   let helia: Helia

@@ -58,7 +58,7 @@
     "@libp2p/tcp": "^6.1.2",
     "@libp2p/websockets": "^5.0.3",
     "@multiformats/sha3": "^2.0.15",
-    "aegir": "^38.1.0",
+    "aegir": "^39.0.4",
     "blockstore-core": "^4.0.0",
     "datastore-core": "^9.0.0",
     "go-ipfs": "^0.19.0",
@@ -66,7 +66,7 @@
     "ipfsd-ctl": "^13.0.0",
     "it-to-buffer": "^4.0.1",
     "kubo-rpc-client": "^3.0.0",
-    "libp2p": "^0.43.0",
+    "libp2p": "^0.44.0",
     "multiformats": "^11.0.1"
   },
   "browser": {

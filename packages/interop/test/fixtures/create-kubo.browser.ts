@@ -1,8 +1,8 @@
-import { Controller, createController } from 'ipfsd-ctl'
+import { type Controller, createController } from 'ipfsd-ctl'
 import * as kuboRpcClient from 'kubo-rpc-client'
 
 export async function createKuboNode (): Promise<Controller> {
-  return await createController({
+  return createController({
     kuboRpcModule: kuboRpcClient,
     test: true,
     endpoint: process.env.IPFSD_SERVER,
