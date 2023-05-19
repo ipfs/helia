@@ -1,3 +1,15 @@
+## [@helia/interface-v1.1.0](https://github.com/ipfs/helia/compare/@helia/interface-v1.0.0...@helia/interface-v1.1.0) (2023-05-19)
+
+
+### Features
+
+* provide default libp2p instance ([#127](https://github.com/ipfs/helia/issues/127)) ([45c9d89](https://github.com/ipfs/helia/commit/45c9d896afa27f5ea043cc5f576d50fc4fa556e9)), closes [#121](https://github.com/ipfs/helia/issues/121)
+
+
+### Trivial Changes
+
+* bump aegir from 38.1.8 to 39.0.4 ([#111](https://github.com/ipfs/helia/issues/111)) ([2156568](https://github.com/ipfs/helia/commit/215656870cb821dd6be2f8054dc39932ba25af14))
+
 ## @helia/interface-v1.0.0 (2023-03-23)
 
 
