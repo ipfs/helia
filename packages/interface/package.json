@@ -155,13 +155,12 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@libp2p/interface-libp2p": "^1.1.0",
-    "@libp2p/interface-peer-id": "^2.0.1",
-    "@libp2p/interfaces": "^3.3.1",
+    "@libp2p/interface-libp2p": "^3.1.0",
+    "@libp2p/interfaces": "^3.3.2",
     "interface-blockstore": "^5.0.0",
     "interface-datastore": "^8.0.0",
     "interface-store": "^5.0.1",
-    "ipfs-bitswap": "^17.0.0",
+    "ipfs-bitswap": "^18.0.0",
     "multiformats": "^11.0.1",
     "progress-events": "^1.0.0"
   },

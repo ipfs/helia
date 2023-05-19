@@ -17,7 +17,6 @@
 import type { Blocks } from './blocks.js'
 import type { Pins } from './pins.js'
 import type { Libp2p } from '@libp2p/interface-libp2p'
-import type { PeerId } from '@libp2p/interface-peer-id'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
@@ -28,11 +27,11 @@ export type { Await, AwaitIterable } from 'interface-store'
 /**
  * The API presented by a Helia node.
  */
-export interface Helia {
+export interface Helia<T = Libp2p> {
   /**
    * The underlying libp2p node
    */
-  libp2p: Libp2p
+  libp2p: T
 
   /**
    * Where the blocks are stored
@@ -71,12 +70,4 @@ export type GcEvents =
 
 export interface GCOptions extends AbortOptions, ProgressOptions<GcEvents> {
 
-}
-
-export interface InfoOptions extends AbortOptions {
-  /**
-   * If passed, return information about this PeerId, defaults
-   * to the ID of the current node.
-   */
-  peerId?: PeerId
 }

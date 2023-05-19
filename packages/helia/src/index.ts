@@ -6,7 +6,6 @@
  * @example
  *
  * ```typescript
- * import { createLibp2p } from 'libp2p'
  * import { MemoryDatastore } from 'datastore-core'
  * import { MemoryBlockstore } from 'blockstore-core'
  * import { createHelia } from 'helia'
@@ -15,19 +14,21 @@
  *
  * const node = await createHelia({
  *   blockstore: new MemoryBlockstore(),
- *   datastore: new MemoryDatastore(),
- *   libp2p: await createLibp2p({
- *     //... libp2p options
- *   })
+ *   datastore: new MemoryDatastore()
  * })
  * const fs = unixfs(node)
  * fs.cat(CID.parse('bafyFoo'))
  * ```
  */
 
+import { MemoryBlockstore } from 'blockstore-core'
+import { MemoryDatastore } from 'datastore-core'
 import { HeliaImpl } from './helia.js'
+import { createLibp2p } from './utils/libp2p.js'
 import type { Helia } from '@helia/interface'
 import type { Libp2p } from '@libp2p/interface-libp2p'
+import type { PubSub } from '@libp2p/interface-pubsub'
+import type { DualKadDHT } from '@libp2p/kad-dht'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
@@ -44,11 +45,11 @@ export interface DAGWalker {
 /**
  * Options used to create a Helia node.
  */
-export interface HeliaInit {
+export interface HeliaInit<T extends Libp2p = Libp2p> {
   /**
    * A libp2p node is required to perform network operations
    */
-  libp2p?: Libp2p
+  libp2p?: T
 
   /**
    * The blockstore is where blocks are stored
@@ -100,8 +101,22 @@ export interface HeliaInit {
 /**
  * Create and return a Helia node
  */
-export async function createHelia (init: HeliaInit = {}): Promise<Helia> {
-  const helia = new HeliaImpl(init)
+export async function createHelia <T extends Libp2p> (init: HeliaInit<T>): Promise<Helia<T>>
+export async function createHelia (init?: HeliaInit<Libp2p<{ dht: DualKadDHT, pubsub: PubSub }>>): Promise<Helia<Libp2p<{ dht: DualKadDHT, pubsub: PubSub }>>>
+export async function createHelia (init: HeliaInit = {}): Promise<Helia<unknown>> {
+  const datastore = init.datastore ?? new MemoryDatastore()
+  const blockstore = init.blockstore ?? new MemoryBlockstore()
+  const libp2p = init.libp2p ?? await createLibp2p({
+    datastore,
+    start: false
+  })
+
+  const helia = new HeliaImpl({
+    ...init,
+    datastore,
+    blockstore,
+    libp2p
+  })
 
   if (init.start !== false) {
     await helia.start()

@@ -1,6 +1,4 @@
 import { logger } from '@libp2p/logger'
-import { MemoryBlockstore } from 'blockstore-core'
-import { MemoryDatastore } from 'datastore-core'
 import { type Bitswap, createBitswap } from 'ipfs-bitswap'
 import drain from 'it-drain'
 import { identity } from 'multiformats/hashes/identity'
@@ -13,11 +11,18 @@ import type { HeliaInit } from '.'
 import type { GCOptions, Helia } from '@helia/interface'
 import type { Pins } from '@helia/interface/pins'
 import type { Libp2p } from '@libp2p/interface-libp2p'
+import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 
 const log = logger('helia')
+
+interface HeliaImplInit<T extends Libp2p = Libp2p> extends HeliaInit<T> {
+  libp2p: T
+  blockstore: Blockstore
+  datastore: Datastore
+}
 
 export class HeliaImpl implements Helia {
   public libp2p: Libp2p
@@ -27,7 +32,7 @@ export class HeliaImpl implements Helia {
 
   #bitswap?: Bitswap
 
-  constructor (init: HeliaInit) {
+  constructor (init: HeliaImplInit) {
     const hashers: MultihashHasher[] = [
       sha256,
       sha512,
@@ -35,56 +40,30 @@ export class HeliaImpl implements Helia {
       ...(init.hashers ?? [])
     ]
 
-    const datastore = init.datastore ?? new MemoryDatastore()
-    const blockstore = init.blockstore ?? new MemoryBlockstore()
+    this.#bitswap = createBitswap(init.libp2p, init.blockstore, {
+      hashLoader: {
+        getHasher: async (codecOrName: string | number): Promise<MultihashHasher<number>> => {
+          const hasher = hashers.find(hasher => {
+            return hasher.code === codecOrName || hasher.name === codecOrName
+          })
 
-    // @ts-expect-error incomplete libp2p implementation
-    const libp2p = init.libp2p ?? new Proxy<Libp2p>({}, {
-      get (_, prop): true | (() => void) {
-        const noop = (): void => {}
-        const noops = ['start', 'stop']
+          if (hasher != null) {
+            return hasher
+          }
 
-        if (noops.includes(prop.toString())) {
-          return noop
+          throw new Error(`Could not load hasher for code/name "${codecOrName}"`)
         }
-
-        if (prop === 'isProxy') {
-          return true
-        }
-
-        throw new Error('Please configure Helia with a libp2p instance')
-      },
-      set (): never {
-        throw new Error('Please configure Helia with a libp2p instance')
       }
     })
 
-    if (init.libp2p != null) {
-      this.#bitswap = createBitswap(libp2p, blockstore, {
-        hashLoader: {
-          getHasher: async (codecOrName: string | number): Promise<MultihashHasher<number>> => {
-            const hasher = hashers.find(hasher => {
-              return hasher.code === codecOrName || hasher.name === codecOrName
-            })
+    this.pins = new PinsImpl(init.datastore, init.blockstore, init.dagWalkers ?? [])
 
-            if (hasher != null) {
-              return hasher
-            }
-
-            throw new Error(`Could not load hasher for code/name "${codecOrName}"`)
-          }
-        }
-      })
-    }
-
-    this.pins = new PinsImpl(datastore, blockstore, init.dagWalkers ?? [])
-
-    this.libp2p = libp2p
-    this.blockstore = new BlockStorage(blockstore, this.pins, {
+    this.libp2p = init.libp2p
+    this.blockstore = new BlockStorage(init.blockstore, this.pins, {
       bitswap: this.#bitswap,
       holdGcLock: init.holdGcLock
     })
-    this.datastore = datastore
+    this.datastore = init.datastore
   }
 
   async start (): Promise<void> {

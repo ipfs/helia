@@ -5,9 +5,7 @@ import { webSockets } from '@libp2p/websockets'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
-import { Key } from 'interface-datastore'
 import { createLibp2p } from 'libp2p'
-import { CID } from 'multiformats/cid'
 import { createHelia } from '../src/index.js'
 import type { Helia } from '@helia/interface'
 
@@ -56,44 +54,5 @@ describe('helia', () => {
 
   it('should have a libp2p', async () => {
     expect(helia).to.have.property('libp2p').that.is.ok()
-  })
-
-  it('allows creating offline node', async () => {
-    const helia = await createHelia({
-      start: false,
-      datastore: new MemoryDatastore(),
-      blockstore: new MemoryBlockstore(),
-      libp2p: await createLibp2p({
-        start: false,
-        transports: [
-          webSockets()
-        ],
-        connectionEncryption: [
-          noise()
-        ],
-        streamMuxers: [
-          yamux()
-        ]
-      })
-    })
-
-    expect(helia.libp2p.isStarted()).to.be.false()
-  })
-
-  it('does not require any constructor args', async () => {
-    const helia = await createHelia()
-
-    const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
-    const block = Uint8Array.from([0, 1, 2, 3])
-    await helia.blockstore.put(cid, block)
-    expect(await helia.blockstore.has(cid)).to.be.true()
-
-    const key = new Key(`/${cid.toString()}`)
-    await helia.datastore.put(key, block)
-    expect(await helia.datastore.has(key)).to.be.true()
-
-    expect(() => {
-      helia.libp2p.isStarted()
-    }).to.throw('Please configure Helia with a libp2p instance')
   })
 })

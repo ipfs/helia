@@ -6,6 +6,7 @@ import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import { createHelia, type HeliaInit } from 'helia'
 import { createLibp2p } from 'libp2p'
+import { identifyService } from 'libp2p/identify'
 import type { Helia } from '@helia/interface'
 
 export async function createHeliaNode (init?: Partial<HeliaInit>): Promise<Helia> {
@@ -26,8 +27,12 @@ export async function createHeliaNode (init?: Partial<HeliaInit>): Promise<Helia
       yamux()
     ],
     datastore,
-    nat: {
-      enabled: false
+    services: {
+      identify: identifyService()
+    },
+    connectionGater: {
+      // allow dialing loopback
+      denyDialMultiaddr: () => false
     }
   })
 
