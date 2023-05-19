@@ -21,10 +21,12 @@
  * ```
  */
 
+import { logger } from '@libp2p/logger'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import { HeliaImpl } from './helia.js'
 import { createLibp2p } from './utils/libp2p.js'
+import { name, version } from './version.js'
 import type { Helia } from '@helia/interface'
 import type { Libp2p } from '@libp2p/interface-libp2p'
 import type { PubSub } from '@libp2p/interface-pubsub'
@@ -33,6 +35,8 @@ import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
+
+const log = logger('helia')
 
 /**
  * DAGWalkers take a block and yield CIDs encoded in that block
@@ -122,5 +126,49 @@ export async function createHelia (init: HeliaInit = {}): Promise<Helia<unknown>
     await helia.start()
   }
 
+  // add helia to agent version
+  if (helia.libp2p.isStarted()) {
+    await addHeliaToAgentVersion(helia)
+  } else {
+    helia.libp2p.addEventListener('start', () => {
+      addHeliaToAgentVersion(helia)
+        .catch(err => {
+          log.error('could not add Helia to agent version', err)
+        })
+    })
+  }
+
   return helia
+}
+
+async function addHeliaToAgentVersion (helia: Helia): Promise<void> {
+  // add helia to agent version
+  const peer = await helia.libp2p.peerStore.get(helia.libp2p.peerId)
+  const versionBuf = peer.metadata.get('AgentVersion')
+
+  if (versionBuf == null) {
+    // identify was not configured
+    return
+  }
+
+  let versionStr = new TextDecoder().decode(versionBuf)
+
+  if (versionStr.match(/js-libp2p\/\d+\.\d+\.\d+\sUserAgent=/) == null) {
+    // the user changed the agent version
+    return
+  }
+
+  if (versionStr.includes(name)) {
+    // update version name
+    versionStr = `${name}/${version} ${versionStr.split(' ').slice(1).join(' ')}`
+  } else {
+    // just prepend version name
+    versionStr = `${name}/${version} ${versionStr}`
+  }
+
+  await helia.libp2p.peerStore.merge(helia.libp2p.peerId, {
+    metadata: {
+      AgentVersion: new TextEncoder().encode(versionStr)
+    }
+  })
 }

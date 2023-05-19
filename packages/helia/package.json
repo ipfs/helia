@@ -135,6 +135,7 @@
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
     "test:node": "aegir test -t node --cov",
     "test:electron-main": "aegir test -t electron-main",
+    "prepublishOnly": "node scripts/update-version.js && npm run build",
     "release": "aegir release"
   },
   "dependencies": {
@@ -144,7 +145,7 @@
     "@helia/interface": "^1.0.0",
     "@ipld/dag-pb": "^4.0.3",
     "@libp2p/bootstrap": "^8.0.0",
-    "@libp2p/interface-libp2p": "^3.1.0",
+    "@libp2p/interface-libp2p": "^3.2.0",
     "@libp2p/interface-pubsub": "^4.0.1",
     "@libp2p/interfaces": "^3.3.2",
     "@libp2p/ipni-content-routing": "^1.0.0",
@@ -154,6 +155,7 @@
     "@libp2p/mplex": "^8.0.3",
     "@libp2p/tcp": "^7.0.1",
     "@libp2p/webrtc": "^2.0.4",
+    "@libp2p/websockets": "^6.0.1",
     "@libp2p/webtransport": "^2.0.1",
     "blockstore-core": "^4.0.0",
     "cborg": "^1.10.0",
@@ -166,6 +168,7 @@
     "it-drain": "^3.0.1",
     "it-filter": "^3.0.1",
     "it-foreach": "^2.0.2",
+    "libp2p": "^0.45.2",
     "mortice": "^3.0.1",
     "multiformats": "^11.0.1",
     "p-defer": "^4.0.0",
@@ -176,11 +179,9 @@
   "devDependencies": {
     "@ipld/dag-cbor": "^9.0.0",
     "@ipld/dag-json": "^10.0.1",
-    "@libp2p/websockets": "^6.0.1",
     "@types/sinon": "^10.0.14",
     "aegir": "^39.0.4",
     "delay": "^5.0.0",
-    "libp2p": "^0.45.1",
     "sinon": "^15.0.2",
     "sinon-ts": "^1.0.0"
   },

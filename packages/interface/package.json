@@ -155,7 +155,7 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@libp2p/interface-libp2p": "^3.1.0",
+    "@libp2p/interface-libp2p": "^3.2.0",
     "@libp2p/interfaces": "^3.3.2",
     "interface-blockstore": "^5.0.0",
     "interface-datastore": "^8.0.0",
