@@ -1,3 +1,15 @@
+## [helia-v1.1.2](https://github.com/ipfs/helia/compare/helia-v1.1.1...helia-v1.1.2) (2023-05-19)
+
+
+### Bug Fixes
+
+* dedupe bootstrap list ([#129](https://github.com/ipfs/helia/issues/129)) ([bb5d1e9](https://github.com/ipfs/helia/commit/bb5d1e91daae9f6c399e0fdf974318a4a7353fb9)), closes [/github.com/ipfs/helia/pull/127#discussion_r1199152374](https://github.com/ipfs//github.com/ipfs/helia/pull/127/issues/discussion_r1199152374)
+
+
+### Dependencies
+
+* update sibling dependencies ([d33c843](https://github.com/ipfs/helia/commit/d33c84378c02f34277178e6553090b92b0eabe0b))
+
 ## [helia-v1.1.1](https://github.com/ipfs/helia/compare/helia-v1.1.0...helia-v1.1.1) (2023-05-19)
 
 
