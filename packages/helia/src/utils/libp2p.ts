@@ -13,6 +13,7 @@ import { autoNATService } from 'libp2p/autonat'
 import { circuitRelayTransport, circuitRelayServer, type CircuitRelayService } from 'libp2p/circuit-relay'
 import { identifyService } from 'libp2p/identify'
 import { uPnPNATService } from 'libp2p/upnp-nat'
+import { bootstrapConfig } from './bootstrappers.js'
 import type { Libp2p } from '@libp2p/interface-libp2p'
 import type { PubSub } from '@libp2p/interface-pubsub'
 import type { Datastore } from 'interface-datastore'
@@ -46,14 +47,7 @@ export async function createLibp2p (opts: CreateLibp2pOptions): Promise<Libp2p<{
     ],
     peerDiscovery: [
       mdns(),
-      bootstrap({
-        list: [
-          '/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
-          '/dnsaddr/bootstrap.libp2p.io/p2p/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa',
-          '/dnsaddr/bootstrap.libp2p.io/p2p/QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb',
-          '/dnsaddr/bootstrap.libp2p.io/p2p/QmcZf59bWwK5XFi76CZX8cbJ4BhTzzA3gU1ZjYZcYW3dwt'
-        ]
-      })
+      bootstrap(bootstrapConfig)
     ],
     contentRouters: [
       ipniContentRouting('https://cid.contact')
