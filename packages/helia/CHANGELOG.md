@@ -1,3 +1,10 @@
+## [helia-v1.1.1](https://github.com/ipfs/helia/compare/helia-v1.1.0...helia-v1.1.1) (2023-05-19)
+
+
+### Bug Fixes
+
+* add helia version to agent version ([#128](https://github.com/ipfs/helia/issues/128)) ([48e19ec](https://github.com/ipfs/helia/commit/48e19ec545cc67157e14ae59054fa377a583cb01)), closes [#122](https://github.com/ipfs/helia/issues/122)
+
 ## [helia-v1.1.0](https://github.com/ipfs/helia/compare/helia-v1.0.4...helia-v1.1.0) (2023-05-19)
 
 
