@@ -1,3 +1,10 @@
+## [helia-v1.1.0](https://github.com/ipfs/helia/compare/helia-v1.0.4...helia-v1.1.0) (2023-05-19)
+
+
+### Features
+
+* provide default libp2p instance ([#127](https://github.com/ipfs/helia/issues/127)) ([45c9d89](https://github.com/ipfs/helia/commit/45c9d896afa27f5ea043cc5f576d50fc4fa556e9)), closes [#121](https://github.com/ipfs/helia/issues/121)
+
 ## [helia-v1.0.4](https://github.com/ipfs/helia/compare/helia-v1.0.3...helia-v1.0.4) (2023-05-04)
 
 
