@@ -24,7 +24,9 @@ describe('hashes', () => {
     kubo = await createKuboNode()
 
     // connect the two nodes
-    await helia.libp2p.peerStore.addressBook.add(kubo.peer.id, kubo.peer.addresses)
+    await helia.libp2p.peerStore.merge(kubo.peer.id, {
+      multiaddrs: kubo.peer.addresses
+    })
     await helia.libp2p.dial(kubo.peer.id)
   })
 
