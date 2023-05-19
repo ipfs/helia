@@ -183,10 +183,10 @@
     "sinon": "^15.0.2",
     "sinon-ts": "^1.0.0"
   },
-  "typedoc": {
-    "entryPoint": "./src/index.ts"
-  },
   "browser": {
     "./dist/src/utils/libp2p.js": "./dist/src/utils/libp2p.browser.js"
+  },
+  "typedoc": {
+    "entryPoint": "./src/index.ts"
   }
 }
