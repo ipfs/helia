@@ -145,6 +145,7 @@
     "@ipld/dag-pb": "^4.0.3",
     "@libp2p/bootstrap": "^8.0.0",
     "@libp2p/interface-libp2p": "^3.1.0",
+    "@libp2p/interface-pubsub": "^4.0.1",
     "@libp2p/interfaces": "^3.3.2",
     "@libp2p/ipni-content-routing": "^1.0.0",
     "@libp2p/kad-dht": "^9.3.3",
