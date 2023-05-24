@@ -1,18 +1,15 @@
-import { createHelia } from 'helia'
-import { createLibp2p } from 'libp2p'
-import { webSockets } from '@libp2p/websockets'
-import { all } from '@libp2p/websockets/filters'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { webSockets } from '@libp2p/websockets'
+import { all } from '@libp2p/websockets/filters'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
+import { createHelia } from 'helia'
+import { createLibp2p, type Libp2pOptions } from 'libp2p'
 import type { Helia } from '@helia/interface'
-import { kadDHT } from '@libp2p/kad-dht'
-import { gossipsub } from '@chainsafe/libp2p-gossipsub'
-import { ipnsValidator } from 'ipns/validator'
-import { ipnsSelector } from 'ipns/selector'
+import type { Libp2p } from '@libp2p/interface-libp2p'
 
-export async function createHeliaNode (): Promise<Helia> {
+export async function createHeliaNode <T extends { identify: any }> (config: Libp2pOptions<T> = {}): Promise<Helia<Libp2p<T>>> {
   const blockstore = new MemoryBlockstore()
   const datastore = new MemoryDatastore()
 
@@ -29,19 +26,11 @@ export async function createHeliaNode (): Promise<Helia> {
     streamMuxers: [
       yamux()
     ],
-    dht: kadDHT({
-      validators: {
-        ipns: ipnsValidator
-      },
-      selectors: {
-        ipns: ipnsSelector
-      }
-    }),
-    pubsub: gossipsub(),
     datastore,
-    nat: {
-      enabled: false
-    }
+    connectionGater: {
+      denyDialMultiaddr: async () => false
+    },
+    ...config
   })
 
   const helia = await createHelia({

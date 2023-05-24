@@ -160,9 +160,8 @@
   },
   "dependencies": {
     "@libp2p/interface-content-routing": "^2.1.0",
-    "@libp2p/interface-dht": "^2.0.1",
     "@libp2p/interface-peer-id": "^2.0.1",
-    "@libp2p/interface-pubsub": "^3.0.6",
+    "@libp2p/interface-pubsub": "^4.0.1",
     "@libp2p/interfaces": "^3.3.1",
     "@libp2p/logger": "^2.0.6",
     "@libp2p/peer-id": "^2.0.1",
@@ -178,7 +177,7 @@
   },
   "devDependencies": {
     "@libp2p/peer-id-factory": "^2.0.1",
-    "aegir": "^38.1.0",
+    "aegir": "^39.0.8",
     "datastore-core": "^9.0.3",
     "sinon": "^15.0.1",
     "sinon-ts": "^1.0.0"

@@ -62,24 +62,24 @@
  * ```
  */
 
-import type { AbortOptions } from '@libp2p/interfaces'
-import { isPeerId, PeerId } from '@libp2p/interface-peer-id'
-import { create, marshal, peerIdToRoutingKey, unmarshal } from 'ipns'
-import type { IPNSEntry } from 'ipns'
-import type { IPNSRouting, IPNSRoutingEvents } from './routing/index.js'
-import { ipnsValidator } from 'ipns/validator'
-import { ipnsSelector } from 'ipns/selector'
-import { CID } from 'multiformats/cid'
-import { resolveDnslink } from './utils/resolve-dns-link.js'
+import { isPeerId, type PeerId } from '@libp2p/interface-peer-id'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
-import type { ProgressEvent, ProgressOptions } from 'progress-events'
+import { create, marshal, peerIdToRoutingKey, unmarshal } from 'ipns'
+import { ipnsSelector } from 'ipns/selector'
+import { ipnsValidator } from 'ipns/validator'
+import { CID } from 'multiformats/cid'
 import { CustomProgressEvent } from 'progress-events'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { localStore, type LocalStore } from './routing/local-store.js'
+import { resolveDnslink } from './utils/resolve-dns-link.js'
+import type { IPNSRouting, IPNSRoutingEvents } from './routing/index.js'
+import type { AbortOptions } from '@libp2p/interfaces'
 import type { Datastore } from 'interface-datastore'
-import { localStore, LocalStore } from './routing/local-store.js'
-import { CodeError } from '@libp2p/interfaces/errors'
+import type { IPNSEntry } from 'ipns'
+import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
 const log = logger('helia:ipns')
 
@@ -223,13 +223,13 @@ class DefaultIPNS implements IPNS {
     const record = await this.#findIpnsRecord(routingKey, options)
     const str = uint8ArrayToString(record.value)
 
-    return await this.#resolve(str, options)
+    return this.#resolve(str, options)
   }
 
   async resolveDns (domain: string, options: ResolveDNSOptions = {}): Promise<CID> {
     const dnslink = await resolveDnslink(domain, options)
 
-    return await this.#resolve(dnslink, options)
+    return this.#resolve(dnslink, options)
   }
 
   republish (options: RepublishOptions = {}): void {
@@ -275,7 +275,7 @@ class DefaultIPNS implements IPNS {
       const scheme = parts[1]
 
       if (scheme === 'ipns') {
-        return await this.resolve(peerIdFromString(parts[2]), options)
+        return this.resolve(peerIdFromString(parts[2]), options)
       } else if (scheme === 'ipfs') {
         return CID.parse(parts[2])
       }

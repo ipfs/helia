@@ -1,37 +1,43 @@
 /* eslint-env mocha */
 
+import { gossipsub } from '@chainsafe/libp2p-gossipsub'
+import { ipns } from '@helia/ipns'
+import { pubsub } from '@helia/ipns/routing'
+import { peerIdFromKeys } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
-import { createHeliaNode } from './fixtures/create-helia.js'
-import { createKuboNode } from './fixtures/create-kubo.js'
-import type { Helia } from '@helia/interface'
-import type { Controller } from 'ipfsd-ctl'
-import { sha256 } from 'multiformats/hashes/sha2'
+import last from 'it-last'
+import { identifyService } from 'libp2p/identify'
+import { base36 } from 'multiformats/bases/base36'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
 import { identity } from 'multiformats/hashes/identity'
-import { base36 } from 'multiformats/bases/base36'
-import type { IPNS } from '@helia/ipns'
-import { ipns } from '@helia/ipns'
-import { pubsub } from '@helia/ipns/routing'
-import last from 'it-last'
-import { peerIdFromKeys } from '@libp2p/peer-id'
-import { gossipsub } from '@chainsafe/libp2p-gossipsub'
-import { waitFor } from './fixtures/wait-for.js'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { sha256 } from 'multiformats/hashes/sha2'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { connect } from './fixtures/connect.js'
+import { createHeliaNode } from './fixtures/create-helia.js'
+import { createKuboNode } from './fixtures/create-kubo.js'
+import { waitFor } from './fixtures/wait-for.js'
+import type { Helia } from '@helia/interface'
+import type { IPNS } from '@helia/ipns'
+import type { PubSub } from '@libp2p/interface-pubsub'
+import type { Controller } from 'ipfsd-ctl'
+import type { Libp2p } from 'libp2p'
 
 const LIBP2P_KEY_CODEC = 0x72
 
 describe('pubsub routing', () => {
-  let helia: Helia
+  let helia: Helia<Libp2p<{ pubsub: PubSub }>>
   let kubo: Controller
   let name: IPNS
 
   beforeEach(async () => {
     helia = await createHeliaNode({
-      pubsub: gossipsub()
+      services: {
+        identify: identifyService(),
+        pubsub: gossipsub()
+      }
     })
     kubo = await createKuboNode({
       ipfsOptions: {
@@ -130,7 +136,7 @@ describe('pubsub routing', () => {
 
     // wait for helia to be subscribed to the topic for record updates
     await waitFor(async () => {
-      return helia.libp2p.pubsub.getTopics().includes(subscriptionName)
+      return helia.libp2p.services.pubsub.getTopics().includes(subscriptionName)
     }, {
       timeout: 30000,
       message: 'Helia did not register for record updates'

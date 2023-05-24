@@ -1,7 +1,7 @@
 /* eslint-env browser */
 
-import { TLRU } from './tlru.js'
 import PQueue from 'p-queue'
+import { TLRU } from './tlru.js'
 import type { AbortOptions } from '@libp2p/interfaces'
 
 // Avoid sending multiple queries for the same hostname by caching results
@@ -57,5 +57,5 @@ export async function resolveDnslink (fqdn: string, opts: ResolveDnsLinkOptions 
     return ipfsPath(response)
   }
 
-  return await resolve(fqdn, opts)
+  return resolve(fqdn, opts)
 }

@@ -1,8 +1,8 @@
-import type { ProgressOptions } from 'progress-events'
-import type { AbortOptions } from '@libp2p/interfaces'
 import type { DHTProgressEvents } from './dht.js'
 import type { DatastoreProgressEvents } from './local-store.js'
 import type { PubSubProgressEvents } from './pubsub.js'
+import type { AbortOptions } from '@libp2p/interfaces'
+import type { ProgressOptions } from 'progress-events'
 
 export interface PutOptions extends AbortOptions, ProgressOptions {
 

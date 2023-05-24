@@ -1,10 +1,10 @@
 
 // @ts-expect-error no types
 import * as goIpfs from 'go-ipfs'
-import { Controller, ControllerOptions, createController } from 'ipfsd-ctl'
+import { type Controller, type ControllerOptions, createController } from 'ipfsd-ctl'
 import * as kuboRpcClient from 'kubo-rpc-client'
-import { isElectronMain, isNode } from 'wherearewe'
 import mergeOptions from 'merge-options'
+import { isElectronMain, isNode } from 'wherearewe'
 
 export async function createKuboNode (options: ControllerOptions<'go'> = {}): Promise<Controller> {
   const opts = mergeOptions({
@@ -24,5 +24,5 @@ export async function createKuboNode (options: ControllerOptions<'go'> = {}): Pr
     }
   }, options)
 
-  return await createController(opts)
+  return createController(opts)
 }

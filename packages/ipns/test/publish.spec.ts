@@ -1,13 +1,13 @@
 /* eslint-env mocha */
 
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
-import type { IPNS, IPNSRouting } from '../src/index.js'
-import { ipns } from '../src/index.js'
 import { CID } from 'multiformats/cid'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import Sinon from 'sinon'
-import { StubbedInstance, stubInterface } from 'sinon-ts'
+import { type StubbedInstance, stubInterface } from 'sinon-ts'
+import { ipns } from '../src/index.js'
+import type { IPNS, IPNSRouting } from '../src/index.js'
 
 const cid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
 

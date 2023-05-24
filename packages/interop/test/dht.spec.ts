@@ -1,31 +1,33 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import { createHeliaNode } from './fixtures/create-helia.js'
-import { createKuboNode } from './fixtures/create-kubo.js'
-import type { Helia } from '@helia/interface'
-import type { Controller } from 'ipfsd-ctl'
-import { sha256 } from 'multiformats/hashes/sha2'
-import { CID } from 'multiformats/cid'
-import * as raw from 'multiformats/codecs/raw'
-import type { IPNS } from '@helia/ipns'
 import { ipns } from '@helia/ipns'
 import { dht } from '@helia/ipns/routing'
-import last from 'it-last'
-import { kadDHT } from '@libp2p/kad-dht'
-import { ipnsValidator } from 'ipns/validator'
-import { ipnsSelector } from 'ipns/selector'
+import { type KadDHT, kadDHT } from '@libp2p/kad-dht'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { sortClosestPeers } from './fixtures/create-peer-ids.js'
-import type { PeerId } from 'kubo-rpc-client/dist/src/types.js'
+import { expect } from 'aegir/chai'
+import { ipnsSelector } from 'ipns/selector'
+import { ipnsValidator } from 'ipns/validator'
+import last from 'it-last'
+import { identifyService } from 'libp2p/identify'
+import { CID } from 'multiformats/cid'
+import * as raw from 'multiformats/codecs/raw'
+import { sha256 } from 'multiformats/hashes/sha2'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { waitFor } from './fixtures/wait-for.js'
-import { connect } from './fixtures/connect.js'
 import { isElectronMain } from 'wherearewe'
+import { connect } from './fixtures/connect.js'
+import { createHeliaNode } from './fixtures/create-helia.js'
+import { createKuboNode } from './fixtures/create-kubo.js'
+import { sortClosestPeers } from './fixtures/create-peer-ids.js'
+import { waitFor } from './fixtures/wait-for.js'
+import type { Helia } from '@helia/interface'
+import type { IPNS } from '@helia/ipns'
+import type { Libp2p } from '@libp2p/interface-libp2p'
+import type { Controller } from 'ipfsd-ctl'
+import type { PeerId } from 'kubo-rpc-client/dist/src/types.js'
 
 describe('dht routing', () => {
-  let helia: Helia
+  let helia: Helia<Libp2p<{ dht: KadDHT }>>
   let kubo: Controller
   let name: IPNS
 
@@ -46,14 +48,19 @@ describe('dht routing', () => {
     value = CID.createV1(raw.code, digest)
 
     helia = await createHeliaNode({
-      dht: kadDHT({
-        validators: {
-          ipns: ipnsValidator
-        },
-        selectors: {
-          ipns: ipnsSelector
-        }
-      })
+      services: {
+        identify: identifyService(),
+        dht: kadDHT({
+          validators: {
+            ipns: ipnsValidator
+          },
+          selectors: {
+            ipns: ipnsSelector
+          },
+          // skips waiting for the initial self-query to find peers
+          allowQueryWithZeroPeers: true
+        })
+      }
     })
     kubo = await createKuboNode()
 
@@ -86,7 +93,7 @@ describe('dht routing', () => {
     await waitFor(async () => {
       let found = false
 
-      for await (const event of helia.libp2p.dht.findPeer(kubo.peer.id)) {
+      for await (const event of helia.libp2p.services.dht.findPeer(kubo.peer.id)) {
         if (event.name === 'FINAL_PEER') {
           found = true
         }

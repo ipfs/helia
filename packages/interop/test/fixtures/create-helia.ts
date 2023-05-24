@@ -1,13 +1,13 @@
-import { createHelia } from 'helia'
-import { createLibp2p, Libp2pOptions } from 'libp2p'
-import { tcp } from '@libp2p/tcp'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { tcp } from '@libp2p/tcp'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
+import { createHelia } from 'helia'
+import { createLibp2p, type Libp2p, type Libp2pOptions } from 'libp2p'
 import type { Helia } from '@helia/interface'
 
-export async function createHeliaNode (config: Libp2pOptions = {}): Promise<Helia> {
+export async function createHeliaNode <T extends { identify: any }> (config: Libp2pOptions<T> = {}): Promise<Helia<Libp2p<T>>> {
   const blockstore = new MemoryBlockstore()
   const datastore = new MemoryDatastore()
 
@@ -27,9 +27,6 @@ export async function createHeliaNode (config: Libp2pOptions = {}): Promise<Heli
       yamux()
     ],
     datastore,
-    nat: {
-      enabled: false
-    },
     ...config
   })
 

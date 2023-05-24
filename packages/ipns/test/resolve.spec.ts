@@ -1,18 +1,18 @@
 /* eslint-env mocha */
 
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { Libp2pRecord } from '@libp2p/record'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
-import type { IPNS, IPNSRouting } from '../src/index.js'
-import { ipns } from '../src/index.js'
-import { CID } from 'multiformats/cid'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import Sinon from 'sinon'
-import { StubbedInstance, stubInterface } from 'sinon-ts'
+import { type Datastore, Key } from 'interface-datastore'
 import { create, marshal, peerIdToRoutingKey } from 'ipns'
-import { Datastore, Key } from 'interface-datastore'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { CID } from 'multiformats/cid'
+import Sinon from 'sinon'
+import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { Libp2pRecord } from '@libp2p/record'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { ipns } from '../src/index.js'
+import type { IPNS, IPNSRouting } from '../src/index.js'
 
 const cid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
 

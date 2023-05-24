@@ -1,12 +1,12 @@
 import dns from 'dns'
 import { promisify } from 'util'
-import type { AbortOptions } from '@libp2p/interfaces'
 import * as isIPFS from 'is-ipfs'
+import type { AbortOptions } from '@libp2p/interfaces'
 
 const MAX_RECURSIVE_DEPTH = 32
 
 export async function resolveDnslink (domain: string, options: AbortOptions = {}): Promise<string> {
-  return await recursiveResolveDnslink(domain, MAX_RECURSIVE_DEPTH, options)
+  return recursiveResolveDnslink(domain, MAX_RECURSIVE_DEPTH, options)
 }
 
 async function recursiveResolveDnslink (domain: string, depth: number, options: AbortOptions = {}): Promise<string> {
@@ -44,7 +44,7 @@ async function recursiveResolveDnslink (domain: string, depth: number, options: 
     return result
   }
 
-  return await recursiveResolveDnslink(domainOrCID, depth - 1, options)
+  return recursiveResolveDnslink(domainOrCID, depth - 1, options)
 }
 
 async function resolve (domain: string, options: AbortOptions = {}): Promise<string> {
