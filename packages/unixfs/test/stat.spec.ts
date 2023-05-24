@@ -1,13 +1,13 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import type { Blockstore } from 'interface-blockstore'
-import { unixfs, UnixFS } from '../src/index.js'
-import { MemoryBlockstore } from 'blockstore-core'
-import type { CID } from 'multiformats/cid'
 import * as dagPb from '@ipld/dag-pb'
+import { expect } from 'aegir/chai'
+import { MemoryBlockstore } from 'blockstore-core'
+import { unixfs, type UnixFS } from '../src/index.js'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 import { largeFile, smallFile } from './fixtures/files.js'
+import type { Blockstore } from 'interface-blockstore'
+import type { CID } from 'multiformats/cid'
 
 describe('stat', function () {
   this.timeout(120 * 1000)

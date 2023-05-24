@@ -1,10 +1,10 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import type { Blockstore } from 'interface-blockstore'
-import { unixfs, UnixFS } from '../src/index.js'
 import { MemoryBlockstore } from 'blockstore-core'
 import all from 'it-all'
+import { unixfs, type UnixFS } from '../src/index.js'
+import type { Blockstore } from 'interface-blockstore'
 
 describe('addAll', () => {
   let blockstore: Blockstore

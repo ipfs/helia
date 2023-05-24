@@ -1,14 +1,15 @@
-import { createHelia } from 'helia'
-import { createLibp2p } from 'libp2p'
-import { webSockets } from '@libp2p/websockets'
-import { all } from '@libp2p/websockets/filters'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { webSockets } from '@libp2p/websockets'
+import { all } from '@libp2p/websockets/filters'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
+import { createHelia } from 'helia'
+import { createLibp2p, type Libp2pOptions } from 'libp2p'
+import { identifyService } from 'libp2p/identify'
 import type { Helia } from '@helia/interface'
 
-export async function createHeliaNode (): Promise<Helia> {
+export async function createHeliaNode (config: Libp2pOptions = {}): Promise<Helia> {
   const blockstore = new MemoryBlockstore()
   const datastore = new MemoryDatastore()
 
@@ -25,10 +26,14 @@ export async function createHeliaNode (): Promise<Helia> {
     streamMuxers: [
       yamux()
     ],
+    services: {
+      identify: identifyService()
+    },
     datastore,
-    nat: {
-      enabled: false
-    }
+    connectionGater: {
+      denyDialMultiaddr: async () => false
+    },
+    ...config
   })
 
   const helia = await createHelia({

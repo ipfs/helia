@@ -1,21 +1,21 @@
-import { recursive } from 'ipfs-unixfs-exporter'
-import { CID } from 'multiformats/cid'
-import type { ChmodOptions } from '../index.js'
-import mergeOpts from 'merge-options'
+import * as dagPB from '@ipld/dag-pb'
 import { logger } from '@libp2p/logger'
 import { UnixFS } from 'ipfs-unixfs'
-import { pipe } from 'it-pipe'
-import { InvalidPBNodeError, NotUnixFSError, UnknownError } from './utils/errors.js'
-import * as dagPB from '@ipld/dag-pb'
-import type { PBNode, PBLink } from '@ipld/dag-pb'
+import { recursive } from 'ipfs-unixfs-exporter'
 import { importer } from 'ipfs-unixfs-importer'
-import { persist } from './utils/persist.js'
-import type { Blocks } from '@helia/interface/blocks'
 import last from 'it-last'
-import { sha256 } from 'multiformats/hashes/sha2'
-import { resolve, updatePathCids } from './utils/resolve.js'
+import { pipe } from 'it-pipe'
+import mergeOpts from 'merge-options'
+import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
+import { sha256 } from 'multiformats/hashes/sha2'
 import { SHARD_SPLIT_THRESHOLD_BYTES } from './utils/constants.js'
+import { InvalidPBNodeError, NotUnixFSError, UnknownError } from './utils/errors.js'
+import { persist } from './utils/persist.js'
+import { resolve, updatePathCids } from './utils/resolve.js'
+import type { ChmodOptions } from '../index.js'
+import type { Blocks } from '@helia/interface/blocks'
+import type { PBNode, PBLink } from '@ipld/dag-pb'
 
 const mergeOptions = mergeOpts.bind({ ignoreUndefined: true })
 const log = logger('helia:unixfs:chmod')
@@ -94,14 +94,14 @@ export async function chmod (cid: CID, mode: number, blockstore: Blocks, options
           }
         }
       }),
-      async (nodes) => await last(nodes)
+      async (nodes) => last(nodes)
     )
 
     if (root == null) {
       throw new UnknownError(`Could not chmod ${resolved.cid.toString()}`)
     }
 
-    return await updatePathCids(root.cid, resolved, blockstore, opts)
+    return updatePathCids(root.cid, resolved, blockstore, opts)
   }
 
   const block = await blockstore.get(resolved.cid)
@@ -133,5 +133,5 @@ export async function chmod (cid: CID, mode: number, blockstore: Blocks, options
 
   await blockstore.put(updatedCid, updatedBlock)
 
-  return await updatePathCids(updatedCid, resolved, blockstore, opts)
+  return updatePathCids(updatedCid, resolved, blockstore, opts)
 }

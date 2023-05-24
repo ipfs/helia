@@ -1,24 +1,24 @@
 import * as dagPB from '@ipld/dag-pb'
-import { DirSharded } from './dir-sharded.js'
 import { logger } from '@libp2p/logger'
 import { UnixFS } from 'ipfs-unixfs'
 import last from 'it-last'
-import type { CID, Version } from 'multiformats/cid'
+// @ts-expect-error no types
+import SparseArray from 'sparse-array'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { type InfiniteHash, wrapHash } from './consumable-hash.js'
+import { DirSharded } from './dir-sharded.js'
 import {
   hamtHashCode,
   hamtHashFn,
   hamtBucketBits
 } from './hamt-constants.js'
-import type { Blocks } from '@helia/interface/blocks'
-import type { Mtime } from 'ipfs-unixfs'
-import type { AbortOptions } from '@libp2p/interfaces'
-import type { ImportResult } from 'ipfs-unixfs-importer'
 import { persist } from './persist.js'
-import { InfiniteHash, wrapHash } from './consumable-hash.js'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-// @ts-expect-error no types
-import SparseArray from 'sparse-array'
 import type { PersistOptions } from './persist.js'
+import type { Blocks } from '@helia/interface/blocks'
+import type { AbortOptions } from '@libp2p/interfaces'
+import type { Mtime } from 'ipfs-unixfs'
+import type { ImportResult } from 'ipfs-unixfs-importer'
+import type { CID, Version } from 'multiformats/cid'
 
 const log = logger('helia:unixfs:commands:utils:hamt-utils')
 

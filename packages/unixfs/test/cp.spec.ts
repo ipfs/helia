@@ -1,16 +1,16 @@
 /* eslint-env mocha */
 
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { expect } from 'aegir/chai'
-import { identity } from 'multiformats/hashes/identity'
-import { CID } from 'multiformats/cid'
-import type { Blockstore } from 'interface-blockstore'
-import { unixfs, UnixFS } from '../src/index.js'
 import { MemoryBlockstore } from 'blockstore-core'
-import toBuffer from 'it-to-buffer'
-import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 import first from 'it-first'
+import toBuffer from 'it-to-buffer'
+import { CID } from 'multiformats/cid'
+import { identity } from 'multiformats/hashes/identity'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { unixfs, type UnixFS } from '../src/index.js'
+import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 import { createSubshardedDirectory } from './fixtures/create-subsharded-directory.js'
+import type { Blockstore } from 'interface-blockstore'
 
 describe('cp', () => {
   let blockstore: Blockstore

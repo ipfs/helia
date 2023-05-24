@@ -1,13 +1,13 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import all from 'it-all'
-import type { Blockstore } from 'interface-blockstore'
-import { unixfs, UnixFS } from '../src/index.js'
 import { MemoryBlockstore } from 'blockstore-core'
-import type { CID } from 'multiformats/cid'
-import type { Mtime } from 'ipfs-unixfs'
+import all from 'it-all'
+import { unixfs, type UnixFS } from '../src/index.js'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
+import type { Blockstore } from 'interface-blockstore'
+import type { Mtime } from 'ipfs-unixfs'
+import type { CID } from 'multiformats/cid'
 
 describe('mkdir', () => {
   let blockstore: Blockstore

@@ -1,12 +1,12 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import type { Blockstore } from 'interface-blockstore'
 import { MemoryBlockstore } from 'blockstore-core'
-import { UnixFS, unixfs } from '../src/index.js'
-import type { CID } from 'multiformats/cid'
+import { type UnixFS, unixfs } from '../src/index.js'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 import { smallFile } from './fixtures/files.js'
+import type { Blockstore } from 'interface-blockstore'
+import type { CID } from 'multiformats/cid'
 
 describe('chmod', () => {
   let blockstore: Blockstore

@@ -1,10 +1,10 @@
 import { exporter } from 'ipfs-unixfs-exporter'
-import type { CID } from 'multiformats/cid'
-import type { CatOptions } from '../index.js'
-import { resolve } from './utils/resolve.js'
 import mergeOpts from 'merge-options'
-import type { Blocks } from '@helia/interface/blocks'
 import { NoContentError, NotAFileError } from './utils/errors.js'
+import { resolve } from './utils/resolve.js'
+import type { CatOptions } from '../index.js'
+import type { Blocks } from '@helia/interface/blocks'
+import type { CID } from 'multiformats/cid'
 
 const mergeOptions = mergeOpts.bind({ ignoreUndefined: true })
 

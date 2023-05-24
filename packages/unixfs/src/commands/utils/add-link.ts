@@ -1,26 +1,26 @@
 import * as dagPB from '@ipld/dag-pb'
-import { CID, Version } from 'multiformats/cid'
 import { logger } from '@libp2p/logger'
 import { UnixFS } from 'ipfs-unixfs'
+import { CID, type Version } from 'multiformats/cid'
+import { sha256 } from 'multiformats/hashes/sha2'
+// @ts-expect-error no types
+import SparseArray from 'sparse-array'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { wrapHash } from './consumable-hash.js'
+import { AlreadyExistsError, InvalidParametersError, InvalidPBNodeError } from './errors.js'
+import { hamtBucketBits, hamtHashFn } from './hamt-constants.js'
 import {
   createShard,
   recreateShardedDirectory,
   toPrefix,
   updateShardedDirectory
 } from './hamt-utils.js'
-import type { PBNode, PBLink } from '@ipld/dag-pb/interface'
-import { sha256 } from 'multiformats/hashes/sha2'
-import { AlreadyExistsError, InvalidParametersError, InvalidPBNodeError } from './errors.js'
-import type { ImportResult } from 'ipfs-unixfs-importer'
-import type { AbortOptions } from '@libp2p/interfaces'
+import { isOverShardThreshold } from './is-over-shard-threshold.js'
 import type { Directory } from './cid-to-directory.js'
 import type { Blocks } from '@helia/interface/blocks'
-import { isOverShardThreshold } from './is-over-shard-threshold.js'
-import { hamtBucketBits, hamtHashFn } from './hamt-constants.js'
-// @ts-expect-error no types
-import SparseArray from 'sparse-array'
-import { wrapHash } from './consumable-hash.js'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import type { PBNode, PBLink } from '@ipld/dag-pb/interface'
+import type { AbortOptions } from '@libp2p/interfaces'
+import type { ImportResult } from 'ipfs-unixfs-importer'
 
 const log = logger('helia:unixfs:components:utils:add-link')
 
@@ -45,7 +45,7 @@ export async function addLink (parent: Directory, child: Required<PBLink>, block
   if (meta.type === 'hamt-sharded-directory') {
     log('adding link to sharded directory')
 
-    return await addToShardedDirectory(parent, child, blockstore, options)
+    return addToShardedDirectory(parent, child, blockstore, options)
   }
 
   log(`adding ${child.Name} (${child.Hash}) to regular directory`)
@@ -253,5 +253,5 @@ const addToShardedDirectory = async (parent: Directory, child: Required<PBLink>,
     log('adding %s to existing sub-shard', linkName)
   }
 
-  return await updateShardedDirectory(path, blockstore, options)
+  return updateShardedDirectory(path, blockstore, options)
 }

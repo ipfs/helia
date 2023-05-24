@@ -1,13 +1,13 @@
-import type { Blocks } from '@helia/interface/blocks'
-import type { CID } from 'multiformats/cid'
-import type { CpOptions } from '../index.js'
-import mergeOpts from 'merge-options'
 import { logger } from '@libp2p/logger'
+import mergeOpts from 'merge-options'
 import { addLink } from './utils/add-link.js'
-import { cidToPBLink } from './utils/cid-to-pblink.js'
 import { cidToDirectory } from './utils/cid-to-directory.js'
+import { cidToPBLink } from './utils/cid-to-pblink.js'
 import { SHARD_SPLIT_THRESHOLD_BYTES } from './utils/constants.js'
 import { InvalidParametersError } from './utils/errors.js'
+import type { CpOptions } from '../index.js'
+import type { Blocks } from '@helia/interface/blocks'
+import type { CID } from 'multiformats/cid'
 
 const mergeOptions = mergeOpts.bind({ ignoreUndefined: true })
 const log = logger('helia:unixfs:cp')

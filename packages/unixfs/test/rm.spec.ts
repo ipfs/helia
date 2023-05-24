@@ -1,15 +1,15 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import type { Blockstore } from 'interface-blockstore'
-import { unixfs, UnixFS } from '../src/index.js'
 import { MemoryBlockstore } from 'blockstore-core'
-import type { CID } from 'multiformats/cid'
 import { importer } from 'ipfs-unixfs-importer'
-import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 import last from 'it-last'
+import { unixfs, type UnixFS } from '../src/index.js'
+import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 import { createSubshardedDirectory } from './fixtures/create-subsharded-directory.js'
 import { smallFile } from './fixtures/files.js'
+import type { Blockstore } from 'interface-blockstore'
+import type { CID } from 'multiformats/cid'
 
 describe('rm', () => {
   let blockstore: Blockstore

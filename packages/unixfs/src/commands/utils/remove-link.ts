@@ -1,21 +1,21 @@
 
 import * as dagPB from '@ipld/dag-pb'
-import type { CID, Version } from 'multiformats/cid'
 import { logger } from '@libp2p/logger'
 import { UnixFS } from 'ipfs-unixfs'
+import { exporter } from 'ipfs-unixfs-exporter'
+import { InvalidParametersError, InvalidPBNodeError } from './errors.js'
 import {
   recreateShardedDirectory,
-  UpdateHamtDirectoryOptions,
+  type UpdateHamtDirectoryOptions,
   updateShardedDirectory
 } from './hamt-utils.js'
-import type { PBNode } from '@ipld/dag-pb'
-import type { Blocks } from '@helia/interface/blocks'
-import type { Directory } from './cid-to-directory.js'
-import type { AbortOptions } from '@libp2p/interfaces'
-import { InvalidParametersError, InvalidPBNodeError } from './errors.js'
-import { exporter } from 'ipfs-unixfs-exporter'
-import { persist } from './persist.js'
 import { isOverShardThreshold } from './is-over-shard-threshold.js'
+import { persist } from './persist.js'
+import type { Directory } from './cid-to-directory.js'
+import type { Blocks } from '@helia/interface/blocks'
+import type { PBNode } from '@ipld/dag-pb'
+import type { AbortOptions } from '@libp2p/interfaces'
+import type { CID, Version } from 'multiformats/cid'
 
 const log = logger('helia:unixfs:utils:remove-link')
 
@@ -44,7 +44,7 @@ export async function removeLink (parent: Directory, name: string, blockstore: B
     if (!(await isOverShardThreshold(result.node, blockstore, options.shardSplitThresholdBytes))) {
       log('converting shard to flat directory %c', parent.cid)
 
-      return await convertToFlatDirectory(result, blockstore, options)
+      return convertToFlatDirectory(result, blockstore, options)
     }
 
     return result
@@ -52,7 +52,7 @@ export async function removeLink (parent: Directory, name: string, blockstore: B
 
   log(`removing link ${name} regular directory`)
 
-  return await removeFromDirectory(parent, name, blockstore, options)
+  return removeFromDirectory(parent, name, blockstore, options)
 }
 
 const removeFromDirectory = async (parent: Directory, name: string, blockstore: Blocks, options: AbortOptions): Promise<RemoveLinkResult> => {
@@ -129,7 +129,7 @@ const removeFromShardedDirectory = async (parent: Directory, name: string, block
     }
   }
 
-  return await updateShardedDirectory(path, blockstore, options)
+  return updateShardedDirectory(path, blockstore, options)
 }
 
 const convertToFlatDirectory = async (parent: Directory, blockstore: Blocks, options: RmLinkOptions): Promise<RemoveLinkResult> => {

@@ -1,16 +1,16 @@
 /* eslint-env mocha */
 
+import { type AddOptions, type UnixFS, unixfs } from '@helia/unixfs'
 import { expect } from 'aegir/chai'
+import { fixedSize } from 'ipfs-unixfs-importer/chunker'
+import { balanced } from 'ipfs-unixfs-importer/layout'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import type { Helia } from '@helia/interface'
-import type { Controller } from 'ipfsd-ctl'
-import { AddOptions, UnixFS, unixfs } from '@helia/unixfs'
-import { balanced } from 'ipfs-unixfs-importer/layout'
-import { fixedSize } from 'ipfs-unixfs-importer/chunker'
-import type { FileCandidate } from 'ipfs-unixfs-importer'
-import type { CID } from 'multiformats/cid'
 import type { AddOptions as KuboAddOptions } from 'ipfs-core-types/src/root.js'
+import type { FileCandidate } from 'ipfs-unixfs-importer'
+import type { Controller } from 'ipfsd-ctl'
+import type { CID } from 'multiformats/cid'
 
 describe('unixfs interop', () => {
   let helia: Helia

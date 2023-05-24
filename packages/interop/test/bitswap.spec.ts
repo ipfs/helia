@@ -1,13 +1,13 @@
 /* eslint-env mocha */
 
+import { type UnixFS, unixfs } from '@helia/unixfs'
 import { expect } from 'aegir/chai'
+import toBuffer from 'it-to-buffer'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import type { Helia } from '@helia/interface'
-import type { Controller } from 'ipfsd-ctl'
-import { UnixFS, unixfs } from '@helia/unixfs'
 import type { FileCandidate } from 'ipfs-unixfs-importer'
-import toBuffer from 'it-to-buffer'
+import type { Controller } from 'ipfsd-ctl'
 
 describe('unixfs bitswap interop', () => {
   let helia: Helia
@@ -20,8 +20,7 @@ describe('unixfs bitswap interop', () => {
     kubo = await createKuboNode()
 
     // connect helia to kubo
-    await helia.libp2p.peerStore.addressBook.add(kubo.peer.id, kubo.peer.addresses)
-    await helia.libp2p.dial(kubo.peer.id)
+    await helia.libp2p.dial(kubo.peer.addresses)
   })
 
   afterEach(async () => {

@@ -1,8 +1,8 @@
-import { exporter, ExporterOptions } from 'ipfs-unixfs-exporter'
-import type { CID } from 'multiformats/cid'
-import type { PBNode } from '@ipld/dag-pb'
-import type { Blocks } from '@helia/interface/blocks'
+import { exporter, type ExporterOptions } from 'ipfs-unixfs-exporter'
 import { NotADirectoryError } from './errors.js'
+import type { Blocks } from '@helia/interface/blocks'
+import type { PBNode } from '@ipld/dag-pb'
+import type { CID } from 'multiformats/cid'
 
 export interface Directory {
   cid: CID

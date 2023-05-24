@@ -1,10 +1,10 @@
-import { exporter, UnixFSEntry } from 'ipfs-unixfs-exporter'
-import type { CID } from 'multiformats/cid'
-import type { LsOptions } from '../index.js'
-import { resolve } from './utils/resolve.js'
+import { exporter, type UnixFSEntry } from 'ipfs-unixfs-exporter'
 import mergeOpts from 'merge-options'
-import type { Blocks } from '@helia/interface/blocks'
 import { NoContentError, NotADirectoryError } from './utils/errors.js'
+import { resolve } from './utils/resolve.js'
+import type { LsOptions } from '../index.js'
+import type { Blocks } from '@helia/interface/blocks'
+import type { CID } from 'multiformats/cid'
 
 const mergeOptions = mergeOpts.bind({ ignoreUndefined: true })
 

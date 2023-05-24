@@ -1,8 +1,8 @@
-import type { Blockstore } from 'interface-blockstore'
-import { UnixFS } from 'ipfs-unixfs'
-import type { CID } from 'multiformats/cid'
 import * as dagPb from '@ipld/dag-pb'
+import { UnixFS } from 'ipfs-unixfs'
 import * as raw from 'multiformats/codecs/raw'
+import type { Blockstore } from 'interface-blockstore'
+import type { CID } from 'multiformats/cid'
 
 type GetStore = Pick<Blockstore, 'get'>
 

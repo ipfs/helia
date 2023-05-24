@@ -1,9 +1,9 @@
-import type { Blockstore } from 'interface-blockstore'
-import { importer } from 'ipfs-unixfs-importer'
-import type { CID } from 'multiformats/cid'
-import { unixfs } from '../../src/index.js'
 import * as dagPb from '@ipld/dag-pb'
+import { importer } from 'ipfs-unixfs-importer'
 import last from 'it-last'
+import { unixfs } from '../../src/index.js'
+import type { Blockstore } from 'interface-blockstore'
+import type { CID } from 'multiformats/cid'
 
 export async function createSubshardedDirectory (blockstore: Blockstore, depth: number = 1, files: number = 5000): Promise<{
   importerCid: CID

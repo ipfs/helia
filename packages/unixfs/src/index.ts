@@ -31,21 +31,21 @@
  * ```
  */
 
-import type { CID, Version } from 'multiformats/cid'
-import type { Blocks, GetBlockProgressEvents, PutBlockProgressEvents } from '@helia/interface/blocks'
-import type { AbortOptions } from '@libp2p/interfaces'
 import { addAll, addBytes, addByteStream, addDirectory, addFile } from './commands/add.js'
 import { cat } from './commands/cat.js'
-import { mkdir } from './commands/mkdir.js'
-import type { Mtime } from 'ipfs-unixfs'
+import { chmod } from './commands/chmod.js'
 import { cp } from './commands/cp.js'
+import { ls } from './commands/ls.js'
+import { mkdir } from './commands/mkdir.js'
 import { rm } from './commands/rm.js'
 import { stat } from './commands/stat.js'
 import { touch } from './commands/touch.js'
-import { chmod } from './commands/chmod.js'
+import type { Blocks, GetBlockProgressEvents, PutBlockProgressEvents } from '@helia/interface/blocks'
+import type { AbortOptions } from '@libp2p/interfaces'
+import type { Mtime, UnixFS as IPFSUnixFS } from 'ipfs-unixfs'
 import type { ExporterProgressEvents, UnixFSEntry } from 'ipfs-unixfs-exporter'
-import { ls } from './commands/ls.js'
 import type { ByteStream, DirectoryCandidate, FileCandidate, ImportCandidateStream, ImporterOptions, ImporterProgressEvents, ImportResult } from 'ipfs-unixfs-importer'
+import type { CID, Version } from 'multiformats/cid'
 import type { ProgressOptions } from 'progress-events'
 
 export interface UnixFSComponents {
@@ -248,7 +248,7 @@ export interface UnixFSStats {
    * UnixFS metadata about this file or directory. Will not be present
    * if the node is a `raw` type.
    */
-  unixfs?: import('ipfs-unixfs').UnixFS
+  unixfs?: IPFSUnixFS
 }
 
 /**
@@ -505,19 +505,19 @@ class DefaultUnixFS implements UnixFS {
   }
 
   async addBytes (bytes: Uint8Array, options: Partial<AddOptions> = {}): Promise<CID> {
-    return await addBytes(bytes, this.components.blockstore, options)
+    return addBytes(bytes, this.components.blockstore, options)
   }
 
   async addByteStream (bytes: ByteStream, options: Partial<AddOptions> = {}): Promise<CID> {
-    return await addByteStream(bytes, this.components.blockstore, options)
+    return addByteStream(bytes, this.components.blockstore, options)
   }
 
   async addFile (file: FileCandidate, options: Partial<AddOptions> = {}): Promise<CID> {
-    return await addFile(file, this.components.blockstore, options)
+    return addFile(file, this.components.blockstore, options)
   }
 
   async addDirectory (dir: Partial<DirectoryCandidate> = {}, options: Partial<AddOptions> = {}): Promise<CID> {
-    return await addDirectory(dir, this.components.blockstore, options)
+    return addDirectory(dir, this.components.blockstore, options)
   }
 
   async * cat (cid: CID, options: Partial<CatOptions> = {}): AsyncIterable<Uint8Array> {
@@ -525,11 +525,11 @@ class DefaultUnixFS implements UnixFS {
   }
 
   async chmod (cid: CID, mode: number, options: Partial<ChmodOptions> = {}): Promise<CID> {
-    return await chmod(cid, mode, this.components.blockstore, options)
+    return chmod(cid, mode, this.components.blockstore, options)
   }
 
   async cp (source: CID, target: CID, name: string, options: Partial<CpOptions> = {}): Promise<CID> {
-    return await cp(source, target, name, this.components.blockstore, options)
+    return cp(source, target, name, this.components.blockstore, options)
   }
 
   async * ls (cid: CID, options: Partial<LsOptions> = {}): AsyncIterable<UnixFSEntry> {
@@ -537,19 +537,19 @@ class DefaultUnixFS implements UnixFS {
   }
 
   async mkdir (cid: CID, dirname: string, options: Partial<MkdirOptions> = {}): Promise<CID> {
-    return await mkdir(cid, dirname, this.components.blockstore, options)
+    return mkdir(cid, dirname, this.components.blockstore, options)
   }
 
   async rm (cid: CID, path: string, options: Partial<RmOptions> = {}): Promise<CID> {
-    return await rm(cid, path, this.components.blockstore, options)
+    return rm(cid, path, this.components.blockstore, options)
   }
 
   async stat (cid: CID, options: Partial<StatOptions> = {}): Promise<UnixFSStats> {
-    return await stat(cid, this.components.blockstore, options)
+    return stat(cid, this.components.blockstore, options)
   }
 
   async touch (cid: CID, options: Partial<TouchOptions> = {}): Promise<CID> {
-    return await touch(cid, this.components.blockstore, options)
+    return touch(cid, this.components.blockstore, options)
   }
 }
 

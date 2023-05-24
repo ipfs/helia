@@ -1,8 +1,8 @@
-import type { CID } from 'multiformats/cid'
-import type { Blocks } from '@helia/interface/blocks'
-import { ByteStream, DirectoryCandidate, FileCandidate, importBytes, importByteStream, ImportCandidateStream, importDirectory, importer, ImporterOptions, importFile, ImportResult } from 'ipfs-unixfs-importer'
-import { balanced } from 'ipfs-unixfs-importer/layout'
+import { type ByteStream, type DirectoryCandidate, type FileCandidate, importBytes, importByteStream, type ImportCandidateStream, importDirectory, importer, type ImporterOptions, importFile, type ImportResult } from 'ipfs-unixfs-importer'
 import { fixedSize } from 'ipfs-unixfs-importer/chunker'
+import { balanced } from 'ipfs-unixfs-importer/layout'
+import type { Blocks } from '@helia/interface/blocks'
+import type { CID } from 'multiformats/cid'
 
 /**
  * Default importer settings match Filecoin

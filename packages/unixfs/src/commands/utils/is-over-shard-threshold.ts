@@ -1,8 +1,8 @@
-import type { PBNode } from '@ipld/dag-pb'
-import type { Blocks } from '@helia/interface/blocks'
-import { UnixFS } from 'ipfs-unixfs'
 import * as dagPb from '@ipld/dag-pb'
+import { UnixFS } from 'ipfs-unixfs'
 import { CID_V0, CID_V1 } from './dir-sharded.js'
+import type { Blocks } from '@helia/interface/blocks'
+import type { PBNode } from '@ipld/dag-pb'
 
 /**
  * Estimate node size only based on DAGLink name and CID byte lengths

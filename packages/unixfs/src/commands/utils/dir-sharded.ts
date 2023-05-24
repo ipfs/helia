@@ -1,14 +1,14 @@
-import { encode, PBLink, prepare } from '@ipld/dag-pb'
+import { encode, type PBLink, prepare } from '@ipld/dag-pb'
+import { createHAMT, Bucket, type BucketChild } from 'hamt-sharding'
 import { UnixFS } from 'ipfs-unixfs'
-import { persist, PersistOptions } from './persist.js'
-import { createHAMT, Bucket, BucketChild } from 'hamt-sharding'
+import { CID } from 'multiformats/cid'
 import {
   hamtHashCode,
   hamtHashFn
 } from './hamt-constants.js'
-import { CID } from 'multiformats/cid'
-import type { Mtime } from 'ipfs-unixfs'
+import { persist, type PersistOptions } from './persist.js'
 import type { Blocks } from '@helia/interface/blocks'
+import type { Mtime } from 'ipfs-unixfs'
 
 interface InProgressImportResult extends ImportResult {
   single?: boolean
@@ -95,7 +95,7 @@ export class DirSharded extends Dir {
   }
 
   async get (name: string): Promise<InProgressImportResult | Dir | undefined> {
-    return await this._bucket.get(name)
+    return this._bucket.get(name)
   }
 
   childCount (): number {
