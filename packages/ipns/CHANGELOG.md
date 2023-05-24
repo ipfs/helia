@@ -1,3 +1,10 @@
+## [@helia/ipns-v1.1.3](https://github.com/ipfs/helia-ipns/compare/@helia/ipns-v1.1.2...@helia/ipns-v1.1.3) (2023-05-24)
+
+
+### Dependencies
+
+* update all deps and fix linting ([4cdba4f](https://github.com/ipfs/helia-ipns/commit/4cdba4fda743e7805725f4155242b93bc74ba4ae))
+
 ## [@helia/ipns-v1.1.2](https://github.com/ipfs/helia-ipns/compare/@helia/ipns-v1.1.1...@helia/ipns-v1.1.2) (2023-05-09)
 
 
