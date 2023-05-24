@@ -145,7 +145,7 @@ Check out the [Helia examples repo](https://github.com/ipfs-examples/helia-examp
 
 ## 📗 Project Docs
 
-- See the [project wiki](wiki/Home).
+- See the [project wiki](https://github.com/ipfs/helia/wiki).
 
 ## 📒 API Docs
 
@@ -222,11 +222,11 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 ## 🛍️ Notable Consumers/Users
 
-- See [Projects using Helia](wiki/Projects-using-Helia).
+- See [Projects using Helia](https://github.com/ipfs/helia/wiki/Projects-using-Helia).
 
 ## 🌞 Branding
 
-- See [Branding](wiki/Branding).
+- See [Branding](https://github.com/ipfs/helia/wiki/Branding).
 
 ## 🪪 License
 
