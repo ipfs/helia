@@ -1,3 +1,11 @@
+## [helia-v1.1.3](https://github.com/ipfs/helia/compare/helia-v1.1.2...helia-v1.1.3) (2023-05-24)
+
+
+### Dependencies
+
+* **dev:** bump delay from 5.0.0 to 6.0.0 ([#130](https://github.com/ipfs/helia/issues/130)) ([d087ffc](https://github.com/ipfs/helia/commit/d087ffcb8074b41781346d09101b2b7bc64768d2))
+* update sibling dependencies ([ed49856](https://github.com/ipfs/helia/commit/ed4985677b62021f76541354ad06b70bd53e929a))
+
 ## [helia-v1.1.2](https://github.com/ipfs/helia/compare/helia-v1.1.1...helia-v1.1.2) (2023-05-19)
 
 
