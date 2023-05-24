@@ -121,6 +121,7 @@ repo for how to do mostly anything with your Helia node.
   - [🐾 Next steps](#-next-steps)
 - [🥅 Purpose and goals](#-purpose-and-goals)
 - [🏃‍♀️ Getting Started](#️-getting-started)
+- [📗 Project Docs](#-project-docs)
 - [📒 API Docs](#-api-docs)
 - [📐 System diagram](#-system-diagram)
 - [🏭 Code Structure](#-code-structure)
@@ -129,18 +130,22 @@ repo for how to do mostly anything with your Helia node.
 - [👫 Get involved](#-get-involved)
   - [🤲 Contribute](#-contribute)
 - [🛍️ Notable Consumers/Users](#️-notable-consumersusers)
-- [🌞 Name](#-name)
+- [🌞 Branding](#-branding)
 - [🪪 License](#-license)
 
 ## 🥅 Purpose and goals
 
 A lean, modular, and modern implementation of IPFS for the prolific JS and browser environments.
 
-See the [Manifesto](./MANIFESTO.md), the [FAQ](./FAQ.md), and the [State of IPFS in JS blog post from October 2022](https://blog.ipfs.tech/state-of-ipfs-in-js/) for more info.
+See the [Manifesto](wiki/Manifesto), the [FAQ](wiki/FAQ), and the [State of IPFS in JS blog post from October 2022](https://blog.ipfs.tech/state-of-ipfs-in-js/) for more info.
 
 ## 🏃‍♀️ Getting Started
 
 Check out the [Helia examples repo](https://github.com/ipfs-examples/helia-examples#examples), which covers a wide variety of use cases. If you feel something has been missed, follow the [contribution guide](https://github.com/ipfs-examples/helia-examples#contributing) and create a PR to the examples repo.
+
+## 📗 Project Docs
+
+- See the [project wiki](wiki/Home).
 
 ## 📒 API Docs
 
@@ -217,15 +222,11 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 ## 🛍️ Notable Consumers/Users
 
-*<YOUR LOGO HERE>*
+- See [Projects using Helia](wiki/Projects-using-Helia).
 
-Helia is in its early days.  If you're using Helia in production or have a novel usecase, we'd love to hear.  Please open an issue so we can learn more!
+## 🌞 Branding
 
-## 🌞 Name
-
-Helia (*HEE-lee-ah*) is the Latin spelling of Ἡλιη -- in Greek mythology, one of the [Heliades](https://www.wikidata.org/wiki/Q12656412): the daughters of the sun god Helios. When their brother Phaethon died trying to drive the sun chariot across the sky, their tears of mourning fell to earth as amber, which is yellow (sort of), and so is JavaScript. They were then turned into [poplar](https://en.wiktionary.org/wiki/poplar) trees and, well, JavaScript is quite popular.
-
-In Oct–Dec 2022, [PL EngRes IP Stewards](https://pl-strflt.notion.site/IP-Stewards-9b65f88602474557b5d6f644194e941f) [sought community input](https://github.com/ipfs/pomegranate/issues/3) for the name of this project. After considering 20 suggestions and holding a couple of polls, the name **Helia** was chosen. Here's [why "ipfs" is not in the name](https://github.com/ipfs/ipfs/issues/470).
+- See [Branding](wiki/Branding).
 
 ## 🪪 License
 
