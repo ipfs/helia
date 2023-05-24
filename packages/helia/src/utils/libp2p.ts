@@ -8,6 +8,8 @@ import { mdns } from '@libp2p/mdns'
 import { mplex } from '@libp2p/mplex'
 import { tcp } from '@libp2p/tcp'
 import { webSockets } from '@libp2p/websockets'
+import { ipnsSelector } from 'ipns/selector'
+import { ipnsValidator } from 'ipns/validator'
 import { createLibp2p as create } from 'libp2p'
 import { autoNATService } from 'libp2p/autonat'
 import { circuitRelayTransport, circuitRelayServer, type CircuitRelayService } from 'libp2p/circuit-relay'
@@ -57,7 +59,14 @@ export async function createLibp2p (opts: CreateLibp2pOptions): Promise<Libp2p<{
       autoNAT: autoNATService(),
       upnp: uPnPNATService(),
       pubsub: gossipsub(),
-      dht: kadDHT(),
+      dht: kadDHT({
+        validators: {
+          ipns: ipnsValidator
+        },
+        selectors: {
+          ipns: ipnsSelector
+        }
+      }),
       relay: circuitRelayServer({
         advertise: true
       })
