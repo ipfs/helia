@@ -1,3 +1,15 @@
+## [helia-v1.1.5](https://github.com/ipfs/helia/compare/helia-v1.1.4...helia-v1.1.5) (2023-05-25)
+
+
+### Bug Fixes
+
+* add dht validators/selectors for ipns ([#135](https://github.com/ipfs/helia/issues/135)) ([2c8e6b5](https://github.com/ipfs/helia/commit/2c8e6b51b3c401a0472a024b8dac3d3ba735d74c))
+
+
+### Dependencies
+
+* update sibling dependencies ([f565ffd](https://github.com/ipfs/helia/commit/f565ffdcf6923b78326ed4cb00be93083b45ccca))
+
 ## [helia-v1.1.4](https://github.com/ipfs/helia/compare/helia-v1.1.3...helia-v1.1.4) (2023-05-24)
 
 
