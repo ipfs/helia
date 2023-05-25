@@ -27,7 +27,8 @@ describe('strings interop', () => {
     str = strings(helia)
     kubo = await createKuboNode()
 
-    await helia.libp2p.dial((await (kubo.api.id())).addresses)
+    const id = await kubo.api.id()
+    await helia.libp2p.dial(id.addresses)
   })
 
   afterEach(async () => {
