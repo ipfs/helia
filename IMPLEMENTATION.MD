@@ -74,7 +74,7 @@ const libp2p = await createLibp2p({
 
 ## Stream Muxing
 
-It allows multiple conversations on the same line by giving it a unique identifier.
+It allows multiple conversations(Streams) on the same line(Connection) by giving it a unique identifier.
 
 ```js
 import { createLibp2p } from "libp2p";
@@ -113,9 +113,11 @@ const libp2p = await createLibp2p({
     ... // placeholder for remaining config
     dht: kadDHT({
         validators: {
+            // If you want to use ipns it requires ipns validators
             ipns: ipnsValidator,
         },
         selectors: {
+            // If you want to use ipns it requires ipns selectors
             ipns: ipnsSelector,
         },
     }),
@@ -147,13 +149,14 @@ const libp2p = await createLibp2p({
     ... // placeholder for remaining config
     peerDiscovery: [
         bootstrap({
+            // this list comes from https://github.com/ipfs/kubo/blob/da28fbc65a2e0f1ce59f9923823326ae2bc4f713/config/bootstrap_peers.go#L17
             list: [
-                "/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
-                "/dnsaddr/bootstrap.libp2p.io/p2p/QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb",
-                "/dnsaddr/bootstrap.libp2p.io/p2p/QmZa1sAxajnQjVM8WjWXoMbmPd7NsWhfKsPkErzpm9wGkp",
-                "/dnsaddr/bootstrap.libp2p.io/p2p/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa",
-                "/dnsaddr/bootstrap.libp2p.io/p2p/QmcZf59bWwK5XFi76CZX8cbJ4BhTzzA3gU1ZjYZcYW3dwt",
-            ],
+                '/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+                '/dnsaddr/bootstrap.libp2p.io/p2p/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa',
+                '/dnsaddr/bootstrap.libp2p.io/p2p/QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb',
+                '/dnsaddr/bootstrap.libp2p.io/p2p/QmcZf59bWwK5XFi76CZX8cbJ4BhTzzA3gU1ZjYZcYW3dwt',
+                '/ip4/104.131.131.82/tcp/4001/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ'
+            ]
         }),
     ],
 })
@@ -276,6 +279,28 @@ export const createHeliaClient = async () => {
     const heliaUnixFX = unixfs(heliaNode);
     return { heliaUnixFX, heliaIPNS };
 };
+```
+To use this you can put it in a context to be used wherever in your react app or you can load it up in a component if you only need it briefly. To get files it can work like below:
+
+This is a small code snippet and should be used as an example of how it could be used in your project
+
+```js
+    const { heliaUnixFX, heliaIPNS } = await createHeliaClient();
+    // Wait 10 seconds
+    await new Promise((resolve) =>
+        setTimeout(resolve, 10000),
+    );
+    for await (const chunk of heliaUnixFX.cat(
+            dataCID, // Qm........
+        )) {
+            const chunkBuffer = Buffer.from(await chunk);
+            try {
+                await writer.write(chunkBuffer); // Writer in this would be a write stream initialialized prior
+            } catch (error) {
+                console.log(error);
+                return;
+            }
+        }
 ```
 
 More Information can be found here https://github.com/libp2p/js-libp2p/blob/master/doc/CONFIGURATION.md
