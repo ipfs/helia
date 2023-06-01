@@ -180,6 +180,7 @@
   "devDependencies": {
     "@ipld/dag-cbor": "^9.0.0",
     "@ipld/dag-json": "^10.0.1",
+    "@multiformats/mafmt": "^12.1.5",
     "@types/sinon": "^10.0.14",
     "aegir": "^39.0.4",
     "delay": "^6.0.0",
