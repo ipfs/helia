@@ -1,42 +1,29 @@
 /* eslint-env mocha */
-import { noise } from '@chainsafe/libp2p-noise'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { webSockets } from '@libp2p/websockets'
+
 import { expect } from 'aegir/chai'
-import { MemoryBlockstore } from 'blockstore-core'
-import { MemoryDatastore } from 'datastore-core'
 import all from 'it-all'
-import { createLibp2p } from 'libp2p'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
-import { createHelia } from '../src/index.js'
 import { createAndPutBlock } from './fixtures/create-block.js'
+import { createHelia } from './fixtures/create-helia.js'
 import type { Helia } from '@helia/interface'
 
 describe('pins', () => {
   let helia: Helia
+  let remote: Helia
 
   beforeEach(async () => {
-    helia = await createHelia({
-      datastore: new MemoryDatastore(),
-      blockstore: new MemoryBlockstore(),
-      libp2p: await createLibp2p({
-        transports: [
-          webSockets()
-        ],
-        connectionEncryption: [
-          noise()
-        ],
-        streamMuxers: [
-          yamux()
-        ]
-      })
-    })
+    helia = await createHelia()
+    remote = await createHelia()
   })
 
   afterEach(async () => {
     if (helia != null) {
       await helia.stop()
+    }
+
+    if (remote != null) {
+      await remote.stop()
     }
   })
 
@@ -130,6 +117,21 @@ describe('pins', () => {
     const pins = await all(helia.pins.ls({
       cid: cid1
     }))
+
+    expect(pins).to.have.lengthOf(1)
+    expect(pins).to.have.nested.property('[0].cid').that.eql(cid1)
+    expect(pins).to.have.nested.property('[0].depth', Infinity)
+    expect(pins).to.have.nested.property('[0].metadata').that.eql({})
+  })
+
+  it('pins a block from another node', async () => {
+    await helia.libp2p.dial(remote.libp2p.getMultiaddrs())
+
+    const cid1 = await createAndPutBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), remote.blockstore)
+
+    await helia.pins.add(cid1)
+
+    const pins = await all(helia.pins.ls())
 
     expect(pins).to.have.lengthOf(1)
     expect(pins).to.have.nested.property('[0].cid').that.eql(cid1)

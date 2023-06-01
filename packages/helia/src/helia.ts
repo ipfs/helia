@@ -7,6 +7,7 @@ import { CustomProgressEvent } from 'progress-events'
 import { PinsImpl } from './pins.js'
 import { BlockStorage } from './storage.js'
 import { assertDatastoreVersionIsCurrent } from './utils/datastore-version.js'
+import { NetworkedStorage } from './utils/networked-storage.js'
 import type { HeliaInit } from '.'
 import type { GCOptions, Helia } from '@helia/interface'
 import type { Pins } from '@helia/interface/pins'
@@ -56,11 +57,14 @@ export class HeliaImpl implements Helia {
       }
     })
 
-    this.pins = new PinsImpl(init.datastore, init.blockstore, init.dagWalkers ?? [])
+    const networkedStorage = new NetworkedStorage(init.blockstore, {
+      bitswap: this.#bitswap
+    })
+
+    this.pins = new PinsImpl(init.datastore, networkedStorage, init.dagWalkers ?? [])
 
     this.libp2p = init.libp2p
-    this.blockstore = new BlockStorage(init.blockstore, this.pins, {
-      bitswap: this.#bitswap,
+    this.blockstore = new BlockStorage(networkedStorage, this.pins, {
       holdGcLock: init.holdGcLock
     })
     this.datastore = init.datastore
