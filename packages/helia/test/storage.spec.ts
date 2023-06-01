@@ -175,4 +175,50 @@ describe('storage', () => {
       expect(await blockstore.has(blocks[i].cid)).to.be.true()
     }
   })
+
+  describe('blocking stores', () => {
+    let helia: Helia
+
+    beforeEach(async () => {
+      helia = await createHelia({
+        blockstore
+      })
+    })
+
+    afterEach(async () => {
+      if (helia != null) {
+        await helia.stop()
+      }
+    })
+
+    it.only('gets many blocks from bitswap when they are not in the blockstore and does not block.', async () => {
+      bitswap.isStarted.returns(true)
+
+      const count = 5
+
+      for (let i = 0; i < count; i++) {
+        const { cid, block } = blocks[i]
+        bitswap.want.withArgs(cid).resolves(block)
+
+        expect(await blockstore.has(cid)).to.be.false()
+      }
+
+      const cidsGenerator = async function* (): AsyncGenerator<CID> {
+        for (let i = 0; i < count; i++) {
+          yield blocks[i].cid
+          await delay(10)
+        }
+      }
+
+      const getFirstEntry = async (asyncIterableInstance: AsyncIterable<Pair>) => {
+        for await (const entry of asyncIterableInstance) {
+          await helia.gc({ signal: AbortSignal.timeout(100) })
+          return entry;
+        }
+      }
+      const retrieved = await storage.getMany(cidsGenerator())
+      const firstEntryFromRetrieved = await getFirstEntry(retrieved)
+      expect(firstEntryFromRetrieved?.block).to.not.be.undefined()
+    })
+  })
 })
