@@ -147,6 +147,10 @@ export async function createHelia (init: HeliaInit = {}): Promise<Helia<unknown>
 }
 
 function isLibp2p (obj: any): obj is Libp2p {
+  if (obj == null) {
+    return false
+  }
+
   if (typeof obj.dial === 'function') {
     return true
   }
