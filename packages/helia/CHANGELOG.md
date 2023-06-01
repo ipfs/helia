@@ -1,3 +1,15 @@
+## [helia-v1.2.1](https://github.com/ipfs/helia/compare/helia-v1.2.0...helia-v1.2.1) (2023-06-01)
+
+
+### Bug Fixes
+
+* ensure pinned blocks are present ([#141](https://github.com/ipfs/helia/issues/141)) ([271c403](https://github.com/ipfs/helia/commit/271c403009d378a35375a9468e41388ebb978f54))
+
+
+### Dependencies
+
+* update sibling dependencies ([fcee11e](https://github.com/ipfs/helia/commit/fcee11eadb7edfa327e3f0bd586e20ea5dc06c8a))
+
 ## [helia-v1.2.0](https://github.com/ipfs/helia/compare/helia-v1.1.5...helia-v1.2.0) (2023-06-01)
 
 
