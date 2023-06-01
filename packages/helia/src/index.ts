@@ -33,6 +33,7 @@ import type { PubSub } from '@libp2p/interface-pubsub'
 import type { DualKadDHT } from '@libp2p/kad-dht'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
+import type { Libp2pOptions } from 'libp2p'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 
@@ -51,9 +52,15 @@ export interface DAGWalker {
  */
 export interface HeliaInit<T extends Libp2p = Libp2p> {
   /**
-   * A libp2p node is required to perform network operations
+   * A libp2p node is required to perform network operations. Either a
+   * preconfigured node or options to configure a node can be passed
+   * here.
+   *
+   * If node options are passed, they will be merged with the default
+   * config for the current platform. In this case all passed config
+   * keys will replace those from the default config.
    */
-  libp2p?: T
+  libp2p?: T | Libp2pOptions
 
   /**
    * The blockstore is where blocks are stored
@@ -110,10 +117,14 @@ export async function createHelia (init?: HeliaInit<Libp2p<{ dht: DualKadDHT, pu
 export async function createHelia (init: HeliaInit = {}): Promise<Helia<unknown>> {
   const datastore = init.datastore ?? new MemoryDatastore()
   const blockstore = init.blockstore ?? new MemoryBlockstore()
-  const libp2p = init.libp2p ?? await createLibp2p({
-    datastore,
-    start: false
-  })
+
+  let libp2p: Libp2p
+
+  if (isLibp2p(init.libp2p)) {
+    libp2p = init.libp2p
+  } else {
+    libp2p = await createLibp2p(datastore, init.libp2p)
+  }
 
   const helia = new HeliaImpl({
     ...init,
@@ -139,6 +150,18 @@ export async function createHelia (init: HeliaInit = {}): Promise<Helia<unknown>
   }
 
   return helia
+}
+
+function isLibp2p (obj: any): obj is Libp2p {
+  if (obj == null) {
+    return false
+  }
+
+  // a non-exhaustive list of methods found on the libp2p object
+  const funcs = ['dial', 'dialProtocol', 'hangUp', 'handle', 'unhandle', 'getMultiaddrs', 'getProtocols']
+
+  // if these are all functions it's probably a libp2p object
+  return funcs.every(m => typeof obj[m] === 'function')
 }
 
 async function addHeliaToAgentVersion (helia: Helia): Promise<void> {

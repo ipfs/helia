@@ -187,7 +187,7 @@
     "sinon-ts": "^1.0.0"
   },
   "browser": {
-    "./dist/src/utils/libp2p.js": "./dist/src/utils/libp2p.browser.js"
+    "./dist/src/utils/libp2p-defaults.js": "./dist/src/utils/libp2p-defaults.browser.js"
   },
   "typedoc": {
     "entryPoint": "./src/index.ts"
