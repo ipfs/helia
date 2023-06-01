@@ -1,3 +1,15 @@
+## [helia-v1.2.0](https://github.com/ipfs/helia/compare/helia-v1.1.5...helia-v1.2.0) (2023-06-01)
+
+
+### Features
+
+* allow passing partial libp2p config to helia factory ([#140](https://github.com/ipfs/helia/issues/140)) ([33a75d5](https://github.com/ipfs/helia/commit/33a75d5f80e2f211440c087806f463525de910d9))
+
+
+### Dependencies
+
+* update sibling dependencies ([c936ba6](https://github.com/ipfs/helia/commit/c936ba63a75276e206d804cf0ef35c3f9bf67f10))
+
 ## [helia-v1.1.5](https://github.com/ipfs/helia/compare/helia-v1.1.4...helia-v1.1.5) (2023-05-25)
 
 
