@@ -157,11 +157,11 @@ function isLibp2p (obj: any): obj is Libp2p {
     return false
   }
 
-  if (typeof obj.dial === 'function') {
-    return true
-  }
+  // a non-exhaustive list of methods found on the libp2p object
+  const funcs = ['dial', 'dialProtocol', 'hangUp', 'handle', 'unhandle', 'getMultiaddrs', 'getProtocols']
 
-  return false
+  // if these are all functions it's probably a libp2p object
+  return funcs.every(m => typeof obj[m] === 'function')
 }
 
 async function addHeliaToAgentVersion (helia: Helia): Promise<void> {
