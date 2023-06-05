@@ -148,9 +148,7 @@
 * update interface-store to 5.x.x ([#63](https://github.com/ipfs/helia/issues/63)) ([5bf11d6](https://github.com/ipfs/helia/commit/5bf11d638eee423624ac49af97757d730744f384))
 * update sibling dependencies ([ac28d38](https://github.com/ipfs/helia/commit/ac28d3878f98a780fc57702921924fa92bd592a0))
 
-# Changelog
-
-## [0.1.0](https://www.github.com/ipfs/helia/compare/helia-v0.0.0...helia-v0.1.0) (2023-03-22)
+## helia-v0.1.0 (2023-03-22)
 
 
 ### Features
@@ -166,7 +164,6 @@
 * survive a cid causing an error during gc ([#38](https://www.github.com/ipfs/helia/issues/38)) ([5330188](https://www.github.com/ipfs/helia/commit/53301881dc6226ea3fc6823fd6e298e4d4796408))
 * update blocks interface to align with interface-blockstore ([#54](https://www.github.com/ipfs/helia/issues/54)) ([202b966](https://www.github.com/ipfs/helia/commit/202b966df3866d449751f775ed3edc9c92e32f6a))
 * use release version of libp2p ([#59](https://www.github.com/ipfs/helia/issues/59)) ([a3a7c9c](https://www.github.com/ipfs/helia/commit/a3a7c9c2d81f2068fee85eeeca7425919f09e182))
-
 
 
 ### Dependencies
