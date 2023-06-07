@@ -1,3 +1,10 @@
+## [@helia/unixfs-v1.2.3](https://github.com/ipfs/helia-unixfs/compare/@helia/unixfs-v1.2.2...@helia/unixfs-v1.2.3) (2023-06-07)
+
+
+### Dependencies
+
+* update all deps and fix linting ([d4d6515](https://github.com/ipfs/helia-unixfs/commit/d4d6515f023db339874d34871e69fb7c3fc47f6c))
+
 ## [@helia/unixfs-v1.2.2](https://github.com/ipfs/helia-unixfs/compare/@helia/unixfs-v1.2.1...@helia/unixfs-v1.2.2) (2023-04-12)
 
 
