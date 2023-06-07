@@ -29,7 +29,7 @@
 <ul class="tsd-hierarchy">
 <li><span class="target">HeliaInit</span></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/master/packages/helia/src/index.ts#L53">helia/src/index.ts:53</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/master/packages/helia/src/index.ts#L59">helia/src/index.ts:59</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -53,7 +53,7 @@
 <div class="tsd-comment tsd-typography"><p>The blockstore is where blocks are stored</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/master/packages/helia/src/index.ts#L68">helia/src/index.ts:68</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/master/packages/helia/src/index.ts#L74">helia/src/index.ts:74</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="dagWalkers" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>dag<wbr/>Walkers</span><a href="#dagWalkers" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">dag<wbr/>Walkers<span class="tsd-signature-symbol">?:</span> <a href="helia.DAGWalker.html" class="tsd-signature-type" data-tsd-kind="Interface">DAGWalker</a><span class="tsd-signature-symbol">[]</span></div>
@@ -62,14 +62,14 @@ how to traverse that DAG.  DAGWalkers take a block and yield any CIDs
 encoded within that block.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/master/packages/helia/src/index.ts#L87">helia/src/index.ts:87</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/master/packages/helia/src/index.ts#L93">helia/src/index.ts:93</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="datastore" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>datastore</span><a href="#datastore" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">datastore<span class="tsd-signature-symbol">?:</span> <a href="https://ipfs.github.io/js-stores/interfaces/datastore_core._internal_.Datastore.html" class="tsd-signature-type external" target="_blank">Datastore</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">{}</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">{}</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">{}</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">{}</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">{}</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">{}</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">{}</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">{}</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">{}</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">{}</span><span class="tsd-signature-symbol">&gt;</span></div>
 <div class="tsd-comment tsd-typography"><p>The datastore is where data is stored</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/master/packages/helia/src/index.ts#L73">helia/src/index.ts:73</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/master/packages/helia/src/index.ts#L79">helia/src/index.ts:79</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="hashers" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>hashers</span><a href="#hashers" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">hashers<span class="tsd-signature-symbol">?:</span> <a href="https://multiformats.github.io/js-multiformats/interfaces/hashes_hasher.MultihashHasher.html" class="tsd-signature-type external" target="_blank">MultihashHasher</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></div>
@@ -78,7 +78,7 @@ bitswap operations. To bitswap blocks with CIDs using other hashes
 pass appropriate MultihashHashers here.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/master/packages/helia/src/index.ts#L80">helia/src/index.ts:80</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/master/packages/helia/src/index.ts#L86">helia/src/index.ts:86</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="holdGcLock" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>hold<wbr/>Gc<wbr/>Lock</span><a href="#holdGcLock" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">hold<wbr/>Gc<wbr/>Lock<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
@@ -95,7 +95,7 @@ expected to access the blockstore (e.g. being run in the background in a
 webworker), pass true here to hold the gc lock in this process.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/master/packages/helia/src/index.ts#L109">helia/src/index.ts:109</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/master/packages/helia/src/index.ts#L115">helia/src/index.ts:115</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="libp2p" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>libp2p</span><a href="#libp2p" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">libp2p<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol"> | </span><a href="https://libp2p.github.io/js-libp2p/types/index.Libp2pOptions.html" class="tsd-signature-type external" target="_blank">Libp2pOptions</a><span class="tsd-signature-symbol">&lt;</span><a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#recordkeys-type" class="tsd-signature-type external" target="_blank">Record</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></div>
@@ -107,14 +107,14 @@ config for the current platform. In this case all passed config
 keys will replace those from the default config.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/master/packages/helia/src/index.ts#L63">helia/src/index.ts:63</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/master/packages/helia/src/index.ts#L69">helia/src/index.ts:69</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="start" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>start</span><a href="#start" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">start<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
 <div class="tsd-comment tsd-typography"><p>Pass <code>false</code> to not start the Helia node</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/master/packages/helia/src/index.ts#L92">helia/src/index.ts:92</a></li></ul></aside></section></section></div>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/master/packages/helia/src/index.ts#L98">helia/src/index.ts:98</a></li></ul></aside></section></section></div>
 <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
