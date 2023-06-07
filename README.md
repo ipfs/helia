@@ -184,6 +184,7 @@ Helia embraces a modular approach and encourages users to bring their own implem
 
 - [`@helia/UnixFS`](https://github.com/ipfs/helia-unixfs)
 - [`@helia/ipns`](https://github.com/ipfs/helia-ipns)
+- [`@helia/car`](https://github.com/ipfs/helia-car)
 - [`@helia/strings`](https://github.com/ipfs/helia-strings)
 - [`@helia/json`](https://github.com/ipfs/helia-json)
 - [`@helia/dag-json`](https://github.com/ipfs/helia-dag-json)
