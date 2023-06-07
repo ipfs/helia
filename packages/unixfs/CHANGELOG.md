@@ -1,3 +1,10 @@
+## [@helia/unixfs-v1.2.4](https://github.com/ipfs/helia-unixfs/compare/@helia/unixfs-v1.2.3...@helia/unixfs-v1.2.4) (2023-06-07)
+
+
+### Bug Fixes
+
+* export unixfs errors ([#50](https://github.com/ipfs/helia-unixfs/issues/50)) ([8426d65](https://github.com/ipfs/helia-unixfs/commit/8426d650ae4645b7b975331c5fd02f56e390cab6))
+
 ## [@helia/unixfs-v1.2.3](https://github.com/ipfs/helia-unixfs/compare/@helia/unixfs-v1.2.2...@helia/unixfs-v1.2.3) (2023-06-07)
 
 
