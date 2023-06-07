@@ -7,6 +7,7 @@ import * as raw from 'multiformats/codecs/raw'
 import { createAndPutBlock } from './fixtures/create-block.js'
 import { createHelia } from './fixtures/create-helia.js'
 import type { Helia } from '@helia/interface'
+import type { ProgressEvent } from 'progress-events'
 
 describe('pins', () => {
   let helia: Helia
@@ -35,6 +36,23 @@ describe('pins', () => {
 
     await expect(helia.pins.isPinned(cidV1)).to.eventually.be.true('did not pin v1 CID')
     await expect(helia.pins.isPinned(cidV0)).to.eventually.be.true('did not pin v0 CID')
+  })
+
+  it('pins a block with progress events', async () => {
+    const cidV1 = await createAndPutBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
+
+    const events: ProgressEvent[] = []
+
+    await helia.pins.add(cidV1, {
+      onProgress: (evt) => {
+        events.push(evt)
+      }
+    })
+
+    expect(events.map(e => e.type)).to.include.members([
+      'blocks:get:blockstore:get',
+      'helia:pin:add'
+    ])
   })
 
   it('unpins a block', async () => {
