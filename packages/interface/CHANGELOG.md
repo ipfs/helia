@@ -1,3 +1,10 @@
+## [@helia/interface-v1.2.1](https://github.com/ipfs/helia/compare/@helia/interface-v1.2.0...@helia/interface-v1.2.1) (2023-06-07)
+
+
+### Bug Fixes
+
+* pass options to blockstore.get during pin.add ([#148](https://github.com/ipfs/helia/issues/148)) ([3a5234e](https://github.com/ipfs/helia/commit/3a5234e3c2f88f9910678b0cbbac5fd340117cc9))
+
 ## [@helia/interface-v1.2.0](https://github.com/ipfs/helia/compare/@helia/interface-v1.1.1...@helia/interface-v1.2.0) (2023-06-07)
 
 
