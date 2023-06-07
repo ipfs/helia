@@ -1,7 +1,7 @@
 import filter from 'it-filter'
 import forEach from 'it-foreach'
 import { CustomProgressEvent, type ProgressOptions } from 'progress-events'
-import type { Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents } from '@helia/interface/blocks'
+import type { Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions } from '@helia/interface/blocks'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Blockstore } from 'interface-blockstore'
 import type { AwaitIterable } from 'interface-store'
@@ -82,8 +82,8 @@ export class NetworkedStorage implements Blocks {
   /**
    * Get a block by cid
    */
-  async get (cid: CID, options: AbortOptions & ProgressOptions<GetBlockProgressEvents> = {}): Promise<Uint8Array> {
-    if (this.bitswap?.isStarted() != null && !(await this.child.has(cid))) {
+  async get (cid: CID, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetBlockProgressEvents> = {}): Promise<Uint8Array> {
+    if (options.offline !== true && this.bitswap?.isStarted() != null && !(await this.child.has(cid))) {
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:bitswap:get', cid))
       const block = await this.bitswap.want(cid, options)
 
@@ -101,11 +101,11 @@ export class NetworkedStorage implements Blocks {
   /**
    * Get multiple blocks back from an (async) iterable of cids
    */
-  async * getMany (cids: AwaitIterable<CID>, options: AbortOptions & ProgressOptions<GetManyBlocksProgressEvents> = {}): AsyncIterable<Pair> {
+  async * getMany (cids: AwaitIterable<CID>, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetManyBlocksProgressEvents> = {}): AsyncIterable<Pair> {
     options.onProgress?.(new CustomProgressEvent('blocks:get-many:blockstore:get-many'))
 
     yield * this.child.getMany(forEach(cids, async (cid): Promise<void> => {
-      if (this.bitswap?.isStarted() === true && !(await this.child.has(cid))) {
+      if (options.offline !== true && this.bitswap?.isStarted() === true && !(await this.child.has(cid))) {
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:bitswap:get', cid))
         const block = await this.bitswap.want(cid, options)
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:blockstore:put', cid))

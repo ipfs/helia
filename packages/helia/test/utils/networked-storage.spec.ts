@@ -42,6 +42,14 @@ describe('storage', () => {
     expect(retrieved).to.equalBytes(block)
   })
 
+  it('gets a block from the blockstore offline', async () => {
+    const { cid } = blocks[0]
+
+    await expect(storage.get(cid, {
+      offline: true
+    })).to.eventually.be.rejected.with.property('code', 'ERR_NOT_FOUND')
+  })
+
   it('gets a block from the blockstore with progress', async () => {
     const { cid, block } = blocks[0]
     await blockstore.put(cid, block)
@@ -70,6 +78,14 @@ describe('storage', () => {
     }()))
 
     expect(retrieved).to.deep.equal(new Array(count).fill(0).map((_, i) => blocks[i]))
+  })
+
+  it('gets many blocks from the blockstore offline', async () => {
+    const { cid } = blocks[0]
+
+    await expect(drain(storage.getMany([cid], {
+      offline: true
+    }))).to.eventually.be.rejected.with.property('code', 'ERR_NOT_FOUND')
   })
 
   it('puts a block into the blockstore', async () => {

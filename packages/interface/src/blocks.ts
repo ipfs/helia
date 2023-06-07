@@ -47,9 +47,16 @@ export type DeleteBlockProgressEvents =
 export type DeleteManyBlocksProgressEvents =
   ProgressEvent<'blocks:delete-many:blockstore:delete-many'>
 
+export interface GetOfflineOptions {
+  /**
+   * If true, do not attempt to fetch any missing blocks from the network (default: false)
+   */
+  offline?: boolean
+}
+
 export interface Blocks extends Blockstore<ProgressOptions<HasBlockProgressEvents>,
 ProgressOptions<PutBlockProgressEvents>, ProgressOptions<PutManyBlocksProgressEvents>,
-ProgressOptions<GetBlockProgressEvents>, ProgressOptions<GetManyBlocksProgressEvents>, ProgressOptions<GetAllBlocksProgressEvents>,
+GetOfflineOptions & ProgressOptions<GetBlockProgressEvents>, GetOfflineOptions & ProgressOptions<GetManyBlocksProgressEvents>, ProgressOptions<GetAllBlocksProgressEvents>,
 ProgressOptions<DeleteBlockProgressEvents>, ProgressOptions<DeleteManyBlocksProgressEvents>
 > {
 
