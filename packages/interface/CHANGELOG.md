@@ -50,9 +50,7 @@
 * update publish config ([913ab6a](https://github.com/ipfs/helia/commit/913ab6ae9a2970c4b908de04b8b6a236b931a3b0))
 * update release please config ([b52d5e3](https://github.com/ipfs/helia/commit/b52d5e3eecce41b10640426c339c99ad14ce874e))
 
-# Changelog
-
-## [0.1.0](https://www.github.com/ipfs/helia/compare/interface-v0.0.0...interface-v0.1.0) (2023-03-22)
+## @helia/interface-v0.1.0 (2023-03-22)
 
 
 ### Features
