@@ -33,7 +33,6 @@ import type { PubSub } from '@libp2p/interface-pubsub'
 import type { DualKadDHT } from '@libp2p/kad-dht'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
-import type { AbortOptions } from 'interface-store'
 import type { Libp2pOptions } from 'libp2p'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
@@ -46,11 +45,6 @@ const log = logger('helia')
 export interface DAGWalker {
   codec: number
   walk: (block: Uint8Array) => AsyncGenerator<CID, void, undefined>
-}
-
-export interface Thing {
-  fetch: (cid: CID, options?: AbortOptions) => Promise<Uint8Array>
-  notify?: (cid: CID, block: Uint8Array, options?: AbortOptions) => void
 }
 
 /**
