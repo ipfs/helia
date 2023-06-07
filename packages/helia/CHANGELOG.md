@@ -1,3 +1,15 @@
+## [helia-v1.2.2](https://github.com/ipfs/helia/compare/helia-v1.2.1...helia-v1.2.2) (2023-06-07)
+
+
+### Dependencies
+
+* update sibling dependencies ([a349576](https://github.com/ipfs/helia/commit/a34957650715efc45382dc005feea6162398b8f9))
+
+
+### Trivial Changes
+
+* update changelogs ([#142](https://github.com/ipfs/helia/issues/142)) ([fefd374](https://github.com/ipfs/helia/commit/fefd3744c0a6d8471de31762ece6ec59b65496c1))
+
 ## [helia-v1.2.1](https://github.com/ipfs/helia/compare/helia-v1.2.0...helia-v1.2.1) (2023-06-01)
 
 
