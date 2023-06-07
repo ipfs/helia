@@ -1,5 +1,5 @@
 import createMortice from 'mortice'
-import type { Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents } from '@helia/interface/blocks'
+import type { Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions } from '@helia/interface/blocks'
 import type { Pins } from '@helia/interface/pins'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Blockstore } from 'interface-blockstore'
@@ -70,7 +70,7 @@ export class BlockStorage implements Blocks {
   /**
    * Get a block by cid
    */
-  async get (cid: CID, options: AbortOptions & ProgressOptions<GetBlockProgressEvents> = {}): Promise<Uint8Array> {
+  async get (cid: CID, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetBlockProgressEvents> = {}): Promise<Uint8Array> {
     const releaseLock = await this.lock.readLock()
 
     try {
@@ -83,7 +83,7 @@ export class BlockStorage implements Blocks {
   /**
    * Get multiple blocks back from an (async) iterable of cids
    */
-  async * getMany (cids: AwaitIterable<CID>, options: AbortOptions & ProgressOptions<GetManyBlocksProgressEvents> = {}): AsyncIterable<Pair> {
+  async * getMany (cids: AwaitIterable<CID>, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetManyBlocksProgressEvents> = {}): AsyncIterable<Pair> {
     const releaseLock = await this.lock.readLock()
 
     try {
