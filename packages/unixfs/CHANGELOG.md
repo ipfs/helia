@@ -1,3 +1,10 @@
+## [@helia/unixfs-v1.3.0](https://github.com/ipfs/helia-unixfs/compare/@helia/unixfs-v1.2.4...@helia/unixfs-v1.3.0) (2023-06-07)
+
+
+### Features
+
+* add offline option to all operations ([#51](https://github.com/ipfs/helia-unixfs/issues/51)) ([444c8bd](https://github.com/ipfs/helia-unixfs/commit/444c8bd0dd40d8cad7ca12f3fbffaaf19f8e75fc))
+
 ## [@helia/unixfs-v1.2.4](https://github.com/ipfs/helia-unixfs/compare/@helia/unixfs-v1.2.3...@helia/unixfs-v1.2.4) (2023-06-07)
 
 
