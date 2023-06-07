@@ -1,3 +1,15 @@
+## [helia-v1.3.0](https://github.com/ipfs/helia/compare/helia-v1.2.2...helia-v1.3.0) (2023-06-07)
+
+
+### Features
+
+* add offline option to blockstore get ([#145](https://github.com/ipfs/helia/issues/145)) ([71c5f6b](https://github.com/ipfs/helia/commit/71c5f6bc32b324ee237e56c2c5a1ce903b3bdbef))
+
+
+### Dependencies
+
+* update sibling dependencies ([671ec87](https://github.com/ipfs/helia/commit/671ec874e90fbdcaf79d9d8253822fd85cee8bc5))
+
 ## [helia-v1.2.2](https://github.com/ipfs/helia/compare/helia-v1.2.1...helia-v1.2.2) (2023-06-07)
 
 
