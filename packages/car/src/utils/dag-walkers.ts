@@ -4,8 +4,8 @@ import * as dagPb from '@ipld/dag-pb'
 import * as cborg from 'cborg'
 import { Type, Token } from 'cborg'
 import * as cborgJson from 'cborg/json'
-import { CID } from 'multiformats/cid'
 import { base64 } from 'multiformats/bases/base64'
+import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
 
 /**
