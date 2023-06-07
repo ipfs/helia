@@ -89,4 +89,16 @@ describe('chmod', () => {
     expect(updatedMode).to.not.equal(originalMode)
     expect(updatedMode).to.equal(0o777)
   })
+
+  it('refuses to chmod missing blocks', async () => {
+    const cid = await fs.addBytes(smallFile)
+
+    await blockstore.delete(cid)
+    expect(blockstore.has(cid)).to.be.false()
+
+    await expect(fs.chmod(cid, 0o777, {
+      offline: true
+    })).to.eventually.be.rejected
+      .with.property('code', 'ERR_NOT_FOUND')
+  })
 })

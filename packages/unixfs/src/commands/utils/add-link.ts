@@ -52,12 +52,12 @@ export async function addLink (parent: Directory, child: Required<PBLink>, block
 
   const result = await addToDirectory(parent, child, blockstore, options)
 
-  if (await isOverShardThreshold(result.node, blockstore, options.shardSplitThresholdBytes)) {
+  if (await isOverShardThreshold(result.node, blockstore, options.shardSplitThresholdBytes, options)) {
     log('converting directory to sharded directory')
 
     const converted = await convertToShardedDirectory(result, blockstore)
     result.cid = converted.cid
-    result.node = dagPB.decode(await blockstore.get(converted.cid))
+    result.node = dagPB.decode(await blockstore.get(converted.cid, options))
   }
 
   return result

@@ -41,7 +41,7 @@ export async function removeLink (parent: Directory, name: string, blockstore: B
 
     const result = await removeFromShardedDirectory(parent, name, blockstore, options)
 
-    if (!(await isOverShardThreshold(result.node, blockstore, options.shardSplitThresholdBytes))) {
+    if (!(await isOverShardThreshold(result.node, blockstore, options.shardSplitThresholdBytes, options))) {
       log('converting shard to flat directory %c', parent.cid)
 
       return convertToFlatDirectory(result, blockstore, options)

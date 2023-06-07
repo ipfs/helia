@@ -197,4 +197,16 @@ describe('stat', function () {
     expect(stats.type).to.equal('file')
     expect(stats.fileSize).to.equal(4n)
   })
+
+  it('refuses to stat missing blocks', async () => {
+    const cid = await fs.addBytes(smallFile)
+
+    await blockstore.delete(cid)
+    expect(blockstore.has(cid)).to.be.false()
+
+    await expect(fs.stat(cid, {
+      offline: true
+    })).to.eventually.be.rejected
+      .with.property('code', 'ERR_NOT_FOUND')
+  })
 })

@@ -67,6 +67,18 @@ describe('cat', () => {
       .with.property('code', 'ERR_NOT_A_FILE')
   })
 
+  it('refuses to read missing blocks', async () => {
+    const cid = await fs.addBytes(smallFile)
+
+    await blockstore.delete(cid)
+    expect(blockstore.has(cid)).to.be.false()
+
+    await expect(drain(fs.cat(cid, {
+      offline: true
+    }))).to.eventually.be.rejected
+      .with.property('code', 'ERR_NOT_FOUND')
+  })
+
   it('reads file from inside a sharded directory', async () => {
     const dirCid = await createShardedDirectory(blockstore)
     const fileCid = await fs.addBytes(smallFile)

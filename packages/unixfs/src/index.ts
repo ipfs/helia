@@ -80,6 +80,12 @@ export interface CatOptions extends AbortOptions, ProgressOptions<GetEvents> {
    * An optional path to allow reading files inside directories
    */
   path?: string
+
+  /**
+   * If true, do not perform any network operations and throw if blocks are
+   * missing from the local store. (default: false)
+   */
+  offline?: boolean
 }
 
 /**
@@ -102,6 +108,12 @@ export interface ChmodOptions extends AbortOptions, ProgressOptions<GetEvents | 
    * smaller than this value will be regular UnixFS directories.
    */
   shardSplitThresholdBytes: number
+
+  /**
+   * If true, do not perform any network operations and throw if blocks are
+   * missing from the local store. (default: false)
+   */
+  offline?: boolean
 }
 
 /**
@@ -118,6 +130,12 @@ export interface CpOptions extends AbortOptions, ProgressOptions<GetEvents | Put
    * smaller than this value will be regular UnixFS directories.
    */
   shardSplitThresholdBytes: number
+
+  /**
+   * If true, do not perform any network operations and throw if blocks are
+   * missing from the local store. (default: false)
+   */
+  offline?: boolean
 }
 
 /**
@@ -139,6 +157,12 @@ export interface LsOptions extends AbortOptions, ProgressOptions<GetEvents> {
    * Stop reading the directory contents after this many directory entries
    */
   length?: number
+
+  /**
+   * If true, do not perform any network operations and throw if blocks are
+   * missing from the local store. (default: false)
+   */
+  offline?: boolean
 }
 
 /**
@@ -171,6 +195,12 @@ export interface MkdirOptions extends AbortOptions, ProgressOptions<GetEvents | 
    * smaller than this value will be regular UnixFS directories.
    */
   shardSplitThresholdBytes: number
+
+  /**
+   * If true, do not perform any network operations and throw if blocks are
+   * missing from the local store. (default: false)
+   */
+  offline?: boolean
 }
 
 /**
@@ -182,6 +212,12 @@ export interface RmOptions extends AbortOptions, ProgressOptions<GetEvents | Put
    * smaller than this value will be regular UnixFS directories.
    */
   shardSplitThresholdBytes: number
+
+  /**
+   * If true, do not perform any network operations and throw if blocks are
+   * missing from the local store. (default: false)
+   */
+  offline?: boolean
 }
 
 /**
@@ -192,6 +228,12 @@ export interface StatOptions extends AbortOptions, ProgressOptions<GetEvents> {
    * An optional path to allow statting paths inside directories
    */
   path?: string
+
+  /**
+   * If true, do not perform any network operations and throw if blocks are
+   * missing from the local store. (default: false)
+   */
+  offline?: boolean
 }
 
 /**
@@ -275,6 +317,12 @@ export interface TouchOptions extends AbortOptions, ProgressOptions<GetEvents | 
    * smaller than this value will be regular UnixFS directories.
    */
   shardSplitThresholdBytes: number
+
+  /**
+   * If true, do not perform any network operations and throw if blocks are
+   * missing from the local store. (default: false)
+   */
+  offline?: boolean
 }
 
 /**

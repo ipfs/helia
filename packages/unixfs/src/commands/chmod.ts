@@ -104,7 +104,7 @@ export async function chmod (cid: CID, mode: number, blockstore: Blocks, options
     return updatePathCids(root.cid, resolved, blockstore, opts)
   }
 
-  const block = await blockstore.get(resolved.cid)
+  const block = await blockstore.get(resolved.cid, options)
   let metadata: UnixFS
   let links: PBLink[] = []
 

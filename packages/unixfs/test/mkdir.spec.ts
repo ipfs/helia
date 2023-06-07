@@ -5,6 +5,7 @@ import { MemoryBlockstore } from 'blockstore-core'
 import all from 'it-all'
 import { unixfs, type UnixFS } from '../src/index.js'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
+import { smallFile } from './fixtures/files.js'
 import type { Blockstore } from 'interface-blockstore'
 import type { Mtime } from 'ipfs-unixfs'
 import type { CID } from 'multiformats/cid'
@@ -115,5 +116,17 @@ describe('mkdir', () => {
     await expect(fs.stat(updatedShardCid, {
       path: dirName
     })).to.eventually.have.nested.property('unixfs.type', 'directory')
+  })
+
+  it('refuses to mkdir with missing blocks', async () => {
+    const cid = await fs.addBytes(smallFile)
+
+    await blockstore.delete(cid)
+    expect(blockstore.has(cid)).to.be.false()
+
+    await expect(fs.mkdir(cid, 'dir', {
+      offline: true
+    })).to.eventually.be.rejected
+      .with.property('code', 'ERR_NOT_FOUND')
   })
 })

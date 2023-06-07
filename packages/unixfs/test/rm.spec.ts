@@ -217,4 +217,16 @@ describe('rm', () => {
 
     expect(containingDirCid).to.eql(importerCid)
   })
+
+  it('refuses to rm missing blocks', async () => {
+    const cid = await fs.addBytes(smallFile)
+
+    await blockstore.delete(cid)
+    expect(blockstore.has(cid)).to.be.false()
+
+    await expect(fs.rm(cid, 'dir', {
+      offline: true
+    })).to.eventually.be.rejected
+      .with.property('code', 'ERR_NOT_FOUND')
+  })
 })

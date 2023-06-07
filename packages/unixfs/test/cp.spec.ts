@@ -10,6 +10,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { unixfs, type UnixFS } from '../src/index.js'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 import { createSubshardedDirectory } from './fixtures/create-subsharded-directory.js'
+import { smallFile } from './fixtures/files.js'
 import type { Blockstore } from 'interface-blockstore'
 
 describe('cp', () => {
@@ -178,5 +179,17 @@ describe('cp', () => {
     const finalDirCid = await fs.cp(fileCid, importerCid, fileName)
 
     expect(finalDirCid).to.eql(containingDirCid, 'adding a file to the imported dir did not result in the same CID')
+  })
+
+  it('refuses to copy missing blocks', async () => {
+    const cid = await fs.addBytes(smallFile)
+
+    await blockstore.delete(cid)
+    expect(blockstore.has(cid)).to.be.false()
+
+    await expect(fs.cp(cid, cid, 'file.txt', {
+      offline: true
+    })).to.eventually.be.rejected
+      .with.property('code', 'ERR_NOT_FOUND')
   })
 })

@@ -108,7 +108,7 @@ export async function touch (cid: CID, blockstore: Blocks, options: Partial<Touc
     return updatePathCids(root.cid, resolved, blockstore, opts)
   }
 
-  const block = await blockstore.get(resolved.cid)
+  const block = await blockstore.get(resolved.cid, options)
   let metadata: UnixFS
   let links: PBLink[] = []
 

@@ -3,6 +3,7 @@ import { UnixFS } from 'ipfs-unixfs'
 import { CID_V0, CID_V1 } from './dir-sharded.js'
 import type { Blocks } from '@helia/interface/blocks'
 import type { PBNode } from '@ipld/dag-pb'
+import type { AbortOptions } from '@libp2p/interfaces'
 
 /**
  * Estimate node size only based on DAGLink name and CID byte lengths
@@ -10,7 +11,7 @@ import type { PBNode } from '@ipld/dag-pb'
  *
  * If the node is a hamt sharded directory the calculation is based on if it was a regular directory.
  */
-export async function isOverShardThreshold (node: PBNode, blockstore: Blocks, threshold: number): Promise<boolean> {
+export async function isOverShardThreshold (node: PBNode, blockstore: Blocks, threshold: number, options: AbortOptions): Promise<boolean> {
   if (node.Data == null) {
     throw new Error('DagPB node had no data')
   }
@@ -21,7 +22,7 @@ export async function isOverShardThreshold (node: PBNode, blockstore: Blocks, th
   if (unixfs.type === 'directory') {
     size = estimateNodeSize(node)
   } else if (unixfs.type === 'hamt-sharded-directory') {
-    size = await estimateShardSize(node, 0, threshold, blockstore)
+    size = await estimateShardSize(node, 0, threshold, blockstore, options)
   } else {
     throw new Error('Can only estimate the size of directories or shards')
   }
@@ -42,7 +43,7 @@ function estimateNodeSize (node: PBNode): number {
   return size
 }
 
-async function estimateShardSize (node: PBNode, current: number, max: number, blockstore: Blocks): Promise<number> {
+async function estimateShardSize (node: PBNode, current: number, max: number, blockstore: Blocks, options: AbortOptions): Promise<number> {
   if (current > max) {
     return max
   }
@@ -67,10 +68,10 @@ async function estimateShardSize (node: PBNode, current: number, max: number, bl
     current += link.Hash.bytes.byteLength
 
     if (link.Hash.code === dagPb.code) {
-      const block = await blockstore.get(link.Hash)
+      const block = await blockstore.get(link.Hash, options)
       const node = dagPb.decode(block)
 
-      current += await estimateShardSize(node, current, max, blockstore)
+      current += await estimateShardSize(node, current, max, blockstore, options)
     }
   }
 
