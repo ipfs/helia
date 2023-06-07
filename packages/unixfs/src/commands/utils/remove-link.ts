@@ -3,7 +3,7 @@ import * as dagPB from '@ipld/dag-pb'
 import { logger } from '@libp2p/logger'
 import { UnixFS } from 'ipfs-unixfs'
 import { exporter } from 'ipfs-unixfs-exporter'
-import { InvalidParametersError, InvalidPBNodeError } from './errors.js'
+import { InvalidParametersError, InvalidPBNodeError } from '../../errors.js'
 import {
   recreateShardedDirectory,
   type UpdateHamtDirectoryOptions,

@@ -1,6 +1,6 @@
 import { exporter } from 'ipfs-unixfs-exporter'
 import mergeOpts from 'merge-options'
-import { NoContentError, NotAFileError } from './utils/errors.js'
+import { NoContentError, NotAFileError } from '../errors.js'
 import { resolve } from './utils/resolve.js'
 import type { CatOptions } from '../index.js'
 import type { Blocks } from '@helia/interface/blocks'

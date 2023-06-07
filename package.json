@@ -14,10 +14,6 @@
   "keywords": [
     "ipfs"
   ],
-  "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=7.0.0"
-  },
   "private": true,
   "scripts": {
     "reset": "aegir run clean && aegir clean **/node_modules **/package-lock.json",

@@ -1,5 +1,5 @@
 import { exporter, type ExporterOptions } from 'ipfs-unixfs-exporter'
-import { NotADirectoryError } from './errors.js'
+import { NotADirectoryError } from '../../errors.js'
 import type { Blocks } from '@helia/interface/blocks'
 import type { PBNode } from '@ipld/dag-pb'
 import type { CID } from 'multiformats/cid'

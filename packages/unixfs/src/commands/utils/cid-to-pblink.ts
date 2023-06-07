@@ -1,6 +1,6 @@
 import * as dagPb from '@ipld/dag-pb'
 import { exporter, type ExporterOptions } from 'ipfs-unixfs-exporter'
-import { NotUnixFSError } from './errors.js'
+import { NotUnixFSError } from '../../errors.js'
 import type { Blocks } from '@helia/interface/blocks'
 import type { PBNode, PBLink } from '@ipld/dag-pb'
 import type { CID } from 'multiformats/cid'

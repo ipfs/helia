@@ -6,8 +6,8 @@ import { sha256 } from 'multiformats/hashes/sha2'
 // @ts-expect-error no types
 import SparseArray from 'sparse-array'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { AlreadyExistsError, InvalidParametersError, InvalidPBNodeError } from '../../errors.js'
 import { wrapHash } from './consumable-hash.js'
-import { AlreadyExistsError, InvalidParametersError, InvalidPBNodeError } from './errors.js'
 import { hamtBucketBits, hamtHashFn } from './hamt-constants.js'
 import {
   createShard,

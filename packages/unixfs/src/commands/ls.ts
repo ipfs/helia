@@ -1,6 +1,6 @@
 import { exporter, type UnixFSEntry } from 'ipfs-unixfs-exporter'
 import mergeOpts from 'merge-options'
-import { NoContentError, NotADirectoryError } from './utils/errors.js'
+import { NoContentError, NotADirectoryError } from '../errors.js'
 import { resolve } from './utils/resolve.js'
 import type { LsOptions } from '../index.js'
 import type { Blocks } from '@helia/interface/blocks'
