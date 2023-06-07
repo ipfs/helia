@@ -1,3 +1,15 @@
+## [@helia/interface-v1.2.0](https://github.com/ipfs/helia/compare/@helia/interface-v1.1.1...@helia/interface-v1.2.0) (2023-06-07)
+
+
+### Features
+
+* add offline option to blockstore get ([#145](https://github.com/ipfs/helia/issues/145)) ([71c5f6b](https://github.com/ipfs/helia/commit/71c5f6bc32b324ee237e56c2c5a1ce903b3bdbef))
+
+
+### Trivial Changes
+
+* update changelogs ([#142](https://github.com/ipfs/helia/issues/142)) ([fefd374](https://github.com/ipfs/helia/commit/fefd3744c0a6d8471de31762ece6ec59b65496c1))
+
 ## [@helia/interface-v1.1.1](https://github.com/ipfs/helia/compare/@helia/interface-v1.1.0...@helia/interface-v1.1.1) (2023-05-19)
 
 
