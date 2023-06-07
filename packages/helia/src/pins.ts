@@ -142,7 +142,7 @@ export class PinsImpl implements Pins {
       throw new Error(`No dag walker found for cid codec ${cid.code}`)
     }
 
-    const block = await this.blockstore.get(cid)
+    const block = await this.blockstore.get(cid, options)
 
     await this.#updatePinnedBlock(cid, withPinnedBlock, options)
 
