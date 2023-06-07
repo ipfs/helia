@@ -1,3 +1,16 @@
+## [helia-v1.3.1](https://github.com/ipfs/helia/compare/helia-v1.3.0...helia-v1.3.1) (2023-06-07)
+
+
+### Bug Fixes
+
+* pass options to blockstore.get during pin.add ([#148](https://github.com/ipfs/helia/issues/148)) ([3a5234e](https://github.com/ipfs/helia/commit/3a5234e3c2f88f9910678b0cbbac5fd340117cc9))
+* remove extra interface ([d577c61](https://github.com/ipfs/helia/commit/d577c61bcc6e4805d214b3ec4a39d78ee752a21e))
+
+
+### Dependencies
+
+* update sibling dependencies ([3323a5c](https://github.com/ipfs/helia/commit/3323a5cd518c63cb67e8eaef0cb64c542982b603))
+
 ## [helia-v1.3.0](https://github.com/ipfs/helia/compare/helia-v1.2.2...helia-v1.3.0) (2023-06-07)
 
 
