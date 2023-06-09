@@ -90,7 +90,7 @@ import { createHelia } from 'helia'
 import { dagCbor } from '@helia/dag-cbor'
 
 const helia = await createHelia()
-const d = dagJson(helia)
+const d = dagCbor(helia)
 
 const object1 = { hello: 'world' }
 const myImmutableAddress1 = await d.add(object1)
