@@ -1,3 +1,6 @@
+# File managed by web3-bot. DO NOT EDIT.
+# See https://github.com/protocol/.github/ for details.
+
 name: test & maybe release
 on:
   push:
@@ -17,6 +20,7 @@ jobs:
     - uses: ipfs/aegir/actions/cache-node-modules@master
     - run: npm run --if-present lint
     - run: npm run --if-present dep-check
+    - run: npm run --if-present doc-check
 
   test-node:
     needs: check
