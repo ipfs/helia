@@ -81,7 +81,7 @@ console.log(await d.get(retrievedObject.link))
 
 ### 🌌 DAG-CBOR
 
-[@helia/dag-cbor](https://www.npmjs.com/package/@helia/dag-json) works in a
+[@helia/dag-cbor](https://www.npmjs.com/package/@helia/dag-cbor) works in a
 similar way to `@helia/dag-json` but stores objects using
 [Concise Binary Object Representation](https://cbor.io/):
 
