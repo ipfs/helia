@@ -1,3 +1,10 @@
+## [helia-v1.3.3](https://github.com/ipfs/helia/compare/helia-v1.3.2...helia-v1.3.3) (2023-06-21)
+
+
+### Dependencies
+
+* update sibling dependencies ([f7cb076](https://github.com/ipfs/helia/commit/f7cb076e9356535164812229eff22c5c0e052674))
+
 ## [helia-v1.3.2](https://github.com/ipfs/helia/compare/helia-v1.3.1...helia-v1.3.2) (2023-06-10)
 
 
