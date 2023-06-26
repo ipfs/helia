@@ -137,7 +137,7 @@ repo for how to do mostly anything with your Helia node.
 
 A lean, modular, and modern implementation of IPFS for the prolific JS and browser environments.
 
-See the [Manifesto](wiki/Manifesto), the [FAQ](wiki/FAQ), and the [State of IPFS in JS blog post from October 2022](https://blog.ipfs.tech/state-of-ipfs-in-js/) for more info.
+See the [Manifesto](https://github.com/ipfs/helia/wiki/Manifesto), the [FAQ](https://github.com/ipfs/helia/wiki/FAQ), and the [State of IPFS in JS blog post from October 2022](https://blog.ipfs.tech/state-of-ipfs-in-js/) for more info.
 
 ## 🏃‍♀️ Getting Started
 
