@@ -153,6 +153,33 @@ generating Ed25519 keypair...
 └─────────┴────────────────────────────────────────┴────────┴───────────┴──────┴───────────┴───────────────────────────────────────────────────────────────┘
 ```
 
+```bash
+TEST_PATH=../../node_modules/ipfs-core/node_modules npm start
+
+> benchmarks-add-dir@1.0.0 start
+> npm run build && node dist/src/index.js
+
+
+> benchmarks-add-dir@1.0.0 build
+> aegir build --bundle false
+
+[14:17:29] tsc [started]
+[14:17:30] tsc [completed]
+generating Ed25519 keypair...
+(node:65964) ExperimentalWarning: The Fetch API is an experimental feature. This feature could change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+generating Ed25519 keypair...
+generating Ed25519 keypair...
+┌─────────┬───────────────────────────────────────────────────────────┬────────┬─────────────┬──────┬─────────────┬───────────────────────────────────────────────────────────────┐
+│ (index) │                      Implementation                       │ ops/s  │    ms/op    │ runs │     p99     │                              CID                              │
+├─────────┼───────────────────────────────────────────────────────────┼────────┼─────────────┼──────┼─────────────┼───────────────────────────────────────────────────────────────┤
+│    0    │    'helia - ../../node_modules/ipfs-core/node_modules'    │ '0.15' │  '6708.96'  │  5   │ '29599.11'  │ 'bafybeihjqqav7quarfmhnejijq7edikz7rvryhuocpug5l7ovhvhvxjtwi' │
+│    1    │    'ipfs - ../../node_modules/ipfs-core/node_modules'     │ '0.00' │ '228866.62' │  5   │ '237419.96' │ 'bafybeicwkwides7xtqvxtc56vbmolrfli2ds2i3dmevghlibhmxmebir7u' │
+│    2    │    'kubo - ../../node_modules/ipfs-core/node_modules'     │ '0.00' │ '230310.82' │  5   │ '234432.20' │ 'bafybeicwkwides7xtqvxtc56vbmolrfli2ds2i3dmevghlibhmxmebir7u' │
+│    3    │ 'kubo-direct - ../../node_modules/ipfs-core/node_modules' │ '0.00' │ '205561.86' │  5   │ '219400.15' │ 'bafybeicwkwides7xtqvxtc56vbmolrfli2ds2i3dmevghlibhmxmebir7u' │
+└─────────┴───────────────────────────────────────────────────────────┴────────┴─────────────┴──────┴─────────────┴───────────────────────────────────────────────────────────────┘
+```
+
 ## Troubleshooting
 
 You can enable debug logging by setting `DEBUG=bench:add-dir*`
