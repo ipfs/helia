@@ -5,6 +5,7 @@ import type { CID } from 'multiformats/cid'
 import { createHeliaBenchmark } from './helia.js'
 import { createIpfsBenchmark } from './ipfs.js'
 import { createKuboBenchmark } from './kubo.js'
+import { createKuboDirectBenchmark } from './kubo-direct.js'
 import debug from 'debug'
 
 const log = debug('bench:add-dir')
@@ -15,7 +16,7 @@ const RESULT_PRECISION = 2
 
 export interface AddDirBenchmark {
   teardown: () => Promise<void>
-  addFile: (path: string) => Promise<CID>
+  addFile?: (path: string) => Promise<CID>
   addDir: (path: string) => Promise<CID>
 }
 
@@ -44,6 +45,14 @@ const impls: Array<{ name: string, create: () => Promise<AddDirBenchmark>, resul
   {
     name: 'kubo',
     create: () => createKuboBenchmark(),
+    results: {
+      timing: [],
+      cids: new Map<string, Set<string>>(),
+    }
+  },
+  {
+    name: 'kubo-direct',
+    create: () => createKuboDirectBenchmark(),
     results: {
       timing: [],
       cids: new Map<string, Set<string>>(),
