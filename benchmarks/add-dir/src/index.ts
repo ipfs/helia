@@ -22,7 +22,6 @@ export interface AddDirBenchmark {
 interface BenchmarkTaskResult {
   timing: number[]
   cids: Map<string, Set<string>>
-  other: Record<string, string>
 }
 
 const impls: Array<{ name: string, create: () => Promise<AddDirBenchmark>, results: BenchmarkTaskResult }> = [
@@ -32,7 +31,6 @@ const impls: Array<{ name: string, create: () => Promise<AddDirBenchmark>, resul
     results: {
       timing: [],
       cids: new Map<string, Set<string>>(),
-      other: {}
     }
   },
   {
@@ -41,7 +39,6 @@ const impls: Array<{ name: string, create: () => Promise<AddDirBenchmark>, resul
     results: {
       timing: [],
       cids: new Map<string, Set<string>>(),
-      other: {}
     }
   },
   {
@@ -50,7 +47,6 @@ const impls: Array<{ name: string, create: () => Promise<AddDirBenchmark>, resul
     results: {
       timing: [],
       cids: new Map<string, Set<string>>(),
-      other: {}
     }
   }
 ]
