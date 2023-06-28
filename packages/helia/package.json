@@ -158,7 +158,7 @@
     "@libp2p/websockets": "^6.0.1",
     "@libp2p/webtransport": "^2.0.1",
     "blockstore-core": "^4.0.0",
-    "cborg": "^1.10.0",
+    "cborg": "^2.0.2",
     "datastore-core": "^9.0.0",
     "interface-blockstore": "^5.0.0",
     "interface-datastore": "^8.0.0",
