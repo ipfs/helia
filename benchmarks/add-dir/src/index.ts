@@ -27,8 +27,16 @@ interface BenchmarkTaskResult {
 
 const impls: Array<{ name: string, create: () => Promise<AddDirBenchmark>, results: BenchmarkTaskResult }> = [
   {
-    name: 'helia',
+    name: 'helia-fs',
     create: () => createHeliaBenchmark(),
+    results: {
+      timing: [],
+      cids: new Map<string, Set<string>>(),
+    }
+  },
+  {
+    name: 'helia-mem',
+    create: () => createHeliaBenchmark({ blockstoreType: 'mem', datastoreType: 'mem' }),
     results: {
       timing: [],
       cids: new Map<string, Set<string>>(),

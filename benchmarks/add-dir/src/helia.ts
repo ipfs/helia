@@ -5,6 +5,8 @@ import nodePath from 'node:path'
 import { createHelia, DAGWalker } from 'helia'
 import * as dagPb from '@ipld/dag-pb'
 import { LevelDatastore } from 'datastore-level'
+import { MemoryBlockstore } from 'blockstore-core'
+import { MemoryDatastore } from 'datastore-core'
 import { FsBlockstore } from 'blockstore-fs'
 import { AddOptions, unixfs } from '@helia/unixfs'
 import type { CID } from 'multiformats/cid'
@@ -32,13 +34,17 @@ const unixFsAddOptions: Partial<AddOptions> = {
   // fileImportConcurrency: 500,
   // blockWriteConcurrency: 10
 }
+interface HeliaBenchmarkOptions {
+  blockstoreType?: 'fs' | 'mem'
+  datastoreType?: 'fs' | 'mem'
+}
 
-export async function createHeliaBenchmark (): Promise<AddDirBenchmark> {
+export async function createHeliaBenchmark ({ blockstoreType = 'fs', datastoreType = 'fs' }: HeliaBenchmarkOptions = {}): Promise<AddDirBenchmark> {
   const repoPath = nodePath.join(os.tmpdir(), `helia-${Math.random()}`)
 
   const helia = await createHelia({
-    blockstore: new FsBlockstore(`${repoPath}/blocks`),
-    datastore: new LevelDatastore(`${repoPath}/data`),
+    blockstore: blockstoreType === 'fs' ? new FsBlockstore(`${repoPath}/blocks`) : new MemoryBlockstore(),
+    datastore: datastoreType === 'fs' ? new LevelDatastore(`${repoPath}/data`) : new MemoryDatastore(),
     dagWalkers: [
       dagPbWalker
     ],
