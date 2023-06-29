@@ -1,21 +1,22 @@
 /* eslint-env mocha */
-
+import type { Helia } from '@helia/interface'
+import type { Pins } from '@helia/interface/pins'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import delay from 'delay'
+import type { Blockstore, Pair } from 'interface-blockstore'
+import type { Bitswap } from 'ipfs-bitswap'
 import all from 'it-all'
 import drain from 'it-drain'
+import type { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
-import Sinon from 'sinon'
-import { type StubbedInstance, stubInterface } from 'sinon-ts'
+import * as Sinon from 'sinon'
+import { stubInterface, type StubbedInstance } from 'sinon-ts'
+import { createHelia } from '../src/index.js'
 import { PinsImpl } from '../src/pins.js'
 import { BlockStorage } from '../src/storage.js'
 import { createBlock } from './fixtures/create-block.js'
-import type { Pins } from '@helia/interface/pins'
-import type { Blockstore } from 'interface-blockstore'
-import type { Bitswap } from 'ipfs-bitswap'
-import type { CID } from 'multiformats/cid'
 
 describe('storage', () => {
   let storage: BlockStorage
@@ -216,6 +217,8 @@ describe('storage', () => {
           return entry;
         }
       }
+
+      setTimeout(() => Promise.reject(), 10000)
       const retrieved = await storage.getMany(cidsGenerator())
       const firstEntryFromRetrieved = await getFirstEntry(retrieved)
       expect(firstEntryFromRetrieved?.block).to.not.be.undefined()
