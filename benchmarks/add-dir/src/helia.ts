@@ -11,6 +11,7 @@ import { FsBlockstore } from 'blockstore-fs'
 import { AddOptions, unixfs } from '@helia/unixfs'
 import type { CID } from 'multiformats/cid'
 import type { AddDirBenchmark } from './index.js'
+import all from 'it-all'
 // import { fixedSize, rabin } from 'ipfs-unixfs-importer/chunker'
 // import { flat } from 'ipfs-unixfs-importer/layout'
 
@@ -52,28 +53,41 @@ export async function createHeliaBenchmark ({ blockstoreType = 'fs', datastoreTy
   })
   const unixFs = unixfs(helia)
 
-  const addFile = async (path: string) => (await unixFs.addFile({ path: nodePath.relative(process.cwd(), path), content: fs.createReadStream(path)}, unixFsAddOptions))
+  const addFile = (path: string): Promise<CID> => unixFs.addFile({
+    path: nodePath.relative(process.cwd(), path),
+    content: fs.createReadStream(path)
+  }, unixFsAddOptions)
 
   const addDir = async function (dir: string): Promise<CID> {
     const dirents = await fsPromises.readdir(dir, { withFileTypes: true });
     const parentDirectoryName = nodePath.dirname(dir).split(nodePath.sep).pop()
     let rootCID = await unixFs.addDirectory({ path: parentDirectoryName }, unixFsAddOptions)
 
-    for (const dirent of dirents) {
+    const children = await Promise.all(dirents.map(async dirent => {
       const path = nodePath.join(dir, dirent.name);
+      const cid: CID = dirent.isDirectory() ? await addDir(path) : await addFile(path);
+      return [cid, dirent.name] as const
+    }));
 
-      if (dirent.isDirectory()) {
-        const cid: CID = await addDir(path);
-        rootCID = await unixFs.cp(cid, rootCID, dirent.name, { offline: true })
-
-      } else {
-        const cid = await addFile(path);
-        rootCID = await unixFs.cp(cid, rootCID, dirent.name, { offline: true })
-      }
+    for (const [cid, name] of children) {
+      rootCID = await unixFs.cp(cid, rootCID, name, { offline: true })
     }
 
     return rootCID;
   };
+
+  const getFolderSize = async (cid: CID) => {
+    const files = await all(unixFs.ls(cid))
+    let size = BigInt(0)
+    for (const file of files) {
+      if (file.type === 'directory') {
+        size += await getFolderSize(file.cid)
+      } else {
+        size += file.size
+      }
+    }
+    return size
+  }
 
   return {
     async teardown () {
@@ -81,6 +95,7 @@ export async function createHeliaBenchmark ({ blockstoreType = 'fs', datastoreTy
       await fsPromises.rm(repoPath, { recursive: true, force: true })
     },
     addFile,
-    addDir
+    addDir,
+    getSize: getFolderSize
   }
 }
