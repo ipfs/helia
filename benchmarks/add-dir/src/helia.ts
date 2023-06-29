@@ -46,25 +46,21 @@ export async function createHeliaBenchmark (): Promise<AddDirBenchmark> {
   })
   const unixFs = unixfs(helia)
 
-  const addFile = async (path: string) => (await unixFs.addFile({ path: nodePath.relative(process.cwd(), path), content: fs.createReadStream(path)}, unixFsAddOptions))
+  const addFile = (path: string): Promise<CID> => unixFs.addFile({
+    path: nodePath.relative(process.cwd(), path),
+    content: fs.createReadStream(path)
+  }, unixFsAddOptions)
 
   const addDir = async function (dir: string): Promise<CID> {
     const dirents = await fsPromises.readdir(dir, { withFileTypes: true });
     const parentDirectoryName = nodePath.dirname(dir).split(nodePath.sep).pop()
-    let rootCID = await unixFs.addDirectory({ path: parentDirectoryName }, unixFsAddOptions)
+    const rootCID = await unixFs.addDirectory({ path: parentDirectoryName }, unixFsAddOptions)
 
-    for (const dirent of dirents) {
+    await Promise.all(dirents.map(async dirent => {
       const path = nodePath.join(dir, dirent.name);
-
-      if (dirent.isDirectory()) {
-        const cid: CID = await addDir(path);
-        rootCID = await unixFs.cp(cid, rootCID, dirent.name, { offline: true })
-
-      } else {
-        const cid = await addFile(path);
-        rootCID = await unixFs.cp(cid, rootCID, dirent.name, { offline: true })
-      }
-    }
+      const cid: CID = dirent.isDirectory() ? await addDir(path) : await addFile(path);
+      await unixFs.cp(cid, rootCID, dirent.name, { offline: true })
+    }));
 
     return rootCID;
   };
