@@ -10,6 +10,7 @@ import { createController } from 'ipfsd-ctl'
 import * as dagPb from '@ipld/dag-pb'
 import { UnixFS } from 'ipfs-unixfs'
 import { CID } from 'multiformats/cid'
+import all from 'it-all'
 
 
 export async function createKuboBenchmark (): Promise<AddDirBenchmark> {
@@ -64,6 +65,19 @@ export async function createKuboBenchmark (): Promise<AddDirBenchmark> {
   };
 
 
+  const getFolderSize = async (cid: CID) => {
+    const files = await all(controller.api.ls(cid))
+    let size = BigInt(0)
+    for (const file of files) {
+      if (file.type === 'dir') {
+        size += await getFolderSize(file.cid)
+      } else {
+        size += BigInt(file.size)
+      }
+    }
+    return size
+  }
+
   return {
     async teardown () {
       const { repoPath } = await controller.api.repo.stat()
@@ -71,6 +85,8 @@ export async function createKuboBenchmark (): Promise<AddDirBenchmark> {
       await fsPromises.rm(repoPath, { recursive: true, force: true })
     },
     addFile,
-    addDir
+    addDir,
+    // TODO: Fix timing out during size calculation.
+    // getSize: getFolderSize
   }
 }

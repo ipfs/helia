@@ -9,6 +9,7 @@ import { sha256 } from 'multiformats/hashes/sha2'
 import * as dagPb from '@ipld/dag-pb'
 import { UnixFS } from 'ipfs-unixfs'
 import { CID } from 'multiformats/cid'
+import all from 'it-all'
 
 export async function createIpfsBenchmark (): Promise<AddDirBenchmark> {
   const repoPath = path.join(os.tmpdir(), `ipfs-${Math.random()}`)
@@ -63,12 +64,27 @@ export async function createIpfsBenchmark (): Promise<AddDirBenchmark> {
     return cid;
   };
 
+  const getFolderSize = async (cid: CID) => {
+    const files = await all(ipfs.ls(cid))
+    let size = BigInt(0)
+    for (const file of files) {
+      if (file.type === 'dir') {
+        size += await getFolderSize(file.cid)
+      } else {
+        size += BigInt(file.size)
+      }
+    }
+    return size
+  }
+
   return {
     async teardown () {
       await ipfs.stop()
       await fsPromises.rm(repoPath, { recursive: true, force: true })
     },
     addFile,
-    addDir
+    addDir,
+    // TODO: fix error `Error: ENOENT: no such file or directory, open '/var/folders/bl/_gl5_59s11v7qz5ysd6bfgb00000gn/T/ipfs-0.5718863035297312/blocks/HT/CIQDL3WAXRMDRTJMORI6Z64ZT22DVW2PCP34LIO67DL4UTZIFU4AHTA.data'`
+    // getSize: getFolderSize
   }
 }

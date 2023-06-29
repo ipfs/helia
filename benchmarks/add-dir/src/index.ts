@@ -1,7 +1,7 @@
 import nodePath from 'node:path'
 
 import { Bench } from 'tinybench'
-import type { CID } from 'multiformats/cid'
+import { CID } from 'multiformats/cid'
 import { createHeliaBenchmark } from './helia.js'
 import { createIpfsBenchmark } from './ipfs.js'
 import { createKuboBenchmark } from './kubo.js'
@@ -18,53 +18,46 @@ export interface AddDirBenchmark {
   teardown: () => Promise<void>
   addFile?: (path: string) => Promise<CID>
   addDir: (path: string) => Promise<CID>
+  getSize?: (cid: CID) => Promise<bigint>
 }
 
 interface BenchmarkTaskResult {
   timing: number[]
   cids: Map<string, Set<string>>
+  sizes: Map<string, Set<string>>
 }
+
+const getDefaultResults = (): BenchmarkTaskResult => ({
+  timing: [],
+  cids: new Map<string, Set<string>>(),
+  sizes: new Map<string, Set<string>>(),
+})
 
 const impls: Array<{ name: string, create: () => Promise<AddDirBenchmark>, results: BenchmarkTaskResult }> = [
   {
     name: 'helia-fs',
     create: () => createHeliaBenchmark(),
-    results: {
-      timing: [],
-      cids: new Map<string, Set<string>>(),
-    }
+    results: getDefaultResults()
   },
   {
     name: 'helia-mem',
     create: () => createHeliaBenchmark({ blockstoreType: 'mem', datastoreType: 'mem' }),
-    results: {
-      timing: [],
-      cids: new Map<string, Set<string>>(),
-    }
+    results: getDefaultResults()
   },
   {
     name: 'ipfs',
     create: () => createIpfsBenchmark(),
-    results: {
-      timing: [],
-      cids: new Map<string, Set<string>>(),
-    }
+    results: getDefaultResults()
   },
   {
     name: 'kubo',
     create: () => createKuboBenchmark(),
-    results: {
-      timing: [],
-      cids: new Map<string, Set<string>>(),
-    }
+    results: getDefaultResults()
   },
   {
     name: 'kubo-direct',
     create: () => createKuboDirectBenchmark(),
-    results: {
-      timing: [],
-      cids: new Map<string, Set<string>>(),
-    }
+    results: getDefaultResults()
   }
 ]
 
@@ -116,6 +109,17 @@ async function main(): Promise<void> {
           },
           afterEach: async () => {
             log(`End: test ${impl.name}`)
+            const cidSet = impl.results.cids.get(testPath)
+            if (cidSet != null) {
+              for (const cid of cidSet.values()) {
+                const size = await subject.getSize?.(CID.parse(cid))
+                if (size != null) {
+                  const statsSet = impl.results.sizes.get(testPath) ?? new Set()
+                  statsSet.add(size?.toString())
+                  impl.results.sizes.set(testPath, statsSet)
+                }
+              }
+            }
           },
         }
         )
@@ -138,9 +142,13 @@ async function main(): Promise<void> {
     }
   } else {
     const implCids: Record<string, string> = {}
+    const implSizes: Record<string, string> = {}
     for (const impl of impls) {
       for (const [testPath, cids] of impl.results.cids.entries()) {
         implCids[`${impl.name} - ${testPath}`] = Array.from(cids).join(', ')
+      }
+      for (const [testPath, sizes] of impl.results.sizes.entries()) {
+        implSizes[`${impl.name} - ${testPath}`] = Array.from(sizes).join(', ')
       }
     }
     console.table(suite.tasks.map(({ name, result }) => {
@@ -160,7 +168,8 @@ async function main(): Promise<void> {
         'ms/op': result?.period.toFixed(RESULT_PRECISION),
         'runs': result?.samples.length,
         'p99': result?.p99.toFixed(RESULT_PRECISION),
-        'CID': implCids[name]
+        'CID': implCids[name],
+        'Bytes': implSizes[name]
       }
     }))
   }

@@ -11,6 +11,7 @@ import { FsBlockstore } from 'blockstore-fs'
 import { AddOptions, unixfs } from '@helia/unixfs'
 import type { CID } from 'multiformats/cid'
 import type { AddDirBenchmark } from './index.js'
+import all from 'it-all'
 // import { fixedSize, rabin } from 'ipfs-unixfs-importer/chunker'
 // import { flat } from 'ipfs-unixfs-importer/layout'
 
@@ -60,16 +61,33 @@ export async function createHeliaBenchmark ({ blockstoreType = 'fs', datastoreTy
   const addDir = async function (dir: string): Promise<CID> {
     const dirents = await fsPromises.readdir(dir, { withFileTypes: true });
     const parentDirectoryName = nodePath.dirname(dir).split(nodePath.sep).pop()
-    const rootCID = await unixFs.addDirectory({ path: parentDirectoryName }, unixFsAddOptions)
+    let rootCID = await unixFs.addDirectory({ path: parentDirectoryName }, unixFsAddOptions)
 
-    await Promise.all(dirents.map(async dirent => {
+    const children = await Promise.all(dirents.map(async dirent => {
       const path = nodePath.join(dir, dirent.name);
       const cid: CID = dirent.isDirectory() ? await addDir(path) : await addFile(path);
-      await unixFs.cp(cid, rootCID, dirent.name, { offline: true })
+      return [cid, dirent.name] as const
     }));
+
+    for (const [cid, name] of children) {
+      rootCID = await unixFs.cp(cid, rootCID, name, { offline: true })
+    }
 
     return rootCID;
   };
+
+  const getFolderSize = async (cid: CID) => {
+    const files = await all(unixFs.ls(cid))
+    let size = BigInt(0)
+    for (const file of files) {
+      if (file.type === 'directory') {
+        size += await getFolderSize(file.cid)
+      } else {
+        size += file.size
+      }
+    }
+    return size
+  }
 
   return {
     async teardown () {
@@ -77,6 +95,7 @@ export async function createHeliaBenchmark ({ blockstoreType = 'fs', datastoreTy
       await fsPromises.rm(repoPath, { recursive: true, force: true })
     },
     addFile,
-    addDir
+    addDir,
+    getSize: getFolderSize
   }
 }
