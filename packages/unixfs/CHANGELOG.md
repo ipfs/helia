@@ -1,3 +1,10 @@
+## [@helia/unixfs-v1.4.0](https://github.com/ipfs/helia-unixfs/compare/@helia/unixfs-v1.3.0...@helia/unixfs-v1.4.0) (2023-06-30)
+
+
+### Features
+
+* add globSource and urlSource ([#53](https://github.com/ipfs/helia-unixfs/issues/53)) ([b490a6e](https://github.com/ipfs/helia-unixfs/commit/b490a6e35cb521c0c29d0f1382fc2e4b3b662b9c))
+
 ## [@helia/unixfs-v1.3.0](https://github.com/ipfs/helia-unixfs/compare/@helia/unixfs-v1.2.4...@helia/unixfs-v1.3.0) (2023-06-07)
 
 
