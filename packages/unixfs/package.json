@@ -165,6 +165,7 @@
     "ipfs-unixfs": "^11.0.0",
     "ipfs-unixfs-exporter": "^13.1.0",
     "ipfs-unixfs-importer": "^15.1.0",
+    "it-glob": "^2.0.4",
     "it-last": "^3.0.1",
     "it-pipe": "^3.0.1",
     "merge-options": "^3.0.4",
@@ -176,13 +177,22 @@
     "aegir": "^39.0.8",
     "blockstore-core": "^4.0.1",
     "delay": "^6.0.0",
+    "iso-url": "^1.2.1",
     "it-all": "^3.0.1",
     "it-drain": "^3.0.1",
     "it-first": "^3.0.1",
     "it-to-buffer": "^4.0.1",
-    "uint8arrays": "^4.0.3"
+    "uint8arrays": "^4.0.3",
+    "wherearewe": "^2.0.1"
   },
   "typedoc": {
     "entryPoint": "./src/index.ts"
+  },
+  "browser": {
+    "./dist/utils/glob-source.js": false,
+    "node:fs": false,
+    "node:fs/promises": false,
+    "node:path": false,
+    "node:url": false
   }
 }

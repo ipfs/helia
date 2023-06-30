@@ -29,6 +29,18 @@
  *   console.info(entry)
  * }
  * ```
+ *
+ * @example
+ *
+ * Recursively adding a directory (Node.js-compatibly environments only):
+ *
+ * ```typescript
+ * import { globSource } from '@helia/unixfs'
+ *
+ * for await (const entry of fs.addAll(globSource('path/to/containing/dir', 'glob-pattern'))) {
+ *   console.info(entry)
+ * }
+ * ```
  */
 
 import { addAll, addBytes, addByteStream, addDirectory, addFile } from './commands/add.js'
@@ -607,3 +619,6 @@ class DefaultUnixFS implements UnixFS {
 export function unixfs (helia: { blockstore: Blocks }): UnixFS {
   return new DefaultUnixFS(helia)
 }
+
+export { globSource } from './utils/glob-source.js'
+export { urlSource } from './utils/url-source.js'

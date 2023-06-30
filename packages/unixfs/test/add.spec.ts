@@ -3,7 +3,9 @@
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import all from 'it-all'
-import { unixfs, type UnixFS } from '../src/index.js'
+import last from 'it-last'
+import { isNode } from 'wherearewe'
+import { globSource, unixfs, urlSource, type UnixFS } from '../src/index.js'
 import type { Blockstore } from 'interface-blockstore'
 
 describe('addAll', () => {
@@ -28,6 +30,16 @@ describe('addAll', () => {
     expect(output).to.have.lengthOf(2)
     expect(output[0].cid.toString()).to.equal('bafkreiaixnpf23vkyecj5xqispjq5ubcwgsntnnurw2bjby7khe4wnjihu')
     expect(output[1].cid.toString()).to.equal('bafkreidmuy2n45xj3cdknzprtzo2uvgm3hak6mzy5sllxty457agsftd34')
+  })
+
+  it('recursively adds a directory', async function () {
+    if (!isNode) {
+      return this.skip()
+    }
+
+    const res = await last(fs.addAll(globSource('./test/fixtures', 'files/**/*')))
+
+    expect(res?.cid.toString()).to.equal('bafybeievhllpjjjbyg53g74wcl5hckdccjjj7zgtexqcacjegoduegnkyu')
   })
 })
 
@@ -81,6 +93,12 @@ describe('addFile', () => {
     })
 
     expect(cid.toString()).to.equal('bafkreiaixnpf23vkyecj5xqispjq5ubcwgsntnnurw2bjby7khe4wnjihu')
+  })
+
+  it('adds a file from a URL', async () => {
+    const cid = await fs.addFile(urlSource(new URL(`${process.env.ECHO_SERVER}/download?data=hello-world`)))
+
+    expect(cid.toString()).to.equal('bafkreifpuj5ujvb3aku75ja5cphnylsac3h47b6f3p4zbzmtm2nkrtrinu')
   })
 })
 
