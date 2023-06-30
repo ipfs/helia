@@ -43,6 +43,7 @@
   },
   "type": "module",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "benchmarks/add-dir"
   ]
 }

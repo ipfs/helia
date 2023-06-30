@@ -14,14 +14,13 @@ export async function createKuboDirectBenchmark (): Promise<AddDirBenchmark> {
   await execa(goIpfs.path(), ['--repo-dir', repoDir, 'init'])
 
   const addDir = async function (dir: string): Promise<CID> {
-    const {stdout} = await execa(goIpfs.path(), ['--repo-dir', repoDir, 'add', '-r', '--cid-version', '1', '--pin=false', dir])
+    const { stdout } = await execa(goIpfs.path(), ['--repo-dir', repoDir, 'add', '-r', '--pin=false', dir])
     const lines = stdout.split('\n')
     const lastLine = lines.pop()
     const cid = CID.parse(lastLine?.split(' ')[1] as string)
 
     return cid
-  };
-
+  }
 
   return {
     async teardown () {
