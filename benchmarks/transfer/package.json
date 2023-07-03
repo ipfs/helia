@@ -1,5 +1,5 @@
 {
-  "name": "benchmarks-gc",
+  "name": "benchmarks-transfer",
   "version": "1.0.0",
   "main": "index.js",
   "private": true,
@@ -14,6 +14,7 @@
   "devDependencies": {
     "@chainsafe/libp2p-noise": "^11.0.0",
     "@chainsafe/libp2p-yamux": "^3.0.5",
+    "@helia/unixfs": "^1.2.1",
     "@ipld/dag-pb": "^4.0.2",
     "@libp2p/websockets": "^5.0.3",
     "aegir": "^38.1.5",
@@ -23,13 +24,18 @@
     "go-ipfs": "^0.19.0",
     "helia": "^1.0.0",
     "ipfs-core": "^0.18.0",
+    "ipfs-unixfs-importer": "^15.1.1",
     "ipfsd-ctl": "^13.0.0",
     "it-all": "^3.0.1",
+    "it-buffer-stream": "^3.0.2",
     "it-drain": "^3.0.1",
     "it-map": "^3.0.2",
     "kubo-rpc-client": "^3.0.1",
     "libp2p": "^0.43.0",
     "multiformats": "^11.0.1",
     "tinybench": "^2.4.0"
+  },
+  "dependencies": {
+    "pretty-bytes": "^6.1.0"
   }
 }

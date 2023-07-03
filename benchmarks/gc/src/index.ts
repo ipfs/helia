@@ -1,3 +1,5 @@
+/* eslint-disable no-console,no-loop-func */
+
 import { Bench } from 'tinybench'
 import { CID } from 'multiformats/cid'
 import { createHeliaBenchmark } from './helia.js'
@@ -15,7 +17,7 @@ const RESULT_PRECISION = 2
 export interface GcBenchmark {
   gc: () => Promise<void>
   teardown: () => Promise<void>
-  pin: (cid: CID ) => Promise<void>
+  pin: (cid: CID) => Promise<void>
   putBlocks: (blocks: Array<{ key: CID, value: Uint8Array }>) => Promise<void>
   clearPins: () => Promise<number>
   isPinned: (cid: CID) => Promise<boolean>
@@ -90,9 +92,9 @@ async function pinBlocks (benchmark: GcBenchmark): Promise<void> {
   }
 }
 
-const impls: Array<{ name: string, create: () => Promise<GcBenchmark>, results: { gc: number[], clearedPins: number[], addedBlocks: number[], pinnedBlocks: number[] }}> = [{
+const impls: Array<{ name: string, create: () => Promise<GcBenchmark>, results: { gc: number[], clearedPins: number[], addedBlocks: number[], pinnedBlocks: number[] } }> = [{
   name: 'helia',
-  create: () => createHeliaBenchmark(),
+  create: async () => await createHeliaBenchmark(),
   results: {
     gc: [],
     clearedPins: [],
@@ -101,7 +103,7 @@ const impls: Array<{ name: string, create: () => Promise<GcBenchmark>, results: 
   }
 }, {
   name: 'ipfs',
-  create: () => createIpfsBenchmark(),
+  create: async () => await createIpfsBenchmark(),
   results: {
     gc: [],
     clearedPins: [],
@@ -110,7 +112,7 @@ const impls: Array<{ name: string, create: () => Promise<GcBenchmark>, results: 
   }
 }, {
   name: 'kubo',
-  create: () => createKuboBenchmark(),
+  create: async () => await createKuboBenchmark(),
   results: {
     gc: [],
     clearedPins: [],
@@ -174,15 +176,15 @@ async function main (): Promise<void> {
         `${(impl.results.clearedPins.reduce((acc, curr) => acc + curr, 0) / impl.results.clearedPins.length).toFixed(RESULT_PRECISION)},`,
         `${(impl.results.addedBlocks.reduce((acc, curr) => acc + curr, 0) / impl.results.addedBlocks.length).toFixed(RESULT_PRECISION)},`,
         `${(impl.results.pinnedBlocks.reduce((acc, curr) => acc + curr, 0) / impl.results.pinnedBlocks.length).toFixed(RESULT_PRECISION)},`,
-        `${(impl.results.gc.reduce((acc, curr) => acc + curr, 0) / impl.results.gc.length).toFixed(RESULT_PRECISION)}`,
+        `${(impl.results.gc.reduce((acc, curr) => acc + curr, 0) / impl.results.gc.length).toFixed(RESULT_PRECISION)}`
       )
     }
   } else {
     console.table(suite.tasks.map(({ name, result }) => ({
-      'Implementation': name,
+      Implementation: name,
       'ops/s': result?.hz.toFixed(RESULT_PRECISION),
       'ms/op': result?.period.toFixed(RESULT_PRECISION),
-      'runs': result?.samples.length
+      runs: result?.samples.length
     })))
   }
 }

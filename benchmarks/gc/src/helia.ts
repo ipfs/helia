@@ -67,11 +67,11 @@ export async function createHeliaBenchmark (): Promise<GcBenchmark> {
 
       return pins.length
     },
-    isPinned: (cid) => {
-      return helia.pins.isPinned(cid)
+    isPinned: async (cid) => {
+      return await helia.pins.isPinned(cid)
     },
-    hasBlock: (cid) => {
-      return helia.blockstore.has(cid)
+    hasBlock: async (cid) => {
+      return await helia.blockstore.has(cid)
     }
   }
 }
