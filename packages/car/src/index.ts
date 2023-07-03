@@ -15,7 +15,7 @@
  * import { car } from '@helia/car'
  * import { CarWriter } from '@ipld/car'
  * import { Readable } from 'node:stream'
- * import fs from 'node:fs'
+ * import nodeFs from 'node:fs'
  *
  * const helia = createHelia({
  *   // ... helia config
@@ -30,7 +30,7 @@
  * const { writer, out } = await CarWriter.create(cid)
  *
  * // `out` needs to be directed somewhere, see the @ipld/car docs for more information
- * Readable.from(out).pipe(fs.createWriteStream('example.car'))
+ * Readable.from(out).pipe(nodeFs.createWriteStream('example.car'))
  *
  * // write the DAG behind `cid` into the writer
  * await c.export(cid, writer)
@@ -44,14 +44,14 @@
  * import { car } from '@helia/car'
  * import { CarReader } from '@ipld/car'
  * import { Readable } from 'node:stream'
- * import fs from 'node:fs'
+ * import nodeFs from 'node:fs'
  *
  * const helia = createHelia({
  *   // ... helia config
  * })
  *
  * // import the car
- * const inStream = fs.createReadStream('example.car')
+ * const inStream = nodeFs.createReadStream('example.car')
  * const reader = await CarReader.fromIterable(inStream)
  *
  * await c.import(reader)
