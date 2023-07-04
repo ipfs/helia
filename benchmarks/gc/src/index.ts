@@ -1,11 +1,13 @@
-import { Bench } from 'tinybench'
+/* eslint-disable no-loop-func,no-console */
+
+import crypto from 'node:crypto'
+import * as dagPb from '@ipld/dag-pb'
 import { CID } from 'multiformats/cid'
+import { sha256 } from 'multiformats/hashes/sha2'
+import { Bench } from 'tinybench'
 import { createHeliaBenchmark } from './helia.js'
 import { createIpfsBenchmark } from './ipfs.js'
 import { createKuboBenchmark } from './kubo.js'
-import * as dagPb from '@ipld/dag-pb'
-import crypto from 'node:crypto'
-import { sha256 } from 'multiformats/hashes/sha2'
 
 const PINNED_DAG_COUNT = parseInt(process.env.INCREMENT ?? '10000')
 const GARBAGE_BLOCK_COUNT = parseInt(process.env.INCREMENT ?? '10000')
@@ -15,7 +17,7 @@ const RESULT_PRECISION = 2
 export interface GcBenchmark {
   gc: () => Promise<void>
   teardown: () => Promise<void>
-  pin: (cid: CID ) => Promise<void>
+  pin: (cid: CID) => Promise<void>
   putBlocks: (blocks: Array<{ key: CID, value: Uint8Array }>) => Promise<void>
   clearPins: () => Promise<number>
   isPinned: (cid: CID) => Promise<boolean>
@@ -90,9 +92,9 @@ async function pinBlocks (benchmark: GcBenchmark): Promise<void> {
   }
 }
 
-const impls: Array<{ name: string, create: () => Promise<GcBenchmark>, results: { gc: number[], clearedPins: number[], addedBlocks: number[], pinnedBlocks: number[] }}> = [{
+const impls: Array<{ name: string, create: () => Promise<GcBenchmark>, results: { gc: number[], clearedPins: number[], addedBlocks: number[], pinnedBlocks: number[] } }> = [{
   name: 'helia',
-  create: () => createHeliaBenchmark(),
+  create: async () => createHeliaBenchmark(),
   results: {
     gc: [],
     clearedPins: [],
@@ -101,7 +103,7 @@ const impls: Array<{ name: string, create: () => Promise<GcBenchmark>, results: 
   }
 }, {
   name: 'ipfs',
-  create: () => createIpfsBenchmark(),
+  create: async () => createIpfsBenchmark(),
   results: {
     gc: [],
     clearedPins: [],
@@ -110,7 +112,7 @@ const impls: Array<{ name: string, create: () => Promise<GcBenchmark>, results: 
   }
 }, {
   name: 'kubo',
-  create: () => createKuboBenchmark(),
+  create: async () => createKuboBenchmark(),
   results: {
     gc: [],
     clearedPins: [],
@@ -174,15 +176,15 @@ async function main (): Promise<void> {
         `${(impl.results.clearedPins.reduce((acc, curr) => acc + curr, 0) / impl.results.clearedPins.length).toFixed(RESULT_PRECISION)},`,
         `${(impl.results.addedBlocks.reduce((acc, curr) => acc + curr, 0) / impl.results.addedBlocks.length).toFixed(RESULT_PRECISION)},`,
         `${(impl.results.pinnedBlocks.reduce((acc, curr) => acc + curr, 0) / impl.results.pinnedBlocks.length).toFixed(RESULT_PRECISION)},`,
-        `${(impl.results.gc.reduce((acc, curr) => acc + curr, 0) / impl.results.gc.length).toFixed(RESULT_PRECISION)}`,
+        `${(impl.results.gc.reduce((acc, curr) => acc + curr, 0) / impl.results.gc.length).toFixed(RESULT_PRECISION)}`
       )
     }
   } else {
     console.table(suite.tasks.map(({ name, result }) => ({
-      'Implementation': name,
+      Implementation: name,
       'ops/s': result?.hz.toFixed(RESULT_PRECISION),
       'ms/op': result?.period.toFixed(RESULT_PRECISION),
-      'runs': result?.samples.length
+      runs: result?.samples.length
     })))
   }
 }

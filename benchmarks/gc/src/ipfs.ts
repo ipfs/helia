@@ -1,9 +1,9 @@
-import { create } from 'ipfs-core'
-import drain from 'it-drain'
-import type { GcBenchmark } from './index.js'
-import all from 'it-all'
 import os from 'node:os'
 import path from 'node:path'
+import { create } from 'ipfs-core'
+import all from 'it-all'
+import drain from 'it-drain'
+import type { GcBenchmark } from './index.js'
 
 export async function createIpfsBenchmark (): Promise<GcBenchmark> {
   const repoPath = path.join(os.tmpdir(), `ipfs-${Math.random()}`)

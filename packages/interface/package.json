@@ -14,10 +14,6 @@
   "keywords": [
     "IPFS"
   ],
-  "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=7.0.0"
-  },
   "type": "module",
   "types": "./dist/src/index.d.ts",
   "typesVersions": {
