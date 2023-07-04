@@ -1,11 +1,12 @@
-import drain from 'it-drain'
-import type { GcBenchmark } from './index.js'
-import all from 'it-all'
+/* eslint-disable no-console */
+
 // @ts-expect-error no types
 import * as goIpfs from 'go-ipfs'
-import * as goRpcClient from 'kubo-rpc-client'
-
 import { createController } from 'ipfsd-ctl'
+import all from 'it-all'
+import drain from 'it-drain'
+import * as goRpcClient from 'kubo-rpc-client'
+import type { GcBenchmark } from './index.js'
 
 export async function createKuboBenchmark (): Promise<GcBenchmark> {
   const controller = await createController({
