@@ -1,10 +1,10 @@
-import { create, globSource } from 'ipfs-core'
-import type { AddDirBenchmark } from './index.js'
-import os from 'node:os'
 import fs, { promises as fsPromises } from 'node:fs'
+import os from 'node:os'
 import nodePath from 'node:path'
-import type { CID } from 'multiformats/cid'
+import { create, globSource } from 'ipfs-core'
 import last from 'it-last'
+import type { AddDirBenchmark } from './index.js'
+import type { CID } from 'multiformats/cid'
 
 export async function createIpfsBenchmark (): Promise<AddDirBenchmark> {
   const repoPath = nodePath.join(os.tmpdir(), `ipfs-${Math.random()}`)

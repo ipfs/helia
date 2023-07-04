@@ -1,14 +1,13 @@
 /* eslint-disable no-console,no-loop-func */
 
 import nodePath from 'node:path'
-
-import { Bench } from 'tinybench'
+import debug from 'debug'
 import { CID } from 'multiformats/cid'
+import { Bench } from 'tinybench'
 import { createHeliaBenchmark } from './helia.js'
 import { createIpfsBenchmark } from './ipfs.js'
-import { createKuboBenchmark } from './kubo.js'
 import { createKuboDirectBenchmark } from './kubo-direct.js'
-import debug from 'debug'
+import { createKuboBenchmark } from './kubo.js'
 
 const log = debug('bench:add-dir')
 const ITERATIONS = parseInt(process.env.ITERATIONS ?? '5')
@@ -38,27 +37,27 @@ const getDefaultResults = (): BenchmarkTaskResult => ({
 const impls: Array<{ name: string, create: () => Promise<AddDirBenchmark>, results: BenchmarkTaskResult }> = [
   {
     name: 'helia-fs',
-    create: async () => await createHeliaBenchmark(),
+    create: async () => createHeliaBenchmark(),
     results: getDefaultResults()
   },
   {
     name: 'helia-mem',
-    create: async () => await createHeliaBenchmark({ blockstoreType: 'mem', datastoreType: 'mem' }),
+    create: async () => createHeliaBenchmark({ blockstoreType: 'mem', datastoreType: 'mem' }),
     results: getDefaultResults()
   },
   {
     name: 'ipfs',
-    create: async () => await createIpfsBenchmark(),
+    create: async () => createIpfsBenchmark(),
     results: getDefaultResults()
   },
   {
     name: 'kubo',
-    create: async () => await createKuboBenchmark(),
+    create: async () => createKuboBenchmark(),
     results: getDefaultResults()
   },
   {
     name: 'kubo-direct',
-    create: async () => await createKuboDirectBenchmark(),
+    create: async () => createKuboDirectBenchmark(),
     results: getDefaultResults()
   }
 ]

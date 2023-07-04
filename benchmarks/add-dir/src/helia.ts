@@ -1,19 +1,18 @@
 import fs, { promises as fsPromises } from 'node:fs'
 import os from 'node:os'
 import nodePath from 'node:path'
-
-import { createHelia, DAGWalker } from 'helia'
+import { type AddOptions, unixfs, globSource } from '@helia/unixfs'
 import * as dagPb from '@ipld/dag-pb'
-import { LevelDatastore } from 'datastore-level'
 import { MemoryBlockstore } from 'blockstore-core'
-import { MemoryDatastore } from 'datastore-core'
 import { FsBlockstore } from 'blockstore-fs'
-import { AddOptions, unixfs, globSource } from '@helia/unixfs'
-import type { CID } from 'multiformats/cid'
-import type { AddDirBenchmark } from './index.js'
-import last from 'it-last'
-import { balanced } from 'ipfs-unixfs-importer/layout'
+import { MemoryDatastore } from 'datastore-core'
+import { LevelDatastore } from 'datastore-level'
+import { createHelia, type DAGWalker } from 'helia'
 import { fixedSize } from 'ipfs-unixfs-importer/chunker'
+import { balanced } from 'ipfs-unixfs-importer/layout'
+import last from 'it-last'
+import type { AddDirBenchmark } from './index.js'
+import type { CID } from 'multiformats/cid'
 
 const dagPbWalker: DAGWalker = {
   codec: dagPb.code,
@@ -53,7 +52,7 @@ export async function createHeliaBenchmark ({ blockstoreType = 'fs', datastoreTy
   })
   const unixFs = unixfs(helia)
 
-  const addFile = async (path: string): Promise<CID> => await unixFs.addFile({
+  const addFile = async (path: string): Promise<CID> => unixFs.addFile({
     path: nodePath.relative(process.cwd(), path),
     content: fs.createReadStream(path)
   }, unixFsAddOptions)
