@@ -14,10 +14,6 @@
   "keywords": [
     "IPFS"
   ],
-  "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=7.0.0"
-  },
   "type": "module",
   "types": "./dist/src/index.d.ts",
   "files": [
@@ -66,7 +62,7 @@
     "ipfsd-ctl": "^13.0.0",
     "it-all": "^3.0.2",
     "it-to-buffer": "^4.0.1",
-    "kubo-rpc-client": "^3.0.0",
+    "kubo-rpc-client": "^3.0.1",
     "libp2p": "^0.45.2",
     "multiformats": "^11.0.1"
   },
