@@ -14,10 +14,10 @@
   "devDependencies": {
     "@chainsafe/libp2p-noise": "^11.0.0",
     "@chainsafe/libp2p-yamux": "^3.0.5",
-    "@helia/unixfs": "^1.3.0",
+    "@helia/unixfs": "^1.4.0",
     "@ipld/dag-pb": "^4.0.2",
     "@libp2p/websockets": "^5.0.3",
-    "aegir": "^38.1.5",
+    "aegir": "^39.0.4",
     "blockstore-fs": "^1.0.1",
     "datastore-level": "^10.0.1",
     "execa": "^7.0.0",
