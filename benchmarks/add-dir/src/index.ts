@@ -159,7 +159,7 @@ async function main (): Promise<void> {
           'ops/s': 'error',
           'ms/op': 'error',
           runs: 'error',
-          stddev: 'error',
+          p99: 'error',
           CID: (result?.error as any)?.message
         }
       }
