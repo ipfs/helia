@@ -1,0 +1,16 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [
+    "./packages/helia",
+    "./packages/interface",
+    "./packages/interop",
+  ],
+  "entryPointStrategy": "packages",
+  "out": ".docs",
+  "hideGenerator": true,
+  "name": "Helia",
+  "includeVersion": true,
+  "cleanOutputDir": true,
+  "logLevel": "Verbose",
+  "readme": "./README.md",
+}
