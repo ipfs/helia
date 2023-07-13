@@ -29,12 +29,15 @@
     "generate": "aegir run generate",
     "build": "aegir run build",
     "lint": "aegir run lint",
+    "docs2": "aegir exec api-extractor -- run --local --verbose && api-documenter markdown -i ./.api-extractor -o ./docs-temp",
     "docs": "NODE_OPTIONS=--max_old_space_size=4096 aegir docs -- --name helia --titleLink './'",
     "docs:no-publish": "NODE_OPTIONS=--max_old_space_size=4096 aegir docs --publish false -- --name helia --titleLink './'",
     "dep-check": "aegir run dep-check",
     "release": "npm run docs:no-publish && aegir run release && npm run docs"
   },
   "devDependencies": {
+    "@microsoft/api-documenter": "^7.22.27",
+    "@microsoft/api-extractor": "^7.36.2",
     "aegir": "^39.0.4",
     "typedoc-plugin-mdn-links": "^3.0.3"
   },
