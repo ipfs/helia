@@ -4,6 +4,11 @@ import { WebSockets } from '@multiformats/mafmt'
 
 /** @type {import('aegir').PartialOptions} */
 const options = {
+  build: {
+    config: {
+      external: ['it-drain']
+    }
+  },
   test: {
     before: async () => {
       // use dynamic import otherwise the source may not have been built yet
