@@ -161,7 +161,7 @@
     "progress-events": "^1.0.0"
   },
   "devDependencies": {
-    "aegir": "^39.0.4"
+    "aegir": "^40.0.0"
   },
   "typedoc": {
     "entryPoint": "./src/index.ts"
