@@ -1,3 +1,15 @@
+## [@helia/unixfs-v1.4.1](https://github.com/ipfs/helia-unixfs/compare/@helia/unixfs-v1.4.0...@helia/unixfs-v1.4.1) (2023-07-25)
+
+
+### Bug Fixes
+
+* correct browser override path for glob-source ([#60](https://github.com/ipfs/helia-unixfs/issues/60)) ([fd0f33b](https://github.com/ipfs/helia-unixfs/commit/fd0f33b2a66e2840b5a03f27a48240b3c5d2b67e))
+
+
+### Documentation
+
+* fix typos in example code ([#57](https://github.com/ipfs/helia-unixfs/issues/57)) ([b7625c3](https://github.com/ipfs/helia-unixfs/commit/b7625c3426380e63052968b1476e2d689c9213de))
+
 ## [@helia/unixfs-v1.4.0](https://github.com/ipfs/helia-unixfs/compare/@helia/unixfs-v1.3.0...@helia/unixfs-v1.4.0) (2023-06-30)
 
 
