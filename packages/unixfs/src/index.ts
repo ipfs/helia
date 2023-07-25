@@ -401,7 +401,7 @@ export interface UnixFS {
    *
    * ```typescript
    * const cid = await fs.addFile({
-   *   path: './foo.txt'
+   *   path: './foo.txt',
    *   content: Uint8Array.from([0, 1, 2, 3]),
    *   mode: 0x755,
    *   mtime: {
@@ -482,7 +482,7 @@ export interface UnixFS {
    *
    * ```typescript
    * for await (const entry of fs.ls(directoryCid)) {
-   *   console.info(etnry)
+   *   console.info(entry)
    * }
    * ```
    */
