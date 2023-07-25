@@ -189,7 +189,7 @@
     "entryPoint": "./src/index.ts"
   },
   "browser": {
-    "./dist/utils/glob-source.js": false,
+    "./dist/src/utils/glob-source.js": false,
     "node:fs": false,
     "node:fs/promises": false,
     "node:path": false,
