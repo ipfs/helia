@@ -178,7 +178,7 @@
     "@ipld/dag-json": "^10.0.1",
     "@multiformats/mafmt": "^12.1.5",
     "@types/sinon": "^10.0.14",
-    "aegir": "^39.0.4",
+    "aegir": "^40.0.1",
     "delay": "^6.0.0",
     "sinon": "^15.0.2",
     "sinon-ts": "^1.0.0"
