@@ -6,7 +6,7 @@ import * as kuboRpcClient from 'kubo-rpc-client'
 export async function createKuboNode (): Promise<Controller> {
   return createController({
     kuboRpcModule: kuboRpcClient,
-    ipfsBin: goIpfs.path(),
+    ipfsBin: process.env.KUBO_BINARY ? process.env.KUBO_BINARY : goIpfs.path(),
     test: true,
     ipfsOptions: {
       config: {
