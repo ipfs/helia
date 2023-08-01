@@ -1,4 +1,4 @@
-// @ts-expect-error no types
+// @ts-ignore no types - TODO: remove me once the next version of npm-go-ipfs has shipped
 import * as goIpfs from 'go-ipfs'
 import { type Controller, createController } from 'ipfsd-ctl'
 import * as kuboRpcClient from 'kubo-rpc-client'
