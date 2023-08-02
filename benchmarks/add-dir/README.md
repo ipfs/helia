@@ -46,7 +46,6 @@ To run:
 ## Things to improve
 
 - [ ] Process hangs sometimes (hanging promises not resolving...?). Temporarily fixed with `process.exit(0)` after test results are output
-- [ ] The Helia test is generating a different CID than js-ipfs & Kubo. This is expected because defaults configured are different, but for accurate comparisons, we should ensure the same structure is generated.
 - [ ] Cannot test using `TEST_PATH=node_modules` yet (test takes roughly 13 minutes for a single run, even when running only helia and altering fileImport and blockWrite concurrency)
 - [ ] Instead of tearing down the entire instance of each implementation, we may want to simply delete the entries in the blockstore (i.e. afterEach: cleanBlockstore())
 - [ ] we should be able to generate a set of files/folders with a specific count, and total size, that we can run these tests against. (using https://github.com/jbenet/go-random-files ?)
