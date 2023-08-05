@@ -1,4 +1,3 @@
-
 // this list comes from https://github.com/ipfs/kubo/blob/da28fbc65a2e0f1ce59f9923823326ae2bc4f713/config/bootstrap_peers.go#L17
 export const bootstrapConfig = {
   list: [
