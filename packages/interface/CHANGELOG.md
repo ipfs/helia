@@ -1,3 +1,15 @@
+## [@helia/interface-v1.2.2](https://github.com/ipfs/helia/compare/@helia/interface-v1.2.1...@helia/interface-v1.2.2) (2023-08-05)
+
+
+### Trivial Changes
+
+* update project config ([#175](https://github.com/ipfs/helia/issues/175)) ([f185a72](https://github.com/ipfs/helia/commit/f185a7220a62f7fc0c025aa5c0be5a981c63cc48))
+
+
+### Dependencies
+
+* **dev:** bump aegir from 39.0.13 to 40.0.8 ([#198](https://github.com/ipfs/helia/issues/198)) ([4d75ecf](https://github.com/ipfs/helia/commit/4d75ecffb79e5177da35d3106e42dac7bc63153a))
+
 ## [@helia/interface-v1.2.1](https://github.com/ipfs/helia/compare/@helia/interface-v1.2.0...@helia/interface-v1.2.1) (2023-06-07)
 
 
