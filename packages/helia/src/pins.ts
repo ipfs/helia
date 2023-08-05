@@ -10,7 +10,7 @@ import { cborWalker, dagPbWalker, jsonWalker, rawWalker } from './utils/dag-walk
 import type { DAGWalker } from './index.js'
 import type { AddOptions, AddPinEvents, IsPinnedOptions, LsOptions, Pin, Pins, RmOptions } from '@helia/interface/pins'
 import type { GetBlockProgressEvents } from '@helia/interface/src/blocks.js'
-import type { AbortOptions } from '@libp2p/interfaces'
+import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 
 const DEFAULT_DAG_WALKERS = [
