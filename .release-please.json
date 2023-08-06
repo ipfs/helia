@@ -6,5 +6,6 @@
   "packages": {
     "packages/helia": {},
     "packages/interface": {}
-  }
+  },
+  "last-release-sha": "b3dbe877260399e6340541fabe9a98771b46af20"
 }
