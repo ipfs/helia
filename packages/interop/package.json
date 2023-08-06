@@ -71,8 +71,5 @@
     "./dist/test/fixtures/create-kubo.js": "./dist/test/fixtures/create-kubo.browser.js",
     "go-ipfs": false
   },
-  "private": true,
-  "typedoc": {
-    "entryPoint": "./src/index.ts"
-  }
+  "private": true
 }
