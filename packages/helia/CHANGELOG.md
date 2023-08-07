@@ -6,6 +6,13 @@
 * **dev:** bump aegir from 39.0.13 to 40.0.8 ([#198](https://github.com/ipfs/helia/issues/198)) ([4d75ecf](https://github.com/ipfs/helia/commit/4d75ecffb79e5177da35d3106e42dac7bc63153a))
 * update sibling dependencies ([beb10b5](https://github.com/ipfs/helia/commit/beb10b5590d66d1d5bef9b5e890b888263df2c92))
 
+### [1.3.13](https://www.github.com/ipfs/helia/compare/helia-v1.3.12...helia-v1.3.13) (2023-08-07)
+
+
+### Dependencies
+
+* update sibling dependencies ([07847bb](https://www.github.com/ipfs/helia/commit/07847bb60b9ebd26497080373e45871abb4b82dd))
+
 ## [helia-v1.3.11](https://github.com/ipfs/helia/compare/helia-v1.3.10...helia-v1.3.11) (2023-08-04)
 
 
