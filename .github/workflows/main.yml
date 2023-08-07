@@ -167,8 +167,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           command: manifest
           release-type: node
-          manifest-file: .release-please-manifest.json
-          config-file: .release-please.json
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
