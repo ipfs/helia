@@ -79,7 +79,7 @@
     "it-drain": "^3.0.1",
     "it-filter": "^3.0.1",
     "it-foreach": "^2.0.2",
-    "libp2p": "^0.45.2",
+    "libp2p": "^0.46.3",
     "mortice": "^3.0.1",
     "multiformats": "^11.0.1",
     "p-defer": "^4.0.0",
