@@ -173,6 +173,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: lts/*
+          registry-url: 'https://registry.npmjs.org'
       - uses: ipfs/aegir/actions/cache-node-modules@master
       - uses: ipfs/aegir/actions/docker-login@master
         with:
