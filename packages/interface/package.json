@@ -65,13 +65,12 @@
     "build": "aegir build"
   },
   "dependencies": {
-    "@libp2p/interface-libp2p": "^3.2.0",
-    "@libp2p/interfaces": "^3.3.2",
+    "@libp2p/interface": "^0.1.1",
     "interface-blockstore": "^5.0.0",
     "interface-datastore": "^8.0.0",
     "interface-store": "^5.0.1",
-    "ipfs-bitswap": "^18.0.0",
-    "multiformats": "^11.0.1",
+    "ipfs-bitswap": "^19.0.0",
+    "multiformats": "^12.0.1",
     "progress-events": "^1.0.0"
   },
   "devDependencies": {

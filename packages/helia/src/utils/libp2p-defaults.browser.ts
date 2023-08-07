@@ -14,7 +14,7 @@ import { autoNATService } from 'libp2p/autonat'
 import { circuitRelayTransport } from 'libp2p/circuit-relay'
 import { identifyService } from 'libp2p/identify'
 import { bootstrapConfig } from './bootstrappers.js'
-import type { PubSub } from '@libp2p/interface-pubsub'
+import type { PubSub } from '@libp2p/interface/pubsub'
 import type { Libp2pOptions } from 'libp2p'
 
 export function libp2pDefaults (): Libp2pOptions<{ dht: DualKadDHT, pubsub: PubSub, identify: unknown, autoNAT: unknown }> {

@@ -48,23 +48,23 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "devDependencies": {
-    "@chainsafe/libp2p-noise": "^12.0.0",
-    "@chainsafe/libp2p-yamux": "^4.0.2",
+    "@chainsafe/libp2p-noise": "^13.0.0",
+    "@chainsafe/libp2p-yamux": "^5.0.0",
     "@helia/interface": "^1.0.0",
-    "@libp2p/tcp": "^7.0.1",
-    "@libp2p/websockets": "^6.0.1",
+    "@libp2p/tcp": "^8.0.2",
+    "@libp2p/websockets": "^7.0.2",
     "@multiformats/sha3": "^2.0.15",
     "aegir": "^40.0.8",
     "blockstore-core": "^4.0.0",
     "datastore-core": "^9.0.0",
-    "go-ipfs": "^0.20.0",
+    "go-ipfs": "^0.21.0",
     "helia": "^1.0.0",
     "ipfsd-ctl": "^13.0.0",
     "it-all": "^3.0.2",
     "it-to-buffer": "^4.0.1",
     "kubo-rpc-client": "^3.0.1",
-    "libp2p": "^0.45.2",
-    "multiformats": "^11.0.1"
+    "libp2p": "^0.46.3",
+    "multiformats": "^12.0.1"
   },
   "browser": {
     "./dist/test/fixtures/create-helia.js": "./dist/test/fixtures/create-helia.browser.js",
