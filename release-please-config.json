@@ -5,8 +5,8 @@
     "packages/helia": {},
     "packages/interface": {}
   },
-  "bootstrap-sha": "9d8fac37fd0e4dd5b4eb7e1a223df2545e8f2bda",
-  "last-release-sha": "9d8fac37fd0e4dd5b4eb7e1a223df2545e8f2bda",
+  "bootstrap-sha": "51417df2e39097a1e6f276938a1090fe2f46143a",
+  "last-release-sha": "b3dbe877260399e6340541fabe9a98771b46af20",
   "changelog-types": [
     { "type": "feat", "section": "Features", "hidden": false },
     { "type": "fix", "section": "Bug Fixes", "hidden": false },
