@@ -6,5 +6,12 @@
     "packages/interface": {}
   },
   "bootstrap-sha": "9d8fac37fd0e4dd5b4eb7e1a223df2545e8f2bda",
-  "last-release-sha": "9d8fac37fd0e4dd5b4eb7e1a223df2545e8f2bda"
+  "last-release-sha": "9d8fac37fd0e4dd5b4eb7e1a223df2545e8f2bda",
+  "changelog-types": [
+    { "type": "feat", "section": "Features", "hidden": false },
+    { "type": "fix", "section": "Bug Fixes", "hidden": false },
+    { "type": "chore", "section": "Trivial Changes", "hidden": false },
+    { "type": "docs", "section": "Documentation", "hidden": false },
+    { "type": "deps", "section": "Dependencies", "hidden": false }
+  ]
 }
