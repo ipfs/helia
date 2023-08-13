@@ -1,4 +1,5 @@
 /* eslint-env mocha */
+import all from 'it-all'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { webSockets } from '@libp2p/websockets'
@@ -55,9 +56,9 @@ describe('pins (depth limited)', () => {
   for (let i = 0; i < MAX_DEPTH; i++) {
     describe(`depth ${i}`, () => { // eslint-disable-line no-loop-func
       it(`pins a block to depth ${i}`, async () => {
-        await helia.pins.add(dag['level-0'].cid, {
+        await all(helia.pins.add(dag['level-0'].cid, {
           depth: i
-        })
+        }))
 
         // only root block should be pinned
         for (const [name, node] of Object.entries(dag)) {
@@ -77,9 +78,9 @@ describe('pins (depth limited)', () => {
       })
 
       it(`unpins to depth ${i}`, async () => {
-        await helia.pins.add(dag['level-0'].cid, {
+        await all(helia.pins.add(dag['level-0'].cid, {
           depth: i
-        })
+        }))
         await helia.pins.rm(dag['level-0'].cid)
 
         // no blocks should be pinned
@@ -91,9 +92,9 @@ describe('pins (depth limited)', () => {
       })
 
       it(`does not delete a pinned sub-block under level ${i}`, async () => {
-        await helia.pins.add(dag['level-0'].cid, {
+        await all(helia.pins.add(dag['level-0'].cid, {
           depth: i
-        })
+        }))
 
         // no sub blocks should be pinned
         for (const [name, node] of Object.entries(dag)) {

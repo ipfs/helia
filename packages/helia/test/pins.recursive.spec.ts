@@ -1,4 +1,5 @@
 /* eslint-env mocha */
+import all from 'it-all'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { webSockets } from '@libp2p/websockets'
@@ -51,7 +52,7 @@ describe('pins (recursive)', () => {
   })
 
   it('pins a block recursively', async () => {
-    await helia.pins.add(dag['level-0'].cid)
+    await all(helia.pins.add(dag['level-0'].cid))
 
     // all sub blocks should be pinned
     for (const [name, node] of Object.entries(dag)) {
@@ -62,7 +63,7 @@ describe('pins (recursive)', () => {
   })
 
   it('unpins recursively', async () => {
-    await helia.pins.add(dag['level-0'].cid)
+    await all(helia.pins.add(dag['level-0'].cid))
     await helia.pins.rm(dag['level-0'].cid)
 
     // no sub blocks should be pinned
@@ -74,7 +75,7 @@ describe('pins (recursive)', () => {
   })
 
   it('does not delete a pinned sub-block', async () => {
-    await helia.pins.add(dag['level-0'].cid)
+    await all(helia.pins.add(dag['level-0'].cid))
 
     // no sub blocks should be pinned
     for (const [name, node] of Object.entries(dag)) {

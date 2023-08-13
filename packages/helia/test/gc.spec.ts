@@ -1,5 +1,5 @@
 /* eslint-env mocha */
-
+import all from 'it-all'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import * as dagCbor from '@ipld/dag-cbor'
@@ -62,7 +62,7 @@ describe('gc', () => {
       }]
     }), helia.blockstore)
 
-    await helia.pins.add(node)
+    await all(helia.pins.add(node))
 
     // this block will be garbage collected
     const doomed = await createAndPutBlock(dagPb.code, dagPb.encode({
@@ -98,7 +98,7 @@ describe('gc', () => {
       ]
     }), helia.blockstore)
 
-    await helia.pins.add(node)
+    await all(helia.pins.add(node))
 
     // this block will be garbage collected
     const doomed = await createAndPutBlock(dagCbor.code, dagJson.encode({
@@ -133,7 +133,7 @@ describe('gc', () => {
       ]
     }), helia.blockstore)
 
-    await helia.pins.add(node)
+    await all(helia.pins.add(node))
 
     // this block will be garbage collected
     const doomed = await createAndPutBlock(dagJson.code, dagJson.encode({
@@ -156,7 +156,7 @@ describe('gc', () => {
   it('pins a raw node and does not garbage collect it', async () => {
     const cid = await createAndPutBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
 
-    await helia.pins.add(cid)
+    await all(helia.pins.add(cid))
 
     // this block will be garbage collected
     const doomed = await createAndPutBlock(raw.code, Uint8Array.from([4, 5, 6, 7]), helia.blockstore)
