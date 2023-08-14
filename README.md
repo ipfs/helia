@@ -15,11 +15,10 @@
 
 ## Table of contents <!-- omit in toc -->
 
-- - [Structure](#structure)
-- [@helia/unixfs <!-- omit in toc -->](#heliaunixfs----omit-in-toc---)
-  - [API Docs](#api-docs)
-  - [License](#license)
-  - [Contribute](#contribute)
+- [Structure](#structure)
+- [API Docs](#api-docs)
+- [License](#license)
+- [Contribute](#contribute)
 
 ## Structure
 
