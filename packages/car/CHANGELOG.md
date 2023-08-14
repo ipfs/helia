@@ -1,3 +1,10 @@
+## [@helia/car-v1.0.1](https://github.com/ipfs/helia-car/compare/@helia/car-v1.0.0...@helia/car-v1.0.1) (2023-08-14)
+
+
+### Documentation
+
+* fs already defined in example ([#1](https://github.com/ipfs/helia-car/issues/1)) ([356797a](https://github.com/ipfs/helia-car/commit/356797a9493c7753178b5f343962951bc9cd3052))
+
 ## @helia/car-v1.0.0 (2023-06-07)
 
 
