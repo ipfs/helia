@@ -54,7 +54,7 @@ export interface Pins {
    * Unpin the block that corresponds to the passed CID. The block will
    * be deleted when garbage collection is run.
    */
-  rm: (cid: CID, options?: RmOptions) => Promise<Pin>
+  rm: (cid: CID, options?: RmOptions) => AsyncGenerator<CID, Pin>
 
   /**
    * List all blocks that have been pinned.
