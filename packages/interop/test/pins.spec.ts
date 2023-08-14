@@ -56,10 +56,16 @@ describe('pins', () => {
 
     await expect(helia.blockstore.has(cid)).to.eventually.be.false()
 
-    const output = await helia.pins.add(cid)
+    const itr = helia.pins.add(cid)[Symbol.asyncIterator]();
+
+    let output = await itr.next();
+
+    while (!output.done) {
+      output = await itr.next();
+    }
 
     await expect(helia.blockstore.has(cid)).to.eventually.be.true()
 
-    expect(output.cid.toString()).to.equal(cid.toString())
+    expect(output.value.cid.toString()).to.equal(cid.toString())
   })
 })
