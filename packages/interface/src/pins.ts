@@ -29,6 +29,11 @@ export interface AddOptions extends AbortOptions, ProgressOptions<AddPinEvents |
    * The number of blocks it should fetch each batch
    */
   batch?: number
+
+  /**
+   * If enabled, the first iteration will yield all the local CIDs regardless of batch value
+   */
+  skipLocal?: boolean
 }
 
 export interface RmOptions extends AbortOptions {

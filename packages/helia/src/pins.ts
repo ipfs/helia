@@ -79,35 +79,38 @@ export class PinsImpl implements Pins {
       throw new Error('Depth must be greater than or equal to 0')
     }
 
-    let batch = Math.round(options.batch ?? 1)
+    const defaultBatch = Math.round(options.batch ?? 1)
 
-    if (batch < 1) {
+    if (defaultBatch < 1) {
       throw new Error('Batch must be greater than or equal to 1')
     }
 
+    let batch = defaultBatch
+
     // use a queue to walk the DAG instead of recursion so we can traverse very large DAGs
-    const queue: CIDQueueItem[] = [{ cid, depth: 0 }]
+    let queue: CIDQueueItem[] = [{ cid, depth: 0 }]
+
+    if (options.skipLocal === true) {
+      const { resolved, unresolved } = await this.#walkLocal(cid, depth, options)
+
+      await this.#pinCids(resolved, options)
+
+      const newBatch = yield resolved
+
+      batch = newBatch != null && newBatch >= 1 ? Math.round(newBatch) : defaultBatch
+
+      // Update the queue to contain all the unresolved values
+      queue = unresolved
+    }
 
     while (queue.length !== 0) {
       const cids = await this.#pullManyFromQueue(queue, depth, batch, options)
 
-      await Promise.all(cids.map(async cid =>
-        this.#updatePinnedBlock(cid, (pinnedBlock): void => {
-          // do not update pinned block if this block is already pinned by this CID
-          if (pinnedBlock.pinnedBy.find(c => uint8ArrayEquals(c, cid.bytes)) != null) {
-            return
-          }
-
-          pinnedBlock.pinCount++
-          pinnedBlock.pinnedBy.push(cid.bytes)
-        }, options)
-      ))
+      await this.#pinCids(cids, options)
 
       const newBatch = yield cids
 
-      if (newBatch != null && newBatch >= 1) {
-        batch = Math.round(newBatch)
-      }
+      batch = newBatch != null && newBatch >= 1 ? Math.round(newBatch) : defaultBatch
     }
 
     const pin: DatastorePin = {
@@ -121,6 +124,61 @@ export class PinsImpl implements Pins {
       cid,
       ...pin
     }
+  }
+
+  /**
+   * Pin multiple CIDs
+   */
+  async #pinCids (cids: CID[], options: AbortOptions): Promise<void> {
+    await Promise.all(cids.map(async cid => {
+      await this.#updatePinnedBlock(cid, (pinnedBlock: DatastorePinnedBlock) => {
+        // do not update pinned block if this block is already pinned by this CID
+        if (pinnedBlock.pinnedBy.find(c => uint8ArrayEquals(c, cid.bytes)) != null) {
+          return
+        }
+
+        pinnedBlock.pinCount++
+        pinnedBlock.pinnedBy.push(cid.bytes)
+      }, options)
+    }))
+  }
+
+  /**
+   * Walk the DAG locally without fetching any blocks over the network.
+   */
+  async #walkLocal (cid: CID, depth: number, options: AbortOptions): Promise<{ resolved: CID[], unresolved: CIDQueueItem[] }> {
+    const queue: CIDQueueItem[] = [{ cid, depth: 0 }]
+    const resolved: CID[] = []
+    const unresolved: CIDQueueItem[] = []
+    const dagWalker = this.dagWalkers[cid.code]
+
+    if (dagWalker == null) {
+      throw new Error(`No dag walker found for cid codec ${cid.code}`)
+    }
+
+    for (;;) {
+      const item = queue.shift()
+
+      if (item == null || options.signal?.aborted === true) {
+        break
+      }
+
+      if (await this.blockstore.has(item.cid)) {
+        if (item.depth < depth) {
+          const block = await this.blockstore.get(item.cid)
+
+          for await (const cid of dagWalker.walk(block)) {
+            queue.push({ cid, depth: item.depth + 1 })
+          }
+        }
+
+        resolved.push(item.cid)
+      } else {
+        unresolved.push(item)
+      }
+    }
+
+    return { unresolved, resolved }
   }
 
   /**
