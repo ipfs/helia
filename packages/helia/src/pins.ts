@@ -66,7 +66,7 @@ export class PinsImpl implements Pins {
     })
   }
 
-  async * add (cid: CID<unknown, number, number, Version>, options: AddOptions = {}): AsyncGenerator<CID[], Pin> {
+  async * add (cid: CID<unknown, number, number, Version>, options: AddOptions = {}): AsyncGenerator<CID[], Pin, number | undefined> {
     const pinKey = toDSKey(cid)
 
     if (await this.datastore.has(pinKey)) {
@@ -79,7 +79,7 @@ export class PinsImpl implements Pins {
       throw new Error('Depth must be greater than or equal to 0')
     }
 
-    const batch = Math.round(options.batch ?? Infinity)
+    let batch = Math.round(options.batch ?? Infinity)
 
     if (batch < 1) {
       throw new Error('Batch must be greater than or equal to 1')
@@ -103,7 +103,11 @@ export class PinsImpl implements Pins {
         }, options)
       ))
 
-      yield cids
+      const newBatch = yield cids
+
+      if (newBatch != null && newBatch >= 1) {
+        batch = Math.round(newBatch)
+      }
     }
 
     const pin: DatastorePin = {
