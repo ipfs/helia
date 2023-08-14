@@ -8,6 +8,7 @@ import { sha256 } from 'multiformats/hashes/sha2'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import type { Helia } from '@helia/interface'
+import type { Pin } from '@helia/interface/pins'
 import type { Controller } from 'ipfsd-ctl'
 
 describe('pins', () => {
@@ -66,6 +67,6 @@ describe('pins', () => {
 
     await expect(helia.blockstore.has(cid)).to.eventually.be.true()
 
-    expect(output.value.cid.toString()).to.equal(cid.toString())
+    expect((output.value as Pin).cid.toString()).to.equal(cid.toString())
   })
 })
