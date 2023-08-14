@@ -1,0 +1,44 @@
+{
+  "name": "@helia/mfs",
+  "version": "0.0.0",
+  "description": "A mutable filesystem powered by Helia",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/ipfs/helia-mfs#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ipfs/helia-mfs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ipfs/helia-mfs/issues"
+  },
+  "keywords": [
+    "ipfs"
+  ],
+  "private": true,
+  "scripts": {
+    "reset": "aegir run clean && aegir clean **/node_modules **/package-lock.json",
+    "test": "aegir run test",
+    "test:node": "aegir run test:node",
+    "test:chrome": "aegir run test:chrome",
+    "test:chrome-webworker": "aegir run test:chrome-webworker",
+    "test:firefox": "aegir run test:firefox",
+    "test:firefox-webworker": "aegir run test:firefox-webworker",
+    "test:electron-main": "aegir run test:electron-main",
+    "test:electron-renderer": "aegir run test:electron-renderer",
+    "clean": "aegir run clean",
+    "generate": "aegir run generate",
+    "build": "aegir run build",
+    "lint": "aegir run lint",
+    "docs": "NODE_OPTIONS=--max_old_space_size=8192 aegir docs -- --exclude packages/interop",
+    "docs:no-publish": "NODE_OPTIONS=--max_old_space_size=8192 aegir docs --publish false -- --exclude packages/interop",
+    "dep-check": "aegir run dep-check",
+    "release": "npm run docs:no-publish && aegir run release && npm run docs"
+  },
+  "devDependencies": {
+    "aegir": "^40.0.9"
+  },
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ]
+}
