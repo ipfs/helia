@@ -79,7 +79,7 @@ export class PinsImpl implements Pins {
       throw new Error('Depth must be greater than or equal to 0')
     }
 
-    let batch = Math.round(options.batch ?? Infinity)
+    let batch = Math.round(options.batch ?? 1)
 
     if (batch < 1) {
       throw new Error('Batch must be greater than or equal to 1')
