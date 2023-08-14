@@ -64,7 +64,7 @@ describe('pins (recursive)', () => {
 
   it('unpins recursively', async () => {
     await all(helia.pins.add(dag['level-0'].cid))
-    await helia.pins.rm(dag['level-0'].cid)
+    await all(helia.pins.rm(dag['level-0'].cid))
 
     // no sub blocks should be pinned
     for (const [name, node] of Object.entries(dag)) {

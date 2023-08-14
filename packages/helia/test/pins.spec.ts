@@ -64,7 +64,7 @@ describe('pins', () => {
     await expect(helia.pins.isPinned(cidV1)).to.eventually.be.true('did not pin v1 CID')
     await expect(helia.pins.isPinned(cidV0)).to.eventually.be.true('did not pin v0 CID')
 
-    await helia.pins.rm(cidV1)
+    await all(helia.pins.rm(cidV1))
 
     await expect(helia.pins.isPinned(cidV1)).to.eventually.be.false('did not unpin v1 CID')
     await expect(helia.pins.isPinned(cidV0)).to.eventually.be.false('did not unpin v0 CID')
