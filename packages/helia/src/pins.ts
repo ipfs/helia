@@ -73,13 +73,13 @@ export class PinsImpl implements Pins {
       throw new Error('Already pinned')
     }
 
-		const depth = Math.round(options.depth ?? Infinity)
+    const depth = Math.round(options.depth ?? Infinity)
 
     if (depth < 0) {
       throw new Error('Depth must be greater than or equal to 0')
     }
 
-		const batch = Math.round(options.batch ?? Infinity)
+    const batch = Math.round(options.batch ?? Infinity)
 
     if (batch < 1) {
       throw new Error('Batch must be greater than or equal to 1')
@@ -217,7 +217,7 @@ export class PinsImpl implements Pins {
     while (queue.length !== 0) {
       const cid = await this.#pullFromQueue(queue, pin.depth, options)
 
-      this.#updatePinnedBlock(cid, (pinnedBlock): void => {
+      await this.#updatePinnedBlock(cid, (pinnedBlock): void => {
         pinnedBlock.pinCount--
         pinnedBlock.pinnedBy = pinnedBlock.pinnedBy.filter(c => uint8ArrayEquals(c, cid.bytes))
       }, {
@@ -225,7 +225,7 @@ export class PinsImpl implements Pins {
         depth: pin.depth
       })
 
-      yield cid;
+      yield cid
     }
 
     return {

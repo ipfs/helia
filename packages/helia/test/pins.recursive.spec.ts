@@ -1,11 +1,11 @@
 /* eslint-env mocha */
-import all from 'it-all'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { webSockets } from '@libp2p/websockets'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
+import all from 'it-all'
 import { createLibp2p } from 'libp2p'
 import { createHelia } from '../src/index.js'
 import { createDag, type DAGNode } from './fixtures/create-dag.js'
