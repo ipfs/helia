@@ -49,7 +49,7 @@
   },
   "devDependencies": {
     "@helia/interface": "^1.2.2",
-    "@helia/mfs": "0.0.0",
+    "@helia/mfs": "^1.0.0",
     "aegir": "^40.0.9",
     "go-ipfs": "^0.22.0",
     "helia": "1.3.12",
