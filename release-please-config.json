@@ -6,6 +6,8 @@
     "packages/interface": {},
     "packages/interop": {}
   },
+  "bootstrap-sha": "51417df2e39097a1e6f276938a1090fe2f46143a",
+  "last-release-sha": "8f1b233685f662a1131711e1b98e8ff31ccc3460",
   "changelog-sections": [
     { "type": "feat", "section": "Features", "hidden": false },
     { "type": "fix", "section": "Bug Fixes", "hidden": false },
