@@ -6,8 +6,8 @@ import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import all from 'it-all'
+import parallel from 'it-parallel'
 import { createLibp2p } from 'libp2p'
-import { map } from 'streaming-iterables'
 import { createHelia } from '../src/index.js'
 import { createDag, type DAGNode } from './fixtures/create-dag.js'
 import { dagWalker } from './fixtures/dag-walker.js'
@@ -57,7 +57,7 @@ describe('pins (depth limited)', () => {
   for (let i = 0; i < MAX_DEPTH; i++) {
     describe(`depth ${i}`, () => { // eslint-disable-line no-loop-func
       it(`pins a block to depth ${i}`, async () => {
-        await all(map(async f => { await f() }, helia.pins.add(dag['level-0'].cid, {
+        await all(parallel(helia.pins.add(dag['level-0'].cid, {
           depth: i
         })))
 
@@ -79,10 +79,10 @@ describe('pins (depth limited)', () => {
       })
 
       it(`unpins to depth ${i}`, async () => {
-        await all(map(async f => { await f() }, helia.pins.add(dag['level-0'].cid, {
+        await all(parallel(helia.pins.add(dag['level-0'].cid, {
           depth: i
         })))
-        await all(map(async f => { await f() }, helia.pins.rm(dag['level-0'].cid)))
+        await all(parallel(helia.pins.rm(dag['level-0'].cid)))
 
         // no blocks should be pinned
         for (const [name, node] of Object.entries(dag)) {
@@ -93,7 +93,7 @@ describe('pins (depth limited)', () => {
       })
 
       it(`does not delete a pinned sub-block under level ${i}`, async () => {
-        await all(map(async f => { await f() }, helia.pins.add(dag['level-0'].cid, {
+        await all(parallel(helia.pins.add(dag['level-0'].cid, {
           depth: i
         })))
 

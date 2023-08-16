@@ -77,11 +77,11 @@
     "it-drain": "^3.0.1",
     "it-filter": "^3.0.1",
     "it-foreach": "^2.0.2",
+    "it-parallel": "^3.0.3",
     "libp2p": "^0.46.3",
     "mortice": "^3.0.1",
     "multiformats": "^12.0.1",
     "progress-events": "^1.0.0",
-    "streaming-iterables": "^8.0.0",
     "uint8arrays": "^4.0.3"
   },
   "devDependencies": {

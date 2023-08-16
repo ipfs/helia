@@ -2,9 +2,9 @@
 
 import { expect } from 'aegir/chai'
 import all from 'it-all'
+import parallel from 'it-parallel'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
-import { map } from 'streaming-iterables'
 import { createAndPutBlock } from './fixtures/create-block.js'
 import { createHelia } from './fixtures/create-helia.js'
 import type { Helia } from '@helia/interface'
@@ -33,7 +33,7 @@ describe('pins', () => {
     const cidV1 = await createAndPutBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
     const cidV0 = CID.createV0(cidV1.multihash)
 
-    await all(map(async f => { await f() }, helia.pins.add(cidV1)))
+    await all(parallel(helia.pins.add(cidV1)))
 
     await expect(helia.pins.isPinned(cidV1)).to.eventually.be.true('did not pin v1 CID')
     await expect(helia.pins.isPinned(cidV0)).to.eventually.be.true('did not pin v0 CID')
@@ -44,7 +44,7 @@ describe('pins', () => {
 
     const events: ProgressEvent[] = []
 
-    await all(map(async f => { await f() }, helia.pins.add(cidV1, {
+    await all(parallel(helia.pins.add(cidV1, {
       onProgress: (evt) => {
         events.push(evt)
       }
@@ -60,12 +60,12 @@ describe('pins', () => {
     const cidV1 = await createAndPutBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
     const cidV0 = CID.createV0(cidV1.multihash)
 
-    await all(map(async f => { await f() }, helia.pins.add(cidV1)))
+    await all(parallel(helia.pins.add(cidV1)))
 
     await expect(helia.pins.isPinned(cidV1)).to.eventually.be.true('did not pin v1 CID')
     await expect(helia.pins.isPinned(cidV0)).to.eventually.be.true('did not pin v0 CID')
 
-    await all(map(async f => { await f() }, helia.pins.rm(cidV1)))
+    await all(parallel(helia.pins.rm(cidV1)))
 
     await expect(helia.pins.isPinned(cidV1)).to.eventually.be.false('did not unpin v1 CID')
     await expect(helia.pins.isPinned(cidV0)).to.eventually.be.false('did not unpin v0 CID')
@@ -74,7 +74,7 @@ describe('pins', () => {
   it('does not delete a pinned block', async () => {
     const cid = await createAndPutBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
 
-    await all(map(async f => { await f() }, helia.pins.add(cid)))
+    await all(parallel(helia.pins.add(cid)))
 
     await expect(helia.blockstore.delete(cid)).to.eventually.be.rejected
       .with.property('message', 'CID was pinned')
@@ -83,7 +83,7 @@ describe('pins', () => {
   it('lists pins created with default args', async () => {
     const cidV1 = await createAndPutBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
 
-    await all(map(async f => { await f() }, helia.pins.add(cidV1)))
+    await all(parallel(helia.pins.add(cidV1)))
 
     const pins = await all(helia.pins.ls())
 
@@ -96,7 +96,7 @@ describe('pins', () => {
   it('lists pins with depth', async () => {
     const cidV1 = await createAndPutBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
 
-    await all(map(async f => { await f() }, helia.pins.add(cidV1, {
+    await all(parallel(helia.pins.add(cidV1, {
       depth: 5
     })))
 
@@ -115,7 +115,7 @@ describe('pins', () => {
       qux: false
     }
 
-    await all(map(async f => { await f() }, helia.pins.add(cidV1, {
+    await all(parallel(helia.pins.add(cidV1, {
       metadata
     })))
 
@@ -130,8 +130,8 @@ describe('pins', () => {
     const cid1 = await createAndPutBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
     const cid2 = await createAndPutBlock(raw.code, Uint8Array.from([4, 5, 6, 7]), helia.blockstore)
 
-    await all(map(async f => { await f() }, helia.pins.add(cid1)))
-    await all(map(async f => { await f() }, helia.pins.add(cid2)))
+    await all(parallel(helia.pins.add(cid1)))
+    await all(parallel(helia.pins.add(cid2)))
 
     const pins = await all(helia.pins.ls({
       cid: cid1
@@ -148,7 +148,7 @@ describe('pins', () => {
 
     const cid1 = await createAndPutBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), remote.blockstore)
 
-    await all(map(async f => { await f() }, helia.pins.add(cid1)))
+    await all(parallel(helia.pins.add(cid1)))
 
     const pins = await all(helia.pins.ls())
 
