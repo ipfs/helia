@@ -1,6 +1,6 @@
 {
   "name": "@helia/interop",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Interop tests for Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/master/packages/interop#readme",
@@ -58,7 +58,7 @@
     "blockstore-core": "^4.0.0",
     "datastore-core": "^9.0.0",
     "go-ipfs": "^0.22.0",
-    "helia": "^2.0.0",
+    "helia": "^2.0.1",
     "ipfsd-ctl": "^13.0.0",
     "it-all": "^3.0.2",
     "it-to-buffer": "^4.0.1",

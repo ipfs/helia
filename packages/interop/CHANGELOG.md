@@ -1,5 +1,19 @@
 # Changelog
 
+### [1.0.1](https://www.github.com/ipfs/helia/compare/interop-v1.0.0...interop-v1.0.1) (2023-08-16)
+
+
+### Bug Fixes
+
+* enable dcutr by default ([#239](https://www.github.com/ipfs/helia/issues/239)) ([7431f09](https://www.github.com/ipfs/helia/commit/7431f09aef332dc142a5f7c2c59c9410e4529a92))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * helia bumped from ^2.0.0 to ^2.0.1
+
 ## [1.0.0](https://www.github.com/ipfs/helia/compare/interop-v0.0.0...interop-v1.0.0) (2023-08-16)
 
 
