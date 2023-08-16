@@ -37,6 +37,12 @@ import type { Libp2pOptions } from 'libp2p'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 
+// re-export interface types so people don't have to depend on @helia/interface
+// if they don't want to
+export * from '@helia/interface'
+export * from '@helia/interface/blocks'
+export * from '@helia/interface/pins'
+
 const log = logger('helia')
 
 /**
