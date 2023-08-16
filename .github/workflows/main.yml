@@ -161,7 +161,7 @@ jobs:
     ]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
-      - uses: GoogleCloudPlatform/release-please-action@v3
+      - uses: GoogleCloudPlatform/release-please-action@v2
         id: release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
