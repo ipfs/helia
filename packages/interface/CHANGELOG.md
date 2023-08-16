@@ -21,6 +21,17 @@
 
 * update libp2p to 0.46.x ([#215](https://www.github.com/ipfs/helia/issues/215)) ([65b68f0](https://www.github.com/ipfs/helia/commit/65b68f071d04d2f6f0fcf35938b146706b1a3cd0))
 
+## [2.0.0](https://www.github.com/ipfs/helia/compare/interface-v1.2.2...interface-v2.0.0) (2023-08-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* libp2p has been updated to 0.46.x
+
+### Dependencies
+
+* update libp2p to 0.46.x ([#215](https://www.github.com/ipfs/helia/issues/215)) ([65b68f0](https://www.github.com/ipfs/helia/commit/65b68f071d04d2f6f0fcf35938b146706b1a3cd0))
+
 ## [@helia/interface-v1.2.1](https://github.com/ipfs/helia/compare/@helia/interface-v1.2.0...@helia/interface-v1.2.1) (2023-06-07)
 
 
