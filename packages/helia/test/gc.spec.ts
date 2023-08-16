@@ -11,6 +11,7 @@ import { MemoryDatastore } from 'datastore-core'
 import all from 'it-all'
 import { createLibp2p } from 'libp2p'
 import * as raw from 'multiformats/codecs/raw'
+import { map } from 'streaming-iterables'
 import { createHelia } from '../src/index.js'
 import { createAndPutBlock } from './fixtures/create-block.js'
 import type { GcEvents, Helia } from '@helia/interface'
@@ -62,7 +63,7 @@ describe('gc', () => {
       }]
     }), helia.blockstore)
 
-    await all(helia.pins.add(node))
+    await all(map(async f => { await f() }, helia.pins.add(node)))
 
     // this block will be garbage collected
     const doomed = await createAndPutBlock(dagPb.code, dagPb.encode({
@@ -98,7 +99,7 @@ describe('gc', () => {
       ]
     }), helia.blockstore)
 
-    await all(helia.pins.add(node))
+    await all(map(async f => { await f() }, helia.pins.add(node)))
 
     // this block will be garbage collected
     const doomed = await createAndPutBlock(dagCbor.code, dagJson.encode({
@@ -133,7 +134,7 @@ describe('gc', () => {
       ]
     }), helia.blockstore)
 
-    await all(helia.pins.add(node))
+    await all(map(async f => { await f() }, helia.pins.add(node)))
 
     // this block will be garbage collected
     const doomed = await createAndPutBlock(dagJson.code, dagJson.encode({
@@ -156,7 +157,7 @@ describe('gc', () => {
   it('pins a raw node and does not garbage collect it', async () => {
     const cid = await createAndPutBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
 
-    await all(helia.pins.add(cid))
+    await all(map(async f => { await f() }, helia.pins.add(cid)))
 
     // this block will be garbage collected
     const doomed = await createAndPutBlock(raw.code, Uint8Array.from([4, 5, 6, 7]), helia.blockstore)

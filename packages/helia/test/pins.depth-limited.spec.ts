@@ -7,6 +7,7 @@ import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import all from 'it-all'
 import { createLibp2p } from 'libp2p'
+import { map } from 'streaming-iterables'
 import { createHelia } from '../src/index.js'
 import { createDag, type DAGNode } from './fixtures/create-dag.js'
 import { dagWalker } from './fixtures/dag-walker.js'
@@ -56,9 +57,9 @@ describe('pins (depth limited)', () => {
   for (let i = 0; i < MAX_DEPTH; i++) {
     describe(`depth ${i}`, () => { // eslint-disable-line no-loop-func
       it(`pins a block to depth ${i}`, async () => {
-        await all(helia.pins.add(dag['level-0'].cid, {
+        await all(map(async f => { await f() }, helia.pins.add(dag['level-0'].cid, {
           depth: i
-        }))
+        })))
 
         // only root block should be pinned
         for (const [name, node] of Object.entries(dag)) {
@@ -78,10 +79,10 @@ describe('pins (depth limited)', () => {
       })
 
       it(`unpins to depth ${i}`, async () => {
-        await all(helia.pins.add(dag['level-0'].cid, {
+        await all(map(async f => { await f() }, helia.pins.add(dag['level-0'].cid, {
           depth: i
-        }))
-        await all(helia.pins.rm(dag['level-0'].cid))
+        })))
+        await all(map(async f => { await f() }, helia.pins.rm(dag['level-0'].cid)))
 
         // no blocks should be pinned
         for (const [name, node] of Object.entries(dag)) {
@@ -92,9 +93,9 @@ describe('pins (depth limited)', () => {
       })
 
       it(`does not delete a pinned sub-block under level ${i}`, async () => {
-        await all(helia.pins.add(dag['level-0'].cid, {
+        await all(map(async f => { await f() }, helia.pins.add(dag['level-0'].cid, {
           depth: i
-        }))
+        })))
 
         // no sub blocks should be pinned
         for (const [name, node] of Object.entries(dag)) {

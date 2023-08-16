@@ -7,6 +7,7 @@ import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import all from 'it-all'
 import { createLibp2p } from 'libp2p'
+import { map } from 'streaming-iterables'
 import { createHelia } from '../src/index.js'
 import { createDag, type DAGNode } from './fixtures/create-dag.js'
 import { dagWalker } from './fixtures/dag-walker.js'
@@ -52,7 +53,7 @@ describe('pins (recursive)', () => {
   })
 
   it('pins a block recursively', async () => {
-    await all(helia.pins.add(dag['level-0'].cid))
+    await all(map(async f => { await f() }, helia.pins.add(dag['level-0'].cid)))
 
     // all sub blocks should be pinned
     for (const [name, node] of Object.entries(dag)) {
@@ -63,8 +64,8 @@ describe('pins (recursive)', () => {
   })
 
   it('unpins recursively', async () => {
-    await all(helia.pins.add(dag['level-0'].cid))
-    await all(helia.pins.rm(dag['level-0'].cid))
+    await all(map(async f => { await f() }, helia.pins.add(dag['level-0'].cid)))
+    await all(map(async f => { await f() }, helia.pins.rm(dag['level-0'].cid)))
 
     // no sub blocks should be pinned
     for (const [name, node] of Object.entries(dag)) {
@@ -75,7 +76,7 @@ describe('pins (recursive)', () => {
   })
 
   it('does not delete a pinned sub-block', async () => {
-    await all(helia.pins.add(dag['level-0'].cid))
+    await all(map(async f => { await f() }, helia.pins.add(dag['level-0'].cid)))
 
     // no sub blocks should be pinned
     for (const [name, node] of Object.entries(dag)) {

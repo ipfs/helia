@@ -24,16 +24,6 @@ export interface AddOptions extends AbortOptions, ProgressOptions<AddPinEvents |
    * Optional user-defined metadata to store with the pin
    */
   metadata?: Record<string, string | number | boolean>
-
-  /**
-   * The number of blocks it should fetch each batch
-   */
-  batch?: number
-
-  /**
-   * If enabled, the first iteration will yield all the local CIDs regardless of batch value
-   */
-  skipLocal?: boolean
 }
 
 export interface RmOptions extends AbortOptions {
@@ -53,13 +43,13 @@ export interface Pins {
    * Pin a block in the blockstore. It will not be deleted
    * when garbage collection is run.
    */
-  add: (cid: CID, options?: AddOptions) => AsyncGenerator<CID[], Pin, number | undefined>
+  add: (cid: CID, options?: AddOptions) => AsyncGenerator<() => Promise<CID>, Pin, number | undefined>
 
   /**
    * Unpin the block that corresponds to the passed CID. The block will
    * be deleted when garbage collection is run.
    */
-  rm: (cid: CID, options?: RmOptions) => AsyncGenerator<CID, Pin>
+  rm: (cid: CID, options?: RmOptions) => AsyncGenerator<() => Promise<CID>, Pin>
 
   /**
    * List all blocks that have been pinned.
