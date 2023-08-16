@@ -43,7 +43,7 @@ export interface Pins {
    * Pin a block in the blockstore. It will not be deleted
    * when garbage collection is run.
    */
-  add: (cid: CID, options?: AddOptions) => AsyncGenerator<() => Promise<CID>, Pin, number | undefined>
+  add: (cid: CID, options?: AddOptions) => AsyncGenerator<() => Promise<CID>, Pin>
 
   /**
    * Unpin the block that corresponds to the passed CID. The block will
