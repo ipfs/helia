@@ -1,6 +1,6 @@
 {
   "name": "@helia/interop",
-  "version": "0.0.0",
+  "version": "1.0.1",
   "description": "Interop tests for Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/master/packages/interop#readme",
@@ -50,7 +50,7 @@
   "devDependencies": {
     "@chainsafe/libp2p-noise": "^13.0.0",
     "@chainsafe/libp2p-yamux": "^5.0.0",
-    "@helia/interface": "^1.0.0",
+    "@helia/interface": "^2.0.0",
     "@libp2p/tcp": "^8.0.2",
     "@libp2p/websockets": "^7.0.2",
     "@multiformats/sha3": "^2.0.15",
@@ -58,18 +58,17 @@
     "blockstore-core": "^4.0.0",
     "datastore-core": "^9.0.0",
     "go-ipfs": "^0.22.0",
-    "helia": "^1.0.0",
+    "helia": "^2.0.1",
     "ipfsd-ctl": "^13.0.0",
     "it-all": "^3.0.2",
     "it-to-buffer": "^4.0.1",
     "kubo-rpc-client": "^3.0.1",
-    "libp2p": "^0.46.3",
+    "libp2p": "^0.46.6",
     "multiformats": "^12.0.1"
   },
   "browser": {
     "./dist/test/fixtures/create-helia.js": "./dist/test/fixtures/create-helia.browser.js",
     "./dist/test/fixtures/create-kubo.js": "./dist/test/fixtures/create-kubo.browser.js",
     "go-ipfs": false
-  },
-  "private": true
+  }
 }

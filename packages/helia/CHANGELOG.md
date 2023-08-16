@@ -6,6 +6,38 @@
 * **dev:** bump aegir from 39.0.13 to 40.0.8 ([#198](https://github.com/ipfs/helia/issues/198)) ([4d75ecf](https://github.com/ipfs/helia/commit/4d75ecffb79e5177da35d3106e42dac7bc63153a))
 * update sibling dependencies ([beb10b5](https://github.com/ipfs/helia/commit/beb10b5590d66d1d5bef9b5e890b888263df2c92))
 
+### [2.0.1](https://www.github.com/ipfs/helia/compare/helia-v2.0.0...helia-v2.0.1) (2023-08-16)
+
+
+### Bug Fixes
+
+* enable dcutr by default ([#239](https://www.github.com/ipfs/helia/issues/239)) ([7431f09](https://www.github.com/ipfs/helia/commit/7431f09aef332dc142a5f7c2c59c9410e4529a92))
+
+## [2.0.0](https://www.github.com/ipfs/helia/compare/helia-v1.3.12...helia-v2.0.0) (2023-08-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* libp2p has been updated to 0.46.x
+
+### Features
+
+* re-export types from @helia/interface ([#232](https://www.github.com/ipfs/helia/issues/232)) ([09c1e47](https://www.github.com/ipfs/helia/commit/09c1e4787a506d34a00d9ce7852d73471d47db1b))
+
+
+### Dependencies
+
+* bump @libp2p/ipni-content-routing from 1.0.2 to 2.0.0 ([#227](https://www.github.com/ipfs/helia/issues/227)) ([a33cb3e](https://www.github.com/ipfs/helia/commit/a33cb3ef2dd21a55b598f206e8d4295935ea2bcc))
+* update libp2p to 0.46.x ([#215](https://www.github.com/ipfs/helia/issues/215)) ([65b68f0](https://www.github.com/ipfs/helia/commit/65b68f071d04d2f6f0fcf35938b146706b1a3cd0))
+* update sibling dependencies ([07847bb](https://www.github.com/ipfs/helia/commit/07847bb60b9ebd26497080373e45871abb4b82dd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^1.0.0 to ^2.0.0
+
 ## [helia-v1.3.11](https://github.com/ipfs/helia/compare/helia-v1.3.10...helia-v1.3.11) (2023-08-04)
 
 
