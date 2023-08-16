@@ -12,12 +12,13 @@ import { ipnsSelector } from 'ipns/selector'
 import { ipnsValidator } from 'ipns/validator'
 import { autoNATService } from 'libp2p/autonat'
 import { circuitRelayTransport } from 'libp2p/circuit-relay'
+import { dcutrService } from 'libp2p/dcutr'
 import { identifyService } from 'libp2p/identify'
 import { bootstrapConfig } from './bootstrappers.js'
 import type { PubSub } from '@libp2p/interface/pubsub'
 import type { Libp2pOptions } from 'libp2p'
 
-export function libp2pDefaults (): Libp2pOptions<{ dht: DualKadDHT, pubsub: PubSub, identify: unknown, autoNAT: unknown }> {
+export function libp2pDefaults (): Libp2pOptions<{ dht: DualKadDHT, pubsub: PubSub, identify: unknown, autoNAT: unknown, dcutr: unknown }> {
   return {
     addresses: {
       listen: [
@@ -50,6 +51,7 @@ export function libp2pDefaults (): Libp2pOptions<{ dht: DualKadDHT, pubsub: PubS
       identify: identifyService(),
       autoNAT: autoNATService(),
       pubsub: gossipsub(),
+      dcutr: dcutrService(),
       dht: kadDHT({
         clientMode: true,
         validators: {
