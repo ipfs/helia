@@ -1,4 +1,3 @@
-
 export interface WaitForOptions {
   timeout: number
   delay?: number

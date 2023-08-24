@@ -14,10 +14,6 @@
   "keywords": [
     "IPFS"
   ],
-  "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=7.0.0"
-  },
   "type": "module",
   "types": "./dist/src/index.d.ts",
   "files": [
@@ -65,7 +61,7 @@
     "@libp2p/peer-id-factory": "^2.0.1",
     "@libp2p/tcp": "^7.0.1",
     "@libp2p/websockets": "^6.0.1",
-    "aegir": "^39.0.8",
+    "aegir": "^40.0.8",
     "blockstore-core": "^4.0.1",
     "datastore-core": "^9.0.3",
     "go-ipfs": "^0.20.0",
@@ -86,8 +82,5 @@
     "./dist/test/fixtures/create-helia.js": "./dist/test/fixtures/create-helia.browser.js",
     "go-ipfs": false
   },
-  "private": true,
-  "typedoc": {
-    "entryPoint": "./src/index.ts"
-  }
+  "private": true
 }

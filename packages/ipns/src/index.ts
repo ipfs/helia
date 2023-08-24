@@ -12,7 +12,7 @@
  * import { createHelia } from 'helia'
  * import { ipns, ipnsValidator, ipnsSelector } from '@helia/ipns'
  * import { dht, pubsub } from '@helia/ipns/routing'
- * import { unixfs } from '@helia/unixfs
+ * import { unixfs } from '@helia/unixfs'
  *
  * const libp2p = await createLibp2p({
  *   dht: kadDHT({

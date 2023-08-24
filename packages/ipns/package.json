@@ -14,10 +14,6 @@
   "keywords": [
     "IPFS"
   ],
-  "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=7.0.0"
-  },
   "type": "module",
   "types": "./dist/src/index.d.ts",
   "typesVersions": {
@@ -177,15 +173,12 @@
   },
   "devDependencies": {
     "@libp2p/peer-id-factory": "^2.0.1",
-    "aegir": "^39.0.8",
+    "aegir": "^40.0.8",
     "datastore-core": "^9.0.3",
     "sinon": "^15.0.1",
     "sinon-ts": "^1.0.0"
   },
   "browser": {
     "./dist/src/utils/resolve-dns-link.js": "./dist/src/utils/resolve-dns-link.browser.js"
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts"
   }
 }

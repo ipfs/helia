@@ -14,10 +14,6 @@
   "keywords": [
     "ipfs"
   ],
-  "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=7.0.0"
-  },
   "private": true,
   "scripts": {
     "reset": "aegir run clean && aegir clean **/node_modules **/package-lock.json",
@@ -33,13 +29,13 @@
     "generate": "aegir run generate",
     "build": "aegir run build",
     "lint": "aegir run lint",
-    "docs": "NODE_OPTIONS=--max_old_space_size=4096 aegir docs",
+    "docs": "NODE_OPTIONS=--max_old_space_size=4096 aegir docs -- --exclude packages/interop",
     "docs:no-publish": "npm run docs -- --publish false",
     "dep-check": "aegir run dep-check",
-    "release": "npm run docs:no-publish && aegir run release && npm run docs"
+    "release": "npm run docs:no-publish && aegir run release && npm run docs -- --exclude packages/interop"
   },
   "devDependencies": {
-    "aegir": "^39.0.8"
+    "aegir": "^40.0.8"
   },
   "type": "module",
   "workspaces": [
