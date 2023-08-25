@@ -1,8 +1,12 @@
 /* eslint-env mocha */
 
+import * as dagCbor from '@ipld/dag-cbor'
+import * as dagJson from '@ipld/dag-json'
+import * as dagPb from '@ipld/dag-pb'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'
+import * as json from 'multiformats/codecs/json'
 import * as raw from 'multiformats/codecs/raw'
 import { createAndPutBlock } from './fixtures/create-block.js'
 import { createHelia } from './fixtures/create-helia.js'
@@ -155,5 +159,69 @@ describe('pins', () => {
     expect(pins).to.have.nested.property('[0].cid').that.eql(cid1)
     expect(pins).to.have.nested.property('[0].depth', Infinity)
     expect(pins).to.have.nested.property('[0].metadata').that.eql({})
+  })
+
+  it('pins a json block', async () => {
+    const cid1 = await createAndPutBlock(json.code, json.encode({ hello: 'world' }), helia.blockstore)
+
+    await helia.pins.add(cid1)
+
+    const pins = await all(helia.pins.ls())
+
+    expect(pins).to.have.lengthOf(1)
+    expect(pins).to.have.nested.property('[0].cid').that.eql(cid1)
+    expect(pins).to.have.nested.property('[0].depth', Infinity)
+    expect(pins).to.have.nested.property('[0].metadata').that.eql({})
+  })
+
+  it('pins a dag-json block', async () => {
+    const cid1 = await createAndPutBlock(dagJson.code, dagJson.encode({ hello: 'world' }), helia.blockstore)
+    const cid2 = await createAndPutBlock(dagJson.code, dagJson.encode({ hello: 'world', linked: cid1 }), helia.blockstore)
+
+    await helia.pins.add(cid2)
+
+    const pins = await all(helia.pins.ls())
+
+    expect(pins).to.have.lengthOf(1)
+    expect(pins).to.have.nested.property('[0].cid').that.eql(cid2)
+    expect(pins).to.have.nested.property('[0].depth', Infinity)
+    expect(pins).to.have.nested.property('[0].metadata').that.eql({})
+
+    await expect(helia.pins.isPinned(cid1)).to.eventually.be.true()
+    await expect(helia.pins.isPinned(cid2)).to.eventually.be.true()
+  })
+
+  it('pins a dag-cbor block', async () => {
+    const cid1 = await createAndPutBlock(dagCbor.code, dagCbor.encode({ hello: 'world' }), helia.blockstore)
+    const cid2 = await createAndPutBlock(dagCbor.code, dagCbor.encode({ hello: 'world', linked: cid1 }), helia.blockstore)
+
+    await helia.pins.add(cid2)
+
+    const pins = await all(helia.pins.ls())
+
+    expect(pins).to.have.lengthOf(1)
+    expect(pins).to.have.nested.property('[0].cid').that.eql(cid2)
+    expect(pins).to.have.nested.property('[0].depth', Infinity)
+    expect(pins).to.have.nested.property('[0].metadata').that.eql({})
+
+    await expect(helia.pins.isPinned(cid1)).to.eventually.be.true()
+    await expect(helia.pins.isPinned(cid2)).to.eventually.be.true()
+  })
+
+  it('pins a dag-pb block', async () => {
+    const cid1 = await createAndPutBlock(dagPb.code, dagPb.encode({ Data: Uint8Array.from([0, 1, 2, 3, 4]), Links: [] }), helia.blockstore)
+    const cid2 = await createAndPutBlock(dagPb.code, dagPb.encode({ Links: [{ Name: '', Hash: cid1, Tsize: 100 }] }), helia.blockstore)
+
+    await helia.pins.add(cid2)
+
+    const pins = await all(helia.pins.ls())
+
+    expect(pins).to.have.lengthOf(1)
+    expect(pins).to.have.nested.property('[0].cid').that.eql(cid2)
+    expect(pins).to.have.nested.property('[0].depth', Infinity)
+    expect(pins).to.have.nested.property('[0].metadata').that.eql({})
+
+    await expect(helia.pins.isPinned(cid1)).to.eventually.be.true()
+    await expect(helia.pins.isPinned(cid2)).to.eventually.be.true()
   })
 })

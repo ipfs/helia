@@ -53,6 +53,8 @@
     "@chainsafe/libp2p-noise": "^13.0.0",
     "@chainsafe/libp2p-yamux": "^5.0.0",
     "@helia/interface": "^2.0.0",
+    "@ipld/dag-cbor": "^9.0.0",
+    "@ipld/dag-json": "^10.0.1",
     "@ipld/dag-pb": "^4.0.3",
     "@libp2p/bootstrap": "^9.0.2",
     "@libp2p/interface": "^0.1.1",
@@ -86,8 +88,6 @@
     "uint8arrays": "^4.0.3"
   },
   "devDependencies": {
-    "@ipld/dag-cbor": "^9.0.0",
-    "@ipld/dag-json": "^10.0.1",
     "@multiformats/mafmt": "^12.1.5",
     "@types/sinon": "^10.0.14",
     "aegir": "^40.0.8",
