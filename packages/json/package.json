@@ -1,6 +1,6 @@
 {
   "name": "@helia/json",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Add/get IPLD blocks containing json with your Helia node",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia-json/tree/master/packages/json#readme",
