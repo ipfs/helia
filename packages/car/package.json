@@ -1,6 +1,6 @@
 {
   "name": "@helia/car",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Import/export car files from Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia-car/tree/master/packages/car#readme",
