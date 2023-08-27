@@ -58,7 +58,7 @@
     "ipfsd-ctl": "^13.0.0",
     "kubo-rpc-client": "^3.0.0",
     "merge-options": "^3.0.4",
-    "multiformats": "^11.0.2",
+    "multiformats": "^12.0.1",
     "wherearewe": "^2.0.1"
   },
   "browser": {
