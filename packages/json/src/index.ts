@@ -3,7 +3,7 @@
  *
  * `@helia/json` makes working with JSON in {@link https://github.com/ipfs/helia Helia} simple & straightforward.
  *
- * See the {@link JSON JSON interface} for all available operations.
+ * See the {@link JSON} interface for all available operations.
  *
  * @example
  *
