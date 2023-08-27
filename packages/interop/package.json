@@ -51,7 +51,7 @@
     "@helia/dag-cbor": "^1.0.0",
     "@helia/interface": "^1.0.0",
     "@ipld/dag-cbor": "^9.0.0",
-    "@libp2p/websockets": "^6.0.1",
+    "@libp2p/websockets": "^7.0.5",
     "aegir": "^40.0.11",
     "go-ipfs": "^0.22.0",
     "helia": "^1.0.0",
