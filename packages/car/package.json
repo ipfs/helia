@@ -154,7 +154,7 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@helia/interface": "^1.0.0",
+    "@helia/interface": "^2.0.0",
     "@ipld/car": "^5.1.1",
     "@ipld/dag-pb": "^4.0.0",
     "@libp2p/interfaces": "^3.3.1",
