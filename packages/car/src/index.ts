@@ -3,7 +3,7 @@
  *
  * `@helia/car` provides `import` and `export` methods to read/write Car files to {@link https://github.com/ipfs/helia Helia}'s blockstore.
  *
- * See the {@link Car Car interface} for all available operations.
+ * See the {@link Car} interface for all available operations.
  *
  * By default it supports `dag-pb`, `dag-cbor`, `dag-json` and `raw` CIDs, more esoteric DAG walkers can be passed as an init option.
  *

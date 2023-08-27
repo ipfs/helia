@@ -29,13 +29,13 @@
     "generate": "aegir run generate",
     "build": "aegir run build",
     "lint": "aegir run lint",
-    "docs": "NODE_OPTIONS=--max_old_space_size=4096 aegir docs",
-    "docs:no-publish": "npm run docs -- --publish false",
+    "docs": "NODE_OPTIONS=--max_old_space_size=4096 aegir docs -- --exclude packages/interop",
+    "docs:no-publish": "NODE_OPTIONS=--max_old_space_size=4096 aegir docs --publish false -- --exclude packages/interop",
     "dep-check": "aegir run dep-check",
     "release": "npm run docs:no-publish && aegir run release && npm run docs"
   },
   "devDependencies": {
-    "aegir": "^39.0.8"
+    "aegir": "^40.0.11"
   },
   "type": "module",
   "workspaces": [

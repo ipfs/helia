@@ -144,7 +144,6 @@
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
     "build": "aegir build",
-    "docs": "aegir docs",
     "test": "aegir test",
     "test:chrome": "aegir test -t browser --cov",
     "test:chrome-webworker": "aegir test -t webworker",
@@ -169,13 +168,10 @@
   },
   "devDependencies": {
     "@helia/unixfs": "^1.2.2",
-    "aegir": "^39.0.8",
+    "aegir": "^40.0.11",
     "blockstore-core": "^4.0.1",
     "ipfs-unixfs-importer": "^15.1.0",
     "it-drain": "^3.0.1",
     "it-to-buffer": "^4.0.2"
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts"
   }
 }
