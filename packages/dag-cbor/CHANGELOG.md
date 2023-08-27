@@ -1,3 +1,10 @@
+## [@helia/dag-cbor-v1.0.2](https://github.com/ipfs/helia-dag-cbor/compare/@helia/dag-cbor-v1.0.1...@helia/dag-cbor-v1.0.2) (2023-08-27)
+
+
+### Dependencies
+
+* bump @helia/interface from 1.2.2 to 2.0.0 ([#30](https://github.com/ipfs/helia-dag-cbor/issues/30)) ([aa6ebcf](https://github.com/ipfs/helia-dag-cbor/commit/aa6ebcf9f58eebf842113985adee4710b009562d))
+
 ## [@helia/dag-cbor-v1.0.1](https://github.com/ipfs/helia-dag-cbor/compare/@helia/dag-cbor-v1.0.0...@helia/dag-cbor-v1.0.1) (2023-08-27)
 
 
