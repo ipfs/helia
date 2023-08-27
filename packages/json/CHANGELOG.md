@@ -1,3 +1,11 @@
+## [@helia/json-v1.0.2](https://github.com/ipfs/helia-json/compare/@helia/json-v1.0.1...@helia/json-v1.0.2) (2023-08-27)
+
+
+### Dependencies
+
+* bump @helia/interface from 1.2.2 to 2.0.0 ([#34](https://github.com/ipfs/helia-json/issues/34)) ([d48f2c5](https://github.com/ipfs/helia-json/commit/d48f2c58338af0d096a1f855ab85a621fce1cc01))
+* bump multiformats from 11.0.2 to 12.0.1 ([#8](https://github.com/ipfs/helia-json/issues/8)) ([c2a2ee3](https://github.com/ipfs/helia-json/commit/c2a2ee38cc8fa76c8a6d0c92c44023c148148a7e))
+
 ## [@helia/json-v1.0.1](https://github.com/ipfs/helia-json/compare/@helia/json-v1.0.0...@helia/json-v1.0.1) (2023-08-27)
 
 
