@@ -1,4 +1,3 @@
-// @ts-expect-error no types
 import * as goIpfs from 'go-ipfs'
 import { type Controller, type ControllerOptions, createController } from 'ipfsd-ctl'
 import * as kuboRpcClient from 'kubo-rpc-client'
