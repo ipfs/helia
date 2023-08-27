@@ -3,7 +3,7 @@
  *
  * `@helia/dag-json` makes working with DAG-JSON {@link https://github.com/ipfs/helia Helia} simple & straightforward.
  *
- * See the {@link Strings Strings interface} for all available operations.
+ * See the {@link DAGJSON} interface for all available operations.
  *
  * @example
  *
