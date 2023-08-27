@@ -3,7 +3,7 @@
  *
  * `@helia/dag-cbor` makes working with DAG-JSON {@link https://github.com/ipfs/helia Helia} simple & straightforward.
  *
- * See the {@link Strings Strings interface} for all available operations.
+ * See the {@link DAGCBOR} interface for all available operations.
  *
  * @example
  *
@@ -56,10 +56,10 @@ export interface DAGCBOR {
    * @example
    *
    * ```typescript
-   * import { json } from '@helia/dag-cbor'
+   * import { dagCbor } from '@helia/dag-cbor'
    *
-   * const j = json(helia)
-   * const cid = await str.add({ hello: 'world' })
+   * const d = dagCbor(helia)
+   * const cid = await d.add({ hello: 'world' })
    *
    * console.info(cid)
    * // CID(bafyreidykglsfhoixmivffc5uwhcgshx4j465xwqntbmu43nb2dzqwfvae)
@@ -74,12 +74,12 @@ export interface DAGCBOR {
    * @example
    *
    * ```typescript
-   * import { json } from '@helia/dag-cbor'
+   * import { dagCbor } from '@helia/dag-cbor'
    * import { CID } from 'multiformats/cid'
    *
-   * const j = json(helia)
+   * const d = dagCbor(helia)
    * const cid = CID.parse('bafyreidykglsfhoixmivffc5uwhcgshx4j465xwqntbmu43nb2dzqwfvae')
-   * const obj = await j.get(cid)
+   * const obj = await d.get(cid)
    *
    * console.info(obj)
    * // { hello: 'world' }

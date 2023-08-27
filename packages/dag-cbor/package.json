@@ -14,10 +14,6 @@
   "keywords": [
     "IPFS"
   ],
-  "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=7.0.0"
-  },
   "type": "module",
   "types": "./dist/src/index.d.ts",
   "files": [
@@ -147,10 +143,7 @@
     "progress-events": "^1.0.0"
   },
   "devDependencies": {
-    "aegir": "^39.0.3",
+    "aegir": "^40.0.11",
     "blockstore-core": "^4.0.1"
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts"
   }
 }
