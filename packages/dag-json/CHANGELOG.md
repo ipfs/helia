@@ -1,3 +1,10 @@
+## [@helia/dag-json-v1.0.2](https://github.com/ipfs/helia-dag-json/compare/@helia/dag-json-v1.0.1...@helia/dag-json-v1.0.2) (2023-08-27)
+
+
+### Dependencies
+
+* bump multiformats from 11.0.2 to 12.0.1 ([#8](https://github.com/ipfs/helia-dag-json/issues/8)) ([c89b8f1](https://github.com/ipfs/helia-dag-json/commit/c89b8f12d700f0e23dc574cc32f7726d9c9558de))
+
 ## [@helia/dag-json-v1.0.1](https://github.com/ipfs/helia-dag-json/compare/@helia/dag-json-v1.0.0...@helia/dag-json-v1.0.1) (2023-08-27)
 
 
