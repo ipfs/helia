@@ -1,3 +1,12 @@
+## [@helia/car-v1.0.3](https://github.com/ipfs/helia-car/compare/@helia/car-v1.0.2...@helia/car-v1.0.3) (2023-08-27)
+
+
+### Dependencies
+
+* bump @helia/interface from 1.2.2 to 2.0.0 ([#32](https://github.com/ipfs/helia-car/issues/32)) ([68656a8](https://github.com/ipfs/helia-car/commit/68656a81b7cd1238641a41573915635905e4a6ed))
+* bump cborg from 1.10.2 to 2.0.5 ([#35](https://github.com/ipfs/helia-car/issues/35)) ([10994ea](https://github.com/ipfs/helia-car/commit/10994ea9abdff8906ae8c3f7d0ff5f50b50d9e60))
+* bump multiformats from 11.0.2 to 12.0.1 ([#4](https://github.com/ipfs/helia-car/issues/4)) ([50bed0f](https://github.com/ipfs/helia-car/commit/50bed0f32b3c07111de804b0e6471e36d8e66626))
+
 ## [@helia/car-v1.0.2](https://github.com/ipfs/helia-car/compare/@helia/car-v1.0.1...@helia/car-v1.0.2) (2023-08-27)
 
 
