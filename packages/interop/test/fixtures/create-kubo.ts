@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment,@typescript-eslint/prefer-ts-expect-error */
-import {path as kuboPath} from 'kubo'
-import { type Controller, createController } from 'ipfsd-ctl'
+import { createController, type Controller } from 'ipfsd-ctl'
+import { path as kuboPath } from 'kubo'
 import * as kuboRpcClient from 'kubo-rpc-client'
 
 export async function createKuboNode (): Promise<Controller> {
