@@ -1,18 +1,17 @@
-import fs, { promises as fsPromises } from 'node:fs'
-import nodePath from 'node:path'
-// @ts-expect-error no types
-import * as goIpfs from 'go-ipfs'
 import { createController } from 'ipfsd-ctl'
 import last from 'it-last'
+import { path as kuboPath } from 'kubo'
 import * as goRpcClient from 'kubo-rpc-client'
-import type { AddDirBenchmark } from './index.js'
 import type { CID } from 'multiformats/cid'
+import fs, { promises as fsPromises } from 'node:fs'
+import nodePath from 'node:path'
+import type { AddDirBenchmark } from './index.js'
 
 export async function createKuboBenchmark (): Promise<AddDirBenchmark> {
   const controller = await createController({
     type: 'go',
     test: true,
-    ipfsBin: goIpfs.path(),
+    ipfsBin: kuboPath(),
     kuboRpcModule: goRpcClient,
     ipfsOptions: {
       init: {
