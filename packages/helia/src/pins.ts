@@ -6,7 +6,7 @@ import defer from 'p-defer'
 import PQueue from 'p-queue'
 import { CustomProgressEvent, type ProgressOptions } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import { cborWalker, dagPbWalker, jsonWalker, rawWalker } from './utils/dag-walkers.js'
+import { dagCborWalker, dagJsonWalker, dagPbWalker, jsonWalker, rawWalker } from './utils/dag-walkers.js'
 import type { DAGWalker } from './index.js'
 import type { AddOptions, AddPinEvents, IsPinnedOptions, LsOptions, Pin, Pins, RmOptions } from '@helia/interface/pins'
 import type { GetBlockProgressEvents } from '@helia/interface/src/blocks.js'
@@ -16,7 +16,8 @@ import type { Blockstore } from 'interface-blockstore'
 const DEFAULT_DAG_WALKERS = [
   rawWalker,
   dagPbWalker,
-  cborWalker,
+  dagCborWalker,
+  dagJsonWalker,
   jsonWalker
 ]
 
