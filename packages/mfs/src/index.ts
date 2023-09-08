@@ -88,20 +88,18 @@ export interface RmOptions extends UnixFsRmOptions {
  */
 export interface MFS {
   /**
-   * Add a single `Uint8Array` to your Helia node as a file.
+   * Add a single `Uint8Array` to your MFS as a file.
    *
    * @example
    *
    * ```typescript
-   * const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3]))
-   *
-   * console.info(cid)
+   * await fs.writeBytes(Uint8Array.from([0, 1, 2, 3]), '/foo.txt')
    * ```
    */
   writeBytes: (bytes: Uint8Array, path: string, options?: Partial<WriteOptions>) => Promise<void>
 
   /**
-   * Add a stream of `Uint8Array` to your Helia node as a file.
+   * Add a stream of `Uint8Array` to your MFS as a file.
    *
    * @example
    *
@@ -109,20 +107,18 @@ export interface MFS {
    * import fs from 'node:fs'
    *
    * const stream = fs.createReadStream('./foo.txt')
-   * const cid = await fs.addByteStream(stream)
-   *
-   * console.info(cid)
+   * await fs.writeByteStream(stream, '/foo.txt')
    * ```
    */
   writeByteStream: (bytes: ByteStream, path: string, options?: Partial<WriteOptions>) => Promise<void>
 
   /**
-   * Retrieve the contents of a file from your Helia node.
+   * Retrieve the contents of a file from your MFS.
    *
    * @example
    *
    * ```typescript
-   * for await (const buf of fs.cat(cid)) {
+   * for await (const buf of fs.cat('/foo.txt')) {
    *   console.info(buf)
    * }
    * ```
@@ -130,112 +126,111 @@ export interface MFS {
   cat: (path: string, options?: Partial<CatOptions>) => AsyncIterable<Uint8Array>
 
   /**
-   * Change the permissions on a file or directory in a DAG
+   * Change the permissions on a file or directory in your MFS
    *
    * @example
    *
    * ```typescript
-   * const beforeCid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3]))
-   * const beforeStats = await fs.stat(beforeCid)
+   * await fs.writeBytes(Uint8Array.from([0, 1, 2, 3]), '/foo.txt')
+   * const beforeStats = await fs.stat('/foo.txt')
    *
-   * const afterCid = await fs.chmod(cid, 0x755)
-   * const afterStats = await fs.stat(afterCid)
+   * await fs.chmod('/foo.txt', 0x755)
+   * const afterStats = await fs.stat('/foo.txt')
    *
-   * console.info(beforeCid, beforeStats)
-   * console.info(afterCid, afterStats)
+   * console.info(beforeStats)
+   * console.info(afterStats)
    * ```
    */
   chmod: (path: string, mode: number, options?: Partial<ChmodOptions>) => Promise<void>
 
   /**
-   * Add a file or directory to a target directory.
+   * Add a file or directory to a target directory in your MFS.
    *
    * @example
    *
    * ```typescript
-   * const fileCid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3]))
-   * const directoryCid = await fs.addDirectory()
+   * await fs.writeBytes(Uint8Array.from([0, 1, 2, 3]), '/foo.txt')
+   * await fs.mkdir('/bar')
    *
-   * const updatedCid = await fs.cp(fileCid, directoryCid, 'foo.txt')
+   * await fs.cp('/foo.txt', '/bar')
+   * ```
    *
-   * console.info(updatedCid)
+   * Copy a file from one place to another in your MFS.
+   *
+   * @example
+   *
+   * ```typescript
+   * await fs.writeBytes(Uint8Array.from([0, 1, 2, 3]), '/foo.txt')
+   *
+   * await fs.cp('/foo.txt', '/bar.txt')
    * ```
    */
   cp: (source: CID | string, destination: string, options?: Partial<CpOptions>) => Promise<void>
 
   /**
-   * List directory contents.
+   * List directory contents from your MFS.
    *
    * @example
    *
    * ```typescript
-   * for await (const entry of fs.ls(directoryCid)) {
-   *   console.info(etnry)
+   * for await (const entry of fs.ls('/bar')) {
+   *   console.info(entry)
    * }
    * ```
    */
   ls: (path?: string, options?: Partial<LsOptions>) => AsyncIterable<UnixFSEntry>
 
   /**
-   * Make a new directory under an existing directory.
+   * Make a new directory in your MFS.
    *
    * @example
    *
    * ```typescript
-   * const directoryCid = await fs.addDirectory()
-   *
-   * const updatedCid = await fs.mkdir(directoryCid, 'new-dir')
-   *
-   * console.info(updatedCid)
+   * await fs.mkdir('/new-dir')
    * ```
    */
   mkdir: (path: string, options?: Partial<MkdirOptions>) => Promise<void>
 
   /**
-   * Remove a file or directory from an existing directory.
+   * Remove a file or directory from your MFS.
    *
    * @example
    *
    * ```typescript
-   * const directoryCid = await fs.addDirectory()
-   * const updatedCid = await fs.mkdir(directoryCid, 'new-dir')
-   *
-   * const finalCid = await fs.rm(updatedCid, 'new-dir')
-   *
-   * console.info(finalCid)
+   * await fs.mkdir('/new-dir')
+   * await fs.rm('/new-dir')
    * ```
    */
   rm: (path: string, options?: Partial<RmOptions>) => Promise<void>
 
   /**
-   * Return statistics about a UnixFS DAG.
+   * Return statistics about a UnixFS DAG in your MFS.
    *
    * @example
    *
    * ```typescript
-   * const fileCid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3]))
+   * await fs.writeBytes(Uint8Array.from([0, 1, 2, 3]), '/foo.txt')
    *
-   * const stats = await fs.stat(fileCid)
-   *
+   * const stats = await fs.stat('/foo.txt')
    * console.info(stats)
    * ```
    */
   stat: (path: string, options?: Partial<StatOptions>) => Promise<UnixFSStats>
 
   /**
-   * Update the mtime of a UnixFS DAG
+   * Update the mtime of a UnixFS DAG in your MFS.
    *
    * @example
    *
    * ```typescript
-   * const beforeCid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3]))
-   * const beforeStats = await fs.stat(beforeCid)
+   * await fs.writeBytes(Uint8Array.from([0, 1, 2, 3]), '/foo.txt')
+   * const beforeStats = await fs.stat('/foo.txt')
    *
-   * const afterCid = await fs.touch(beforeCid)
+   * await fs.touch('/foo.txt')
    * const afterStats = await fs.stat(afterCid)
    *
-   * console.info(beforeCid, beforeStats)
-   * console.info(afterCid, afterStats)
+   * console.info(beforeStats)
+   * console.info(afterStats)
    * ```
    */
   touch: (path: string, options?: Partial<TouchOptions>) => Promise<void>
