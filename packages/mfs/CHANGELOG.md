@@ -1,3 +1,15 @@
+## [@helia/mfs-v1.0.1](https://github.com/ipfs/helia-mfs/compare/@helia/mfs-v1.0.0...@helia/mfs-v1.0.1) (2023-09-08)
+
+
+### Documentation
+
+* update docs to use MFS style API ([#4](https://github.com/ipfs/helia-mfs/issues/4)) ([88b23b0](https://github.com/ipfs/helia-mfs/commit/88b23b0db4ac9da2a9e94291f2db7b10f436ce00))
+
+
+### Dependencies
+
+* bump @helia/interface from 1.2.2 to 2.0.0 ([#2](https://github.com/ipfs/helia-mfs/issues/2)) ([351fae7](https://github.com/ipfs/helia-mfs/commit/351fae7a129e642a6f312c9a61609273dec190bf))
+
 ## @helia/mfs-v1.0.0 (2023-08-14)
 
 
