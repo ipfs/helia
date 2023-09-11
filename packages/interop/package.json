@@ -64,7 +64,7 @@
     "aegir": "^40.0.8",
     "blockstore-core": "^4.0.1",
     "datastore-core": "^9.0.3",
-    "go-ipfs": "^0.20.0",
+    "go-ipfs": "^0.22.0",
     "helia": "^1.0.0",
     "ipfsd-ctl": "^13.0.0",
     "ipns": "^6.0.0",
