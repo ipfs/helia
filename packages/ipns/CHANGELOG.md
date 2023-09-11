@@ -1,3 +1,10 @@
+## [@helia/ipns-v1.1.5](https://github.com/ipfs/helia-ipns/compare/@helia/ipns-v1.1.4...@helia/ipns-v1.1.5) (2023-09-11)
+
+
+### Dependencies
+
+* bump @libp2p/logger from 2.1.1 to 3.0.2 ([#87](https://github.com/ipfs/helia-ipns/issues/87)) ([b2886b9](https://github.com/ipfs/helia-ipns/commit/b2886b9598a66a31c69ee0c3c7e13748614be37e))
+
 ## [@helia/ipns-v1.1.4](https://github.com/ipfs/helia-ipns/compare/@helia/ipns-v1.1.3...@helia/ipns-v1.1.4) (2023-09-11)
 
 
