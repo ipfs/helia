@@ -1,11 +1,14 @@
 /* eslint max-depth: ["error", 7] */
 
+import * as dagCbor from '@ipld/dag-cbor'
+import * as dagJson from '@ipld/dag-json'
 import * as dagPb from '@ipld/dag-pb'
 import * as cborg from 'cborg'
 import { Type, Token } from 'cborg'
 import * as cborgJson from 'cborg/json'
 import { CID } from 'multiformats'
 import { base64 } from 'multiformats/bases/base64'
+import * as json from 'multiformats/codecs/json'
 import * as raw from 'multiformats/codecs/raw'
 import type { DAGWalker } from '../index.js'
 
@@ -39,8 +42,8 @@ const CID_TAG = 42
  * all we are interested in is extracting the the CIDs from the block
  * so we can just use cborg for that.
  */
-export const cborWalker: DAGWalker = {
-  codec: 0x71,
+export const dagCborWalker: DAGWalker = {
+  codec: dagCbor.code,
   async * walk (block) {
     const cids: CID[] = []
     const tags: cborg.TagDecoder[] = []
@@ -137,8 +140,8 @@ class DagJsonTokenizer extends cborgJson.Tokenizer {
  * all we are interested in is extracting the the CIDs from the block
  * so we can just use cborg/json for that.
  */
-export const jsonWalker: DAGWalker = {
-  codec: 0x0129,
+export const dagJsonWalker: DAGWalker = {
+  codec: dagJson.code,
   async * walk (block) {
     const cids: CID[] = []
     const tags: cborg.TagDecoder[] = []
@@ -166,4 +169,13 @@ export const jsonWalker: DAGWalker = {
 
     yield * cids
   }
+}
+
+/**
+ * Dag walker for json CIDs. JSON has no facility for linking to
+ * external blocks so the walker is a no-op.
+ */
+export const jsonWalker: DAGWalker = {
+  codec: json.code,
+  async * walk () {}
 }

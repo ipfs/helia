@@ -4,7 +4,7 @@ import { base36 } from 'multiformats/bases/base36'
 import { CID, type Version } from 'multiformats/cid'
 import { CustomProgressEvent } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import { cborWalker, dagPbWalker, jsonWalker, rawWalker } from './utils/dag-walkers.js'
+import { dagCborWalker, dagJsonWalker, dagPbWalker, jsonWalker, rawWalker } from './utils/dag-walkers.js'
 import type { DAGWalker } from './index.js'
 import type { AddOptions, IsPinnedOptions, LsOptions, Pin, Pins, RmOptions } from '@helia/interface/pins'
 import type { AbortOptions } from '@libp2p/interface'
@@ -13,7 +13,8 @@ import type { Blockstore } from 'interface-blockstore'
 const DEFAULT_DAG_WALKERS = [
   rawWalker,
   dagPbWalker,
-  cborWalker,
+  dagCborWalker,
+  dagJsonWalker,
   jsonWalker
 ]
 
