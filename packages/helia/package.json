@@ -93,7 +93,7 @@
     "@types/sinon": "^10.0.14",
     "aegir": "^40.0.8",
     "delay": "^6.0.0",
-    "sinon": "^15.0.2",
+    "sinon": "^16.0.0",
     "sinon-ts": "^1.0.0"
   },
   "browser": {
