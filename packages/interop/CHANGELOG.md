@@ -1,5 +1,19 @@
 # Changelog
 
+### [1.0.2](https://www.github.com/ipfs/helia/compare/interop-v1.0.1...interop-v1.0.2) (2023-09-14)
+
+
+### Bug Fixes
+
+* **kubo:** ⬆️ Upgrading go-ipfs to kubo ([#251](https://www.github.com/ipfs/helia/issues/251)) ([963a7a2](https://www.github.com/ipfs/helia/commit/963a7a21774703a105c865a5b6db670f278eec73))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * helia bumped from ^2.0.1 to ^2.0.2
+
 ### [1.0.1](https://www.github.com/ipfs/helia/compare/interop-v1.0.0...interop-v1.0.1) (2023-08-16)
 
 
