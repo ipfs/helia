@@ -6,6 +6,13 @@
 * **dev:** bump aegir from 39.0.13 to 40.0.8 ([#198](https://github.com/ipfs/helia/issues/198)) ([4d75ecf](https://github.com/ipfs/helia/commit/4d75ecffb79e5177da35d3106e42dac7bc63153a))
 * update sibling dependencies ([beb10b5](https://github.com/ipfs/helia/commit/beb10b5590d66d1d5bef9b5e890b888263df2c92))
 
+### [2.0.2](https://www.github.com/ipfs/helia/compare/helia-v2.0.1...helia-v2.0.2) (2023-09-14)
+
+
+### Bug Fixes
+
+* add dag walker for json codec ([#247](https://www.github.com/ipfs/helia/issues/247)) ([5c4b570](https://www.github.com/ipfs/helia/commit/5c4b5709e6b98de5efc9bed388942e367f5874e7)), closes [#246](https://www.github.com/ipfs/helia/issues/246)
+
 ### [2.0.1](https://www.github.com/ipfs/helia/compare/helia-v2.0.0...helia-v2.0.1) (2023-08-16)
 
 
