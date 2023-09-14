@@ -19,7 +19,7 @@ import { isOverShardThreshold } from './is-over-shard-threshold.js'
 import type { Directory } from './cid-to-directory.js'
 import type { Blocks } from '@helia/interface/blocks'
 import type { PBNode, PBLink } from '@ipld/dag-pb/interface'
-import type { AbortOptions } from '@libp2p/interfaces'
+import type { AbortOptions } from '@libp2p/interface'
 import type { ImportResult } from 'ipfs-unixfs-importer'
 
 const log = logger('helia:unixfs:components:utils:add-link')

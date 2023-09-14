@@ -5,7 +5,7 @@ import { addLink } from './add-link.js'
 import { cidToDirectory } from './cid-to-directory.js'
 import { cidToPBLink } from './cid-to-pblink.js'
 import type { Blocks } from '@helia/interface/blocks'
-import type { AbortOptions } from '@libp2p/interfaces'
+import type { AbortOptions } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 
 const log = logger('helia:unixfs:components:utils:resolve')

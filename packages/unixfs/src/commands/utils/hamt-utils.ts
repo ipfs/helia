@@ -15,7 +15,7 @@ import {
 import { persist } from './persist.js'
 import type { PersistOptions } from './persist.js'
 import type { Blocks } from '@helia/interface/blocks'
-import type { AbortOptions } from '@libp2p/interfaces'
+import type { AbortOptions } from '@libp2p/interface'
 import type { Mtime } from 'ipfs-unixfs'
 import type { ImportResult } from 'ipfs-unixfs-importer'
 import type { CID, Version } from 'multiformats/cid'

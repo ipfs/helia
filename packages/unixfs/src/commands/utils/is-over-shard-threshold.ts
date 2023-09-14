@@ -3,7 +3,7 @@ import { UnixFS } from 'ipfs-unixfs'
 import { CID_V0, CID_V1 } from './dir-sharded.js'
 import type { Blocks } from '@helia/interface/blocks'
 import type { PBNode } from '@ipld/dag-pb'
-import type { AbortOptions } from '@libp2p/interfaces'
+import type { AbortOptions } from '@libp2p/interface'
 
 /**
  * Estimate node size only based on DAGLink name and CID byte lengths

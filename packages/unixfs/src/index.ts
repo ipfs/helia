@@ -53,7 +53,7 @@ import { rm } from './commands/rm.js'
 import { stat } from './commands/stat.js'
 import { touch } from './commands/touch.js'
 import type { Blocks, GetBlockProgressEvents, PutBlockProgressEvents } from '@helia/interface/blocks'
-import type { AbortOptions } from '@libp2p/interfaces'
+import type { AbortOptions } from '@libp2p/interface'
 import type { Mtime, UnixFS as IPFSUnixFS } from 'ipfs-unixfs'
 import type { ExporterProgressEvents, UnixFSEntry } from 'ipfs-unixfs-exporter'
 import type { ByteStream, DirectoryCandidate, FileCandidate, ImportCandidateStream, ImporterOptions, ImporterProgressEvents, ImportResult } from 'ipfs-unixfs-importer'
@@ -384,7 +384,7 @@ export interface UnixFS {
    * @example
    *
    * ```typescript
-   * import fs from 'node:fs'
+   * import fs from 'fs'
    *
    * const stream = fs.createReadStream('./foo.txt')
    * const cid = await fs.addByteStream(stream)

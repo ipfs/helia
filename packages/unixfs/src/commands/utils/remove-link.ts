@@ -1,4 +1,3 @@
-
 import * as dagPB from '@ipld/dag-pb'
 import { logger } from '@libp2p/logger'
 import { UnixFS } from 'ipfs-unixfs'
@@ -14,7 +13,7 @@ import { persist } from './persist.js'
 import type { Directory } from './cid-to-directory.js'
 import type { Blocks } from '@helia/interface/blocks'
 import type { PBNode } from '@ipld/dag-pb'
-import type { AbortOptions } from '@libp2p/interfaces'
+import type { AbortOptions } from '@libp2p/interface'
 import type { CID, Version } from 'multiformats/cid'
 
 const log = logger('helia:unixfs:utils:remove-link')

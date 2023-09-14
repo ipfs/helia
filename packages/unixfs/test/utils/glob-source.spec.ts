@@ -1,8 +1,8 @@
 /* eslint-env mocha */
 
-import fs from 'node:fs'
-import Path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import fs from 'fs'
+import Path from 'path'
+import { fileURLToPath } from 'url'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
 import { isNode } from 'wherearewe'

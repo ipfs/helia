@@ -8,7 +8,7 @@ import { InvalidPBNodeError, NotUnixFSError, UnknownError } from '../errors.js'
 import { resolve } from './utils/resolve.js'
 import type { StatOptions, UnixFSStats } from '../index.js'
 import type { Blocks } from '@helia/interface/blocks'
-import type { AbortOptions } from '@libp2p/interfaces'
+import type { AbortOptions } from '@libp2p/interface'
 import type { Mtime } from 'ipfs-unixfs'
 import type { CID } from 'multiformats/cid'
 
