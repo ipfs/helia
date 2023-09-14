@@ -1,6 +1,9 @@
 import { circuitRelayServer } from 'libp2p/circuit-relay'
 import { identifyService } from 'libp2p/identify'
 import { WebSockets } from '@multiformats/mafmt'
+import { CID } from 'multiformats/cid'
+import { sha256 } from 'multiformats/hashes/sha2'
+import * as raw from 'multiformats/codecs/raw'
 
 /** @type {import('aegir').PartialOptions} */
 const options = {
@@ -28,12 +31,18 @@ const options = {
         }
       })
 
+      const block = Uint8Array.from([0, 1, 2, 3])
+      const mh = await sha256.digest(block)
+      const cid = CID.createV1(raw.code, mh)
+      await helia.blockstore.put(cid, block)
+
       return {
         env: {
           RELAY_SERVER: helia.libp2p.getMultiaddrs()
             .filter(ma => WebSockets.matches(ma))
             .map(ma => ma.toString())
-            .pop()
+            .pop(),
+          BLOCK_CID: cid.toString()
         },
         helia
       }

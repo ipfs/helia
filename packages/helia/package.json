@@ -89,6 +89,7 @@
   },
   "devDependencies": {
     "@multiformats/mafmt": "^12.1.5",
+    "@multiformats/multiaddr": "^12.1.7",
     "@types/sinon": "^10.0.14",
     "aegir": "^40.0.8",
     "delay": "^6.0.0",
