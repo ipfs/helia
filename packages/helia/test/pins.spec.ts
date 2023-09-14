@@ -3,6 +3,7 @@
 import * as dagCbor from '@ipld/dag-cbor'
 import * as dagJson from '@ipld/dag-json'
 import * as dagPb from '@ipld/dag-pb'
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'
@@ -15,20 +16,14 @@ import type { ProgressEvent } from 'progress-events'
 
 describe('pins', () => {
   let helia: Helia
-  let remote: Helia
 
   beforeEach(async () => {
     helia = await createHelia()
-    remote = await createHelia()
   })
 
   afterEach(async () => {
     if (helia != null) {
       await helia.stop()
-    }
-
-    if (remote != null) {
-      await remote.stop()
     }
   })
 
@@ -147,16 +142,14 @@ describe('pins', () => {
   })
 
   it('pins a block from another node', async () => {
-    await helia.libp2p.dial(remote.libp2p.getMultiaddrs())
-
-    const cid1 = await createAndPutBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), remote.blockstore)
-
-    await helia.pins.add(cid1)
+    const cid = CID.parse(process.env.BLOCK_CID ?? '')
+    await helia.libp2p.dial(multiaddr(process.env.RELAY_SERVER))
+    await helia.pins.add(cid)
 
     const pins = await all(helia.pins.ls())
 
     expect(pins).to.have.lengthOf(1)
-    expect(pins).to.have.nested.property('[0].cid').that.eql(cid1)
+    expect(pins).to.have.nested.property('[0].cid').that.eql(cid)
     expect(pins).to.have.nested.property('[0].depth', Infinity)
     expect(pins).to.have.nested.property('[0].metadata').that.eql({})
   })
