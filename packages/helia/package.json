@@ -1,6 +1,6 @@
 {
   "name": "helia",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "An implementation of IPFS in JavaScript",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/master/packages/helia#readme",
@@ -68,7 +68,7 @@
     "@libp2p/websockets": "^7.0.2",
     "@libp2p/webtransport": "^3.0.3",
     "blockstore-core": "^4.0.0",
-    "cborg": "^2.0.3",
+    "cborg": "^4.0.1",
     "datastore-core": "^9.0.0",
     "interface-blockstore": "^5.0.0",
     "interface-datastore": "^8.0.0",
@@ -92,7 +92,7 @@
     "@types/sinon": "^10.0.14",
     "aegir": "^40.0.8",
     "delay": "^6.0.0",
-    "sinon": "^15.0.2",
+    "sinon": "^16.0.0",
     "sinon-ts": "^1.0.0"
   },
   "browser": {
