@@ -2,7 +2,7 @@
 
 import PQueue from 'p-queue'
 import { TLRU } from './tlru.js'
-import type { AbortOptions } from '@libp2p/interfaces'
+import type { AbortOptions } from '@libp2p/interface'
 
 // Avoid sending multiple queries for the same hostname by caching results
 const cache = new TLRU<{ Path: string, Message: string }>(1000)

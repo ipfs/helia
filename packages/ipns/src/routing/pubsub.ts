@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interfaces/errors'
+import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import { peerIdToRoutingKey } from 'ipns'
 import { ipnsSelector } from 'ipns/selector'
@@ -9,8 +9,8 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { localStore, type LocalStore } from './local-store.js'
 import type { GetOptions, IPNSRouting, PutOptions } from './index.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Message, PublishResult, PubSub } from '@libp2p/interface-pubsub'
+import type { PeerId } from '@libp2p/interface/peer-id'
+import type { Message, PublishResult, PubSub } from '@libp2p/interface/pubsub'
 import type { Datastore } from 'interface-datastore'
 
 const log = logger('helia:ipns:routing:pubsub')

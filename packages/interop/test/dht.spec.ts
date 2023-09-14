@@ -2,7 +2,7 @@
 
 import { ipns } from '@helia/ipns'
 import { dht } from '@helia/ipns/routing'
-import { type KadDHT, kadDHT } from '@libp2p/kad-dht'
+import { kadDHT, type DualKadDHT } from '@libp2p/kad-dht'
 import { createEd25519PeerId, createRSAPeerId, createSecp256k1PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import { ipnsSelector } from 'ipns/selector'
@@ -23,13 +23,13 @@ import { keyTypes } from './fixtures/key-types.js'
 import { waitFor } from './fixtures/wait-for.js'
 import type { Helia } from '@helia/interface'
 import type { IPNS } from '@helia/ipns'
-import type { Libp2p } from '@libp2p/interface-libp2p'
+import type { Libp2p } from '@libp2p/interface'
 import type { Controller } from 'ipfsd-ctl'
 import type { PeerId } from 'kubo-rpc-client/dist/src/types.js'
 
 keyTypes.forEach(type => {
   describe(`dht routing with ${type} keys`, () => {
-    let helia: Helia<Libp2p<{ dht: KadDHT }>>
+    let helia: Helia<Libp2p<{ dht: DualKadDHT }>>
     let kubo: Controller
     let name: IPNS
 

@@ -1,7 +1,7 @@
 import dns from 'dns'
 import { promisify } from 'util'
 import * as isIPFS from 'is-ipfs'
-import type { AbortOptions } from '@libp2p/interfaces'
+import type { AbortOptions } from '@libp2p/interface'
 
 const MAX_RECURSIVE_DEPTH = 32
 

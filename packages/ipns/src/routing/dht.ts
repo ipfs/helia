@@ -1,7 +1,7 @@
 import { CustomProgressEvent, type ProgressEvent } from 'progress-events'
 import type { GetOptions, PutOptions } from './index.js'
 import type { IPNSRouting } from '../index.js'
-import type { ContentRouting } from '@libp2p/interface-content-routing'
+import type { ContentRouting } from '@libp2p/interface/content-routing'
 
 export interface DHTRoutingComponents {
   libp2p: {

@@ -3,7 +3,7 @@ import { type Datastore, Key } from 'interface-datastore'
 import { CustomProgressEvent, type ProgressEvent } from 'progress-events'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { GetOptions, IPNSRouting, PutOptions } from '../routing'
-import type { AbortOptions } from '@libp2p/interfaces'
+import type { AbortOptions } from '@libp2p/interface'
 
 function dhtRoutingKey (key: Uint8Array): Key {
   return new Key('/dht/record/' + uint8ArrayToString(key, 'base32'), false)

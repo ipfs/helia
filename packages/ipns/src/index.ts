@@ -62,8 +62,8 @@
  * ```
  */
 
-import { isPeerId, type PeerId } from '@libp2p/interface-peer-id'
-import { CodeError } from '@libp2p/interfaces/errors'
+import { CodeError } from '@libp2p/interface/errors'
+import { isPeerId, type PeerId } from '@libp2p/interface/peer-id'
 import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { create, marshal, peerIdToRoutingKey, unmarshal } from 'ipns'
@@ -76,7 +76,7 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { localStore, type LocalStore } from './routing/local-store.js'
 import { resolveDnslink } from './utils/resolve-dns-link.js'
 import type { IPNSRouting, IPNSRoutingEvents } from './routing/index.js'
-import type { AbortOptions } from '@libp2p/interfaces'
+import type { AbortOptions } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 import type { IPNSEntry } from 'ipns'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
