@@ -1,3 +1,10 @@
+## [@helia/unixfs-v1.4.2](https://github.com/ipfs/helia-unixfs/compare/@helia/unixfs-v1.4.1...@helia/unixfs-v1.4.2) (2023-09-14)
+
+
+### Dependencies
+
+* bump @helia/interface from 1.2.2 to 2.0.0 ([#87](https://github.com/ipfs/helia-unixfs/issues/87)) ([098a305](https://github.com/ipfs/helia-unixfs/commit/098a305241024ed3903b686892ded8abfca55f5f))
+
 ## [@helia/unixfs-v1.4.1](https://github.com/ipfs/helia-unixfs/compare/@helia/unixfs-v1.4.0...@helia/unixfs-v1.4.1) (2023-07-25)
 
 
