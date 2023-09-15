@@ -171,7 +171,7 @@
     "@libp2p/peer-id-factory": "^3.0.3",
     "aegir": "^40.0.8",
     "datastore-core": "^9.0.3",
-    "sinon": "^15.0.1",
+    "sinon": "^16.0.0",
     "sinon-ts": "^1.0.0"
   },
   "browser": {
