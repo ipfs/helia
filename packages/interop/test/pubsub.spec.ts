@@ -23,9 +23,9 @@ import { keyTypes } from './fixtures/key-types.js'
 import { waitFor } from './fixtures/wait-for.js'
 import type { Helia } from '@helia/interface'
 import type { IPNS } from '@helia/ipns'
+import type { Libp2p } from '@libp2p/interface'
 import type { PubSub } from '@libp2p/interface/pubsub'
 import type { Controller } from 'ipfsd-ctl'
-import type { Libp2p } from 'libp2p'
 
 const LIBP2P_KEY_CODEC = 0x72
 

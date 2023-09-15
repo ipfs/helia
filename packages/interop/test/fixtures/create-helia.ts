@@ -4,10 +4,12 @@ import { tcp } from '@libp2p/tcp'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import { createHelia } from 'helia'
-import { createLibp2p, type Libp2p, type Libp2pOptions } from 'libp2p'
+import { createLibp2p, type Libp2pOptions } from 'libp2p'
 import type { Helia } from '@helia/interface'
+import type { Libp2p } from '@libp2p/interface'
+import type { IdentifyService } from 'libp2p/identify'
 
-export async function createHeliaNode <T extends { identify: any }> (config: Libp2pOptions<T> = {}): Promise<Helia<Libp2p<T>>> {
+export async function createHeliaNode <T extends { identify: IdentifyService }> (config: Libp2pOptions<T> = {}): Promise<Helia<Libp2p<T>>> {
   const blockstore = new MemoryBlockstore()
   const datastore = new MemoryDatastore()
 

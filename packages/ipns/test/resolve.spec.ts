@@ -9,7 +9,6 @@ import { create, marshal, peerIdToRoutingKey } from 'ipns'
 import { CID } from 'multiformats/cid'
 import Sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { ipns } from '../src/index.js'
 import type { IPNS, IPNSRouting } from '../src/index.js'
@@ -39,7 +38,7 @@ describe('resolve', () => {
       throw new Error('Did not resolve entry')
     }
 
-    expect(resolvedValue.toString()).to.equal(cid.toString())
+    expect(resolvedValue.toString()).to.equal(cid.toV1().toString())
   })
 
   it('should resolve a record offline', async () => {
@@ -58,7 +57,7 @@ describe('resolve', () => {
       throw new Error('Did not resolve entry')
     }
 
-    expect(resolvedValue.toString()).to.equal(cid.toString())
+    expect(resolvedValue.toString()).to.equal(cid.toV1().toString())
   })
 
   it('should resolve a recursive record', async () => {
@@ -73,7 +72,7 @@ describe('resolve', () => {
       throw new Error('Did not resolve entry')
     }
 
-    expect(resolvedValue.toString()).to.equal(cid.toString())
+    expect(resolvedValue.toString()).to.equal(cid.toV1().toString())
   })
 
   it('should resolve /ipns/tableflip.io', async function () {
@@ -112,14 +111,13 @@ describe('resolve', () => {
 
     expect(datastore.has(dhtKey)).to.be.false('already had record')
 
-    const bytes = uint8ArrayFromString(`/ipfs/${cid.toString()}`)
-    const record = await create(peerId, bytes, 0n, 60000)
+    const record = await create(peerId, cid, 0n, 60000)
     const marshalledRecord = marshal(record)
 
     routing.get.withArgs(routingKey).resolves(marshalledRecord)
 
     const result = await name.resolve(peerId)
-    expect(result.toString()).to.equal(cid.toString(), 'incorrect record resolved')
+    expect(result.toString()).to.equal(cid.toV1().toString(), 'incorrect record resolved')
 
     expect(datastore.has(dhtKey)).to.be.true('did not cache record locally')
   })
@@ -129,8 +127,8 @@ describe('resolve', () => {
     const routingKey = peerIdToRoutingKey(peerId)
     const dhtKey = new Key('/dht/record/' + uint8ArrayToString(routingKey, 'base32'), false)
 
-    const marshalledRecordA = marshal(await create(peerId, uint8ArrayFromString(`/ipfs/${cid.toString()}`), 0n, 60000))
-    const marshalledRecordB = marshal(await create(peerId, uint8ArrayFromString(`/ipfs/${cid.toString()}`), 10n, 60000))
+    const marshalledRecordA = marshal(await create(peerId, cid, 0n, 60000))
+    const marshalledRecordB = marshal(await create(peerId, cid, 10n, 60000))
 
     // records should not match
     expect(marshalledRecordA).to.not.equalBytes(marshalledRecordB)
@@ -140,7 +138,7 @@ describe('resolve', () => {
     routing.get.withArgs(routingKey).resolves(marshalledRecordB)
 
     const result = await name.resolve(peerId)
-    expect(result.toString()).to.equal(cid.toString(), 'incorrect record resolved')
+    expect(result.toString()).to.equal(cid.toV1().toString(), 'incorrect record resolved')
 
     const cached = await datastore.get(dhtKey)
     const record = Libp2pRecord.deserialize(cached)
