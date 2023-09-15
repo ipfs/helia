@@ -29,13 +29,12 @@ import { createLibp2p } from './utils/libp2p.js'
 import { name, version } from './version.js'
 import type { Helia } from '@helia/interface'
 import type { Libp2p } from '@libp2p/interface'
-import type { PubSub } from '@libp2p/interface/pubsub'
-import type { DualKadDHT } from '@libp2p/kad-dht'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { Libp2pOptions } from 'libp2p'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
+import type { DefaultLibp2pServices } from './utils/libp2p-defaults.js'
 
 // re-export interface types so people don't have to depend on @helia/interface
 // if they don't want to
@@ -119,7 +118,7 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
  * Create and return a Helia node
  */
 export async function createHelia <T extends Libp2p> (init: HeliaInit<T>): Promise<Helia<T>>
-export async function createHelia (init?: HeliaInit<Libp2p<{ dht: DualKadDHT, pubsub: PubSub }>>): Promise<Helia<Libp2p<{ dht: DualKadDHT, pubsub: PubSub }>>>
+export async function createHelia (init?: HeliaInit<Libp2p<DefaultLibp2pServices>>): Promise<Helia<Libp2p<DefaultLibp2pServices>>>
 export async function createHelia (init: HeliaInit = {}): Promise<Helia<unknown>> {
   const datastore = init.datastore ?? new MemoryDatastore()
   const blockstore = init.blockstore ?? new MemoryBlockstore()
