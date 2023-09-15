@@ -1,3 +1,10 @@
+## [@helia/ipns-v1.1.6](https://github.com/ipfs/helia-ipns/compare/@helia/ipns-v1.1.5...@helia/ipns-v1.1.6) (2023-09-15)
+
+
+### Dependencies
+
+* **dev:** bump libp2p from 0.45.9 to 0.46.6 ([#92](https://github.com/ipfs/helia-ipns/issues/92)) ([efe02e5](https://github.com/ipfs/helia-ipns/commit/efe02e5b38992189edb40cd34d79e76dca4c34a3))
+
 ## [@helia/ipns-v1.1.5](https://github.com/ipfs/helia-ipns/compare/@helia/ipns-v1.1.4...@helia/ipns-v1.1.5) (2023-09-11)
 
 
