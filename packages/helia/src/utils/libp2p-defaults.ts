@@ -7,6 +7,7 @@ import { type DualKadDHT, kadDHT } from '@libp2p/kad-dht'
 import { mdns } from '@libp2p/mdns'
 import { mplex } from '@libp2p/mplex'
 import { tcp } from '@libp2p/tcp'
+import { webRTC, webRTCDirect } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
 import { ipnsSelector } from 'ipns/selector'
 import { ipnsValidator } from 'ipns/validator'
@@ -35,15 +36,18 @@ export function libp2pDefaults (): Libp2pOptions<DefaultLibp2pServices> {
   return {
     addresses: {
       listen: [
-        '/ip4/0.0.0.0/tcp/0'
+        '/ip4/0.0.0.0/tcp/0',
+        '/webrtc'
       ]
     },
     transports: [
-      tcp(),
-      webSockets(),
       circuitRelayTransport({
         discoverRelays: 1
-      })
+      }),
+      tcp(),
+      webRTC(),
+      webRTCDirect(),
+      webSockets()
     ],
     connectionEncryption: [
       noise()

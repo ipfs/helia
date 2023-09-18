@@ -36,13 +36,13 @@ export function libp2pDefaults (): Libp2pOptions<DefaultLibp2pServices> {
       ]
     },
     transports: [
+      circuitRelayTransport({
+        discoverRelays: 1
+      }),
       webRTC(),
       webRTCDirect(),
       webTransport(),
-      webSockets(),
-      circuitRelayTransport({
-        discoverRelays: 1
-      })
+      webSockets()
     ],
     connectionEncryption: [
       noise()
