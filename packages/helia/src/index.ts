@@ -143,15 +143,11 @@ export async function createHelia (init: HeliaInit = {}): Promise<Helia<unknown>
   }
 
   // add helia to agent version
-  if (helia.libp2p.isStarted()) {
-    await addHeliaToAgentVersion(helia)
-  } else {
-    helia.libp2p.addEventListener('start', () => {
-      addHeliaToAgentVersion(helia)
-        .catch(err => {
-          log.error('could not add Helia to agent version', err)
-        })
-    })
+  try {
+    // @ts-expect-error identify may not be configured under the identify key
+    helia.libp2p.services.identify.host.agentVersion = `${name}/${version} ${helia.libp2p.services.identify.host.agentVersion}`
+  } catch (err) {
+    log.error('could not add Helia to agent version', err)
   }
 
   return helia
@@ -167,36 +163,4 @@ function isLibp2p (obj: any): obj is Libp2p {
 
   // if these are all functions it's probably a libp2p object
   return funcs.every(m => typeof obj[m] === 'function')
-}
-
-async function addHeliaToAgentVersion (helia: Helia): Promise<void> {
-  // add helia to agent version
-  const peer = await helia.libp2p.peerStore.get(helia.libp2p.peerId)
-  const versionBuf = peer.metadata.get('AgentVersion')
-
-  if (versionBuf == null) {
-    // identify was not configured
-    return
-  }
-
-  let versionStr = new TextDecoder().decode(versionBuf)
-
-  if (versionStr.match(/js-libp2p\/\d+\.\d+\.\d+\sUserAgent=/) == null) {
-    // the user changed the agent version
-    return
-  }
-
-  if (versionStr.includes(name)) {
-    // update version name
-    versionStr = `${name}/${version} ${versionStr.split(' ').slice(1).join(' ')}`
-  } else {
-    // just prepend version name
-    versionStr = `${name}/${version} ${versionStr}`
-  }
-
-  await helia.libp2p.peerStore.merge(helia.libp2p.peerId, {
-    metadata: {
-      AgentVersion: new TextEncoder().encode(versionStr)
-    }
-  })
 }
