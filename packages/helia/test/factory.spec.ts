@@ -42,11 +42,8 @@ describe('helia factory', () => {
   it('adds helia details to the AgentVersion', async () => {
     helia = await createHelia()
 
-    const peer = await helia.libp2p.peerStore.get(helia.libp2p.peerId)
-    const agentVersionBuf = peer.metadata.get('AgentVersion')
-    const agentVersion = new TextDecoder().decode(agentVersionBuf)
-
-    expect(agentVersion).to.include('helia/')
+    expect(helia).to.have.nested.property('libp2p.services.identify.host.agentVersion')
+      .that.includes('helia/')
   })
 
   it('does not add helia details to the AgentVersion when it has been overridden', async () => {
@@ -56,18 +53,15 @@ describe('helia factory', () => {
           webSockets()
         ],
         services: {
-          identity: identifyService({
+          identify: identifyService({
             agentVersion: 'my custom agent version'
           })
         }
       })
     })
 
-    const peer = await helia.libp2p.peerStore.get(helia.libp2p.peerId)
-    const agentVersionBuf = peer.metadata.get('AgentVersion')
-    const agentVersion = new TextDecoder().decode(agentVersionBuf)
-
-    expect(agentVersion).to.not.include('helia/')
+    expect(helia).to.have.nested.property('libp2p.services.identify.host.agentVersion')
+      .that.does.not.include('helia/')
   })
 
   it('does not add helia details to the AgentVersion when identify is not configured', async () => {
