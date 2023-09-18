@@ -74,7 +74,7 @@
     "interface-datastore": "^8.0.0",
     "interface-store": "^5.0.1",
     "ipfs-bitswap": "^19.0.0",
-    "ipns": "^6.0.0",
+    "ipns": "^7.0.1",
     "it-all": "^3.0.2",
     "it-drain": "^3.0.1",
     "it-filter": "^3.0.1",
