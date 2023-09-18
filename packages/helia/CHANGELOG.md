@@ -6,6 +6,15 @@
 * **dev:** bump aegir from 39.0.13 to 40.0.8 ([#198](https://github.com/ipfs/helia/issues/198)) ([4d75ecf](https://github.com/ipfs/helia/commit/4d75ecffb79e5177da35d3106e42dac7bc63153a))
 * update sibling dependencies ([beb10b5](https://github.com/ipfs/helia/commit/beb10b5590d66d1d5bef9b5e890b888263df2c92))
 
+### [2.0.3](https://www.github.com/ipfs/helia/compare/helia-v2.0.2...helia-v2.0.3) (2023-09-18)
+
+
+### Bug Fixes
+
+* export libp2p service return type ([#263](https://www.github.com/ipfs/helia/issues/263)) ([76769cf](https://www.github.com/ipfs/helia/commit/76769cf33e06746f998b4f16b52d3e2a6a7a20a8))
+* try circuit relay transport first ([#267](https://www.github.com/ipfs/helia/issues/267)) ([d5e9c3c](https://www.github.com/ipfs/helia/commit/d5e9c3c45c8dc3e63969105b785f6a836820a1f8))
+* update attempt to add helia to identify agent version ([#268](https://www.github.com/ipfs/helia/issues/268)) ([6dc7d55](https://www.github.com/ipfs/helia/commit/6dc7d55cd3099785417a7a2c99db755e856bd59a))
+
 ### [2.0.2](https://www.github.com/ipfs/helia/compare/helia-v2.0.1...helia-v2.0.2) (2023-09-14)
 
 
