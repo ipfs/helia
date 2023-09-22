@@ -1,3 +1,14 @@
+## [@helia/ipns-v2.0.0](https://github.com/ipfs/helia-ipns/compare/@helia/ipns-v1.1.7...@helia/ipns-v2.0.0) (2023-09-22)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `IPNSRecord` type returned from the `publish` method has changed
+
+### Dependencies
+
+* update ipns to v7.x.x ([#106](https://github.com/ipfs/helia-ipns/issues/106)) ([83a1d14](https://github.com/ipfs/helia-ipns/commit/83a1d147e8ba758efd7d2574ea486218bd1f3df2))
+
 ## [@helia/ipns-v1.1.7](https://github.com/ipfs/helia-ipns/compare/@helia/ipns-v1.1.6...@helia/ipns-v1.1.7) (2023-09-15)
 
 
