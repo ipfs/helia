@@ -37,6 +37,7 @@ export function libp2pDefaults (): Libp2pOptions<DefaultLibp2pServices> {
     addresses: {
       listen: [
         '/ip4/0.0.0.0/tcp/0',
+        '/ip6/::/tcp/0',
         '/webrtc'
       ]
     },
