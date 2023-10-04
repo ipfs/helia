@@ -7,6 +7,7 @@ import type { Helia } from '@helia/interface'
 
 export async function createHelia (): Promise<Helia> {
   return createNode({
+    byteProviders: [],
     libp2p: {
       addresses: {
         listen: [
