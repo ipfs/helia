@@ -1,13 +1,13 @@
 import filter from 'it-filter'
 import forEach from 'it-foreach'
 import { CustomProgressEvent, type ProgressOptions } from 'progress-events'
+import type { ByteProvider } from './byte-provider.js'
 import type { Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions } from '@helia/interface/blocks'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { AwaitIterable } from 'interface-store'
 import type { Bitswap } from 'ipfs-bitswap'
 import type { CID } from 'multiformats/cid'
-import type { ByteProvider } from './byte-provider.js'
 
 export interface BlockStorageInit {
   holdGcLock?: boolean
@@ -84,7 +84,7 @@ export class NetworkedStorage implements Blocks {
   }
 
   async #_get (cid: CID, options: GetOfflineOptions & AbortOptions & (ProgressOptions<GetBlockProgressEvents> | ProgressOptions<GetManyBlocksProgressEvents>)): Promise<Uint8Array> {
-    const blockGetPromises: Promise<Uint8Array>[] = []
+    const blockGetPromises: Array<Promise<Uint8Array>> = []
     /**
      * We need to create a new AbortController that aborts when:
      * 1. options.signal is aborted
@@ -109,7 +109,7 @@ export class NetworkedStorage implements Blocks {
       if (!byteProviderController.signal.aborted) {
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:byte-provider:get', cid))
         const providerPromise = provider.get(cid, newOptions)
-        providerPromise.then(() => {
+        void providerPromise.then(() => {
           // if a provider resolves, abort the signal so we don't request bytes from any other providers
           byteProviderController.abort()
         })

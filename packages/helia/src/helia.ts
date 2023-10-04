@@ -6,6 +6,7 @@ import { sha256, sha512 } from 'multiformats/hashes/sha2'
 import { CustomProgressEvent } from 'progress-events'
 import { PinsImpl } from './pins.js'
 import { BlockStorage } from './storage.js'
+import { ByteProvider } from './utils/byte-provider.js'
 import { assertDatastoreVersionIsCurrent } from './utils/datastore-version.js'
 import { NetworkedStorage } from './utils/networked-storage.js'
 import type { BlockProvider, HeliaInit } from '.'
@@ -16,7 +17,6 @@ import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
-import { ByteProvider } from './utils/byte-provider.js'
 
 const log = logger('helia')
 
