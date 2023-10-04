@@ -22,6 +22,7 @@ export async function getRawBlockFromGateway (url: string | URL, cid: CID, signa
     }
     return new Uint8Array(await res.arrayBuffer())
   } catch (cause) {
+    // @ts-expect-error - TS thinks signal?.aborted can only be false now because it was checked for true above.
     if (signal?.aborted === true) {
       throw new Error(`fetching raw block for CID ${cid} from gateway ${gwUrl.toString()} was aborted`)
     }
