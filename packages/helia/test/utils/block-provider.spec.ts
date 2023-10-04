@@ -9,10 +9,10 @@ import Sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { NetworkedStorage } from '../../src/utils/networked-storage.js'
 import { createBlock } from '../fixtures/create-block.js'
+import type { BlockProvider } from '../../src/utils/block-provider.js'
 import type { Blockstore } from 'interface-blockstore'
 import type { Bitswap } from 'ipfs-bitswap'
 import type { CID } from 'multiformats/cid'
-import { BlockProvider } from '../../src/utils/block-provider.js'
 
 describe('block-provider', () => {
   let storage: NetworkedStorage
