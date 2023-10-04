@@ -153,7 +153,7 @@ export class NetworkedStorage implements Blocks {
     options.onProgress?.(new CustomProgressEvent('blocks:get-many:blockstore:get-many'))
 
     yield * this.child.getMany(forEach(cids, async (cid): Promise<void> => {
-      if (options.offline !== true && this.bitswap?.isStarted() === true && !(await this.child.has(cid))) {
+      if (options.offline !== true && !(await this.child.has(cid))) {
         const block = await this.#_get(cid, options)
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:blockstore:put', cid))
         await this.child.put(cid, block, options)
