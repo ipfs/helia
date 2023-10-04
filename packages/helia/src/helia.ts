@@ -8,7 +8,7 @@ import { PinsImpl } from './pins.js'
 import { BlockStorage } from './storage.js'
 import { assertDatastoreVersionIsCurrent } from './utils/datastore-version.js'
 import { NetworkedStorage } from './utils/networked-storage.js'
-import type { HeliaInit } from '.'
+import type { BlockProvider, HeliaInit } from '.'
 import type { GCOptions, Helia } from '@helia/interface'
 import type { Pins } from '@helia/interface/pins'
 import type { Libp2p } from '@libp2p/interface'
@@ -16,12 +16,14 @@ import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
+import { ByteProvider } from './utils/byte-provider.js'
 
 const log = logger('helia')
 
 interface HeliaImplInit<T extends Libp2p = Libp2p> extends HeliaInit<T> {
   libp2p: T
   blockstore: Blockstore
+  blockProviders: BlockProvider[]
   datastore: Datastore
 }
 
@@ -58,7 +60,8 @@ export class HeliaImpl implements Helia {
     })
 
     const networkedStorage = new NetworkedStorage(init.blockstore, {
-      bitswap: this.#bitswap
+      bitswap: this.#bitswap,
+      byteProviders: init.blockProviders.map((provider) => new ByteProvider(init.blockstore, provider))
     })
 
     this.pins = new PinsImpl(init.datastore, networkedStorage, init.dagWalkers ?? [])

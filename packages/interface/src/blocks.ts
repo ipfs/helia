@@ -61,3 +61,5 @@ ProgressOptions<DeleteBlockProgressEvents>, ProgressOptions<DeleteManyBlocksProg
 > {
 
 }
+
+export * from './block-provider.js'

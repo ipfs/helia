@@ -7,10 +7,12 @@ import type { Blockstore } from 'interface-blockstore'
 import type { AwaitIterable } from 'interface-store'
 import type { Bitswap } from 'ipfs-bitswap'
 import type { CID } from 'multiformats/cid'
+import type { ByteProvider } from './byte-provider.js'
 
 export interface BlockStorageInit {
   holdGcLock?: boolean
   bitswap?: Bitswap
+  byteProviders?: ByteProvider[]
 }
 
 export interface GetOptions extends AbortOptions {
@@ -24,6 +26,7 @@ export interface GetOptions extends AbortOptions {
 export class NetworkedStorage implements Blocks {
   private readonly child: Blockstore
   private readonly bitswap?: Bitswap
+  readonly #byteProviders: ByteProvider[]
 
   /**
    * Create a new BlockStorage
@@ -31,6 +34,7 @@ export class NetworkedStorage implements Blocks {
   constructor (blockstore: Blockstore, options: BlockStorageInit = {}) {
     this.child = blockstore
     this.bitswap = options.bitswap
+    this.#byteProviders = options.byteProviders ?? []
   }
 
   unwrap (): Blockstore {
@@ -79,13 +83,53 @@ export class NetworkedStorage implements Blocks {
     yield * this.child.putMany(notifyEach, options)
   }
 
+  async #_get (cid: CID, options: GetOfflineOptions & AbortOptions & (ProgressOptions<GetBlockProgressEvents> | ProgressOptions<GetManyBlocksProgressEvents>)): Promise<Uint8Array> {
+    const blockGetPromises: Promise<Uint8Array>[] = []
+    /**
+     * We need to create a new AbortController that aborts when:
+     * 1. options.signal is aborted
+     * 2. any of the blockGetPromises are resolved
+     */
+    const byteProviderController = new AbortController()
+    const newOptions = { ...options, signal: byteProviderController.signal }
+    if (options.signal != null) {
+      // abort the byteProvider signal when the options.signal is aborted
+      options.signal.addEventListener('abort', (): void => {
+        byteProviderController.abort()
+      })
+    }
+
+    if (this.bitswap?.isStarted() === true) {
+      options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:bitswap:get', cid))
+      blockGetPromises.push(this.bitswap.want(cid, newOptions))
+    }
+
+    for (const provider of this.#byteProviders) {
+      // if the signal has already been aborted, don't bother requesting from other providers.
+      if (!byteProviderController.signal.aborted) {
+        options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:byte-provider:get', cid))
+        const providerPromise = provider.get(cid, newOptions)
+        providerPromise.then(() => {
+          // if a provider resolves, abort the signal so we don't request bytes from any other providers
+          byteProviderController.abort()
+        })
+        blockGetPromises.push(providerPromise)
+      }
+    }
+
+    const block = await Promise.any(blockGetPromises)
+    // cancel all other block get promises
+    byteProviderController.abort()
+
+    return block
+  }
+
   /**
    * Get a block by cid
    */
   async get (cid: CID, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetBlockProgressEvents> = {}): Promise<Uint8Array> {
-    if (options.offline !== true && this.bitswap?.isStarted() != null && !(await this.child.has(cid))) {
-      options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:bitswap:get', cid))
-      const block = await this.bitswap.want(cid, options)
+    if (options.offline !== true && !(await this.child.has(cid))) {
+      const block = await this.#_get(cid, options)
 
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:blockstore:put', cid))
       await this.child.put(cid, block, options)
@@ -106,8 +150,7 @@ export class NetworkedStorage implements Blocks {
 
     yield * this.child.getMany(forEach(cids, async (cid): Promise<void> => {
       if (options.offline !== true && this.bitswap?.isStarted() === true && !(await this.child.has(cid))) {
-        options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:bitswap:get', cid))
-        const block = await this.bitswap.want(cid, options)
+        const block = await this.#_get(cid, options)
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:blockstore:put', cid))
         await this.child.put(cid, block, options)
       }

@@ -35,6 +35,8 @@ import type { Datastore } from 'interface-datastore'
 import type { Libp2pOptions } from 'libp2p'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
+import type { BlockProvider } from '@helia/interface/blocks'
+import { getDefaultBlockProviders } from './utils/block-provider-defaults.js'
 
 // re-export interface types so people don't have to depend on @helia/interface
 // if they don't want to
@@ -112,6 +114,12 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
    * webworker), pass true here to hold the gc lock in this process.
    */
   holdGcLock?: boolean
+
+  /**
+   * BlockProviders are used to fetch blocks from other sources when they are not
+   * present in the blockstore.
+   */
+  blockProviders?: BlockProvider[]
 }
 
 /**
@@ -135,6 +143,7 @@ export async function createHelia (init: HeliaInit = {}): Promise<Helia<unknown>
     ...init,
     datastore,
     blockstore,
+    blockProviders: init.blockProviders ?? getDefaultBlockProviders(),
     libp2p
   })
 
