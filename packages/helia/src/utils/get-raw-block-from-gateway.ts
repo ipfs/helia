@@ -5,6 +5,9 @@ export async function getRawBlockFromGateway (url: string | URL, cid: CID, signa
 
   gwUrl.pathname = `/ipfs/${cid.toString()}`
   gwUrl.search = '?format=raw' // necessary as not every gateway supports dag-cbor, but every should support sending raw block as-is
+  if (signal?.aborted) {
+    throw new Error(`Signal to fetch raw block for CID ${cid} from gateway ${gwUrl.toString()} was aborted prior to fetch`)
+  }
   try {
     const res = await fetch(gwUrl.toString(), {
       signal,
@@ -19,7 +22,9 @@ export async function getRawBlockFromGateway (url: string | URL, cid: CID, signa
     }
     return new Uint8Array(await res.arrayBuffer())
   } catch (cause) {
-    console.error('cause', cause)
+    if (signal?.aborted) {
+      throw new Error(`fetching raw block for CID ${cid} from gateway ${gwUrl.toString()} was aborted`)
+    }
     throw new Error(`unable to fetch raw block for CID ${cid}`)
   }
 }

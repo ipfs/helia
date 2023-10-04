@@ -117,11 +117,15 @@ export class NetworkedStorage implements Blocks {
       }
     }
 
-    const block = await Promise.any(blockGetPromises)
-    // cancel all other block get promises
-    byteProviderController.abort()
+    try {
+      const block = await Promise.any(blockGetPromises)
+      // cancel all other block get promises
+      byteProviderController.abort()
 
-    return block
+      return block
+    } catch (err) {
+      throw new Error(`Could not get block for ${cid.toString()} from any provider`)
+    }
   }
 
   /**
