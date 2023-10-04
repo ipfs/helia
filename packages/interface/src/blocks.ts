@@ -62,4 +62,4 @@ ProgressOptions<DeleteBlockProgressEvents>, ProgressOptions<DeleteManyBlocksProg
 
 }
 
-export * from './block-provider.js'
+export * from './byte-provider.js'

@@ -14,7 +14,7 @@ import type { Blockstore } from 'interface-blockstore'
 import type { Bitswap } from 'ipfs-bitswap'
 import type { CID } from 'multiformats/cid'
 
-describe('storage', () => {
+describe('networked-storage', () => {
   let storage: NetworkedStorage
   let blockstore: Blockstore
   let bitswap: StubbedInstance<Bitswap>
@@ -30,7 +30,8 @@ describe('storage', () => {
     blockstore = new MemoryBlockstore()
     bitswap = stubInterface<Bitswap>()
     storage = new NetworkedStorage(blockstore, {
-      bitswap
+      bitswap,
+      blockProviders: []
     })
   })
 

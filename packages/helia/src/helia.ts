@@ -6,10 +6,10 @@ import { sha256, sha512 } from 'multiformats/hashes/sha2'
 import { CustomProgressEvent } from 'progress-events'
 import { PinsImpl } from './pins.js'
 import { BlockStorage } from './storage.js'
-import { ByteProvider } from './utils/byte-provider.js'
+import { BlockProvider } from './utils/block-provider.js'
 import { assertDatastoreVersionIsCurrent } from './utils/datastore-version.js'
 import { NetworkedStorage } from './utils/networked-storage.js'
-import type { BlockProvider, HeliaInit } from '.'
+import type { ByteProvider, HeliaInit } from '.'
 import type { GCOptions, Helia } from '@helia/interface'
 import type { Pins } from '@helia/interface/pins'
 import type { Libp2p } from '@libp2p/interface'
@@ -23,7 +23,7 @@ const log = logger('helia')
 interface HeliaImplInit<T extends Libp2p = Libp2p> extends HeliaInit<T> {
   libp2p: T
   blockstore: Blockstore
-  blockProviders: BlockProvider[]
+  byteProviders: ByteProvider[]
   datastore: Datastore
 }
 
@@ -61,7 +61,7 @@ export class HeliaImpl implements Helia {
 
     const networkedStorage = new NetworkedStorage(init.blockstore, {
       bitswap: this.#bitswap,
-      byteProviders: init.blockProviders.map((provider) => new ByteProvider(init.blockstore, provider))
+      blockProviders: init.byteProviders.map((provider) => new BlockProvider(init.blockstore, provider))
     })
 
     this.pins = new PinsImpl(init.datastore, networkedStorage, init.dagWalkers ?? [])

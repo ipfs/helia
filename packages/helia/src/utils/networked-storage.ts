@@ -1,7 +1,7 @@
 import filter from 'it-filter'
 import forEach from 'it-foreach'
 import { CustomProgressEvent, type ProgressOptions } from 'progress-events'
-import type { ByteProvider } from './byte-provider.js'
+import type { BlockProvider } from './block-provider.js'
 import type { Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions } from '@helia/interface/blocks'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
@@ -12,7 +12,7 @@ import type { CID } from 'multiformats/cid'
 export interface BlockStorageInit {
   holdGcLock?: boolean
   bitswap?: Bitswap
-  byteProviders?: ByteProvider[]
+  blockProviders?: BlockProvider[]
 }
 
 export interface GetOptions extends AbortOptions {
@@ -26,7 +26,7 @@ export interface GetOptions extends AbortOptions {
 export class NetworkedStorage implements Blocks {
   private readonly child: Blockstore
   private readonly bitswap?: Bitswap
-  readonly #byteProviders: ByteProvider[]
+  readonly #blockProviders: BlockProvider[]
 
   /**
    * Create a new BlockStorage
@@ -34,7 +34,7 @@ export class NetworkedStorage implements Blocks {
   constructor (blockstore: Blockstore, options: BlockStorageInit = {}) {
     this.child = blockstore
     this.bitswap = options.bitswap
-    this.#byteProviders = options.byteProviders ?? []
+    this.#blockProviders = options.blockProviders ?? []
   }
 
   unwrap (): Blockstore {
@@ -90,12 +90,12 @@ export class NetworkedStorage implements Blocks {
      * 1. options.signal is aborted
      * 2. any of the blockGetPromises are resolved
      */
-    const byteProviderController = new AbortController()
-    const newOptions = { ...options, signal: byteProviderController.signal }
+    const blockProviderController = new AbortController()
+    const newOptions = { ...options, signal: blockProviderController.signal }
     if (options.signal != null) {
-      // abort the byteProvider signal when the options.signal is aborted
+      // abort the blockProvider signal when the options.signal is aborted
       options.signal.addEventListener('abort', (): void => {
-        byteProviderController.abort()
+        blockProviderController.abort()
       })
     }
 
@@ -104,14 +104,14 @@ export class NetworkedStorage implements Blocks {
       blockGetPromises.push(this.bitswap.want(cid, newOptions))
     }
 
-    for (const provider of this.#byteProviders) {
+    for (const provider of this.#blockProviders) {
       // if the signal has already been aborted, don't bother requesting from other providers.
-      if (!byteProviderController.signal.aborted) {
+      if (!blockProviderController.signal.aborted) {
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:byte-provider:get', cid))
         const providerPromise = provider.get(cid, newOptions)
         void providerPromise.then(() => {
           // if a provider resolves, abort the signal so we don't request bytes from any other providers
-          byteProviderController.abort()
+          blockProviderController.abort()
         })
         blockGetPromises.push(providerPromise)
       }
@@ -120,7 +120,7 @@ export class NetworkedStorage implements Blocks {
     try {
       const block = await Promise.any(blockGetPromises)
       // cancel all other block get promises
-      byteProviderController.abort()
+      blockProviderController.abort()
 
       return block
     } catch (err) {

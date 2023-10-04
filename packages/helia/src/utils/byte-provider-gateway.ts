@@ -1,11 +1,12 @@
 import { logger } from '@libp2p/logger'
 import { getRawBlockFromGateway } from './get-raw-block-from-gateway.js'
-import type { BlockProvider } from '@helia/interface/blocks'
+import type { ByteProvider } from '@helia/interface/blocks'
 import type { CID } from 'multiformats/cid'
 
 const log = logger('helia:gateway-block-provider')
-export function getGatewayBlockProvider (url: URL | string): BlockProvider {
-  const blockProvider: BlockProvider = {
+
+export function getGatewayBlockProvider (url: URL | string): ByteProvider {
+  const byteProvider: ByteProvider = {
     get: async (cid: CID, options = {}) => {
       log('getting block for %s from %s', cid.toString(), url.toString())
       try {
@@ -21,5 +22,5 @@ export function getGatewayBlockProvider (url: URL | string): BlockProvider {
     }
   }
 
-  return blockProvider
+  return byteProvider
 }

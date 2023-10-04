@@ -37,6 +37,7 @@ export async function createHeliaNode (init?: Partial<HeliaInit>): Promise<Helia
     libp2p,
     blockstore,
     datastore,
+    byteProviders: [],
     ...init
   })
 

@@ -25,12 +25,12 @@ import { logger } from '@libp2p/logger'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import { HeliaImpl } from './helia.js'
-import { getDefaultBlockProviders } from './utils/block-provider-defaults.js'
+import { getDefaultByteProviders } from './utils/byte-provider-defaults.js'
 import { createLibp2p } from './utils/libp2p.js'
 import { name, version } from './version.js'
 import type { DefaultLibp2pServices } from './utils/libp2p-defaults.js'
 import type { Helia } from '@helia/interface'
-import type { BlockProvider } from '@helia/interface/blocks'
+import type { ByteProvider } from '@helia/interface/blocks'
 import type { Libp2p } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
@@ -116,10 +116,10 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
   holdGcLock?: boolean
 
   /**
-   * BlockProviders are used to fetch blocks from other sources when they are not
+   * ByteProviders are used to fetch blocks from other sources when they are not
    * present in the blockstore.
    */
-  blockProviders?: BlockProvider[]
+  byteProviders?: ByteProvider[]
 }
 
 /**
@@ -143,7 +143,7 @@ export async function createHelia (init: HeliaInit = {}): Promise<Helia<unknown>
     ...init,
     datastore,
     blockstore,
-    blockProviders: init.blockProviders ?? getDefaultBlockProviders(),
+    byteProviders: init.byteProviders ?? getDefaultByteProviders(),
     libp2p
   })
 

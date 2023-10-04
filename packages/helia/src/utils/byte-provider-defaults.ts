@@ -1,7 +1,7 @@
-import { getGatewayBlockProvider } from './block-provider-gateway.js'
-import type { BlockProvider } from '@helia/interface/blocks'
+import { getGatewayBlockProvider } from './byte-provider-gateway.js'
+import type { ByteProvider } from '@helia/interface/blocks'
 
-export function getDefaultBlockProviders (): BlockProvider[] {
+export function getDefaultByteProviders (): ByteProvider[] {
   return [
     getGatewayBlockProvider('https://dweb.link'), // 2023-10-03: IPNS, Origin, and Block/CAR support from https://ipfs-public-gateway-checker.on.fleek.co/
     getGatewayBlockProvider('https://cf-ipfs.com'), // 2023-10-03: IPNS, Origin, and Block/CAR support from https://ipfs-public-gateway-checker.on.fleek.co/

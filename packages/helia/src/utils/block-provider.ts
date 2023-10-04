@@ -1,36 +1,39 @@
 import { logger } from '@libp2p/logger'
 import forEach from 'it-foreach'
-import type { Pair, GetOfflineOptions, BlockProvider } from '@helia/interface/blocks'
+import type { Pair, GetOfflineOptions, ByteProvider } from '@helia/interface/blocks'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { AwaitIterable } from 'interface-store'
 import type { CID } from 'multiformats/cid'
 
-const log = logger('helia:byte-provider')
+const log = logger('helia:block-provider')
 
 export interface GetOptions extends AbortOptions {
   progress?: (evt: Event) => void
 }
 
 /**
- * ByteProvider is a partial implementation of the Blocks interface that
+ * BlockProvider is a partial implementation of the Blocks interface that only handles block retrieval.
+ *
+ * This takes a {@link ByteProvider} and {@link Blockstore}. When a block is requested, it will first
+ * check the blockstore for the block. If it is not found, it will then call the provider to get the bytes. Once the
+ * bytes are retrieved, they are validated as a "block" and then that block is stored in the blockstore.
  *
  */
-// export class ByteProvider implements Pick<Blocks, 'get' | 'getMany'> {
-export class ByteProvider {
+export class BlockProvider {
   private readonly blockstore: Blockstore
-  readonly #provider: BlockProvider
+  readonly #provider: ByteProvider
 
   /**
-   * Create a new BlockStorage
+   * Create a new BlockProvider
    */
-  constructor (blockstore: Blockstore, provider: BlockProvider) {
+  constructor (blockstore: Blockstore, provider: ByteProvider) {
     this.blockstore = blockstore
     this.#provider = provider
   }
 
   /**
-   * Get a block by cid
+   * Get a block by cid, using the given ByteProvider
    */
   async get (cid: CID, options: GetOfflineOptions & AbortOptions): Promise<Uint8Array> {
     if (options.offline !== true && !(await this.blockstore.has(cid))) {
