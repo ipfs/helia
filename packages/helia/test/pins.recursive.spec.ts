@@ -26,6 +26,7 @@ describe('pins (recursive)', () => {
 
     helia = await createHelia({
       datastore: new MemoryDatastore(),
+      byteProviders: [],
       blockstore,
       libp2p: await createLibp2p({
         transports: [

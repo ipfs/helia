@@ -29,6 +29,7 @@ describe('pins (depth limited)', () => {
     helia = await createHelia({
       datastore: new MemoryDatastore(),
       blockstore,
+      byteProviders: [],
       libp2p: await createLibp2p({
         transports: [
           webSockets()
