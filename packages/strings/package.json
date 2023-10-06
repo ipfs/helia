@@ -14,10 +14,6 @@
   "keywords": [
     "IPFS"
   ],
-  "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=7.0.0"
-  },
   "type": "module",
   "types": "./dist/src/index.d.ts",
   "files": [
@@ -35,6 +31,7 @@
   "eslintConfig": {
     "extends": "ipfs",
     "parserOptions": {
+      "package": true,
       "sourceType": "module"
     }
   },
@@ -139,15 +136,15 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@helia/interface": "^1.0.0",
+    "@helia/interface": "^2.0.0",
     "@libp2p/interfaces": "^3.3.1",
     "interface-blockstore": "^5.0.0",
-    "multiformats": "^11.0.1",
+    "multiformats": "^12.1.2",
     "progress-events": "^1.0.0",
     "uint8arrays": "^4.0.3"
   },
   "devDependencies": {
-    "aegir": "^39.0.3",
+    "aegir": "^41.0.0",
     "blockstore-core": "^4.0.1"
   },
   "typedoc": {

@@ -66,7 +66,7 @@ export interface Strings {
    * // CID(bafkreifzjut3te2nhyekklss27nh3k72ysco7y32koao5eei66wof36n5e)
    * ```
    */
-  add: (str: string, options?: Partial<AddOptions>) => Promise<CID>
+  add(str: string, options?: Partial<AddOptions>): Promise<CID>
 
   /**
    * Get a string from your Helia node, either previously added to it or to
@@ -86,7 +86,7 @@ export interface Strings {
    * // hello world
    * ```
    */
-  get: (cid: CID, options?: Partial<GetOptions>) => Promise<string>
+  get(cid: CID, options?: Partial<GetOptions>): Promise<string>
 }
 
 class DefaultStrings implements Strings {
