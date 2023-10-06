@@ -1,6 +1,6 @@
 {
   "name": "@helia/strings",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Add/get IPLD blocks containing strings with your Helia node",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia-strings/tree/master/packages/strings#readme",

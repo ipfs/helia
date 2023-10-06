@@ -1,3 +1,10 @@
+## [@helia/strings-v1.0.1](https://github.com/ipfs/helia-strings/compare/@helia/strings-v1.0.0...@helia/strings-v1.0.1) (2023-10-06)
+
+
+### Dependencies
+
+* bump @helia/interface from 1.2.2 to 2.0.0 ([#39](https://github.com/ipfs/helia-strings/issues/39)) ([7c9bc2e](https://github.com/ipfs/helia-strings/commit/7c9bc2e9f99ccbaec1d8c25c900585deb5f6a327))
+
 ## @helia/strings-v1.0.0 (2023-05-03)
 
 
