@@ -1,3 +1,10 @@
+## [@helia/json-v1.0.3](https://github.com/ipfs/helia-json/compare/@helia/json-v1.0.2...@helia/json-v1.0.3) (2023-10-07)
+
+
+### Dependencies
+
+* **dev:** bump aegir from 40.0.13 to 41.0.0 ([#36](https://github.com/ipfs/helia-json/issues/36)) ([ca3f05a](https://github.com/ipfs/helia-json/commit/ca3f05a74316f53b0e44f5edd6e303b6e8463bf2))
+
 ## [@helia/json-v1.0.2](https://github.com/ipfs/helia-json/compare/@helia/json-v1.0.1...@helia/json-v1.0.2) (2023-08-27)
 
 
