@@ -87,7 +87,7 @@ export interface CarInit {
  */
 export interface DAGWalker {
   codec: number
-  walk: (block: Uint8Array) => AsyncGenerator<CID, void, undefined>
+  walk(block: Uint8Array): AsyncGenerator<CID, void, undefined>
 }
 
 /**
@@ -115,7 +115,7 @@ export interface Car {
    * await c.import(reader)
    * ```
    */
-  import: (reader: Pick<CarReader, 'blocks'>, options?: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents>) => Promise<void>
+  import(reader: Pick<CarReader, 'blocks'>, options?: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents>): Promise<void>
 
   /**
    * Store all blocks that make up one or more DAGs in a car file.
@@ -143,7 +143,7 @@ export interface Car {
    * await eventPromise
    * ```
    */
-  export: (root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>) => Promise<void>
+  export(root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): Promise<void>
 }
 
 const DEFAULT_DAG_WALKERS = [

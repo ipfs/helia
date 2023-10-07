@@ -4,7 +4,7 @@ import defer from 'p-defer'
 import type { CID } from 'multiformats/cid'
 
 export interface MemoryCar extends Pick<CarWriter, 'put' | 'close'> {
-  bytes: () => Promise<Uint8Array>
+  bytes(): Promise<Uint8Array>
 }
 
 export function memoryCarWriter (root: CID | CID[]): MemoryCar {

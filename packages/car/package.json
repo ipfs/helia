@@ -51,6 +51,7 @@
   "eslintConfig": {
     "extends": "ipfs",
     "parserOptions": {
+      "project": true,
       "sourceType": "module"
     }
   },
@@ -158,7 +159,7 @@
     "@ipld/car": "^5.1.1",
     "@ipld/dag-pb": "^4.0.0",
     "@libp2p/interfaces": "^3.3.1",
-    "cborg": "^2.0.5",
+    "cborg": "^4.0.3",
     "interface-blockstore": "^5.0.0",
     "it-map": "^3.0.3",
     "multiformats": "^12.0.1",
@@ -168,7 +169,7 @@
   },
   "devDependencies": {
     "@helia/unixfs": "^1.2.2",
-    "aegir": "^40.0.11",
+    "aegir": "^41.0.0",
     "blockstore-core": "^4.0.1",
     "ipfs-unixfs-importer": "^15.1.0",
     "it-drain": "^3.0.1",

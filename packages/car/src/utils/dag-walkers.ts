@@ -13,7 +13,7 @@ import * as raw from 'multiformats/codecs/raw'
  */
 export interface DAGWalker {
   codec: number
-  walk: (block: Uint8Array) => AsyncGenerator<CID, void, undefined>
+  walk(block: Uint8Array): AsyncGenerator<CID, void, undefined>
 }
 
 /**
