@@ -1,3 +1,10 @@
+## [@helia/car-v1.0.4](https://github.com/ipfs/helia-car/compare/@helia/car-v1.0.3...@helia/car-v1.0.4) (2023-10-07)
+
+
+### Dependencies
+
+* **dev:** bump aegir from 40.0.13 to 41.0.0 ([#41](https://github.com/ipfs/helia-car/issues/41)) ([e8fc99f](https://github.com/ipfs/helia-car/commit/e8fc99f4e372eaf72c2598f5a7a9942143c6d788))
+
 ## [@helia/car-v1.0.3](https://github.com/ipfs/helia-car/compare/@helia/car-v1.0.2...@helia/car-v1.0.3) (2023-08-27)
 
 
