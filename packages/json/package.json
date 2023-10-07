@@ -31,6 +31,7 @@
   "eslintConfig": {
     "extends": "ipfs",
     "parserOptions": {
+      "project": true,
       "sourceType": "module"
     }
   },
@@ -141,7 +142,7 @@
     "progress-events": "^1.0.0"
   },
   "devDependencies": {
-    "aegir": "^40.0.11",
+    "aegir": "^41.0.0",
     "blockstore-core": "^4.0.1"
   }
 }

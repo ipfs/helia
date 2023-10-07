@@ -31,6 +31,7 @@
   "eslintConfig": {
     "extends": "ipfs",
     "parserOptions": {
+      "project": true,
       "sourceType": "module"
     }
   },
@@ -51,7 +52,7 @@
     "@helia/interface": "^2.0.0",
     "@helia/json": "^1.0.0",
     "@libp2p/websockets": "^7.0.5",
-    "aegir": "^40.0.11",
+    "aegir": "^41.0.0",
     "go-ipfs": "^0.22.0",
     "helia": "^2.0.1",
     "ipfs-core-types": "^0.14.0",
