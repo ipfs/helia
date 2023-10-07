@@ -1,3 +1,10 @@
+## [@helia/ipns-v2.0.1](https://github.com/ipfs/helia-ipns/compare/@helia/ipns-v2.0.0...@helia/ipns-v2.0.1) (2023-10-07)
+
+
+### Dependencies
+
+* **dev:** bump aegir from 40.0.13 to 41.0.0 ([#107](https://github.com/ipfs/helia-ipns/issues/107)) ([5402d30](https://github.com/ipfs/helia-ipns/commit/5402d30de1437052e9e9b955d9be3c2898515447))
+
 ## [@helia/ipns-v2.0.0](https://github.com/ipfs/helia-ipns/compare/@helia/ipns-v1.1.7...@helia/ipns-v2.0.0) (2023-09-22)
 
 
