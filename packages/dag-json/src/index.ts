@@ -65,7 +65,7 @@ export interface DAGJSON {
    * // CID(baguqeerasords4njcts6vs7qvdjfcvgnume4hqohf65zsfguprqphs3icwea)
    * ```
    */
-  add: (str: unknown, options?: Partial<AddOptions>) => Promise<CID>
+  add(str: unknown, options?: Partial<AddOptions>): Promise<CID>
 
   /**
    * Get an object from your Helia node, either previously added to it or to
@@ -85,7 +85,7 @@ export interface DAGJSON {
    * // { hello: 'world' }
    * ```
    */
-  get: <T> (cid: CID, options?: Partial<GetOptions>) => Promise<T>
+  get<T>(cid: CID, options?: Partial<GetOptions>): Promise<T>
 }
 
 class DefaultDAGJSON implements DAGJSON {
