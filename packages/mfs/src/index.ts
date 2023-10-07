@@ -96,7 +96,7 @@ export interface MFS {
    * await fs.writeBytes(Uint8Array.from([0, 1, 2, 3]), '/foo.txt')
    * ```
    */
-  writeBytes: (bytes: Uint8Array, path: string, options?: Partial<WriteOptions>) => Promise<void>
+  writeBytes(bytes: Uint8Array, path: string, options?: Partial<WriteOptions>): Promise<void>
 
   /**
    * Add a stream of `Uint8Array` to your MFS as a file.
@@ -110,7 +110,7 @@ export interface MFS {
    * await fs.writeByteStream(stream, '/foo.txt')
    * ```
    */
-  writeByteStream: (bytes: ByteStream, path: string, options?: Partial<WriteOptions>) => Promise<void>
+  writeByteStream(bytes: ByteStream, path: string, options?: Partial<WriteOptions>): Promise<void>
 
   /**
    * Retrieve the contents of a file from your MFS.
@@ -123,7 +123,7 @@ export interface MFS {
    * }
    * ```
    */
-  cat: (path: string, options?: Partial<CatOptions>) => AsyncIterable<Uint8Array>
+  cat(path: string, options?: Partial<CatOptions>): AsyncIterable<Uint8Array>
 
   /**
    * Change the permissions on a file or directory in your MFS
@@ -141,7 +141,7 @@ export interface MFS {
    * console.info(afterStats)
    * ```
    */
-  chmod: (path: string, mode: number, options?: Partial<ChmodOptions>) => Promise<void>
+  chmod(path: string, mode: number, options?: Partial<ChmodOptions>): Promise<void>
 
   /**
    * Add a file or directory to a target directory in your MFS.
@@ -165,7 +165,7 @@ export interface MFS {
    * await fs.cp('/foo.txt', '/bar.txt')
    * ```
    */
-  cp: (source: CID | string, destination: string, options?: Partial<CpOptions>) => Promise<void>
+  cp(source: CID | string, destination: string, options?: Partial<CpOptions>): Promise<void>
 
   /**
    * List directory contents from your MFS.
@@ -178,7 +178,7 @@ export interface MFS {
    * }
    * ```
    */
-  ls: (path?: string, options?: Partial<LsOptions>) => AsyncIterable<UnixFSEntry>
+  ls(path?: string, options?: Partial<LsOptions>): AsyncIterable<UnixFSEntry>
 
   /**
    * Make a new directory in your MFS.
@@ -189,7 +189,7 @@ export interface MFS {
    * await fs.mkdir('/new-dir')
    * ```
    */
-  mkdir: (path: string, options?: Partial<MkdirOptions>) => Promise<void>
+  mkdir(path: string, options?: Partial<MkdirOptions>): Promise<void>
 
   /**
    * Remove a file or directory from your MFS.
@@ -201,7 +201,7 @@ export interface MFS {
    * await fs.rm('/new-dir')
    * ```
    */
-  rm: (path: string, options?: Partial<RmOptions>) => Promise<void>
+  rm(path: string, options?: Partial<RmOptions>): Promise<void>
 
   /**
    * Return statistics about a UnixFS DAG in your MFS.
@@ -215,7 +215,7 @@ export interface MFS {
    * console.info(stats)
    * ```
    */
-  stat: (path: string, options?: Partial<StatOptions>) => Promise<UnixFSStats>
+  stat(path: string, options?: Partial<StatOptions>): Promise<UnixFSStats>
 
   /**
    * Update the mtime of a UnixFS DAG in your MFS.
@@ -233,7 +233,7 @@ export interface MFS {
    * console.info(afterStats)
    * ```
    */
-  touch: (path: string, options?: Partial<TouchOptions>) => Promise<void>
+  touch(path: string, options?: Partial<TouchOptions>): Promise<void>
 }
 
 interface PathEntry {
