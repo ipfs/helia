@@ -1,3 +1,10 @@
+## [@helia/mfs-v1.0.2](https://github.com/ipfs/helia-mfs/compare/@helia/mfs-v1.0.1...@helia/mfs-v1.0.2) (2023-10-07)
+
+
+### Dependencies
+
+* **dev:** bump helia from 2.0.1 to 2.0.3 ([#10](https://github.com/ipfs/helia-mfs/issues/10)) ([6911470](https://github.com/ipfs/helia-mfs/commit/6911470cb43720798fca571669a166eb3689dad2))
+
 ## [@helia/mfs-v1.0.1](https://github.com/ipfs/helia-mfs/compare/@helia/mfs-v1.0.0...@helia/mfs-v1.0.1) (2023-09-08)
 
 
