@@ -65,7 +65,7 @@ export interface DAGCBOR {
    * // CID(bafyreidykglsfhoixmivffc5uwhcgshx4j465xwqntbmu43nb2dzqwfvae)
    * ```
    */
-  add: (str: unknown, options?: Partial<AddOptions>) => Promise<CID>
+  add(str: unknown, options?: Partial<AddOptions>): Promise<CID>
 
   /**
    * Get an object from your Helia node, either previously added to it or to
@@ -85,7 +85,7 @@ export interface DAGCBOR {
    * // { hello: 'world' }
    * ```
    */
-  get: <T> (cid: CID, options?: Partial<GetOptions>) => Promise<T>
+  get<T>(cid: CID, options?: Partial<GetOptions>): Promise<T>
 }
 
 class DefaultDAGCBOR implements DAGCBOR {
