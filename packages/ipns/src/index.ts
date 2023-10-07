@@ -128,23 +128,23 @@ export interface IPNS {
    *
    * If the valid is a PeerId, a recursive IPNS record will be created.
    */
-  publish: (key: PeerId, value: CID | PeerId, options?: PublishOptions) => Promise<IPNSRecord>
+  publish(key: PeerId, value: CID | PeerId, options?: PublishOptions): Promise<IPNSRecord>
 
   /**
    * Accepts a public key formatted as a libp2p PeerID and resolves the IPNS record
    * corresponding to that public key until a value is found
    */
-  resolve: (key: PeerId, options?: ResolveOptions) => Promise<CID>
+  resolve(key: PeerId, options?: ResolveOptions): Promise<CID>
 
   /**
    * Resolve a CID from a dns-link style IPNS record
    */
-  resolveDns: (domain: string, options?: ResolveDNSOptions) => Promise<CID>
+  resolveDns(domain: string, options?: ResolveDNSOptions): Promise<CID>
 
   /**
    * Periodically republish all IPNS records found in the datastore
    */
-  republish: (options?: RepublishOptions) => void
+  republish(options?: RepublishOptions): void
 }
 
 export type { IPNSRouting } from './routing/index.js'

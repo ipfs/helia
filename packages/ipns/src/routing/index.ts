@@ -13,8 +13,8 @@ export interface GetOptions extends AbortOptions, ProgressOptions {
 }
 
 export interface IPNSRouting {
-  put: (routingKey: Uint8Array, marshaledRecord: Uint8Array, options?: PutOptions) => Promise<void>
-  get: (routingKey: Uint8Array, options?: GetOptions) => Promise<Uint8Array>
+  put(routingKey: Uint8Array, marshaledRecord: Uint8Array, options?: PutOptions): Promise<void>
+  get(routingKey: Uint8Array, options?: GetOptions): Promise<Uint8Array>
 }
 
 export type IPNSRoutingEvents =

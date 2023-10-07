@@ -15,7 +15,7 @@ export type DatastoreProgressEvents =
   ProgressEvent<'ipns:routing:datastore:error', Error>
 
 export interface LocalStore extends IPNSRouting {
-  has: (routingKey: Uint8Array, options?: AbortOptions) => Promise<boolean>
+  has(routingKey: Uint8Array, options?: AbortOptions): Promise<boolean>
 }
 
 /**
