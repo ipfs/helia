@@ -1,3 +1,11 @@
+## [@helia/dag-json-v1.0.3](https://github.com/ipfs/helia-dag-json/compare/@helia/dag-json-v1.0.2...@helia/dag-json-v1.0.3) (2023-10-07)
+
+
+### Dependencies
+
+* bump @helia/interface from 1.2.2 to 2.0.0 ([#32](https://github.com/ipfs/helia-dag-json/issues/32)) ([eb836ef](https://github.com/ipfs/helia-dag-json/commit/eb836ef15f6bc754fbab4fdbe47c76f5492a56d9))
+* **dev:** bump aegir from 40.0.13 to 41.0.0 ([#36](https://github.com/ipfs/helia-dag-json/issues/36)) ([9f57d11](https://github.com/ipfs/helia-dag-json/commit/9f57d11e461a3b1fddbc2a92e225d31eee56613c))
+
 ## [@helia/dag-json-v1.0.2](https://github.com/ipfs/helia-dag-json/compare/@helia/dag-json-v1.0.1...@helia/dag-json-v1.0.2) (2023-08-27)
 
 

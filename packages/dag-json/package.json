@@ -1,6 +1,6 @@
 {
   "name": "@helia/dag-json",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Add/get IPLD blocks containing dag-json with your Helia node",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia-dag-json/tree/master/packages/dag-json#readme",
