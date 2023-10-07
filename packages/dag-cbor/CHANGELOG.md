@@ -1,3 +1,10 @@
+## [@helia/dag-cbor-v1.0.3](https://github.com/ipfs/helia-dag-cbor/compare/@helia/dag-cbor-v1.0.2...@helia/dag-cbor-v1.0.3) (2023-10-07)
+
+
+### Dependencies
+
+* **dev:** bump aegir from 40.0.13 to 41.0.0 ([#36](https://github.com/ipfs/helia-dag-cbor/issues/36)) ([77e29bc](https://github.com/ipfs/helia-dag-cbor/commit/77e29bcdda33387b8bf15124bc316ef03b434433))
+
 ## [@helia/dag-cbor-v1.0.2](https://github.com/ipfs/helia-dag-cbor/compare/@helia/dag-cbor-v1.0.1...@helia/dag-cbor-v1.0.2) (2023-08-27)
 
 
