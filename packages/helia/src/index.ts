@@ -27,7 +27,7 @@ import { MemoryDatastore } from 'datastore-core'
 import { identity } from 'multiformats/hashes/identity'
 import { sha256, sha512 } from 'multiformats/hashes/sha2'
 import { BitswapBlockProvider } from './block-providers/bitswap-block-provider.js'
-import { TrustedGatewayBlockProvider } from './block-providers/trustless-gateway-block-provider.js'
+import { TrustlessGatewayBlockProvider } from './block-providers/trustless-gateway-block-provider.js'
 import { HeliaImpl } from './helia.js'
 import { createLibp2p } from './utils/libp2p.js'
 import { name, version } from './version.js'
@@ -168,7 +168,7 @@ export async function createHelia (init: HeliaInit = {}): Promise<Helia<unknown>
 
   const blockProviders = init.blockProviders ?? [
     new BitswapBlockProvider(libp2p, blockstore, hashers),
-    new TrustedGatewayBlockProvider(DEFAULT_TRUSTLESS_GATEWAYS)
+    new TrustlessGatewayBlockProvider(DEFAULT_TRUSTLESS_GATEWAYS)
   ]
 
   const helia = new HeliaImpl({
