@@ -50,17 +50,17 @@ export interface Helia<T = Libp2p> {
   /**
    * Starts the Helia node
    */
-  start: () => Promise<void>
+  start(): Promise<void>
 
   /**
    * Stops the Helia node
    */
-  stop: () => Promise<void>
+  stop(): Promise<void>
 
   /**
    * Remove any unpinned blocks from the blockstore
    */
-  gc: (options?: GCOptions) => Promise<void>
+  gc(options?: GCOptions): Promise<void>
 }
 
 export type GcEvents =

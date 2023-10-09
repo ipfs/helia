@@ -31,6 +31,7 @@
   "eslintConfig": {
     "extends": "ipfs",
     "parserOptions": {
+      "project": true,
       "sourceType": "module"
     }
   },
@@ -54,7 +55,7 @@
     "@libp2p/tcp": "^8.0.2",
     "@libp2p/websockets": "^7.0.2",
     "@multiformats/sha3": "^3.0.0",
-    "aegir": "^40.0.8",
+    "aegir": "^41.0.0",
     "blockstore-core": "^4.0.0",
     "datastore-core": "^9.0.0",
     "helia": "^2.0.3",

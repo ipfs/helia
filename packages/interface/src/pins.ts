@@ -43,21 +43,21 @@ export interface Pins {
    * Pin a block in the blockstore. It will not be deleted
    * when garbage collection is run.
    */
-  add: (cid: CID, options?: AddOptions) => Promise<Pin>
+  add(cid: CID, options?: AddOptions): Promise<Pin>
 
   /**
    * Unpin the block that corresponds to the passed CID. The block will
    * be deleted when garbage collection is run.
    */
-  rm: (cid: CID, options?: RmOptions) => Promise<Pin>
+  rm(cid: CID, options?: RmOptions): Promise<Pin>
 
   /**
    * List all blocks that have been pinned.
    */
-  ls: (options?: LsOptions) => AsyncGenerator<Pin, void, undefined>
+  ls(options?: LsOptions): AsyncGenerator<Pin, void, undefined>
 
   /**
    * Return true if the passed CID is pinned
    */
-  isPinned: (cid: CID, options?: IsPinnedOptions) => Promise<boolean>
+  isPinned(cid: CID, options?: IsPinnedOptions): Promise<boolean>
 }
