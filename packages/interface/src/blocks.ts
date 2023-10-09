@@ -1,4 +1,5 @@
 import type { Blockstore } from 'interface-blockstore'
+import type { AbortOptions } from 'interface-store'
 import type { BitswapNotifyProgressEvents, BitswapWantProgressEvents } from 'ipfs-bitswap'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
@@ -10,31 +11,31 @@ export interface Pair {
 
 export type HasBlockProgressEvents =
   ProgressEvent<'blocks:put:duplicate', CID> |
-  ProgressEvent<'blocks:put:bitswap:notify', CID> |
+  ProgressEvent<'blocks:put:providers:notify', CID> |
   ProgressEvent<'blocks:put:blockstore:put', CID> |
   BitswapNotifyProgressEvents
 
 export type PutBlockProgressEvents =
   ProgressEvent<'blocks:put:duplicate', CID> |
-  ProgressEvent<'blocks:put:bitswap:notify', CID> |
+  ProgressEvent<'blocks:put:providers:notify', CID> |
   ProgressEvent<'blocks:put:blockstore:put', CID> |
   BitswapNotifyProgressEvents
 
 export type PutManyBlocksProgressEvents =
   ProgressEvent<'blocks:put-many:duplicate', CID> |
-  ProgressEvent<'blocks:put-many:bitswap:notify', CID> |
+  ProgressEvent<'blocks:put-many:providers:notify', CID> |
   ProgressEvent<'blocks:put-many:blockstore:put-many'> |
   BitswapNotifyProgressEvents
 
 export type GetBlockProgressEvents =
-  ProgressEvent<'blocks:get:bitswap:want', CID> |
+  ProgressEvent<'blocks:get:providers:want', CID> |
   ProgressEvent<'blocks:get:blockstore:get', CID> |
   ProgressEvent<'blocks:get:blockstore:put', CID> |
   BitswapWantProgressEvents
 
 export type GetManyBlocksProgressEvents =
   ProgressEvent<'blocks:get-many:blockstore:get-many'> |
-  ProgressEvent<'blocks:get-many:bitswap:want', CID> |
+  ProgressEvent<'blocks:get-many:providers:want', CID> |
   ProgressEvent<'blocks:get-many:blockstore:put', CID> |
   BitswapWantProgressEvents
 
@@ -60,4 +61,19 @@ GetOfflineOptions & ProgressOptions<GetBlockProgressEvents>, GetOfflineOptions &
 ProgressOptions<DeleteBlockProgressEvents>, ProgressOptions<DeleteManyBlocksProgressEvents>
 > {
 
+}
+
+export interface BlockProvider<
+  NotifyProgressOptions extends ProgressOptions = ProgressOptions,
+  WantProgressOptions extends ProgressOptions = ProgressOptions
+> {
+  /**
+   * Notify a block provider that a new block is available
+   */
+  notify(cid: CID, block: Uint8Array, options?: NotifyProgressOptions): void
+
+  /**
+   * Retrieve a block
+   */
+  get(cid: CID, options?: AbortOptions & WantProgressOptions): Promise<Uint8Array>
 }

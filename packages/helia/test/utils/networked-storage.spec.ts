@@ -10,14 +10,14 @@ import Sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { NetworkedStorage } from '../../src/utils/networked-storage.js'
 import { createBlock } from '../fixtures/create-block.js'
+import type { BitswapBlockProvider } from '../../src/block-providers/bitswap-block-provider.js'
 import type { Blockstore } from 'interface-blockstore'
-import type { Bitswap } from 'ipfs-bitswap'
 import type { CID } from 'multiformats/cid'
 
 describe('storage', () => {
   let storage: NetworkedStorage
   let blockstore: Blockstore
-  let bitswap: StubbedInstance<Bitswap>
+  let bitswap: StubbedInstance<BitswapBlockProvider>
   let blocks: Array<{ cid: CID, block: Uint8Array }>
 
   beforeEach(async () => {
@@ -28,9 +28,11 @@ describe('storage', () => {
     }
 
     blockstore = new MemoryBlockstore()
-    bitswap = stubInterface<Bitswap>()
+    bitswap = stubInterface<BitswapBlockProvider>()
     storage = new NetworkedStorage(blockstore, {
-      bitswap
+      blockProviders: [
+        bitswap
+      ]
     })
   })
 
@@ -114,7 +116,7 @@ describe('storage', () => {
     const { cid, block } = blocks[0]
 
     bitswap.isStarted.returns(true)
-    bitswap.want.withArgs(cid).resolves(block)
+    bitswap.get.withArgs(cid).resolves(block)
 
     expect(await blockstore.has(cid)).to.be.false()
 
@@ -122,7 +124,7 @@ describe('storage', () => {
 
     expect(await blockstore.has(cid)).to.be.true()
     expect(returned).to.equalBytes(block)
-    expect(bitswap.want.called).to.be.true()
+    expect(bitswap.get.called).to.be.true()
   })
 
   it('gets many blocks from bitswap when they are not in the blockstore', async () => {
@@ -132,7 +134,7 @@ describe('storage', () => {
 
     for (let i = 0; i < count; i++) {
       const { cid, block } = blocks[i]
-      bitswap.want.withArgs(cid).resolves(block)
+      bitswap.get.withArgs(cid).resolves(block)
 
       expect(await blockstore.has(cid)).to.be.false()
     }
@@ -148,7 +150,7 @@ describe('storage', () => {
 
     for (let i = 0; i < count; i++) {
       const { cid } = blocks[i]
-      expect(bitswap.want.calledWith(cid)).to.be.true()
+      expect(bitswap.get.calledWith(cid)).to.be.true()
       expect(await blockstore.has(cid)).to.be.true()
     }
   })
@@ -165,7 +167,7 @@ describe('storage', () => {
     await blockstore.put(blocks[4].cid, blocks[4].block)
 
     // block #2 comes from bitswap but slowly
-    bitswap.want.withArgs(blocks[2].cid).callsFake(async () => {
+    bitswap.get.withArgs(blocks[2].cid).callsFake(async () => {
       await delay(100)
       return blocks[2].block
     })
