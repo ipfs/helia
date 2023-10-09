@@ -14,7 +14,7 @@ export interface BlockStorageInit {
 }
 
 export interface GetOptions extends AbortOptions {
-  progress?: (evt: Event) => void
+  progress?(evt: Event): void
 }
 
 /**
