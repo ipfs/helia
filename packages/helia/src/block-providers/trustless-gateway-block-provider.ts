@@ -117,7 +117,8 @@ export type TrustlessGatewayGetBlockProgressEvents =
 
 /**
  * A BlockProvider that accepts a list of trustless gateways that are queried
- * for blocks. Individual gateways are randomly chosen.
+ * for blocks. Gateways are queried in order of reliability, with the most
+ * reliable gateways being queried first.
  */
 export class TrustlessGatewayBlockProvider implements BlockProvider<
 ProgressOptions,
