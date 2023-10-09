@@ -31,6 +31,7 @@
   "eslintConfig": {
     "extends": "ipfs",
     "parserOptions": {
+      "project": true,
       "sourceType": "module"
     }
   },
@@ -91,7 +92,7 @@
     "@multiformats/mafmt": "^12.1.5",
     "@multiformats/multiaddr": "^12.1.7",
     "@types/sinon": "^10.0.14",
-    "aegir": "^40.0.8",
+    "aegir": "^41.0.0",
     "delay": "^6.0.0",
     "sinon": "^16.0.0",
     "sinon-ts": "^1.0.0"
