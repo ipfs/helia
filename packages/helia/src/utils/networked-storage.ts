@@ -1,24 +1,35 @@
 import { CodeError } from '@libp2p/interface/errors'
 import { start, stop, type Startable } from '@libp2p/interface/startable'
+import { logger } from '@libp2p/logger'
 import { anySignal } from 'any-signal'
 import filter from 'it-filter'
 import forEach from 'it-foreach'
 import { CustomProgressEvent, type ProgressOptions } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import type { BlockProvider, Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions } from '@helia/interface/blocks'
+import type { BlockBroker, Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions, BlockRetriever, BlockAnnouncer } from '@helia/interface/blocks'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { AwaitIterable } from 'interface-store'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 
+const log = logger('helia:networked-storage')
+
 export interface NetworkedStorageStorageInit {
-  blockProviders?: BlockProvider[]
+  blockBrokers?: BlockBroker[]
   hashers?: MultihashHasher[]
 }
 
 export interface GetOptions extends AbortOptions {
   progress?(evt: Event): void
+}
+
+function isBlockRetriever (b: any): b is BlockRetriever {
+  return typeof b.retrieve === 'function'
+}
+
+function isBlockAnnouncer (b: any): b is BlockAnnouncer {
+  return typeof b.announce === 'function'
 }
 
 /**
@@ -27,7 +38,8 @@ export interface GetOptions extends AbortOptions {
  */
 export class NetworkedStorage implements Blocks, Startable {
   private readonly child: Blockstore
-  private readonly blockProviders: BlockProvider[]
+  private readonly blockRetrievers: BlockRetriever[]
+  private readonly blockAnnouncers: BlockAnnouncer[]
   private readonly hashers: MultihashHasher[]
   private started: boolean
 
@@ -36,7 +48,8 @@ export class NetworkedStorage implements Blocks, Startable {
    */
   constructor (blockstore: Blockstore, init: NetworkedStorageStorageInit) {
     this.child = blockstore
-    this.blockProviders = init.blockProviders ?? []
+    this.blockRetrievers = (init.blockBrokers ?? []).filter(isBlockRetriever)
+    this.blockAnnouncers = (init.blockBrokers ?? []).filter(isBlockAnnouncer)
     this.hashers = init.hashers ?? []
     this.started = false
   }
@@ -46,12 +59,12 @@ export class NetworkedStorage implements Blocks, Startable {
   }
 
   async start (): Promise<void> {
-    await start(this.child, ...this.blockProviders)
+    await start(this.child, ...new Set([...this.blockRetrievers, ...this.blockAnnouncers]))
     this.started = true
   }
 
   async stop (): Promise<void> {
-    await stop(this.child, ...this.blockProviders)
+    await stop(this.child, ...new Set([...this.blockRetrievers, ...this.blockAnnouncers]))
     this.started = false
   }
 
@@ -70,8 +83,8 @@ export class NetworkedStorage implements Blocks, Startable {
 
     options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:providers:notify', cid))
 
-    this.blockProviders.forEach(provider => {
-      provider.notify?.(cid, block, options)
+    this.blockAnnouncers.forEach(provider => {
+      provider.announce(cid, block, options)
     })
 
     options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:blockstore:put', cid))
@@ -95,8 +108,8 @@ export class NetworkedStorage implements Blocks, Startable {
 
     const notifyEach = forEach(missingBlocks, ({ cid, block }): void => {
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:put-many:providers:notify', cid))
-      this.blockProviders.forEach(provider => {
-        provider.notify?.(cid, block, options)
+      this.blockAnnouncers.forEach(provider => {
+        provider.announce(cid, block, options)
       })
     })
 
@@ -111,14 +124,14 @@ export class NetworkedStorage implements Blocks, Startable {
     if (options.offline !== true && !(await this.child.has(cid))) {
       // we do not have the block locally, get it from a block provider
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:providers:get', cid))
-      const block = await raceBlockProviders(cid, this.blockProviders, this.hashers, options)
+      const block = await raceBlockRetrievers(cid, this.blockRetrievers, this.hashers, options)
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:blockstore:put', cid))
       await this.child.put(cid, block, options)
 
       // notify other block providers of the new block
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:providers:notify', cid))
-      this.blockProviders.forEach(provider => {
-        provider.notify?.(cid, block, options)
+      this.blockAnnouncers.forEach(provider => {
+        provider.announce(cid, block, options)
       })
 
       return block
@@ -139,14 +152,14 @@ export class NetworkedStorage implements Blocks, Startable {
       if (options.offline !== true && !(await this.child.has(cid))) {
         // we do not have the block locally, get it from a block provider
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:providers:get', cid))
-        const block = await raceBlockProviders(cid, this.blockProviders, this.hashers, options)
+        const block = await raceBlockRetrievers(cid, this.blockRetrievers, this.hashers, options)
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:blockstore:put', cid))
         await this.child.put(cid, block, options)
 
         // notify other block providers of the new block
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:providers:notify', cid))
-        this.blockProviders.forEach(provider => {
-          provider.notify?.(cid, block, options)
+        this.blockAnnouncers.forEach(provider => {
+          provider.announce(cid, block, options)
         })
       }
     }))
@@ -187,11 +200,11 @@ export class NetworkedStorage implements Blocks, Startable {
  * Race block providers cancelling any pending requests once the block has been
  * found.
  */
-async function raceBlockProviders (cid: CID, providers: BlockProvider[], hashers: MultihashHasher[], options: AbortOptions): Promise<Uint8Array> {
+async function raceBlockRetrievers (cid: CID, providers: BlockRetriever[], hashers: MultihashHasher[], options: AbortOptions): Promise<Uint8Array> {
   const hasher = hashers.find(hasher => hasher.code === cid.multihash.code)
 
   if (hasher == null) {
-    throw new CodeError(`No hasher configured for multihash code ${cid.code}, please configure one`, 'ERR_UNKNOWN_HASH_ALG')
+    throw new CodeError(`No hasher configured for multihash code 0x${cid.multihash.code.toString(16)}, please configure one. You can look up which hash this is at https://github.com/multiformats/multicodec/blob/master/table.csv`, 'ERR_UNKNOWN_HASH_ALG')
   }
 
   const controller = new AbortController()
@@ -200,19 +213,24 @@ async function raceBlockProviders (cid: CID, providers: BlockProvider[], hashers
   try {
     return await Promise.any(
       providers.map(async provider => {
-        const block = await provider.get(cid, {
-          ...options,
-          signal
-        })
+        try {
+          const block = await provider.retrieve(cid, {
+            ...options,
+            signal
+          })
 
-        // verify block
-        const hash = await hasher.digest(block)
+          // verify block
+          const hash = await hasher.digest(block)
 
-        if (!uint8ArrayEquals(hash.digest, cid.multihash.digest)) {
-          throw new CodeError('Hash of downloaded block did not match multihash from passed CID', 'ERR_HASH_MISMATCH')
+          if (!uint8ArrayEquals(hash.digest, cid.multihash.digest)) {
+            throw new CodeError('Hash of downloaded block did not match multihash from passed CID', 'ERR_HASH_MISMATCH')
+          }
+
+          return block
+        } catch (err) {
+          log.error('could not retrieve block for %c', cid, err)
+          throw err
         }
-
-        return block
       })
     )
   } finally {

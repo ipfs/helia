@@ -24,16 +24,14 @@
 import { logger } from '@libp2p/logger'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
-import { identity } from 'multiformats/hashes/identity'
-import { sha256, sha512 } from 'multiformats/hashes/sha2'
-import { BitswapBlockProvider } from './block-providers/bitswap-block-provider.js'
-import { TrustlessGatewayBlockProvider } from './block-providers/trustless-gateway-block-provider.js'
+import { BitswapBlockBroker, TrustedGatewayBlockBroker } from './block-brokers/index.js'
 import { HeliaImpl } from './helia.js'
+import { defaultHashers } from './utils/default-hashers.js'
 import { createLibp2p } from './utils/libp2p.js'
 import { name, version } from './version.js'
 import type { DefaultLibp2pServices } from './utils/libp2p-defaults.js'
 import type { Helia } from '@helia/interface'
-import type { BlockProvider } from '@helia/interface/blocks'
+import type { BlockBroker } from '@helia/interface/blocks'
 import type { Libp2p } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
@@ -100,7 +98,7 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
    * A list of strategies used to fetch blocks when they are not present in
    * the local blockstore
    */
-  blockProviders?: BlockProvider[]
+  blockBrokers?: BlockBroker[]
 
   /**
    * Pass `false` to not start the Helia node
@@ -159,16 +157,11 @@ export async function createHelia (init: HeliaInit = {}): Promise<Helia<unknown>
     libp2p = await createLibp2p(datastore, init.libp2p)
   }
 
-  const hashers: MultihashHasher[] = [
-    sha256,
-    sha512,
-    identity,
-    ...(init.hashers ?? [])
-  ]
+  const hashers = defaultHashers(init.hashers)
 
-  const blockProviders = init.blockProviders ?? [
-    new BitswapBlockProvider(libp2p, blockstore, hashers),
-    new TrustlessGatewayBlockProvider(DEFAULT_TRUSTLESS_GATEWAYS)
+  const blockBrokers = init.blockBrokers ?? [
+    new BitswapBlockBroker(libp2p, blockstore, hashers),
+    new TrustedGatewayBlockBroker(DEFAULT_TRUSTLESS_GATEWAYS)
   ]
 
   const helia = new HeliaImpl({
@@ -176,7 +169,8 @@ export async function createHelia (init: HeliaInit = {}): Promise<Helia<unknown>
     datastore,
     blockstore,
     libp2p,
-    blockProviders
+    blockBrokers,
+    hashers
   })
 
   if (init.start !== false) {
