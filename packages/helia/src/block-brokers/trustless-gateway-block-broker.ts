@@ -7,9 +7,10 @@ import type { ProgressEvent, ProgressOptions } from 'progress-events'
 const log = logger('helia:trustless-gateway-block-broker')
 
 /**
- * A BlockProvider constructs instances of `TrustlessGateway`
- * keeps track of the number of attempts, errors, and successes for a given
- * gateway url.
+ * A `TrustlessGateway` keeps track of the number of attempts, errors, and
+ * successes for a given gateway url so that we can prioritize gateways that
+ * have been more reliable in the past, and ensure that requests are distributed
+ * across all gateways within a given `TrustedGatewayBlockBroker` instance.
  */
 class TrustlessGateway {
   public readonly url: URL
@@ -24,7 +25,8 @@ class TrustlessGateway {
   /**
    * The number of times this gateway has errored while attempting to fetch a
    * block. This includes `response.ok === false` and any other errors that
-   * throw while attempting to fetch a block.
+   * throw while attempting to fetch a block. This does not include aborted
+   * attempts.
    */
   #errors = 0
 
@@ -32,6 +34,7 @@ class TrustlessGateway {
    * The number of times this gateway has successfully fetched a block.
    */
   #successes = 0
+
   constructor (url: URL | string) {
     this.url = url instanceof URL ? url : new URL(url)
   }
@@ -85,22 +88,26 @@ class TrustlessGateway {
    * reliable, for prioritization. This is based on the number of successful attempts made
    * and the number of errors encountered.
    *
-   * * Unused gateways have 100% reliability
-   * * Gateways that have never errored have 100% reliability
+   * Unused gateways have 100% reliability; They will be prioritized over
+   * gateways with a 100% success rate to ensure that we attempt all gateways.
    */
   get reliability (): number {
-    // if we have never tried to use this gateway, it is considered the most
-    // reliable until we determine otherwise
-    // (prioritize unused gateways)
+    /**
+     * if we have never tried to use this gateway, it is considered the most
+     * reliable until we determine otherwise (prioritize unused gateways)
+     */
     if (this.#attempts === 0) {
       return 1
     }
 
-    // We have attempted the gateway, so we need to calculate the reliability
-    // based on the number of attempts, errors, and successes. Gateways that
-    // return a single error should drop their reliability score more than a
-    // success increases it.
-    // Play around with the below reliability function at https://www.desmos.com/calculator/d6hfhf5ukm
+    /**
+     * We have attempted the gateway, so we need to calculate the reliability
+     * based on the number of attempts, errors, and successes. Gateways that
+     * return a single error should drop their reliability score more than a
+     * single success increases it.
+     *
+     * Play around with the below reliability function at https://www.desmos.com/calculator/d6hfhf5ukm
+     */
     return this.#successes / (this.#attempts + (this.#errors * 3))
   }
 }
