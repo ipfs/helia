@@ -30,7 +30,7 @@ export class HeliaImpl implements Helia {
 
   constructor (init: HeliaImplInit) {
     const networkedStorage = new NetworkedStorage(init.blockstore, {
-      blockProviders: init.blockProviders,
+      blockBrokers: init.blockBrokers,
       hashers: init.hashers
     })
 

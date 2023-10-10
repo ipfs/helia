@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import type { BlockProvider } from '@helia/interface/blocks'
+import type { BlockRetriever } from '@helia/interface/blocks'
 import type { AbortOptions } from 'interface-store'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
@@ -10,11 +10,10 @@ export type TrustlessGatewayGetBlockProgressEvents =
   ProgressEvent<'trustless-gateway:get-block:fetch', URL>
 
 /**
- * A BlockProvider that accepts a list of trustless gateways that are queried
- * for blocks. Individual gateways are randomly chosen.
+ * A class that accepts a list of trustless gateways that are queried
+ * for blocks.
  */
-export class TrustedGatewayBlockProvider implements BlockProvider<
-ProgressOptions,
+export class TrustedGatewayBlockBroker implements BlockRetriever<
 ProgressOptions<TrustlessGatewayGetBlockProgressEvents>
 > {
   private readonly gateways: URL[]
@@ -23,7 +22,7 @@ ProgressOptions<TrustlessGatewayGetBlockProgressEvents>
     this.gateways = urls.map(url => new URL(url.toString()))
   }
 
-  async get (cid: CID, options: AbortOptions & ProgressOptions<TrustlessGatewayGetBlockProgressEvents> = {}): Promise<Uint8Array> {
+  async retrieve (cid: CID, options: AbortOptions & ProgressOptions<TrustlessGatewayGetBlockProgressEvents> = {}): Promise<Uint8Array> {
     // choose a gateway
     const url = this.gateways[Math.floor(Math.random() * this.gateways.length)]
 

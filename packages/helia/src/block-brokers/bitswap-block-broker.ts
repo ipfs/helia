@@ -1,5 +1,5 @@
 import { createBitswap } from 'ipfs-bitswap'
-import type { BlockProvider } from '@helia/interface/blocks'
+import type { BlockAnnouncer, BlockRetriever } from '@helia/interface/blocks'
 import type { Libp2p } from '@libp2p/interface'
 import type { Startable } from '@libp2p/interface/startable'
 import type { Blockstore } from 'interface-blockstore'
@@ -9,8 +9,7 @@ import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 import type { ProgressOptions } from 'progress-events'
 
-export class BitswapBlockProvider implements BlockProvider<
-ProgressOptions<BitswapNotifyProgressEvents>,
+export class BitswapBlockBroker implements BlockAnnouncer<ProgressOptions<BitswapNotifyProgressEvents>>, BlockRetriever<
 ProgressOptions<BitswapWantBlockProgressEvents>
 >, Startable {
   private readonly bitswap: Bitswap
@@ -49,11 +48,11 @@ ProgressOptions<BitswapWantBlockProgressEvents>
     this.started = false
   }
 
-  notify (cid: CID, block: Uint8Array, options?: ProgressOptions<BitswapNotifyProgressEvents>): void {
+  announce (cid: CID, block: Uint8Array, options?: ProgressOptions<BitswapNotifyProgressEvents>): void {
     this.bitswap.notify(cid, block, options)
   }
 
-  async get (cid: CID, options?: AbortOptions & ProgressOptions<BitswapWantBlockProgressEvents>): Promise<Uint8Array> {
+  async retrieve (cid: CID, options?: AbortOptions & ProgressOptions<BitswapWantBlockProgressEvents>): Promise<Uint8Array> {
     return this.bitswap.want(cid, options)
   }
 }

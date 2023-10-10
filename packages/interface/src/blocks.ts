@@ -63,17 +63,18 @@ ProgressOptions<DeleteBlockProgressEvents>, ProgressOptions<DeleteManyBlocksProg
 
 }
 
-export interface BlockProvider<
-  NotifyProgressOptions extends ProgressOptions = ProgressOptions,
-  WantProgressOptions extends ProgressOptions = ProgressOptions
-> {
+export interface BlockRetriever<GetProgressOptions extends ProgressOptions = ProgressOptions> {
   /**
-   * Notify a block provider that a new block is available
+   * Retrieve a block from a source
    */
-  notify?(cid: CID, block: Uint8Array, options?: NotifyProgressOptions): void
-
-  /**
-   * Retrieve a block
-   */
-  get(cid: CID, options?: AbortOptions & WantProgressOptions): Promise<Uint8Array>
+  retrieve(cid: CID, options?: AbortOptions & GetProgressOptions): Promise<Uint8Array>
 }
+
+export interface BlockAnnouncer<NotifyProgressOptions extends ProgressOptions = ProgressOptions> {
+  /**
+   * Make a new block available to peers
+   */
+  announce(cid: CID, block: Uint8Array, options?: NotifyProgressOptions): void
+}
+
+export type BlockBroker = BlockRetriever | BlockAnnouncer
