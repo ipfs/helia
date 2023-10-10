@@ -7,10 +7,10 @@ import all from 'it-all'
 import * as raw from 'multiformats/codecs/raw'
 import Sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
-import { defaultHashers } from '../src/utils/default-hashers.js'
-import { NetworkedStorage } from '../src/utils/networked-storage.js'
-import { createBlock } from './fixtures/create-block.js'
-import type { BitswapBlockBroker, TrustedGatewayBlockBroker } from '../src/block-brokers/index.js'
+import { defaultHashers } from '../../src/utils/default-hashers.js'
+import { NetworkedStorage } from '../../src/utils/networked-storage.js'
+import { createBlock } from '../fixtures/create-block.js'
+import type { BitswapBlockBroker, TrustlessGatewayBlockBroker } from '../../src/block-brokers/index.js'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 
@@ -19,7 +19,7 @@ describe('block-provider', () => {
   let blockstore: Blockstore
   let bitswapBlockBroker: StubbedInstance<BitswapBlockBroker>
   let blocks: Array<{ cid: CID, block: Uint8Array }>
-  let gatewayBlockBroker: StubbedInstance<TrustedGatewayBlockBroker>
+  let gatewayBlockBroker: StubbedInstance<TrustlessGatewayBlockBroker>
 
   beforeEach(async () => {
     blocks = []
@@ -30,7 +30,7 @@ describe('block-provider', () => {
 
     blockstore = new MemoryBlockstore()
     bitswapBlockBroker = stubInterface<BitswapBlockBroker>()
-    gatewayBlockBroker = stubInterface<TrustedGatewayBlockBroker>()
+    gatewayBlockBroker = stubInterface<TrustlessGatewayBlockBroker>()
     storage = new NetworkedStorage(blockstore, {
       blockBrokers: [
         bitswapBlockBroker,
@@ -109,7 +109,28 @@ describe('block-provider', () => {
     }
   })
 
-  it('handles incorrect bytes from a gateway', async () => {})
-  it('tries all gateways before failing', async () => {})
-  it('prioritizes gateways based on reliability', async () => {})
+  it('handles incorrect bytes from a gateway', async () => {
+    const { cid } = blocks[0]
+    const block = blocks[1].block
+    storage = new NetworkedStorage(blockstore, {
+      blockBrokers: [
+        gatewayBlockBroker
+      ],
+      hashers: defaultHashers()
+    })
+
+    gatewayBlockBroker.retrieve.withArgs(cid, Sinon.match.any).resolves(block)
+
+    expect(await blockstore.has(cid)).to.be.false()
+
+    try {
+      await storage.get(cid)
+      throw new Error('should have thrown')
+    } catch (err) {
+      const error = err as AggregateError & { errors: Error & { code: string } }
+      expect(error).to.be.an('error')
+      expect(error.errors).to.be.an('array').with.lengthOf(1)
+      expect(error.errors[0]).to.be.an('error').with.property('code', 'ERR_HASH_MISMATCH')
+    }
+  })
 })

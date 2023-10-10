@@ -24,7 +24,7 @@
 import { logger } from '@libp2p/logger'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
-import { BitswapBlockBroker, TrustedGatewayBlockBroker } from './block-brokers/index.js'
+import { BitswapBlockBroker, TrustlessGatewayBlockBroker } from './block-brokers/index.js'
 import { HeliaImpl } from './helia.js'
 import { defaultHashers } from './utils/default-hashers.js'
 import { createLibp2p } from './utils/libp2p.js'
@@ -171,7 +171,7 @@ export async function createHelia (init: HeliaInit = {}): Promise<Helia<unknown>
     }) satisfies BlockBroker
   }) ?? [
     new BitswapBlockBroker(libp2p, blockstore, hashers),
-    new TrustedGatewayBlockBroker(DEFAULT_TRUSTLESS_GATEWAYS)
+    new TrustlessGatewayBlockBroker(DEFAULT_TRUSTLESS_GATEWAYS)
   ]
 
   const helia = new HeliaImpl({

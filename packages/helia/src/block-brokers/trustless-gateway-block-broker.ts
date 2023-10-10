@@ -9,9 +9,9 @@ const log = logger('helia:trustless-gateway-block-broker')
  * A `TrustlessGateway` keeps track of the number of attempts, errors, and
  * successes for a given gateway url so that we can prioritize gateways that
  * have been more reliable in the past, and ensure that requests are distributed
- * across all gateways within a given `TrustedGatewayBlockBroker` instance.
+ * across all gateways within a given `TrustlessGatewayBlockBroker` instance.
  */
-class TrustlessGateway {
+export class TrustlessGateway {
   public readonly url: URL
   /**
    * The number of times this gateway has been attempted to be used to fetch a
@@ -137,13 +137,20 @@ export type TrustlessGatewayGetBlockProgressEvents =
  * A class that accepts a list of trustless gateways that are queried
  * for blocks.
  */
-export class TrustedGatewayBlockBroker implements BlockRetriever<
+export class TrustlessGatewayBlockBroker implements BlockRetriever<
 ProgressOptions<TrustlessGatewayGetBlockProgressEvents>
 > {
   private readonly gateways: TrustlessGateway[]
 
-  constructor (urls: Array<string | URL>) {
-    this.gateways = urls.map((url) => new TrustlessGateway(url))
+  constructor (gatewaysOrUrls: Array<string | URL | TrustlessGateway>) {
+    this.gateways = gatewaysOrUrls.map((gatewayOrUrl) => {
+      if (gatewayOrUrl instanceof TrustlessGateway || Object.prototype.hasOwnProperty.call(gatewayOrUrl, 'getRawBlock')) {
+        return gatewayOrUrl as TrustlessGateway
+      }
+      // eslint-disable-next-line no-console
+      console.trace('creating new TrustlessGateway for %s', gatewayOrUrl)
+      return new TrustlessGateway(gatewayOrUrl)
+    })
   }
 
   async retrieve (cid: CID, options: BlockRetrievalOptions<ProgressOptions<TrustlessGatewayGetBlockProgressEvents>> = {}): Promise<Uint8Array> {
