@@ -11,6 +11,10 @@
 [![codecov](https://img.shields.io/codecov/c/github/ipfs/helia.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia)
 [![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
 
+[Helia](https://github.com/ipfs/helia) is a lean, modular, and modern TypeScript implementation of IPFS for the prolific JS and browser environments.
+
+See the [Manifesto](https://github.com/ipfs/helia/wiki/Manifesto), the [FAQ](https://github.com/ipfs/helia/wiki/FAQ), and the [State of IPFS in JS blog post from October 2022](https://blog.ipfs.tech/state-of-ipfs-in-js/) for more info.
+
 ## 🌟 Usage
 
 A quick overview of how to get different types of data in and out of your Helia
@@ -119,7 +123,6 @@ repo for how to do mostly anything with your Helia node.
   - [🌠 DAG-JSON](#-dag-json)
   - [🌌 DAG-CBOR](#-dag-cbor)
   - [🐾 Next steps](#-next-steps)
-- [🥅 Purpose and goals](#-purpose-and-goals)
 - [🏃‍♀️ Getting Started](#️-getting-started)
 - [📗 Project Docs](#-project-docs)
 - [📒 API Docs](#-api-docs)
@@ -132,12 +135,6 @@ repo for how to do mostly anything with your Helia node.
 - [🛍️ Notable Consumers/Users](#️-notable-consumersusers)
 - [🌞 Branding](#-branding)
 - [🪪 License](#-license)
-
-## 🥅 Purpose and goals
-
-A lean, modular, and modern implementation of IPFS for the prolific JS and browser environments.
-
-See the [Manifesto](https://github.com/ipfs/helia/wiki/Manifesto), the [FAQ](https://github.com/ipfs/helia/wiki/FAQ), and the [State of IPFS in JS blog post from October 2022](https://blog.ipfs.tech/state-of-ipfs-in-js/) for more info.
 
 ## 🏃‍♀️ Getting Started
 
