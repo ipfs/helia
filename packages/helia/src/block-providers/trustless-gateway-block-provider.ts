@@ -19,7 +19,7 @@ ProgressOptions<TrustlessGatewayGetBlockProgressEvents>
 > {
   private readonly gateways: URL[]
 
-  constructor (urls: string[]) {
+  constructor (urls: Array<string | URL>) {
     this.gateways = urls.map(url => new URL(url.toString()))
   }
 
