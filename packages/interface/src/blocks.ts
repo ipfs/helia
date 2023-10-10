@@ -1,4 +1,5 @@
 import type { Blockstore } from 'interface-blockstore'
+import type { AbortOptions } from 'interface-store'
 import type { BitswapNotifyProgressEvents, BitswapWantProgressEvents } from 'ipfs-bitswap'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
@@ -10,31 +11,31 @@ export interface Pair {
 
 export type HasBlockProgressEvents =
   ProgressEvent<'blocks:put:duplicate', CID> |
-  ProgressEvent<'blocks:put:bitswap:notify', CID> |
+  ProgressEvent<'blocks:put:providers:notify', CID> |
   ProgressEvent<'blocks:put:blockstore:put', CID> |
   BitswapNotifyProgressEvents
 
 export type PutBlockProgressEvents =
   ProgressEvent<'blocks:put:duplicate', CID> |
-  ProgressEvent<'blocks:put:bitswap:notify', CID> |
+  ProgressEvent<'blocks:put:providers:notify', CID> |
   ProgressEvent<'blocks:put:blockstore:put', CID> |
   BitswapNotifyProgressEvents
 
 export type PutManyBlocksProgressEvents =
   ProgressEvent<'blocks:put-many:duplicate', CID> |
-  ProgressEvent<'blocks:put-many:bitswap:notify', CID> |
+  ProgressEvent<'blocks:put-many:providers:notify', CID> |
   ProgressEvent<'blocks:put-many:blockstore:put-many'> |
   BitswapNotifyProgressEvents
 
 export type GetBlockProgressEvents =
-  ProgressEvent<'blocks:get:bitswap:want', CID> |
+  ProgressEvent<'blocks:get:providers:want', CID> |
   ProgressEvent<'blocks:get:blockstore:get', CID> |
   ProgressEvent<'blocks:get:blockstore:put', CID> |
   BitswapWantProgressEvents
 
 export type GetManyBlocksProgressEvents =
   ProgressEvent<'blocks:get-many:blockstore:get-many'> |
-  ProgressEvent<'blocks:get-many:bitswap:want', CID> |
+  ProgressEvent<'blocks:get-many:providers:want', CID> |
   ProgressEvent<'blocks:get-many:blockstore:put', CID> |
   BitswapWantProgressEvents
 
@@ -61,3 +62,19 @@ ProgressOptions<DeleteBlockProgressEvents>, ProgressOptions<DeleteManyBlocksProg
 > {
 
 }
+
+export interface BlockRetriever<GetProgressOptions extends ProgressOptions = ProgressOptions> {
+  /**
+   * Retrieve a block from a source
+   */
+  retrieve(cid: CID, options?: AbortOptions & GetProgressOptions): Promise<Uint8Array>
+}
+
+export interface BlockAnnouncer<NotifyProgressOptions extends ProgressOptions = ProgressOptions> {
+  /**
+   * Make a new block available to peers
+   */
+  announce(cid: CID, block: Uint8Array, options?: NotifyProgressOptions): void
+}
+
+export type BlockBroker = BlockRetriever | BlockAnnouncer

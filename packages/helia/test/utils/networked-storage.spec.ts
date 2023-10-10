@@ -8,16 +8,17 @@ import drain from 'it-drain'
 import * as raw from 'multiformats/codecs/raw'
 import Sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
+import { defaultHashers } from '../../src/utils/default-hashers.js'
 import { NetworkedStorage } from '../../src/utils/networked-storage.js'
 import { createBlock } from '../fixtures/create-block.js'
+import type { BitswapBlockBroker } from '../../src/block-brokers/bitswap-block-broker.js'
 import type { Blockstore } from 'interface-blockstore'
-import type { Bitswap } from 'ipfs-bitswap'
 import type { CID } from 'multiformats/cid'
 
 describe('storage', () => {
   let storage: NetworkedStorage
   let blockstore: Blockstore
-  let bitswap: StubbedInstance<Bitswap>
+  let bitswap: StubbedInstance<BitswapBlockBroker>
   let blocks: Array<{ cid: CID, block: Uint8Array }>
 
   beforeEach(async () => {
@@ -28,9 +29,12 @@ describe('storage', () => {
     }
 
     blockstore = new MemoryBlockstore()
-    bitswap = stubInterface<Bitswap>()
+    bitswap = stubInterface<BitswapBlockBroker>()
     storage = new NetworkedStorage(blockstore, {
-      bitswap
+      blockBrokers: [
+        bitswap
+      ],
+      hashers: defaultHashers()
     })
   })
 
@@ -114,7 +118,7 @@ describe('storage', () => {
     const { cid, block } = blocks[0]
 
     bitswap.isStarted.returns(true)
-    bitswap.want.withArgs(cid).resolves(block)
+    bitswap.retrieve.withArgs(cid).resolves(block)
 
     expect(await blockstore.has(cid)).to.be.false()
 
@@ -122,7 +126,7 @@ describe('storage', () => {
 
     expect(await blockstore.has(cid)).to.be.true()
     expect(returned).to.equalBytes(block)
-    expect(bitswap.want.called).to.be.true()
+    expect(bitswap.retrieve.called).to.be.true()
   })
 
   it('gets many blocks from bitswap when they are not in the blockstore', async () => {
@@ -132,7 +136,7 @@ describe('storage', () => {
 
     for (let i = 0; i < count; i++) {
       const { cid, block } = blocks[i]
-      bitswap.want.withArgs(cid).resolves(block)
+      bitswap.retrieve.withArgs(cid).resolves(block)
 
       expect(await blockstore.has(cid)).to.be.false()
     }
@@ -148,7 +152,7 @@ describe('storage', () => {
 
     for (let i = 0; i < count; i++) {
       const { cid } = blocks[i]
-      expect(bitswap.want.calledWith(cid)).to.be.true()
+      expect(bitswap.retrieve.calledWith(cid)).to.be.true()
       expect(await blockstore.has(cid)).to.be.true()
     }
   })
@@ -165,7 +169,7 @@ describe('storage', () => {
     await blockstore.put(blocks[4].cid, blocks[4].block)
 
     // block #2 comes from bitswap but slowly
-    bitswap.want.withArgs(blocks[2].cid).callsFake(async () => {
+    bitswap.retrieve.withArgs(blocks[2].cid).callsFake(async () => {
       await delay(100)
       return blocks[2].block
     })
