@@ -62,6 +62,6 @@ ProgressOptions<BitswapWantBlockProgressEvents>
  * A helper factory for users who want to override Helia `blockBrokers` but
  * still want to use the default `BitswapBlockBroker`.
  */
-export const BitSwapBlockBrokerFactory = (hashers: MultihashHasher[]): BlockBrokerFactoryFunction => (components): BitswapBlockBroker => {
-  return new BitswapBlockBroker(components.libp2p, components.blockstore, hashers)
+export const BitswapBlockBrokerFactory: BlockBrokerFactoryFunction = (components): BitswapBlockBroker => {
+  return new BitswapBlockBroker(components.libp2p, components.blockstore, components.hashers)
 }

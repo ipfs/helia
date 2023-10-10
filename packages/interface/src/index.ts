@@ -19,6 +19,7 @@ import type { Pins } from './pins.js'
 import type { Libp2p, AbortOptions } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
+import type { MultihashHasher } from 'multiformats/hashes/interface'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
 export type { Await, AwaitIterable } from 'interface-store'
@@ -70,6 +71,9 @@ export type GcEvents =
 export interface GCOptions extends AbortOptions, ProgressOptions<GcEvents> {
 
 }
+export type BlockBrokerFactoryComponents = Pick<Helia, 'libp2p' | 'blockstore' | 'datastore'> & {
+  hashers: MultihashHasher[]
+}
 
 /**
  * A function that receives some {@link Helia} components and returns a
@@ -80,5 +84,5 @@ export interface GCOptions extends AbortOptions, ProgressOptions<GcEvents> {
  * scope.
  */
 export interface BlockBrokerFactoryFunction {
-  (heliaComponents: Pick<Helia, 'libp2p' | 'blockstore' | 'datastore'>): BlockBroker
+  (heliaComponents: BlockBrokerFactoryComponents): BlockBroker
 }

@@ -159,15 +159,16 @@ export async function createHelia (init: HeliaInit = {}): Promise<Helia<unknown>
 
   const hashers = defaultHashers(init.hashers)
 
-  const blockBrokers = init.blockBrokers?.map((blockBroker) => {
+  const blockBrokers: BlockBroker[] = init.blockBrokers?.map((blockBroker: BlockBroker | BlockBrokerFactoryFunction): BlockBroker => {
     if (typeof blockBroker !== 'function') {
-      return blockBroker
+      return blockBroker satisfies BlockBroker
     }
     return blockBroker({
       blockstore,
       datastore,
-      libp2p
-    })
+      libp2p,
+      hashers
+    }) satisfies BlockBroker
   }) ?? [
     new BitswapBlockBroker(libp2p, blockstore, hashers),
     new TrustedGatewayBlockBroker(DEFAULT_TRUSTLESS_GATEWAYS)
