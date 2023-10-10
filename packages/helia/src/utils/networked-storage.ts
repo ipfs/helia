@@ -6,7 +6,7 @@ import filter from 'it-filter'
 import forEach from 'it-foreach'
 import { CustomProgressEvent, type ProgressOptions } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import type { BlockBroker, Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions, BlockRetriever, BlockAnnouncer } from '@helia/interface/blocks'
+import type { BlockBroker, Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions, BlockRetriever, BlockAnnouncer, BlockRetrievalOptions } from '@helia/interface/blocks'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { AwaitIterable } from 'interface-store'
@@ -196,16 +196,30 @@ export class NetworkedStorage implements Blocks, Startable {
   }
 }
 
-/**
- * Race block providers cancelling any pending requests once the block has been
- * found.
- */
-async function raceBlockRetrievers (cid: CID, providers: BlockRetriever[], hashers: MultihashHasher[], options: AbortOptions): Promise<Uint8Array> {
+export const getCidBlockVerifierFunction = (cid: CID, hashers: MultihashHasher[]): Required<BlockRetrievalOptions>['validateFn'] => {
   const hasher = hashers.find(hasher => hasher.code === cid.multihash.code)
 
   if (hasher == null) {
     throw new CodeError(`No hasher configured for multihash code 0x${cid.multihash.code.toString(16)}, please configure one. You can look up which hash this is at https://github.com/multiformats/multicodec/blob/master/table.csv`, 'ERR_UNKNOWN_HASH_ALG')
   }
+
+  return async (block: Uint8Array): Promise<void> => {
+    // verify block
+    const hash = await hasher.digest(block)
+
+    if (!uint8ArrayEquals(hash.digest, cid.multihash.digest)) {
+      // if a hash mismatch occurs for a TrustlessGatewayBlockBroker, we should try another gateway
+      throw new CodeError('Hash of downloaded block did not match multihash from passed CID', 'ERR_HASH_MISMATCH')
+    }
+  }
+}
+
+/**
+ * Race block providers cancelling any pending requests once the block has been
+ * found.
+ */
+async function raceBlockRetrievers (cid: CID, providers: BlockRetriever[], hashers: MultihashHasher[], options: AbortOptions): Promise<Uint8Array> {
+  const validateFn = getCidBlockVerifierFunction(cid, hashers)
 
   const controller = new AbortController()
   const signal = anySignal([controller.signal, options.signal])
@@ -214,21 +228,25 @@ async function raceBlockRetrievers (cid: CID, providers: BlockRetriever[], hashe
     return await Promise.any(
       providers.map(async provider => {
         try {
+          let blocksWereValidated = false
           const block = await provider.retrieve(cid, {
             ...options,
-            signal
+            signal,
+            validateFn: async (block: Uint8Array): Promise<void> => {
+              await validateFn(block)
+              blocksWereValidated = true
+            }
           })
 
-          // verify block
-          const hash = await hasher.digest(block)
-
-          if (!uint8ArrayEquals(hash.digest, cid.multihash.digest)) {
-            throw new CodeError('Hash of downloaded block did not match multihash from passed CID', 'ERR_HASH_MISMATCH')
+          if (!blocksWereValidated) {
+            // the blockBroker either did not throw an error when attempting to validate the block
+            // or did not call the validateFn at all. We should validate the block ourselves
+            await validateFn(block)
           }
 
           return block
         } catch (err) {
-          log.error('could not retrieve block for %c', cid, err)
+          log.error('could not retrieve verified block for %c', cid, err)
           throw err
         }
       })

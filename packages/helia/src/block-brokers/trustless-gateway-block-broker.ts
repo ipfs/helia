@@ -1,6 +1,5 @@
 import { logger } from '@libp2p/logger'
-import type { BlockRetriever } from '@helia/interface/blocks'
-import type { AbortOptions } from 'interface-store'
+import type { BlockRetrievalOptions, BlockRetriever } from '@helia/interface/blocks'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
@@ -29,6 +28,13 @@ class TrustlessGateway {
    * attempts.
    */
   #errors = 0
+
+  /**
+   * The number of times this gateway has returned an invalid block. A gateway
+   * that returns the wrong blocks for a CID should be considered for removal
+   * from the list of gateways to fetch blocks from.
+   */
+  #invalidBlocks = 0
 
   /**
    * The number of times this gateway has successfully fetched a block.
@@ -100,6 +106,11 @@ class TrustlessGateway {
       return 1
     }
 
+    if (this.#invalidBlocks > 0) {
+      // this gateway may not be trustworthy..
+      return -Infinity
+    }
+
     /**
      * We have attempted the gateway, so we need to calculate the reliability
      * based on the number of attempts, errors, and successes. Gateways that
@@ -109,6 +120,13 @@ class TrustlessGateway {
      * Play around with the below reliability function at https://www.desmos.com/calculator/d6hfhf5ukm
      */
     return this.#successes / (this.#attempts + (this.#errors * 3))
+  }
+
+  /**
+   * Increment the number of invalid blocks returned by this gateway.
+   */
+  incrementInvalidBlocks (): void {
+    this.#invalidBlocks++
   }
 }
 
@@ -128,7 +146,7 @@ ProgressOptions<TrustlessGatewayGetBlockProgressEvents>
     this.gateways = urls.map((url) => new TrustlessGateway(url))
   }
 
-  async retrieve (cid: CID, options: AbortOptions & ProgressOptions<TrustlessGatewayGetBlockProgressEvents> = {}): Promise<Uint8Array> {
+  async retrieve (cid: CID, options: BlockRetrievalOptions<ProgressOptions<TrustlessGatewayGetBlockProgressEvents>> = {}): Promise<Uint8Array> {
     // Loop through the gateways until we get a block or run out of gateways
     const sortedGateways = this.gateways.sort((a, b) => b.reliability - a.reliability)
     const aggregateErrors: Error[] = []
@@ -137,6 +155,14 @@ ProgressOptions<TrustlessGatewayGetBlockProgressEvents>
       try {
         const block = await gateway.getRawBlock(cid, options.signal)
         log.trace('got block for %c from %s', cid, gateway.url)
+        try {
+          await options.validateFn?.(block)
+        } catch (err) {
+          log.error('failed to validate block for %c from %s', cid, gateway.url, err)
+          gateway.incrementInvalidBlocks()
+
+          throw new Error(`unable to validate block for CID ${cid} from gateway ${gateway.url}`)
+        }
 
         return block
       } catch (err: unknown) {
