@@ -36,9 +36,6 @@
     "docs": "NODE_OPTIONS=--max_old_space_size=8192 aegir docs -- --exclude packages/interop --excludeExternals",
     "docs:no-publish": "NODE_OPTIONS=--max_old_space_size=8192 aegir docs --publish false -- --exclude packages/interop"
   },
-  "dependencies": {
-    "any-signal": "^4.1.1"
-  },
   "devDependencies": {
     "aegir": "^41.0.0",
     "npm-run-all": "^4.1.5",
