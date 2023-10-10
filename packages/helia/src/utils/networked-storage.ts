@@ -71,7 +71,7 @@ export class NetworkedStorage implements Blocks, Startable {
     options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:providers:notify', cid))
 
     this.blockProviders.forEach(provider => {
-      provider.notify(cid, block, options)
+      provider.notify?.(cid, block, options)
     })
 
     options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:blockstore:put', cid))
@@ -96,7 +96,7 @@ export class NetworkedStorage implements Blocks, Startable {
     const notifyEach = forEach(missingBlocks, ({ cid, block }): void => {
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:put-many:providers:notify', cid))
       this.blockProviders.forEach(provider => {
-        provider.notify(cid, block, options)
+        provider.notify?.(cid, block, options)
       })
     })
 
@@ -118,7 +118,7 @@ export class NetworkedStorage implements Blocks, Startable {
       // notify other block providers of the new block
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:providers:notify', cid))
       this.blockProviders.forEach(provider => {
-        provider.notify(cid, block, options)
+        provider.notify?.(cid, block, options)
       })
 
       return block
@@ -146,7 +146,7 @@ export class NetworkedStorage implements Blocks, Startable {
         // notify other block providers of the new block
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:providers:notify', cid))
         this.blockProviders.forEach(provider => {
-          provider.notify(cid, block, options)
+          provider.notify?.(cid, block, options)
         })
       }
     }))
@@ -191,7 +191,7 @@ async function raceBlockProviders (cid: CID, providers: BlockProvider[], hashers
   const hasher = hashers.find(hasher => hasher.code === cid.multihash.code)
 
   if (hasher == null) {
-    throw new CodeError(`No hasher configured for multihash code ${cid.code}, please configure one`, 'ERR_UNKNOWN_HASH_ALG')
+    throw new CodeError(`No hasher configured for multihash code 0x${cid.multihash.code.toString(16)}, please configure one. You can look up which hash this is at https://github.com/multiformats/multicodec/blob/master/table.csv`, 'ERR_UNKNOWN_HASH_ALG')
   }
 
   const controller = new AbortController()

@@ -23,10 +23,6 @@ ProgressOptions<TrustlessGatewayGetBlockProgressEvents>
     this.gateways = urls.map(url => new URL(url.toString()))
   }
 
-  notify (cid: CID, block: Uint8Array, options?: ProgressOptions): void {
-    // no-op
-  }
-
   async get (cid: CID, options: AbortOptions & ProgressOptions<TrustlessGatewayGetBlockProgressEvents> = {}): Promise<Uint8Array> {
     // choose a gateway
     const url = this.gateways[Math.floor(Math.random() * this.gateways.length)]

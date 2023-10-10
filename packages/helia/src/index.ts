@@ -24,11 +24,10 @@
 import { logger } from '@libp2p/logger'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
-import { identity } from 'multiformats/hashes/identity'
-import { sha256, sha512 } from 'multiformats/hashes/sha2'
 import { BitswapBlockProvider } from './block-providers/bitswap-block-provider.js'
 import { TrustedGatewayBlockProvider } from './block-providers/trustless-gateway-block-provider.js'
 import { HeliaImpl } from './helia.js'
+import { defaultHashers } from './utils/default-hashers.js'
 import { createLibp2p } from './utils/libp2p.js'
 import { name, version } from './version.js'
 import type { DefaultLibp2pServices } from './utils/libp2p-defaults.js'
@@ -159,12 +158,7 @@ export async function createHelia (init: HeliaInit = {}): Promise<Helia<unknown>
     libp2p = await createLibp2p(datastore, init.libp2p)
   }
 
-  const hashers: MultihashHasher[] = [
-    sha256,
-    sha512,
-    identity,
-    ...(init.hashers ?? [])
-  ]
+  const hashers = defaultHashers(init.hashers)
 
   const blockProviders = init.blockProviders ?? [
     new BitswapBlockProvider(libp2p, blockstore, hashers),
@@ -176,7 +170,8 @@ export async function createHelia (init: HeliaInit = {}): Promise<Helia<unknown>
     datastore,
     blockstore,
     libp2p,
-    blockProviders
+    blockProviders,
+    hashers
   })
 
   if (init.start !== false) {

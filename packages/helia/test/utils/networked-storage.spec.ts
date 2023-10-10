@@ -8,6 +8,7 @@ import drain from 'it-drain'
 import * as raw from 'multiformats/codecs/raw'
 import Sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
+import { defaultHashers } from '../../src/utils/default-hashers.js'
 import { NetworkedStorage } from '../../src/utils/networked-storage.js'
 import { createBlock } from '../fixtures/create-block.js'
 import type { BitswapBlockProvider } from '../../src/block-providers/bitswap-block-provider.js'
@@ -32,7 +33,8 @@ describe('storage', () => {
     storage = new NetworkedStorage(blockstore, {
       blockProviders: [
         bitswap
-      ]
+      ],
+      hashers: defaultHashers()
     })
   })
 

@@ -70,7 +70,7 @@ export interface BlockProvider<
   /**
    * Notify a block provider that a new block is available
    */
-  notify(cid: CID, block: Uint8Array, options?: NotifyProgressOptions): void
+  notify?(cid: CID, block: Uint8Array, options?: NotifyProgressOptions): void
 
   /**
    * Retrieve a block
