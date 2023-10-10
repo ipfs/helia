@@ -1,4 +1,5 @@
 import { createBitswap } from 'ipfs-bitswap'
+import type { BlockBrokerFactoryFunction } from '@helia/interface'
 import type { BlockAnnouncer, BlockRetriever } from '@helia/interface/blocks'
 import type { Libp2p } from '@libp2p/interface'
 import type { Startable } from '@libp2p/interface/startable'
@@ -55,4 +56,12 @@ ProgressOptions<BitswapWantBlockProgressEvents>
   async retrieve (cid: CID, options?: AbortOptions & ProgressOptions<BitswapWantBlockProgressEvents>): Promise<Uint8Array> {
     return this.bitswap.want(cid, options)
   }
+}
+
+/**
+ * A helper factory for users who want to override Helia `blockBrokers` but
+ * still want to use the default `BitswapBlockBroker`.
+ */
+export const BitSwapBlockBrokerFactory = (hashers: MultihashHasher[]): BlockBrokerFactoryFunction => (components): BitswapBlockBroker => {
+  return new BitswapBlockBroker(components.libp2p, components.blockstore, hashers)
 }

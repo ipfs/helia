@@ -1,3 +1,4 @@
+import { type BlockBroker } from '@helia/interface/blocks'
 import { start, stop } from '@libp2p/interface/startable'
 import { logger } from '@libp2p/logger'
 import drain from 'it-drain'
@@ -19,6 +20,7 @@ const log = logger('helia')
 interface HeliaImplInit<T extends Libp2p = Libp2p> extends HeliaInit<T> {
   libp2p: T
   blockstore: Blockstore
+  blockBrokers: BlockBroker[]
   datastore: Datastore
 }
 
