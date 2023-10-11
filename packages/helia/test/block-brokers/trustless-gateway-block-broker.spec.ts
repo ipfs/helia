@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 import { expect } from 'aegir/chai'
 import * as raw from 'multiformats/codecs/raw'
+import Sinon from 'sinon'
 import { type StubbedInstance, stubConstructor } from 'sinon-ts'
 import { TrustlessGatewayBlockBroker } from '../../src/block-brokers/index.js'
 import { TrustlessGateway } from '../../src/block-brokers/trustless-gateway-block-broker.js'
@@ -11,7 +12,18 @@ describe('trustless-gateway-block-broker', () => {
   let blocks: Array<{ cid: CID, block: Uint8Array }>
   let gatewayBlockBroker: TrustlessGatewayBlockBroker
   let gateways: Array<StubbedInstance<TrustlessGateway>>
-  // let gateways: Array<TrustedGateway>
+
+  // take a Record<gatewayIndex, (gateway: StubbedInstance<TrustlessGateway>) => void> and stub the gateways
+  // Record.default is the default handler
+  function stubGateways (handlers: Record<number, (gateway: StubbedInstance<TrustlessGateway>, index?: number) => void> & { default(gateway: StubbedInstance<TrustlessGateway>, index: number): void }): void {
+    for (let i = 0; i < gateways.length; i++) {
+      if (handlers[i] != null) {
+        handlers[i](gateways[i])
+        continue
+      }
+      handlers.default(gateways[i], i)
+    }
+  }
 
   beforeEach(async () => {
     blocks = []
@@ -39,6 +51,8 @@ describe('trustless-gateway-block-broker', () => {
       throw new Error('should have failed')
     } catch (err: unknown) {
       expect(err).to.exist()
+      expect(err).to.be.an.instanceOf(AggregateError)
+      expect((err as AggregateError).errors).to.have.lengthOf(gateways.length)
     }
     for (const gateway of gateways) {
       expect(gateway.getRawBlock.calledWith(blocks[0].cid)).to.be.true()
@@ -46,28 +60,92 @@ describe('trustless-gateway-block-broker', () => {
   })
 
   it('prioritizes gateways based on reliability', async () => {
-    // stub all gateway responses to fail
-    for (const gateway of gateways) {
-      gateway.getRawBlock.rejects(new Error('failed'))
-    }
-    // try to get a block
-    try {
-      await gatewayBlockBroker.retrieve(blocks[0].cid)
-      throw new Error('should have failed')
-    } catch (err: unknown) {
-      expect(err).to.exist()
-    }
+    const callOrder: number[] = []
 
-    for (const gateway of gateways) {
-      expect(gateway.getRawBlock.calledWith(blocks[0].cid)).to.be.true()
+    // stub all gateway responses to fail, and set reliabilities to known values.
+    stubGateways({
+      default: (gateway, i) => {
+        gateway.getRawBlock.withArgs(blocks[1].cid, Sinon.match.any).callsFake(async () => {
+          callOrder.push(i)
+          throw new Error('failed')
+        })
+        gateway.reliability.returns(i) // known reliability of 0, 1, 2, 3
+      }
+    })
+
+    try {
+      await gatewayBlockBroker.retrieve(blocks[1].cid)
+    } catch {
+      // ignore
     }
-    // stub the first gateway to succeed
-    gateways[0].getRawBlock.resolves(blocks[1].block)
-    // try to get a block and ensure the first gateway was called
-    await gatewayBlockBroker.retrieve(blocks[1].cid)
+    // all gateways were called
     expect(gateways[0].getRawBlock.calledWith(blocks[1].cid)).to.be.true()
-    expect(gateways[1].getRawBlock.calledWith(blocks[1].cid)).to.be.false()
-    expect(gateways[2].getRawBlock.calledWith(blocks[1].cid)).to.be.false()
-    expect(gateways[3].getRawBlock.calledWith(blocks[1].cid)).to.be.false()
+    expect(gateways[1].getRawBlock.calledWith(blocks[1].cid)).to.be.true()
+    expect(gateways[2].getRawBlock.calledWith(blocks[1].cid)).to.be.true()
+    expect(gateways[3].getRawBlock.calledWith(blocks[1].cid)).to.be.true()
+    // and in the correct order.
+    expect(callOrder).to.have.ordered.members([3, 2, 1, 0])
+  })
+
+  it('tries other gateways if it receives invalid blocks', async () => {
+    const { cid: cid1, block: block1 } = blocks[0]
+    const { block: block2 } = blocks[1]
+    stubGateways({
+      // return valid block for only one gateway
+      0: (gateway) => {
+        gateway.getRawBlock.withArgs(cid1, Sinon.match.any).resolves(block1)
+        gateway.reliability.returns(0) // make sure it's called last
+      },
+      // return invalid blocks for all other gateways
+      default: (gateway) => { // default stub function
+        gateway.getRawBlock.withArgs(cid1, Sinon.match.any).resolves(block2) // invalid block for the CID
+        gateway.reliability.returns(1) // make sure other gateways are called first
+      }
+    })
+    // try {
+    const block = await gatewayBlockBroker.retrieve(cid1, {
+      validateFn: async (block) => {
+        if (block !== block1) {
+          throw new Error('invalid block')
+        }
+      }
+    })
+    expect(block).to.equal(block1)
+
+    // expect that all gateways are called, because everyone returned invalid blocks except the last one
+    for (const gateway of gateways) {
+      expect(gateway.getRawBlock.calledWith(cid1, Sinon.match.any)).to.be.true()
+    }
+  })
+
+  it('doesnt call other gateways if the first gateway returns a valid block', async () => {
+    const { cid: cid1, block: block1 } = blocks[0]
+    const { block: block2 } = blocks[1]
+
+    stubGateways({
+      // return valid block for only one gateway
+      3: (gateway) => {
+        gateway.getRawBlock.withArgs(cid1, Sinon.match.any).resolves(block1)
+        gateway.reliability.returns(1) // make sure it's called first
+      },
+      // return invalid blocks for all other gateways
+      default: (gateway) => { // default stub function
+        gateway.getRawBlock.withArgs(cid1, Sinon.match.any).resolves(block2) // invalid block for the CID
+        gateway.reliability.returns(0) // make sure other gateways are called last
+      }
+    })
+    const block = await gatewayBlockBroker.retrieve(cid1, {
+      validateFn: async (block) => {
+        if (block !== block1) {
+          throw new Error('invalid block')
+        }
+      }
+    })
+    expect(block).to.equal(block1)
+    expect(gateways[3].getRawBlock.calledWith(cid1, Sinon.match.any)).to.be.true()
+    // expect that other gateways are not called, because the first gateway returned a valid block
+    expect(gateways[0].getRawBlock.calledWith(cid1, Sinon.match.any)).to.be.false()
+    expect(gateways[1].getRawBlock.calledWith(cid1, Sinon.match.any)).to.be.false()
+    expect(gateways[2].getRawBlock.calledWith(cid1, Sinon.match.any)).to.be.false()
   })
 })

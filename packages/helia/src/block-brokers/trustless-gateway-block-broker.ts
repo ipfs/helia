@@ -97,7 +97,7 @@ export class TrustlessGateway {
    * Unused gateways have 100% reliability; They will be prioritized over
    * gateways with a 100% success rate to ensure that we attempt all gateways.
    */
-  get reliability (): number {
+  reliability (): number {
     /**
      * if we have never tried to use this gateway, it is considered the most
      * reliable until we determine otherwise (prioritize unused gateways)
@@ -155,7 +155,7 @@ ProgressOptions<TrustlessGatewayGetBlockProgressEvents>
 
   async retrieve (cid: CID, options: BlockRetrievalOptions<ProgressOptions<TrustlessGatewayGetBlockProgressEvents>> = {}): Promise<Uint8Array> {
     // Loop through the gateways until we get a block or run out of gateways
-    const sortedGateways = this.gateways.sort((a, b) => b.reliability - a.reliability)
+    const sortedGateways = this.gateways.sort((a, b) => b.reliability() - a.reliability())
     const aggregateErrors: Error[] = []
     for (const gateway of sortedGateways) {
       log('getting block for %c from %s', cid, gateway.url)
