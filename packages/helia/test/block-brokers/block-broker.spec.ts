@@ -10,16 +10,16 @@ import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { defaultHashers } from '../../src/utils/default-hashers.js'
 import { NetworkedStorage } from '../../src/utils/networked-storage.js'
 import { createBlock } from '../fixtures/create-block.js'
-import type { BitswapBlockBroker, TrustlessGatewayBlockBroker } from '../../src/block-brokers/index.js'
+import type { BlockBroker, BlockRetriever } from '@helia/interface/blocks'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 
-describe('block-provider', () => {
+describe('block-broker', () => {
   let storage: NetworkedStorage
   let blockstore: Blockstore
-  let bitswapBlockBroker: StubbedInstance<BitswapBlockBroker>
+  let bitswapBlockBroker: StubbedInstance<Required<BlockBroker>>
   let blocks: Array<{ cid: CID, block: Uint8Array }>
-  let gatewayBlockBroker: StubbedInstance<TrustlessGatewayBlockBroker>
+  let gatewayBlockBroker: StubbedInstance<Required<BlockRetriever>>
 
   beforeEach(async () => {
     blocks = []
@@ -29,8 +29,8 @@ describe('block-provider', () => {
     }
 
     blockstore = new MemoryBlockstore()
-    bitswapBlockBroker = stubInterface<BitswapBlockBroker>()
-    gatewayBlockBroker = stubInterface<TrustlessGatewayBlockBroker>()
+    bitswapBlockBroker = stubInterface()
+    gatewayBlockBroker = stubInterface()
     storage = new NetworkedStorage(blockstore, {
       blockBrokers: [
         bitswapBlockBroker,

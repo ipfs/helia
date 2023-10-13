@@ -11,14 +11,14 @@ import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { defaultHashers } from '../../src/utils/default-hashers.js'
 import { NetworkedStorage } from '../../src/utils/networked-storage.js'
 import { createBlock } from '../fixtures/create-block.js'
-import type { BitswapBlockBroker } from '../../src/block-brokers/bitswap-block-broker.js'
+import type { BlockAnnouncer, BlockRetriever } from '@helia/interface/blocks'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 
 describe('networked-storage', () => {
   let storage: NetworkedStorage
   let blockstore: Blockstore
-  let bitswap: StubbedInstance<BitswapBlockBroker>
+  let bitswap: StubbedInstance<Required<BlockRetriever & BlockAnnouncer>>
   let blocks: Array<{ cid: CID, block: Uint8Array }>
 
   beforeEach(async () => {
@@ -29,7 +29,7 @@ describe('networked-storage', () => {
     }
 
     blockstore = new MemoryBlockstore()
-    bitswap = stubInterface<BitswapBlockBroker>()
+    bitswap = stubInterface()
     storage = new NetworkedStorage(blockstore, {
       blockBrokers: [
         bitswap
@@ -117,7 +117,6 @@ describe('networked-storage', () => {
   it('gets a block from bitswap when it is not in the blockstore', async () => {
     const { cid, block } = blocks[0]
 
-    bitswap.isStarted.returns(true)
     bitswap.retrieve.withArgs(cid).resolves(block)
 
     expect(await blockstore.has(cid)).to.be.false()
@@ -130,8 +129,6 @@ describe('networked-storage', () => {
   })
 
   it('gets many blocks from bitswap when they are not in the blockstore', async () => {
-    bitswap.isStarted.returns(true)
-
     const count = 5
 
     for (let i = 0; i < count; i++) {
@@ -158,8 +155,6 @@ describe('networked-storage', () => {
   })
 
   it('gets some blocks from bitswap when they are not in the blockstore', async () => {
-    bitswap.isStarted.returns(true)
-
     const count = 5
 
     // blocks 0,1,3,4 are in the blockstore
