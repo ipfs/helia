@@ -3,14 +3,15 @@ import { expect } from 'aegir/chai'
 import * as raw from 'multiformats/codecs/raw'
 import Sinon from 'sinon'
 import { type StubbedInstance, stubConstructor } from 'sinon-ts'
-import { TrustlessGatewayBlockBroker } from '../../src/block-brokers/index.js'
-import { TrustlessGateway } from '../../src/block-brokers/trustless-gateway-block-broker.js'
+import { TrustlessGatewayBlockBroker } from '../../src/block-brokers/trustless-gateway/broker.js'
+import { TrustlessGateway } from '../../src/block-brokers/trustless-gateway/trustless-gateway.js'
 import { createBlock } from '../fixtures/create-block.js'
+import type { BlockRetriever } from '@helia/interface/blocks'
 import type { CID } from 'multiformats/cid'
 
 describe('trustless-gateway-block-broker', () => {
   let blocks: Array<{ cid: CID, block: Uint8Array }>
-  let gatewayBlockBroker: TrustlessGatewayBlockBroker
+  let gatewayBlockBroker: BlockRetriever
   let gateways: Array<StubbedInstance<TrustlessGateway>>
 
   // take a Record<gatewayIndex, (gateway: StubbedInstance<TrustlessGateway>) => void> and stub the gateways
@@ -38,7 +39,9 @@ describe('trustless-gateway-block-broker', () => {
       stubConstructor(TrustlessGateway, 'http://localhost:8082'),
       stubConstructor(TrustlessGateway, 'http://localhost:8083')
     ]
-    gatewayBlockBroker = new TrustlessGatewayBlockBroker(gateways)
+    gatewayBlockBroker = new TrustlessGatewayBlockBroker()
+    // must copy the array because the broker calls .sort which mutates in-place
+    ;(gatewayBlockBroker as any).gateways = [...gateways]
   })
 
   it('tries all gateways before failing', async () => {
@@ -46,14 +49,12 @@ describe('trustless-gateway-block-broker', () => {
     for (const gateway of gateways) {
       gateway.getRawBlock.rejects(new Error('failed'))
     }
-    try {
-      await gatewayBlockBroker.retrieve(blocks[0].cid)
-      throw new Error('should have failed')
-    } catch (err: unknown) {
-      expect(err).to.exist()
-      expect(err).to.be.an.instanceOf(AggregateError)
-      expect((err as AggregateError).errors).to.have.lengthOf(gateways.length)
-    }
+
+    await expect(gatewayBlockBroker.retrieve(blocks[0].cid))
+      .to.eventually.be.rejected()
+      .with.property('errors')
+      .with.lengthOf(gateways.length)
+
     for (const gateway of gateways) {
       expect(gateway.getRawBlock.calledWith(blocks[0].cid)).to.be.true()
     }
@@ -73,11 +74,8 @@ describe('trustless-gateway-block-broker', () => {
       }
     })
 
-    try {
-      await gatewayBlockBroker.retrieve(blocks[1].cid)
-    } catch {
-      // ignore
-    }
+    await expect(gatewayBlockBroker.retrieve(blocks[1].cid)).to.eventually.be.rejected()
+
     // all gateways were called
     expect(gateways[0].getRawBlock.calledWith(blocks[1].cid)).to.be.true()
     expect(gateways[1].getRawBlock.calledWith(blocks[1].cid)).to.be.true()
@@ -102,7 +100,7 @@ describe('trustless-gateway-block-broker', () => {
         gateway.reliability.returns(1) // make sure other gateways are called first
       }
     })
-    // try {
+
     const block = await gatewayBlockBroker.retrieve(cid1, {
       validateFn: async (block) => {
         if (block !== block1) {
@@ -118,7 +116,7 @@ describe('trustless-gateway-block-broker', () => {
     }
   })
 
-  it('doesnt call other gateways if the first gateway returns a valid block', async () => {
+  it('does not call other gateways if the first gateway returns a valid block', async () => {
     const { cid: cid1, block: block1 } = blocks[0]
     const { block: block2 } = blocks[1]
 

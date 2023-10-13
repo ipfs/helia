@@ -24,13 +24,11 @@
 import { logger } from '@libp2p/logger'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
-import { BitswapBlockBroker, TrustlessGatewayBlockBroker } from './block-brokers/index.js'
 import { HeliaImpl } from './helia.js'
-import { defaultHashers } from './utils/default-hashers.js'
 import { createLibp2p } from './utils/libp2p.js'
 import { name, version } from './version.js'
 import type { DefaultLibp2pServices } from './utils/libp2p-defaults.js'
-import type { Helia, BlockBrokerFactoryFunction } from '@helia/interface'
+import type { Helia } from '@helia/interface'
 import type { BlockBroker } from '@helia/interface/blocks'
 import type { Libp2p } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
@@ -98,7 +96,7 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
    * A list of strategies used to fetch blocks when they are not present in
    * the local blockstore
    */
-  blockBrokers?: Array<BlockBroker | BlockBrokerFactoryFunction>
+  blockBrokers?: Array<(components: any) => BlockBroker>
 
   /**
    * Pass `false` to not start the Helia node
@@ -123,23 +121,6 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
   holdGcLock?: boolean
 }
 
-const DEFAULT_TRUSTLESS_GATEWAYS = [
-  // 2023-10-03: IPNS, Origin, and Block/CAR support from https://ipfs-public-gateway-checker.on.fleek.co/
-  'https://dweb.link',
-
-  // 2023-10-03: IPNS, Origin, and Block/CAR support from https://ipfs-public-gateway-checker.on.fleek.co/
-  'https://cf-ipfs.com',
-
-  // 2023-10-03: IPNS, Origin, and Block/CAR support from https://ipfs-public-gateway-checker.on.fleek.co/
-  'https://4everland.io',
-
-  // 2023-10-03: IPNS, Origin, and Block/CAR support from https://ipfs-public-gateway-checker.on.fleek.co/
-  'https://w3s.link',
-
-  // 2023-10-03: IPNS, and Block/CAR support from https://ipfs-public-gateway-checker.on.fleek.co/
-  'https://cloudflare-ipfs.com'
-]
-
 /**
  * Create and return a Helia node
  */
@@ -157,30 +138,11 @@ export async function createHelia (init: HeliaInit = {}): Promise<Helia<unknown>
     libp2p = await createLibp2p(datastore, init.libp2p)
   }
 
-  const hashers = defaultHashers(init.hashers)
-
-  const blockBrokers: BlockBroker[] = init.blockBrokers?.map((blockBroker: BlockBroker | BlockBrokerFactoryFunction): BlockBroker => {
-    if (typeof blockBroker !== 'function') {
-      return blockBroker satisfies BlockBroker
-    }
-    return blockBroker({
-      blockstore,
-      datastore,
-      libp2p,
-      hashers
-    }) satisfies BlockBroker
-  }) ?? [
-    new BitswapBlockBroker(libp2p, blockstore, hashers),
-    new TrustlessGatewayBlockBroker(DEFAULT_TRUSTLESS_GATEWAYS)
-  ]
-
   const helia = new HeliaImpl({
     ...init,
     datastore,
     blockstore,
-    libp2p,
-    blockBrokers,
-    hashers
+    libp2p
   })
 
   if (init.start !== false) {

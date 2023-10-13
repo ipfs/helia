@@ -11,11 +11,11 @@ const options = {
     before: async () => {
       // use dynamic import otherwise the source may not have been built yet
       const { createHelia } = await import('./dist/src/index.js')
-      const { BitswapBlockBrokerFactory } = await import('./dist/src/block-brokers/index.js')
+      const { bitswap } = await import('./dist/src/block-brokers/index.js')
 
       const helia = await createHelia({
         blockBrokers: [
-          BitswapBlockBrokerFactory
+          bitswap()
         ],
         libp2p: {
           addresses: {

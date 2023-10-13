@@ -1,11 +1,12 @@
-import { type BlockBroker } from '@helia/interface/blocks'
 import { start, stop } from '@libp2p/interface/startable'
 import { logger } from '@libp2p/logger'
 import drain from 'it-drain'
 import { CustomProgressEvent } from 'progress-events'
+import { bitswap, trustlessGateway } from './block-brokers/index.js'
 import { PinsImpl } from './pins.js'
 import { BlockStorage } from './storage.js'
 import { assertDatastoreVersionIsCurrent } from './utils/datastore-version.js'
+import { defaultHashers } from './utils/default-hashers.js'
 import { NetworkedStorage } from './utils/networked-storage.js'
 import type { HeliaInit } from '.'
 import type { GCOptions, Helia } from '@helia/interface'
@@ -20,7 +21,6 @@ const log = logger('helia')
 interface HeliaImplInit<T extends Libp2p = Libp2p> extends HeliaInit<T> {
   libp2p: T
   blockstore: Blockstore
-  blockBrokers: BlockBroker[]
   datastore: Datastore
 }
 
@@ -31,9 +31,25 @@ export class HeliaImpl implements Helia {
   public pins: Pins
 
   constructor (init: HeliaImplInit) {
+    const hashers = defaultHashers(init.hashers)
+
+    const components = {
+      blockstore: init.blockstore,
+      datastore: init.datastore,
+      libp2p: init.libp2p,
+      hashers
+    }
+
+    const blockBrokers = init.blockBrokers?.map((fn) => {
+      return fn(components)
+    }) ?? [
+      bitswap()(components),
+      trustlessGateway()()
+    ]
+
     const networkedStorage = new NetworkedStorage(init.blockstore, {
-      blockBrokers: init.blockBrokers,
-      hashers: init.hashers
+      blockBrokers,
+      hashers
     })
 
     this.pins = new PinsImpl(init.datastore, networkedStorage, init.dagWalkers ?? [])
