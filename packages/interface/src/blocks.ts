@@ -63,11 +63,21 @@ ProgressOptions<DeleteBlockProgressEvents>, ProgressOptions<DeleteManyBlocksProg
 
 }
 
+export type BlockRetrievalOptions<GetProgressOptions extends ProgressOptions = ProgressOptions> = AbortOptions & GetProgressOptions & {
+  /**
+   * A function that blockBrokers should call prior to returning a block to ensure it can maintain control
+   * of the block request flow. e.g. TrustedGatewayBlockBroker will use this to ensure that the block
+   * is valid from one of the gateways before assuming it's work is done. If the block is not valid, it should try another gateway
+   * and WILL consider the gateway that returned the invalid blocks completely unreliable.
+   */
+  validateFn?(block: Uint8Array): Promise<void>
+}
+
 export interface BlockRetriever<GetProgressOptions extends ProgressOptions = ProgressOptions> {
   /**
    * Retrieve a block from a source
    */
-  retrieve(cid: CID, options?: AbortOptions & GetProgressOptions): Promise<Uint8Array>
+  retrieve(cid: CID, options?: BlockRetrievalOptions<GetProgressOptions>): Promise<Uint8Array>
 }
 
 export interface BlockAnnouncer<NotifyProgressOptions extends ProgressOptions = ProgressOptions> {

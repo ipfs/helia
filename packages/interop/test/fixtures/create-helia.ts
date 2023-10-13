@@ -4,6 +4,7 @@ import { tcp } from '@libp2p/tcp'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import { createHelia, type HeliaInit } from 'helia'
+import { BitswapBlockBrokerFactory } from 'helia/block-brokers'
 import { createLibp2p } from 'libp2p'
 import { identifyService } from 'libp2p/identify'
 import type { Helia } from '@helia/interface'
@@ -35,6 +36,9 @@ export async function createHeliaNode (init?: Partial<HeliaInit>): Promise<Helia
 
   const helia = await createHelia({
     libp2p,
+    blockBrokers: [
+      BitswapBlockBrokerFactory
+    ],
     blockstore,
     datastore,
     ...init

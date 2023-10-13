@@ -1,6 +1,5 @@
 import { logger } from '@libp2p/logger'
-import type { BlockRetriever } from '@helia/interface/blocks'
-import type { AbortOptions } from 'interface-store'
+import type { BlockRetrievalOptions, BlockRetriever } from '@helia/interface/blocks'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
@@ -10,9 +9,9 @@ const log = logger('helia:trustless-gateway-block-broker')
  * A `TrustlessGateway` keeps track of the number of attempts, errors, and
  * successes for a given gateway url so that we can prioritize gateways that
  * have been more reliable in the past, and ensure that requests are distributed
- * across all gateways within a given `TrustedGatewayBlockBroker` instance.
+ * across all gateways within a given `TrustlessGatewayBlockBroker` instance.
  */
-class TrustlessGateway {
+export class TrustlessGateway {
   public readonly url: URL
   /**
    * The number of times this gateway has been attempted to be used to fetch a
@@ -29,6 +28,13 @@ class TrustlessGateway {
    * attempts.
    */
   #errors = 0
+
+  /**
+   * The number of times this gateway has returned an invalid block. A gateway
+   * that returns the wrong blocks for a CID should be considered for removal
+   * from the list of gateways to fetch blocks from.
+   */
+  #invalidBlocks = 0
 
   /**
    * The number of times this gateway has successfully fetched a block.
@@ -91,13 +97,18 @@ class TrustlessGateway {
    * Unused gateways have 100% reliability; They will be prioritized over
    * gateways with a 100% success rate to ensure that we attempt all gateways.
    */
-  get reliability (): number {
+  reliability (): number {
     /**
      * if we have never tried to use this gateway, it is considered the most
      * reliable until we determine otherwise (prioritize unused gateways)
      */
     if (this.#attempts === 0) {
       return 1
+    }
+
+    if (this.#invalidBlocks > 0) {
+      // this gateway may not be trustworthy..
+      return -Infinity
     }
 
     /**
@@ -110,6 +121,13 @@ class TrustlessGateway {
      */
     return this.#successes / (this.#attempts + (this.#errors * 3))
   }
+
+  /**
+   * Increment the number of invalid blocks returned by this gateway.
+   */
+  incrementInvalidBlocks (): void {
+    this.#invalidBlocks++
+  }
 }
 
 export type TrustlessGatewayGetBlockProgressEvents =
@@ -119,24 +137,39 @@ export type TrustlessGatewayGetBlockProgressEvents =
  * A class that accepts a list of trustless gateways that are queried
  * for blocks.
  */
-export class TrustedGatewayBlockBroker implements BlockRetriever<
+export class TrustlessGatewayBlockBroker implements BlockRetriever<
 ProgressOptions<TrustlessGatewayGetBlockProgressEvents>
 > {
   private readonly gateways: TrustlessGateway[]
 
-  constructor (urls: Array<string | URL>) {
-    this.gateways = urls.map((url) => new TrustlessGateway(url))
+  constructor (gatewaysOrUrls: Array<string | URL | TrustlessGateway>) {
+    this.gateways = gatewaysOrUrls.map((gatewayOrUrl) => {
+      if (gatewayOrUrl instanceof TrustlessGateway || Object.prototype.hasOwnProperty.call(gatewayOrUrl, 'getRawBlock')) {
+        return gatewayOrUrl as TrustlessGateway
+      }
+      // eslint-disable-next-line no-console
+      console.trace('creating new TrustlessGateway for %s', gatewayOrUrl)
+      return new TrustlessGateway(gatewayOrUrl)
+    })
   }
 
-  async retrieve (cid: CID, options: AbortOptions & ProgressOptions<TrustlessGatewayGetBlockProgressEvents> = {}): Promise<Uint8Array> {
+  async retrieve (cid: CID, options: BlockRetrievalOptions<ProgressOptions<TrustlessGatewayGetBlockProgressEvents>> = {}): Promise<Uint8Array> {
     // Loop through the gateways until we get a block or run out of gateways
-    const sortedGateways = this.gateways.sort((a, b) => b.reliability - a.reliability)
+    const sortedGateways = this.gateways.sort((a, b) => b.reliability() - a.reliability())
     const aggregateErrors: Error[] = []
     for (const gateway of sortedGateways) {
       log('getting block for %c from %s', cid, gateway.url)
       try {
         const block = await gateway.getRawBlock(cid, options.signal)
         log.trace('got block for %c from %s', cid, gateway.url)
+        try {
+          await options.validateFn?.(block)
+        } catch (err) {
+          log.error('failed to validate block for %c from %s', cid, gateway.url, err)
+          gateway.incrementInvalidBlocks()
+
+          throw new Error(`unable to validate block for CID ${cid} from gateway ${gateway.url}`)
+        }
 
         return block
       } catch (err: unknown) {

@@ -15,7 +15,7 @@ import type { BitswapBlockBroker } from '../../src/block-brokers/bitswap-block-b
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 
-describe('storage', () => {
+describe('networked-storage', () => {
   let storage: NetworkedStorage
   let blockstore: Blockstore
   let bitswap: StubbedInstance<BitswapBlockBroker>
