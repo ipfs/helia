@@ -363,7 +363,7 @@ export interface UnixFS {
    * }
    * ```
    */
-  addAll: (source: ImportCandidateStream, options?: Partial<AddOptions>) => AsyncIterable<ImportResult>
+  addAll(source: ImportCandidateStream, options?: Partial<AddOptions>): AsyncIterable<ImportResult>
 
   /**
    * Add a single `Uint8Array` to your Helia node as a file.
@@ -376,7 +376,7 @@ export interface UnixFS {
    * console.info(cid)
    * ```
    */
-  addBytes: (bytes: Uint8Array, options?: Partial<AddOptions>) => Promise<CID>
+  addBytes(bytes: Uint8Array, options?: Partial<AddOptions>): Promise<CID>
 
   /**
    * Add a stream of `Uint8Array` to your Helia node as a file.
@@ -392,7 +392,7 @@ export interface UnixFS {
    * console.info(cid)
    * ```
    */
-  addByteStream: (bytes: ByteStream, options?: Partial<AddOptions>) => Promise<CID>
+  addByteStream(bytes: ByteStream, options?: Partial<AddOptions>): Promise<CID>
 
   /**
    * Add a file to your Helia node with optional metadata.
@@ -413,7 +413,7 @@ export interface UnixFS {
    * console.info(cid)
    * ```
    */
-  addFile: (file: FileCandidate, options?: Partial<AddOptions>) => Promise<CID>
+  addFile(file: FileCandidate, options?: Partial<AddOptions>): Promise<CID>
 
   /**
    * Add a directory to your Helia node.
@@ -426,7 +426,7 @@ export interface UnixFS {
    * console.info(cid)
    * ```
    */
-  addDirectory: (dir?: Partial<DirectoryCandidate>, options?: Partial<AddOptions>) => Promise<CID>
+  addDirectory(dir?: Partial<DirectoryCandidate>, options?: Partial<AddOptions>): Promise<CID>
 
   /**
    * Retrieve the contents of a file from your Helia node.
@@ -439,7 +439,7 @@ export interface UnixFS {
    * }
    * ```
    */
-  cat: (cid: CID, options?: Partial<CatOptions>) => AsyncIterable<Uint8Array>
+  cat(cid: CID, options?: Partial<CatOptions>): AsyncIterable<Uint8Array>
 
   /**
    * Change the permissions on a file or directory in a DAG
@@ -457,7 +457,7 @@ export interface UnixFS {
    * console.info(afterCid, afterStats)
    * ```
    */
-  chmod: (cid: CID, mode: number, options?: Partial<ChmodOptions>) => Promise<CID>
+  chmod(cid: CID, mode: number, options?: Partial<ChmodOptions>): Promise<CID>
 
   /**
    * Add a file or directory to a target directory.
@@ -473,7 +473,7 @@ export interface UnixFS {
    * console.info(updatedCid)
    * ```
    */
-  cp: (source: CID, target: CID, name: string, options?: Partial<CpOptions>) => Promise<CID>
+  cp(source: CID, target: CID, name: string, options?: Partial<CpOptions>): Promise<CID>
 
   /**
    * List directory contents.
@@ -486,7 +486,7 @@ export interface UnixFS {
    * }
    * ```
    */
-  ls: (cid: CID, options?: Partial<LsOptions>) => AsyncIterable<UnixFSEntry>
+  ls(cid: CID, options?: Partial<LsOptions>): AsyncIterable<UnixFSEntry>
 
   /**
    * Make a new directory under an existing directory.
@@ -501,7 +501,7 @@ export interface UnixFS {
    * console.info(updatedCid)
    * ```
    */
-  mkdir: (cid: CID, dirname: string, options?: Partial<MkdirOptions>) => Promise<CID>
+  mkdir(cid: CID, dirname: string, options?: Partial<MkdirOptions>): Promise<CID>
 
   /**
    * Remove a file or directory from an existing directory.
@@ -517,7 +517,7 @@ export interface UnixFS {
    * console.info(finalCid)
    * ```
    */
-  rm: (cid: CID, path: string, options?: Partial<RmOptions>) => Promise<CID>
+  rm(cid: CID, path: string, options?: Partial<RmOptions>): Promise<CID>
 
   /**
    * Return statistics about a UnixFS DAG.
@@ -532,7 +532,7 @@ export interface UnixFS {
    * console.info(stats)
    * ```
    */
-  stat: (cid: CID, options?: Partial<StatOptions>) => Promise<UnixFSStats>
+  stat(cid: CID, options?: Partial<StatOptions>): Promise<UnixFSStats>
 
   /**
    * Update the mtime of a UnixFS DAG
@@ -550,7 +550,7 @@ export interface UnixFS {
    * console.info(afterCid, afterStats)
    * ```
    */
-  touch: (cid: CID, options?: Partial<TouchOptions>) => Promise<CID>
+  touch(cid: CID, options?: Partial<TouchOptions>): Promise<CID>
 }
 
 class DefaultUnixFS implements UnixFS {
