@@ -24,13 +24,13 @@
 import { logger } from '@libp2p/logger'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
-import { BitswapBlockBroker, TrustedGatewayBlockBroker } from './block-brokers/index.js'
+import { BitswapBlockBroker, TrustlessGatewayBlockBroker } from './block-brokers/index.js'
 import { HeliaImpl } from './helia.js'
 import { defaultHashers } from './utils/default-hashers.js'
 import { createLibp2p } from './utils/libp2p.js'
 import { name, version } from './version.js'
 import type { DefaultLibp2pServices } from './utils/libp2p-defaults.js'
-import type { Helia } from '@helia/interface'
+import type { Helia, BlockBrokerFactoryFunction } from '@helia/interface'
 import type { BlockBroker } from '@helia/interface/blocks'
 import type { Libp2p } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
@@ -98,7 +98,7 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
    * A list of strategies used to fetch blocks when they are not present in
    * the local blockstore
    */
-  blockBrokers?: BlockBroker[]
+  blockBrokers?: Array<BlockBroker | BlockBrokerFactoryFunction>
 
   /**
    * Pass `false` to not start the Helia node
@@ -159,9 +159,19 @@ export async function createHelia (init: HeliaInit = {}): Promise<Helia<unknown>
 
   const hashers = defaultHashers(init.hashers)
 
-  const blockBrokers = init.blockBrokers ?? [
+  const blockBrokers: BlockBroker[] = init.blockBrokers?.map((blockBroker: BlockBroker | BlockBrokerFactoryFunction): BlockBroker => {
+    if (typeof blockBroker !== 'function') {
+      return blockBroker satisfies BlockBroker
+    }
+    return blockBroker({
+      blockstore,
+      datastore,
+      libp2p,
+      hashers
+    }) satisfies BlockBroker
+  }) ?? [
     new BitswapBlockBroker(libp2p, blockstore, hashers),
-    new TrustedGatewayBlockBroker(DEFAULT_TRUSTLESS_GATEWAYS)
+    new TrustlessGatewayBlockBroker(DEFAULT_TRUSTLESS_GATEWAYS)
   ]
 
   const helia = new HeliaImpl({
