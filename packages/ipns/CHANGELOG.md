@@ -1,3 +1,10 @@
+## [@helia/ipns-v2.0.2](https://github.com/ipfs/helia-ipns/compare/@helia/ipns-v2.0.1...@helia/ipns-v2.0.2) (2023-10-24)
+
+
+### Dependencies
+
+* **dev:** bump sinon from 16.1.3 to 17.0.0 ([#108](https://github.com/ipfs/helia-ipns/issues/108)) ([530aeff](https://github.com/ipfs/helia-ipns/commit/530aeff8af103c9126411cc1b035ee106f113f1f))
+
 ## [@helia/ipns-v2.0.1](https://github.com/ipfs/helia-ipns/compare/@helia/ipns-v2.0.0...@helia/ipns-v2.0.1) (2023-10-07)
 
 
