@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
+import { Record } from '@libp2p/kad-dht'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { Libp2pRecord } from '@libp2p/record'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import { type Datastore, Key } from 'interface-datastore'
@@ -141,7 +141,7 @@ describe('resolve', () => {
     expect(result.toString()).to.equal(cid.toV1().toString(), 'incorrect record resolved')
 
     const cached = await datastore.get(dhtKey)
-    const record = Libp2pRecord.deserialize(cached)
+    const record = Record.deserialize(cached)
 
     // should have cached the updated record
     expect(record.value).to.equalBytes(marshalledRecordB)

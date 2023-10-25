@@ -1,4 +1,4 @@
-import { Libp2pRecord } from '@libp2p/record'
+import { Record } from '@libp2p/kad-dht'
 import { type Datastore, Key } from 'interface-datastore'
 import { CustomProgressEvent, type ProgressEvent } from 'progress-events'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
@@ -30,7 +30,7 @@ export function localStore (datastore: Datastore): LocalStore {
         const key = dhtRoutingKey(routingKey)
 
         // Marshal to libp2p record as the DHT does
-        const record = new Libp2pRecord(routingKey, marshalledRecord, new Date())
+        const record = new Record(routingKey, marshalledRecord, new Date())
 
         options.onProgress?.(new CustomProgressEvent('ipns:routing:datastore:put'))
         await datastore.put(key, record.serialize(), options)
@@ -47,7 +47,7 @@ export function localStore (datastore: Datastore): LocalStore {
         const buf = await datastore.get(key, options)
 
         // Unmarshal libp2p record as the DHT does
-        const record = Libp2pRecord.deserialize(buf)
+        const record = Record.deserialize(buf)
 
         return record.value
       } catch (err: any) {
