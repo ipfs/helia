@@ -43,6 +43,7 @@ export async function createHeliaBenchmark ({ blockstoreType = 'fs', datastoreTy
   const repoPath = nodePath.join(os.tmpdir(), `helia-${Math.random()}`)
 
   const helia = await createHelia({
+    blockBrokers: [],
     blockstore: blockstoreType === 'fs' ? new FsBlockstore(`${repoPath}/blocks`) : new MemoryBlockstore(),
     datastore: datastoreType === 'fs' ? new LevelDatastore(`${repoPath}/data`) : new MemoryDatastore(),
     dagWalkers: [
