@@ -1,0 +1,43 @@
+name: Benchmarks
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - '**'
+  workflow_dispatch:
+
+jobs:
+  benchmark:
+    name: Performance regression check
+    runs-on: ubuntu-latest
+    steps:
+        - uses: actions/checkout@v3
+        - uses: actions/setup-node@v3
+          with:
+            node-version: lts/*
+        - uses: ipfs/aegir/actions/cache-node-modules@master
+        - name: Run benchmark
+          run: |
+            jq '.workspaces += ["benchmarks/*"]' package.json > temp.json && mv temp.json package.json
+            npm run reset
+            npm install
+            npm run build
+            cd benchmarks/add-dir
+            npm start
+            # generate in output.json
+        - name: Download previous benchmark data
+          uses: actions/cache@v3
+          with:
+              path: ./cache
+              key: ${{ runner.os }}-benchmark
+        - name: Store benchmark result
+          uses: benchmark-action/github-action-benchmark@v1
+          with:
+                tool: 'customSmallerIsBetter'
+                output-file-path: benchmarks/add-dir/output.json
+                external-data-json-path: ./cache/benchmark-data.json
+                fail-on-alert: true
+                summary-always: true
+            # Upload the updated cache file for the next job by actions/cache
