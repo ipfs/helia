@@ -1,3 +1,10 @@
+## [@helia/ipns-v2.0.3](https://github.com/ipfs/helia-ipns/compare/@helia/ipns-v2.0.2...@helia/ipns-v2.0.3) (2023-10-26)
+
+
+### Bug Fixes
+
+* update libp2p interfaces ([#109](https://github.com/ipfs/helia-ipns/issues/109)) ([514b6e1](https://github.com/ipfs/helia-ipns/commit/514b6e1e4192f700a6f0e769d52a4ec5dfe757ec))
+
 ## [@helia/ipns-v2.0.2](https://github.com/ipfs/helia-ipns/compare/@helia/ipns-v2.0.1...@helia/ipns-v2.0.2) (2023-10-24)
 
 
