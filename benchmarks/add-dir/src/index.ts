@@ -1,5 +1,6 @@
 /* eslint-disable no-console,no-loop-func */
 
+import fs from 'node:fs'
 import nodePath from 'node:path'
 import debug from 'debug'
 import { CID } from 'multiformats/cid'
@@ -34,7 +35,11 @@ const getDefaultResults = (): BenchmarkTaskResult => ({
   sizes: new Map<string, Set<string>>()
 })
 
-const impls: Array<{ name: string, create: () => Promise<AddDirBenchmark>, results: BenchmarkTaskResult }> = [
+const impls: Array<{
+  name: string
+  create: () => Promise<AddDirBenchmark>
+  results: BenchmarkTaskResult
+}> = [
   {
     name: 'helia-fs',
     create: async () => createHeliaBenchmark(),
@@ -42,7 +47,8 @@ const impls: Array<{ name: string, create: () => Promise<AddDirBenchmark>, resul
   },
   {
     name: 'helia-mem',
-    create: async () => createHeliaBenchmark({ blockstoreType: 'mem', datastoreType: 'mem' }),
+    create: async () =>
+      createHeliaBenchmark({ blockstoreType: 'mem', datastoreType: 'mem' }),
     results: getDefaultResults()
   },
   {
@@ -85,44 +91,54 @@ async function main (): Promise<void> {
     }
   })
 
-  const testPaths = TEST_PATH != null
-    ? [TEST_PATH]
-    : [
-        nodePath.relative(process.cwd(), nodePath.join(process.cwd(), 'src')),
-        nodePath.relative(process.cwd(), nodePath.join(process.cwd(), 'dist')),
-        nodePath.relative(process.cwd(), nodePath.join(process.cwd(), '..', 'gc', 'src'))
-      ]
+  const testPaths =
+    TEST_PATH != null
+      ? [TEST_PATH]
+      : [
+          nodePath.relative(process.cwd(), nodePath.join(process.cwd(), 'src')),
+          nodePath.relative(
+            process.cwd(),
+            nodePath.join(process.cwd(), 'dist')
+          ),
+          nodePath.relative(
+            process.cwd(),
+            nodePath.join(process.cwd(), '..', 'gc', 'src')
+          )
+        ]
 
   for (const impl of impls) {
     for (const testPath of testPaths) {
       const absPath = nodePath.join(process.cwd(), testPath)
-      suite.add(`${impl.name} - ${testPath}`, async function () {
-        const start = Date.now()
-        const cid = await subject.addDir(absPath)
-        impl.results.timing.push(Date.now() - start)
-        const cidSet = impl.results.cids.get(testPath) ?? new Set()
-        cidSet.add(cid.toString())
-        impl.results.cids.set(testPath, cidSet)
-      },
-      {
-        beforeEach: async () => {
-          log(`Start: test ${impl.name}`)
+      suite.add(
+        `${impl.name} - ${testPath}`,
+        async function () {
+          const start = Date.now()
+          const cid = await subject.addDir(absPath)
+          impl.results.timing.push(Date.now() - start)
+          const cidSet = impl.results.cids.get(testPath) ?? new Set()
+          cidSet.add(cid.toString())
+          impl.results.cids.set(testPath, cidSet)
         },
-        afterEach: async () => {
-          log(`End: test ${impl.name}`)
-          const cidSet = impl.results.cids.get(testPath)
-          if (cidSet != null) {
-            for (const cid of cidSet.values()) {
-              const size = await subject.getSize?.(CID.parse(cid))
-              if (size != null) {
-                const statsSet = impl.results.sizes.get(testPath) ?? new Set()
-                statsSet.add(size?.toString())
-                impl.results.sizes.set(testPath, statsSet)
+        {
+          beforeEach: async () => {
+            log(`Start: test ${impl.name}`)
+          },
+          afterEach: async () => {
+            log(`End: test ${impl.name}`)
+            const cidSet = impl.results.cids.get(testPath)
+            if (cidSet != null) {
+              for (const cid of cidSet.values()) {
+                const size = await subject.getSize?.(CID.parse(cid))
+                if (size != null) {
+                  const statsSet =
+                    impl.results.sizes.get(testPath) ?? new Set()
+                  statsSet.add(size?.toString())
+                  impl.results.sizes.set(testPath, statsSet)
+                }
               }
             }
           }
         }
-      }
       )
     }
   }
@@ -138,7 +154,10 @@ async function main (): Promise<void> {
       console.info(
         `${impl.name},`,
         `${process.env.INCREMENT},`,
-        `${(impl.results.timing.reduce((acc, curr) => acc + curr, 0) / impl.results.timing.length).toFixed(RESULT_PRECISION)},`
+        `${(
+          impl.results.timing.reduce((acc, curr) => acc + curr, 0) /
+          impl.results.timing.length
+        ).toFixed(RESULT_PRECISION)},`
       )
     }
   } else {
@@ -152,31 +171,70 @@ async function main (): Promise<void> {
         implSizes[`${impl.name} - ${testPath}`] = Array.from(sizes).join(', ')
       }
     }
-    console.table(suite.tasks.map(({ name, result }) => {
-      if (result?.error != null) {
+    console.table(
+      suite.tasks.map(({ name, result }) => {
+        if (result?.error != null) {
+          return {
+            Implementation: name,
+            'ops/s': 'error',
+            'ms/op': 'error',
+            runs: 'error',
+            p99: 'error',
+            CID: (result?.error as any)?.message
+          }
+        }
         return {
           Implementation: name,
-          'ops/s': 'error',
-          'ms/op': 'error',
-          runs: 'error',
-          p99: 'error',
-          CID: (result?.error as any)?.message
+          'ops/s': result?.hz.toFixed(RESULT_PRECISION),
+          'ms/op': result?.period.toFixed(RESULT_PRECISION),
+          runs: result?.samples.length,
+          p99: result?.p99.toFixed(RESULT_PRECISION),
+          CID: implCids[name]
         }
-      }
-      return {
-        Implementation: name,
-        'ops/s': result?.hz.toFixed(RESULT_PRECISION),
-        'ms/op': result?.period.toFixed(RESULT_PRECISION),
-        runs: result?.samples.length,
-        p99: result?.p99.toFixed(RESULT_PRECISION),
-        CID: implCids[name]
-      }
-    }))
+      })
+    )
   }
+
+  const benchOutputPath = 'output.json'
+  const benchOutput = suite.tasks
+    .map(({ name, result }) => {
+      if (result?.error != null || result == null) {
+        return []
+      }
+
+      // Generate JSON array with: { name, value, unit, range, extra }
+      // which is compatible with `benchmark-action/github-action-benchmark`
+      return [
+        {
+          name: `${name} - ops/s`,
+          value: parseFloat(result.hz.toFixed(RESULT_PRECISION)),
+          unit: 'ops/s',
+          range: '0..1000000'
+          // extra: undefined,
+        },
+        {
+          name: `${name} - ms/op`,
+          value: parseFloat(result.period.toFixed(RESULT_PRECISION)),
+          unit: 'ms/op',
+          range: '0..1000000'
+          // extra: undefined,
+        },
+        {
+          name: `${name} - p99`,
+          value: parseFloat(result.p99.toFixed(RESULT_PRECISION)),
+          unit: 'ms/op',
+          range: '0..1000000'
+          // extra: undefined,
+        }
+      ]
+    })
+    .flat()
+  fs.writeFileSync(benchOutputPath, JSON.stringify(benchOutput))
+
   process.exit(0) // sometimes the test hangs (need to debug)
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error(err) // eslint-disable-line no-console
   process.exit(1)
 })

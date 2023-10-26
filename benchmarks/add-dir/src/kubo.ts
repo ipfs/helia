@@ -1,11 +1,11 @@
+import fs, { promises as fsPromises } from 'node:fs'
+import nodePath from 'node:path'
 import { createController } from 'ipfsd-ctl'
 import last from 'it-last'
 import { path as kuboPath } from 'kubo'
 import * as goRpcClient from 'kubo-rpc-client'
-import type { CID } from 'multiformats/cid'
-import fs, { promises as fsPromises } from 'node:fs'
-import nodePath from 'node:path'
 import type { AddDirBenchmark } from './index.js'
+import type { CID } from 'multiformats/cid'
 
 export async function createKuboBenchmark (): Promise<AddDirBenchmark> {
   const controller = await createController({

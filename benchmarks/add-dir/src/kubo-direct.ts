@@ -1,9 +1,9 @@
-import { execa } from 'execa'
-import { path as kuboPath } from 'kubo'
-import { CID } from 'multiformats/cid'
 import { promises as fsPromises } from 'node:fs'
 import os from 'node:os'
 import nodePath from 'node:path'
+import { execa } from 'execa'
+import { path as kuboPath } from 'kubo'
+import { CID } from 'multiformats/cid'
 import type { AddDirBenchmark } from './index.js'
 
 export async function createKuboDirectBenchmark (): Promise<AddDirBenchmark> {
