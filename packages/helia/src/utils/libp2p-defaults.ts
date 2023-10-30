@@ -1,8 +1,8 @@
 import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { createDelegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
 import { bootstrap } from '@libp2p/bootstrap'
-import { ipniContentRouting } from '@libp2p/ipni-content-routing'
 import { type DualKadDHT, kadDHT } from '@libp2p/kad-dht'
 import { mdns } from '@libp2p/mdns'
 import { mplex } from '@libp2p/mplex'
@@ -23,6 +23,7 @@ import type { Libp2pOptions } from 'libp2p'
 
 export interface DefaultLibp2pServices extends Record<string, unknown> {
   dht: DualKadDHT
+  delegatedRouting: unknown
   pubsub: PubSub
   relay: CircuitRelayService
   identify: IdentifyService
@@ -61,15 +62,13 @@ export function libp2pDefaults (): Libp2pOptions<DefaultLibp2pServices> {
       mdns(),
       bootstrap(bootstrapConfig)
     ],
-    contentRouters: [
-      ipniContentRouting('https://cid.contact')
-    ],
     services: {
       identify: identifyService(),
       autoNAT: autoNATService(),
       upnp: uPnPNATService(),
       pubsub: gossipsub(),
       dcutr: dcutrService(),
+      delegatedRouting: () => createDelegatedRoutingV1HttpApiClient('https://trustless-gateway.link'),
       dht: kadDHT({
         validators: {
           ipns: ipnsValidator
