@@ -1,4 +1,7 @@
 {
   "$schema": "https://typedoc.org/schema.json",
-  "name": "Helia"
+  "name": "Helia",
+  "exclude": [
+    "packages/interop"
+  ]
 }

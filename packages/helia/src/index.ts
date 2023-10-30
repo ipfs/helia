@@ -1,22 +1,20 @@
 /**
  * @packageDocumentation
  *
- * Create a Helia node.
+ * Exports a `createHelia` function that returns an object that implements the {@link Helia} API.
+ *
+ * Pass it to other modules like {@link https://www.npmjs.com/package/@helia/unixfs | @helia/unixfs} to make files available on the distributed web.
  *
  * @example
  *
  * ```typescript
- * import { MemoryDatastore } from 'datastore-core'
- * import { MemoryBlockstore } from 'blockstore-core'
  * import { createHelia } from 'helia'
  * import { unixfs } from '@helia/unixfs'
  * import { CID } from 'multiformats/cid'
  *
- * const node = await createHelia({
- *   blockstore: new MemoryBlockstore(),
- *   datastore: new MemoryDatastore()
- * })
- * const fs = unixfs(node)
+ * const helia = await createHelia()
+ *
+ * const fs = unixfs(helia)
  * fs.cat(CID.parse('bafyFoo'))
  * ```
  */
