@@ -60,7 +60,7 @@ export function libp2pDefaults (): Libp2pOptions<DefaultLibp2pServices> {
       autoNAT: autoNATService(),
       pubsub: gossipsub(),
       dcutr: dcutrService(),
-      delegatedRouting: () => createDelegatedRoutingV1HttpApiClient('https://trustless-gateway.link'),
+      delegatedRouting: () => createDelegatedRoutingV1HttpApiClient('https://delegated-ipfs.dev'),
       dht: kadDHT({
         clientMode: true,
         validators: {
