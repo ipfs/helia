@@ -1,7 +1,7 @@
 /**
  * @packageDocumentation
  *
- * The API defined by a Helia node
+ * The API defined by a {@link Helia} node
  *
  * @example
  *

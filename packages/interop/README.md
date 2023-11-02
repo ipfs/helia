@@ -4,22 +4,12 @@
   </a>
 </p>
 
-# @helia/interop <!-- omit in toc -->
-
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
 [![codecov](https://img.shields.io/codecov/c/github/ipfs/helia.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia)
 [![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
 
 > Interop tests for Helia
-
-## Table of contents <!-- omit in toc -->
-
-- [Install](#install)
-  - [Browser `<script>` tag](#browser-script-tag)
-- [API Docs](#api-docs)
-- [License](#license)
-- [Contribute](#contribute)
 
 ## Install
 
@@ -34,10 +24,6 @@ Loading this module through a script tag will make it's exports available as `He
 ```html
 <script src="https://unpkg.com/@helia/interop/dist/index.min.js"></script>
 ```
-
-## API Docs
-
-- <https://ipfs.github.io/helia/modules/_helia_interop.html>
 
 ## License
 
