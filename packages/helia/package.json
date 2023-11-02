@@ -120,7 +120,7 @@
     "aegir": "^41.0.0",
     "delay": "^6.0.0",
     "sinon": "^17.0.0",
-    "sinon-ts": "^1.0.0"
+    "sinon-ts": "^2.0.0"
   },
   "browser": {
     "./dist/src/utils/libp2p-defaults.js": "./dist/src/utils/libp2p-defaults.browser.js"
