@@ -1,8 +1,8 @@
 import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { createDelegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
 import { bootstrap } from '@libp2p/bootstrap'
-import { ipniContentRouting } from '@libp2p/ipni-content-routing'
 import { type DualKadDHT, kadDHT } from '@libp2p/kad-dht'
 import { mplex } from '@libp2p/mplex'
 import { webRTC, webRTCDirect } from '@libp2p/webrtc'
@@ -21,6 +21,7 @@ import type { Libp2pOptions } from 'libp2p'
 
 export interface DefaultLibp2pServices extends Record<string, unknown> {
   dht: DualKadDHT
+  delegatedRouting: unknown
   pubsub: PubSub
   identify: IdentifyService
   autoNAT: unknown
@@ -54,14 +55,12 @@ export function libp2pDefaults (): Libp2pOptions<DefaultLibp2pServices> {
     peerDiscovery: [
       bootstrap(bootstrapConfig)
     ],
-    contentRouters: [
-      ipniContentRouting('https://cid.contact')
-    ],
     services: {
       identify: identifyService(),
       autoNAT: autoNATService(),
       pubsub: gossipsub(),
       dcutr: dcutrService(),
+      delegatedRouting: () => createDelegatedRoutingV1HttpApiClient('https://delegated-ipfs.dev'),
       dht: kadDHT({
         clientMode: true,
         validators: {
