@@ -13,10 +13,7 @@ export const DEFAULT_TRUSTLESS_GATEWAYS = [
   'https://4everland.io',
 
   // 2023-10-03: IPNS, Origin, and Block/CAR support from https://ipfs-public-gateway-checker.on.fleek.co/
-  'https://w3s.link',
-
-  // https://github.com/protocol/bifrost-community/issues/1
-  'https://trustless-gateway.link/'
+  'https://w3s.link'
 ]
 
 export type TrustlessGatewayGetBlockProgressEvents =
