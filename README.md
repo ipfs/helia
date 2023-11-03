@@ -138,15 +138,19 @@ graph TD;
     IPNS-->Datastore;
     subgraph helia [Helia]
       Datastore
-      Blockstore-->Bitswap;
+      Blockstore-->BlockBrokers;
+      BlockBrokers-->Bitswap;
+      BlockBrokers-->TrustlessGateways;
       Libp2p-->DHT;
       Libp2p-->PubSub;
       Libp2p-->IPNI;
       Libp2p-->Reframe;
     end
-    Blockstore-->BlockStorage["File system/IDB/S3/etc"]
-    Datastore-->DataStorage["Level/S3/IDB/etc"]
+    Blockstore-->BlockStorage["File system/IDB/S3/etc"];
+    Datastore-->DataStorage["Level/S3/IDB/etc"];
     Bitswap-->Network;
+    TrustlessGateways-->Gateway1;
+    TrustlessGateways-->GatewayN;
     DHT-->Network;
     PubSub-->Network;
     IPNI-->Network;
