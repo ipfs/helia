@@ -6,6 +6,29 @@
 * **dev:** bump aegir from 39.0.13 to 40.0.8 ([#198](https://github.com/ipfs/helia/issues/198)) ([4d75ecf](https://github.com/ipfs/helia/commit/4d75ecffb79e5177da35d3106e42dac7bc63153a))
 * update sibling dependencies ([beb10b5](https://github.com/ipfs/helia/commit/beb10b5590d66d1d5bef9b5e890b888263df2c92))
 
+## [2.1.0](https://www.github.com/ipfs/helia/compare/helia-v2.0.3...helia-v2.1.0) (2023-11-06)
+
+
+### Features
+
+* configurable block brokers ([#280](https://www.github.com/ipfs/helia/issues/280)) ([0749cbf](https://www.github.com/ipfs/helia/commit/0749cbf99745ea6ab4363f1b5d635634ca0ddcfa))
+* GatewayBlockBroker prioritizes & tries all gateways ([#281](https://www.github.com/ipfs/helia/issues/281)) ([9bad21b](https://www.github.com/ipfs/helia/commit/9bad21bd59fe6d1ba4a137db5a46bd2ead5238c3))
+* use trustless-gateway.link by default ([#299](https://www.github.com/ipfs/helia/issues/299)) ([bf11efa](https://www.github.com/ipfs/helia/commit/bf11efa4875f3b8f844511d70122983fc46b4f88))
+
+
+### Bug Fixes
+
+* listen on ip6 addresses ([#271](https://www.github.com/ipfs/helia/issues/271)) ([7ef5e79](https://www.github.com/ipfs/helia/commit/7ef5e79620f043522ff0dacc260af1fe83e5d77e))
+* remove trustless-gateway.link ([#301](https://www.github.com/ipfs/helia/issues/301)) ([0343725](https://www.github.com/ipfs/helia/commit/03437255213b14f5931aed91e8555d7fb7f92926))
+* replace IPNI gateway with delegated routing client ([#297](https://www.github.com/ipfs/helia/issues/297)) ([57d580d](https://www.github.com/ipfs/helia/commit/57d580da26c5e28852cc9fe4d0d80adb36699ece))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^2.0.0 to ^2.1.0
+
 ### [2.0.3](https://www.github.com/ipfs/helia/compare/helia-v2.0.2...helia-v2.0.3) (2023-09-18)
 
 

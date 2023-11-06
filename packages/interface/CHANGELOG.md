@@ -10,6 +10,14 @@
 
 * **dev:** bump aegir from 39.0.13 to 40.0.8 ([#198](https://github.com/ipfs/helia/issues/198)) ([4d75ecf](https://github.com/ipfs/helia/commit/4d75ecffb79e5177da35d3106e42dac7bc63153a))
 
+## [2.1.0](https://www.github.com/ipfs/helia/compare/interface-v2.0.0...interface-v2.1.0) (2023-11-06)
+
+
+### Features
+
+* configurable block brokers ([#280](https://www.github.com/ipfs/helia/issues/280)) ([0749cbf](https://www.github.com/ipfs/helia/commit/0749cbf99745ea6ab4363f1b5d635634ca0ddcfa))
+* GatewayBlockBroker prioritizes & tries all gateways ([#281](https://www.github.com/ipfs/helia/issues/281)) ([9bad21b](https://www.github.com/ipfs/helia/commit/9bad21bd59fe6d1ba4a137db5a46bd2ead5238c3))
+
 ## [2.0.0](https://www.github.com/ipfs/helia/compare/interface-v1.2.2...interface-v2.0.0) (2023-08-16)
 
 
