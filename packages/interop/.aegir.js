@@ -12,7 +12,7 @@ export default {
           host: '127.0.0.1',
           port: ipfsdPort
         }, {
-          ipfsBin: (await import('go-ipfs')).default.path(),
+          ipfsBin: (await import('kubo')).default.path(),
           kuboRpcModule: kuboRpcClient,
           ipfsOptions: {
             config: {

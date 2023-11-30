@@ -58,10 +58,10 @@
     "aegir": "^41.0.0",
     "blockstore-core": "^4.0.1",
     "datastore-core": "^9.0.3",
-    "go-ipfs": "^0.22.0",
     "helia": "^2.0.3",
     "ipfs-core-types": "^0.14.0",
     "ipfsd-ctl": "^13.0.0",
+    "kubo": "^0.23.0",
     "kubo-rpc-client": "^3.0.0",
     "libp2p": "^0.46.12",
     "merge-options": "^3.0.4",
@@ -70,7 +70,7 @@
   },
   "browser": {
     "./dist/test/fixtures/create-helia.js": "./dist/test/fixtures/create-helia.browser.js",
-    "go-ipfs": false
+    "kubo": false
   },
   "private": true,
   "typedoc": {
