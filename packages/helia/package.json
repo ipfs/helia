@@ -82,7 +82,7 @@
     "@ipld/dag-cbor": "^9.0.0",
     "@ipld/dag-json": "^10.0.1",
     "@ipld/dag-pb": "^4.0.3",
-    "@libp2p/bootstrap": "^9.0.2",
+    "@libp2p/bootstrap": "^10.0.2",
     "@libp2p/interface": "^0.1.1",
     "@libp2p/kad-dht": "^10.0.2",
     "@libp2p/logger": "^3.0.1",
