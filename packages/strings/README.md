@@ -13,47 +13,23 @@
 
 > Add/get IPLD blocks containing strings with your Helia node
 
-## Table of contents <!-- omit in toc -->
+# About
 
-- [Install](#install)
-  - [Browser `<script>` tag](#browser-script-tag)
-- [API Docs](#api-docs)
-- [License](#license)
-- [Contribute](#contribute)
+`@helia/strings` makes working with strings Helia simple & straightforward.
 
-## Install
+See the Strings interface for all available operations.
 
-```console
-$ npm i @helia/strings
+## Example
+
+```typescript
+import { createHelia } from 'helia'
+import { strings } from '@helia/strings'
+import { CID } from 'multiformats/cid'
+
+const str = strings(helia)
+const cid = await str.put('hello world')
+const string = await str.get(cid)
+
+console.info(string)
+// hello world
 ```
-
-### Browser `<script>` tag
-
-Loading this module through a script tag will make it's exports available as `HeliaStrings` in the global namespace.
-
-```html
-<script src="https://unpkg.com/@helia/strings/dist/index.min.js"></script>
-```
-
-## API Docs
-
-- <https://ipfs.github.io/helia-strings/modules/_helia_strings.html>
-
-## License
-
-Licensed under either of
-
-- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
-
-## Contribute
-
-Contributions welcome! Please check out [the issues](https://github.com/ipfs/helia-strings/issues).
-
-Also see our [contributing document](https://github.com/ipfs/community/blob/master/CONTRIBUTING_JS.md) for more information on how we work, and about contributing in general.
-
-Please be aware that all interactions related to this repo are subject to the IPFS [Code of Conduct](https://github.com/ipfs/community/blob/master/code-of-conduct.md).
-
-Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
-
-[![](https://cdn.rawgit.com/jbenet/contribute-ipfs-gif/master/img/contribute.gif)](https://github.com/ipfs/community/blob/master/CONTRIBUTING.md)
