@@ -87,7 +87,7 @@
     "@libp2p/kad-dht": "^10.0.2",
     "@libp2p/logger": "^3.0.1",
     "@libp2p/mdns": "^9.0.2",
-    "@libp2p/mplex": "^9.0.2",
+    "@libp2p/mplex": "^10.0.2",
     "@libp2p/tcp": "^8.0.2",
     "@libp2p/webrtc": "^3.1.3",
     "@libp2p/websockets": "^7.0.2",
