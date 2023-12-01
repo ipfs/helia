@@ -37,11 +37,11 @@ describe('helia', () => {
   })
 
   it('stops and starts', async () => {
-    expect(helia.libp2p.isStarted()).to.be.true()
+    expect(helia.libp2p.status).to.equal('started')
 
     await helia.stop()
 
-    expect(helia.libp2p.isStarted()).to.be.false()
+    expect(helia.libp2p.status).to.equal('stopped')
   })
 
   it('should have a blockstore', async () => {

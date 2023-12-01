@@ -49,11 +49,11 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "devDependencies": {
-    "@chainsafe/libp2p-noise": "^13.0.0",
-    "@chainsafe/libp2p-yamux": "^5.0.0",
+    "@chainsafe/libp2p-noise": "^14.0.0",
+    "@chainsafe/libp2p-yamux": "^6.0.1",
     "@helia/interface": "^2.1.0",
-    "@libp2p/tcp": "^8.0.2",
-    "@libp2p/websockets": "^7.0.2",
+    "@libp2p/tcp": "^9.0.1",
+    "@libp2p/websockets": "^8.0.1",
     "@multiformats/sha3": "^3.0.0",
     "aegir": "^41.0.0",
     "blockstore-core": "^4.0.0",
@@ -62,9 +62,9 @@
     "ipfsd-ctl": "^13.0.0",
     "it-all": "^3.0.2",
     "it-to-buffer": "^4.0.1",
-    "kubo": "^0.23.0",
+    "kubo": "^0.24.0",
     "kubo-rpc-client": "^3.0.1",
-    "libp2p": "^0.46.6",
+    "libp2p": "^1.0.1",
     "multiformats": "^12.0.1"
   },
   "browser": {

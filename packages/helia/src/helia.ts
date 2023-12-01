@@ -1,4 +1,4 @@
-import { start, stop } from '@libp2p/interface/startable'
+import { start, stop } from '@libp2p/interface'
 import { logger } from '@libp2p/logger'
 import drain from 'it-drain'
 import { CustomProgressEvent } from 'progress-events'
