@@ -1,4 +1,6 @@
 /* eslint-env mocha */
+
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import * as raw from 'multiformats/codecs/raw'
 import Sinon from 'sinon'
@@ -39,7 +41,9 @@ describe('trustless-gateway-block-broker', () => {
       stubConstructor(TrustlessGateway, 'http://localhost:8082'),
       stubConstructor(TrustlessGateway, 'http://localhost:8083')
     ]
-    gatewayBlockBroker = new TrustlessGatewayBlockBroker()
+    gatewayBlockBroker = new TrustlessGatewayBlockBroker({
+      logger: defaultLogger()
+    })
     // must copy the array because the broker calls .sort which mutates in-place
     ;(gatewayBlockBroker as any).gateways = [...gateways]
   })

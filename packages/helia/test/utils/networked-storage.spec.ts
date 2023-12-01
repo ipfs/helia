@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import delay from 'delay'
@@ -30,7 +31,10 @@ describe('networked-storage', () => {
 
     blockstore = new MemoryBlockstore()
     bitswap = stubInterface()
-    storage = new NetworkedStorage(blockstore, {
+    storage = new NetworkedStorage({
+      blockstore,
+      logger: defaultLogger()
+    }, {
       blockBrokers: [
         bitswap
       ],

@@ -16,7 +16,7 @@
 
 import type { Blocks } from './blocks.js'
 import type { Pins } from './pins.js'
-import type { Libp2p, AbortOptions } from '@libp2p/interface'
+import type { Libp2p, AbortOptions, ComponentLogger } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
@@ -46,6 +46,11 @@ export interface Helia<T = Libp2p> {
    * Pinning operations for blocks in the blockstore
    */
   pins: Pins
+
+  /**
+   * A logging component that can be reused by consumers
+   */
+  logger: ComponentLogger
 
   /**
    * Starts the Helia node

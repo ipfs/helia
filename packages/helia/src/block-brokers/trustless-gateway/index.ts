@@ -1,5 +1,6 @@
 import { TrustlessGatewayBlockBroker } from './broker.js'
 import type { BlockRetriever } from '@helia/interface/src/blocks.js'
+import type { ComponentLogger } from '@libp2p/interface'
 import type { ProgressEvent } from 'progress-events'
 
 export const DEFAULT_TRUSTLESS_GATEWAYS = [
@@ -23,6 +24,10 @@ export interface TrustlessGatewayBlockBrokerInit {
   gateways?: Array<string | URL>
 }
 
-export function trustlessGateway (init: TrustlessGatewayBlockBrokerInit = {}): () => BlockRetriever {
-  return () => new TrustlessGatewayBlockBroker(init)
+export interface TrustlessGatewayComponents {
+  logger: ComponentLogger
+}
+
+export function trustlessGateway (init: TrustlessGatewayBlockBrokerInit = {}): (components: TrustlessGatewayComponents) => BlockRetriever {
+  return (components) => new TrustlessGatewayBlockBroker(components, init)
 }
