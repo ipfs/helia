@@ -168,15 +168,11 @@ jobs:
       test-electron-renderer
     ]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    permissions:
-      contents: write
-      id-token: write
-      pull-requests: write
     steps:
-      - uses: google-github-actions/release-please-action@v3
+      - uses: GoogleCloudPlatform/release-please-action@v2
         id: release
         with:
-          token: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           command: manifest
           release-type: node
           manifest-file: .release-please-manifest.json

@@ -11,10 +11,6 @@
   "bugs": {
     "url": "https://github.com/ipfs/helia/issues"
   },
-  "publishConfig": {
-    "access": "public",
-    "provenance": true
-  },
   "keywords": [
     "IPFS"
   ],
