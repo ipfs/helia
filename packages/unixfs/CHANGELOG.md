@@ -1,3 +1,15 @@
+## [@helia/unixfs-v1.4.3](https://github.com/ipfs/helia-unixfs/compare/@helia/unixfs-v1.4.2...@helia/unixfs-v1.4.3) (2023-12-03)
+
+
+### Bug Fixes
+
+* convert date to mtime in glob source ([#106](https://github.com/ipfs/helia-unixfs/issues/106)) ([cd9e903](https://github.com/ipfs/helia-unixfs/commit/cd9e903c2ccac61372eaa64a61b4a8f3d79f9d4a))
+
+
+### Dependencies
+
+* **dev:** bump aegir from 40.0.13 to 41.0.0 ([#105](https://github.com/ipfs/helia-unixfs/issues/105)) ([2421ee2](https://github.com/ipfs/helia-unixfs/commit/2421ee2b4440446160e1a665bc5ecfc92d2b64de))
+
 ## [@helia/unixfs-v1.4.2](https://github.com/ipfs/helia-unixfs/compare/@helia/unixfs-v1.4.1...@helia/unixfs-v1.4.2) (2023-09-14)
 
 
