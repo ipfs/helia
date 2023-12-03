@@ -7,6 +7,8 @@ import { expect } from 'aegir/chai'
 import all from 'it-all'
 import { isNode } from 'wherearewe'
 import { globSource } from '../../src/utils/glob-source.js'
+import { toMtime } from '../../src/utils/to-mtime.js'
+import type { Mtime } from 'ipfs-unixfs'
 
 function fixtureDir (): string {
   const filename = fileURLToPath(import.meta.url)
@@ -23,8 +25,8 @@ function findMode (file: string): number {
   return fs.statSync(fixture(file)).mode
 }
 
-function findMtime (file: string): Date {
-  return fs.statSync(fixture(file)).mtime
+function findMtime (file: string): Mtime {
+  return toMtime(fs.statSync(fixture(file)).mtime)
 }
 
 describe('glob-source', () => {
@@ -228,28 +230,28 @@ describe('glob-source', () => {
     }
 
     const result = await all(globSource(fixtureDir(), '{dir,dir/**/*}', {
-      mtime: new Date(5)
+      mtime: toMtime(new Date(5))
     }))
 
     expect(result).to.have.lengthOf(6)
     expect(result).to.containSubset([{
       path: '/dir',
-      mtime: new Date(5)
+      mtime: toMtime(new Date(5))
     }, {
       path: '/dir/file-1.txt',
-      mtime: new Date(5)
+      mtime: toMtime(new Date(5))
     }, {
       path: '/dir/file-2.js',
-      mtime: new Date(5)
+      mtime: toMtime(new Date(5))
     }, {
       path: '/dir/file-3.css',
-      mtime: new Date(5)
+      mtime: toMtime(new Date(5))
     }, {
       path: '/dir/nested-dir',
-      mtime: new Date(5)
+      mtime: toMtime(new Date(5))
     }, {
       path: '/dir/nested-dir/other.txt',
-      mtime: new Date(5)
+      mtime: toMtime(new Date(5))
     }])
   })
 
@@ -274,7 +276,7 @@ describe('glob-source', () => {
       mtime: [5, 0]
     }))
 
-    expect(result).to.have.deep.nested.property('[0].mtime', [5, 0])
+    expect(result).to.have.deep.nested.property('[0].mtime', toMtime([5, 0]))
   })
 
   it('overrides mtime for file with UnixFS timespec', async function () {
@@ -286,6 +288,6 @@ describe('glob-source', () => {
       mtime: { Seconds: 5, FractionalNanoseconds: 0 }
     }))
 
-    expect(result).to.have.deep.nested.property('[0].mtime', { Seconds: 5, FractionalNanoseconds: 0 })
+    expect(result).to.have.deep.nested.property('[0].mtime', toMtime({ Seconds: 5, FractionalNanoseconds: 0 }))
   })
 })

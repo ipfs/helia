@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment,@typescript-eslint/prefer-ts-expect-error */
-// @ts-ignore no types - TODO: remove me once the next version of npm-go-ipfs has shipped
-import * as goIpfs from 'go-ipfs'
 import { type Controller, type ControllerOptions, createController } from 'ipfsd-ctl'
+import * as goIpfs from 'kubo'
 import * as kuboRpcClient from 'kubo-rpc-client'
 import mergeOptions from 'merge-options'
 import { isElectronMain, isNode } from 'wherearewe'

@@ -3,6 +3,7 @@ import fsp from 'fs/promises'
 import Path from 'path'
 import glob from 'it-glob'
 import { InvalidParametersError } from '../errors.js'
+import { toMtime } from './to-mtime.js'
 import type { MtimeLike } from 'ipfs-unixfs'
 import type { ImportCandidateStream } from 'ipfs-unixfs-importer'
 
@@ -84,7 +85,7 @@ export async function * globSource (cwd: string, pattern: string, options: GlobS
       path: toPosix(p.replace(cwd, '')),
       content: stat.isFile() ? fs.createReadStream(p) : undefined,
       mode,
-      mtime
+      mtime: toMtime(mtime)
     }
   }
 }
