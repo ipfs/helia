@@ -3,6 +3,7 @@
 import { identify } from '@libp2p/identify'
 import { webSockets } from '@libp2p/websockets'
 import { expect } from 'aegir/chai'
+import { MemoryDatastore } from 'datastore-core'
 import { Key } from 'interface-datastore'
 import { createLibp2p } from 'libp2p'
 import { CID } from 'multiformats/cid'
@@ -77,5 +78,27 @@ describe('helia factory', () => {
     const agentVersionBuf = peer.metadata.get('AgentVersion')
 
     expect(agentVersionBuf).to.be.undefined()
+  })
+
+  it('reuses peer id if reusing datastore', async () => {
+    const datastore = new MemoryDatastore()
+
+    helia = await createHelia({
+      datastore,
+      start: false
+    })
+
+    const peerId = helia.libp2p.peerId
+
+    await helia.stop()
+
+    await createHelia({
+      datastore,
+      start: false
+    })
+
+    const otherPeerId = helia.libp2p.peerId
+
+    expect(peerId.toString()).to.equal(otherPeerId.toString())
   })
 })

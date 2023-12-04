@@ -89,6 +89,7 @@
     "@libp2p/identify": "^1.0.1",
     "@libp2p/interface": "^1.0.1",
     "@libp2p/kad-dht": "^11.0.2",
+    "@libp2p/keychain": "^4.0.2",
     "@libp2p/mdns": "^10.0.2",
     "@libp2p/mplex": "^10.0.2",
     "@libp2p/ping": "^1.0.1",

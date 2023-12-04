@@ -27,6 +27,7 @@ import type { DefaultLibp2pServices } from './utils/libp2p-defaults.js'
 import type { Helia } from '@helia/interface'
 import type { BlockBroker } from '@helia/interface/blocks'
 import type { ComponentLogger, Libp2p } from '@libp2p/interface'
+import type { KeychainInit } from '@libp2p/keychain'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { Libp2pOptions } from 'libp2p'
@@ -119,6 +120,12 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
    * default implementation from libp2p will be used.
    */
   logger?: ComponentLogger
+
+  /**
+   * By default Helia stores the node's PeerId in an encrypted form in a
+   * libp2p keystore. These options control how that keystore is configured.
+   */
+  keychain?: KeychainInit
 }
 
 /**
@@ -135,17 +142,18 @@ export async function createHelia (init: HeliaInit = {}): Promise<Helia<unknown>
   if (isLibp2p(init.libp2p)) {
     libp2p = init.libp2p
   } else {
-    libp2p = await createLibp2p(datastore, {
-      logger: init.logger,
-      ...init.libp2p
+    libp2p = await createLibp2p({
+      ...init,
+      libp2p: init.libp2p,
+      datastore
     })
   }
 
   const helia = new HeliaImpl({
     ...init,
+    libp2p,
     datastore,
-    blockstore,
-    libp2p
+    blockstore
   })
 
   if (init.start !== false) {
