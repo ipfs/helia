@@ -53,7 +53,7 @@
     "@chainsafe/libp2p-yamux": "^5.0.0",
     "@helia/interface": "^2.1.0",
     "@libp2p/tcp": "^8.0.2",
-    "@libp2p/websockets": "^7.0.2",
+    "@libp2p/websockets": "^8.0.5",
     "@multiformats/sha3": "^3.0.0",
     "aegir": "^41.0.0",
     "blockstore-core": "^4.0.0",
