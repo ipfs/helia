@@ -1,3 +1,14 @@
+## [@helia/ipns-v3.0.0](https://github.com/ipfs/helia-ipns/compare/@helia/ipns-v2.0.3...@helia/ipns-v3.0.0) (2023-12-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* alters the options object passed to the `ipns` factory function
+
+### Features
+
+* support DNS over HTTPS and DNS-JSON over HTTPS ([#55](https://github.com/ipfs/helia-ipns/issues/55)) ([2ac0e8b](https://github.com/ipfs/helia-ipns/commit/2ac0e8b26556b73961e67191c564ac2b18d32b31))
+
 ## [@helia/ipns-v2.0.3](https://github.com/ipfs/helia-ipns/compare/@helia/ipns-v2.0.2...@helia/ipns-v2.0.3) (2023-10-26)
 
 
