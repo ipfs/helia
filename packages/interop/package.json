@@ -53,7 +53,7 @@
     "@chainsafe/libp2p-noise": "^13.0.0",
     "@chainsafe/libp2p-yamux": "^5.0.0",
     "@helia/interface": "^2.0.0",
-    "@helia/ipns": "^2.0.0",
+    "@helia/ipns": "^3.0.0",
     "@libp2p/interface": "^0.1.2",
     "@libp2p/kad-dht": "^10.0.4",
     "@libp2p/peer-id": "^3.0.2",
