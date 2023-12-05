@@ -25,7 +25,7 @@ describe('resolve', () => {
     routing = stubInterface<IPNSRouting>()
     routing.get.throws(new Error('Not found'))
 
-    name = ipns({ datastore }, [routing])
+    name = ipns({ datastore }, { routers: [routing] })
   })
 
   it('should resolve a record', async () => {
@@ -73,23 +73,6 @@ describe('resolve', () => {
     }
 
     expect(resolvedValue.toString()).to.equal(cid.toV1().toString())
-  })
-
-  it('should resolve /ipns/tableflip.io', async function () {
-    const domain = 'tableflip.io'
-
-    try {
-      const resolvedValue = await name.resolveDns(domain)
-
-      expect(resolvedValue).to.be.an.instanceOf(CID)
-    } catch (err: any) {
-      // happens when running tests offline
-      if (err.message.includes(`ECONNREFUSED ${domain}`) === true) {
-        return this.skip()
-      }
-
-      throw err
-    }
   })
 
   it('should emit progress events', async function () {

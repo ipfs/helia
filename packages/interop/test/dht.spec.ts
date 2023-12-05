@@ -131,9 +131,11 @@ keyTypes.forEach(type => {
         message: 'Kubo could not find Helia on the DHT'
       })
 
-      name = ipns(helia, [
-        dht(helia)
-      ])
+      name = ipns(helia, {
+        routers: [
+          dht(helia)
+        ]
+      })
     }
 
     afterEach(async () => {

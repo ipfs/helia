@@ -60,16 +60,15 @@
     "@libp2p/peer-id-factory": "^3.0.3",
     "@libp2p/tcp": "^8.0.4",
     "@libp2p/websockets": "^7.0.4",
-    "aegir": "^41.0.0",
     "blockstore-core": "^4.0.1",
     "datastore-core": "^9.0.3",
-    "go-ipfs": "^0.22.0",
     "helia": "^2.0.1",
     "ipfsd-ctl": "^13.0.0",
     "ipns": "^7.0.1",
     "it-all": "^3.0.2",
     "it-last": "^3.0.1",
     "it-map": "^3.0.3",
+    "kubo": "^0.24.0",
     "kubo-rpc-client": "^3.0.0",
     "libp2p": "^0.46.6",
     "merge-options": "^3.0.4",
@@ -79,7 +78,7 @@
   },
   "browser": {
     "./dist/test/fixtures/create-helia.js": "./dist/test/fixtures/create-helia.browser.js",
-    "go-ipfs": false
+    "kubo": false
   },
   "private": true
 }

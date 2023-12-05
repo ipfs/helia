@@ -52,9 +52,11 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
       // connect the two nodes
       await connect(helia, kubo, '/meshsub/1.1.0')
 
-      name = ipns(helia, [
-        pubsub(helia)
-      ])
+      name = ipns(helia, {
+        routers: [
+          pubsub(helia)
+        ]
+      })
     })
 
     afterEach(async () => {

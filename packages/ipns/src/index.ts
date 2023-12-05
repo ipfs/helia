@@ -5,16 +5,20 @@
  *
  * @example
  *
+ * With {@link IPNSRouting} routers:
+ *
  * ```typescript
  * import { createHelia } from 'helia'
  * import { dht, pubsub } from '@helia/ipns/routing'
  * import { unixfs } from '@helia/unixfs'
  *
  * const helia = await createHelia()
- * const name = ipns(helia, [
- *   dht(helia),
- *   pubsub(helia)
- * ])
+ * const name = ipns(helia, {
+ *  routers: [
+ *    dht(helia),
+ *    pubsub(helia)
+ *  ]
+ * })
  *
  * // create a public key to publish as an IPNS name
  * const keyInfo = await helia.libp2p.keychain.createKey('my-key')
@@ -33,13 +37,76 @@
  *
  * @example
  *
+ * With default {@link DNSResolver} resolvers:
+ *
  * ```typescript
- * // resolve a CID from a TXT record in a DNS zone file, eg:
- * // > dig ipfs.io TXT
+ * import { createHelia } from 'helia'
+ * import { dht, pubsub } from '@helia/ipns/routing'
+ * import { unixfs } from '@helia/unixfs'
+ *
+ * const helia = await createHelia()
+ * const name = ipns(helia, {
+ *  resolvers: [
+ *    dnsOverHttps('https://private-dns-server.me/dns-query'),
+ *  ]
+ * })
+ *
+ * const cid = name.resolveDns('some-domain-with-dnslink-entry.com')
+ * ```
+ *
+ * @example
+ *
+ * Calling `resolveDns` with the `@helia/ipns` instance:
+ *
+ * ```typescript
+ * // resolve a CID from a TXT record in a DNS zone file, using the default
+ * // resolver for the current platform eg:
+ * // > dig _dnslink.ipfs.io TXT
  * // ;; ANSWER SECTION:
- * // ipfs.io.           435     IN      TXT     "dnslink=/ipfs/Qmfoo"
+ * // _dnslink.ipfs.io.          60     IN      TXT     "dnslink=/ipns/website.ipfs.io"
+ * // > dig _dnslink.website.ipfs.io TXT
+ * // ;; ANSWER SECTION:
+ * // _dnslink.website.ipfs.io.  60     IN      TXT     "dnslink=/ipfs/QmWebsite"
  *
  * const cid = name.resolveDns('ipfs.io')
+ *
+ * console.info(cid)
+ * // QmWebsite
+ * ```
+ *
+ * @example
+ *
+ * This example uses the Mozilla provided RFC 1035 DNS over HTTPS service. This
+ * uses binary DNS records so requires extra dependencies to process the
+ * response which can increase browser bundle sizes.
+ *
+ * If this is a concern, use the DNS-JSON-Over-HTTPS resolver instead.
+ *
+ * ```typescript
+ * // use DNS-Over-HTTPS
+ * import { dnsOverHttps } from '@helia/ipns/dns-resolvers'
+ *
+ * const cid = name.resolveDns('ipfs.io', {
+ *   resolvers: [
+ *     dnsOverHttps('https://mozilla.cloudflare-dns.com/dns-query')
+ *   ]
+ * })
+ * ```
+ *
+ * @example
+ *
+ * DNS-JSON-Over-HTTPS resolvers use the RFC 8427 `application/dns-json` and can
+ * result in a smaller browser bundle due to the response being plain JSON.
+ *
+ * ```typescript
+ * // use DNS-JSON-Over-HTTPS
+ * import { dnsJsonOverHttps } from '@helia/ipns/dns-resolvers'
+ *
+ * const cid = name.resolveDns('ipfs.io', {
+ *   resolvers: [
+ *     dnsJsonOverHttps('https://mozilla.cloudflare-dns.com/dns-query')
+ *   ]
+ * })
  * ```
  */
 
@@ -51,9 +118,10 @@ import { ipnsSelector } from 'ipns/selector'
 import { ipnsValidator } from 'ipns/validator'
 import { CID } from 'multiformats/cid'
 import { CustomProgressEvent } from 'progress-events'
+import { defaultResolver } from './dns-resolvers/default.js'
 import { localStore, type LocalStore } from './routing/local-store.js'
-import { resolveDnslink } from './utils/resolve-dns-link.js'
 import type { IPNSRouting, IPNSRoutingEvents } from './routing/index.js'
+import type { DNSResponse } from './utils/dns.js'
 import type { AbortOptions } from '@libp2p/interface'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Datastore } from 'interface-datastore'
@@ -83,6 +151,11 @@ export type RepublishProgressEvents =
   ProgressEvent<'ipns:republish:success', IPNSRecord> |
   ProgressEvent<'ipns:republish:error', { record: IPNSRecord, err: Error }>
 
+export type ResolveDnsLinkProgressEvents =
+  ProgressEvent<'dnslink:cache', string> |
+  ProgressEvent<'dnslink:query', string> |
+  ProgressEvent<'dnslink:answer', DNSResponse>
+
 export interface PublishOptions extends AbortOptions, ProgressOptions<PublishProgressEvents | IPNSRoutingEvents> {
   /**
    * Time duration of the record in ms (default: 24hrs)
@@ -108,11 +181,35 @@ export interface ResolveOptions extends AbortOptions, ProgressOptions<ResolvePro
   offline?: boolean
 }
 
-export interface ResolveDNSOptions extends ResolveOptions {
+export interface ResolveDnsLinkOptions extends AbortOptions, ProgressOptions<ResolveDnsLinkProgressEvents> {
   /**
    * Do not use cached DNS entries (default: false)
    */
   nocache?: boolean
+}
+
+export interface DNSResolver {
+  (domain: string, options?: ResolveDnsLinkOptions): Promise<string>
+}
+
+export interface ResolveDNSOptions extends AbortOptions, ProgressOptions<ResolveProgressEvents | IPNSRoutingEvents | ResolveDnsLinkProgressEvents> {
+  /**
+   * Do not query the network for the IPNS record (default: false)
+   */
+  offline?: boolean
+
+  /**
+   * Do not use cached DNS entries (default: false)
+   */
+  nocache?: boolean
+
+  /**
+   * These resolvers will be used to resolve the dnslink entries, if unspecified node will
+   * fall back to the `dns` module and browsers fall back to querying google/cloudflare DoH
+   *
+   * @see https://github.com/ipfs/helia-ipns/pull/55#discussion_r1270096881
+   */
+  resolvers?: DNSResolver[]
 }
 
 export interface RepublishOptions extends AbortOptions, ProgressOptions<RepublishProgressEvents | IPNSRoutingEvents> {
@@ -157,10 +254,12 @@ class DefaultIPNS implements IPNS {
   private readonly routers: IPNSRouting[]
   private readonly localStore: LocalStore
   private timeout?: ReturnType<typeof setTimeout>
+  private readonly defaultResolvers: DNSResolver[]
 
-  constructor (components: IPNSComponents, routers: IPNSRouting[] = []) {
+  constructor (components: IPNSComponents, routers: IPNSRouting[] = [], resolvers: DNSResolver[] = []) {
     this.routers = routers
     this.localStore = localStore(components.datastore)
+    this.defaultResolvers = resolvers.length > 0 ? resolvers : [defaultResolver()]
   }
 
   async publish (key: PeerId, value: CID | PeerId, options: PublishOptions = {}): Promise<IPNSRecord> {
@@ -201,7 +300,11 @@ class DefaultIPNS implements IPNS {
   }
 
   async resolveDns (domain: string, options: ResolveDNSOptions = {}): Promise<CID> {
-    const dnslink = await resolveDnslink(domain, options)
+    const resolvers = options.resolvers ?? this.defaultResolvers
+
+    const dnslink = await Promise.any(
+      resolvers.map(async resolver => resolver(domain, options))
+    )
 
     return this.#resolve(dnslink, options)
   }
@@ -298,8 +401,13 @@ class DefaultIPNS implements IPNS {
   }
 }
 
-export function ipns (components: IPNSComponents, routers: IPNSRouting[] = []): IPNS {
-  return new DefaultIPNS(components, routers)
+export interface IPNSOptions {
+  routers?: IPNSRouting[]
+  resolvers?: DNSResolver[]
+}
+
+export function ipns (components: IPNSComponents, { routers = [], resolvers = [] }: IPNSOptions): IPNS {
+  return new DefaultIPNS(components, routers, resolvers)
 }
 
 export { ipnsValidator }
