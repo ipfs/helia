@@ -1,6 +1,5 @@
 {
   "plugins": ["node-workspace"],
-  "group-pull-request-title-pattern": "chore: release ${component}",
   "packages": {
     "packages/helia": {},
     "packages/interface": {},
