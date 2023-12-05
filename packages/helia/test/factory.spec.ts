@@ -1,10 +1,11 @@
 /* eslint-env mocha */
 
+import { identify } from '@libp2p/identify'
 import { webSockets } from '@libp2p/websockets'
 import { expect } from 'aegir/chai'
+import { MemoryDatastore } from 'datastore-core'
 import { Key } from 'interface-datastore'
 import { createLibp2p } from 'libp2p'
-import { identifyService } from 'libp2p/identify'
 import { CID } from 'multiformats/cid'
 import { createHelia } from '../src/index.js'
 import type { Helia } from '@helia/interface'
@@ -23,7 +24,7 @@ describe('helia factory', () => {
       start: false
     })
 
-    expect(helia.libp2p.isStarted()).to.be.false()
+    expect(helia.libp2p.status).to.equal('stopped')
   })
 
   it('does not require any constructor args', async () => {
@@ -53,7 +54,7 @@ describe('helia factory', () => {
           webSockets()
         ],
         services: {
-          identify: identifyService({
+          identify: identify({
             agentVersion: 'my custom agent version'
           })
         }
@@ -77,5 +78,27 @@ describe('helia factory', () => {
     const agentVersionBuf = peer.metadata.get('AgentVersion')
 
     expect(agentVersionBuf).to.be.undefined()
+  })
+
+  it('reuses peer id if reusing datastore', async () => {
+    const datastore = new MemoryDatastore()
+
+    helia = await createHelia({
+      datastore,
+      start: false
+    })
+
+    const peerId = helia.libp2p.peerId
+
+    await helia.stop()
+
+    await createHelia({
+      datastore,
+      start: false
+    })
+
+    const otherPeerId = helia.libp2p.peerId
+
+    expect(peerId.toString()).to.equal(otherPeerId.toString())
   })
 })

@@ -1,5 +1,5 @@
-import { circuitRelayServer } from 'libp2p/circuit-relay'
-import { identifyService } from 'libp2p/identify'
+import { circuitRelayServer } from '@libp2p/circuit-relay-v2'
+import { identify } from '@libp2p/identify'
 import { WebSockets } from '@multiformats/mafmt'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
@@ -23,8 +23,11 @@ const options = {
               `/ip4/127.0.0.1/tcp/0/ws`
             ]
           },
+          connectionManager: {
+            inboundConnectionThreshold: Infinity
+          },
           services: {
-            identify: identifyService(),
+            identify: identify(),
             relay: circuitRelayServer({
               reservations: {
                 maxReservations: Infinity,

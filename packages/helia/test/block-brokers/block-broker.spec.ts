@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import delay from 'delay'
@@ -31,7 +32,10 @@ describe('block-broker', () => {
     blockstore = new MemoryBlockstore()
     bitswapBlockBroker = stubInterface()
     gatewayBlockBroker = stubInterface()
-    storage = new NetworkedStorage(blockstore, {
+    storage = new NetworkedStorage({
+      blockstore,
+      logger: defaultLogger()
+    }, {
       blockBrokers: [
         bitswapBlockBroker,
         gatewayBlockBroker
@@ -112,7 +116,10 @@ describe('block-broker', () => {
   it('handles incorrect bytes from a gateway', async () => {
     const { cid } = blocks[0]
     const block = blocks[1].block
-    storage = new NetworkedStorage(blockstore, {
+    storage = new NetworkedStorage({
+      blockstore,
+      logger: defaultLogger()
+    }, {
       blockBrokers: [
         gatewayBlockBroker
       ],

@@ -1,7 +1,6 @@
 import { createBitswap } from 'ipfs-bitswap'
 import type { BlockAnnouncer, BlockBroker, BlockRetrievalOptions, BlockRetriever } from '@helia/interface/blocks'
-import type { Libp2p } from '@libp2p/interface'
-import type { Startable } from '@libp2p/interface/startable'
+import type { Libp2p, Startable } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { Bitswap, BitswapNotifyProgressEvents, BitswapOptions, BitswapWantBlockProgressEvents } from 'ipfs-bitswap'
 import type { CID } from 'multiformats/cid'

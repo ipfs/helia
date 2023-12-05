@@ -1,5 +1,4 @@
-import { start, stop } from '@libp2p/interface/startable'
-import { logger } from '@libp2p/logger'
+import { start, stop } from '@libp2p/interface'
 import drain from 'it-drain'
 import { CustomProgressEvent } from 'progress-events'
 import { bitswap, trustlessGateway } from './block-brokers/index.js'
@@ -11,12 +10,10 @@ import { NetworkedStorage } from './utils/networked-storage.js'
 import type { HeliaInit } from '.'
 import type { GCOptions, Helia } from '@helia/interface'
 import type { Pins } from '@helia/interface/pins'
-import type { Libp2p } from '@libp2p/interface'
+import type { ComponentLogger, Libp2p, Logger } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
-
-const log = logger('helia')
 
 interface HeliaImplInit<T extends Libp2p = Libp2p> extends HeliaInit<T> {
   libp2p: T
@@ -29,25 +26,30 @@ export class HeliaImpl implements Helia {
   public blockstore: BlockStorage
   public datastore: Datastore
   public pins: Pins
+  public logger: ComponentLogger
+  private readonly log: Logger
 
   constructor (init: HeliaImplInit) {
+    this.logger = init.libp2p.logger
+    this.log = this.logger.forComponent('helia')
     const hashers = defaultHashers(init.hashers)
 
     const components = {
       blockstore: init.blockstore,
       datastore: init.datastore,
       libp2p: init.libp2p,
-      hashers
+      hashers,
+      logger: init.libp2p.logger
     }
 
     const blockBrokers = init.blockBrokers?.map((fn) => {
       return fn(components)
     }) ?? [
       bitswap()(components),
-      trustlessGateway()()
+      trustlessGateway()(components)
     ]
 
-    const networkedStorage = new NetworkedStorage(init.blockstore, {
+    const networkedStorage = new NetworkedStorage(components, {
       blockBrokers,
       hashers
     })
@@ -79,7 +81,7 @@ export class HeliaImpl implements Helia {
       const helia = this
       const blockstore = this.blockstore.unwrap()
 
-      log('gc start')
+      this.log('gc start')
 
       await drain(blockstore.deleteMany((async function * (): AsyncGenerator<CID> {
         for await (const { cid } of blockstore.getAll()) {
@@ -92,7 +94,7 @@ export class HeliaImpl implements Helia {
 
             options.onProgress?.(new CustomProgressEvent<CID>('helia:gc:deleted', cid))
           } catch (err) {
-            log.error('Error during gc', err)
+            helia.log.error('Error during gc', err)
             options.onProgress?.(new CustomProgressEvent<Error>('helia:gc:error', err))
           }
         }
@@ -101,6 +103,6 @@ export class HeliaImpl implements Helia {
       releaseLock()
     }
 
-    log('gc finished')
+    this.log('gc finished')
   }
 }

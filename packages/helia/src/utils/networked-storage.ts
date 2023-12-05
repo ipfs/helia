@@ -1,19 +1,15 @@
-import { CodeError } from '@libp2p/interface/errors'
-import { start, stop, type Startable } from '@libp2p/interface/startable'
-import { logger } from '@libp2p/logger'
+import { CodeError, start, stop } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
 import filter from 'it-filter'
 import forEach from 'it-foreach'
 import { CustomProgressEvent, type ProgressOptions } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import type { BlockBroker, Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions, BlockRetriever, BlockAnnouncer, BlockRetrievalOptions } from '@helia/interface/blocks'
-import type { AbortOptions } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, Logger, LoggerOptions, Startable } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { AwaitIterable } from 'interface-store'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
-
-const log = logger('helia:networked-storage')
 
 export interface NetworkedStorageStorageInit {
   blockBrokers?: BlockBroker[]
@@ -32,6 +28,11 @@ function isBlockAnnouncer (b: any): b is BlockAnnouncer {
   return typeof b.announce === 'function'
 }
 
+export interface NetworkedStorageComponents {
+  blockstore: Blockstore
+  logger: ComponentLogger
+}
+
 /**
  * Networked storage wraps a regular blockstore - when getting blocks if the
  * blocks are not present Bitswap will be used to fetch them from network peers.
@@ -42,12 +43,14 @@ export class NetworkedStorage implements Blocks, Startable {
   private readonly blockAnnouncers: BlockAnnouncer[]
   private readonly hashers: MultihashHasher[]
   private started: boolean
+  private readonly log: Logger
 
   /**
    * Create a new BlockStorage
    */
-  constructor (blockstore: Blockstore, init: NetworkedStorageStorageInit) {
-    this.child = blockstore
+  constructor (components: NetworkedStorageComponents, init: NetworkedStorageStorageInit) {
+    this.log = components.logger.forComponent('helia:networked-storage')
+    this.child = components.blockstore
     this.blockRetrievers = (init.blockBrokers ?? []).filter(isBlockRetriever)
     this.blockAnnouncers = (init.blockBrokers ?? []).filter(isBlockAnnouncer)
     this.hashers = init.hashers ?? []
@@ -124,7 +127,10 @@ export class NetworkedStorage implements Blocks, Startable {
     if (options.offline !== true && !(await this.child.has(cid))) {
       // we do not have the block locally, get it from a block provider
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:providers:get', cid))
-      const block = await raceBlockRetrievers(cid, this.blockRetrievers, this.hashers, options)
+      const block = await raceBlockRetrievers(cid, this.blockRetrievers, this.hashers, {
+        ...options,
+        log: this.log
+      })
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:blockstore:put', cid))
       await this.child.put(cid, block, options)
 
@@ -152,7 +158,10 @@ export class NetworkedStorage implements Blocks, Startable {
       if (options.offline !== true && !(await this.child.has(cid))) {
         // we do not have the block locally, get it from a block provider
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:providers:get', cid))
-        const block = await raceBlockRetrievers(cid, this.blockRetrievers, this.hashers, options)
+        const block = await raceBlockRetrievers(cid, this.blockRetrievers, this.hashers, {
+          ...options,
+          log: this.log
+        })
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:blockstore:put', cid))
         await this.child.put(cid, block, options)
 
@@ -218,7 +227,7 @@ export const getCidBlockVerifierFunction = (cid: CID, hashers: MultihashHasher[]
  * Race block providers cancelling any pending requests once the block has been
  * found.
  */
-async function raceBlockRetrievers (cid: CID, providers: BlockRetriever[], hashers: MultihashHasher[], options: AbortOptions): Promise<Uint8Array> {
+async function raceBlockRetrievers (cid: CID, providers: BlockRetriever[], hashers: MultihashHasher[], options: AbortOptions & LoggerOptions): Promise<Uint8Array> {
   const validateFn = getCidBlockVerifierFunction(cid, hashers)
 
   const controller = new AbortController()
@@ -246,7 +255,7 @@ async function raceBlockRetrievers (cid: CID, providers: BlockRetriever[], hashe
 
           return block
         } catch (err) {
-          log.error('could not retrieve verified block for %c', cid, err)
+          options.log.error('could not retrieve verified block for %c', cid, err)
           throw err
         }
       })
