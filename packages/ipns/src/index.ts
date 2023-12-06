@@ -9,6 +9,7 @@
  *
  * ```typescript
  * import { createHelia } from 'helia'
+ * import { ipns } from '@helia/ipns'
  * import { dht, pubsub } from '@helia/ipns/routing'
  * import { unixfs } from '@helia/unixfs'
  *
@@ -41,8 +42,9 @@
  *
  * ```typescript
  * import { createHelia } from 'helia'
- * import { dht, pubsub } from '@helia/ipns/routing'
+ * import { ipns } from '@helia/ipns'
  * import { unixfs } from '@helia/unixfs'
+ * import { dnsOverHttps } from '@helia/ipns/dns-resolvers'
  *
  * const helia = await createHelia()
  * const name = ipns(helia, {

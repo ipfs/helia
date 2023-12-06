@@ -60,6 +60,7 @@
     "@libp2p/peer-id-factory": "^3.0.3",
     "@libp2p/tcp": "^8.0.4",
     "@libp2p/websockets": "^7.0.4",
+    "aegir": "^41.1.14",
     "blockstore-core": "^4.0.1",
     "datastore-core": "^9.0.3",
     "helia": "^2.0.1",

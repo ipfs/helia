@@ -177,6 +177,7 @@
     "@libp2p/interface": "^0.1.4",
     "@libp2p/peer-id-factory": "^3.0.3",
     "@types/dns-packet": "^5.6.4",
+    "aegir": "^41.1.14",
     "datastore-core": "^9.0.3",
     "sinon": "^17.0.0",
     "sinon-ts": "^1.0.0"

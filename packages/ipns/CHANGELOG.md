@@ -5,6 +5,41 @@
 
 * alters the options object passed to the `ipns` factory function
 
+#### Before
+
+```typescript
+import { createHelia } from 'helia'
+import { ipns } from '@helia/ipns'
+import { dht, pubsub } from '@helia/ipns/routing'
+import { unixfs } from '@helia/unixfs'
+
+const helia = await createHelia()
+const name = ipns(helia, [
+  dht(helia),
+  pubsub(helia)
+])
+```
+
+#### After
+
+```typescript
+import { createHelia } from 'helia'
+import { ipns } from '@helia/ipns'
+import { dnsOverHttps } from '@helia/ipns/dns-resolvers'
+import { unixfs } from '@helia/unixfs'
+
+const helia = await createHelia()
+const name = ipns(helia, {
+  routers: [
+    dht(helia),
+    pubsub(helia)
+  ],
+  resolvers: [
+    dnsOverHttps('https://private-dns-server.me/dns-query'),
+  ]
+})
+```
+
 ### Features
 
 * support DNS over HTTPS and DNS-JSON over HTTPS ([#55](https://github.com/ipfs/helia-ipns/issues/55)) ([2ac0e8b](https://github.com/ipfs/helia-ipns/commit/2ac0e8b26556b73961e67191c564ac2b18d32b31))
