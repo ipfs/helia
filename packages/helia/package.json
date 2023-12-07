@@ -121,7 +121,7 @@
     "p-defer": "^4.0.0",
     "p-queue": "^7.3.4",
     "progress-events": "^1.0.0",
-    "uint8arrays": "^4.0.3"
+    "uint8arrays": "^5.0.0"
   },
   "devDependencies": {
     "@libp2p/logger": "^4.0.1",
