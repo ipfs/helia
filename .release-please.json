@@ -1,6 +1,7 @@
 {
   "plugins": ["node-workspace"],
   "packages": {
+    "packages/block-brokers": {},
     "packages/helia": {},
     "packages/interface": {},
     "packages/interop": {}

@@ -1,7 +1,7 @@
 import { start, stop } from '@libp2p/interface'
 import drain from 'it-drain'
 import { CustomProgressEvent } from 'progress-events'
-import { bitswap, trustlessGateway } from './block-brokers/index.js'
+import { bitswap, trustlessGateway } from '@helia/block-brokers'
 import { PinsImpl } from './pins.js'
 import { BlockStorage } from './storage.js'
 import { assertDatastoreVersionIsCurrent } from './utils/datastore-version.js'

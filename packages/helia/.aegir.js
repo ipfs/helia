@@ -4,6 +4,7 @@ import { WebSockets } from '@multiformats/mafmt'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import * as raw from 'multiformats/codecs/raw'
+import { bitswap } from '@helia/block-blockers'
 
 /** @type {import('aegir').PartialOptions} */
 const options = {
@@ -11,7 +12,6 @@ const options = {
     before: async () => {
       // use dynamic import otherwise the source may not have been built yet
       const { createHelia } = await import('./dist/src/index.js')
-      const { bitswap } = await import('./dist/src/block-brokers/index.js')
 
       const helia = await createHelia({
         blockBrokers: [
