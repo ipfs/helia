@@ -19,7 +19,7 @@ $ npm i @helia/block-brokers
 
 <!-- ### Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `bitswap` and `trustlessGateway` in the global namespace.
+Loading this module through a script tag will make it's exports available as `bitswap` and `trustlessGateway` and `NetworkedStorage` in the global namespace.
 
 ```html
 <script src="https://unpkg.com/@helia/block-brokers/dist/index.min.js"></script>
