@@ -35,7 +35,7 @@ export interface NetworkedStorageComponents {
 
 /**
  * Networked storage wraps a regular blockstore - when getting blocks if the
- * blocks are not present Bitswap will be used to fetch them from network peers.
+ * blocks are not present, blockBrokers will be used to fetch them from network peers.
  */
 export class NetworkedStorage implements Blocks, Startable {
   private readonly child: Blockstore
