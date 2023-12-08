@@ -225,7 +225,7 @@ export interface IPNS {
   /**
    * Creates an IPNS record signed by the passed PeerId that will resolve to the passed value
    *
-   * If the valid is a PeerId, a recursive IPNS record will be created.
+   * If the value is a PeerId, a recursive IPNS record will be created.
    */
   publish(key: PeerId, value: CID | PeerId, options?: PublishOptions): Promise<IPNSRecord>
 
