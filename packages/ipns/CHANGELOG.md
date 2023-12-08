@@ -1,3 +1,17 @@
+## [@helia/ipns-v3.0.1](https://github.com/ipfs/helia-ipns/compare/@helia/ipns-v3.0.0...@helia/ipns-v3.0.1) (2023-12-08)
+
+
+### Trivial Changes
+
+* fix docs and aegir dep in subpackages ([#142](https://github.com/ipfs/helia-ipns/issues/142)) ([f66dd71](https://github.com/ipfs/helia-ipns/commit/f66dd71f18dab57471749e6a708917ea291d05e1))
+* update sibling dependencies ([6ab5ddc](https://github.com/ipfs/helia-ipns/commit/6ab5ddcecb377bf61b6a4566292249fd5dc3d2c7))
+* update sibling dependencies ([d0d84f0](https://github.com/ipfs/helia-ipns/commit/d0d84f07db9338ccc8245167929bd71f4cb8b238))
+
+
+### Documentation
+
+* fix typo ([#113](https://github.com/ipfs/helia-ipns/issues/113)) ([d732db9](https://github.com/ipfs/helia-ipns/commit/d732db9f4fea23aa11456d451f02d4f143846ba3))
+
 ## [@helia/ipns-v3.0.0](https://github.com/ipfs/helia-ipns/compare/@helia/ipns-v2.0.3...@helia/ipns-v3.0.0) (2023-12-05)
 
 
