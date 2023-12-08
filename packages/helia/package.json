@@ -119,7 +119,7 @@
     "mortice": "^3.0.1",
     "multiformats": "^12.0.1",
     "p-defer": "^4.0.0",
-    "p-queue": "^7.3.4",
+    "p-queue": "^8.0.0",
     "progress-events": "^1.0.0",
     "uint8arrays": "^5.0.0"
   },
