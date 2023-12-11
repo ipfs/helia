@@ -47,10 +47,6 @@
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
     },
-    "./block-brokers": {
-      "types": "./dist/src/block-brokers/index.d.ts",
-      "import": "./dist/src/block-brokers/index.js"
-    },
     "./hashers": {
       "types": "./dist/src/utils/default-hashers.d.ts",
       "import": "./dist/src/utils/default-hashers.js"
