@@ -145,7 +145,7 @@ describe('pins', () => {
   it('pins a block from another node', async () => {
     const cid = CID.parse(process.env.BLOCK_CID ?? '')
     await helia.libp2p.dial(multiaddr(process.env.RELAY_SERVER))
-    await helia.pins.add(cid)
+    await all(parallel(helia.pins.add(cid)))
 
     const pins = await all(helia.pins.ls())
 
@@ -172,7 +172,7 @@ describe('pins', () => {
     const cid1 = await createAndPutBlock(dagJson.code, dagJson.encode({ hello: 'world' }), helia.blockstore)
     const cid2 = await createAndPutBlock(dagJson.code, dagJson.encode({ hello: 'world', linked: cid1 }), helia.blockstore)
 
-    await helia.pins.add(cid2)
+    await all(parallel(helia.pins.add(cid2)))
 
     const pins = await all(helia.pins.ls())
 
@@ -189,7 +189,7 @@ describe('pins', () => {
     const cid1 = await createAndPutBlock(dagCbor.code, dagCbor.encode({ hello: 'world' }), helia.blockstore)
     const cid2 = await createAndPutBlock(dagCbor.code, dagCbor.encode({ hello: 'world', linked: cid1 }), helia.blockstore)
 
-    await helia.pins.add(cid2)
+    await all(parallel(helia.pins.add(cid2)))
 
     const pins = await all(helia.pins.ls())
 
@@ -206,7 +206,7 @@ describe('pins', () => {
     const cid1 = await createAndPutBlock(dagPb.code, dagPb.encode({ Data: Uint8Array.from([0, 1, 2, 3, 4]), Links: [] }), helia.blockstore)
     const cid2 = await createAndPutBlock(dagPb.code, dagPb.encode({ Links: [{ Name: '', Hash: cid1, Tsize: 100 }] }), helia.blockstore)
 
-    await helia.pins.add(cid2)
+    await all(parallel(helia.pins.add(cid2)))
 
     const pins = await all(helia.pins.ls())
 
