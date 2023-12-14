@@ -165,7 +165,7 @@ async function main (): Promise<void> {
   await suite.run()
 
   if (process.env.INCREMENT != null) {
-    if (process.env.ITERATION === '1') {
+    if (process.env.ITERATIONS === '1') {
       console.info('implementation, count, clear pins (ms), add blocks (ms), add pins (ms), gc (ms)')
     }
 
