@@ -35,6 +35,17 @@ interface DatastorePinnedBlock {
   pinnedBy: Uint8Array[]
 }
 
+/**
+ * Callback for updating a {@link DatastorePinnedBlock}'s properties when
+ * calling `#updatePinnedBlock`
+ *
+ * The callback should return `false` to prevent any pinning modifications to
+ * the block, and true in all other cases.
+ */
+interface WithPinnedBlockCallback {
+  (pinnedBlock: DatastorePinnedBlock): boolean
+}
+
 const DATASTORE_PIN_PREFIX = '/pin/'
 const DATASTORE_BLOCK_PREFIX = '/pinned-block/'
 const DATASTORE_ENCODING = base36
@@ -82,11 +93,12 @@ export class PinsImpl implements Pins {
         await this.#updatePinnedBlock(cid, (pinnedBlock: DatastorePinnedBlock) => {
           // do not update pinned block if this block is already pinned by this CID
           if (pinnedBlock.pinnedBy.find(c => uint8ArrayEquals(c, cid.bytes)) != null) {
-            return
+            return false
           }
 
           pinnedBlock.pinCount++
           pinnedBlock.pinnedBy.push(cid.bytes)
+          return true
         }, options)
 
         return cid
@@ -157,7 +169,7 @@ export class PinsImpl implements Pins {
   /**
    * Update the pin count for the CID
    */
-  async #updatePinnedBlock (cid: CID, withPinnedBlock: (pinnedBlock: DatastorePinnedBlock) => void, options: AddOptions): Promise<void> {
+  async #updatePinnedBlock (cid: CID, withPinnedBlock: WithPinnedBlockCallback, options: AddOptions): Promise<void> {
     const blockKey = new Key(`${DATASTORE_BLOCK_PREFIX}${DATASTORE_ENCODING.encode(cid.multihash.bytes)}`)
 
     let pinnedBlock: DatastorePinnedBlock = {
@@ -173,7 +185,10 @@ export class PinsImpl implements Pins {
       }
     }
 
-    withPinnedBlock(pinnedBlock)
+    const shouldContinue = withPinnedBlock(pinnedBlock)
+    if (!shouldContinue) {
+      return
+    }
 
     if (pinnedBlock.pinCount === 0) {
       if (await this.datastore.has(blockKey)) {
@@ -197,9 +212,10 @@ export class PinsImpl implements Pins {
       yield async () => {
         const cid = await promise()
 
-        await this.#updatePinnedBlock(cid, (pinnedBlock): void => {
+        await this.#updatePinnedBlock(cid, (pinnedBlock): boolean => {
           pinnedBlock.pinCount--
           pinnedBlock.pinnedBy = pinnedBlock.pinnedBy.filter(c => uint8ArrayEquals(c, cid.bytes))
+          return true
         }, {
           ...options,
           depth: pin.depth
