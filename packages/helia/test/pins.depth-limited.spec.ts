@@ -29,6 +29,7 @@ describe('pins (depth limited)', () => {
     dag = await createDag(codec, blockstore, MAX_DEPTH, 3)
 
     helia = await createHelia({
+      blockBrokers: [],
       datastore: new MemoryDatastore(),
       blockstore,
       libp2p: await createLibp2p({

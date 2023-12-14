@@ -1,36 +1,74 @@
+import { CodeError, start, stop } from '@libp2p/interface'
+import { anySignal } from 'any-signal'
 import filter from 'it-filter'
 import forEach from 'it-foreach'
 import { CustomProgressEvent, type ProgressOptions } from 'progress-events'
-import type { Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions } from '@helia/interface/blocks'
-import type { AbortOptions } from '@libp2p/interface'
+import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import type { BlockBroker, Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions, BlockRetriever, BlockAnnouncer, BlockRetrievalOptions } from '@helia/interface/blocks'
+import type { AbortOptions, ComponentLogger, Logger, LoggerOptions, Startable } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { AwaitIterable } from 'interface-store'
-import type { Bitswap } from 'ipfs-bitswap'
 import type { CID } from 'multiformats/cid'
+import type { MultihashHasher } from 'multiformats/hashes/interface'
 
-export interface BlockStorageInit {
-  holdGcLock?: boolean
-  bitswap?: Bitswap
+export interface NetworkedStorageStorageInit {
+  blockBrokers?: BlockBroker[]
+  hashers?: MultihashHasher[]
 }
 
 export interface GetOptions extends AbortOptions {
-  progress?: (evt: Event) => void
+  progress?(evt: Event): void
+}
+
+function isBlockRetriever (b: any): b is BlockRetriever {
+  return typeof b.retrieve === 'function'
+}
+
+function isBlockAnnouncer (b: any): b is BlockAnnouncer {
+  return typeof b.announce === 'function'
+}
+
+export interface NetworkedStorageComponents {
+  blockstore: Blockstore
+  logger: ComponentLogger
 }
 
 /**
  * Networked storage wraps a regular blockstore - when getting blocks if the
  * blocks are not present Bitswap will be used to fetch them from network peers.
  */
-export class NetworkedStorage implements Blocks {
+export class NetworkedStorage implements Blocks, Startable {
   private readonly child: Blockstore
-  private readonly bitswap?: Bitswap
+  private readonly blockRetrievers: BlockRetriever[]
+  private readonly blockAnnouncers: BlockAnnouncer[]
+  private readonly hashers: MultihashHasher[]
+  private started: boolean
+  private readonly log: Logger
 
   /**
    * Create a new BlockStorage
    */
-  constructor (blockstore: Blockstore, options: BlockStorageInit = {}) {
-    this.child = blockstore
-    this.bitswap = options.bitswap
+  constructor (components: NetworkedStorageComponents, init: NetworkedStorageStorageInit) {
+    this.log = components.logger.forComponent('helia:networked-storage')
+    this.child = components.blockstore
+    this.blockRetrievers = (init.blockBrokers ?? []).filter(isBlockRetriever)
+    this.blockAnnouncers = (init.blockBrokers ?? []).filter(isBlockAnnouncer)
+    this.hashers = init.hashers ?? []
+    this.started = false
+  }
+
+  isStarted (): boolean {
+    return this.started
+  }
+
+  async start (): Promise<void> {
+    await start(this.child, ...new Set([...this.blockRetrievers, ...this.blockAnnouncers]))
+    this.started = true
+  }
+
+  async stop (): Promise<void> {
+    await stop(this.child, ...new Set([...this.blockRetrievers, ...this.blockAnnouncers]))
+    this.started = false
   }
 
   unwrap (): Blockstore {
@@ -46,10 +84,11 @@ export class NetworkedStorage implements Blocks {
       return cid
     }
 
-    if (this.bitswap?.isStarted() === true) {
-      options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:bitswap:notify', cid))
-      this.bitswap.notify(cid, block, options)
-    }
+    options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:providers:notify', cid))
+
+    this.blockAnnouncers.forEach(provider => {
+      provider.announce(cid, block, options)
+    })
 
     options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:blockstore:put', cid))
 
@@ -71,8 +110,10 @@ export class NetworkedStorage implements Blocks {
     })
 
     const notifyEach = forEach(missingBlocks, ({ cid, block }): void => {
-      options.onProgress?.(new CustomProgressEvent<CID>('blocks:put-many:bitswap:notify', cid))
-      this.bitswap?.notify(cid, block, options)
+      options.onProgress?.(new CustomProgressEvent<CID>('blocks:put-many:providers:notify', cid))
+      this.blockAnnouncers.forEach(provider => {
+        provider.announce(cid, block, options)
+      })
     })
 
     options.onProgress?.(new CustomProgressEvent('blocks:put-many:blockstore:put-many'))
@@ -83,12 +124,21 @@ export class NetworkedStorage implements Blocks {
    * Get a block by cid
    */
   async get (cid: CID, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetBlockProgressEvents> = {}): Promise<Uint8Array> {
-    if (options.offline !== true && this.bitswap?.isStarted() != null && !(await this.child.has(cid))) {
-      options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:bitswap:get', cid))
-      const block = await this.bitswap.want(cid, options)
-
+    if (options.offline !== true && !(await this.child.has(cid))) {
+      // we do not have the block locally, get it from a block provider
+      options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:providers:get', cid))
+      const block = await raceBlockRetrievers(cid, this.blockRetrievers, this.hashers, {
+        ...options,
+        log: this.log
+      })
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:blockstore:put', cid))
       await this.child.put(cid, block, options)
+
+      // notify other block providers of the new block
+      options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:providers:notify', cid))
+      this.blockAnnouncers.forEach(provider => {
+        provider.announce(cid, block, options)
+      })
 
       return block
     }
@@ -105,11 +155,21 @@ export class NetworkedStorage implements Blocks {
     options.onProgress?.(new CustomProgressEvent('blocks:get-many:blockstore:get-many'))
 
     yield * this.child.getMany(forEach(cids, async (cid): Promise<void> => {
-      if (options.offline !== true && this.bitswap?.isStarted() === true && !(await this.child.has(cid))) {
-        options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:bitswap:get', cid))
-        const block = await this.bitswap.want(cid, options)
+      if (options.offline !== true && !(await this.child.has(cid))) {
+        // we do not have the block locally, get it from a block provider
+        options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:providers:get', cid))
+        const block = await raceBlockRetrievers(cid, this.blockRetrievers, this.hashers, {
+          ...options,
+          log: this.log
+        })
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:blockstore:put', cid))
         await this.child.put(cid, block, options)
+
+        // notify other block providers of the new block
+        options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:providers:notify', cid))
+        this.blockAnnouncers.forEach(provider => {
+          provider.announce(cid, block, options)
+        })
       }
     }))
   }
@@ -142,5 +202,65 @@ export class NetworkedStorage implements Blocks {
   async * getAll (options: AbortOptions & ProgressOptions<GetAllBlocksProgressEvents> = {}): AsyncIterable<Pair> {
     options.onProgress?.(new CustomProgressEvent('blocks:get-all:blockstore:get-many'))
     yield * this.child.getAll(options)
+  }
+}
+
+export const getCidBlockVerifierFunction = (cid: CID, hashers: MultihashHasher[]): Required<BlockRetrievalOptions>['validateFn'] => {
+  const hasher = hashers.find(hasher => hasher.code === cid.multihash.code)
+
+  if (hasher == null) {
+    throw new CodeError(`No hasher configured for multihash code 0x${cid.multihash.code.toString(16)}, please configure one. You can look up which hash this is at https://github.com/multiformats/multicodec/blob/master/table.csv`, 'ERR_UNKNOWN_HASH_ALG')
+  }
+
+  return async (block: Uint8Array): Promise<void> => {
+    // verify block
+    const hash = await hasher.digest(block)
+
+    if (!uint8ArrayEquals(hash.digest, cid.multihash.digest)) {
+      // if a hash mismatch occurs for a TrustlessGatewayBlockBroker, we should try another gateway
+      throw new CodeError('Hash of downloaded block did not match multihash from passed CID', 'ERR_HASH_MISMATCH')
+    }
+  }
+}
+
+/**
+ * Race block providers cancelling any pending requests once the block has been
+ * found.
+ */
+async function raceBlockRetrievers (cid: CID, providers: BlockRetriever[], hashers: MultihashHasher[], options: AbortOptions & LoggerOptions): Promise<Uint8Array> {
+  const validateFn = getCidBlockVerifierFunction(cid, hashers)
+
+  const controller = new AbortController()
+  const signal = anySignal([controller.signal, options.signal])
+
+  try {
+    return await Promise.any(
+      providers.map(async provider => {
+        try {
+          let blocksWereValidated = false
+          const block = await provider.retrieve(cid, {
+            ...options,
+            signal,
+            validateFn: async (block: Uint8Array): Promise<void> => {
+              await validateFn(block)
+              blocksWereValidated = true
+            }
+          })
+
+          if (!blocksWereValidated) {
+            // the blockBroker either did not throw an error when attempting to validate the block
+            // or did not call the validateFn at all. We should validate the block ourselves
+            await validateFn(block)
+          }
+
+          return block
+        } catch (err) {
+          options.log.error('could not retrieve verified block for %c', cid, err)
+          throw err
+        }
+      })
+    )
+  } finally {
+    signal.clear()
   }
 }

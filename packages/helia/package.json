@@ -1,6 +1,6 @@
 {
   "name": "helia",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "description": "An implementation of IPFS in JavaScript",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/master/packages/helia#readme",
@@ -11,11 +11,31 @@
   "bugs": {
     "url": "https://github.com/ipfs/helia/issues"
   },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "keywords": [
     "IPFS"
   ],
   "type": "module",
   "types": "./dist/src/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ],
+      "src/*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ]
+    }
+  },
   "files": [
     "src",
     "dist",
@@ -26,11 +46,20 @@
     ".": {
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
+    },
+    "./block-brokers": {
+      "types": "./dist/src/block-brokers/index.d.ts",
+      "import": "./dist/src/block-brokers/index.js"
+    },
+    "./hashers": {
+      "types": "./dist/src/utils/default-hashers.d.ts",
+      "import": "./dist/src/utils/default-hashers.js"
     }
   },
   "eslintConfig": {
     "extends": "ipfs",
     "parserOptions": {
+      "project": true,
       "sourceType": "module"
     }
   },
@@ -49,51 +78,59 @@
     "prepublishOnly": "node scripts/update-version.js && npm run build"
   },
   "dependencies": {
-    "@chainsafe/libp2p-gossipsub": "^10.0.0",
-    "@chainsafe/libp2p-noise": "^13.0.0",
-    "@chainsafe/libp2p-yamux": "^5.0.0",
-    "@helia/interface": "^2.0.0",
+    "@chainsafe/libp2p-gossipsub": "^11.0.0",
+    "@chainsafe/libp2p-noise": "^14.0.0",
+    "@chainsafe/libp2p-yamux": "^6.0.1",
+    "@helia/delegated-routing-v1-http-api-client": "^1.1.0",
+    "@helia/interface": "^2.1.0",
     "@ipld/dag-cbor": "^9.0.0",
     "@ipld/dag-json": "^10.0.1",
     "@ipld/dag-pb": "^4.0.3",
-    "@libp2p/bootstrap": "^9.0.2",
-    "@libp2p/interface": "^0.1.1",
-    "@libp2p/ipni-content-routing": "^2.0.0",
-    "@libp2p/kad-dht": "^10.0.2",
-    "@libp2p/logger": "^3.0.1",
-    "@libp2p/mdns": "^9.0.2",
-    "@libp2p/mplex": "^9.0.2",
-    "@libp2p/tcp": "^8.0.2",
-    "@libp2p/webrtc": "^3.1.3",
-    "@libp2p/websockets": "^7.0.2",
-    "@libp2p/webtransport": "^3.0.3",
+    "@libp2p/autonat": "^1.0.1",
+    "@libp2p/bootstrap": "^10.0.2",
+    "@libp2p/circuit-relay-v2": "^1.0.2",
+    "@libp2p/dcutr": "^1.0.1",
+    "@libp2p/identify": "^1.0.1",
+    "@libp2p/interface": "^1.0.1",
+    "@libp2p/kad-dht": "^11.0.2",
+    "@libp2p/keychain": "^4.0.2",
+    "@libp2p/mdns": "^10.0.2",
+    "@libp2p/mplex": "^10.0.2",
+    "@libp2p/ping": "^1.0.1",
+    "@libp2p/tcp": "^9.0.2",
+    "@libp2p/upnp-nat": "^1.0.1",
+    "@libp2p/webrtc": "^4.0.3",
+    "@libp2p/websockets": "^8.0.2",
+    "@libp2p/webtransport": "^4.0.3",
+    "any-signal": "^4.1.1",
     "blockstore-core": "^4.0.0",
     "cborg": "^4.0.1",
     "datastore-core": "^9.0.0",
     "interface-blockstore": "^5.0.0",
     "interface-datastore": "^8.0.0",
     "interface-store": "^5.0.1",
-    "ipfs-bitswap": "^19.0.0",
-    "ipns": "^6.0.0",
+    "ipfs-bitswap": "^20.0.0",
+    "ipns": "^7.0.1",
     "it-all": "^3.0.2",
     "it-drain": "^3.0.1",
     "it-filter": "^3.0.1",
     "it-foreach": "^2.0.2",
     "it-parallel": "^3.0.3",
-    "libp2p": "^0.46.6",
+    "libp2p": "^1.0.3",
     "mortice": "^3.0.1",
     "multiformats": "^12.0.1",
     "progress-events": "^1.0.0",
-    "uint8arrays": "^4.0.3"
+    "uint8arrays": "^5.0.0"
   },
   "devDependencies": {
+    "@libp2p/logger": "^4.0.1",
     "@multiformats/mafmt": "^12.1.5",
     "@multiformats/multiaddr": "^12.1.7",
-    "@types/sinon": "^10.0.14",
-    "aegir": "^40.0.8",
+    "@types/sinon": "^17.0.2",
+    "aegir": "^41.0.0",
     "delay": "^6.0.0",
-    "sinon": "^16.0.0",
-    "sinon-ts": "^1.0.0"
+    "sinon": "^17.0.0",
+    "sinon-ts": "^2.0.0"
   },
   "browser": {
     "./dist/src/utils/libp2p-defaults.js": "./dist/src/utils/libp2p-defaults.browser.js"

@@ -1,23 +1,19 @@
-import { logger } from '@libp2p/logger'
-import { type Bitswap, createBitswap } from 'ipfs-bitswap'
+import { start, stop } from '@libp2p/interface'
 import drain from 'it-drain'
-import { identity } from 'multiformats/hashes/identity'
-import { sha256, sha512 } from 'multiformats/hashes/sha2'
 import { CustomProgressEvent } from 'progress-events'
+import { bitswap, trustlessGateway } from './block-brokers/index.js'
 import { PinsImpl } from './pins.js'
 import { BlockStorage } from './storage.js'
 import { assertDatastoreVersionIsCurrent } from './utils/datastore-version.js'
+import { defaultHashers } from './utils/default-hashers.js'
 import { NetworkedStorage } from './utils/networked-storage.js'
 import type { HeliaInit } from '.'
 import type { GCOptions, Helia } from '@helia/interface'
 import type { Pins } from '@helia/interface/pins'
-import type { Libp2p } from '@libp2p/interface'
+import type { ComponentLogger, Libp2p, Logger } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
-import type { MultihashHasher } from 'multiformats/hashes/interface'
-
-const log = logger('helia')
 
 interface HeliaImplInit<T extends Libp2p = Libp2p> extends HeliaInit<T> {
   libp2p: T
@@ -30,35 +26,32 @@ export class HeliaImpl implements Helia {
   public blockstore: BlockStorage
   public datastore: Datastore
   public pins: Pins
-
-  #bitswap?: Bitswap
+  public logger: ComponentLogger
+  private readonly log: Logger
 
   constructor (init: HeliaImplInit) {
-    const hashers: MultihashHasher[] = [
-      sha256,
-      sha512,
-      identity,
-      ...(init.hashers ?? [])
+    this.logger = init.libp2p.logger
+    this.log = this.logger.forComponent('helia')
+    const hashers = defaultHashers(init.hashers)
+
+    const components = {
+      blockstore: init.blockstore,
+      datastore: init.datastore,
+      libp2p: init.libp2p,
+      hashers,
+      logger: init.libp2p.logger
+    }
+
+    const blockBrokers = init.blockBrokers?.map((fn) => {
+      return fn(components)
+    }) ?? [
+      bitswap()(components),
+      trustlessGateway()(components)
     ]
 
-    this.#bitswap = createBitswap(init.libp2p, init.blockstore, {
-      hashLoader: {
-        getHasher: async (codecOrName: string | number): Promise<MultihashHasher<number>> => {
-          const hasher = hashers.find(hasher => {
-            return hasher.code === codecOrName || hasher.name === codecOrName
-          })
-
-          if (hasher != null) {
-            return hasher
-          }
-
-          throw new Error(`Could not load hasher for code/name "${codecOrName}"`)
-        }
-      }
-    })
-
-    const networkedStorage = new NetworkedStorage(init.blockstore, {
-      bitswap: this.#bitswap
+    const networkedStorage = new NetworkedStorage(components, {
+      blockBrokers,
+      hashers
     })
 
     this.pins = new PinsImpl(init.datastore, networkedStorage, init.dagWalkers ?? [])
@@ -72,14 +65,13 @@ export class HeliaImpl implements Helia {
 
   async start (): Promise<void> {
     await assertDatastoreVersionIsCurrent(this.datastore)
-
-    await this.#bitswap?.start()
+    await start(this.blockstore)
     await this.libp2p.start()
   }
 
   async stop (): Promise<void> {
     await this.libp2p.stop()
-    await this.#bitswap?.stop()
+    await stop(this.blockstore)
   }
 
   async gc (options: GCOptions = {}): Promise<void> {
@@ -89,7 +81,7 @@ export class HeliaImpl implements Helia {
       const helia = this
       const blockstore = this.blockstore.unwrap()
 
-      log('gc start')
+      this.log('gc start')
 
       await drain(blockstore.deleteMany((async function * (): AsyncGenerator<CID> {
         for await (const { cid } of blockstore.getAll()) {
@@ -102,7 +94,7 @@ export class HeliaImpl implements Helia {
 
             options.onProgress?.(new CustomProgressEvent<CID>('helia:gc:deleted', cid))
           } catch (err) {
-            log.error('Error during gc', err)
+            helia.log.error('Error during gc', err)
             options.onProgress?.(new CustomProgressEvent<Error>('helia:gc:error', err))
           }
         }
@@ -111,6 +103,6 @@ export class HeliaImpl implements Helia {
       releaseLock()
     }
 
-    log('gc finished')
+    this.log('gc finished')
   }
 }

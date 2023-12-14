@@ -4,19 +4,21 @@
   </a>
 </p>
 
-# helia <!-- omit in toc -->
-
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
 [![codecov](https://img.shields.io/codecov/c/github/ipfs/helia.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia)
 [![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
 
-## 🌟 Usage
+[Helia](https://github.com/ipfs/helia) is a lean, modular, and modern TypeScript implementation of IPFS for the prolific JS and browser environments.
+
+See the [Manifesto](https://github.com/ipfs/helia/wiki/Manifesto), the [FAQ](https://github.com/ipfs/helia/wiki/FAQ), and the [State of IPFS in JS blog post from October 2022](https://blog.ipfs.tech/state-of-ipfs-in-js/) for more info.
+
+# 🌟 Usage
 
 A quick overview of how to get different types of data in and out of your Helia
 node.
 
-### 🪢 Strings
+## 🪢 Strings
 
 You can use the [@helia/strings](https://www.npmjs.com/package/@helia/strings)
 module to easily add and get strings from your Helia node:
@@ -34,7 +36,7 @@ console.log(await s.get(myImmutableAddress))
 // hello world
 ```
 
-### 🌃 JSON
+## 🌃 JSON
 
 The [@helia/json](https://www.npmjs.com/package/@helia/json) module lets you add
 or get plain JS objects:
@@ -52,7 +54,7 @@ console.log(await j.get(myImmutableAddress))
 // { hello: 'world' }
 ```
 
-### 🌠 DAG-JSON
+## 🌠 DAG-JSON
 
 The [@helia/dag-json](https://www.npmjs.com/package/@helia/dag-json) allows you
 to store references to linked objects as
@@ -79,7 +81,7 @@ console.log(await d.get(retrievedObject.link))
 // { hello: 'world' }
 ```
 
-### 🌌 DAG-CBOR
+## 🌌 DAG-CBOR
 
 [@helia/dag-cbor](https://www.npmjs.com/package/@helia/dag-cbor) works in a
 similar way to `@helia/dag-json` but stores objects using
@@ -106,52 +108,24 @@ console.log(await d.get(retrievedObject.link))
 // { hello: 'world' }
 ```
 
-### 🐾 Next steps
+# 🐾 Next steps
 
 Check out the [helia-examples](https://github.com/ipfs-examples/helia-examples)
 repo for how to do mostly anything with your Helia node.
 
-## Table of contents <!-- omit in toc -->
-
-- [🌟 Usage](#-usage)
-  - [🪢 Strings](#-strings)
-  - [🌃 JSON](#-json)
-  - [🌠 DAG-JSON](#-dag-json)
-  - [🌌 DAG-CBOR](#-dag-cbor)
-  - [🐾 Next steps](#-next-steps)
-- [🥅 Purpose and goals](#-purpose-and-goals)
-- [🏃‍♀️ Getting Started](#️-getting-started)
-- [📗 Project Docs](#-project-docs)
-- [📒 API Docs](#-api-docs)
-- [📐 System diagram](#-system-diagram)
-- [🏭 Code Structure](#-code-structure)
-- [📣 Project status](#-project-status)
-- [🛣️ Roadmap](#️-roadmap)
-- [👫 Get involved](#-get-involved)
-  - [🤲 Contribute](#-contribute)
-- [🛍️ Notable Consumers/Users](#️-notable-consumersusers)
-- [🌞 Branding](#-branding)
-- [🪪 License](#-license)
-
-## 🥅 Purpose and goals
-
-A lean, modular, and modern implementation of IPFS for the prolific JS and browser environments.
-
-See the [Manifesto](https://github.com/ipfs/helia/wiki/Manifesto), the [FAQ](https://github.com/ipfs/helia/wiki/FAQ), and the [State of IPFS in JS blog post from October 2022](https://blog.ipfs.tech/state-of-ipfs-in-js/) for more info.
-
-## 🏃‍♀️ Getting Started
+# 🏃‍♀️ Getting Started
 
 Check out the [Helia examples repo](https://github.com/ipfs-examples/helia-examples#examples), which covers a wide variety of use cases. If you feel something has been missed, follow the [contribution guide](https://github.com/ipfs-examples/helia-examples#contributing) and create a PR to the examples repo.
 
-## 📗 Project Docs
+# 📗 Project Docs
 
 - See the [project wiki](https://github.com/ipfs/helia/wiki).
 
-## 📒 API Docs
+# 📒 API Docs
 
 - https://ipfs.github.io/helia
 
-## 📐 System diagram
+# 📐 System diagram
 
 ```mermaid
 graph TD;
@@ -164,22 +138,26 @@ graph TD;
     IPNS-->Datastore;
     subgraph helia [Helia]
       Datastore
-      Blockstore-->Bitswap;
+      Blockstore-->BlockBrokers;
+      BlockBrokers-->Bitswap;
+      BlockBrokers-->TrustlessGateways;
       Libp2p-->DHT;
       Libp2p-->PubSub;
       Libp2p-->IPNI;
       Libp2p-->Reframe;
     end
-    Blockstore-->BlockStorage["File system/IDB/S3/etc"]
-    Datastore-->DataStorage["Level/S3/IDB/etc"]
+    Blockstore-->BlockStorage["File system/IDB/S3/etc"];
+    Datastore-->DataStorage["Level/S3/IDB/etc"];
     Bitswap-->Network;
+    TrustlessGateways-->Gateway1;
+    TrustlessGateways-->GatewayN;
     DHT-->Network;
     PubSub-->Network;
     IPNI-->Network;
     Reframe-->Network;
 ```
 
-## 🏭 Code Structure
+# 🏭 Code Structure
 Helia embraces a modular approach and encourages users to bring their own implementations of interfacing libraries to suit their needs. Helia also ships supplemental libraries and tools including:
 
 - [`@helia/UnixFS`](https://github.com/ipfs/helia-unixfs)
@@ -198,19 +176,20 @@ This repo itself is made up of these packages:
 - [`/packages/helia`](./packages/helia) An implementation of the Helia API
 - [`/packages/interop`](./packages/interop) Interop tests for Helia
 
-## 📣 Project status
+# 📣 Project status
 Helia v1 shipped in 202303 (see [releases](https://github.com/ipfs/helia/releases)), and development keeps on trucking as we work on initiatives in the [roadmap](#roadmap) and make performance improvements and bug fixes along the way.
 
-## 🛣️ Roadmap
+# 🛣️ Roadmap
 Please find and comment on [the Roadmap here](https://github.com/ipfs/helia/issues/5).
 
-## 👫 Get involved
-* Watch our Helia Demo Day presentations [here](https://www.youtube.com/playlist?list=PLuhRWgmPaHtQAnt8INOe5-kV9TLVaUJ9v)
-* We are sharing about the progress at periodic [Helia Demos](https://lu.ma/helia).  This is a good place to find out the latest and learn of ways to get involved.  We'd love to see you there!
-* Pick up one of the [issues](https://github.com/ipfs/helia/issues).
-* Come chat in Filecoin Slack #ip-js.  (Yes, we should bridge this to other chat enviornments.  Please comment [here](https://github.com/ipfs/helia/issues/33) if you'd like this.)
+# 👫 Get involved
 
-### 🤲 Contribute
+- Watch our Helia Demo Day presentations [here](https://www.youtube.com/playlist?list=PLuhRWgmPaHtQAnt8INOe5-kV9TLVaUJ9v)
+- We are sharing about the progress at periodic [Helia Demos](https://lu.ma/helia).  This is a good place to find out the latest and learn of ways to get involved.  We'd love to see you there!
+- Pick up one of the [issues](https://github.com/ipfs/helia/issues).
+- Come chat in Filecoin Slack #ip-js.  (Yes, we should bridge this to other chat enviornments.  Please comment [here](https://github.com/ipfs/helia/issues/33) if you'd like this.)
+
+# 🤲 Contribute
 
 Contributions welcome! Please check out [the issues](https://github.com/ipfs/helia/issues).
 
@@ -222,15 +201,15 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 [![](https://cdn.rawgit.com/jbenet/contribute-ipfs-gif/master/img/contribute.gif)](https://github.com/ipfs/community/blob/master/CONTRIBUTING.md)
 
-## 🛍️ Notable Consumers/Users
+# 🛍️ Notable Consumers/Users
 
 - See [Projects using Helia](https://github.com/ipfs/helia/wiki/Projects-using-Helia).
 
-## 🌞 Branding
+# 🌞 Branding
 
 - See [Branding](https://github.com/ipfs/helia/wiki/Branding).
 
-## 🪪 License
+# 🪪 License
 
 Licensed under either of
 

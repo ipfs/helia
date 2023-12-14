@@ -1,6 +1,6 @@
 {
   "name": "@helia/interface",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "The Helia API",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/master/packages/interface#readme",
@@ -10,6 +10,10 @@
   },
   "bugs": {
     "url": "https://github.com/ipfs/helia/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "keywords": [
     "IPFS"
@@ -55,6 +59,7 @@
   "eslintConfig": {
     "extends": "ipfs",
     "parserOptions": {
+      "project": true,
       "sourceType": "module"
     }
   },
@@ -65,15 +70,15 @@
     "build": "aegir build"
   },
   "dependencies": {
-    "@libp2p/interface": "^0.1.1",
+    "@libp2p/interface": "^1.0.1",
     "interface-blockstore": "^5.0.0",
     "interface-datastore": "^8.0.0",
     "interface-store": "^5.0.1",
-    "ipfs-bitswap": "^19.0.0",
+    "ipfs-bitswap": "^20.0.0",
     "multiformats": "^12.0.1",
     "progress-events": "^1.0.0"
   },
   "devDependencies": {
-    "aegir": "^40.0.8"
+    "aegir": "^41.0.0"
   }
 }

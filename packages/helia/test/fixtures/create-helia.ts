@@ -1,12 +1,16 @@
+import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
+import { identify } from '@libp2p/identify'
 import { webSockets } from '@libp2p/websockets'
 import * as Filters from '@libp2p/websockets/filters'
-import { circuitRelayTransport } from 'libp2p/circuit-relay'
-import { identifyService } from 'libp2p/identify'
+import { bitswap } from '../../src/block-brokers/index.js'
 import { createHelia as createNode } from '../../src/index.js'
 import type { Helia } from '@helia/interface'
 
 export async function createHelia (): Promise<Helia> {
   return createNode({
+    blockBrokers: [
+      bitswap()
+    ],
     libp2p: {
       addresses: {
         listen: [
@@ -23,7 +27,7 @@ export async function createHelia (): Promise<Helia> {
         denyDialMultiaddr: async () => false
       },
       services: {
-        identify: identifyService()
+        identify: identify()
       }
     }
   })

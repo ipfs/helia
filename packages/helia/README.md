@@ -4,8 +4,6 @@
   </a>
 </p>
 
-# helia <!-- omit in toc -->
-
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
 [![codecov](https://img.shields.io/codecov/c/github/ipfs/helia.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia)
@@ -13,13 +11,24 @@
 
 > An implementation of IPFS in JavaScript
 
-## Table of contents <!-- omit in toc -->
+## About
 
-- [Install](#install)
-  - [Browser `<script>` tag](#browser-script-tag)
-- [API Docs](#api-docs)
-- [License](#license)
-- [Contribute](#contribute)
+Exports a `createHelia` function that returns an object that implements the Helia API.
+
+Pass it to other modules like @helia/unixfs to make files available on the distributed web.
+
+### Example
+
+```typescript
+import { createHelia } from 'helia'
+import { unixfs } from '@helia/unixfs'
+import { CID } from 'multiformats/cid'
+
+const helia = await createHelia()
+
+const fs = unixfs(helia)
+fs.cat(CID.parse('bafyFoo'))
+```
 
 ## Install
 

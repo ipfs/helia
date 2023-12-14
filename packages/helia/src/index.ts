@@ -1,36 +1,33 @@
 /**
  * @packageDocumentation
  *
- * Create a Helia node.
+ * Exports a `createHelia` function that returns an object that implements the {@link Helia} API.
+ *
+ * Pass it to other modules like {@link https://www.npmjs.com/package/@helia/unixfs | @helia/unixfs} to make files available on the distributed web.
  *
  * @example
  *
  * ```typescript
- * import { MemoryDatastore } from 'datastore-core'
- * import { MemoryBlockstore } from 'blockstore-core'
  * import { createHelia } from 'helia'
  * import { unixfs } from '@helia/unixfs'
  * import { CID } from 'multiformats/cid'
  *
- * const node = await createHelia({
- *   blockstore: new MemoryBlockstore(),
- *   datastore: new MemoryDatastore()
- * })
- * const fs = unixfs(node)
+ * const helia = await createHelia()
+ *
+ * const fs = unixfs(helia)
  * fs.cat(CID.parse('bafyFoo'))
  * ```
  */
 
-import { logger } from '@libp2p/logger'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import { HeliaImpl } from './helia.js'
 import { createLibp2p } from './utils/libp2p.js'
-import { name, version } from './version.js'
+import type { DefaultLibp2pServices } from './utils/libp2p-defaults.js'
 import type { Helia } from '@helia/interface'
-import type { Libp2p } from '@libp2p/interface'
-import type { PubSub } from '@libp2p/interface/pubsub'
-import type { DualKadDHT } from '@libp2p/kad-dht'
+import type { BlockBroker } from '@helia/interface/blocks'
+import type { ComponentLogger, Libp2p } from '@libp2p/interface'
+import type { KeychainInit } from '@libp2p/keychain'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { Libp2pOptions } from 'libp2p'
@@ -43,14 +40,12 @@ export * from '@helia/interface'
 export * from '@helia/interface/blocks'
 export * from '@helia/interface/pins'
 
-const log = logger('helia')
-
 /**
  * DAGWalkers take a block and yield CIDs encoded in that block
  */
 export interface DAGWalker {
   codec: number
-  walk: (block: Uint8Array) => AsyncGenerator<CID, void, undefined>
+  walk(block: Uint8Array): AsyncGenerator<CID, void, undefined>
 }
 
 /**
@@ -93,6 +88,12 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
   dagWalkers?: DAGWalker[]
 
   /**
+   * A list of strategies used to fetch blocks when they are not present in
+   * the local blockstore
+   */
+  blockBrokers?: Array<(components: any) => BlockBroker>
+
+  /**
    * Pass `false` to not start the Helia node
    */
   start?: boolean
@@ -113,13 +114,25 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
    * webworker), pass true here to hold the gc lock in this process.
    */
   holdGcLock?: boolean
+
+  /**
+   * An optional logging component to pass to libp2p. If not specified the
+   * default implementation from libp2p will be used.
+   */
+  logger?: ComponentLogger
+
+  /**
+   * By default Helia stores the node's PeerId in an encrypted form in a
+   * libp2p keystore. These options control how that keystore is configured.
+   */
+  keychain?: KeychainInit
 }
 
 /**
  * Create and return a Helia node
  */
 export async function createHelia <T extends Libp2p> (init: HeliaInit<T>): Promise<Helia<T>>
-export async function createHelia (init?: HeliaInit<Libp2p<{ dht: DualKadDHT, pubsub: PubSub }>>): Promise<Helia<Libp2p<{ dht: DualKadDHT, pubsub: PubSub }>>>
+export async function createHelia (init?: HeliaInit<Libp2p<DefaultLibp2pServices>>): Promise<Helia<Libp2p<DefaultLibp2pServices>>>
 export async function createHelia (init: HeliaInit = {}): Promise<Helia<unknown>> {
   const datastore = init.datastore ?? new MemoryDatastore()
   const blockstore = init.blockstore ?? new MemoryBlockstore()
@@ -129,30 +142,22 @@ export async function createHelia (init: HeliaInit = {}): Promise<Helia<unknown>
   if (isLibp2p(init.libp2p)) {
     libp2p = init.libp2p
   } else {
-    libp2p = await createLibp2p(datastore, init.libp2p)
+    libp2p = await createLibp2p({
+      ...init,
+      libp2p: init.libp2p,
+      datastore
+    })
   }
 
   const helia = new HeliaImpl({
     ...init,
+    libp2p,
     datastore,
-    blockstore,
-    libp2p
+    blockstore
   })
 
   if (init.start !== false) {
     await helia.start()
-  }
-
-  // add helia to agent version
-  if (helia.libp2p.isStarted()) {
-    await addHeliaToAgentVersion(helia)
-  } else {
-    helia.libp2p.addEventListener('start', () => {
-      addHeliaToAgentVersion(helia)
-        .catch(err => {
-          log.error('could not add Helia to agent version', err)
-        })
-    })
   }
 
   return helia
@@ -168,36 +173,4 @@ function isLibp2p (obj: any): obj is Libp2p {
 
   // if these are all functions it's probably a libp2p object
   return funcs.every(m => typeof obj[m] === 'function')
-}
-
-async function addHeliaToAgentVersion (helia: Helia): Promise<void> {
-  // add helia to agent version
-  const peer = await helia.libp2p.peerStore.get(helia.libp2p.peerId)
-  const versionBuf = peer.metadata.get('AgentVersion')
-
-  if (versionBuf == null) {
-    // identify was not configured
-    return
-  }
-
-  let versionStr = new TextDecoder().decode(versionBuf)
-
-  if (versionStr.match(/js-libp2p\/\d+\.\d+\.\d+\sUserAgent=/) == null) {
-    // the user changed the agent version
-    return
-  }
-
-  if (versionStr.includes(name)) {
-    // update version name
-    versionStr = `${name}/${version} ${versionStr.split(' ').slice(1).join(' ')}`
-  } else {
-    // just prepend version name
-    versionStr = `${name}/${version} ${versionStr}`
-  }
-
-  await helia.libp2p.peerStore.merge(helia.libp2p.peerId, {
-    metadata: {
-      AgentVersion: new TextEncoder().encode(versionStr)
-    }
-  })
 }

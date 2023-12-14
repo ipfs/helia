@@ -1,12 +1,13 @@
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { identify } from '@libp2p/identify'
 import { webSockets } from '@libp2p/websockets'
 import { all } from '@libp2p/websockets/filters'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import { createHelia, type HeliaInit } from 'helia'
+import { bitswap } from 'helia/block-brokers'
 import { createLibp2p } from 'libp2p'
-import { identifyService } from 'libp2p/identify'
 import type { Helia } from '@helia/interface'
 
 export async function createHeliaNode (init?: Partial<HeliaInit>): Promise<Helia> {
@@ -28,7 +29,7 @@ export async function createHeliaNode (init?: Partial<HeliaInit>): Promise<Helia
     ],
     datastore,
     services: {
-      identify: identifyService()
+      identify: identify()
     },
     connectionGater: {
       // allow dialing loopback
@@ -38,6 +39,9 @@ export async function createHeliaNode (init?: Partial<HeliaInit>): Promise<Helia
 
   const helia = await createHelia({
     libp2p,
+    blockBrokers: [
+      bitswap()
+    ],
     blockstore,
     datastore,
     ...init

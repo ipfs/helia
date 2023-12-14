@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import delay from 'delay'
@@ -8,16 +9,17 @@ import drain from 'it-drain'
 import * as raw from 'multiformats/codecs/raw'
 import Sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
+import { defaultHashers } from '../../src/utils/default-hashers.js'
 import { NetworkedStorage } from '../../src/utils/networked-storage.js'
 import { createBlock } from '../fixtures/create-block.js'
+import type { BlockAnnouncer, BlockRetriever } from '@helia/interface/blocks'
 import type { Blockstore } from 'interface-blockstore'
-import type { Bitswap } from 'ipfs-bitswap'
 import type { CID } from 'multiformats/cid'
 
-describe('storage', () => {
+describe('networked-storage', () => {
   let storage: NetworkedStorage
   let blockstore: Blockstore
-  let bitswap: StubbedInstance<Bitswap>
+  let bitswap: StubbedInstance<Required<BlockRetriever & BlockAnnouncer>>
   let blocks: Array<{ cid: CID, block: Uint8Array }>
 
   beforeEach(async () => {
@@ -28,9 +30,15 @@ describe('storage', () => {
     }
 
     blockstore = new MemoryBlockstore()
-    bitswap = stubInterface<Bitswap>()
-    storage = new NetworkedStorage(blockstore, {
-      bitswap
+    bitswap = stubInterface()
+    storage = new NetworkedStorage({
+      blockstore,
+      logger: defaultLogger()
+    }, {
+      blockBrokers: [
+        bitswap
+      ],
+      hashers: defaultHashers()
     })
   })
 
@@ -113,8 +121,7 @@ describe('storage', () => {
   it('gets a block from bitswap when it is not in the blockstore', async () => {
     const { cid, block } = blocks[0]
 
-    bitswap.isStarted.returns(true)
-    bitswap.want.withArgs(cid).resolves(block)
+    bitswap.retrieve.withArgs(cid).resolves(block)
 
     expect(await blockstore.has(cid)).to.be.false()
 
@@ -122,17 +129,15 @@ describe('storage', () => {
 
     expect(await blockstore.has(cid)).to.be.true()
     expect(returned).to.equalBytes(block)
-    expect(bitswap.want.called).to.be.true()
+    expect(bitswap.retrieve.called).to.be.true()
   })
 
   it('gets many blocks from bitswap when they are not in the blockstore', async () => {
-    bitswap.isStarted.returns(true)
-
     const count = 5
 
     for (let i = 0; i < count; i++) {
       const { cid, block } = blocks[i]
-      bitswap.want.withArgs(cid).resolves(block)
+      bitswap.retrieve.withArgs(cid).resolves(block)
 
       expect(await blockstore.has(cid)).to.be.false()
     }
@@ -148,14 +153,12 @@ describe('storage', () => {
 
     for (let i = 0; i < count; i++) {
       const { cid } = blocks[i]
-      expect(bitswap.want.calledWith(cid)).to.be.true()
+      expect(bitswap.retrieve.calledWith(cid)).to.be.true()
       expect(await blockstore.has(cid)).to.be.true()
     }
   })
 
   it('gets some blocks from bitswap when they are not in the blockstore', async () => {
-    bitswap.isStarted.returns(true)
-
     const count = 5
 
     // blocks 0,1,3,4 are in the blockstore
@@ -165,7 +168,7 @@ describe('storage', () => {
     await blockstore.put(blocks[4].cid, blocks[4].block)
 
     // block #2 comes from bitswap but slowly
-    bitswap.want.withArgs(blocks[2].cid).callsFake(async () => {
+    bitswap.retrieve.withArgs(blocks[2].cid).callsFake(async () => {
       await delay(100)
       return blocks[2].block
     })

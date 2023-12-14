@@ -27,6 +27,7 @@ describe('pins (recursive)', () => {
     dag = await createDag(codec, blockstore, 2, 3)
 
     helia = await createHelia({
+      blockBrokers: [],
       datastore: new MemoryDatastore(),
       blockstore,
       libp2p: await createLibp2p({

@@ -1,7 +1,8 @@
+import { start, stop } from '@libp2p/interface'
 import createMortice from 'mortice'
 import type { Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions } from '@helia/interface/blocks'
 import type { Pins } from '@helia/interface/pins'
-import type { AbortOptions } from '@libp2p/interface'
+import type { AbortOptions, Startable } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { AwaitIterable } from 'interface-store'
 import type { Mortice } from 'mortice'
@@ -13,7 +14,7 @@ export interface BlockStorageInit {
 }
 
 export interface GetOptions extends AbortOptions {
-  progress?: (evt: Event) => void
+  progress?(evt: Event): void
 }
 
 /**
@@ -21,10 +22,11 @@ export interface GetOptions extends AbortOptions {
  * blockstore (that may be on disk, s3, or something else). If the blocks are
  * not present Bitswap will be used to fetch them from network peers.
  */
-export class BlockStorage implements Blocks {
+export class BlockStorage implements Blocks, Startable {
   public lock: Mortice
   private readonly child: Blockstore
   private readonly pins: Pins
+  private started: boolean
 
   /**
    * Create a new BlockStorage
@@ -35,6 +37,21 @@ export class BlockStorage implements Blocks {
     this.lock = createMortice({
       singleProcess: options.holdGcLock
     })
+    this.started = false
+  }
+
+  isStarted (): boolean {
+    return this.started
+  }
+
+  async start (): Promise<void> {
+    await start(this.child)
+    this.started = true
+  }
+
+  async stop (): Promise<void> {
+    await stop(this.child)
+    this.started = false
   }
 
   unwrap (): Blockstore {

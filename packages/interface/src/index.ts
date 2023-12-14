@@ -1,7 +1,7 @@
 /**
  * @packageDocumentation
  *
- * The API defined by a Helia node
+ * The API defined by a {@link Helia} node
  *
  * @example
  *
@@ -16,7 +16,7 @@
 
 import type { Blocks } from './blocks.js'
 import type { Pins } from './pins.js'
-import type { Libp2p, AbortOptions } from '@libp2p/interface'
+import type { Libp2p, AbortOptions, ComponentLogger } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
@@ -48,19 +48,24 @@ export interface Helia<T = Libp2p> {
   pins: Pins
 
   /**
+   * A logging component that can be reused by consumers
+   */
+  logger: ComponentLogger
+
+  /**
    * Starts the Helia node
    */
-  start: () => Promise<void>
+  start(): Promise<void>
 
   /**
    * Stops the Helia node
    */
-  stop: () => Promise<void>
+  stop(): Promise<void>
 
   /**
    * Remove any unpinned blocks from the blockstore
    */
-  gc: (options?: GCOptions) => Promise<void>
+  gc(options?: GCOptions): Promise<void>
 }
 
 export type GcEvents =
