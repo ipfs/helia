@@ -112,19 +112,19 @@ export interface HeliaHTTPInit {
  */
 export async function createHeliaHTTP (init: HeliaHTTPInit): Promise<HeliaHTTP>
 export async function createHeliaHTTP (init?: HeliaHTTPInit): Promise<HeliaHTTP>
-export async function createHeliaHTTP (init: HeliaHTTPInit = {}): Promise<HeliaHTTP<unknown>> {
+export async function createHeliaHTTP (init: HeliaHTTPInit = {}): Promise<HeliaHTTP> {
   const datastore = init.datastore ?? new MemoryDatastore()
   const blockstore = init.blockstore ?? new MemoryBlockstore()
 
-  const helia = new HeliaHTTPImpl({
+  const heliaHTTP = new HeliaHTTPImpl({
     ...init,
     datastore,
     blockstore
   })
 
   if (init.start !== false) {
-    await helia.start()
+    await heliaHTTP.start()
   }
 
-  return helia
+  return heliaHTTP
 }
