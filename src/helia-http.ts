@@ -1,12 +1,13 @@
 import { start, stop } from '@libp2p/interface'
+import { defaultLogger } from '@libp2p/logger'
 import drain from 'it-drain'
 import { CustomProgressEvent } from 'progress-events'
-import { trustlessGateway } from '@helia/block-brokers'
+import { trustlessGateway, NetworkedStorage } from '@helia/block-brokers'
 import { PinsImpl } from './pins.js'
 import { BlockStorage } from './storage.js'
 import { assertDatastoreVersionIsCurrent } from './utils/datastore-version.js'
 import { defaultHashers } from './utils/default-hashers.js'
-import { NetworkedStorage } from '@helia/block-brokers'
+
 import type { HeliaHTTPInit } from '.'
 import type { GCOptions, HeliaHTTP } from '@helia/interface/http'
 import type { Pins } from '@helia/interface/pins'
@@ -28,15 +29,16 @@ export class HeliaHTTPImpl implements HeliaHTTP {
   private readonly log: Logger
 
   constructor (init: HeliaHTTPImplInit) {
-    this.logger = init.libp2p.logger
-    this.log = this.logger.forComponent('helia')
+
+    this.logger = init.logger ? init.logger : defaultLogger()
+    this.log = this.logger.forComponent('helia:http')
     const hashers = defaultHashers(init.hashers)
 
     const components = {
       blockstore: init.blockstore,
       datastore: init.datastore,
       hashers,
-      logger: init.libp2p.logger
+      logger: init.logger
     }
 
     const blockBrokers = init.blockBrokers?.map((fn) => {

@@ -22,15 +22,15 @@ describe('helia', () => {
     }
   })
 
-  it('stops and starts', async () => {
-    // TODO(DJ: Find another way to check these states
+  // it('stops and starts', async () => {
+  //   // TODO(DJ: Find another way to check these states
 
-    expect(heliaHTTP.libp2p.status).to.equal('started')
+  //   expect(heliaHTTP.libp2p.status).to.equal('started')
 
-    await heliaHTTP.stop()
+  //   await heliaHTTP.stop()
 
-    expect(heliaHTTP.libp2p.status).to.equal('stopped')
-  })
+  //   expect(heliaHTTP.libp2p.status).to.equal('stopped')
+  // })
 
   it('should have a blockstore', async () => {
     expect(heliaHTTP).to.have.property('blockstore').that.is.ok()

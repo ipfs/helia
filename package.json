@@ -59,6 +59,7 @@
     "@ipld/dag-json": "^10.1.5",
     "@ipld/dag-pb": "^4.0.6",
     "@libp2p/interface": "^1.0.1",
+    "@libp2p/logger": "^4.0.2",
     "blockstore-core": "^4.3.8",
     "cborg": "^4.0.1",
     "datastore-core": "^9.2.6",
@@ -75,7 +76,7 @@
     "aegir": "^41.0.0",
     "delay": "^6.0.0",
     "it-all": "^3.0.4",
-    "mortice": "^3.0.3",
+    "mortice": "^3.0.4",
     "sinon": "^17.0.1",
     "sinon-ts": "^2.0.0"
   }
