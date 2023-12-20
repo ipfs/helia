@@ -70,7 +70,7 @@
     "kubo": "^0.24.0",
     "kubo-rpc-client": "^3.0.1",
     "libp2p": "^1.0.1",
-    "multiformats": "^12.0.1"
+    "multiformats": "^13.0.0"
   },
   "browser": {
     "./dist/test/fixtures/create-helia.js": "./dist/test/fixtures/create-helia.browser.js",
