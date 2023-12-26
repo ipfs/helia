@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://github.com/ipfs/helia" title="Helia">
+  <a href="https://github.com/ipfs/helia-http" title="helia-http">
     <img src="https://raw.githubusercontent.com/ipfs/helia/main/assets/helia.png" alt="Helia logo" width="300" />
   </a>
 </p>
@@ -9,12 +9,10 @@
 [![codecov](https://img.shields.io/codecov/c/github/ipfs/helia.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia)
 [![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
 
-> An implementation of IPFS in JavaScript
+# Helia-http
+> An lightweight implementation of IPFS over HTTP in JavaScript
 
 ## About
-
-TODO:     "@helia/block-brokers": "https://gitpkg.now.sh/meandavejustice/helia/packages/block-brokers?341-breakout-block-brokers",
-    "@helia/interface": "https://gitpkg.now.sh/meandavejustice/helia/packages/interface?352-update-@helia/interface-for-http",
 
 Exports a `createHeliaHTTP` function that returns an object that implements the lightweight Helia API.
 
