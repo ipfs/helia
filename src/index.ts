@@ -21,6 +21,7 @@
 
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
+import { defaultLogger } from '@libp2p/logger'
 import { HeliaHTTPImpl } from './helia-http.js'
 import type { HeliaHTTP } from '@helia/interface/http'
 import type { BlockBroker } from '@helia/interface/blocks'
@@ -110,16 +111,17 @@ export interface HeliaHTTPInit {
 /**
  * Create and return a Helia node
  */
-export async function createHeliaHTTP (init: HeliaHTTPInit): Promise<HeliaHTTP>
-export async function createHeliaHTTP (init?: HeliaHTTPInit): Promise<HeliaHTTP>
+// export async function createHeliaHTTP (init: HeliaHTTPInit): Promise<HeliaHTTP>
 export async function createHeliaHTTP (init: HeliaHTTPInit = {}): Promise<HeliaHTTP> {
   const datastore = init.datastore ?? new MemoryDatastore()
   const blockstore = init.blockstore ?? new MemoryBlockstore()
+  const logger = init.logger ?? defaultLogger()
 
   const heliaHTTP = new HeliaHTTPImpl({
     ...init,
     datastore,
-    blockstore
+    blockstore,
+    logger
   })
 
   if (init.start !== false) {

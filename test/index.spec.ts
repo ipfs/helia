@@ -41,6 +41,6 @@ describe('helia', () => {
   })
 
   it('should have not a libp2p', async () => {
-    expect(heliaHTTP).to.have.property('libp2p').that.is.not.ok()
+    expect(heliaHTTP).to.not.have.property('libp2p').that.is.ok()
   })
 })

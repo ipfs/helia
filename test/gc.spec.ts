@@ -9,8 +9,7 @@ import { MemoryDatastore } from 'datastore-core'
 import * as raw from 'multiformats/codecs/raw'
 import { createHeliaHTTP } from '../src/index.js'
 import { createAndPutBlock } from './fixtures/create-block.js'
-import type { GcEvents } from '@helia/interface'
-import type { HeliaHTTP } from '@helia/interface/http'
+import type { HeliaHTTP, GcEvents } from '@helia/interface/http'
 
 describe('gc', () => {
   let heliaHTTP: HeliaHTTP
@@ -176,7 +175,7 @@ describe('gc', () => {
 
     await expect(heliaHTTP.blockstore.has(cid)).to.eventually.be.true('did not keep cid')
 
-    const errorEvents = events.filter(e => e.type === 'helia:gc:error')
+    const errorEvents = events.filter(e => e.type === 'heliaHTTP:gc:error')
     expect(errorEvents).to.have.lengthOf(1)
     expect(errorEvents[0].detail.toString()).to.include('Urk!')
   })

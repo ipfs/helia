@@ -65,19 +65,19 @@
     "datastore-core": "^9.2.6",
     "interface-blockstore": "^5.2.7",
     "interface-datastore": "^8.2.9",
+    "interface-store": "^5.1.5",
     "it-drain": "^3.0.5",
     "multiformats": "^12.1.3",
+    "p-defer": "^4.0.0",
+    "p-queue": "^8.0.1",
     "progress-events": "^1.0.0",
     "uint8arrays": "^5.0.0"
   },
   "devDependencies": {
-    "@libp2p/circuit-relay-v2": "^1.0.7",
     "@types/sinon": "^17.0.2",
     "aegir": "^41.0.0",
     "delay": "^6.0.0",
     "it-all": "^3.0.4",
-    "mortice": "^3.0.4",
-    "sinon": "^17.0.1",
-    "sinon-ts": "^2.0.0"
+    "mortice": "^3.0.4"
   }
 }

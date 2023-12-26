@@ -1,5 +1,4 @@
 import { start, stop } from '@libp2p/interface'
-import { defaultLogger } from '@libp2p/logger'
 import drain from 'it-drain'
 import { CustomProgressEvent } from 'progress-events'
 import { trustlessGateway, NetworkedStorage } from '@helia/block-brokers'
@@ -15,6 +14,7 @@ import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
+import { defaultLogger } from '@libp2p/logger'
 
 interface HeliaHTTPImplInit extends HeliaHTTPInit {
   blockstore: Blockstore
@@ -29,8 +29,7 @@ export class HeliaHTTPImpl implements HeliaHTTP {
   private readonly log: Logger
 
   constructor (init: HeliaHTTPImplInit) {
-
-    this.logger = init.logger ? init.logger : defaultLogger()
+    this.logger = init.logger ?? defaultLogger()
     this.log = this.logger.forComponent('helia:http')
     const hashers = defaultHashers(init.hashers)
 
@@ -38,7 +37,7 @@ export class HeliaHTTPImpl implements HeliaHTTP {
       blockstore: init.blockstore,
       datastore: init.datastore,
       hashers,
-      logger: init.logger
+      logger: this.logger
     }
 
     const blockBrokers = init.blockBrokers?.map((fn) => {
@@ -87,10 +86,10 @@ export class HeliaHTTPImpl implements HeliaHTTP {
 
             yield cid
 
-            options.onProgress?.(new CustomProgressEvent<CID>('helia:gc:deleted', cid))
+            options.onProgress?.(new CustomProgressEvent<CID>('heliaHTTP:gc:deleted', cid))
           } catch (err) {
             heliaHTTP.log.error('Error during gc', err)
-            options.onProgress?.(new CustomProgressEvent<Error>('helia:gc:error', err))
+            options.onProgress?.(new CustomProgressEvent<Error>('heliaHTTP:gc:error', err))
           }
         }
       }())))
