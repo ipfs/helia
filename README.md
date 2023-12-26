@@ -6,8 +6,8 @@
 
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
-[![codecov](https://img.shields.io/codecov/c/github/ipfs/helia.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia)
-[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
+[![codecov](https://img.shields.io/codecov/c/github/meandavejustice/helia-http.svg?style=flat-square)](https://codecov.io/gh/meandavejustice/helia-http)
+[![CI](https://img.shields.io/github/actions/workflow/status/meandavejustice/helia-http/main.yml?branch=main\&style=flat-square)](https://github.com/meandavejustice/helia-http/actions/workflows/main.yml?query=branch%3Amain)
 
 # Helia-http
 > An lightweight implementation of IPFS over HTTP in JavaScript
@@ -21,7 +21,7 @@ Pass it to other modules like @helia/unixfs to make files available on the distr
 ### Example
 
 ```typescript
-import { createHeliaHttp } from '@helia/http'
+import { createHeliaHttp } from 'helia-http'
 import { unixfs } from '@helia/unixfs'
 import { CID } from 'multiformats/cid'
 
@@ -31,7 +31,7 @@ const fs = unixfs(helia)
 fs.cat(CID.parse('bafyFoo'))
 ```
 
-## Install
+<!-- ## Install
 
 ```console
 $ npm i @helia/http
@@ -47,7 +47,7 @@ Loading this module through a script tag will make it's exports available as `He
 
 ## API Docs
 
-- <https://ipfs.github.io/helia/modules/http.html>
+- <https://ipfs.github.io/helia/modules/http.html> -->
 
 ## License
 
@@ -58,7 +58,7 @@ Licensed under either of
 
 ## Contribute
 
-Contributions welcome! Please check out [the issues](https://github.com/ipfs/helia/issues).
+Contributions welcome! Please check out [the issues](https://github.com/meandavejustice/helia-http/issues).
 
 Also see our [contributing document](https://github.com/ipfs/community/blob/master/CONTRIBUTING_JS.md) for more information on how we work, and about contributing in general.
 
