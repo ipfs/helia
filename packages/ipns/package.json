@@ -159,6 +159,7 @@
     "release": "aegir release"
   },
   "dependencies": {
+    "@libp2p/interface": "^0.1.4",
     "@libp2p/kad-dht": "^10.0.11",
     "@libp2p/logger": "^3.0.2",
     "@libp2p/peer-id": "^3.0.2",
@@ -174,7 +175,6 @@
     "uint8arrays": "^4.0.3"
   },
   "devDependencies": {
-    "@libp2p/interface": "^0.1.4",
     "@libp2p/peer-id-factory": "^3.0.3",
     "@types/dns-packet": "^5.6.4",
     "aegir": "^41.1.14",
