@@ -54,11 +54,11 @@ describe('pins', () => {
       rawLeaves: true
     })
 
-    await expect(helia.blockstore.has(cid)).to.eventually.be.false()
+    await expect(helia.blockstore.has(CID.parse(cid.toString()))).to.eventually.be.false()
 
-    const output = await helia.pins.add(cid)
+    const output = await helia.pins.add(CID.parse(cid.toString()))
 
-    await expect(helia.blockstore.has(cid)).to.eventually.be.true()
+    await expect(helia.blockstore.has(CID.parse(cid.toString()))).to.eventually.be.true()
 
     expect(output.cid.toString()).to.equal(cid.toString())
   })
