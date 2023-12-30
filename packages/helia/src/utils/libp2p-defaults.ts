@@ -7,7 +7,7 @@ import { bootstrap } from '@libp2p/bootstrap'
 import { circuitRelayTransport, circuitRelayServer, type CircuitRelayService } from '@libp2p/circuit-relay-v2'
 import { dcutr } from '@libp2p/dcutr'
 import { type Identify, identify } from '@libp2p/identify'
-import { type DualKadDHT, kadDHT } from '@libp2p/kad-dht'
+import { type KadDHT, kadDHT } from '@libp2p/kad-dht'
 import { keychain, type Keychain } from '@libp2p/keychain'
 import { mdns } from '@libp2p/mdns'
 import { mplex } from '@libp2p/mplex'
@@ -29,7 +29,7 @@ export interface DefaultLibp2pServices extends Record<string, unknown> {
   autoNAT: unknown
   dcutr: unknown
   delegatedRouting: unknown
-  dht: DualKadDHT
+  dht: KadDHT
   identify: Identify
   keychain: Keychain
   ping: PingService
