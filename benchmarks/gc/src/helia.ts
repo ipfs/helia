@@ -1,16 +1,12 @@
 import os from 'node:os'
 import path from 'node:path'
-import { noise } from '@chainsafe/libp2p-noise'
-import { yamux } from '@chainsafe/libp2p-yamux'
 import * as dagPb from '@ipld/dag-pb'
-import { webSockets } from '@libp2p/websockets'
 import { FsBlockstore } from 'blockstore-fs'
 import { LevelDatastore } from 'datastore-level'
 import { createHelia, type DAGWalker } from 'helia'
 import all from 'it-all'
 import drain from 'it-drain'
 import map from 'it-map'
-import { createLibp2p } from 'libp2p'
 import type { GcBenchmark } from './index.js'
 
 const dagPbWalker: DAGWalker = {
@@ -28,17 +24,11 @@ export async function createHeliaBenchmark (): Promise<GcBenchmark> {
   const helia = await createHelia({
     blockstore: new FsBlockstore(`${repoPath}/blocks`),
     datastore: new LevelDatastore(`${repoPath}/data`),
-    libp2p: await createLibp2p({
-      transports: [
-        webSockets()
-      ],
-      connectionEncryption: [
-        noise()
-      ],
-      streamMuxers: [
-        yamux()
-      ]
-    }),
+    libp2p: {
+      addresses: {
+        listen: []
+      }
+    },
     dagWalkers: [
       dagPbWalker
     ],
