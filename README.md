@@ -18,6 +18,8 @@ Exports a `createHeliaHTTP` function that returns an object that implements the 
 
 Pass it to other modules like @helia/unixfs to make files available on the distributed web.
 
+This repo solves [this issue](https://github.com/ipfs/helia/issues/289) and aims to eventually merge back into the [Helia repo](https://github.com/ipfs/helia).
+
 ### Example
 
 ```typescript
