@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { peerIdFromString } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
@@ -19,10 +20,10 @@ describe('blockstore', () => {
     kubo = await createKuboNode()
 
     // connect the two nodes
-    await helia.libp2p.peerStore.merge(kubo.peer.id, {
+    await helia.libp2p.peerStore.merge(peerIdFromString(kubo.peer.id.toString()), {
       multiaddrs: kubo.peer.addresses
     })
-    await helia.libp2p.dial(kubo.peer.id)
+    await helia.libp2p.dial(peerIdFromString(kubo.peer.id.toString()))
   })
 
   afterEach(async () => {
@@ -51,7 +52,7 @@ describe('blockstore', () => {
       cidVersion: 1,
       rawLeaves: true
     })
-    const output = await helia.blockstore.get(cid)
+    const output = await helia.blockstore.get(CID.parse(cid.toString()))
 
     expect(output).to.equalBytes(input)
   })

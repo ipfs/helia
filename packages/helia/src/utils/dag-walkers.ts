@@ -17,7 +17,7 @@ import type { DAGWalker } from '../index.js'
  */
 export const dagPbWalker: DAGWalker = {
   codec: dagPb.code,
-  async * walk (block) {
+  * walk (block) {
     const node = dagPb.decode(block)
 
     yield * node.Links.map(l => l.Hash)
@@ -29,7 +29,7 @@ export const dagPbWalker: DAGWalker = {
  */
 export const rawWalker: DAGWalker = {
   codec: raw.code,
-  async * walk () {
+  * walk () {
     // no embedded CIDs in a raw block
   }
 }
@@ -44,7 +44,7 @@ const CID_TAG = 42
  */
 export const dagCborWalker: DAGWalker = {
   codec: dagCbor.code,
-  async * walk (block) {
+  * walk (block) {
     const cids: CID[] = []
     const tags: cborg.TagDecoder[] = []
     tags[CID_TAG] = (bytes) => {
@@ -142,7 +142,7 @@ class DagJsonTokenizer extends cborgJson.Tokenizer {
  */
 export const dagJsonWalker: DAGWalker = {
   codec: dagJson.code,
-  async * walk (block) {
+  * walk (block) {
     const cids: CID[] = []
     const tags: cborg.TagDecoder[] = []
     tags[CID_TAG] = (string) => {
@@ -177,5 +177,5 @@ export const dagJsonWalker: DAGWalker = {
  */
 export const jsonWalker: DAGWalker = {
   codec: json.code,
-  async * walk () {}
+  * walk () {}
 }

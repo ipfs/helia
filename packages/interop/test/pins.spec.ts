@@ -2,6 +2,7 @@
 
 import { expect } from 'aegir/chai'
 import all from 'it-all'
+import drain from 'it-drain'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
 import { sha256 } from 'multiformats/hashes/sha2'
@@ -54,12 +55,10 @@ describe('pins', () => {
       rawLeaves: true
     })
 
-    await expect(helia.blockstore.has(cid)).to.eventually.be.false()
+    await expect(helia.blockstore.has(CID.parse(cid.toString()))).to.eventually.be.false()
 
-    const output = await helia.pins.add(cid)
+    await drain(helia.pins.add(CID.parse(cid.toString())))
 
-    await expect(helia.blockstore.has(cid)).to.eventually.be.true()
-
-    expect(output.cid.toString()).to.equal(cid.toString())
+    await expect(helia.blockstore.has(CID.parse(cid.toString()))).to.eventually.be.true()
   })
 })
