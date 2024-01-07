@@ -45,7 +45,7 @@ export * from '@helia/interface/pins'
  */
 export interface DAGWalker {
   codec: number
-  walk(block: Uint8Array): AsyncGenerator<CID, void, undefined>
+  walk(block: Uint8Array): Generator<CID, void, undefined>
 }
 
 /**
