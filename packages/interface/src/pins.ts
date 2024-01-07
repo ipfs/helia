@@ -43,13 +43,13 @@ export interface Pins {
    * Pin a block in the blockstore. It will not be deleted
    * when garbage collection is run.
    */
-  add(cid: CID, options?: AddOptions): AsyncGenerator<() => Promise<CID>, Pin>
+  add(cid: CID, options?: AddOptions): AsyncGenerator<CID, void, undefined>
 
   /**
    * Unpin the block that corresponds to the passed CID. The block will
    * be deleted when garbage collection is run.
    */
-  rm(cid: CID, options?: RmOptions): AsyncGenerator<() => Promise<CID>, Pin>
+  rm(cid: CID, options?: RmOptions): AsyncGenerator<CID, void, undefined>
 
   /**
    * List all blocks that have been pinned.

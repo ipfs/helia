@@ -6,7 +6,7 @@ import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import all from 'it-all'
-import parallel from 'it-parallel'
+import drain from 'it-drain'
 import { createLibp2p } from 'libp2p'
 import { type AddPinEvents, createHelia } from '../src/index.js'
 import { createDag, type DAGNode } from './fixtures/create-dag.js'
@@ -54,7 +54,7 @@ describe('pins (recursive)', () => {
   })
 
   it('pins a block recursively', async () => {
-    await all(parallel(helia.pins.add(dag['level-0'].cid)))
+    await drain(helia.pins.add(dag['level-0'].cid))
 
     // all sub blocks should be pinned
     for (const [name, node] of Object.entries(dag)) {
@@ -65,8 +65,8 @@ describe('pins (recursive)', () => {
   })
 
   it('unpins recursively', async () => {
-    await all(parallel(helia.pins.add(dag['level-0'].cid)))
-    await all(parallel(helia.pins.rm(dag['level-0'].cid)))
+    await drain(helia.pins.add(dag['level-0'].cid))
+    await drain(helia.pins.rm(dag['level-0'].cid))
 
     // no sub blocks should be pinned
     for (const [name, node] of Object.entries(dag)) {
@@ -77,7 +77,7 @@ describe('pins (recursive)', () => {
   })
 
   it('does not delete a pinned sub-block', async () => {
-    await all(parallel(helia.pins.add(dag['level-0'].cid)))
+    await drain(helia.pins.add(dag['level-0'].cid))
 
     // no sub blocks should be pinned
     for (const [name, node] of Object.entries(dag)) {
@@ -88,34 +88,73 @@ describe('pins (recursive)', () => {
     }
   })
 
-  it('can resume an interrupted pinning operation', async () => {
-    // dag has 13 nodes. We should abort after 5
-    const events: AddPinEvents[] = []
-    const getPinIterator = (): ReturnType<typeof helia.pins.add> => helia.pins.add(dag['level-0'].cid, {
+  it('should not re-pin blocks pinned during an interrupted pinning operation', async () => {
+    // the dag to pin has 13 nodes. We should abort after 5
+    const firstTryEvents: AddPinEvents[] = []
+
+    const pinIter = helia.pins.add(dag['level-0'].cid, {
       onProgress: (evt) => {
         if (evt.type === 'helia:pin:add') {
-          events.push(evt)
+          firstTryEvents.push(evt)
+        }
+
+        if (firstTryEvents.length === 5) {
+          throw new Error('Urk!')
         }
       }
     })
-    const pinIter = getPinIterator()
+
     let output = await pinIter.next()
-    const firstTryPins = []
 
-    while (output.done === false && events.length < 5) {
-      firstTryPins.push(await output.value())
-      output = await pinIter.next()
-    }
+    // read as much of the iterator as possible
+    await expect((async () => {
+      while (true) {
+        output = await pinIter.next()
+      }
+    })()).to.eventually.be.rejected
+      .with.property('message', 'Urk!')
 
-    expect(firstTryPins).to.have.lengthOf(5)
-    expect(events.length).to.eq(5)
-    expect(output.done).to.eq(false) // we're not actually done. We simulated a crash
+    // we're not actually done. We simulated a crash
+    expect(output.done).to.be.false()
 
-    // now resume, and consume the entire iterator to completion
-    const pin = await all(parallel(getPinIterator()))
+    // we pinned the first 5 CIDs in the DAG
+    expect(firstTryEvents.map(evt => evt.detail.toString()))
+      .to.deep.equal([
+        dag['level-0'].cid.toString(),
+        dag['level-0'].links[0].toString(),
+        dag['level-0-0'].links[0].toString(),
+        dag['level-0-0'].links[1].toString(),
+        dag['level-0-0'].links[2].toString()
+      ])
 
+    const secondTryEvents: AddPinEvents[] = []
+
+    // now restart, and consume the entire iterator
+    const pin = await all(helia.pins.add(dag['level-0'].cid, {
+      onProgress: (evt) => {
+        if (evt.type === 'helia:pin:add') {
+          secondTryEvents.push(evt)
+        }
+      }
+    }))
+
+    // all blocks in the DAG should be pinned
     expect(pin).to.have.lengthOf(13)
+
     // we did not re-pin things we already pinned
-    expect(events.length).to.eq(13)
+    expect(secondTryEvents).to.have.lengthOf(pin.length - firstTryEvents.length)
+
+    // these are the rest of the CIDs in the pinned DAG
+    expect(secondTryEvents.map(evt => evt.detail.toString()))
+      .to.deep.equal([
+        dag['level-0'].links[1].toString(),
+        dag['level-0-1'].links[0].toString(),
+        dag['level-0-1'].links[1].toString(),
+        dag['level-0-1'].links[2].toString(),
+        dag['level-0'].links[2].toString(),
+        dag['level-0-2'].links[0].toString(),
+        dag['level-0-2'].links[1].toString(),
+        dag['level-0-2'].links[2].toString()
+      ])
   })
 })

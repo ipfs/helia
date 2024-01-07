@@ -5,7 +5,7 @@ import type { DAGWalker } from '../../src/index.js'
 export function dagWalker (codec: number, dag: Record<string, DAGNode>): DAGWalker {
   return {
     codec,
-    async * walk (block) {
+    * walk (block) {
       const node = dag[uint8ArrayToString(block)] ?? { links: [] }
 
       yield * node.links

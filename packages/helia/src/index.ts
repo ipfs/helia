@@ -45,7 +45,7 @@ export * from '@helia/interface/pins'
  */
 export interface DAGWalker {
   codec: number
-  walk(block: Uint8Array): AsyncGenerator<CID, void, undefined>
+  walk(block: Uint8Array): Generator<CID, void, undefined>
 }
 
 /**
@@ -137,12 +137,12 @@ export async function createHelia (init: HeliaInit = {}): Promise<Helia<unknown>
   const datastore = init.datastore ?? new MemoryDatastore()
   const blockstore = init.blockstore ?? new MemoryBlockstore()
 
-  let libp2p: Libp2p
+  let libp2p: Libp2p<DefaultLibp2pServices>
 
   if (isLibp2p(init.libp2p)) {
-    libp2p = init.libp2p
+    libp2p = init.libp2p as any
   } else {
-    libp2p = await createLibp2p({
+    libp2p = await createLibp2p<DefaultLibp2pServices>({
       ...init,
       libp2p: init.libp2p,
       datastore

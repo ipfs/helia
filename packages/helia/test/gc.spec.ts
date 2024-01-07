@@ -8,8 +8,7 @@ import { webSockets } from '@libp2p/websockets'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
-import all from 'it-all'
-import parallel from 'it-parallel'
+import drain from 'it-drain'
 import { createLibp2p } from 'libp2p'
 import * as raw from 'multiformats/codecs/raw'
 import { createHelia } from '../src/index.js'
@@ -53,7 +52,7 @@ describe('gc', () => {
       Links: []
     }), helia.blockstore)
 
-    const node = await createAndPutBlock(dagPb.code, dagPb.encode({
+    const root = await createAndPutBlock(dagPb.code, dagPb.encode({
       Links: [{
         Hash: child1,
         Name: 'child1'
@@ -63,7 +62,7 @@ describe('gc', () => {
       }]
     }), helia.blockstore)
 
-    await all(parallel(helia.pins.add(node)))
+    await drain(helia.pins.add(root))
 
     // this block will be garbage collected
     const doomed = await createAndPutBlock(dagPb.code, dagPb.encode({
@@ -73,14 +72,14 @@ describe('gc', () => {
 
     await expect(helia.blockstore.has(child1)).to.eventually.be.true()
     await expect(helia.blockstore.has(child2)).to.eventually.be.true()
-    await expect(helia.blockstore.has(node)).to.eventually.be.true()
+    await expect(helia.blockstore.has(root)).to.eventually.be.true()
     await expect(helia.blockstore.has(doomed)).to.eventually.be.true()
 
     await helia.gc()
 
     await expect(helia.blockstore.has(child1)).to.eventually.be.true()
     await expect(helia.blockstore.has(child2)).to.eventually.be.true()
-    await expect(helia.blockstore.has(node)).to.eventually.be.true()
+    await expect(helia.blockstore.has(root)).to.eventually.be.true()
     await expect(helia.blockstore.has(doomed)).to.eventually.be.false()
   })
 
@@ -92,14 +91,14 @@ describe('gc', () => {
       baz: 'qux'
     }), helia.blockstore)
 
-    const node = await createAndPutBlock(dagCbor.code, dagCbor.encode({
+    const root = await createAndPutBlock(dagCbor.code, dagCbor.encode({
       children: [
         child1,
         child2
       ]
     }), helia.blockstore)
 
-    await all(parallel(helia.pins.add(node)))
+    await drain(helia.pins.add(root))
 
     // this block will be garbage collected
     const doomed = await createAndPutBlock(dagCbor.code, dagJson.encode({
@@ -108,14 +107,14 @@ describe('gc', () => {
 
     await expect(helia.blockstore.has(child1)).to.eventually.be.true()
     await expect(helia.blockstore.has(child2)).to.eventually.be.true()
-    await expect(helia.blockstore.has(node)).to.eventually.be.true()
+    await expect(helia.blockstore.has(root)).to.eventually.be.true()
     await expect(helia.blockstore.has(doomed)).to.eventually.be.true()
 
     await helia.gc()
 
     await expect(helia.blockstore.has(child1)).to.eventually.be.true()
     await expect(helia.blockstore.has(child2)).to.eventually.be.true()
-    await expect(helia.blockstore.has(node)).to.eventually.be.true()
+    await expect(helia.blockstore.has(root)).to.eventually.be.true()
     await expect(helia.blockstore.has(doomed)).to.eventually.be.false()
   })
 
@@ -127,14 +126,14 @@ describe('gc', () => {
       baz: 'qux'
     }), helia.blockstore)
 
-    const node = await createAndPutBlock(dagJson.code, dagJson.encode({
+    const root = await createAndPutBlock(dagJson.code, dagJson.encode({
       children: [
         child1,
         child2
       ]
     }), helia.blockstore)
 
-    await all(parallel(helia.pins.add(node)))
+    await drain(helia.pins.add(root))
 
     // this block will be garbage collected
     const doomed = await createAndPutBlock(dagJson.code, dagJson.encode({
@@ -143,21 +142,21 @@ describe('gc', () => {
 
     await expect(helia.blockstore.has(child1)).to.eventually.be.true()
     await expect(helia.blockstore.has(child2)).to.eventually.be.true()
-    await expect(helia.blockstore.has(node)).to.eventually.be.true()
+    await expect(helia.blockstore.has(root)).to.eventually.be.true()
     await expect(helia.blockstore.has(doomed)).to.eventually.be.true()
 
     await helia.gc()
 
     await expect(helia.blockstore.has(child1)).to.eventually.be.true()
     await expect(helia.blockstore.has(child2)).to.eventually.be.true()
-    await expect(helia.blockstore.has(node)).to.eventually.be.true()
+    await expect(helia.blockstore.has(root)).to.eventually.be.true()
     await expect(helia.blockstore.has(doomed)).to.eventually.be.false()
   })
 
   it('pins a raw node and does not garbage collect it', async () => {
     const cid = await createAndPutBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
 
-    await all(parallel(helia.pins.add(cid)))
+    await drain(helia.pins.add(cid))
 
     // this block will be garbage collected
     const doomed = await createAndPutBlock(raw.code, Uint8Array.from([4, 5, 6, 7]), helia.blockstore)

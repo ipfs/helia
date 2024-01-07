@@ -1,12 +1,13 @@
+import { Queue } from '@libp2p/utils/queue'
 import * as cborg from 'cborg'
 import { type Datastore, Key } from 'interface-datastore'
 import { base36 } from 'multiformats/bases/base36'
 import { CID, type Version } from 'multiformats/cid'
-import { CustomProgressEvent } from 'progress-events'
+import { CustomProgressEvent, type ProgressOptions } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { dagCborWalker, dagJsonWalker, dagPbWalker, jsonWalker, rawWalker } from './utils/dag-walkers.js'
-import type { DAGWalker } from './index.js'
-import type { AddOptions, IsPinnedOptions, LsOptions, Pin, Pins, RmOptions } from '@helia/interface/pins'
+import type { DAGWalker, GetBlockProgressEvents } from './index.js'
+import type { AddOptions, AddPinEvents, IsPinnedOptions, LsOptions, Pin, Pins, RmOptions } from '@helia/interface/pins'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 
@@ -49,6 +50,11 @@ interface WithPinnedBlockCallback {
 const DATASTORE_PIN_PREFIX = '/pin/'
 const DATASTORE_BLOCK_PREFIX = '/pinned-block/'
 const DATASTORE_ENCODING = base36
+const DAG_WALK_QUEUE_CONCURRENCY = 1
+
+interface WalkDagOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents | AddPinEvents> {
+  depth: number
+}
 
 function toDSKey (cid: CID): Key {
   if (cid.version === 0) {
@@ -73,7 +79,7 @@ export class PinsImpl implements Pins {
     })
   }
 
-  async * add (cid: CID<unknown, number, number, Version>, options: AddOptions = {}): AsyncGenerator<() => Promise<CID>, Pin> {
+  async * add (cid: CID<unknown, number, number, Version>, options: AddOptions = {}): AsyncGenerator<CID, void, undefined> {
     const pinKey = toDSKey(cid)
 
     if (await this.datastore.has(pinKey)) {
@@ -86,23 +92,27 @@ export class PinsImpl implements Pins {
       throw new Error('Depth must be greater than or equal to 0')
     }
 
-    for await (const promise of this.#walkDag(cid, depth, options)) {
-      yield async () => {
-        const cid = await promise()
+    // use a queue to walk the DAG instead of recursion so we can traverse very large DAGs
+    const queue = new Queue<AsyncGenerator<CID>>({
+      concurrency: DAG_WALK_QUEUE_CONCURRENCY
+    })
 
-        await this.#updatePinnedBlock(cid, (pinnedBlock: DatastorePinnedBlock) => {
-          // do not update pinned block if this block is already pinned by this CID
-          if (pinnedBlock.pinnedBy.find(c => uint8ArrayEquals(c, cid.bytes)) != null) {
-            return false
-          }
+    for await (const childCid of this.#walkDag(cid, queue, {
+      ...options,
+      depth
+    })) {
+      await this.#updatePinnedBlock(childCid, (pinnedBlock: DatastorePinnedBlock) => {
+        // do not update pinned block if this block is already pinned by this CID
+        if (pinnedBlock.pinnedBy.find(c => uint8ArrayEquals(c, cid.bytes)) != null) {
+          return false
+        }
 
-          pinnedBlock.pinCount++
-          pinnedBlock.pinnedBy.push(cid.bytes)
-          return true
-        }, options)
+        pinnedBlock.pinCount++
+        pinnedBlock.pinnedBy.push(cid.bytes)
+        return true
+      }, options)
 
-        return cid
-      }
+      yield childCid
     }
 
     const pin: DatastorePin = {
@@ -111,58 +121,34 @@ export class PinsImpl implements Pins {
     }
 
     await this.datastore.put(pinKey, cborg.encode(pin), options)
-
-    return {
-      cid,
-      ...pin
-    }
   }
 
   /**
    * Walk a DAG in an iterable fashion
    */
-  async * #walkDag (cid: CID, maxDepth: number, options: AbortOptions): AsyncGenerator<() => Promise<CID>> {
-    const queue: Array<() => Promise<CID>> = []
-    const promises: Array<Promise<CID>> = []
-
-    const enqueue = (cid: CID, depth: number): void => {
-      queue.push(async () => {
-        const promise = Promise.resolve().then(async () => {
-          const dagWalker = this.dagWalkers[cid.code]
-
-          if (dagWalker == null) {
-            throw new Error(`No dag walker found for cid codec ${cid.code}`)
-          }
-
-          const block = await this.blockstore.get(cid, options)
-
-          if (depth < maxDepth) {
-            for await (const cid of dagWalker.walk(block)) {
-              enqueue(cid, depth + 1)
-            }
-          }
-
-          return cid
-        })
-
-        promises.push(promise)
-
-        return promise
-      })
+  async * #walkDag (cid: CID, queue: Queue<AsyncGenerator<CID>>, options: WalkDagOptions): AsyncGenerator<CID> {
+    if (options.depth === -1) {
+      return
     }
 
-    enqueue(cid, 0)
+    const dagWalker = this.dagWalkers[cid.code]
 
-    while (queue.length + promises.length !== 0) {
-      const func = queue.shift()
+    if (dagWalker == null) {
+      throw new Error(`No dag walker found for cid codec ${cid.code}`)
+    }
 
-      if (func == null) {
-        await promises.shift()
+    const block = await this.blockstore.get(cid, options)
 
-        continue
-      }
+    yield cid
 
-      yield func
+    // walk dag, ensure all blocks are present
+    for await (const cid of dagWalker.walk(block)) {
+      yield * await queue.add(async () => {
+        return this.#walkDag(cid, queue, {
+          ...options,
+          depth: options.depth - 1
+        })
+      })
     }
   }
 
@@ -186,6 +172,7 @@ export class PinsImpl implements Pins {
     }
 
     const shouldContinue = withPinnedBlock(pinnedBlock)
+
     if (!shouldContinue) {
       return
     }
@@ -198,36 +185,35 @@ export class PinsImpl implements Pins {
     }
 
     await this.datastore.put(blockKey, cborg.encode(pinnedBlock), options)
-    options.onProgress?.(new CustomProgressEvent<CID>('helia:pin:add', { detail: cid }))
+    options.onProgress?.(new CustomProgressEvent<CID>('helia:pin:add', cid))
   }
 
-  async * rm (cid: CID<unknown, number, number, Version>, options: RmOptions = {}): AsyncGenerator<() => Promise<CID>, Pin> {
+  async * rm (cid: CID<unknown, number, number, Version>, options: RmOptions = {}): AsyncGenerator<CID, void, undefined> {
     const pinKey = toDSKey(cid)
     const buf = await this.datastore.get(pinKey, options)
     const pin = cborg.decode(buf)
 
     await this.datastore.delete(pinKey, options)
 
-    for await (const promise of this.#walkDag(cid, pin.depth, options)) {
-      yield async () => {
-        const cid = await promise()
+    // use a queue to walk the DAG instead of recursion so we can traverse very large DAGs
+    const queue = new Queue<AsyncGenerator<CID>>({
+      concurrency: DAG_WALK_QUEUE_CONCURRENCY
+    })
 
-        await this.#updatePinnedBlock(cid, (pinnedBlock): boolean => {
-          pinnedBlock.pinCount--
-          pinnedBlock.pinnedBy = pinnedBlock.pinnedBy.filter(c => uint8ArrayEquals(c, cid.bytes))
-          return true
-        }, {
-          ...options,
-          depth: pin.depth
-        })
+    for await (const childCid of this.#walkDag(cid, queue, {
+      ...options,
+      depth: pin.depth
+    })) {
+      await this.#updatePinnedBlock(childCid, (pinnedBlock): boolean => {
+        pinnedBlock.pinCount--
+        pinnedBlock.pinnedBy = pinnedBlock.pinnedBy.filter(c => uint8ArrayEquals(c, cid.bytes))
+        return true
+      }, {
+        ...options,
+        depth: pin.depth
+      })
 
-        return cid
-      }
-    }
-
-    return {
-      cid,
-      ...pin
+      yield childCid
     }
   }
 
