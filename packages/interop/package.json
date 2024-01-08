@@ -3,13 +3,17 @@
   "version": "0.0.0",
   "description": "Interop tests for @helia/json",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/ipfs/helia-json/tree/master/packages/interop#readme",
+  "homepage": "https://github.com/ipfs/helia-json/tree/main/packages/interop#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ipfs/helia-json.git"
   },
   "bugs": {
     "url": "https://github.com/ipfs/helia-json/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "keywords": [
     "IPFS"
@@ -49,17 +53,17 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "devDependencies": {
-    "@helia/interface": "^2.0.0",
+    "@helia/interface": "^3.0.0",
     "@helia/json": "^1.0.0",
-    "@libp2p/websockets": "^7.0.5",
-    "aegir": "^41.0.0",
+    "@libp2p/websockets": "^8.0.10",
+    "aegir": "^42.0.1",
     "go-ipfs": "^0.22.0",
-    "helia": "^2.0.1",
+    "helia": "^3.0.0",
     "ipfs-core-types": "^0.14.0",
     "ipfsd-ctl": "^13.0.0",
     "kubo-rpc-client": "^3.0.0",
     "merge-options": "^3.0.4",
-    "multiformats": "^12.0.1",
+    "multiformats": "^13.0.0",
     "wherearewe": "^2.0.1"
   },
   "browser": {

@@ -4,7 +4,7 @@
   </a>
 </p>
 
-# @helia/json <!-- omit in toc -->
+# @helia/json
 
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
@@ -13,21 +13,36 @@
 
 > Add/get IPLD blocks containing json with your Helia node
 
-## Table of contents <!-- omit in toc -->
+# About
 
-- [Install](#install)
-  - [Browser `<script>` tag](#browser-script-tag)
-- [API Docs](#api-docs)
-- [License](#license)
-- [Contribute](#contribute)
+`@helia/json` makes working with JSON in Helia simple & straightforward.
 
-## Install
+See the JSON interface for all available operations.
+
+## Example
+
+```typescript
+import { createHelia } from 'helia'
+import { json } from '@helia/json'
+import { CID } from 'multiformats/cid'
+
+const j = json(helia)
+const cid = await j.put({
+  hello: 'world'
+})
+const obj = await j.get(cid)
+
+console.info(obj)
+// { hello: 'world' }
+```
+
+# Install
 
 ```console
 $ npm i @helia/json
 ```
 
-### Browser `<script>` tag
+## Browser `<script>` tag
 
 Loading this module through a script tag will make it's exports available as `HeliaJson` in the global namespace.
 
@@ -35,18 +50,18 @@ Loading this module through a script tag will make it's exports available as `He
 <script src="https://unpkg.com/@helia/json/dist/index.min.js"></script>
 ```
 
-## API Docs
+# API Docs
 
 - <https://ipfs.github.io/helia-json/modules/_helia_json.html>
 
-## License
+# License
 
 Licensed under either of
 
 - Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
 - MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
-## Contribute
+# Contribute
 
 Contributions welcome! Please check out [the issues](https://github.com/ipfs/helia-json/issues).
 

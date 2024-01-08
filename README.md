@@ -4,7 +4,7 @@
   </a>
 </p>
 
-# @helia/json <!-- omit in toc -->
+# @helia/json
 
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
@@ -13,30 +13,23 @@
 
 > Add/get IPLD blocks containing json with your Helia node
 
-## Table of contents <!-- omit in toc -->
-
-- [Structure](#structure)
-- [API Docs](#api-docs)
-- [License](#license)
-- [Contribute](#contribute)
-
-## Structure
+# Packages
 
 - [`/packages/interop`](./packages/interop) Interop tests for @helia/json
 - [`/packages/json`](./packages/json) Add/get IPLD blocks containing json with your Helia node
 
-## API Docs
+# API Docs
 
 - <https://ipfs.github.io/helia-json>
 
-## License
+# License
 
 Licensed under either of
 
 - Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
 - MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
-## Contribute
+# Contribute
 
 Contributions welcome! Please check out [the issues](https://github.com/ipfs/helia-json/issues).
 

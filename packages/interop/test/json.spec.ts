@@ -2,6 +2,7 @@
 
 import { json, type JSON, type AddOptions } from '@helia/json'
 import { expect } from 'aegir/chai'
+import { CID } from 'multiformats/cid'
 import * as jsonCodec from 'multiformats/codecs/json'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
@@ -57,7 +58,7 @@ describe('json interop', () => {
   it('should add to kubo and fetch from helia', async () => {
     const input = { hello: 'world' }
     const cid = await kubo.api.block.put(jsonCodec.encode(input))
-    const output = await j.get(cid)
+    const output = await j.get(CID.parse(cid.toString()))
 
     expect(output).to.deep.equal(input)
   })
