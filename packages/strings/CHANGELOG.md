@@ -1,3 +1,19 @@
+## [@helia/strings-v2.0.0](https://github.com/ipfs/helia-strings/compare/@helia/strings-v1.0.1...@helia/strings-v2.0.0) (2024-01-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* uses multiformats v13 and helia v3
+
+### Features
+
+* update helia to v3 and multiformats to v13 ([#87](https://github.com/ipfs/helia-strings/issues/87)) ([ae7cbc9](https://github.com/ipfs/helia-strings/commit/ae7cbc9a16a267cb0f6d7cecd381f919430afaea))
+
+
+### Trivial Changes
+
+* update sibling dependencies ([1184ea6](https://github.com/ipfs/helia-strings/commit/1184ea695987cee7f922b7954c8bc626bc035dba))
+
 ## [@helia/strings-v1.0.1](https://github.com/ipfs/helia-strings/compare/@helia/strings-v1.0.0...@helia/strings-v1.0.1) (2023-10-06)
 
 
