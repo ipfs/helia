@@ -13,7 +13,7 @@ import type { AddOptions as KuboAddOptions } from 'ipfs-core-types/src/root.js'
 import type { FileCandidate } from 'ipfs-unixfs-importer'
 import type { Controller } from 'ipfsd-ctl'
 
-describe('unixfs interop', () => {
+describe('@helia/unixfs - files', () => {
   let helia: Helia<Libp2p>
   let unixFs: UnixFS
   let kubo: Controller

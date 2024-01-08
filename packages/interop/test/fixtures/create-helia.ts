@@ -1,48 +1,49 @@
-import { noise } from '@chainsafe/libp2p-noise'
-import { yamux } from '@chainsafe/libp2p-yamux'
 import { bitswap } from '@helia/block-brokers'
-import { identify } from '@libp2p/identify'
-import { tcp } from '@libp2p/tcp'
-import { MemoryBlockstore } from 'blockstore-core'
-import { MemoryDatastore } from 'datastore-core'
-import { createHelia, type HeliaInit } from 'helia'
-import { createLibp2p } from 'libp2p'
+import { ipnsValidator, ipnsSelector } from '@helia/ipns'
+import { kadDHT, removePublicAddressesMapper } from '@libp2p/kad-dht'
+import { sha3512 } from '@multiformats/sha3'
+import { createHelia, libp2pDefaults } from 'helia'
 import type { Helia } from '@helia/interface'
+import type { Libp2p } from '@libp2p/interface'
+import type { DefaultLibp2pServices } from 'helia'
 
-export async function createHeliaNode (init?: Partial<HeliaInit>): Promise<Helia> {
-  const blockstore = new MemoryBlockstore()
-  const datastore = new MemoryDatastore()
+export async function createHeliaNode (): Promise<Helia<Libp2p<DefaultLibp2pServices>>> {
+  const defaults = libp2pDefaults()
+  defaults.addresses = {
+    listen: [
+      '/ip4/0.0.0.0/tcp/0'
+    ]
+  }
+  defaults.services = {
+    ...(defaults.services ?? {}),
+    dht: kadDHT({
+      validators: {
+        ipns: ipnsValidator
+      },
+      selectors: {
+        ipns: ipnsSelector
+      },
+      // skips waiting for the initial self-query to find peers
+      allowQueryWithZeroPeers: true,
 
-  const libp2p = await createLibp2p({
-    addresses: {
-      listen: [
-        '/ip4/0.0.0.0/tcp/0'
-      ]
-    },
-    transports: [
-      tcp()
-    ],
-    connectionEncryption: [
-      noise()
-    ],
-    streamMuxers: [
-      yamux()
-    ],
-    datastore,
-    services: {
-      identify: identify()
-    }
-  })
+      protocol: '/ipfs/lan/kad/1.0.0',
+      peerInfoMapper: removePublicAddressesMapper,
+      clientMode: false
+    })
+  }
 
-  const helia = await createHelia({
-    libp2p,
+  // remove services that are not used in tests
+  delete defaults.services.autoNAT
+  delete defaults.services.dcutr
+  delete defaults.services.delegatedRouting
+
+  return createHelia<Libp2p<DefaultLibp2pServices>>({
     blockBrokers: [
       bitswap()
     ],
-    blockstore,
-    datastore,
-    ...init
+    libp2p: defaults,
+    hashers: [
+      sha3512
+    ]
   })
-
-  return helia
 }

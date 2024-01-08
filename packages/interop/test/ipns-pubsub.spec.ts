@@ -1,11 +1,8 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 5] */
 
-import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 import { ipns } from '@helia/ipns'
 import { pubsub } from '@helia/ipns/routing'
-import { identify } from '@libp2p/identify'
-import { keychain, type Keychain } from '@libp2p/keychain'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import last from 'it-last'
@@ -24,9 +21,9 @@ import { keyTypes } from './fixtures/key-types.js'
 import { waitFor } from './fixtures/wait-for.js'
 import type { Helia } from '@helia/interface'
 import type { IPNS } from '@helia/ipns'
-import type { Identify } from '@libp2p/identify'
 import type { Libp2p } from '@libp2p/interface'
 import type { PubSub } from '@libp2p/interface/pubsub'
+import type { Keychain } from '@libp2p/keychain'
 import type { Controller } from 'ipfsd-ctl'
 
 const LIBP2P_KEY_CODEC = 0x72
@@ -35,22 +32,14 @@ const LIBP2P_KEY_CODEC = 0x72
 // component of the keypair, but that means we can't test pubsub
 // resolution because Kubo will use the DHT as well
 keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
-  describe(`pubsub routing with ${keyType} keys`, () => {
+  describe(`@helia/ipns - pubsub routing with ${keyType} keys`, () => {
     let helia: Helia<Libp2p<{ pubsub: PubSub, keychain: Keychain }>>
     let kubo: Controller
     let name: IPNS
 
     beforeEach(async () => {
-      helia = await createHeliaNode<{ identify: Identify, pubsub: PubSub, keychain: Keychain }>({
-        services: {
-          identify: identify(),
-          pubsub: gossipsub(),
-          keychain: keychain()
-        }
-      })
-      kubo = await createKuboNode({
-        args: ['--enable-pubsub-experiment', '--enable-namesys-pubsub']
-      })
+      helia = await createHeliaNode()
+      kubo = await createKuboNode()
 
       // connect the two nodes
       await connect(helia, kubo, '/meshsub/1.1.0')

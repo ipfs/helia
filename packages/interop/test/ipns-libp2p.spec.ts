@@ -2,14 +2,9 @@
 
 import { ipns } from '@helia/ipns'
 import { libp2p } from '@helia/ipns/routing'
-import { identify } from '@libp2p/identify'
-import { kadDHT, removePublicAddressesMapper, type KadDHT } from '@libp2p/kad-dht'
-import { keychain, type Keychain } from '@libp2p/keychain'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { createEd25519PeerId, createRSAPeerId, createSecp256k1PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
-import { ipnsSelector } from 'ipns/selector'
-import { ipnsValidator } from 'ipns/validator'
 import last from 'it-last'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
@@ -26,10 +21,12 @@ import { waitFor } from './fixtures/wait-for.js'
 import type { Helia } from '@helia/interface'
 import type { IPNS } from '@helia/ipns'
 import type { Libp2p, PeerId } from '@libp2p/interface'
+import type { KadDHT } from '@libp2p/kad-dht'
+import type { Keychain } from '@libp2p/keychain'
 import type { Controller } from 'ipfsd-ctl'
 
 keyTypes.forEach(type => {
-  describe(`libp2p routing with ${type} keys`, () => {
+  describe(`@helia/ipns - libp2p routing with ${type} keys`, () => {
     let helia: Helia<Libp2p<{ dht: KadDHT, keychain: Keychain }>>
     let kubo: Controller
     let name: IPNS
@@ -50,27 +47,7 @@ keyTypes.forEach(type => {
       const digest = await sha256.digest(input)
       value = CID.createV1(raw.code, digest)
 
-      helia = await createHeliaNode({
-        services: {
-          identify: identify(),
-          dht: kadDHT({
-            validators: {
-              ipns: ipnsValidator
-            },
-            selectors: {
-              ipns: ipnsSelector
-            },
-            // skips waiting for the initial self-query to find peers
-            allowQueryWithZeroPeers: true,
-
-            // use lan-only mode
-            protocol: '/ipfs/lan/kad/1.0.0',
-            peerInfoMapper: removePublicAddressesMapper,
-            clientMode: false
-          }),
-          keychain: keychain()
-        }
-      })
+      helia = await createHeliaNode()
       kubo = await createKuboNode()
 
       // find a PeerId that is KAD-closer to the resolver than the publisher when used as an IPNS key

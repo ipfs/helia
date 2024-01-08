@@ -10,7 +10,7 @@ import type { Helia } from '@helia/interface'
 import type { PutOptions as KuboAddOptions } from 'ipfs-core-types/src/block/index.js'
 import type { Controller } from 'ipfsd-ctl'
 
-describe('json interop', () => {
+describe('@helia/json', () => {
   let helia: Helia
   let j: JSON
   let kubo: Controller

@@ -14,7 +14,7 @@ import type { Helia } from '@helia/interface'
 import type { FileCandidate } from 'ipfs-unixfs-importer'
 import type { Controller } from 'ipfsd-ctl'
 
-describe('car interop', () => {
+describe('@helia/car', () => {
   let helia: Helia
   let c: Car
   let u: UnixFS

@@ -1,17 +1,17 @@
 /* eslint-env mocha */
 
+import { peerIdFromString } from '@libp2p/peer-id'
+import { sha3512 } from '@multiformats/sha3'
 import { expect } from 'aegir/chai'
-import all from 'it-all'
-import drain from 'it-drain'
+import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
-import { sha256 } from 'multiformats/hashes/sha2'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import type { Helia } from '@helia/interface'
 import type { Controller } from 'ipfsd-ctl'
 
-describe('pins', () => {
+describe('helia - hashes', () => {
   let helia: Helia
   let kubo: Controller
 
@@ -20,7 +20,10 @@ describe('pins', () => {
     kubo = await createKuboNode()
 
     // connect the two nodes
-    await helia.libp2p.dial(kubo.peer.addresses)
+    await helia.libp2p.peerStore.merge(peerIdFromString(kubo.peer.id.toString()), {
+      multiaddrs: kubo.peer.addresses
+    })
+    await helia.libp2p.dial(peerIdFromString(kubo.peer.id.toString()))
   })
 
   afterEach(async () => {
@@ -33,32 +36,26 @@ describe('pins', () => {
     }
   })
 
-  it('pinning on kubo should pull from helia', async () => {
+  it('should be able to send a block with a non-default hash', async () => {
     const input = Uint8Array.from([0, 1, 2, 3, 4])
-    const digest = await sha256.digest(input)
+    const digest = await sha3512.digest(input)
     const cid = CID.createV1(raw.code, digest)
-
-    expect((await all(kubo.api.refs.local())).map(r => r.ref)).to.not.include(cid.toString())
-
     await helia.blockstore.put(cid, input)
+    const output = await toBuffer(kubo.api.cat(cid))
 
-    const pinned = await kubo.api.pin.add(cid)
-    expect(pinned.toString()).to.equal(cid.toString())
-
-    expect((await all(kubo.api.refs.local())).map(r => r.ref)).to.include(cid.toString())
+    expect(output).to.equalBytes(input)
   })
 
-  it('pinning on helia should pull from kubo', async () => {
+  it('should be able to receive a block with a non-default hash', async () => {
     const input = Uint8Array.from([0, 1, 2, 3, 4])
     const { cid } = await kubo.api.add({ content: input }, {
       cidVersion: 1,
-      rawLeaves: true
+      rawLeaves: true,
+      hashAlg: 'sha3-512'
     })
+    expect(cid.multihash.code).to.equal(sha3512.code)
+    const output = await helia.blockstore.get(CID.parse(cid.toString()))
 
-    await expect(helia.blockstore.has(CID.parse(cid.toString()))).to.eventually.be.false()
-
-    await drain(helia.pins.add(CID.parse(cid.toString())))
-
-    await expect(helia.blockstore.has(CID.parse(cid.toString()))).to.eventually.be.true()
+    expect(output).to.equalBytes(input)
   })
 })

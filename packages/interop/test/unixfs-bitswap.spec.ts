@@ -11,7 +11,7 @@ import type { Libp2p } from '@libp2p/interface'
 import type { FileCandidate } from 'ipfs-unixfs-importer'
 import type { Controller } from 'ipfsd-ctl'
 
-describe('unixfs bitswap interop', () => {
+describe('@helia/unixfs - bitswap', () => {
   let helia: Helia<Libp2p>
   let unixFs: UnixFS
   let kubo: Controller

@@ -17,6 +17,7 @@ export async function createKuboNode (): Promise<Controller> {
           ]
         }
       }
-    }
+    },
+    args: ['--enable-pubsub-experiment', '--enable-namesys-pubsub']
   })
 }

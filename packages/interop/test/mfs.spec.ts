@@ -7,7 +7,7 @@ import { createKuboNode } from './fixtures/create-kubo.js'
 import type { Helia } from '@helia/interface'
 import type { Controller } from 'ipfsd-ctl'
 
-describe('mfs interop', () => {
+describe('@helia/mfs', () => {
   let helia: Helia
   let fs: MFS
   let kubo: Controller

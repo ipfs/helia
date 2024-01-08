@@ -10,7 +10,7 @@ import type { Helia } from '@helia/interface'
 import type { PutOptions as KuboAddOptions } from 'ipfs-core-types/src/block/index.js'
 import type { Controller } from 'ipfsd-ctl'
 
-describe('dag-json interop', () => {
+describe('@helia/dag-cbor', () => {
   let helia: Helia
   let d: DAGCBOR
   let kubo: Controller

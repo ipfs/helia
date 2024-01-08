@@ -11,7 +11,7 @@ import type { Helia } from '@helia/interface'
 import type { PutOptions as KuboAddOptions } from 'ipfs-core-types/src/block/index.js'
 import type { Controller } from 'ipfsd-ctl'
 
-describe('strings interop', () => {
+describe('@helia/strings', () => {
   let helia: Helia
   let str: Strings
   let kubo: Controller
