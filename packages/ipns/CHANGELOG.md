@@ -1,3 +1,19 @@
+## [@helia/ipns-v4.0.0](https://github.com/ipfs/helia-ipns/compare/@helia/ipns-v3.0.1...@helia/ipns-v4.0.0) (2024-01-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* uses multiformats v13 and helia v3, renames `dht` routing to `libp2p`
+
+### Features
+
+* update helia to v3 and multiformats to v13 ([#167](https://github.com/ipfs/helia-ipns/issues/167)) ([a0381b9](https://github.com/ipfs/helia-ipns/commit/a0381b95051bbf3edfa4f53e0ae2d5f43c1e4382))
+
+
+### Bug Fixes
+
+* make @libp2p/interface a dependency ([#159](https://github.com/ipfs/helia-ipns/issues/159)) ([546ecf0](https://github.com/ipfs/helia-ipns/commit/546ecf023bd619d32e187fa6a55d39fcf12e4bbe)), closes [#158](https://github.com/ipfs/helia-ipns/issues/158)
+
 ## [@helia/ipns-v3.0.1](https://github.com/ipfs/helia-ipns/compare/@helia/ipns-v3.0.0...@helia/ipns-v3.0.1) (2023-12-08)
 
 
