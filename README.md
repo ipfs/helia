@@ -165,7 +165,7 @@ Helia embraces a modular approach and encourages users to bring their own implem
 - [`@helia/ipns`](./packages/ipns)
 - [`@helia/car`](./packages/car)
 - [`@helia/strings`](./packages/strings)
-- [`@helia/json`](https://github.com/ipfs/helia-json)
+- [`@helia/json`](./packages/json)
 - [`@helia/dag-json`](https://github.com/ipfs/helia-dag-json)
 - [`@helia/dag-cbor`](https://github.com/ipfs/helia-dag-cbor)
 
