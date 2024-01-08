@@ -1,0 +1,6 @@
+{
+  "entryPoints": [
+    "./src/index.ts",
+    "./src/errors.ts"
+  ]
+}

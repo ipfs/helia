@@ -11,13 +11,13 @@
 
 > Interop tests for Helia
 
-## Install
+# Install
 
 ```console
 $ npm i @helia/interop
 ```
 
-### Browser `<script>` tag
+## Browser `<script>` tag
 
 Loading this module through a script tag will make it's exports available as `HeliaInterop` in the global namespace.
 
@@ -25,14 +25,14 @@ Loading this module through a script tag will make it's exports available as `He
 <script src="https://unpkg.com/@helia/interop/dist/index.min.js"></script>
 ```
 
-## License
+# License
 
 Licensed under either of
 
 - Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
 - MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
-## Contribute
+# Contribute
 
 Contributions welcome! Please check out [the issues](https://github.com/ipfs/helia/issues).
 

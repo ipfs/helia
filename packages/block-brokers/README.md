@@ -11,28 +11,32 @@
 
 > Block brokers for Helia
 
-## Install
+# Install
 
 ```console
 $ npm i @helia/block-brokers
 ```
 
-<!-- ### Browser `<script>` tag
+## Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `bitswap` and `trustlessGateway` and `NetworkedStorage` in the global namespace.
+Loading this module through a script tag will make it's exports available as `HeliaBlockBrokers` in the global namespace.
 
 ```html
 <script src="https://unpkg.com/@helia/block-brokers/dist/index.min.js"></script>
-``` -->
+```
 
-## License
+# API Docs
+
+- <https://ipfs.github.io/helia/modules/_helia_block_brokers.html>
+
+# License
 
 Licensed under either of
 
 - Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
 - MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
-## Contribute
+# Contribute
 
 Contributions welcome! Please check out [the issues](https://github.com/ipfs/helia/issues).
 

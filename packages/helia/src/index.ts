@@ -22,6 +22,7 @@
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import { HeliaImpl } from './helia.js'
+import { libp2pDefaults } from './utils/libp2p-defaults.js'
 import { createLibp2p } from './utils/libp2p.js'
 import type { DefaultLibp2pServices } from './utils/libp2p-defaults.js'
 import type { Helia } from '@helia/interface'
@@ -39,6 +40,9 @@ import type { MultihashHasher } from 'multiformats/hashes/interface'
 export * from '@helia/interface'
 export * from '@helia/interface/blocks'
 export * from '@helia/interface/pins'
+
+export type { DefaultLibp2pServices }
+export { libp2pDefaults }
 
 /**
  * DAGWalkers take a block and yield CIDs encoded in that block

@@ -1,0 +1,153 @@
+{
+  "name": "@helia/dag-json",
+  "version": "2.0.0",
+  "description": "Add/get IPLD blocks containing dag-json with your Helia node",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/ipfs/helia/tree/main/packages/dag-json#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ipfs/helia.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ipfs/helia/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "IPFS"
+  ],
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "project": true,
+      "sourceType": "module"
+    }
+  },
+  "release": {
+    "branches": [
+      "main"
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "preset": "conventionalcommits",
+          "releaseRules": [
+            {
+              "breaking": true,
+              "release": "major"
+            },
+            {
+              "revert": true,
+              "release": "patch"
+            },
+            {
+              "type": "feat",
+              "release": "minor"
+            },
+            {
+              "type": "fix",
+              "release": "patch"
+            },
+            {
+              "type": "docs",
+              "release": "patch"
+            },
+            {
+              "type": "test",
+              "release": "patch"
+            },
+            {
+              "type": "deps",
+              "release": "patch"
+            },
+            {
+              "scope": "no-release",
+              "release": false
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "conventionalcommits",
+          "presetConfig": {
+            "types": [
+              {
+                "type": "feat",
+                "section": "Features"
+              },
+              {
+                "type": "fix",
+                "section": "Bug Fixes"
+              },
+              {
+                "type": "chore",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "docs",
+                "section": "Documentation"
+              },
+              {
+                "type": "deps",
+                "section": "Dependencies"
+              },
+              {
+                "type": "test",
+                "section": "Tests"
+              }
+            ]
+          }
+        }
+      ],
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+      "@semantic-release/git"
+    ]
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "build": "aegir build",
+    "test": "aegir test",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main",
+    "release": "aegir release"
+  },
+  "dependencies": {
+    "@helia/interface": "^3.0.0",
+    "@ipld/dag-json": "^10.0.1",
+    "@libp2p/interfaces": "^3.3.1",
+    "multiformats": "^13.0.0",
+    "progress-events": "^1.0.0"
+  },
+  "devDependencies": {
+    "aegir": "^42.0.1",
+    "blockstore-core": "^4.3.8",
+    "interface-blockstore": "^5.2.9"
+  }
+}

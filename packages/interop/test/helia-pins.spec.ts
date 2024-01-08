@@ -1,8 +1,8 @@
 /* eslint-env mocha */
 
-import { peerIdFromString } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
-import toBuffer from 'it-to-buffer'
+import all from 'it-all'
+import drain from 'it-drain'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
 import { sha256 } from 'multiformats/hashes/sha2'
@@ -11,7 +11,7 @@ import { createKuboNode } from './fixtures/create-kubo.js'
 import type { Helia } from '@helia/interface'
 import type { Controller } from 'ipfsd-ctl'
 
-describe('blockstore', () => {
+describe('helia - pins', () => {
   let helia: Helia
   let kubo: Controller
 
@@ -20,10 +20,7 @@ describe('blockstore', () => {
     kubo = await createKuboNode()
 
     // connect the two nodes
-    await helia.libp2p.peerStore.merge(peerIdFromString(kubo.peer.id.toString()), {
-      multiaddrs: kubo.peer.addresses
-    })
-    await helia.libp2p.dial(peerIdFromString(kubo.peer.id.toString()))
+    await helia.libp2p.dial(kubo.peer.addresses)
   })
 
   afterEach(async () => {
@@ -36,24 +33,32 @@ describe('blockstore', () => {
     }
   })
 
-  it('should be able to send a block', async () => {
+  it('pinning on kubo should pull from helia', async () => {
     const input = Uint8Array.from([0, 1, 2, 3, 4])
     const digest = await sha256.digest(input)
     const cid = CID.createV1(raw.code, digest)
-    await helia.blockstore.put(cid, input)
-    const output = await toBuffer(kubo.api.cat(cid))
 
-    expect(output).to.equalBytes(input)
+    expect((await all(kubo.api.refs.local())).map(r => r.ref)).to.not.include(cid.toString())
+
+    await helia.blockstore.put(cid, input)
+
+    const pinned = await kubo.api.pin.add(cid)
+    expect(pinned.toString()).to.equal(cid.toString())
+
+    expect((await all(kubo.api.refs.local())).map(r => r.ref)).to.include(cid.toString())
   })
 
-  it('should be able to receive a block', async () => {
+  it('pinning on helia should pull from kubo', async () => {
     const input = Uint8Array.from([0, 1, 2, 3, 4])
     const { cid } = await kubo.api.add({ content: input }, {
       cidVersion: 1,
       rawLeaves: true
     })
-    const output = await helia.blockstore.get(CID.parse(cid.toString()))
 
-    expect(output).to.equalBytes(input)
+    await expect(helia.blockstore.has(CID.parse(cid.toString()))).to.eventually.be.false()
+
+    await drain(helia.pins.add(CID.parse(cid.toString())))
+
+    await expect(helia.blockstore.has(CID.parse(cid.toString()))).to.eventually.be.true()
   })
 })

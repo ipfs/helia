@@ -3,7 +3,7 @@
   "version": "3.0.0",
   "description": "The Helia API",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/ipfs/helia/tree/master/packages/interface#readme",
+  "homepage": "https://github.com/ipfs/helia/tree/main/packages/interface#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ipfs/helia.git"
@@ -71,14 +71,14 @@
   },
   "dependencies": {
     "@libp2p/interface": "^1.1.1",
-    "interface-blockstore": "^5.0.0",
-    "interface-datastore": "^8.0.0",
-    "interface-store": "^5.0.1",
+    "interface-blockstore": "^5.2.7",
+    "interface-datastore": "^8.2.2",
+    "interface-store": "^5.1.5",
     "ipfs-bitswap": "^20.0.0",
     "multiformats": "^13.0.0",
     "progress-events": "^1.0.0"
   },
   "devDependencies": {
-    "aegir": "^42.0.0"
+    "aegir": "^42.0.1"
   }
 }

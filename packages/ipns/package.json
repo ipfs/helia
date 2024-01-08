@@ -1,0 +1,195 @@
+{
+  "name": "@helia/ipns",
+  "version": "4.0.0",
+  "description": "An implementation of IPNS for Helia",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/ipfs/helia/tree/main/packages/ipns#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ipfs/helia.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ipfs/helia/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "IPFS"
+  ],
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ],
+      "src/*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ]
+    }
+  },
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    },
+    "./dns-resolvers": {
+      "types": "./dist/src/dns-resolvers/index.d.ts",
+      "import": "./dist/src/dns-resolvers/index.js"
+    },
+    "./routing": {
+      "types": "./dist/src/routing/index.d.ts",
+      "import": "./dist/src/routing/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "project": true,
+      "sourceType": "module"
+    }
+  },
+  "release": {
+    "branches": [
+      "main"
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "preset": "conventionalcommits",
+          "releaseRules": [
+            {
+              "breaking": true,
+              "release": "major"
+            },
+            {
+              "revert": true,
+              "release": "patch"
+            },
+            {
+              "type": "feat",
+              "release": "minor"
+            },
+            {
+              "type": "fix",
+              "release": "patch"
+            },
+            {
+              "type": "docs",
+              "release": "patch"
+            },
+            {
+              "type": "test",
+              "release": "patch"
+            },
+            {
+              "type": "deps",
+              "release": "patch"
+            },
+            {
+              "scope": "no-release",
+              "release": false
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "conventionalcommits",
+          "presetConfig": {
+            "types": [
+              {
+                "type": "feat",
+                "section": "Features"
+              },
+              {
+                "type": "fix",
+                "section": "Bug Fixes"
+              },
+              {
+                "type": "chore",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "docs",
+                "section": "Documentation"
+              },
+              {
+                "type": "deps",
+                "section": "Dependencies"
+              },
+              {
+                "type": "test",
+                "section": "Tests"
+              }
+            ]
+          }
+        }
+      ],
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+      "@semantic-release/git"
+    ]
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "build": "aegir build",
+    "test": "aegir test",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main",
+    "release": "aegir release"
+  },
+  "dependencies": {
+    "@libp2p/interface": "^1.1.1",
+    "@libp2p/kad-dht": "^12.0.2",
+    "@libp2p/logger": "^4.0.4",
+    "@libp2p/peer-id": "^4.0.4",
+    "dns-over-http-resolver": "^3.0.0",
+    "dns-packet": "^5.6.0",
+    "hashlru": "^2.3.0",
+    "interface-datastore": "^8.2.2",
+    "ipns": "^8.0.0",
+    "is-ipfs": "^8.0.1",
+    "multiformats": "^13.0.0",
+    "p-queue": "^8.0.1",
+    "progress-events": "^1.0.0",
+    "uint8arrays": "^5.0.1"
+  },
+  "devDependencies": {
+    "@libp2p/peer-id-factory": "^4.0.3",
+    "@types/dns-packet": "^5.6.4",
+    "aegir": "^42.0.1",
+    "datastore-core": "^9.2.0",
+    "sinon": "^17.0.1",
+    "sinon-ts": "^2.0.0"
+  },
+  "browser": {
+    "./dist/src/dns-resolvers/resolver.js": "./dist/src/dns-resolvers/resolver.browser.js"
+  },
+  "typedoc": {
+    "entryPoint": "./src/index.ts"
+  }
+}

@@ -30,13 +30,13 @@ const fs = unixfs(helia)
 fs.cat(CID.parse('bafyFoo'))
 ```
 
-## Install
+# Install
 
 ```console
 $ npm i helia
 ```
 
-### Browser `<script>` tag
+## Browser `<script>` tag
 
 Loading this module through a script tag will make it's exports available as `Helia` in the global namespace.
 
@@ -44,18 +44,18 @@ Loading this module through a script tag will make it's exports available as `He
 <script src="https://unpkg.com/helia/dist/index.min.js"></script>
 ```
 
-## API Docs
+# API Docs
 
 - <https://ipfs.github.io/helia/modules/helia.html>
 
-## License
+# License
 
 Licensed under either of
 
 - Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
 - MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
-## Contribute
+# Contribute
 
 Contributions welcome! Please check out [the issues](https://github.com/ipfs/helia/issues).
 
