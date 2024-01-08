@@ -99,7 +99,7 @@
     "@multiformats/mafmt": "^12.1.5",
     "@multiformats/multiaddr": "^12.1.7",
     "@types/sinon": "^17.0.2",
-    "aegir": "^42.0.1",
+    "aegir": "^42.1.0",
     "delay": "^6.0.0",
     "it-all": "^3.0.4"
   },
