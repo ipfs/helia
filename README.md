@@ -166,7 +166,7 @@ Helia embraces a modular approach and encourages users to bring their own implem
 - [`@helia/car`](./packages/car)
 - [`@helia/strings`](./packages/strings)
 - [`@helia/json`](./packages/json)
-- [`@helia/dag-json`](https://github.com/ipfs/helia-dag-json)
+- [`@helia/dag-json`](./packages/dag-json)
 - [`@helia/dag-cbor`](https://github.com/ipfs/helia-dag-cbor)
 
 These libraries are by no means the "one true implementation", but instead instead provide optionality depending on one's needs.

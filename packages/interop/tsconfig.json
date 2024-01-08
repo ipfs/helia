@@ -12,6 +12,9 @@
       "path": "../car"
     },
     {
+      "path": "../dag-json"
+    },
+    {
       "path": "../helia"
     },
     {
