@@ -4,7 +4,7 @@
   </a>
 </p>
 
-# @helia/mfs <!-- omit in toc -->
+# @helia/mfs
 
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
@@ -13,21 +13,42 @@
 
 > A mutable filesystem powered by Helia
 
-## Table of contents <!-- omit in toc -->
+# About
 
-- [Install](#install)
-  - [Browser `<script>` tag](#browser-script-tag)
-- [API Docs](#api-docs)
-- [License](#license)
-- [Contribute](#contribute)
+`@helia/mfs` is an implementation of a Mutable File System powered by Helia.
 
-## Install
+See the interface for all available operations.
+
+## Example
+
+```typescript
+import { createHelia } from 'helia'
+import { mfs } from '@helia/mfs'
+
+const helia = createHelia({
+  // ... helia config
+})
+const fs = mfs(helia)
+
+// create an empty directory
+await fs.mkdir('/my-directory')
+
+// add a file to the directory
+await fs.writeBytes(Uint8Array.from([0, 1, 2, 3]), '/my-directory/foo.txt')
+
+// read the file
+for await (const buf of fs.cat('/my-directory/foo.txt')) {
+  console.info(buf)
+}
+```
+
+# Install
 
 ```console
 $ npm i @helia/mfs
 ```
 
-### Browser `<script>` tag
+## Browser `<script>` tag
 
 Loading this module through a script tag will make it's exports available as `HeliaMfs` in the global namespace.
 
@@ -35,18 +56,18 @@ Loading this module through a script tag will make it's exports available as `He
 <script src="https://unpkg.com/@helia/mfs/dist/index.min.js"></script>
 ```
 
-## API Docs
+# API Docs
 
-- <https://ipfs.github.io/helia-mfs/modules.html>
+- <https://ipfs.github.io/helia-mfs/modules/_helia_mfs.html>
 
-## License
+# License
 
 Licensed under either of
 
 - Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
 - MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
-## Contribute
+# Contribute
 
 Contributions welcome! Please check out [the issues](https://github.com/ipfs/helia-mfs/issues).
 

@@ -3,13 +3,17 @@
   "version": "1.0.2",
   "description": "A mutable filesystem powered by Helia",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/ipfs/helia-mfs/tree/master/packages/mfs#readme",
+  "homepage": "https://github.com/ipfs/helia-mfs/tree/main/packages/mfs#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ipfs/helia-mfs.git"
   },
   "bugs": {
     "url": "https://github.com/ipfs/helia-mfs/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "keywords": [
     "IPFS"
@@ -135,28 +139,28 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@helia/interface": "^2.0.0",
-    "@helia/unixfs": "^1.2.2",
-    "@ipld/dag-pb": "^4.0.0",
+    "@helia/interface": "^3.0.0",
+    "@helia/unixfs": "^2.0.0",
     "@libp2p/interfaces": "^3.3.1",
-    "@libp2p/logger": "^3.0.1",
-    "interface-blockstore": "^5.0.0",
+    "@libp2p/logger": "^4.0.4",
     "interface-datastore": "^8.2.2",
     "ipfs-unixfs": "^11.0.0",
     "ipfs-unixfs-exporter": "^13.1.0",
     "ipfs-unixfs-importer": "^15.1.0",
-    "it-last": "^3.0.1",
-    "multiformats": "^12.0.1"
+    "multiformats": "^13.0.0"
   },
   "devDependencies": {
-    "aegir": "^41.0.3",
+    "@ipld/dag-pb": "^4.0.7",
+    "aegir": "^42.0.1",
     "blockstore-core": "^4.0.1",
     "datastore-core": "^9.2.0",
     "delay": "^6.0.0",
+    "interface-blockstore": "^5.2.9",
     "it-all": "^3.0.1",
     "it-drain": "^3.0.1",
     "it-first": "^3.0.1",
+    "it-last": "^3.0.4",
     "it-to-buffer": "^4.0.1",
-    "uint8arrays": "^4.0.3"
+    "uint8arrays": "^5.0.1"
   }
 }

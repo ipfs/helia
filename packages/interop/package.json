@@ -3,13 +3,17 @@
   "version": "0.0.0",
   "description": "Interop tests for @helia/mfs",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/ipfs/helia-mfs/tree/master/packages/interop#readme",
+  "homepage": "https://github.com/ipfs/helia-mfs/tree/main/packages/interop#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ipfs/helia-mfs.git"
   },
   "bugs": {
     "url": "https://github.com/ipfs/helia-mfs/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "keywords": [
     "IPFS"
@@ -49,11 +53,11 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "devDependencies": {
-    "@helia/interface": "^2.0.0",
+    "@helia/interface": "^3.0.0",
     "@helia/mfs": "^1.0.0",
-    "aegir": "^41.0.3",
+    "aegir": "^42.0.1",
     "go-ipfs": "^0.22.0",
-    "helia": "^2.0.3",
+    "helia": "^3.0.0",
     "ipfsd-ctl": "^13.0.0",
     "kubo-rpc-client": "^3.0.0",
     "merge-options": "^3.0.4",
