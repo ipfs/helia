@@ -3,13 +3,17 @@
   "version": "1.4.3",
   "description": "A Helia-compatible wrapper for UnixFS",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/ipfs/helia-unixfs/tree/master/packages/unixfs#readme",
+  "homepage": "https://github.com/ipfs/helia-unixfs/tree/main/packages/unixfs#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ipfs/helia-unixfs.git"
   },
   "bugs": {
     "url": "https://github.com/ipfs/helia-unixfs/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "keywords": [
     "IPFS"
@@ -155,13 +159,12 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@helia/interface": "^2.0.0",
+    "@helia/interface": "^3.0.0",
     "@ipld/dag-pb": "^4.0.0",
-    "@libp2p/interface": "^0.1.2",
-    "@libp2p/logger": "^3.0.2",
+    "@libp2p/interface": "^1.0.2",
+    "@libp2p/logger": "^4.0.2",
     "@multiformats/murmur3": "^2.1.2",
     "hamt-sharding": "^3.0.2",
-    "interface-blockstore": "^5.0.0",
     "ipfs-unixfs": "^11.0.0",
     "ipfs-unixfs-exporter": "^13.1.0",
     "ipfs-unixfs-importer": "^15.1.0",
@@ -169,20 +172,21 @@
     "it-last": "^3.0.1",
     "it-pipe": "^3.0.1",
     "merge-options": "^3.0.4",
-    "multiformats": "^12.1.1",
+    "multiformats": "^13.0.0",
     "progress-events": "^1.0.0",
-    "sparse-array": "^1.3.2"
+    "sparse-array": "^1.3.2",
+    "uint8arrays": "^5.0.1"
   },
   "devDependencies": {
-    "aegir": "^41.0.0",
+    "aegir": "^42.0.1",
     "blockstore-core": "^4.0.1",
     "delay": "^6.0.0",
+    "interface-blockstore": "^5.2.9",
     "iso-url": "^1.2.1",
     "it-all": "^3.0.1",
     "it-drain": "^3.0.1",
     "it-first": "^3.0.1",
     "it-to-buffer": "^4.0.1",
-    "uint8arrays": "^4.0.3",
     "wherearewe": "^2.0.1"
   },
   "browser": {

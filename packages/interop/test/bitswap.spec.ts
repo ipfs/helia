@@ -3,14 +3,16 @@
 import { type UnixFS, unixfs } from '@helia/unixfs'
 import { expect } from 'aegir/chai'
 import toBuffer from 'it-to-buffer'
+import { CID } from 'multiformats/cid'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import type { Helia } from '@helia/interface'
+import type { Libp2p } from '@libp2p/interface'
 import type { FileCandidate } from 'ipfs-unixfs-importer'
 import type { Controller } from 'ipfsd-ctl'
 
 describe('unixfs bitswap interop', () => {
-  let helia: Helia
+  let helia: Helia<Libp2p>
   let unixFs: UnixFS
   let kubo: Controller
 
@@ -74,7 +76,7 @@ describe('unixfs bitswap interop', () => {
 
     const { cid } = await kubo.api.add(candidate.content)
 
-    const bytes = await toBuffer(unixFs.cat(cid))
+    const bytes = await toBuffer(unixFs.cat(CID.parse(cid.toString())))
 
     expect(bytes).to.equalBytes(toBuffer(input))
   })

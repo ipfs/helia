@@ -5,7 +5,7 @@
  *
  * See the {@link UnixFS UnixFS interface} for all available operations.
  *
- * @example
+ * @example Creating files and directories
  *
  * ```typescript
  * import { createHelia } from 'helia'
@@ -30,9 +30,9 @@
  * }
  * ```
  *
- * @example
+ * @example Recursively adding a directory
  *
- * Recursively adding a directory (Node.js-compatibly environments only):
+ * Node.js-compatibly environments only:
  *
  * ```typescript
  * import { globSource } from '@helia/unixfs'

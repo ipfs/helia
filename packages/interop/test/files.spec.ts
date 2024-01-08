@@ -4,16 +4,17 @@ import { type AddOptions, type UnixFS, unixfs } from '@helia/unixfs'
 import { expect } from 'aegir/chai'
 import { fixedSize } from 'ipfs-unixfs-importer/chunker'
 import { balanced } from 'ipfs-unixfs-importer/layout'
+import { CID } from 'multiformats/cid'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import type { Helia } from '@helia/interface'
+import type { Libp2p } from '@libp2p/interface'
 import type { AddOptions as KuboAddOptions } from 'ipfs-core-types/src/root.js'
 import type { FileCandidate } from 'ipfs-unixfs-importer'
 import type { Controller } from 'ipfsd-ctl'
-import type { CID } from 'multiformats/cid'
 
 describe('unixfs interop', () => {
-  let helia: Helia
+  let helia: Helia<Libp2p>
   let unixFs: UnixFS
   let kubo: Controller
 
@@ -26,7 +27,7 @@ describe('unixfs interop', () => {
   async function importToKubo (data: FileCandidate, opts?: KuboAddOptions): Promise<CID> {
     const result = await kubo.api.add(data.content, opts)
 
-    return result.cid
+    return CID.parse(result.cid.toString())
   }
 
   async function expectSameCid (data: () => FileCandidate, heliaOpts: Partial<AddOptions> = {}, kuboOpts: KuboAddOptions = {}): Promise<void> {
