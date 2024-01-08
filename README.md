@@ -208,7 +208,7 @@ Please find and comment on [the Roadmap here](https://github.com/ipfs/helia/issu
 - Watch our Helia Demo Day presentations [here](https://www.youtube.com/playlist?list=PLuhRWgmPaHtQAnt8INOe5-kV9TLVaUJ9v)
 - We are sharing about the progress at periodic [Helia Demos](https://lu.ma/helia).  This is a good place to find out the latest and learn of ways to get involved.  We'd love to see you there!
 - Pick up one of the [issues](https://github.com/ipfs/helia/issues).
-- Come chat in Filecoin Slack #ip-js.  (Yes, we should bridge this to other chat enviornments.  Please comment [here](https://github.com/ipfs/helia/issues/33) if you'd like this.)
+- Come chat in Filecoin Slack #ip-js.  (Yes, we should bridge this to other chat environments.  Please comment [here](https://github.com/ipfs/helia/issues/33) if you'd like this.)
 
 # 🤲 Contribute
 
