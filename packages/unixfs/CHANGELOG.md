@@ -1,3 +1,19 @@
+## [@helia/unixfs-v2.0.0](https://github.com/ipfs/helia-unixfs/compare/@helia/unixfs-v1.4.3...@helia/unixfs-v2.0.0) (2024-01-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* uses multiformats v13 and helia v3
+
+### Features
+
+* update helia to v3 and multiformats to v13 ([#147](https://github.com/ipfs/helia-unixfs/issues/147)) ([001247c](https://github.com/ipfs/helia-unixfs/commit/001247c6fc38ff3d810736371de901e5e1099f26))
+
+
+### Trivial Changes
+
+* update sibling dependencies ([1b0b2ef](https://github.com/ipfs/helia-unixfs/commit/1b0b2ef05c5cbd78c3b5d5629237200a69bbd5dd))
+
 ## [@helia/unixfs-v1.4.3](https://github.com/ipfs/helia-unixfs/compare/@helia/unixfs-v1.4.2...@helia/unixfs-v1.4.3) (2023-12-03)
 
 
