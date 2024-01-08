@@ -1,3 +1,14 @@
+## [@helia/car-v2.0.0](https://github.com/ipfs/helia-car/compare/@helia/car-v1.0.4...@helia/car-v2.0.0) (2024-01-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* uses multiformats v13 and helia v3
+
+### Features
+
+* update helia to v3 and multiformats to v13 ([#52](https://github.com/ipfs/helia-car/issues/52)) ([6405c34](https://github.com/ipfs/helia-car/commit/6405c3487879614dc4dd7308b15c946d644e0488))
+
 ## [@helia/car-v1.0.4](https://github.com/ipfs/helia-car/compare/@helia/car-v1.0.3...@helia/car-v1.0.4) (2023-10-07)
 
 
