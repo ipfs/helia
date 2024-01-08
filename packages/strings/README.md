@@ -17,7 +17,7 @@
 
 `@helia/strings` makes working with strings Helia simple & straightforward.
 
-See the interface for all available operations.
+See the Strings interface for all available operations.
 
 ## Example
 
