@@ -47,10 +47,6 @@
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
     },
-    "./block-brokers": {
-      "types": "./dist/src/block-brokers/index.d.ts",
-      "import": "./dist/src/block-brokers/index.js"
-    },
     "./hashers": {
       "types": "./dist/src/utils/default-hashers.d.ts",
       "import": "./dist/src/utils/default-hashers.js"
@@ -81,6 +77,7 @@
     "@chainsafe/libp2p-gossipsub": "^11.0.0",
     "@chainsafe/libp2p-noise": "^14.0.0",
     "@chainsafe/libp2p-yamux": "^6.0.1",
+    "@helia/block-brokers": "^0.0.0",
     "@helia/delegated-routing-v1-http-api-client": "^1.1.0",
     "@helia/interface": "^3.0.0",
     "@ipld/dag-cbor": "^9.0.0",
@@ -91,7 +88,7 @@
     "@libp2p/circuit-relay-v2": "^1.0.2",
     "@libp2p/dcutr": "^1.0.1",
     "@libp2p/identify": "^1.0.1",
-    "@libp2p/interface": "^1.0.1",
+    "@libp2p/interface": "^1.1.1",
     "@libp2p/kad-dht": "^12.0.1",
     "@libp2p/keychain": "^4.0.2",
     "@libp2p/logger": "^4.0.1",
@@ -104,18 +101,14 @@
     "@libp2p/webrtc": "^4.0.3",
     "@libp2p/websockets": "^8.0.2",
     "@libp2p/webtransport": "^4.0.3",
-    "any-signal": "^4.1.1",
     "blockstore-core": "^4.0.0",
     "cborg": "^4.0.1",
     "datastore-core": "^9.0.0",
     "interface-blockstore": "^5.0.0",
     "interface-datastore": "^8.0.0",
     "interface-store": "^5.0.1",
-    "ipfs-bitswap": "^20.0.0",
     "ipns": "^8.0.0",
     "it-drain": "^3.0.1",
-    "it-filter": "^3.0.1",
-    "it-foreach": "^2.0.2",
     "libp2p": "^1.0.3",
     "mortice": "^3.0.1",
     "multiformats": "^13.0.0",
@@ -128,9 +121,7 @@
     "@types/sinon": "^17.0.2",
     "aegir": "^42.0.0",
     "delay": "^6.0.0",
-    "it-all": "^3.0.4",
-    "sinon": "^17.0.0",
-    "sinon-ts": "^2.0.0"
+    "it-all": "^3.0.4"
   },
   "browser": {
     "./dist/src/utils/libp2p-defaults.js": "./dist/src/utils/libp2p-defaults.browser.js"

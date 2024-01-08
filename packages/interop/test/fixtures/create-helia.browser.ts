@@ -1,12 +1,12 @@
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { bitswap } from '@helia/block-brokers'
 import { identify } from '@libp2p/identify'
 import { webSockets } from '@libp2p/websockets'
 import { all } from '@libp2p/websockets/filters'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import { createHelia, type HeliaInit } from 'helia'
-import { bitswap } from 'helia/block-brokers'
 import { createLibp2p } from 'libp2p'
 import type { Helia } from '@helia/interface'
 

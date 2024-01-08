@@ -199,7 +199,7 @@ export class NetworkedStorage implements Blocks, Startable {
     return this.child.has(cid, options)
   }
 
-  async * getAll (options: AbortOptions & ProgressOptions<GetAllBlocksProgressEvents> = {}): AsyncIterable<Pair> {
+  async * getAll (options: AbortOptions & ProgressOptions<GetAllBlocksProgressEvents> = {}): AwaitIterable<Pair> {
     options.onProgress?.(new CustomProgressEvent('blocks:get-all:blockstore:get-many'))
     yield * this.child.getAll(options)
   }

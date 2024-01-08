@@ -1,6 +1,8 @@
 {
   "plugins": ["node-workspace"],
+  "last-release-sha": "456f6841aa4f6f27cb9b8636c90a1765a3018878",
   "packages": {
+    "packages/block-brokers": {},
     "packages/helia": {},
     "packages/interface": {},
     "packages/interop": {}

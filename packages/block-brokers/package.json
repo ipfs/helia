@@ -1,9 +1,9 @@
 {
-  "name": "@helia/interface",
-  "version": "3.0.0",
-  "description": "The Helia API",
+  "name": "@helia/block-brokers",
+  "version": "0.0.0",
+  "description": "Block brokers for Helia",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/ipfs/helia/tree/master/packages/interface#readme",
+  "homepage": "https://github.com/ipfs/helia/tree/master/packages/block-brokers#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ipfs/helia.git"
@@ -46,14 +46,6 @@
     ".": {
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
-    },
-    "./blocks": {
-      "types": "./dist/src/blocks.d.ts",
-      "import": "./dist/src/blocks.js"
-    },
-    "./pins": {
-      "types": "./dist/src/pins.d.ts",
-      "import": "./dist/src/pins.js"
     }
   },
   "eslintConfig": {
@@ -67,18 +59,37 @@
     "clean": "aegir clean",
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
-    "build": "aegir build"
+    "build": "aegir build",
+    "test": "aegir test",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
+    "@helia/interface": "^3.0.0",
     "@libp2p/interface": "^1.1.1",
-    "interface-blockstore": "^5.0.0",
-    "interface-datastore": "^8.0.0",
-    "interface-store": "^5.0.1",
+    "any-signal": "^4.1.1",
+    "interface-blockstore": "^5.2.7",
+    "interface-store": "^5.1.5",
     "ipfs-bitswap": "^20.0.0",
+    "it-filter": "^3.0.4",
+    "it-foreach": "^2.0.6",
     "multiformats": "^13.0.0",
-    "progress-events": "^1.0.0"
+    "progress-events": "^1.0.0",
+    "uint8arrays": "^5.0.0"
   },
   "devDependencies": {
-    "aegir": "^42.0.0"
+    "@libp2p/logger": "^4.0.1",
+    "@types/sinon": "^17.0.2",
+    "aegir": "^42.0.0",
+    "blockstore-core": "^4.3.8",
+    "delay": "^6.0.0",
+    "it-all": "^3.0.4",
+    "it-drain": "^3.0.5",
+    "sinon": "^17.0.1",
+    "sinon-ts": "^2.0.0"
   }
 }
