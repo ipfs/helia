@@ -1,1 +1,14 @@
-{"packages/block-brokers":"0.0.0", "packages/helia":"3.0.0","packages/interface":"3.0.0","packages/interop":"2.0.0","packages/unixfs":"2.0.0"}
+{
+  "packages/block-brokers":"0.0.0",
+  "packages/car":"2.0.0",
+  "packages/dag-cbor":"2.0.0",
+  "packages/dag-json":"2.0.0",
+  "packages/helia":"3.0.0",
+  "packages/interface":"3.0.0",
+  "packages/interop":"2.0.0",
+  "packages/ipns":"4.0.0",
+  "packages/json":"2.0.0",
+  "packages/mfs":"2.0.0",
+  "packages/strings":"2.0.0",
+  "packages/unixfs":"2.0.0"
+}

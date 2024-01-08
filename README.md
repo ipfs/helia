@@ -158,6 +158,7 @@ graph TD;
 ```
 
 # 🏭 Code Structure
+
 Helia embraces a modular approach and encourages users to bring their own implementations of interfacing libraries to suit their needs. Helia also ships supplemental libraries and tools including:
 
 - [`@helia/UnixFS`](./packages/unixfs)
@@ -167,7 +168,7 @@ Helia embraces a modular approach and encourages users to bring their own implem
 - [`@helia/strings`](./packages/strings)
 - [`@helia/json`](./packages/json)
 - [`@helia/dag-json`](./packages/dag-json)
-- [`@helia/dag-cbor`](https://github.com/ipfs/helia-dag-cbor)
+- [`@helia/dag-cbor`](./packages/dag-cbor)
 
 These libraries are by no means the "one true implementation", but instead instead provide optionality depending on one's needs.
 
@@ -177,9 +178,11 @@ This repo itself is made up of these packages:
 - [`/packages/interop`](./packages/interop) Interop tests for Helia
 
 # 📣 Project status
+
 Helia v1 shipped in 202303 (see [releases](https://github.com/ipfs/helia/releases)), and development keeps on trucking as we work on initiatives in the [roadmap](#roadmap) and make performance improvements and bug fixes along the way.
 
 # 🛣️ Roadmap
+
 Please find and comment on [the Roadmap here](https://github.com/ipfs/helia/issues/5).
 
 # 👫 Get involved
