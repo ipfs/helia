@@ -162,7 +162,7 @@ Helia embraces a modular approach and encourages users to bring their own implem
 
 - [`@helia/UnixFS`](./packages/unixfs)
 - [`@helia/mfs`](./packages/mfs)
-- [`@helia/ipns`](https://github.com/ipfs/helia-ipns)
+- [`@helia/ipns`](./packages/ipns)
 - [`@helia/car`](https://github.com/ipfs/helia-car)
 - [`@helia/strings`](https://github.com/ipfs/helia-strings)
 - [`@helia/json`](https://github.com/ipfs/helia-json)
