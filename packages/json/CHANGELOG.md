@@ -1,3 +1,14 @@
+## [@helia/json-v2.0.0](https://github.com/ipfs/helia-json/compare/@helia/json-v1.0.3...@helia/json-v2.0.0) (2024-01-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* uses multiformats v13 and helia v3
+
+### Features
+
+* update helia to v3 and multiformats to v13 ([#46](https://github.com/ipfs/helia-json/issues/46)) ([e3dc586](https://github.com/ipfs/helia-json/commit/e3dc5867ffc4de0dd3b05b56eb1b0ce98d50dcb1))
+
 ## [@helia/json-v1.0.3](https://github.com/ipfs/helia-json/compare/@helia/json-v1.0.2...@helia/json-v1.0.3) (2023-10-07)
 
 
