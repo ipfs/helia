@@ -10,6 +10,23 @@
 
 * **dev:** bump aegir from 39.0.13 to 40.0.8 ([#198](https://github.com/ipfs/helia/issues/198)) ([4d75ecf](https://github.com/ipfs/helia/commit/4d75ecffb79e5177da35d3106e42dac7bc63153a))
 
+## [3.0.0](https://github.com/ipfs/helia/compare/interface-v2.1.0...interface-v3.0.0) (2024-01-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* `helia.pin.add` and `helia.pin.rm` now return `AsyncGenerator<CID>`
+* The libp2p API has changed in a couple of places - please see the [upgrade guide](https://github.com/libp2p/js-libp2p/blob/main/doc/migrations/v0.46-v1.0.0.md)
+
+### deps
+
+* updates to libp2p v1 ([#320](https://github.com/ipfs/helia/issues/320)) ([635d7a2](https://github.com/ipfs/helia/commit/635d7a2938111ccc53f8defbd9b8f8f8ea3e8e6a))
+
+
+### Features
+
+* iterable pinning ([#231](https://github.com/ipfs/helia/issues/231)) ([c15c774](https://github.com/ipfs/helia/commit/c15c7749294d3d4aea5aef70544d088250336798))
+
 ## [2.1.0](https://www.github.com/ipfs/helia/compare/interface-v2.0.0...interface-v2.1.0) (2023-11-06)
 
 

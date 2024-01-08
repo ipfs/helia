@@ -1,5 +1,30 @@
 # Changelog
 
+## [2.0.0](https://github.com/ipfs/helia/compare/interop-v1.1.0...interop-v2.0.0) (2024-01-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* `helia.pin.add` and `helia.pin.rm` now return `AsyncGenerator<CID>`
+* The libp2p API has changed in a couple of places - please see the [upgrade guide](https://github.com/libp2p/js-libp2p/blob/main/doc/migrations/v0.46-v1.0.0.md)
+
+### deps
+
+* updates to libp2p v1 ([#320](https://github.com/ipfs/helia/issues/320)) ([635d7a2](https://github.com/ipfs/helia/commit/635d7a2938111ccc53f8defbd9b8f8f8ea3e8e6a))
+
+
+### Features
+
+* iterable pinning ([#231](https://github.com/ipfs/helia/issues/231)) ([c15c774](https://github.com/ipfs/helia/commit/c15c7749294d3d4aea5aef70544d088250336798))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @helia/interface bumped from ^2.1.0 to ^3.0.0
+    * helia bumped from ^2.1.0 to ^3.0.0
+
 ## [1.1.0](https://www.github.com/ipfs/helia/compare/interop-v1.0.3...interop-v1.1.0) (2023-11-06)
 
 
