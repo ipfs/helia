@@ -53,7 +53,7 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "devDependencies": {
-    "@helia/car": "^1.0.0",
+    "@helia/car": "^2.0.0",
     "@helia/interface": "^3.0.0",
     "@helia/unixfs": "^2.0.0",
     "@ipld/car": "^5.1.1",
