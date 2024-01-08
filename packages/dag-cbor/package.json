@@ -3,13 +3,13 @@
   "version": "2.0.0",
   "description": "Add/get IPLD blocks containing dag-cbor with your Helia node",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/ipfs/helia-dag-cbor/tree/main/packages/dag-cbor#readme",
+  "homepage": "https://github.com/ipfs/helia/tree/main/packages/dag-cbor#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ipfs/helia-dag-cbor.git"
+    "url": "git+https://github.com/ipfs/helia.git"
   },
   "bugs": {
-    "url": "https://github.com/ipfs/helia-dag-cbor/issues"
+    "url": "https://github.com/ipfs/helia/issues"
   },
   "publishConfig": {
     "access": "public",
@@ -148,7 +148,7 @@
   },
   "devDependencies": {
     "aegir": "^42.0.1",
-    "blockstore-core": "^4.0.1",
-    "interface-blockstore": "^5.0.0"
+    "blockstore-core": "^4.3.8",
+    "interface-blockstore": "^5.2.9"
   }
 }

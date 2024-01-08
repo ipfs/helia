@@ -8,8 +8,8 @@
 
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
-[![codecov](https://img.shields.io/codecov/c/github/ipfs/helia-dag-cbor.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia-dag-cbor)
-[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia-dag-cbor/js-test-and-release.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia-dag-cbor/actions/workflows/js-test-and-release.yml?query=branch%3Amain)
+[![codecov](https://img.shields.io/codecov/c/github/ipfs/helia.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia)
+[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
 
 > Add/get IPLD blocks containing dag-cbor with your Helia node
 
@@ -52,7 +52,7 @@ Loading this module through a script tag will make it's exports available as `He
 
 # API Docs
 
-- <https://ipfs.github.io/helia-dag-cbor/modules/_helia_dag_cbor.html>
+- <https://ipfs.github.io/helia/modules/_helia_dag_cbor.html>
 
 # License
 
@@ -63,7 +63,7 @@ Licensed under either of
 
 # Contribute
 
-Contributions welcome! Please check out [the issues](https://github.com/ipfs/helia-dag-cbor/issues).
+Contributions welcome! Please check out [the issues](https://github.com/ipfs/helia/issues).
 
 Also see our [contributing document](https://github.com/ipfs/community/blob/master/CONTRIBUTING_JS.md) for more information on how we work, and about contributing in general.
 

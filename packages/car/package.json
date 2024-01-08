@@ -3,13 +3,13 @@
   "version": "2.0.0",
   "description": "Import/export car files from Helia",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/ipfs/helia-car/tree/main/packages/car#readme",
+  "homepage": "https://github.com/ipfs/helia/tree/main/packages/car#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ipfs/helia-car.git"
+    "url": "git+https://github.com/ipfs/helia.git"
   },
   "bugs": {
-    "url": "https://github.com/ipfs/helia-car/issues"
+    "url": "https://github.com/ipfs/helia/issues"
   },
   "publishConfig": {
     "access": "public",
@@ -20,22 +20,6 @@
   ],
   "type": "module",
   "types": "./dist/src/index.d.ts",
-  "typesVersions": {
-    "*": {
-      "*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ],
-      "src/*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ]
-    }
-  },
   "files": [
     "src",
     "dist",
@@ -157,7 +141,7 @@
   "dependencies": {
     "@helia/interface": "^3.0.0",
     "@ipld/car": "^5.1.1",
-    "@ipld/dag-pb": "^4.0.0",
+    "@ipld/dag-pb": "^4.0.3",
     "@libp2p/interfaces": "^3.3.1",
     "cborg": "^4.0.3",
     "it-drain": "^3.0.5",
@@ -170,9 +154,9 @@
   "devDependencies": {
     "@helia/unixfs": "^2.0.0",
     "aegir": "^42.0.1",
-    "blockstore-core": "^4.0.1",
+    "blockstore-core": "^4.3.8",
     "interface-blockstore": "^5.2.9",
-    "ipfs-unixfs-importer": "^15.1.0",
+    "ipfs-unixfs-importer": "^15.2.3",
     "it-to-buffer": "^4.0.2"
   }
 }

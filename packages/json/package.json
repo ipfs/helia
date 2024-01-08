@@ -3,13 +3,13 @@
   "version": "2.0.0",
   "description": "Add/get IPLD blocks containing json with your Helia node",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/ipfs/helia-json/tree/main/packages/json#readme",
+  "homepage": "https://github.com/ipfs/helia/tree/main/packages/json#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ipfs/helia-json.git"
+    "url": "git+https://github.com/ipfs/helia.git"
   },
   "bugs": {
-    "url": "https://github.com/ipfs/helia-json/issues"
+    "url": "https://github.com/ipfs/helia/issues"
   },
   "publishConfig": {
     "access": "public",
@@ -146,7 +146,7 @@
   },
   "devDependencies": {
     "aegir": "^42.0.1",
-    "blockstore-core": "^4.0.1",
-    "interface-blockstore": "^5.0.0"
+    "blockstore-core": "^4.3.8",
+    "interface-blockstore": "^5.2.9"
   }
 }

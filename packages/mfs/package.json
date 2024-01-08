@@ -3,13 +3,13 @@
   "version": "2.0.0",
   "description": "A mutable filesystem powered by Helia",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/ipfs/helia-mfs/tree/main/packages/mfs#readme",
+  "homepage": "https://github.com/ipfs/helia/tree/main/packages/mfs#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ipfs/helia-mfs.git"
+    "url": "git+https://github.com/ipfs/helia.git"
   },
   "bugs": {
-    "url": "https://github.com/ipfs/helia-mfs/issues"
+    "url": "https://github.com/ipfs/helia/issues"
   },
   "publishConfig": {
     "access": "public",
@@ -152,15 +152,15 @@
   "devDependencies": {
     "@ipld/dag-pb": "^4.0.7",
     "aegir": "^42.0.1",
-    "blockstore-core": "^4.0.1",
+    "blockstore-core": "^4.3.8",
     "datastore-core": "^9.2.0",
     "delay": "^6.0.0",
     "interface-blockstore": "^5.2.9",
-    "it-all": "^3.0.1",
-    "it-drain": "^3.0.1",
+    "it-all": "^3.0.4",
+    "it-drain": "^3.0.5",
     "it-first": "^3.0.1",
     "it-last": "^3.0.4",
-    "it-to-buffer": "^4.0.1",
+    "it-to-buffer": "^4.0.2",
     "uint8arrays": "^5.0.1"
   }
 }

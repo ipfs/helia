@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "Block brokers for Helia",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/ipfs/helia/tree/master/packages/block-brokers#readme",
+  "homepage": "https://github.com/ipfs/helia/tree/main/packages/block-brokers#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ipfs/helia.git"
@@ -20,22 +20,6 @@
   ],
   "type": "module",
   "types": "./dist/src/index.d.ts",
-  "typesVersions": {
-    "*": {
-      "*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ],
-      "src/*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ]
-    }
-  },
   "files": [
     "src",
     "dist",
@@ -79,12 +63,12 @@
     "it-foreach": "^2.0.6",
     "multiformats": "^13.0.0",
     "progress-events": "^1.0.0",
-    "uint8arrays": "^5.0.0"
+    "uint8arrays": "^5.0.1"
   },
   "devDependencies": {
     "@libp2p/logger": "^4.0.1",
     "@types/sinon": "^17.0.2",
-    "aegir": "^42.0.0",
+    "aegir": "^42.0.1",
     "blockstore-core": "^4.3.8",
     "delay": "^6.0.0",
     "it-all": "^3.0.4",
