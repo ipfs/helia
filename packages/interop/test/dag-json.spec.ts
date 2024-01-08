@@ -3,6 +3,7 @@
 import { dagCbor, type DAGCBOR, type AddOptions } from '@helia/dag-cbor'
 import * as codec from '@ipld/dag-cbor'
 import { expect } from 'aegir/chai'
+import { CID } from 'multiformats/cid'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import type { Helia } from '@helia/interface'
@@ -57,7 +58,7 @@ describe('dag-json interop', () => {
   it('should add to kubo and fetch from helia', async () => {
     const input = { hello: 'world' }
     const cid = await kubo.api.block.put(codec.encode(input))
-    const output = await d.get(cid)
+    const output = await d.get(CID.parse(cid.toString()))
 
     expect(output).to.deep.equal(input)
   })

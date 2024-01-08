@@ -4,7 +4,7 @@
   </a>
 </p>
 
-# @helia/dag-cbor <!-- omit in toc -->
+# @helia/dag-cbor
 
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
@@ -13,21 +13,36 @@
 
 > Add/get IPLD blocks containing dag-cbor with your Helia node
 
-## Table of contents <!-- omit in toc -->
+# About
 
-- [Install](#install)
-  - [Browser `<script>` tag](#browser-script-tag)
-- [API Docs](#api-docs)
-- [License](#license)
-- [Contribute](#contribute)
+`@helia/dag-cbor` makes working with DAG-JSON Helia simple & straightforward.
 
-## Install
+See the DAGCBOR interface for all available operations.
+
+## Example
+
+```typescript
+import { createHelia } from 'helia'
+import { dagCbor } from '@helia/dag-cbor'
+import { CID } from 'multiformats/cid'
+
+const d = dagCbor(helia)
+const cid = await d.put({
+  hello: 'world'
+})
+const obj = await d.get(cid)
+
+console.info(obj)
+// { hello: 'world' }
+```
+
+# Install
 
 ```console
 $ npm i @helia/dag-cbor
 ```
 
-### Browser `<script>` tag
+## Browser `<script>` tag
 
 Loading this module through a script tag will make it's exports available as `HeliaDagCbor` in the global namespace.
 
@@ -35,18 +50,18 @@ Loading this module through a script tag will make it's exports available as `He
 <script src="https://unpkg.com/@helia/dag-cbor/dist/index.min.js"></script>
 ```
 
-## API Docs
+# API Docs
 
 - <https://ipfs.github.io/helia-dag-cbor/modules/_helia_dag_cbor.html>
 
-## License
+# License
 
 Licensed under either of
 
 - Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
 - MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
-## Contribute
+# Contribute
 
 Contributions welcome! Please check out [the issues](https://github.com/ipfs/helia-dag-cbor/issues).
 

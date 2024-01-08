@@ -4,39 +4,34 @@
   </a>
 </p>
 
-# @helia/dag-cbor <!-- omit in toc -->
+# @helia/dag-cbor
 
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
 [![codecov](https://img.shields.io/codecov/c/github/ipfs/helia-dag-cbor.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia-dag-cbor)
 [![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia-dag-cbor/js-test-and-release.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia-dag-cbor/actions/workflows/js-test-and-release.yml?query=branch%3Amain)
 
-> Add/get IPLD blocks containing json with your Helia node
+> Add/get IPLD blocks containing dag-cbor with your Helia node
 
-## Table of contents <!-- omit in toc -->
-
-- [Structure](#structure)
-- [API Docs](#api-docs)
-- [License](#license)
-- [Contribute](#contribute)
-
-## Structure
+# Packages
 
 - [`/packages/dag-cbor`](./packages/dag-cbor) Add/get IPLD blocks containing dag-cbor with your Helia node
 - [`/packages/interop`](./packages/interop) Interop tests for @helia/dag-cbor
 
-## API Docs
+> Add/get IPLD blocks containing json with your Helia node
+
+# API Docs
 
 - <https://ipfs.github.io/helia-dag-cbor>
 
-## License
+# License
 
 Licensed under either of
 
 - Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
 - MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
-## Contribute
+# Contribute
 
 Contributions welcome! Please check out [the issues](https://github.com/ipfs/helia-dag-cbor/issues).
 

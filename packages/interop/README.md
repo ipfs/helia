@@ -4,7 +4,7 @@
   </a>
 </p>
 
-# @helia/dag-cbor-interop <!-- omit in toc -->
+# @helia/dag-cbor-interop
 
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
@@ -13,21 +13,13 @@
 
 > Interop tests for @helia/dag-cbor
 
-## Table of contents <!-- omit in toc -->
-
-- [Install](#install)
-  - [Browser `<script>` tag](#browser-script-tag)
-- [API Docs](#api-docs)
-- [License](#license)
-- [Contribute](#contribute)
-
-## Install
+# Install
 
 ```console
 $ npm i @helia/dag-cbor-interop
 ```
 
-### Browser `<script>` tag
+## Browser `<script>` tag
 
 Loading this module through a script tag will make it's exports available as `HeliaDagCborInterop` in the global namespace.
 
@@ -35,18 +27,14 @@ Loading this module through a script tag will make it's exports available as `He
 <script src="https://unpkg.com/@helia/dag-cbor-interop/dist/index.min.js"></script>
 ```
 
-## API Docs
-
-- <https://ipfs.github.io/helia-dag-cbor/modules/_helia_dag_cbor_interop.html>
-
-## License
+# License
 
 Licensed under either of
 
 - Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
 - MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
-## Contribute
+# Contribute
 
 Contributions welcome! Please check out [the issues](https://github.com/ipfs/helia-dag-cbor/issues).
 
