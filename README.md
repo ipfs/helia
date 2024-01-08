@@ -160,7 +160,7 @@ graph TD;
 # 🏭 Code Structure
 Helia embraces a modular approach and encourages users to bring their own implementations of interfacing libraries to suit their needs. Helia also ships supplemental libraries and tools including:
 
-- [`@helia/UnixFS`](https://github.com/ipfs/helia-unixfs)
+- [`@helia/UnixFS`](./packages/unixfs)
 - [`@helia/mfs`](https://github.com/ipfs/helia-mfs)
 - [`@helia/ipns`](https://github.com/ipfs/helia-ipns)
 - [`@helia/car`](https://github.com/ipfs/helia-car)

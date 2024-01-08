@@ -6,16 +6,5 @@
   "include": [
     "src",
     "test"
-  ],
-  "references": [
-    {
-      "path": "../helia"
-    },
-    {
-      "path": "../interface"
-    },
-    {
-      "path": "../unixfs"
-    }
   ]
 }

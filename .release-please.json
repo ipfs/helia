@@ -5,6 +5,7 @@
     "packages/block-brokers": {},
     "packages/helia": {},
     "packages/interface": {},
-    "packages/interop": {}
+    "packages/interop": {},
+    "packages/unixfs": {}
   }
 }
