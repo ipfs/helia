@@ -3,13 +3,17 @@
   "version": "1.0.1",
   "description": "Add/get IPLD blocks containing strings with your Helia node",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/ipfs/helia-strings/tree/master/packages/strings#readme",
+  "homepage": "https://github.com/ipfs/helia-strings/tree/main/packages/strings#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ipfs/helia-strings.git"
   },
   "bugs": {
     "url": "https://github.com/ipfs/helia-strings/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "keywords": [
     "IPFS"
@@ -31,8 +35,9 @@
   "eslintConfig": {
     "extends": "ipfs",
     "parserOptions": {
-      "package": true,
-      "sourceType": "module"
+      "project": true,
+      "sourceType": "module",
+      "package": true
     }
   },
   "release": {
@@ -136,18 +141,15 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@helia/interface": "^2.0.0",
+    "@helia/interface": "^3.0.0",
     "@libp2p/interfaces": "^3.3.1",
-    "interface-blockstore": "^5.0.0",
-    "multiformats": "^12.1.2",
+    "multiformats": "^13.0.0",
     "progress-events": "^1.0.0",
-    "uint8arrays": "^4.0.3"
+    "uint8arrays": "^5.0.1"
   },
   "devDependencies": {
-    "aegir": "^41.0.0",
-    "blockstore-core": "^4.0.1"
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts"
+    "aegir": "^42.0.1",
+    "blockstore-core": "^4.0.1",
+    "interface-blockstore": "^5.0.0"
   }
 }

@@ -2,6 +2,7 @@
 
 import { strings, type Strings, type AddOptions } from '@helia/strings'
 import { expect } from 'aegir/chai'
+import { CID } from 'multiformats/cid'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { createHeliaNode } from './fixtures/create-helia.js'
@@ -59,7 +60,7 @@ describe('strings interop', () => {
   it('should add to kubo and fetch from helia', async () => {
     const input = 'hello world'
     const cid = await kubo.api.block.put(uint8ArrayFromString(input))
-    const output = await str.get(cid)
+    const output = await str.get(CID.parse(cid.toString()))
 
     expect(output).to.equal(input)
   })
