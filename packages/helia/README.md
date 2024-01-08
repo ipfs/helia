@@ -11,13 +11,13 @@
 
 > An implementation of IPFS in JavaScript
 
-## About
+# About
 
 Exports a `createHelia` function that returns an object that implements the Helia API.
 
 Pass it to other modules like @helia/unixfs to make files available on the distributed web.
 
-### Example
+## Example
 
 ```typescript
 import { createHelia } from 'helia'

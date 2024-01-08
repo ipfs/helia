@@ -3,7 +3,7 @@
  *
  * `@helia/strings` makes working with strings {@link https://github.com/ipfs/helia Helia} simple & straightforward.
  *
- * See the {@link Strings Strings interface} for all available operations.
+ * See the [API docs](https://ipfs.github.io/helia/modules/_helia_strings.html) for all available operations.
  *
  * @example
  *

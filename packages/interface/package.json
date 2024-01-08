@@ -79,6 +79,6 @@
     "progress-events": "^1.0.0"
   },
   "devDependencies": {
-    "aegir": "^42.0.1"
+    "aegir": "^42.1.0"
   }
 }

@@ -72,7 +72,7 @@
     "@libp2p/peer-id-factory": "^4.0.3",
     "@libp2p/websockets": "^8.0.1",
     "@multiformats/sha3": "^3.0.0",
-    "aegir": "^42.0.1",
+    "aegir": "^42.1.0",
     "helia": "^3.0.0",
     "ipfs-core-types": "^0.14.1",
     "ipfs-unixfs-importer": "^15.2.3",

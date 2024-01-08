@@ -3,7 +3,7 @@
  *
  * `@helia/mfs` is an implementation of a {@link https://docs.ipfs.tech/concepts/file-systems/ Mutable File System} powered by {@link https://github.com/ipfs/helia Helia}.
  *
- * See the {@link MFS MFS interface} for all available operations.
+ * See the [API docs](https://ipfs.github.io/helia/modules/_helia_mfs.html) for all available operations.
  *
  * @example
  *

@@ -17,7 +17,7 @@
 
 `@helia/mfs` is an implementation of a Mutable File System powered by Helia.
 
-See the interface for all available operations.
+See the [API docs](https://ipfs.github.io/helia/modules/_helia_mfs.html) for all available operations.
 
 ## Example
 

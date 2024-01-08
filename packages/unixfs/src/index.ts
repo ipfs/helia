@@ -3,7 +3,7 @@
  *
  * `@helia/unixfs` is an implementation of a {@link https://github.com/ipfs/specs/blob/main/UNIXFS.md UnixFS filesystem} compatible with {@link https://github.com/ipfs/helia Helia}.
  *
- * See the {@link UnixFS UnixFS interface} for all available operations.
+ * See the [API docs](https://ipfs.github.io/helia/modules/_helia_unixfs.html) for all available operations.
  *
  * @example Creating files and directories
  *

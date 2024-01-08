@@ -151,7 +151,7 @@
   },
   "devDependencies": {
     "@ipld/dag-pb": "^4.0.7",
-    "aegir": "^42.0.1",
+    "aegir": "^42.1.0",
     "blockstore-core": "^4.3.8",
     "datastore-core": "^9.2.0",
     "delay": "^6.0.0",
