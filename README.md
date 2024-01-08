@@ -161,7 +161,7 @@ graph TD;
 Helia embraces a modular approach and encourages users to bring their own implementations of interfacing libraries to suit their needs. Helia also ships supplemental libraries and tools including:
 
 - [`@helia/UnixFS`](./packages/unixfs)
-- [`@helia/mfs`](https://github.com/ipfs/helia-mfs)
+- [`@helia/mfs`](./packages/mfs)
 - [`@helia/ipns`](https://github.com/ipfs/helia-ipns)
 - [`@helia/car`](https://github.com/ipfs/helia-car)
 - [`@helia/strings`](https://github.com/ipfs/helia-strings)
