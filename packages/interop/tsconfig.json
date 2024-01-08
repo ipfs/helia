@@ -24,6 +24,9 @@
       "path": "../mfs"
     },
     {
+      "path": "../strings"
+    },
+    {
       "path": "../unixfs"
     }
   ]
