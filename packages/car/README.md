@@ -4,7 +4,7 @@
   </a>
 </p>
 
-# @helia/car <!-- omit in toc -->
+# @helia/car
 
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
@@ -13,21 +13,71 @@
 
 > Import/export car files from Helia
 
-## Table of contents <!-- omit in toc -->
+# About
 
-- [Install](#install)
-  - [Browser `<script>` tag](#browser-script-tag)
-- [API Docs](#api-docs)
-- [License](#license)
-- [Contribute](#contribute)
+`@helia/car` provides `import` and `export` methods to read/write Car files to Helia's blockstore.
 
-## Install
+See the Car interface for all available operations.
+
+By default it supports `dag-pb`, `dag-cbor`, `dag-json` and `raw` CIDs, more esoteric DAG walkers can be passed as an init option.
+
+## Example - Exporting a DAG as a CAR file
+
+```typescript
+import { createHelia } from 'helia'
+import { unixfs } from '@helia/unixfs'
+import { car } from '@helia/car'
+import { CarWriter } from '@ipld/car'
+import { Readable } from 'node:stream'
+import nodeFs from 'node:fs'
+
+const helia = createHelia({
+  // ... helia config
+})
+const fs = unixfs(helia)
+
+// add some UnixFS data
+const cid = await fs.addBytes(fileData1)
+
+// export it as a Car
+const c = car(helia)
+const { writer, out } = await CarWriter.create(cid)
+
+// `out` needs to be directed somewhere, see the @ipld/car docs for more information
+Readable.from(out).pipe(nodeFs.createWriteStream('example.car'))
+
+// write the DAG behind `cid` into the writer
+await c.export(cid, writer)
+```
+
+## Example - Importing all blocks from a CAR file
+
+```typescript
+import { createHelia } from 'helia'
+import { unixfs } from '@helia/unixfs'
+import { car } from '@helia/car'
+import { CarReader } from '@ipld/car'
+import { Readable } from 'node:stream'
+import nodeFs from 'node:fs'
+
+const helia = createHelia({
+  // ... helia config
+})
+
+// import the car
+const inStream = nodeFs.createReadStream('example.car')
+const reader = await CarReader.fromIterable(inStream)
+
+await c.import(reader)
+```
+
+# Install
 
 ```console
 $ npm i @helia/car
 ```
 
-### Browser `<script>` tag
+## Browser `<script>` tag
 
 Loading this module through a script tag will make it's exports available as `HeliaCar` in the global namespace.
 
@@ -35,18 +85,18 @@ Loading this module through a script tag will make it's exports available as `He
 <script src="https://unpkg.com/@helia/car/dist/index.min.js"></script>
 ```
 
-## API Docs
+# API Docs
 
 - <https://ipfs.github.io/helia-car/modules/_helia_car.html>
 
-## License
+# License
 
 Licensed under either of
 
 - Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
 - MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
-## Contribute
+# Contribute
 
 Contributions welcome! Please check out [the issues](https://github.com/ipfs/helia-car/issues).
 

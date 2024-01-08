@@ -5,6 +5,7 @@ import { type UnixFS, unixfs } from '@helia/unixfs'
 import { CarReader } from '@ipld/car'
 import { expect } from 'aegir/chai'
 import toBuffer from 'it-to-buffer'
+import { CID } from 'multiformats/cid'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import { memoryCarWriter } from './fixtures/memory-car.js'
@@ -91,6 +92,6 @@ describe('car interop', () => {
 
     await c.import(reader)
 
-    expect(await toBuffer(u.cat(cid))).to.equalBytes(toBuffer(input))
+    expect(await toBuffer(u.cat(CID.parse(cid.toString())))).to.equalBytes(toBuffer(input))
   })
 })

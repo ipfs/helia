@@ -3,13 +3,17 @@
   "version": "0.0.0",
   "description": "Interop tests for @helia/car",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/ipfs/helia-car/tree/master/packages/interop#readme",
+  "homepage": "https://github.com/ipfs/helia-car/tree/main/packages/interop#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ipfs/helia-car.git"
   },
   "bugs": {
     "url": "https://github.com/ipfs/helia-car/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "keywords": [
     "IPFS"
@@ -50,19 +54,19 @@
   },
   "devDependencies": {
     "@helia/car": "^1.0.0",
-    "@helia/interface": "^2.0.0",
-    "@helia/unixfs": "^1.2.2",
+    "@helia/interface": "^3.0.0",
+    "@helia/unixfs": "^2.0.0",
     "@ipld/car": "^5.1.1",
-    "@libp2p/websockets": "^7.0.5",
-    "aegir": "^41.0.0",
+    "@libp2p/websockets": "^8.0.10",
+    "aegir": "^42.0.1",
     "go-ipfs": "^0.22.0",
-    "helia": "^2.0.1",
+    "helia": "^3.0.0",
     "ipfs-unixfs-importer": "^15.1.0",
     "ipfsd-ctl": "^13.0.0",
     "it-to-buffer": "^4.0.2",
     "kubo-rpc-client": "^3.0.0",
     "merge-options": "^3.0.4",
-    "multiformats": "^12.0.1",
+    "multiformats": "^13.0.0",
     "p-defer": "^4.0.0",
     "wherearewe": "^2.0.1"
   },

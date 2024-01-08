@@ -9,7 +9,9 @@ on:
 
 permissions:
   contents: write
+  id-token: write
   packages: write
+  pull-requests: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event_name == 'push' && github.sha || github.ref }}

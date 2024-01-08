@@ -7,7 +7,7 @@
  *
  * By default it supports `dag-pb`, `dag-cbor`, `dag-json` and `raw` CIDs, more esoteric DAG walkers can be passed as an init option.
  *
- * @example
+ * @example Exporting a DAG as a CAR file
  *
  * ```typescript
  * import { createHelia } from 'helia'
@@ -36,7 +36,7 @@
  * await c.export(cid, writer)
  * ```
  *
- * @example
+ * @example Importing all blocks from a CAR file
  *
  * ```typescript
  * import { createHelia } from 'helia'

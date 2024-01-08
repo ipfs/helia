@@ -13,30 +13,23 @@
 
 > Import/export car files from Helia
 
-## Table of contents <!-- omit in toc -->
-
-- [Structure](#structure)
-- [API Docs](#api-docs)
-- [License](#license)
-- [Contribute](#contribute)
-
-## Structure
+# Packages
 
 - [`/packages/car`](./packages/car) Import/export car files from Helia
 - [`/packages/interop`](./packages/interop) Interop tests for @helia/car
 
-## API Docs
+# API Docs
 
 - <https://ipfs.github.io/helia-car>
 
-## License
+# License
 
 Licensed under either of
 
 - Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
 - MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
-## Contribute
+# Contribute
 
 Contributions welcome! Please check out [the issues](https://github.com/ipfs/helia-car/issues).
 

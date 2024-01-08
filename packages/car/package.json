@@ -3,13 +3,17 @@
   "version": "1.0.4",
   "description": "Import/export car files from Helia",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/ipfs/helia-car/tree/master/packages/car#readme",
+  "homepage": "https://github.com/ipfs/helia-car/tree/main/packages/car#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ipfs/helia-car.git"
   },
   "bugs": {
     "url": "https://github.com/ipfs/helia-car/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "keywords": [
     "IPFS"
@@ -42,10 +46,6 @@
     ".": {
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
-    },
-    "./errors": {
-      "types": "./dist/src/errors.d.ts",
-      "import": "./dist/src/errors.js"
     }
   },
   "eslintConfig": {
@@ -155,24 +155,24 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@helia/interface": "^2.0.0",
+    "@helia/interface": "^3.0.0",
     "@ipld/car": "^5.1.1",
     "@ipld/dag-pb": "^4.0.0",
     "@libp2p/interfaces": "^3.3.1",
     "cborg": "^4.0.3",
-    "interface-blockstore": "^5.0.0",
+    "it-drain": "^3.0.5",
     "it-map": "^3.0.3",
-    "multiformats": "^12.0.1",
+    "multiformats": "^13.0.0",
     "p-defer": "^4.0.0",
-    "p-queue": "^7.3.4",
+    "p-queue": "^8.0.1",
     "progress-events": "^1.0.0"
   },
   "devDependencies": {
-    "@helia/unixfs": "^1.2.2",
-    "aegir": "^41.0.0",
+    "@helia/unixfs": "^2.0.0",
+    "aegir": "^42.0.1",
     "blockstore-core": "^4.0.1",
+    "interface-blockstore": "^5.2.9",
     "ipfs-unixfs-importer": "^15.1.0",
-    "it-drain": "^3.0.1",
     "it-to-buffer": "^4.0.2"
   }
 }
