@@ -1,3 +1,14 @@
+## [@helia/dag-json-v2.0.0](https://github.com/ipfs/helia-dag-json/compare/@helia/dag-json-v1.0.3...@helia/dag-json-v2.0.0) (2024-01-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* uses multiformats v13 and helia v3
+
+### Features
+
+* update helia to v3 and multiformats to v13 ([#45](https://github.com/ipfs/helia-dag-json/issues/45)) ([3c7d9d4](https://github.com/ipfs/helia-dag-json/commit/3c7d9d4a8e74e1a808c265fbc6ecbdc24f0f3da9))
+
 ## [@helia/dag-json-v1.0.3](https://github.com/ipfs/helia-dag-json/compare/@helia/dag-json-v1.0.2...@helia/dag-json-v1.0.3) (2023-10-07)
 
 
