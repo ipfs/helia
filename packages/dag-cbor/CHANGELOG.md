@@ -1,3 +1,14 @@
+## [@helia/dag-cbor-v2.0.0](https://github.com/ipfs/helia-dag-cbor/compare/@helia/dag-cbor-v1.0.3...@helia/dag-cbor-v2.0.0) (2024-01-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* uses multiformats v13 and helia v3
+
+### Features
+
+* update helia to v3 and multiformats to v13 ([#45](https://github.com/ipfs/helia-dag-cbor/issues/45)) ([f078447](https://github.com/ipfs/helia-dag-cbor/commit/f078447b6eba4c3d404d62bb930757aa1c0efe74))
+
 ## [@helia/dag-cbor-v1.0.3](https://github.com/ipfs/helia-dag-cbor/compare/@helia/dag-cbor-v1.0.2...@helia/dag-cbor-v1.0.3) (2023-10-07)
 
 
