@@ -9,10 +9,34 @@
   ],
   "references": [
     {
+      "path": "../car"
+    },
+    {
+      "path": "../dag-cbor"
+    },
+    {
+      "path": "../dag-json"
+    },
+    {
       "path": "../helia"
     },
     {
       "path": "../interface"
+    },
+    {
+      "path": "../ipns"
+    },
+    {
+      "path": "../json"
+    },
+    {
+      "path": "../mfs"
+    },
+    {
+      "path": "../strings"
+    },
+    {
+      "path": "../unixfs"
     }
   ]
 }

@@ -1,0 +1,52 @@
+## [@helia/car-v2.0.0](https://github.com/ipfs/helia-car/compare/@helia/car-v1.0.4...@helia/car-v2.0.0) (2024-01-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* uses multiformats v13 and helia v3
+
+### Features
+
+* update helia to v3 and multiformats to v13 ([#52](https://github.com/ipfs/helia-car/issues/52)) ([6405c34](https://github.com/ipfs/helia-car/commit/6405c3487879614dc4dd7308b15c946d644e0488))
+
+## [@helia/car-v1.0.4](https://github.com/ipfs/helia-car/compare/@helia/car-v1.0.3...@helia/car-v1.0.4) (2023-10-07)
+
+
+### Dependencies
+
+* **dev:** bump aegir from 40.0.13 to 41.0.0 ([#41](https://github.com/ipfs/helia-car/issues/41)) ([e8fc99f](https://github.com/ipfs/helia-car/commit/e8fc99f4e372eaf72c2598f5a7a9942143c6d788))
+
+## [@helia/car-v1.0.3](https://github.com/ipfs/helia-car/compare/@helia/car-v1.0.2...@helia/car-v1.0.3) (2023-08-27)
+
+
+### Dependencies
+
+* bump @helia/interface from 1.2.2 to 2.0.0 ([#32](https://github.com/ipfs/helia-car/issues/32)) ([68656a8](https://github.com/ipfs/helia-car/commit/68656a81b7cd1238641a41573915635905e4a6ed))
+* bump cborg from 1.10.2 to 2.0.5 ([#35](https://github.com/ipfs/helia-car/issues/35)) ([10994ea](https://github.com/ipfs/helia-car/commit/10994ea9abdff8906ae8c3f7d0ff5f50b50d9e60))
+* bump multiformats from 11.0.2 to 12.0.1 ([#4](https://github.com/ipfs/helia-car/issues/4)) ([50bed0f](https://github.com/ipfs/helia-car/commit/50bed0f32b3c07111de804b0e6471e36d8e66626))
+
+## [@helia/car-v1.0.2](https://github.com/ipfs/helia-car/compare/@helia/car-v1.0.1...@helia/car-v1.0.2) (2023-08-27)
+
+
+### Dependencies
+
+* **dev:** bump aegir from 39.0.13 to 40.0.11 ([#30](https://github.com/ipfs/helia-car/issues/30)) ([ea26a0b](https://github.com/ipfs/helia-car/commit/ea26a0bd14137eb1de6ab282cdcecd55578064ab))
+
+## [@helia/car-v1.0.1](https://github.com/ipfs/helia-car/compare/@helia/car-v1.0.0...@helia/car-v1.0.1) (2023-08-14)
+
+
+### Documentation
+
+* fs already defined in example ([#1](https://github.com/ipfs/helia-car/issues/1)) ([356797a](https://github.com/ipfs/helia-car/commit/356797a9493c7753178b5f343962951bc9cd3052))
+
+## @helia/car-v1.0.0 (2023-06-07)
+
+
+### Bug Fixes
+
+* import from multiformats/cid for smaller bundles ([0857d1f](https://github.com/ipfs/helia-car/commit/0857d1f76cd7403dbea46cf3d9c891543fc83fe1))
+
+
+### Trivial Changes
+
+* fix linting ([3803a37](https://github.com/ipfs/helia-car/commit/3803a378c0d7a556248e39e7a3c756e94e69888d))
