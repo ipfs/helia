@@ -13,35 +13,14 @@
 
 > Interop tests for @helia/ipns
 
-## Table of contents <!-- omit in toc -->
-
-- [Install](#install)
-  - [Browser `<script>` tag](#browser-script-tag)
-- [License](#license)
-- [Contribute](#contribute)
-
-## Install
-
-```console
-$ npm i @helia/ipns-interop
-```
-
-### Browser `<script>` tag
-
-Loading this module through a script tag will make it's exports available as `HeliaIpnsInterop` in the global namespace.
-
-```html
-<script src="https://unpkg.com/@helia/ipns-interop/dist/index.min.js"></script>
-```
-
-## License
+# License
 
 Licensed under either of
 
 - Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
 - MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
-## Contribute
+# Contribute
 
 Contributions welcome! Please check out [the issues](https://github.com/ipfs/helia-ipns/issues).
 

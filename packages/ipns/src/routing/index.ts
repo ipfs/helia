@@ -1,4 +1,4 @@
-import type { DHTProgressEvents } from './dht.js'
+import type { Libp2pContentRoutingProgressEvents } from './libp2p.js'
 import type { DatastoreProgressEvents } from './local-store.js'
 import type { PubSubProgressEvents } from './pubsub.js'
 import type { AbortOptions } from '@libp2p/interface'
@@ -19,8 +19,8 @@ export interface IPNSRouting {
 
 export type IPNSRoutingEvents =
   DatastoreProgressEvents |
-  DHTProgressEvents |
+  Libp2pContentRoutingProgressEvents |
   PubSubProgressEvents
 
-export { dht } from './dht.js'
+export { libp2p } from './libp2p.js'
 export { pubsub } from './pubsub.js'

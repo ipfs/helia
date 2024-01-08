@@ -1,21 +1,21 @@
 import { CustomProgressEvent, type ProgressEvent } from 'progress-events'
 import type { GetOptions, PutOptions } from './index.js'
 import type { IPNSRouting } from '../index.js'
-import type { ContentRouting } from '@libp2p/interface/content-routing'
+import type { ContentRouting } from '@libp2p/interface'
 
-export interface DHTRoutingComponents {
+export interface Libp2pContentRoutingComponents {
   libp2p: {
     contentRouting: ContentRouting
   }
 }
 
-export type DHTProgressEvents =
-  ProgressEvent<'ipns:routing:dht:error', Error>
+export type Libp2pContentRoutingProgressEvents =
+  ProgressEvent<'ipns:routing:libp2p:error', Error>
 
-export class DHTRouting implements IPNSRouting {
+export class Libp2pContentRouting implements IPNSRouting {
   private readonly contentRouting: ContentRouting
 
-  constructor (components: DHTRoutingComponents) {
+  constructor (components: Libp2pContentRoutingComponents) {
     this.contentRouting = components.libp2p.contentRouting
   }
 
@@ -23,7 +23,7 @@ export class DHTRouting implements IPNSRouting {
     try {
       await this.contentRouting.put(routingKey, marshaledRecord, options)
     } catch (err: any) {
-      options.onProgress?.(new CustomProgressEvent<Error>('ipns:routing:dht:error', err))
+      options.onProgress?.(new CustomProgressEvent<Error>('ipns:routing:libp2p:error', err))
     }
   }
 
@@ -31,13 +31,17 @@ export class DHTRouting implements IPNSRouting {
     try {
       return await this.contentRouting.get(routingKey, options)
     } catch (err: any) {
-      options.onProgress?.(new CustomProgressEvent<Error>('ipns:routing:dht:error', err))
+      options.onProgress?.(new CustomProgressEvent<Error>('ipns:routing:libp2p:error', err))
     }
 
     throw new Error('Not found')
   }
 }
 
-export function dht (components: DHTRoutingComponents): IPNSRouting {
-  return new DHTRouting(components)
+/**
+ * The libp2p routing uses any available Content Routers configured on the
+ * passed libp2p node. This could be KadDHT, HTTP API Delegated Routing, etc.
+ */
+export function libp2p (components: Libp2pContentRoutingComponents): IPNSRouting {
+  return new Libp2pContentRouting(components)
 }

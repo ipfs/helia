@@ -3,13 +3,17 @@
   "version": "3.0.1",
   "description": "An implementation of IPNS for Helia",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/ipfs/helia-ipns/tree/master/packages/ipns#readme",
+  "homepage": "https://github.com/ipfs/helia-ipns/tree/main/packages/ipns#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ipfs/helia-ipns.git"
   },
   "bugs": {
     "url": "https://github.com/ipfs/helia-ipns/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "keywords": [
     "IPFS"
@@ -43,13 +47,13 @@
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
     },
-    "./routing": {
-      "types": "./dist/src/routing/index.d.ts",
-      "import": "./dist/src/routing/index.js"
-    },
     "./dns-resolvers": {
       "types": "./dist/src/dns-resolvers/index.d.ts",
       "import": "./dist/src/dns-resolvers/index.js"
+    },
+    "./routing": {
+      "types": "./dist/src/routing/index.d.ts",
+      "import": "./dist/src/routing/index.js"
     }
   },
   "eslintConfig": {
@@ -159,28 +163,28 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@libp2p/interface": "^0.1.4",
-    "@libp2p/kad-dht": "^10.0.11",
-    "@libp2p/logger": "^3.0.2",
-    "@libp2p/peer-id": "^3.0.2",
-    "dns-over-http-resolver": "^2.1.3",
+    "@libp2p/interface": "^1.1.1",
+    "@libp2p/kad-dht": "^12.0.2",
+    "@libp2p/logger": "^4.0.4",
+    "@libp2p/peer-id": "^4.0.4",
+    "dns-over-http-resolver": "^3.0.0",
     "dns-packet": "^5.6.0",
     "hashlru": "^2.3.0",
     "interface-datastore": "^8.0.0",
-    "ipns": "^7.0.1",
+    "ipns": "^8.0.0",
     "is-ipfs": "^8.0.1",
-    "multiformats": "^12.0.1",
-    "p-queue": "^7.3.0",
+    "multiformats": "^13.0.0",
+    "p-queue": "^8.0.1",
     "progress-events": "^1.0.0",
-    "uint8arrays": "^4.0.3"
+    "uint8arrays": "^5.0.1"
   },
   "devDependencies": {
-    "@libp2p/peer-id-factory": "^3.0.3",
+    "@libp2p/peer-id-factory": "^4.0.3",
     "@types/dns-packet": "^5.6.4",
-    "aegir": "^41.1.14",
+    "aegir": "^42.0.1",
     "datastore-core": "^9.0.3",
     "sinon": "^17.0.0",
-    "sinon-ts": "^1.0.0"
+    "sinon-ts": "^2.0.0"
   },
   "browser": {
     "./dist/src/dns-resolvers/resolver.js": "./dist/src/dns-resolvers/resolver.browser.js"

@@ -3,27 +3,27 @@
  *
  * IPNS operations using a Helia node
  *
- * @example
+ * @example Using libp2p and pubsub routers
  *
  * With {@link IPNSRouting} routers:
  *
  * ```typescript
  * import { createHelia } from 'helia'
  * import { ipns } from '@helia/ipns'
- * import { dht, pubsub } from '@helia/ipns/routing'
+ * import { libp2p, pubsub } from '@helia/ipns/routing'
  * import { unixfs } from '@helia/unixfs'
  *
  * const helia = await createHelia()
  * const name = ipns(helia, {
  *  routers: [
- *    dht(helia),
+ *    libp2p(helia),
  *    pubsub(helia)
  *  ]
  * })
  *
  * // create a public key to publish as an IPNS name
- * const keyInfo = await helia.libp2p.keychain.createKey('my-key')
- * const peerId = await helia.libp2p.keychain.exportPeerId(keyInfo.name)
+ * const keyInfo = await helia.libp2p.services.keychain.createKey('my-key')
+ * const peerId = await helia.libp2p.services.keychain.exportPeerId(keyInfo.name)
  *
  * // store some data to publish
  * const fs = unixfs(helia)
@@ -36,7 +36,7 @@
  * const cid = name.resolve(peerId)
  * ```
  *
- * @example
+ * @example Using custom DNS over HTTPS resolvers
  *
  * With default {@link DNSResolver} resolvers:
  *
@@ -56,7 +56,7 @@
  * const cid = name.resolveDns('some-domain-with-dnslink-entry.com')
  * ```
  *
- * @example
+ * @example Resolving a domain with a dnslink entry
  *
  * Calling `resolveDns` with the `@helia/ipns` instance:
  *
@@ -76,7 +76,7 @@
  * // QmWebsite
  * ```
  *
- * @example
+ * @example Using DNS-Over-HTTPS
  *
  * This example uses the Mozilla provided RFC 1035 DNS over HTTPS service. This
  * uses binary DNS records so requires extra dependencies to process the
@@ -95,7 +95,7 @@
  * })
  * ```
  *
- * @example
+ * @example Using DNS-JSON-Over-HTTPS
  *
  * DNS-JSON-Over-HTTPS resolvers use the RFC 8427 `application/dns-json` and can
  * result in a smaller browser bundle due to the response being plain JSON.
@@ -112,7 +112,7 @@
  * ```
  */
 
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { create, marshal, peerIdToRoutingKey, unmarshal } from 'ipns'
@@ -124,8 +124,7 @@ import { defaultResolver } from './dns-resolvers/default.js'
 import { localStore, type LocalStore } from './routing/local-store.js'
 import type { IPNSRouting, IPNSRoutingEvents } from './routing/index.js'
 import type { DNSResponse } from './utils/dns.js'
-import type { AbortOptions } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { AbortOptions, PeerId } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 import type { IPNSRecord } from 'ipns'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'

@@ -3,13 +3,17 @@
   "version": "0.0.0",
   "description": "Interop tests for @helia/ipns",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/ipfs/helia-ipns/tree/master/packages/interop#readme",
+  "homepage": "https://github.com/ipfs/helia-ipns/tree/main/packages/interop#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ipfs/helia-ipns.git"
   },
   "bugs": {
     "url": "https://github.com/ipfs/helia-ipns/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "keywords": [
     "IPFS"
@@ -49,32 +53,34 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "devDependencies": {
-    "@chainsafe/libp2p-gossipsub": "^10.1.0",
-    "@chainsafe/libp2p-noise": "^13.0.0",
-    "@chainsafe/libp2p-yamux": "^5.0.0",
-    "@helia/interface": "^2.0.0",
+    "@chainsafe/libp2p-gossipsub": "^11.0.1",
+    "@chainsafe/libp2p-noise": "^14.1.0",
+    "@chainsafe/libp2p-yamux": "^6.0.1",
+    "@helia/interface": "^3.0.0",
     "@helia/ipns": "^3.0.0",
-    "@libp2p/interface": "^0.1.2",
-    "@libp2p/kad-dht": "^10.0.4",
-    "@libp2p/peer-id": "^3.0.2",
-    "@libp2p/peer-id-factory": "^3.0.3",
-    "@libp2p/tcp": "^8.0.4",
-    "@libp2p/websockets": "^7.0.4",
-    "aegir": "^41.1.14",
+    "@libp2p/identify": "^1.0.9",
+    "@libp2p/interface": "^1.1.1",
+    "@libp2p/kad-dht": "^12.0.2",
+    "@libp2p/keychain": "^4.0.5",
+    "@libp2p/peer-id": "^4.0.4",
+    "@libp2p/peer-id-factory": "^4.0.3",
+    "@libp2p/tcp": "^9.0.10",
+    "@libp2p/websockets": "^8.0.10",
+    "aegir": "^42.0.1",
     "blockstore-core": "^4.0.1",
     "datastore-core": "^9.0.3",
-    "helia": "^2.0.1",
+    "helia": "^3.0.0",
     "ipfsd-ctl": "^13.0.0",
-    "ipns": "^7.0.1",
+    "ipns": "^8.0.0",
     "it-all": "^3.0.2",
     "it-last": "^3.0.1",
     "it-map": "^3.0.3",
-    "kubo": "^0.24.0",
+    "kubo": "^0.25.0",
     "kubo-rpc-client": "^3.0.0",
-    "libp2p": "^0.46.6",
+    "libp2p": "^1.1.1",
     "merge-options": "^3.0.4",
-    "multiformats": "^12.0.1",
-    "uint8arrays": "^4.0.3",
+    "multiformats": "^13.0.0",
+    "uint8arrays": "^5.0.1",
     "wherearewe": "^2.0.1"
   },
   "browser": {

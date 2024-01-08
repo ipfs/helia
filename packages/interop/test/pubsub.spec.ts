@@ -4,10 +4,11 @@
 import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 import { ipns } from '@helia/ipns'
 import { pubsub } from '@helia/ipns/routing'
+import { identify } from '@libp2p/identify'
+import { keychain, type Keychain } from '@libp2p/keychain'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import last from 'it-last'
-import { identifyService } from 'libp2p/identify'
 import { base36 } from 'multiformats/bases/base36'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
@@ -23,6 +24,7 @@ import { keyTypes } from './fixtures/key-types.js'
 import { waitFor } from './fixtures/wait-for.js'
 import type { Helia } from '@helia/interface'
 import type { IPNS } from '@helia/ipns'
+import type { Identify } from '@libp2p/identify'
 import type { Libp2p } from '@libp2p/interface'
 import type { PubSub } from '@libp2p/interface/pubsub'
 import type { Controller } from 'ipfsd-ctl'
@@ -34,15 +36,16 @@ const LIBP2P_KEY_CODEC = 0x72
 // resolution because Kubo will use the DHT as well
 keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
   describe(`pubsub routing with ${keyType} keys`, () => {
-    let helia: Helia<Libp2p<{ pubsub: PubSub }>>
+    let helia: Helia<Libp2p<{ pubsub: PubSub, keychain: Keychain }>>
     let kubo: Controller
     let name: IPNS
 
     beforeEach(async () => {
-      helia = await createHeliaNode({
+      helia = await createHeliaNode<{ identify: Identify, pubsub: PubSub, keychain: Keychain }>({
         services: {
-          identify: identifyService(),
-          pubsub: gossipsub()
+          identify: identify(),
+          pubsub: gossipsub(),
+          keychain: keychain()
         }
       })
       kubo = await createKuboNode({
@@ -75,8 +78,8 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
       const cid = CID.createV1(raw.code, digest)
 
       const keyName = 'my-ipns-key'
-      await helia.libp2p.keychain.createKey(keyName, keyType)
-      const peerId = await helia.libp2p.keychain.exportPeerId(keyName)
+      await helia.libp2p.services.keychain.createKey(keyName, keyType)
+      const peerId = await helia.libp2p.services.keychain.exportPeerId(keyName)
 
       if (peerId.publicKey == null) {
         throw new Error('No public key present')
@@ -87,6 +90,7 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
         .with.property('message', 'PublishError.InsufficientPeers')
 
       // should fail to resolve the first time as kubo was not subscribed to the pubsub channel
+      // @ts-expect-error kubo deps are out of date
       await expect(last(kubo.api.name.resolve(peerId, {
         timeout: 100
       }))).to.eventually.be.undefined()
@@ -107,6 +111,7 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
       await name.publish(peerId, cid)
 
       // kubo should now be able to resolve IPNS name
+      // @ts-expect-error kubo deps are out of date
       const resolved = await last(kubo.api.name.resolve(peerId, {
         timeout: 100
       }))

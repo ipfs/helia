@@ -1,14 +1,16 @@
 /* eslint-env mocha */
 
 import { ipns } from '@helia/ipns'
-import { dht } from '@helia/ipns/routing'
-import { kadDHT, type DualKadDHT } from '@libp2p/kad-dht'
+import { libp2p } from '@helia/ipns/routing'
+import { identify } from '@libp2p/identify'
+import { kadDHT, removePublicAddressesMapper, type KadDHT } from '@libp2p/kad-dht'
+import { keychain, type Keychain } from '@libp2p/keychain'
+import { peerIdFromString } from '@libp2p/peer-id'
 import { createEd25519PeerId, createRSAPeerId, createSecp256k1PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import { ipnsSelector } from 'ipns/selector'
 import { ipnsValidator } from 'ipns/validator'
 import last from 'it-last'
-import { identifyService } from 'libp2p/identify'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
 import { sha256 } from 'multiformats/hashes/sha2'
@@ -23,13 +25,12 @@ import { keyTypes } from './fixtures/key-types.js'
 import { waitFor } from './fixtures/wait-for.js'
 import type { Helia } from '@helia/interface'
 import type { IPNS } from '@helia/ipns'
-import type { Libp2p } from '@libp2p/interface'
+import type { Libp2p, PeerId } from '@libp2p/interface'
 import type { Controller } from 'ipfsd-ctl'
-import type { PeerId } from 'kubo-rpc-client/dist/src/types.js'
 
 keyTypes.forEach(type => {
-  describe(`dht routing with ${type} keys`, () => {
-    let helia: Helia<Libp2p<{ dht: DualKadDHT }>>
+  describe(`libp2p routing with ${type} keys`, () => {
+    let helia: Helia<Libp2p<{ dht: KadDHT, keychain: Keychain }>>
     let kubo: Controller
     let name: IPNS
 
@@ -51,7 +52,7 @@ keyTypes.forEach(type => {
 
       helia = await createHeliaNode({
         services: {
-          identify: identifyService(),
+          identify: identify(),
           dht: kadDHT({
             validators: {
               ipns: ipnsValidator
@@ -60,8 +61,14 @@ keyTypes.forEach(type => {
               ipns: ipnsSelector
             },
             // skips waiting for the initial self-query to find peers
-            allowQueryWithZeroPeers: true
-          })
+            allowQueryWithZeroPeers: true,
+
+            // use lan-only mode
+            protocol: '/ipfs/lan/kad/1.0.0',
+            peerInfoMapper: removePublicAddressesMapper,
+            clientMode: false
+          }),
+          keychain: keychain()
         }
       })
       kubo = await createKuboNode()
@@ -83,10 +90,10 @@ keyTypes.forEach(type => {
 
         const [closest] = await sortClosestPeers(routingKey, [
           helia.libp2p.peerId,
-          kubo.peer.id
+          peerIdFromString(kubo.peer.id.toString())
         ])
 
-        if (resolver === 'kubo' && closest.equals(kubo.peer.id)) {
+        if (resolver === 'kubo' && closest.equals(peerIdFromString(kubo.peer.id.toString()))) {
           break
         }
 
@@ -102,7 +109,7 @@ keyTypes.forEach(type => {
       await waitFor(async () => {
         let found = false
 
-        for await (const event of helia.libp2p.services.dht.findPeer(kubo.peer.id)) {
+        for await (const event of helia.libp2p.services.dht.findPeer(peerIdFromString(kubo.peer.id.toString()))) {
           if (event.name === 'FINAL_PEER') {
             found = true
           }
@@ -118,6 +125,7 @@ keyTypes.forEach(type => {
       await waitFor(async () => {
         let found = false
 
+        // @ts-expect-error kubo deps are out of date
         for await (const event of kubo.api.dht.findPeer(helia.libp2p.peerId)) {
           if (event.name === 'FINAL_PEER') {
             found = true
@@ -133,7 +141,7 @@ keyTypes.forEach(type => {
 
       name = ipns(helia, {
         routers: [
-          dht(helia)
+          libp2p(helia)
         ]
       })
     }
@@ -152,11 +160,11 @@ keyTypes.forEach(type => {
       await createNodes('kubo')
 
       const keyName = 'my-ipns-key'
-      await helia.libp2p.keychain.importPeer(keyName, key)
+      await helia.libp2p.services.keychain.importPeer(keyName, key)
 
       await name.publish(key, value)
 
-      const resolved = await last(kubo.api.name.resolve(key))
+      const resolved = await last(kubo.api.name.resolve(key.toString()))
 
       if (resolved == null) {
         throw new Error('kubo failed to resolve name')

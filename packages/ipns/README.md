@@ -17,27 +17,27 @@
 
 IPNS operations using a Helia node
 
-## Example
+## Example - Using libp2p and pubsub routers
 
 With IPNSRouting routers:
 
 ```typescript
 import { createHelia } from 'helia'
 import { ipns } from '@helia/ipns'
-import { dht, pubsub } from '@helia/ipns/routing'
+import { libp2p, pubsub } from '@helia/ipns/routing'
 import { unixfs } from '@helia/unixfs'
 
 const helia = await createHelia()
 const name = ipns(helia, {
  routers: [
-   dht(helia),
+   libp2p(helia),
    pubsub(helia)
  ]
 })
 
 // create a public key to publish as an IPNS name
-const keyInfo = await helia.libp2p.keychain.createKey('my-key')
-const peerId = await helia.libp2p.keychain.exportPeerId(keyInfo.name)
+const keyInfo = await helia.libp2p.services.keychain.createKey('my-key')
+const peerId = await helia.libp2p.services.keychain.exportPeerId(keyInfo.name)
 
 // store some data to publish
 const fs = unixfs(helia)
@@ -50,7 +50,7 @@ await name.publish(peerId, cid)
 const cid = name.resolve(peerId)
 ```
 
-## Example
+## Example - Using custom DNS over HTTPS resolvers
 
 With default DNSResolver resolvers:
 
@@ -70,7 +70,7 @@ const name = ipns(helia, {
 const cid = name.resolveDns('some-domain-with-dnslink-entry.com')
 ```
 
-## Example
+## Example - Resolving a domain with a dnslink entry
 
 Calling `resolveDns` with the `@helia/ipns` instance:
 
@@ -90,7 +90,7 @@ console.info(cid)
 // QmWebsite
 ```
 
-## Example
+## Example - Using DNS-Over-HTTPS
 
 This example uses the Mozilla provided RFC 1035 DNS over HTTPS service. This
 uses binary DNS records so requires extra dependencies to process the
@@ -109,7 +109,7 @@ const cid = name.resolveDns('ipfs.io', {
 })
 ```
 
-## Example
+## Example - Using DNS-JSON-Over-HTTPS
 
 DNS-JSON-Over-HTTPS resolvers use the RFC 8427 `application/dns-json` and can
 result in a smaller browser bundle due to the response being plain JSON.
@@ -124,3 +124,40 @@ const cid = name.resolveDns('ipfs.io', {
   ]
 })
 ```
+
+# Install
+
+```console
+$ npm i @helia/ipns
+```
+
+## Browser `<script>` tag
+
+Loading this module through a script tag will make it's exports available as `HeliaIpns` in the global namespace.
+
+```html
+<script src="https://unpkg.com/@helia/ipns/dist/index.min.js"></script>
+```
+
+# API Docs
+
+- <https://ipfs.github.io/helia-ipns/modules/_helia_ipns.html>
+
+# License
+
+Licensed under either of
+
+- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+
+# Contribute
+
+Contributions welcome! Please check out [the issues](https://github.com/ipfs/helia-ipns/issues).
+
+Also see our [contributing document](https://github.com/ipfs/community/blob/master/CONTRIBUTING_JS.md) for more information on how we work, and about contributing in general.
+
+Please be aware that all interactions related to this repo are subject to the IPFS [Code of Conduct](https://github.com/ipfs/community/blob/master/code-of-conduct.md).
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
+
+[![](https://cdn.rawgit.com/jbenet/contribute-ipfs-gif/master/img/contribute.gif)](https://github.com/ipfs/community/blob/master/CONTRIBUTING.md)
