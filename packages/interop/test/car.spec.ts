@@ -4,6 +4,7 @@ import { car } from '@helia/car'
 import { type UnixFS, unixfs } from '@helia/unixfs'
 import { CarReader } from '@ipld/car'
 import { expect } from 'aegir/chai'
+import drain from 'it-drain'
 import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import { createHeliaNode } from './fixtures/create-helia.js'
@@ -62,11 +63,15 @@ describe('@helia/car', () => {
 
     const buf = await writer.bytes()
 
-    kubo.api.dag.import([buf])
+    await drain(kubo.api.dag.import([buf]))
 
-    const bytes = await toBuffer(kubo.api.cat(cid))
+    const output: Uint8Array[] = []
 
-    expect(bytes).to.equalBytes(toBuffer(input))
+    for await (const b of kubo.api.cat(cid)) {
+      output.push(b)
+    }
+
+    expect(toBuffer(output)).to.equalBytes(toBuffer(input))
   })
 
   it('should export a car from kubo, import and read the contents from Helia', async () => {
