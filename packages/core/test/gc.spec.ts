@@ -1,39 +1,19 @@
 /* eslint-env mocha */
-import { noise } from '@chainsafe/libp2p-noise'
-import { yamux } from '@chainsafe/libp2p-yamux'
 import * as dagCbor from '@ipld/dag-cbor'
 import * as dagJson from '@ipld/dag-json'
 import * as dagPb from '@ipld/dag-pb'
-import { webSockets } from '@libp2p/websockets'
 import { expect } from 'aegir/chai'
-import { MemoryBlockstore } from 'blockstore-core'
-import { MemoryDatastore } from 'datastore-core'
 import drain from 'it-drain'
-import { createLibp2p } from 'libp2p'
 import * as raw from 'multiformats/codecs/raw'
-import { createHelia } from '../src/index.js'
 import { createAndPutBlock } from './fixtures/create-block.js'
+import { createHelia } from './fixtures/create-helia.js'
 import type { GcEvents, Helia } from '@helia/interface'
 
 describe('gc', () => {
   let helia: Helia
 
   beforeEach(async () => {
-    helia = await createHelia({
-      datastore: new MemoryDatastore(),
-      blockstore: new MemoryBlockstore(),
-      libp2p: await createLibp2p({
-        transports: [
-          webSockets()
-        ],
-        connectionEncryption: [
-          noise()
-        ],
-        streamMuxers: [
-          yamux()
-        ]
-      })
-    })
+    helia = await createHelia()
   })
 
   afterEach(async () => {

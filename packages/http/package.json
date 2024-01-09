@@ -54,30 +54,18 @@
   },
   "dependencies": {
     "@helia/block-brokers": "~0.0.0",
+    "@helia/core": "~0.0.0",
+    "@helia/delegated-routing-v1-http-api-client": "^1.1.2",
     "@helia/interface": "^3.0.0",
-    "@ipld/dag-cbor": "^9.0.6",
-    "@ipld/dag-json": "^10.1.5",
-    "@ipld/dag-pb": "^4.0.6",
     "@libp2p/interface": "^1.1.1",
-    "@libp2p/logger": "^4.0.4",
     "blockstore-core": "^4.3.8",
-    "cborg": "^4.0.3",
     "datastore-core": "^9.2.6",
     "interface-blockstore": "^5.2.7",
     "interface-datastore": "^8.2.9",
-    "interface-store": "^5.1.5",
-    "it-drain": "^3.0.5",
-    "multiformats": "^13.0.0",
-    "p-defer": "^4.0.0",
-    "p-queue": "^8.0.1",
-    "progress-events": "^1.0.0",
-    "uint8arrays": "^5.0.1"
+    "libp2p": "^1.1.1",
+    "multiformats": "^13.0.0"
   },
   "devDependencies": {
-    "@types/sinon": "^17.0.2",
-    "aegir": "^42.1.0",
-    "delay": "^6.0.0",
-    "it-all": "^3.0.4",
-    "mortice": "^3.0.4"
+    "aegir": "^42.1.0"
   }
 }

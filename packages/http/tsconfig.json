@@ -5,9 +5,12 @@
   },
   "include": [
     "src",
-    "packages/http/test"
+    "test"
   ],
   "references": [
+    {
+      "path": "../core"
+    },
     {
       "path": "../block-brokers"
     },

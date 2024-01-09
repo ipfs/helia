@@ -1,9 +1,9 @@
 /**
  * @packageDocumentation
  *
- * Exports a `createHeliaHTTP` function that returns an object that implements a lightweight {@link Helia} API.
+ * Exports a `createHeliaHTTP` function that returns an object that implements a lightweight version of the {@link Helia} API that functions only over HTTP.
  *
- * Pass it to other modules like {@link https://www.npmjs.com/package/@helia/unixfs | @helia/unixfs} to make files available on the distributed web.
+ * Pass it to other modules like {@link https://www.npmjs.com/package/@helia/unixfs | @helia/unixfs} to fetch files from the distributed web.
  *
  * @example
  *
@@ -19,16 +19,18 @@
  * ```
  */
 
+import { trustlessGateway } from '@helia/block-brokers'
+import { Helia as HeliaClass } from '@helia/core'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
-import { defaultLogger } from '@libp2p/logger'
-import { HeliaHTTPImpl } from './helia-http.js'
-import type { HeliaHTTP } from '@helia/interface/http'
+import { createLibp2p } from './utils/libp2p.js'
+import type { DefaultLibp2pServices } from './utils/libp2p-defaults.js'
+import type { DAGWalker, Helia } from '@helia/interface'
 import type { BlockBroker } from '@helia/interface/blocks'
-import type { ComponentLogger } from '@libp2p/interface'
+import type { ComponentLogger, Libp2p } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
-import type { CID } from 'multiformats/cid'
+import type { Libp2pOptions } from 'libp2p'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 
 // re-export interface types so people don't have to depend on @helia/interface
@@ -38,17 +40,20 @@ export * from '@helia/interface/blocks'
 export * from '@helia/interface/pins'
 
 /**
- * DAGWalkers take a block and yield CIDs encoded in that block
- */
-export interface DAGWalker {
-  codec: number
-  walk(block: Uint8Array): AsyncGenerator<CID, void, undefined>
-}
-
-/**
  * Options used to create a Helia node.
  */
-export interface HeliaHTTPInit {
+export interface HeliaHTTPInit<T extends Libp2p = Libp2p> {
+  /**
+   * A libp2p node is required to perform network operations. Either a
+   * preconfigured node or options to configure a node can be passed
+   * here.
+   *
+   * If node options are passed, they will be merged with the default
+   * config for the current platform. In this case all passed config
+   * keys will replace those from the default config.
+   */
+  libp2p?: T | Libp2pOptions
+
   /**
    * The blockstore is where blocks are stored
    */
@@ -82,7 +87,7 @@ export interface HeliaHTTPInit {
   /**
    * Pass `false` to not start the Helia node
    */
-    start?: boolean
+  start?: boolean
 
   /**
    * Garbage collection requires preventing blockstore writes during searches
@@ -111,22 +116,47 @@ export interface HeliaHTTPInit {
 /**
  * Create and return a Helia node
  */
-// export async function createHeliaHTTP (init: HeliaHTTPInit): Promise<HeliaHTTP>
-export async function createHeliaHTTP (init: HeliaHTTPInit = {}): Promise<HeliaHTTP> {
+export async function createHeliaHTTP (init: HeliaHTTPInit = {}): Promise<Helia> {
   const datastore = init.datastore ?? new MemoryDatastore()
   const blockstore = init.blockstore ?? new MemoryBlockstore()
-  const logger = init.logger ?? defaultLogger()
 
-  const heliaHTTP = new HeliaHTTPImpl({
+  let libp2p: Libp2p<DefaultLibp2pServices>
+
+  if (isLibp2p(init.libp2p)) {
+    libp2p = init.libp2p as any
+  } else {
+    libp2p = await createLibp2p<DefaultLibp2pServices>({
+      ...init,
+      libp2p: init.libp2p,
+      datastore
+    })
+  }
+
+  const helia = new HeliaClass({
     ...init,
+    libp2p,
     datastore,
     blockstore,
-    logger
+    blockBrokers: init.blockBrokers ?? [
+      trustlessGateway()
+    ]
   })
 
   if (init.start !== false) {
-    await heliaHTTP.start()
+    await helia.start()
   }
 
-  return heliaHTTP
+  return helia
+}
+
+function isLibp2p (obj: any): obj is Libp2p {
+  if (obj == null) {
+    return false
+  }
+
+  // a non-exhaustive list of methods found on the libp2p object
+  const funcs = ['dial', 'dialProtocol', 'hangUp', 'handle', 'unhandle', 'getMultiaddrs', 'getProtocols']
+
+  // if these are all functions it's probably a libp2p object
+  return funcs.every(m => typeof obj[m] === 'function')
 }

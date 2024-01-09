@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://github.com/ipfs/helia-http" title="helia-http">
+  <a href="https://github.com/ipfs/helia" title="Helia">
     <img src="https://raw.githubusercontent.com/ipfs/helia/main/assets/helia.png" alt="Helia logo" width="300" />
   </a>
 </p>
@@ -9,46 +9,25 @@
 [![codecov](https://img.shields.io/codecov/c/github/ipfs/helia.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia)
 [![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
 
-> A lightweight implementation of IPFS over HTTP in JavaScript
-
-# About
-
-Exports a `createHeliaHTTP` function that returns an object that implements a lightweight version of the Helia API that functions only over HTTP.
-
-Pass it to other modules like @helia/unixfs to fetch files from the distributed web.
-
-## Example
-
-```typescript
-import { createHeliaHTTP } from '@helia/http'
-import { unixfs } from '@helia/unixfs'
-import { CID } from 'multiformats/cid'
-
-const helia = await createHeliaHTTP()
-
-const fs = unixfs(helia)
-fs.cat(CID.parse('bafyFoo'))
-```
+> An implementation of IPFS in JavaScript
 
 # Install
 
 ```console
-$ npm i @helia/http
+$ npm i helia
 ```
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `HeliaHttp` in the global namespace.
+Loading this module through a script tag will make it's exports available as `Helia` in the global namespace.
 
 ```html
-<script src="https://unpkg.com/@helia/http/dist/index.min.js"></script>
+<script src="https://unpkg.com/helia/dist/index.min.js"></script>
 ```
-
-# Helia-http
 
 # API Docs
 
-- <https://ipfs.github.io/helia/modules/_helia_http.html>
+- <https://ipfs.github.io/helia/modules/helia.html>
 
 # License
 

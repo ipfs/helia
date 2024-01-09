@@ -75,3 +75,11 @@ export type GcEvents =
 export interface GCOptions extends AbortOptions, ProgressOptions<GcEvents> {
 
 }
+
+/**
+ * DAGWalkers take a block and yield CIDs encoded in that block
+ */
+export interface DAGWalker {
+  codec: number
+  walk(block: Uint8Array): Generator<CID, void, undefined>
+}

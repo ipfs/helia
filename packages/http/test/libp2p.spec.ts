@@ -2,7 +2,7 @@
 
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
-import { createHelia } from '../src/index.js'
+import { createHeliaHTTP } from '../src/index.js'
 import type { Helia } from '@helia/interface'
 
 describe('libp2p', () => {
@@ -17,7 +17,7 @@ describe('libp2p', () => {
   it('allows passing libp2p config', async () => {
     const config = {}
 
-    helia = await createHelia({
+    helia = await createHeliaHTTP({
       libp2p: config
     })
 
@@ -29,7 +29,7 @@ describe('libp2p', () => {
       services: {}
     }
 
-    helia = await createHelia({
+    helia = await createHeliaHTTP({
       libp2p: config
     })
 
@@ -39,7 +39,7 @@ describe('libp2p', () => {
   it('allows passing a libp2p node', async () => {
     const libp2p = await createLibp2p()
 
-    helia = await createHelia({
+    helia = await createHeliaHTTP({
       libp2p
     })
 

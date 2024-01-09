@@ -19,9 +19,10 @@
  * ```
  */
 
+import { bitswap } from '@helia/block-brokers'
+import { Helia as HeliaClass } from '@helia/core'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
-import { HeliaImpl } from './helia.js'
 import { libp2pDefaults } from './utils/libp2p-defaults.js'
 import { createLibp2p } from './utils/libp2p.js'
 import type { DefaultLibp2pServices } from './utils/libp2p-defaults.js'
@@ -153,11 +154,14 @@ export async function createHelia (init: HeliaInit = {}): Promise<Helia<unknown>
     })
   }
 
-  const helia = new HeliaImpl({
+  const helia = new HeliaClass({
     ...init,
     libp2p,
     datastore,
-    blockstore
+    blockstore,
+    blockBrokers: init.blockBrokers ?? [
+      bitswap()
+    ]
   })
 
   if (init.start !== false) {

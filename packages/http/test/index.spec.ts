@@ -4,10 +4,10 @@ import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import { createHeliaHTTP } from '../src/index.js'
-import type { HeliaHTTP } from '@helia/interface/http'
+import type { Helia } from '@helia/interface'
 
 describe('helia', () => {
-  let heliaHTTP: HeliaHTTP
+  let heliaHTTP: Helia
 
   beforeEach(async () => {
     heliaHTTP = await createHeliaHTTP({
@@ -22,15 +22,13 @@ describe('helia', () => {
     }
   })
 
-  // it('stops and starts', async () => {
-  //   // TODO(DJ: Find another way to check these states
+  it('stops and starts', async () => {
+    expect(heliaHTTP.libp2p.status).to.equal('started')
 
-  //   expect(heliaHTTP.libp2p.status).to.equal('started')
+    await heliaHTTP.stop()
 
-  //   await heliaHTTP.stop()
-
-  //   expect(heliaHTTP.libp2p.status).to.equal('stopped')
-  // })
+    expect(heliaHTTP.libp2p.status).to.equal('stopped')
+  })
 
   it('should have a blockstore', async () => {
     expect(heliaHTTP).to.have.property('blockstore').that.is.ok()
@@ -40,7 +38,7 @@ describe('helia', () => {
     expect(heliaHTTP).to.have.property('datastore').that.is.ok()
   })
 
-  it('should have not a libp2p', async () => {
-    expect(heliaHTTP).to.not.have.property('libp2p').that.is.ok()
+  it('should have a libp2p', async () => {
+    expect(heliaHTTP).to.have.property('libp2p').that.is.ok()
   })
 })
