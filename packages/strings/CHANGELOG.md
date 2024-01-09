@@ -14,6 +14,12 @@
 
 * update sibling dependencies ([1184ea6](https://github.com/ipfs/helia-strings/commit/1184ea695987cee7f922b7954c8bc626bc035dba))
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^3.0.0 to ^3.0.1
+
 ## [@helia/strings-v1.0.1](https://github.com/ipfs/helia-strings/compare/@helia/strings-v1.0.0...@helia/strings-v1.0.1) (2023-10-06)
 
 
