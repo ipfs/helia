@@ -1,7 +1,7 @@
 {
   "name": "@helia/http",
   "version": "0.9.0",
-  "description": "Helia http without libp2p (lightweight)",
+  "description": "A lightweight implementation of IPFS over HTTP in JavaScript",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/meandavejustice/helia-http#readme",
   "repository": {

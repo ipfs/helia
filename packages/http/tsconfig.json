@@ -5,6 +5,6 @@
   },
   "include": [
     "src",
-    "test"
+    "packages/http/test"
   ]
 }

@@ -10,7 +10,8 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/meandavejustice/helia-http/main.yml?branch=main\&style=flat-square)](https://github.com/meandavejustice/helia-http/actions/workflows/main.yml?query=branch%3Amain)
 
 # Helia-http
-> An lightweight implementation of IPFS over HTTP in JavaScript
+
+> A lightweight implementation of IPFS over HTTP in JavaScript
 
 ## About
 
