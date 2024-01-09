@@ -160,7 +160,7 @@
   },
   "dependencies": {
     "@helia/interface": "^3.0.0",
-    "@ipld/dag-pb": "^4.0.3",
+    "@ipld/dag-pb": "^4.0.6",
     "@libp2p/interface": "^1.1.1",
     "@libp2p/logger": "^4.0.4",
     "@multiformats/murmur3": "^2.1.2",

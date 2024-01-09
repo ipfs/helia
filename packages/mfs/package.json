@@ -143,7 +143,7 @@
     "@helia/unixfs": "^2.0.0",
     "@libp2p/interfaces": "^3.3.1",
     "@libp2p/logger": "^4.0.4",
-    "interface-datastore": "^8.2.2",
+    "interface-datastore": "^8.2.9",
     "ipfs-unixfs": "^11.0.0",
     "ipfs-unixfs-exporter": "^13.1.0",
     "ipfs-unixfs-importer": "^15.1.0",

@@ -170,7 +170,7 @@
     "dns-over-http-resolver": "^3.0.0",
     "dns-packet": "^5.6.0",
     "hashlru": "^2.3.0",
-    "interface-datastore": "^8.2.2",
+    "interface-datastore": "^8.2.9",
     "ipns": "^8.0.0",
     "is-ipfs": "^8.0.1",
     "multiformats": "^13.0.0",

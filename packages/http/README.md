@@ -6,10 +6,8 @@
 
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
-[![codecov](https://img.shields.io/codecov/c/github/meandavejustice/helia-http.svg?style=flat-square)](https://codecov.io/gh/meandavejustice/helia-http)
-[![CI](https://img.shields.io/github/actions/workflow/status/meandavejustice/helia-http/main.yml?branch=main\&style=flat-square)](https://github.com/meandavejustice/helia-http/actions/workflows/main.yml?query=branch%3Amain)
-
-# Helia-http
+[![codecov](https://img.shields.io/codecov/c/github/ipfs/helia.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia)
+[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
 
 > A lightweight implementation of IPFS over HTTP in JavaScript
 
@@ -52,16 +50,36 @@ Loading this module through a script tag will make it's exports available as `He
 
 - <https://ipfs.github.io/helia/modules/http.html> -->
 
-## License
+# Install
+
+```console
+$ npm i @helia/http
+```
+
+## Browser `<script>` tag
+
+Loading this module through a script tag will make it's exports available as `HeliaHttp` in the global namespace.
+
+```html
+<script src="https://unpkg.com/@helia/http/dist/index.min.js"></script>
+```
+
+# Helia-http
+
+# API Docs
+
+- <https://ipfs.github.io/helia/modules/_helia_http.html>
+
+# License
 
 Licensed under either of
 
 - Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
 - MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
-## Contribute
+# Contribute
 
-Contributions welcome! Please check out [the issues](https://github.com/meandavejustice/helia-http/issues).
+Contributions welcome! Please check out [the issues](https://github.com/ipfs/helia/issues).
 
 Also see our [contributing document](https://github.com/ipfs/community/blob/master/CONTRIBUTING_JS.md) for more information on how we work, and about contributing in general.
 

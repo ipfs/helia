@@ -141,7 +141,7 @@
   "dependencies": {
     "@helia/interface": "^3.0.0",
     "@ipld/car": "^5.1.1",
-    "@ipld/dag-pb": "^4.0.3",
+    "@ipld/dag-pb": "^4.0.6",
     "@libp2p/interfaces": "^3.3.1",
     "cborg": "^4.0.3",
     "it-drain": "^3.0.5",
