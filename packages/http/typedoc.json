@@ -1,0 +1,7 @@
+{
+  "entryPoints": [
+    "./src/index.ts",
+    "./src/utils/default-hashers.ts"
+  ],
+  "includeVersion": true
+}

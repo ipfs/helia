@@ -1,0 +1,83 @@
+{
+  "name": "@helia/http",
+  "version": "0.9.0",
+  "description": "A lightweight implementation of IPFS over HTTP in JavaScript",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/meandavejustice/helia-http#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/meandavejustice/helia-http.git"
+  },
+  "bugs": {
+    "url": "https://github.com/meandavejustice/helia-http/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "IPFS"
+  ],
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "project": true,
+      "sourceType": "module"
+    }
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "build": "aegir build",
+    "test": "aegir test",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main"
+  },
+  "dependencies": {
+    "@helia/block-brokers": "https://gitpkg.now.sh/meandavejustice/helia/packages/block-brokers?341-breakout-block-brokers",
+    "@helia/interface": "https://gitpkg.now.sh/meandavejustice/helia/packages/interface?352-update-@helia/interface-for-http",
+    "@ipld/dag-cbor": "^9.0.6",
+    "@ipld/dag-json": "^10.1.5",
+    "@ipld/dag-pb": "^4.0.6",
+    "@libp2p/interface": "^1.0.1",
+    "@libp2p/logger": "^4.0.2",
+    "blockstore-core": "^4.3.8",
+    "cborg": "^4.0.1",
+    "datastore-core": "^9.2.6",
+    "interface-blockstore": "^5.2.7",
+    "interface-datastore": "^8.2.9",
+    "interface-store": "^5.1.5",
+    "it-drain": "^3.0.5",
+    "multiformats": "^12.1.3",
+    "p-defer": "^4.0.0",
+    "p-queue": "^8.0.1",
+    "progress-events": "^1.0.0",
+    "uint8arrays": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/sinon": "^17.0.2",
+    "aegir": "^41.0.0",
+    "delay": "^6.0.0",
+    "it-all": "^3.0.4",
+    "mortice": "^3.0.4"
+  }
+}
