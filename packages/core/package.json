@@ -50,8 +50,7 @@
     "test:firefox": "aegir test -t browser -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
     "test:node": "aegir test -t node --cov",
-    "test:electron-main": "aegir test -t electron-main",
-    "prepublishOnly": "node scripts/update-version.js && npm run build"
+    "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
     "@helia/interface": "^3.0.0",
