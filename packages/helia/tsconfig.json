@@ -9,10 +9,10 @@
   ],
   "references": [
     {
-      "path": "../core"
+      "path": "../block-brokers"
     },
     {
-      "path": "../block-brokers"
+      "path": "../core"
     },
     {
       "path": "../interface"

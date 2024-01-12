@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "Shared code that implements the Helia API",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/ipfs/helia/tree/main/packages/helia#readme",
+  "homepage": "https://github.com/ipfs/helia/tree/main/packages/core#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ipfs/helia.git"

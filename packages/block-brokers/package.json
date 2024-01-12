@@ -61,7 +61,7 @@
     "progress-events": "^1.0.0"
   },
   "devDependencies": {
-    "@libp2p/logger": "^4.0.1",
+    "@libp2p/logger": "^4.0.4",
     "@types/sinon": "^17.0.2",
     "aegir": "^42.1.0",
     "sinon": "^17.0.1",

@@ -70,7 +70,7 @@
     "@libp2p/keychain": "^4.0.5",
     "@libp2p/peer-id": "^4.0.3",
     "@libp2p/peer-id-factory": "^4.0.3",
-    "@libp2p/websockets": "^8.0.1",
+    "@libp2p/websockets": "^8.0.10",
     "@multiformats/sha3": "^3.0.0",
     "aegir": "^42.1.0",
     "helia": "^3.0.0",

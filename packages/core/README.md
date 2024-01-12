@@ -9,25 +9,44 @@
 [![codecov](https://img.shields.io/codecov/c/github/ipfs/helia.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia)
 [![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
 
-> An implementation of IPFS in JavaScript
+> Shared code that implements the Helia API
+
+# About
+
+Exports a `Helia` class that implements the HeliaInterface API.
+
+In general you should use the `helia` or `@helia/http` modules instead which
+pre-configure Helia for certain use-cases (p2p or pure-HTTP).
+
+## Example
+
+```typescript
+import { Helia } from '@helia/core'
+
+const node = new Helia({
+  // ...options
+})
+```
 
 # Install
 
 ```console
-$ npm i helia
+$ npm i @helia/core
 ```
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `Helia` in the global namespace.
+Loading this module through a script tag will make it's exports available as `HeliaCore` in the global namespace.
 
 ```html
-<script src="https://unpkg.com/helia/dist/index.min.js"></script>
+<script src="https://unpkg.com/@helia/core/dist/index.min.js"></script>
 ```
+
+> An implementation of IPFS in JavaScript
 
 # API Docs
 
-- <https://ipfs.github.io/helia/modules/helia.html>
+- <https://ipfs.github.io/helia/modules/_helia_core.html>
 
 # License
 

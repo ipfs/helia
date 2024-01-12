@@ -152,8 +152,8 @@
   "devDependencies": {
     "@ipld/dag-pb": "^4.0.7",
     "aegir": "^42.1.0",
-    "blockstore-core": "^4.3.8",
-    "datastore-core": "^9.2.0",
+    "blockstore-core": "^4.3.10",
+    "datastore-core": "^9.2.7",
     "delay": "^6.0.0",
     "interface-blockstore": "^5.2.9",
     "it-all": "^3.0.4",
