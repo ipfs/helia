@@ -10,6 +10,13 @@
 
 * **dev:** bump aegir from 39.0.13 to 40.0.8 ([#198](https://github.com/ipfs/helia/issues/198)) ([4d75ecf](https://github.com/ipfs/helia/commit/4d75ecffb79e5177da35d3106e42dac7bc63153a))
 
+## [3.0.1](https://github.com/ipfs/helia/compare/interface-v3.0.0...interface-v3.0.1) (2024-01-09)
+
+
+### Bug Fixes
+
+* create @helia/block-brokers package ([#341](https://github.com/ipfs/helia/issues/341)) ([#342](https://github.com/ipfs/helia/issues/342)) ([2979147](https://github.com/ipfs/helia/commit/297914756fa06dc0c28890a2654d1159d16689c2))
+
 ## [3.0.0](https://github.com/ipfs/helia/compare/interface-v2.1.0...interface-v3.0.0) (2024-01-07)
 
 

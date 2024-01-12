@@ -1,6 +1,6 @@
 {
   "name": "@helia/block-brokers",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Block brokers for Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/block-brokers#readme",
@@ -53,7 +53,7 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@helia/interface": "^3.0.0",
+    "@helia/interface": "^3.0.1",
     "@libp2p/interface": "^1.1.1",
     "interface-blockstore": "^5.2.7",
     "ipfs-bitswap": "^20.0.0",
