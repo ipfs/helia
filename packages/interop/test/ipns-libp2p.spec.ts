@@ -18,16 +18,14 @@ import { createKuboNode } from './fixtures/create-kubo.js'
 import { sortClosestPeers } from './fixtures/create-peer-ids.js'
 import { keyTypes } from './fixtures/key-types.js'
 import { waitFor } from './fixtures/wait-for.js'
-import type { Helia } from '@helia/interface'
 import type { IPNS } from '@helia/ipns'
-import type { Libp2p, PeerId } from '@libp2p/interface'
-import type { KadDHT } from '@libp2p/kad-dht'
-import type { Keychain } from '@libp2p/keychain'
+import type { PeerId } from '@libp2p/interface'
+import type { HeliaLibp2p } from 'helia'
 import type { Controller } from 'ipfsd-ctl'
 
 keyTypes.forEach(type => {
   describe(`@helia/ipns - libp2p routing with ${type} keys`, () => {
-    let helia: Helia<Libp2p<{ dht: KadDHT, keychain: Keychain }>>
+    let helia: HeliaLibp2p
     let kubo: Controller
     let name: IPNS
 

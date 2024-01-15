@@ -17,19 +17,21 @@
  * ```
  */
 
-import { start, stop } from '@libp2p/interface'
+import { contentRoutingSymbol, peerRoutingSymbol, start, stop } from '@libp2p/interface'
+import { defaultLogger } from '@libp2p/logger'
 import drain from 'it-drain'
 import { CustomProgressEvent } from 'progress-events'
 import { PinsImpl } from './pins.js'
+import { Routing as RoutingClass } from './routing.js'
 import { BlockStorage } from './storage.js'
 import { defaultDagWalkers } from './utils/dag-walkers.js'
 import { assertDatastoreVersionIsCurrent } from './utils/datastore-version.js'
 import { defaultHashers } from './utils/default-hashers.js'
 import { NetworkedStorage } from './utils/networked-storage.js'
-import type { DAGWalker, GCOptions, Helia as HeliaInterface } from '@helia/interface'
+import type { DAGWalker, GCOptions, Helia as HeliaInterface, Routing } from '@helia/interface'
 import type { BlockBroker } from '@helia/interface/blocks'
 import type { Pins } from '@helia/interface/pins'
-import type { ComponentLogger, Libp2p, Logger } from '@libp2p/interface'
+import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
@@ -38,18 +40,7 @@ import type { MultihashHasher } from 'multiformats/hashes/interface'
 /**
  * Options used to create a Helia node.
  */
-export interface HeliaInit<T extends Libp2p = Libp2p> {
-  /**
-   * A libp2p node is required to perform network operations. Either a
-   * preconfigured node or options to configure a node can be passed
-   * here.
-   *
-   * If node options are passed, they will be merged with the default
-   * config for the current platform. In this case all passed config
-   * keys will replace those from the default config.
-   */
-  libp2p: T
-
+export interface HeliaInit {
   /**
    * The blockstore is where blocks are stored
    */
@@ -102,27 +93,38 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
    * default implementation from libp2p will be used.
    */
   logger?: ComponentLogger
+
+  /**
+   * Routers perform operations such as looking up content providers,
+   * information about network peers or getting/putting records.
+   */
+  routers?: Array<Partial<Routing>>
+
+  /**
+   * Components used by subclasses
+   */
+  components?: Record<string, any>
 }
 
 export class Helia implements HeliaInterface {
-  public libp2p: Libp2p
   public blockstore: BlockStorage
   public datastore: Datastore
   public pins: Pins
   public logger: ComponentLogger
+  public routing: Routing
   private readonly log: Logger
 
   constructor (init: HeliaInit) {
-    this.logger = init.libp2p.logger
+    this.logger = init.logger ?? defaultLogger()
     this.log = this.logger.forComponent('helia')
     const hashers = defaultHashers(init.hashers)
 
     const components = {
       blockstore: init.blockstore,
       datastore: init.datastore,
-      libp2p: init.libp2p,
       hashers,
-      logger: init.libp2p.logger
+      logger: this.logger,
+      ...(init.components ?? {})
     }
 
     const blockBrokers = init.blockBrokers.map((fn) => {
@@ -136,22 +138,47 @@ export class Helia implements HeliaInterface {
 
     this.pins = new PinsImpl(init.datastore, networkedStorage, defaultDagWalkers(init.dagWalkers))
 
-    this.libp2p = init.libp2p
     this.blockstore = new BlockStorage(networkedStorage, this.pins, {
       holdGcLock: init.holdGcLock
     })
     this.datastore = init.datastore
+    this.routing = new RoutingClass(components, {
+      routers: (init.routers ?? []).flatMap((router: any) => {
+        // if the router itself is a router
+        const routers = [
+          router
+        ]
+
+        // if the router provides a libp2p-style ContentRouter
+        if (router[contentRoutingSymbol] != null) {
+          routers.push(router[contentRoutingSymbol])
+        }
+
+        // if the router provides a libp2p-style PeerRouter
+        if (router[peerRoutingSymbol] != null) {
+          routers.push(router[peerRoutingSymbol])
+        }
+
+        return routers
+      })
+    })
   }
 
   async start (): Promise<void> {
     await assertDatastoreVersionIsCurrent(this.datastore)
-    await start(this.blockstore)
-    await this.libp2p.start()
+    await start(
+      this.blockstore,
+      this.datastore,
+      this.routing
+    )
   }
 
   async stop (): Promise<void> {
-    await this.libp2p.stop()
-    await stop(this.blockstore)
+    await stop(
+      this.blockstore,
+      this.datastore,
+      this.routing
+    )
   }
 
   async gc (options: GCOptions = {}): Promise<void> {
@@ -185,16 +212,4 @@ export class Helia implements HeliaInterface {
 
     this.log('gc finished')
   }
-}
-
-export function isLibp2p (obj: any): obj is Libp2p {
-  if (obj == null) {
-    return false
-  }
-
-  // a non-exhaustive list of methods found on the libp2p object
-  const funcs = ['dial', 'dialProtocol', 'hangUp', 'handle', 'unhandle', 'getMultiaddrs', 'getProtocols']
-
-  // if these are all functions it's probably a libp2p object
-  return funcs.every(m => typeof obj[m] === 'function')
 }

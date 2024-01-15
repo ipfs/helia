@@ -1,7 +1,5 @@
 /* eslint-env mocha */
 
-// TODO(DJ): TESTS HAVE NOT fully BEEN UPDATED
-
 import { expect } from 'aegir/chai'
 import { Key } from 'interface-datastore'
 import { CID } from 'multiformats/cid'
@@ -18,7 +16,9 @@ describe('helia factory', () => {
   })
 
   it('does not require any constructor args', async () => {
-    heliaHTTP = await createHeliaHTTP()
+    heliaHTTP = await createHeliaHTTP({
+      holdGcLock: true
+    })
 
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
     const block = Uint8Array.from([0, 1, 2, 3])

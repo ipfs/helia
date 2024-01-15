@@ -6,11 +6,10 @@ import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import { createLibp2p } from 'libp2p'
-import { createHelia } from '../src/index.js'
-import type { Helia } from '@helia/interface'
+import { createHelia, type HeliaLibp2p } from '../src/index.js'
 
 describe('helia', () => {
-  let helia: Helia
+  let helia: HeliaLibp2p<any>
 
   beforeEach(async () => {
     helia = await createHelia({

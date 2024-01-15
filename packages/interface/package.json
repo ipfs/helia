@@ -74,7 +74,6 @@
     "interface-blockstore": "^5.2.7",
     "interface-datastore": "^8.2.9",
     "interface-store": "^5.1.5",
-    "ipfs-bitswap": "^20.0.0",
     "multiformats": "^13.0.0",
     "progress-events": "^1.0.0"
   },

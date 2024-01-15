@@ -6,12 +6,12 @@ import { expect } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
-import type { Helia } from '@helia/interface'
+import type { HeliaLibp2p } from 'helia'
 import type { PutOptions as KuboAddOptions } from 'ipfs-core-types/src/block/index.js'
 import type { Controller } from 'ipfsd-ctl'
 
 describe('@helia/dag-cbor', () => {
-  let helia: Helia
+  let helia: HeliaLibp2p
   let d: DAGCBOR
   let kubo: Controller
 

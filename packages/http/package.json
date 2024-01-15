@@ -53,19 +53,19 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@helia/block-brokers": "~0.0.0",
-    "@helia/core": "~0.0.0",
-    "@helia/delegated-routing-v1-http-api-client": "^1.1.2",
+    "@helia/block-brokers": "^1.0.0",
+    "@helia/core": "^0.0.0",
+    "@helia/delegated-routing-v1-http-api-client": "^2.0.1",
     "@helia/interface": "^3.0.0",
-    "@libp2p/interface": "^1.1.1",
     "blockstore-core": "^4.3.8",
-    "datastore-core": "^9.2.6",
-    "interface-blockstore": "^5.2.7",
-    "interface-datastore": "^8.2.9",
-    "libp2p": "^1.1.1",
-    "multiformats": "^13.0.0"
+    "datastore-core": "^9.2.6"
   },
   "devDependencies": {
-    "aegir": "^42.1.0"
+    "@libp2p/interface": "^1.1.1",
+    "aegir": "^42.1.0",
+    "interface-datastore": "^8.2.10",
+    "multiformats": "^13.0.1",
+    "sinon": "^17.0.1",
+    "sinon-ts": "^2.0.0"
   }
 }

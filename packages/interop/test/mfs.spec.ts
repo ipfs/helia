@@ -4,11 +4,11 @@ import { type MFS, mfs } from '@helia/mfs'
 import { expect } from 'aegir/chai'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
-import type { Helia } from '@helia/interface'
+import type { HeliaLibp2p } from 'helia'
 import type { Controller } from 'ipfsd-ctl'
 
 describe('@helia/mfs', () => {
-  let helia: Helia
+  let helia: HeliaLibp2p
   let fs: MFS
   let kubo: Controller
 

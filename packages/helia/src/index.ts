@@ -20,13 +20,14 @@
  */
 
 import { bitswap } from '@helia/block-brokers'
-import { Helia as HeliaClass } from '@helia/core'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
+import { HeliaP2P } from './helia-p2p.js'
+import { Libp2pRouting } from './libp2p-routing.js'
 import { libp2pDefaults } from './utils/libp2p-defaults.js'
 import { createLibp2p } from './utils/libp2p.js'
 import type { DefaultLibp2pServices } from './utils/libp2p-defaults.js'
-import type { Helia } from '@helia/interface'
+import type { Helia } from '@helia/core'
 import type { BlockBroker } from '@helia/interface/blocks'
 import type { ComponentLogger, Libp2p } from '@libp2p/interface'
 import type { KeychainInit } from '@libp2p/keychain'
@@ -133,12 +134,16 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
   keychain?: KeychainInit
 }
 
+export interface HeliaLibp2p<T extends Libp2p = Libp2p<DefaultLibp2pServices>> extends Helia {
+  libp2p: T
+}
+
 /**
  * Create and return a Helia node
  */
-export async function createHelia <T extends Libp2p> (init: HeliaInit<T>): Promise<Helia<T>>
-export async function createHelia (init?: HeliaInit<Libp2p<DefaultLibp2pServices>>): Promise<Helia<Libp2p<DefaultLibp2pServices>>>
-export async function createHelia (init: HeliaInit = {}): Promise<Helia<unknown>> {
+export async function createHelia <T extends Libp2p> (init: HeliaInit<T>): Promise<HeliaLibp2p<T>>
+export async function createHelia (init?: HeliaInit<Libp2p<DefaultLibp2pServices>>): Promise<HeliaLibp2p<Libp2p<DefaultLibp2pServices>>>
+export async function createHelia (init: HeliaInit = {}): Promise<HeliaLibp2p> {
   const datastore = init.datastore ?? new MemoryDatastore()
   const blockstore = init.blockstore ?? new MemoryBlockstore()
 
@@ -154,13 +159,16 @@ export async function createHelia (init: HeliaInit = {}): Promise<Helia<unknown>
     })
   }
 
-  const helia = new HeliaClass({
+  const helia = new HeliaP2P({
     ...init,
     libp2p,
     datastore,
     blockstore,
     blockBrokers: init.blockBrokers ?? [
       bitswap()
+    ],
+    routers: [
+      new Libp2pRouting(libp2p)
     ]
   })
 

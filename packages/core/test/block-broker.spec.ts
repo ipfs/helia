@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
@@ -42,6 +43,12 @@ describe('block-broker', () => {
       ],
       hashers: defaultHashers()
     })
+  })
+
+  afterEach(async () => {
+    await stop(
+      storage, blockstore
+    )
   })
 
   it('gets a block from the gatewayBlockBroker when it is not in the blockstore', async () => {

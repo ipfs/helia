@@ -1,6 +1,5 @@
 import type { Blockstore } from 'interface-blockstore'
 import type { AbortOptions } from 'interface-store'
-import type { BitswapNotifyProgressEvents, BitswapWantProgressEvents } from 'ipfs-bitswap'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
@@ -12,32 +11,27 @@ export interface Pair {
 export type HasBlockProgressEvents =
   ProgressEvent<'blocks:put:duplicate', CID> |
   ProgressEvent<'blocks:put:providers:notify', CID> |
-  ProgressEvent<'blocks:put:blockstore:put', CID> |
-  BitswapNotifyProgressEvents
+  ProgressEvent<'blocks:put:blockstore:put', CID>
 
 export type PutBlockProgressEvents =
   ProgressEvent<'blocks:put:duplicate', CID> |
   ProgressEvent<'blocks:put:providers:notify', CID> |
-  ProgressEvent<'blocks:put:blockstore:put', CID> |
-  BitswapNotifyProgressEvents
+  ProgressEvent<'blocks:put:blockstore:put', CID>
 
 export type PutManyBlocksProgressEvents =
   ProgressEvent<'blocks:put-many:duplicate', CID> |
   ProgressEvent<'blocks:put-many:providers:notify', CID> |
-  ProgressEvent<'blocks:put-many:blockstore:put-many'> |
-  BitswapNotifyProgressEvents
+  ProgressEvent<'blocks:put-many:blockstore:put-many'>
 
 export type GetBlockProgressEvents =
   ProgressEvent<'blocks:get:providers:want', CID> |
   ProgressEvent<'blocks:get:blockstore:get', CID> |
-  ProgressEvent<'blocks:get:blockstore:put', CID> |
-  BitswapWantProgressEvents
+  ProgressEvent<'blocks:get:blockstore:put', CID>
 
 export type GetManyBlocksProgressEvents =
   ProgressEvent<'blocks:get-many:blockstore:get-many'> |
   ProgressEvent<'blocks:get-many:providers:want', CID> |
-  ProgressEvent<'blocks:get-many:blockstore:put', CID> |
-  BitswapWantProgressEvents
+  ProgressEvent<'blocks:get-many:blockstore:put', CID>
 
 export type GetAllBlocksProgressEvents =
   ProgressEvent<'blocks:get-all:blockstore:get-many'>

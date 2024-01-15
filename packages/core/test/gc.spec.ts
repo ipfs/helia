@@ -27,6 +27,7 @@ describe('gc', () => {
       Data: Uint8Array.from([0, 1, 2, 3]),
       Links: []
     }), helia.blockstore)
+
     const child2 = await createAndPutBlock(dagPb.code, dagPb.encode({
       Data: Uint8Array.from([4, 5, 6, 7]),
       Links: []

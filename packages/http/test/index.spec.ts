@@ -1,44 +1,52 @@
 /* eslint-env mocha */
-
 import { expect } from 'aegir/chai'
-import { MemoryBlockstore } from 'blockstore-core'
-import { MemoryDatastore } from 'datastore-core'
+import Sinon from 'sinon'
+import { stubInterface } from 'sinon-ts'
 import { createHeliaHTTP } from '../src/index.js'
-import type { Helia } from '@helia/interface'
+import type { Helia, Routing } from '@helia/interface'
+import type { Startable } from '@libp2p/interface'
 
-describe('helia', () => {
-  let heliaHTTP: Helia
+describe('@helia/http', () => {
+  let helia: Helia
+  let routing: Routing
 
   beforeEach(async () => {
-    heliaHTTP = await createHeliaHTTP({
-      datastore: new MemoryDatastore(),
-      blockstore: new MemoryBlockstore()
+    routing = stubInterface<Routing & Startable>({
+      start: Sinon.stub(),
+      stop: Sinon.stub()
+    })
+    helia = await createHeliaHTTP({
+      start: false,
+      routers: [
+        routing
+      ]
     })
   })
 
   afterEach(async () => {
-    if (heliaHTTP != null) {
-      await heliaHTTP.stop()
+    if (helia != null) {
+      await helia.stop()
     }
   })
 
   it('stops and starts', async () => {
-    expect(heliaHTTP.libp2p.status).to.equal('started')
+    expect(routing).to.have.nested.property('start.called', false)
 
-    await heliaHTTP.stop()
+    await helia.start()
 
-    expect(heliaHTTP.libp2p.status).to.equal('stopped')
+    expect(routing).to.have.nested.property('start.called', true)
+    expect(routing).to.have.nested.property('stop.called', false)
+
+    await helia.stop()
+
+    expect(routing).to.have.nested.property('stop.called', true)
   })
 
   it('should have a blockstore', async () => {
-    expect(heliaHTTP).to.have.property('blockstore').that.is.ok()
+    expect(helia).to.have.property('blockstore').that.is.ok()
   })
 
   it('should have a datastore', async () => {
-    expect(heliaHTTP).to.have.property('datastore').that.is.ok()
-  })
-
-  it('should have a libp2p', async () => {
-    expect(heliaHTTP).to.have.property('libp2p').that.is.ok()
+    expect(helia).to.have.property('datastore').that.is.ok()
   })
 })

@@ -88,7 +88,10 @@
   },
   "devDependencies": {
     "@multiformats/mafmt": "^12.1.5",
-    "aegir": "^42.1.0"
+    "@multiformats/multiaddr": "^12.1.12",
+    "aegir": "^42.1.0",
+    "it-all": "^3.0.4",
+    "it-drain": "^3.0.5"
   },
   "browser": {
     "./dist/src/utils/libp2p-defaults.js": "./dist/src/utils/libp2p-defaults.browser.js"
