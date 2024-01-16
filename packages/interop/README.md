@@ -19,7 +19,7 @@ Runs interop tests between Helia and Kubo.
 
 ```console
 $ npm i @helia/interop
-$ KUBO_EXEC=/path/to/kubo helia-interop
+$ KUBO_BINARY=/path/to/kubo helia-interop
 ```
 
 # Install
