@@ -11,6 +11,10 @@
 
 > Routers for Helia
 
+# About
+
+Abstraction layer over different content and peer routing mechanisms.
+
 # Install
 
 ```console
