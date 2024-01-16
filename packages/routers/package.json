@@ -1,9 +1,9 @@
 {
-  "name": "@helia/http",
-  "version": "0.9.0",
-  "description": "A lightweight implementation of IPFS over HTTP in JavaScript",
+  "name": "@helia/routers",
+  "version": "0.0.0",
+  "description": "Routers for Helia",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/ipfs/helia/tree/main/packages/http#readme",
+  "homepage": "https://github.com/ipfs/helia/tree/main/packages/routers#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ipfs/helia.git"
@@ -53,19 +53,21 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@helia/block-brokers": "^1.0.0",
-    "@helia/core": "^0.0.0",
+    "@helia/delegated-routing-v1-http-api-client": "^2.0.2",
     "@helia/interface": "^3.0.1",
-    "@helia/routers": "^0.0.0",
-    "blockstore-core": "^4.3.8",
-    "datastore-core": "^9.2.6"
+    "@libp2p/interface": "^1.1.1",
+    "@libp2p/peer-id": "^4.0.5",
+    "ipns": "^8.0.3",
+    "it-first": "^3.0.4",
+    "it-map": "^3.0.5",
+    "multiformats": "^13.0.0",
+    "uint8arrays": "^5.0.1"
   },
   "devDependencies": {
-    "@libp2p/interface": "^1.1.1",
+    "@libp2p/peer-id-factory": "^4.0.5",
     "aegir": "^42.1.0",
-    "interface-datastore": "^8.2.10",
-    "multiformats": "^13.0.1",
-    "sinon": "^17.0.1",
+    "it-drain": "^3.0.5",
     "sinon-ts": "^2.0.0"
-  }
+  },
+  "sideEffects": false
 }

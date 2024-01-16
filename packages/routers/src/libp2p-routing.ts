@@ -2,7 +2,7 @@ import type { Provider, Routing, RoutingOptions } from '@helia/interface'
 import type { Libp2p, PeerId, PeerInfo } from '@libp2p/interface'
 import type { CID } from 'multiformats'
 
-export class Libp2pRouting implements Routing {
+class Libp2pRouter implements Routing {
   private readonly libp2p: Libp2p
 
   constructor (libp2p: Libp2p) {
@@ -32,4 +32,8 @@ export class Libp2pRouting implements Routing {
   async * getClosestPeers (key: Uint8Array, options?: RoutingOptions): AsyncIterable<PeerInfo> {
     yield * this.libp2p.peerRouting.getClosestPeers(key, options)
   }
+}
+
+export function libp2pRouting (libp2p: Libp2p): Routing {
+  return new Libp2pRouter(libp2p)
 }

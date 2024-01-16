@@ -16,9 +16,7 @@ describe('helia factory', () => {
   })
 
   it('does not require any constructor args', async () => {
-    heliaHTTP = await createHeliaHTTP({
-      holdGcLock: true
-    })
+    heliaHTTP = await createHeliaHTTP()
 
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
     const block = Uint8Array.from([0, 1, 2, 3])

@@ -77,14 +77,13 @@ export interface HeliaInit {
    * imported - without locking this could lead to the deletion of blocks while
    * they are being added to the blockstore.
    *
-   * By default this lock is held on the main process (e.g. node cluster's
-   * primary process, the renderer thread in browsers) and other processes will
-   * contact the main process for access (worker processes in node cluster,
-   * webworkers in the browser).
+   * By default this lock is held on the current process and other processes
+   * will contact this process for access.
    *
-   * If Helia is being run wholly in a non-primary process, with no other process
-   * expected to access the blockstore (e.g. being run in the background in a
-   * webworker), pass true here to hold the gc lock in this process.
+   * If Helia is being run in multiple processes, one process must hold the GC
+   * lock so use this option to control which process that is.
+   *
+   * @default true
    */
   holdGcLock?: boolean
 
@@ -139,7 +138,7 @@ export class Helia implements HeliaInterface {
     this.pins = new PinsImpl(init.datastore, networkedStorage, defaultDagWalkers(init.dagWalkers))
 
     this.blockstore = new BlockStorage(networkedStorage, this.pins, {
-      holdGcLock: init.holdGcLock
+      holdGcLock: init.holdGcLock ?? true
     })
     this.datastore = init.datastore
     this.routing = new RoutingClass(components, {

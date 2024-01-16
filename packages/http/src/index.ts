@@ -21,16 +21,14 @@
 
 import { trustlessGateway } from '@helia/block-brokers'
 import { Helia as HeliaClass, type HeliaInit } from '@helia/core'
-import { createDelegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
+import { delegatedHTTPRouting } from '@helia/routers'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
-import type { Helia, Routing } from '@helia/interface'
+import type { Helia } from '@helia/interface'
 
 // re-export interface types so people don't have to depend on @helia/interface
 // if they don't want to
 export * from '@helia/interface'
-export * from '@helia/interface/blocks'
-export * from '@helia/interface/pins'
 
 export interface HeliaHTTPInit extends HeliaInit {
   /**
@@ -55,8 +53,7 @@ export async function createHeliaHTTP (init: Partial<HeliaHTTPInit> = {}): Promi
       trustlessGateway()
     ],
     routers: init.routers ?? [
-      // TODO: export a Routing implementation from @helia/delegated-routing-v1-http-api-client
-      createDelegatedRoutingV1HttpApiClient('https://delegated-ipfs.dev') as Partial<Routing>
+      delegatedHTTPRouting('https://delegated-ipfs.dev')
     ]
   })
 

@@ -24,21 +24,23 @@ export interface RoutingOptions extends AbortOptions, ProgressOptions {
   useCache?: boolean
 }
 
-export type PROVIDER_PROTOCOL_GRAPHSYNC = 'transport-graphsync-filecoinv1'
-export type PROVIDER_PROTOCOL_HTTP = 'transport-ipfs-gateway-http'
-export type PROVIDER_PROTOCOL_BITSWAP = 'transport-bitswap'
-
 /**
  * A provider can supply the content for a CID
  */
 export interface Provider extends PeerInfo {
   /**
-   * If present this is the method that the peer can supply the content via.
+   * If present these are the methods that the peer can supply the content via.
    *
    * If not present the caller should attempt to dial the remote peer and run
    * the identify protocol to discover how to retrieve the content.
+   *
+   * Example values are (but not limited to):
+   *
+   * - transport-graphsync-filecoinv1
+   * - transport-ipfs-gateway-http
+   * - transport-bitswap
    */
-  protocol?: PROVIDER_PROTOCOL_GRAPHSYNC | PROVIDER_PROTOCOL_HTTP | PROVIDER_PROTOCOL_BITSWAP
+  protocols?: string[]
 }
 
 export interface Routing {

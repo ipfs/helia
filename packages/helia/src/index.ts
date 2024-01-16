@@ -20,10 +20,10 @@
  */
 
 import { bitswap } from '@helia/block-brokers'
+import { libp2pRouting } from '@helia/routers'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import { HeliaP2P } from './helia-p2p.js'
-import { Libp2pRouting } from './libp2p-routing.js'
 import { libp2pDefaults } from './utils/libp2p-defaults.js'
 import { createLibp2p } from './utils/libp2p.js'
 import type { DefaultLibp2pServices } from './utils/libp2p-defaults.js'
@@ -40,8 +40,6 @@ import type { MultihashHasher } from 'multiformats/hashes/interface'
 // re-export interface types so people don't have to depend on @helia/interface
 // if they don't want to
 export * from '@helia/interface'
-export * from '@helia/interface/blocks'
-export * from '@helia/interface/pins'
 
 export type { DefaultLibp2pServices }
 export { libp2pDefaults }
@@ -168,7 +166,7 @@ export async function createHelia (init: HeliaInit = {}): Promise<HeliaLibp2p> {
       bitswap()
     ],
     routers: [
-      new Libp2pRouting(libp2p)
+      libp2pRouting(libp2p)
     ]
   })
 
