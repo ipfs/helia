@@ -5,6 +5,7 @@ import * as kuboRpcClient from 'kubo-rpc-client'
 /** @type {import('aegir').PartialOptions} */
 export default {
   test: {
+    files: './dist/src/*.spec.js',
     before: async (options) => {
       if (options.runner !== 'node') {
         const ipfsdPort = await getPort()

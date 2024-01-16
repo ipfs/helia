@@ -18,6 +18,9 @@
   "keywords": [
     "IPFS"
   ],
+  "bin": {
+    "helia-interop": "./dist/src/bin.js"
+  },
   "type": "module",
   "types": "./dist/src/index.d.ts",
   "files": [
@@ -52,7 +55,7 @@
     "test:node": "aegir test -t node --cov",
     "test:electron-main": "aegir test -t electron-main"
   },
-  "devDependencies": {
+  "dependencies": {
     "@helia/block-brokers": "^1.0.0",
     "@helia/car": "^2.0.1",
     "@helia/dag-cbor": "^2.0.1",
@@ -90,6 +93,7 @@
   "browser": {
     "./dist/test/fixtures/create-helia.js": "./dist/test/fixtures/create-helia.browser.js",
     "./dist/test/fixtures/create-kubo.js": "./dist/test/fixtures/create-kubo.browser.js",
+    "./dist/src/bin.js": "./dist/src/index.js",
     "kubo": false
   }
 }
