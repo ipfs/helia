@@ -19,7 +19,7 @@
  * ```
  */
 
-import { bitswap } from '@helia/block-brokers'
+import { bitswap, trustlessGateway } from '@helia/block-brokers'
 import { libp2pRouting } from '@helia/routers'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
@@ -163,6 +163,7 @@ export async function createHelia (init: HeliaInit = {}): Promise<HeliaLibp2p> {
     datastore,
     blockstore,
     blockBrokers: init.blockBrokers ?? [
+      trustlessGateway(),
       bitswap()
     ],
     routers: [
