@@ -5,7 +5,7 @@
   "packages/dag-json": "2.0.1",
   "packages/helia": "3.0.1",
   "packages/interface": "3.0.1",
-  "packages/interop": "3.0.0",
+  "packages/interop": "3.0.1",
   "packages/ipns": "4.0.0",
   "packages/json": "2.0.1",
   "packages/mfs": "2.0.1",
