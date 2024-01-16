@@ -5,7 +5,7 @@ import type { ProgressEvent } from 'progress-events'
 
 export const DEFAULT_TRUSTLESS_GATEWAYS = [
   // 2023-10-03: IPNS, Origin, and Block/CAR support from https://ipfs-public-gateway-checker.on.fleek.co/
-  'https://ipfs.io',
+  'https://trustless-gateway.link',
 
   // 2023-10-03: IPNS, Origin, and Block/CAR support from https://ipfs-public-gateway-checker.on.fleek.co/
   'https://cloudflare-ipfs.com',
