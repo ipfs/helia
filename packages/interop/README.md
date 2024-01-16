@@ -11,6 +11,17 @@
 
 > Interop tests for Helia
 
+# About
+
+Runs interop tests between Helia and Kubo.
+
+## Example - Testing a new Kubo release
+
+```console
+$ npm i @helia/interop
+$ KUBO_BINARY=/path/to/kubo helia-interop
+```
+
 # Install
 
 ```console
