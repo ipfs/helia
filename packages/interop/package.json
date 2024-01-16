@@ -91,8 +91,8 @@
     "wherearewe": "^2.0.1"
   },
   "browser": {
-    "./dist/test/fixtures/create-helia.js": "./dist/test/fixtures/create-helia.browser.js",
-    "./dist/test/fixtures/create-kubo.js": "./dist/test/fixtures/create-kubo.browser.js",
+    "./dist/src/fixtures/create-helia.js": "./dist/src/fixtures/create-helia.browser.js",
+    "./dist/src/fixtures/create-kubo.js": "./dist/src/fixtures/create-kubo.browser.js",
     "./dist/src/bin.js": "./dist/src/index.js",
     "kubo": false
   }
