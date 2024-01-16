@@ -1,5 +1,58 @@
 # Changelog
 
+## [3.0.1](https://github.com/ipfs/helia/compare/interop-v3.0.0...interop-v3.0.1) (2024-01-16)
+
+
+### Bug Fixes
+
+* update type import path ([#379](https://github.com/ipfs/helia/issues/379)) ([ece384a](https://github.com/ipfs/helia/commit/ece384aab5e1c95857aa4aa07b86656710d8ca35))
+
+## [3.0.0](https://github.com/ipfs/helia/compare/interop-v2.0.0...interop-v3.0.0) (2024-01-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* uses multiformats v13 and helia v3
+* uses multiformats v13 and helia v3
+* uses multiformats v13 and helia v3
+* uses multiformats v13 and helia v3
+* uses multiformats v13 and helia v3
+* uses multiformats v13 and helia v3, renames `dht` routing to `libp2p`
+* uses multiformats v13
+* uses multiformats v13 and helia v3
+
+### Features
+
+* update helia to v3 and multiformats to v13 ([9f7dc0a](https://github.com/ipfs/helia/commit/9f7dc0a0581524531501fc062fefb6ba26d99c02))
+* update helia to v3 and multiformats to v13 ([#147](https://github.com/ipfs/helia/issues/147)) ([001247c](https://github.com/ipfs/helia/commit/001247c6fc38ff3d810736371de901e5e1099f26))
+* update helia to v3 and multiformats to v13 ([#167](https://github.com/ipfs/helia/issues/167)) ([a0381b9](https://github.com/ipfs/helia/commit/a0381b95051bbf3edfa4f53e0ae2d5f43c1e4382))
+* update helia to v3 and multiformats to v13 ([#45](https://github.com/ipfs/helia/issues/45)) ([f078447](https://github.com/ipfs/helia/commit/f078447b6eba4c3d404d62bb930757aa1c0efe74))
+* update helia to v3 and multiformats to v13 ([#45](https://github.com/ipfs/helia/issues/45)) ([3c7d9d4](https://github.com/ipfs/helia/commit/3c7d9d4a8e74e1a808c265fbc6ecbdc24f0f3da9))
+* update helia to v3 and multiformats to v13 ([#46](https://github.com/ipfs/helia/issues/46)) ([e3dc586](https://github.com/ipfs/helia/commit/e3dc5867ffc4de0dd3b05b56eb1b0ce98d50dcb1))
+* update helia to v3 and multiformats to v13 ([#52](https://github.com/ipfs/helia/issues/52)) ([6405c34](https://github.com/ipfs/helia/commit/6405c3487879614dc4dd7308b15c946d644e0488))
+* update helia to v3 and multiformats to v13 ([#87](https://github.com/ipfs/helia/issues/87)) ([ae7cbc9](https://github.com/ipfs/helia/commit/ae7cbc9a16a267cb0f6d7cecd381f919430afaea))
+
+
+### Bug Fixes
+
+* create @helia/block-brokers package ([#341](https://github.com/ipfs/helia/issues/341)) ([#342](https://github.com/ipfs/helia/issues/342)) ([2979147](https://github.com/ipfs/helia/commit/297914756fa06dc0c28890a2654d1159d16689c2))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @helia/block-brokers bumped from ~0.0.0 to ~1.0.0
+    * @helia/car bumped from ^2.0.0 to ^2.0.1
+    * @helia/dag-cbor bumped from ^2.0.0 to ^2.0.1
+    * @helia/dag-json bumped from ^2.0.0 to ^2.0.1
+    * @helia/interface bumped from ^3.0.0 to ^3.0.1
+    * @helia/json bumped from ^2.0.0 to ^2.0.1
+    * @helia/mfs bumped from ^2.0.0 to ^2.0.1
+    * @helia/strings bumped from ^2.0.0 to ^2.0.1
+    * @helia/unixfs bumped from ^2.0.0 to ^2.0.1
+    * helia bumped from ^3.0.0 to ^3.0.1
+
 ## [2.0.0](https://github.com/ipfs/helia/compare/interop-v1.1.0...interop-v2.0.0) (2024-01-07)
 
 

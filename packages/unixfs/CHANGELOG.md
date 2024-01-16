@@ -14,6 +14,12 @@
 
 * update sibling dependencies ([1b0b2ef](https://github.com/ipfs/helia-unixfs/commit/1b0b2ef05c5cbd78c3b5d5629237200a69bbd5dd))
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^3.0.0 to ^3.0.1
+
 ## [@helia/unixfs-v1.4.3](https://github.com/ipfs/helia-unixfs/compare/@helia/unixfs-v1.4.2...@helia/unixfs-v1.4.3) (2023-12-03)
 
 

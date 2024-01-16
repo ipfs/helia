@@ -9,6 +9,12 @@
 
 * update helia to v3 and multiformats to v13 ([#45](https://github.com/ipfs/helia-dag-cbor/issues/45)) ([f078447](https://github.com/ipfs/helia-dag-cbor/commit/f078447b6eba4c3d404d62bb930757aa1c0efe74))
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^3.0.0 to ^3.0.1
+
 ## [@helia/dag-cbor-v1.0.3](https://github.com/ipfs/helia-dag-cbor/compare/@helia/dag-cbor-v1.0.2...@helia/dag-cbor-v1.0.3) (2023-10-07)
 
 

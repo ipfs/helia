@@ -9,6 +9,14 @@
 
 * update helia to v3 and multiformats to v13 ([#52](https://github.com/ipfs/helia-car/issues/52)) ([6405c34](https://github.com/ipfs/helia-car/commit/6405c3487879614dc4dd7308b15c946d644e0488))
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^3.0.0 to ^3.0.1
+  * devDependencies
+    * @helia/unixfs bumped from ^2.0.0 to ^2.0.1
+
 ## [@helia/car-v1.0.4](https://github.com/ipfs/helia-car/compare/@helia/car-v1.0.3...@helia/car-v1.0.4) (2023-10-07)
 
 

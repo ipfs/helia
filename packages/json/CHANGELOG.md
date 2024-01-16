@@ -9,6 +9,12 @@
 
 * update helia to v3 and multiformats to v13 ([#46](https://github.com/ipfs/helia-json/issues/46)) ([e3dc586](https://github.com/ipfs/helia-json/commit/e3dc5867ffc4de0dd3b05b56eb1b0ce98d50dcb1))
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^3.0.0 to ^3.0.1
+
 ## [@helia/json-v1.0.3](https://github.com/ipfs/helia-json/compare/@helia/json-v1.0.2...@helia/json-v1.0.3) (2023-10-07)
 
 

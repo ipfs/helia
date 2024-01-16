@@ -9,6 +9,13 @@
 
 * update helia to v3 and multiformats to v13 ([9f7dc0a](https://github.com/ipfs/helia-mfs/commit/9f7dc0a0581524531501fc062fefb6ba26d99c02))
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^3.0.0 to ^3.0.1
+    * @helia/unixfs bumped from ^2.0.0 to ^2.0.1
+
 ## [@helia/mfs-v1.0.2](https://github.com/ipfs/helia-mfs/compare/@helia/mfs-v1.0.1...@helia/mfs-v1.0.2) (2023-10-07)
 
 
