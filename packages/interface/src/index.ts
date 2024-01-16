@@ -19,6 +19,7 @@ import type { Pins } from './pins.js'
 import type { Routing } from './routing.js'
 import type { AbortOptions, ComponentLogger } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
+import type { MultihashHasher } from 'multiformats'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
@@ -53,6 +54,18 @@ export interface Helia {
    * content providers, information about peers, etc.
    */
   routing: Routing
+
+  /**
+   * DAGWalkers are codec-specific implementations that know how to yield all
+   * CIDs contained within a block that corresponds to that codec.
+   */
+  dagWalkers: Record<number, DAGWalker>
+
+  /**
+   * Hashers can be used to hash a piece of data with the specified hashing
+   * algorithm.
+   */
+  hashers: Record<number, MultihashHasher>
 
   /**
    * Starts the Helia node

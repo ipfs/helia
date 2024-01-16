@@ -10,7 +10,7 @@ import type { ProgressOptions } from 'progress-events'
 interface BitswapComponents {
   libp2p: Libp2p
   blockstore: Blockstore
-  hashers: MultihashHasher[]
+  hashers: Record<string, MultihashHasher>
 }
 
 export interface BitswapInit extends BitswapOptions {
@@ -29,9 +29,15 @@ ProgressOptions<BitswapWantBlockProgressEvents>
     this.bitswap = createBitswap(libp2p, blockstore, {
       hashLoader: {
         getHasher: async (codecOrName: string | number): Promise<MultihashHasher<number>> => {
-          const hasher = hashers.find(hasher => {
-            return hasher.code === codecOrName || hasher.name === codecOrName
-          })
+          let hasher: MultihashHasher | undefined
+
+          if (typeof codecOrName === 'string') {
+            hasher = Object.values(hashers).find(hasher => {
+              return hasher.name === codecOrName
+            })
+          } else {
+            hasher = hashers[codecOrName]
+          }
 
           if (hasher != null) {
             return hasher

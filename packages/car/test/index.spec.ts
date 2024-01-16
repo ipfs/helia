@@ -2,31 +2,58 @@
 
 import { type UnixFS, unixfs } from '@helia/unixfs'
 import { CarReader } from '@ipld/car'
+import * as dagPb from '@ipld/dag-pb'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { fixedSize } from 'ipfs-unixfs-importer/chunker'
 import toBuffer from 'it-to-buffer'
+import * as raw from 'multiformats/codecs/raw'
 import { car, type Car } from '../src/index.js'
 import { largeFile, smallFile } from './fixtures/files.js'
 import { memoryCarWriter } from './fixtures/memory-car.js'
+import type { DAGWalker } from '@helia/interface'
 import type { Blockstore } from 'interface-blockstore'
+
+/**
+ * Dag walker for dag-pb CIDs
+ */
+const dagPbWalker: DAGWalker = {
+  codec: dagPb.code,
+  * walk (block) {
+    const node = dagPb.decode(block)
+
+    yield * node.Links.map(l => l.Hash)
+  }
+}
+
+const rawWalker: DAGWalker = {
+  codec: raw.code,
+  * walk () {
+    // no embedded CIDs in a raw block
+  }
+}
 
 describe('import', () => {
   let blockstore: Blockstore
   let c: Car
   let u: UnixFS
+  let dagWalkers: Record<number, DAGWalker>
 
   beforeEach(async () => {
     blockstore = new MemoryBlockstore()
+    dagWalkers = {
+      [dagPb.code]: dagPbWalker,
+      [raw.code]: rawWalker
+    }
 
-    c = car({ blockstore })
+    c = car({ blockstore, dagWalkers })
     u = unixfs({ blockstore })
   })
 
   it('exports and imports a car file', async () => {
     const otherBlockstore = new MemoryBlockstore()
     const otherUnixFS = unixfs({ blockstore: otherBlockstore })
-    const otherCar = car({ blockstore: otherBlockstore })
+    const otherCar = car({ blockstore: otherBlockstore, dagWalkers })
     const cid = await otherUnixFS.addBytes(smallFile)
 
     const writer = memoryCarWriter(cid)
@@ -46,7 +73,7 @@ describe('import', () => {
 
     const otherBlockstore = new MemoryBlockstore()
     const otherUnixFS = unixfs({ blockstore: otherBlockstore })
-    const otherCar = car({ blockstore: otherBlockstore })
+    const otherCar = car({ blockstore: otherBlockstore, dagWalkers })
     const cid1 = await otherUnixFS.addBytes(fileData1)
     const cid2 = await otherUnixFS.addBytes(fileData2)
     const cid3 = await otherUnixFS.addBytes(fileData3)
@@ -66,7 +93,7 @@ describe('import', () => {
   it('exports and imports a multiple block car file', async () => {
     const otherBlockstore = new MemoryBlockstore()
     const otherUnixFS = unixfs({ blockstore: otherBlockstore })
-    const otherCar = car({ blockstore: otherBlockstore })
+    const otherCar = car({ blockstore: otherBlockstore, dagWalkers })
     const cid = await otherUnixFS.addBytes(largeFile, {
       chunker: fixedSize({
         chunkSize: 1024
@@ -90,7 +117,7 @@ describe('import', () => {
 
     const otherBlockstore = new MemoryBlockstore()
     const otherUnixFS = unixfs({ blockstore: otherBlockstore })
-    const otherCar = car({ blockstore: otherBlockstore })
+    const otherCar = car({ blockstore: otherBlockstore, dagWalkers })
     const cid1 = await otherUnixFS.addBytes(fileData1, {
       chunker: fixedSize({
         chunkSize: 2

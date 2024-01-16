@@ -11,11 +11,6 @@ import type { AwaitIterable } from 'interface-store'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 
-export interface NetworkedStorageStorageInit {
-  blockBrokers?: BlockBroker[]
-  hashers?: MultihashHasher[]
-}
-
 export interface GetOptions extends AbortOptions {
   progress?(evt: Event): void
 }
@@ -31,6 +26,8 @@ function isBlockAnnouncer (b: any): b is BlockAnnouncer {
 export interface NetworkedStorageComponents {
   blockstore: Blockstore
   logger: ComponentLogger
+  blockBrokers?: BlockBroker[]
+  hashers?: Record<number, MultihashHasher>
 }
 
 /**
@@ -41,19 +38,19 @@ export class NetworkedStorage implements Blocks, Startable {
   private readonly child: Blockstore
   private readonly blockRetrievers: BlockRetriever[]
   private readonly blockAnnouncers: BlockAnnouncer[]
-  private readonly hashers: MultihashHasher[]
+  private readonly hashers: Record<number, MultihashHasher>
   private started: boolean
   private readonly log: Logger
 
   /**
    * Create a new BlockStorage
    */
-  constructor (components: NetworkedStorageComponents, init: NetworkedStorageStorageInit) {
+  constructor (components: NetworkedStorageComponents) {
     this.log = components.logger.forComponent('helia:networked-storage')
     this.child = components.blockstore
-    this.blockRetrievers = (init.blockBrokers ?? []).filter(isBlockRetriever)
-    this.blockAnnouncers = (init.blockBrokers ?? []).filter(isBlockAnnouncer)
-    this.hashers = init.hashers ?? []
+    this.blockRetrievers = (components.blockBrokers ?? []).filter(isBlockRetriever)
+    this.blockAnnouncers = (components.blockBrokers ?? []).filter(isBlockAnnouncer)
+    this.hashers = components.hashers ?? {}
     this.started = false
   }
 
@@ -127,7 +124,7 @@ export class NetworkedStorage implements Blocks, Startable {
     if (options.offline !== true && !(await this.child.has(cid))) {
       // we do not have the block locally, get it from a block provider
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:providers:get', cid))
-      const block = await raceBlockRetrievers(cid, this.blockRetrievers, this.hashers, {
+      const block = await raceBlockRetrievers(cid, this.blockRetrievers, this.hashers[cid.multihash.code], {
         ...options,
         log: this.log
       })
@@ -158,7 +155,7 @@ export class NetworkedStorage implements Blocks, Startable {
       if (options.offline !== true && !(await this.child.has(cid))) {
         // we do not have the block locally, get it from a block provider
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:providers:get', cid))
-        const block = await raceBlockRetrievers(cid, this.blockRetrievers, this.hashers, {
+        const block = await raceBlockRetrievers(cid, this.blockRetrievers, this.hashers[cid.multihash.code], {
           ...options,
           log: this.log
         })
@@ -205,9 +202,7 @@ export class NetworkedStorage implements Blocks, Startable {
   }
 }
 
-export const getCidBlockVerifierFunction = (cid: CID, hashers: MultihashHasher[]): Required<BlockRetrievalOptions>['validateFn'] => {
-  const hasher = hashers.find(hasher => hasher.code === cid.multihash.code)
-
+export const getCidBlockVerifierFunction = (cid: CID, hasher: MultihashHasher): Required<BlockRetrievalOptions>['validateFn'] => {
   if (hasher == null) {
     throw new CodeError(`No hasher configured for multihash code 0x${cid.multihash.code.toString(16)}, please configure one. You can look up which hash this is at https://github.com/multiformats/multicodec/blob/master/table.csv`, 'ERR_UNKNOWN_HASH_ALG')
   }
@@ -227,8 +222,8 @@ export const getCidBlockVerifierFunction = (cid: CID, hashers: MultihashHasher[]
  * Race block providers cancelling any pending requests once the block has been
  * found.
  */
-async function raceBlockRetrievers (cid: CID, providers: BlockRetriever[], hashers: MultihashHasher[], options: AbortOptions & LoggerOptions): Promise<Uint8Array> {
-  const validateFn = getCidBlockVerifierFunction(cid, hashers)
+async function raceBlockRetrievers (cid: CID, providers: BlockRetriever[], hasher: MultihashHasher, options: AbortOptions & LoggerOptions): Promise<Uint8Array> {
+  const validateFn = getCidBlockVerifierFunction(cid, hasher)
 
   const controller = new AbortController()
   const signal = anySignal([controller.signal, options.signal])
