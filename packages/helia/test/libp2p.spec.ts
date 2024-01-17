@@ -44,4 +44,28 @@ describe('libp2p', () => {
 
     expect(helia.libp2p).to.equal(libp2p)
   })
+
+  it('ignores libp2p start param when it is false', async () => {
+    helia = await createHelia({
+      libp2p: {
+        // @ts-expect-error start is omitted from libp2p init type
+        start: false
+      },
+      start: true
+    })
+
+    expect(helia.libp2p.status).to.equal('started')
+  })
+
+  it('ignores libp2p start param when it is true', async () => {
+    helia = await createHelia({
+      libp2p: {
+        // @ts-expect-error start is omitted from libp2p init type
+        start: true
+      },
+      start: false
+    })
+
+    expect(helia.libp2p.status).to.equal('stopped')
+  })
 })

@@ -64,8 +64,11 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
    * If node options are passed, they will be merged with the default
    * config for the current platform. In this case all passed config
    * keys will replace those from the default config.
+   *
+   * The libp2p `start` option is not supported, instead please pass `start` in
+   * the root of the HeliaInit object.
    */
-  libp2p?: T | Libp2pOptions
+  libp2p?: T | Omit<Libp2pOptions, 'start'>
 
   /**
    * The blockstore is where blocks are stored
@@ -152,7 +155,13 @@ export async function createHelia (init: HeliaInit = {}): Promise<HeliaLibp2p> {
   } else {
     libp2p = await createLibp2p<DefaultLibp2pServices>({
       ...init,
-      libp2p: init.libp2p,
+      libp2p: {
+        ...init.libp2p,
+
+        // ignore the libp2p start parameter as it should be on the main init
+        // object instead
+        start: undefined
+      },
       datastore
     })
   }
