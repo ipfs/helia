@@ -28,7 +28,8 @@
     "dist",
     "!dist/test",
     "!**/*.tsbuildinfo",
-    ".aegir.js"
+    ".aegir.js",
+    "npm-shrinkwrap.json"
   ],
   "exports": {
     ".": {
@@ -54,7 +55,8 @@
     "test:firefox": "aegir test -t browser -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
     "test:node": "aegir test -t node --cov",
-    "test:electron-main": "aegir test -t electron-main"
+    "test:electron-main": "aegir test -t electron-main",
+    "prepublishOnly": "npm i --package-lock-only --workspaces=false && npm shrinkwrap --workspaces=false"
   },
   "dependencies": {
     "@helia/block-brokers": "^1.0.0",
