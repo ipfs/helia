@@ -2,8 +2,15 @@
 /* eslint-disable no-console */
 
 import { spawn } from 'node:child_process'
+import { dirname, resolve } from 'path'
+import { fileURLToPath } from 'url'
 
-const test = spawn('npx', ['aegir', 'test'])
+// aegir should be run from `node_modules/@helia/interop`
+const cwd = resolve(dirname(fileURLToPath(import.meta.url)), '../../')
+
+const test = spawn('npx', ['aegir', 'test'], {
+  cwd
+})
 
 test.stdout.on('data', (data) => {
   process.stdout.write(data)
