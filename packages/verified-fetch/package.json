@@ -1,0 +1,100 @@
+{
+  "name": "@helia/verified-fetch",
+  "version": "0.0.0",
+  "description": "A fetch-like API for IPFS content on the web.",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/ipfs/helia/tree/main/packages/verified-fetch#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ipfs/helia.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ipfs/helia/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "IPFS",
+    "fetch",
+    "helia"
+  ],
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "project": true,
+      "sourceType": "module"
+    }
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "build": "aegir build",
+    "test": "aegir test",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main"
+  },
+  "dependencies": {
+    "@helia/http": "next",
+    "@helia/interface": "^3.0.1",
+    "@ipld/dag-cbor": "^9.0.7",
+    "@ipld/dag-json": "^10.1.5",
+    "@ipld/dag-pb": "^4.0.6",
+    "@libp2p/interface": "^1.1.1",
+    "@libp2p/logger": "^4.0.4",
+    "@libp2p/peer-collections": "^5.1.4",
+    "@libp2p/utils": "^5.2.0",
+    "any-signal": "^4.1.1",
+    "cborg": "^4.0.3",
+    "file-type": "^19.0.0",
+    "interface-blockstore": "^5.2.7",
+    "interface-datastore": "^8.2.9",
+    "interface-store": "^5.1.5",
+    "it-drain": "^3.0.5",
+    "it-filter": "^3.0.4",
+    "it-foreach": "^2.0.6",
+    "it-merge": "^3.0.3",
+    "mime-type": "^4.0.0",
+    "mime-types": "^2.1.35",
+    "mortice": "^3.0.1",
+    "multiformats": "^13.0.0",
+    "progress-events": "^1.0.0",
+    "uint8arrays": "^5.0.1"
+  },
+  "devDependencies": {
+    "@helia/ipns": "^4.0.0",
+    "@types/mime-types": "^2.1.4",
+    "@types/sinon": "^17.0.2",
+    "aegir": "^42.1.0",
+    "blockstore-core": "^4.3.10",
+    "datastore-core": "^9.2.7",
+    "delay": "^6.0.0",
+    "it-all": "^3.0.4",
+    "sinon": "^17.0.1",
+    "sinon-ts": "^2.0.0"
+  },
+  "browser": {
+    "node:buffer": false,
+    "node:stream": false
+  }
+}
