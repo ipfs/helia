@@ -4,9 +4,11 @@
   "packages": {
     "packages/block-brokers": {},
     "packages/car": {},
+    "packages/core": {},
     "packages/dag-cbor": {},
     "packages/dag-json": {},
     "packages/helia": {},
+    "packages/http": {},
     "packages/interface": {},
     "packages/interop": {},
     "packages/ipns": {},
