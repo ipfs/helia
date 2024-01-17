@@ -1,7 +1,6 @@
 /* eslint-env mocha */
 
 import { ipns } from '@helia/ipns'
-import { libp2p } from '@helia/ipns/routing'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { createEd25519PeerId, createRSAPeerId, createSecp256k1PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
@@ -24,7 +23,7 @@ import type { HeliaLibp2p } from 'helia'
 import type { Controller } from 'ipfsd-ctl'
 
 keyTypes.forEach(type => {
-  describe(`@helia/ipns - libp2p routing with ${type} keys`, () => {
+  describe(`@helia/ipns - default routing with ${type} keys`, () => {
     let helia: HeliaLibp2p
     let kubo: Controller
     let name: IPNS
@@ -114,11 +113,7 @@ keyTypes.forEach(type => {
         message: 'Kubo could not find Helia on the DHT'
       })
 
-      name = ipns(helia, {
-        routers: [
-          libp2p(helia)
-        ]
-      })
+      name = ipns(helia)
     }
 
     afterEach(async () => {

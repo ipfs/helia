@@ -153,6 +153,7 @@
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
     "build": "aegir build",
+    "docs": "aegir docs",
     "test": "aegir test",
     "test:chrome": "aegir test -t browser --cov",
     "test:chrome-webworker": "aegir test -t webworker",
@@ -163,6 +164,7 @@
     "release": "aegir release"
   },
   "dependencies": {
+    "@helia/interface": "^3.0.1",
     "@libp2p/interface": "^1.1.1",
     "@libp2p/kad-dht": "^12.0.2",
     "@libp2p/logger": "^4.0.4",
@@ -188,8 +190,5 @@
   },
   "browser": {
     "./dist/src/dns-resolvers/resolver.js": "./dist/src/dns-resolvers/resolver.browser.js"
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts"
   }
 }

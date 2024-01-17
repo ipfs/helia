@@ -3,20 +3,58 @@
  *
  * IPNS operations using a Helia node
  *
- * @example Using libp2p and pubsub routers
+ * @example Getting started
  *
  * With {@link IPNSRouting} routers:
  *
  * ```typescript
  * import { createHelia } from 'helia'
  * import { ipns } from '@helia/ipns'
- * import { libp2p, pubsub } from '@helia/ipns/routing'
+ * import { unixfs } from '@helia/unixfs'
+ *
+ * const helia = await createHelia()
+ * const name = ipns(helia)
+ *
+ * // create a public key to publish as an IPNS name
+ * const keyInfo = await helia.libp2p.services.keychain.createKey('my-key')
+ * const peerId = await helia.libp2p.services.keychain.exportPeerId(keyInfo.name)
+ *
+ * // store some data to publish
+ * const fs = unixfs(helia)
+ * const cid = await fs.add(Uint8Array.from([0, 1, 2, 3, 4]))
+ *
+ * // publish the name
+ * await name.publish(peerId, cid)
+ *
+ * // resolve the name
+ * const cid = name.resolve(peerId)
+ * ```
+ *
+ * @example Using custom PubSub router
+ *
+ * Additional IPNS routers can be configured - these enable alternative means to
+ * publish and resolve IPNS names.
+ *
+ * One example is the PubSub router - this requires an instance of Helia with
+ * libp2p PubSub configured.
+ *
+ * It works by subscribing to a pubsub topic for each IPNS name that we try to
+ * resolve. Updated IPNS records are shared on these topics so an update must
+ * occur before the name is resolvable.
+ *
+ * This router is only suitable for networks where IPNS updates are frequent
+ * and multiple peers are listening on the topic(s), otherwise update messages
+ * may fail to be published with "Insufficient peers" errors.
+ *
+ * ```typescript
+ * import { createHelia } from 'helia'
+ * import { ipns } from '@helia/ipns'
+ * import { pubsub } from '@helia/ipns/routing'
  * import { unixfs } from '@helia/unixfs'
  *
  * const helia = await createHelia()
  * const name = ipns(helia, {
  *  routers: [
- *    libp2p(helia),
  *    pubsub(helia)
  *  ]
  * })
@@ -121,9 +159,11 @@ import { ipnsValidator } from 'ipns/validator'
 import { CID } from 'multiformats/cid'
 import { CustomProgressEvent } from 'progress-events'
 import { defaultResolver } from './dns-resolvers/default.js'
+import { helia } from './routing/helia.js'
 import { localStore, type LocalStore } from './routing/local-store.js'
 import type { IPNSRouting, IPNSRoutingEvents } from './routing/index.js'
 import type { DNSResponse } from './utils/dns.js'
+import type { Routing } from '@helia/interface'
 import type { AbortOptions, PeerId } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 import type { IPNSRecord } from 'ipns'
@@ -249,6 +289,7 @@ export type { IPNSRouting } from './routing/index.js'
 
 export interface IPNSComponents {
   datastore: Datastore
+  routing: Routing
 }
 
 class DefaultIPNS implements IPNS {
@@ -258,7 +299,10 @@ class DefaultIPNS implements IPNS {
   private readonly defaultResolvers: DNSResolver[]
 
   constructor (components: IPNSComponents, routers: IPNSRouting[] = [], resolvers: DNSResolver[] = []) {
-    this.routers = routers
+    this.routers = [
+      helia(components.routing),
+      ...routers
+    ]
     this.localStore = localStore(components.datastore)
     this.defaultResolvers = resolvers.length > 0 ? resolvers : [defaultResolver()]
   }
@@ -407,7 +451,7 @@ export interface IPNSOptions {
   resolvers?: DNSResolver[]
 }
 
-export function ipns (components: IPNSComponents, { routers = [], resolvers = [] }: IPNSOptions): IPNS {
+export function ipns (components: IPNSComponents, { routers = [], resolvers = [] }: IPNSOptions = {}): IPNS {
   return new DefaultIPNS(components, routers, resolvers)
 }
 
