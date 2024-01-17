@@ -12,6 +12,7 @@
     "packages/ipns": {},
     "packages/json": {},
     "packages/mfs": {},
+    "packages/routers": {},
     "packages/strings": {},
     "packages/unixfs": {}
   }
