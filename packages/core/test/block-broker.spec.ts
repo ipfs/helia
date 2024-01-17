@@ -35,8 +35,7 @@ describe('block-broker', () => {
     gatewayBlockBroker = stubInterface()
     storage = new NetworkedStorage({
       blockstore,
-      logger: defaultLogger()
-    }, {
+      logger: defaultLogger(),
       blockBrokers: [
         bitswapBlockBroker,
         gatewayBlockBroker
@@ -125,8 +124,7 @@ describe('block-broker', () => {
     const block = blocks[1].block
     storage = new NetworkedStorage({
       blockstore,
-      logger: defaultLogger()
-    }, {
+      logger: defaultLogger(),
       blockBrokers: [
         gatewayBlockBroker
       ],

@@ -5,20 +5,11 @@ import { base36 } from 'multiformats/bases/base36'
 import { CID, type Version } from 'multiformats/cid'
 import { CustomProgressEvent, type ProgressOptions } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import { dagCborWalker, dagJsonWalker, dagPbWalker, jsonWalker, rawWalker } from './utils/dag-walkers.js'
 import type { DAGWalker } from '@helia/interface'
 import type { GetBlockProgressEvents } from '@helia/interface/blocks'
 import type { AddOptions, AddPinEvents, IsPinnedOptions, LsOptions, Pin, Pins, RmOptions } from '@helia/interface/pins'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
-
-const DEFAULT_DAG_WALKERS = [
-  rawWalker,
-  dagPbWalker,
-  dagCborWalker,
-  dagJsonWalker,
-  jsonWalker
-]
 
 interface DatastorePin {
   /**
@@ -68,16 +59,12 @@ function toDSKey (cid: CID): Key {
 export class PinsImpl implements Pins {
   private readonly datastore: Datastore
   private readonly blockstore: Blockstore
-  private dagWalkers: Record<number, DAGWalker>
+  private readonly dagWalkers: Record<number, DAGWalker>
 
-  constructor (datastore: Datastore, blockstore: Blockstore, dagWalkers: DAGWalker[]) {
+  constructor (datastore: Datastore, blockstore: Blockstore, dagWalkers: Record<number, DAGWalker>) {
     this.datastore = datastore
     this.blockstore = blockstore
-    this.dagWalkers = {}
-
-    ;[...DEFAULT_DAG_WALKERS, ...dagWalkers].forEach(dagWalker => {
-      this.dagWalkers[dagWalker.codec] = dagWalker
-    })
+    this.dagWalkers = dagWalkers
   }
 
   async * add (cid: CID<unknown, number, number, Version>, options: AddOptions = {}): AsyncGenerator<CID, void, undefined> {

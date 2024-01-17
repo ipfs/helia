@@ -33,8 +33,7 @@ describe('networked-storage', () => {
     bitswap = stubInterface()
     storage = new NetworkedStorage({
       blockstore,
-      logger: defaultLogger()
-    }, {
+      logger: defaultLogger(),
       blockBrokers: [
         bitswap
       ],

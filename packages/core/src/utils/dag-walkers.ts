@@ -180,12 +180,19 @@ export const jsonWalker: DAGWalker = {
   * walk () {}
 }
 
-export function defaultDagWalkers (walkers: DAGWalker[] = []): DAGWalker[] {
-  return [
+export function defaultDagWalkers (walkers: DAGWalker[] = []): Record<number, DAGWalker> {
+  const output: Record<number, DAGWalker> = {}
+
+  ;[
     dagPbWalker,
     rawWalker,
     dagCborWalker,
     dagJsonWalker,
+    jsonWalker,
     ...walkers
-  ]
+  ].forEach(dagWalker => {
+    output[dagWalker.codec] = dagWalker
+  })
+
+  return output
 }

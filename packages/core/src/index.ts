@@ -105,37 +105,48 @@ export interface HeliaInit {
   components?: Record<string, any>
 }
 
+interface Components {
+  blockstore: Blockstore
+  datastore: Datastore
+  hashers: Record<number, MultihashHasher>
+  dagWalkers: Record<number, DAGWalker>
+  logger: ComponentLogger
+  blockBrokers: BlockBroker[]
+}
+
 export class Helia implements HeliaInterface {
   public blockstore: BlockStorage
   public datastore: Datastore
   public pins: Pins
   public logger: ComponentLogger
   public routing: Routing
+  public dagWalkers: Record<number, DAGWalker>
+  public hashers: Record<number, MultihashHasher>
   private readonly log: Logger
 
   constructor (init: HeliaInit) {
     this.logger = init.logger ?? defaultLogger()
     this.log = this.logger.forComponent('helia')
-    const hashers = defaultHashers(init.hashers)
+    this.hashers = defaultHashers(init.hashers)
+    this.dagWalkers = defaultDagWalkers(init.dagWalkers)
 
-    const components = {
+    const components: Components = {
       blockstore: init.blockstore,
       datastore: init.datastore,
-      hashers,
+      hashers: this.hashers,
+      dagWalkers: this.dagWalkers,
       logger: this.logger,
+      blockBrokers: [],
       ...(init.components ?? {})
     }
 
-    const blockBrokers = init.blockBrokers.map((fn) => {
+    components.blockBrokers = init.blockBrokers.map((fn) => {
       return fn(components)
     })
 
-    const networkedStorage = new NetworkedStorage(components, {
-      blockBrokers,
-      hashers
-    })
+    const networkedStorage = new NetworkedStorage(components)
 
-    this.pins = new PinsImpl(init.datastore, networkedStorage, defaultDagWalkers(init.dagWalkers))
+    this.pins = new PinsImpl(init.datastore, networkedStorage, this.dagWalkers)
 
     this.blockstore = new BlockStorage(networkedStorage, this.pins, {
       holdGcLock: init.holdGcLock ?? true

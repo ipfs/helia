@@ -62,7 +62,7 @@ import drain from 'it-drain'
 import map from 'it-map'
 import defer from 'p-defer'
 import PQueue from 'p-queue'
-import { cborWalker, dagPbWalker, jsonWalker, rawWalker } from './utils/dag-walkers.js'
+import type { DAGWalker } from '@helia/interface'
 import type { Blocks, GetBlockProgressEvents, PutManyBlocksProgressEvents } from '@helia/interface/blocks'
 import type { CarReader, CarWriter } from '@ipld/car'
 import type { AbortOptions } from '@libp2p/interfaces'
@@ -71,23 +71,7 @@ import type { ProgressOptions } from 'progress-events'
 
 export interface CarComponents {
   blockstore: Blocks
-}
-
-export interface CarInit {
-  /**
-   * In order to export CIDs that correspond to a DAG, it's necessary to know
-   * how to traverse that DAG.  DAGWalkers take a block and yield any CIDs
-   * encoded within that block.
-   */
-  dagWalkers?: DAGWalker[]
-}
-
-/**
- * DAGWalkers take a block and yield CIDs encoded in that block
- */
-export interface DAGWalker {
-  codec: number
-  walk(block: Uint8Array): AsyncGenerator<CID, void, undefined>
+  dagWalkers: Record<number, DAGWalker>
 }
 
 /**
@@ -146,27 +130,13 @@ export interface Car {
   export(root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): Promise<void>
 }
 
-const DEFAULT_DAG_WALKERS = [
-  rawWalker,
-  dagPbWalker,
-  cborWalker,
-  jsonWalker
-]
-
 const DAG_WALK_QUEUE_CONCURRENCY = 1
 
 class DefaultCar implements Car {
   private readonly components: CarComponents
-  private dagWalkers: Record<number, DAGWalker>
 
-  constructor (components: CarComponents, init: CarInit) {
+  constructor (components: CarComponents, init: any) {
     this.components = components
-
-    this.dagWalkers = {}
-
-    ;[...DEFAULT_DAG_WALKERS, ...(init.dagWalkers ?? [])].forEach(dagWalker => {
-      this.dagWalkers[dagWalker.codec] = dagWalker
-    })
   }
 
   async import (reader: Pick<CarReader, 'blocks'>, options?: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents>): Promise<void> {
@@ -188,7 +158,7 @@ class DefaultCar implements Car {
       deferred.resolve()
     })
     queue.on('error', (err) => {
-      deferred.resolve(err)
+      deferred.reject(err)
     })
 
     for (const root of roots) {
@@ -212,7 +182,7 @@ class DefaultCar implements Car {
    * and update the pin count for them
    */
   async #walkDag (cid: CID, queue: PQueue, withBlock: (cid: CID, block: Uint8Array) => Promise<void>, options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): Promise<void> {
-    const dagWalker = this.dagWalkers[cid.code]
+    const dagWalker = this.components.dagWalkers[cid.code]
 
     if (dagWalker == null) {
       throw new Error(`No dag walker found for cid codec ${cid.code}`)
@@ -234,6 +204,6 @@ class DefaultCar implements Car {
 /**
  * Create a {@link Car} instance for use with {@link https://github.com/ipfs/helia Helia}
  */
-export function car (helia: { blockstore: Blocks }, init: CarInit = {}): Car {
+export function car (helia: { blockstore: Blocks, dagWalkers: Record<number, DAGWalker> }, init: any = {}): Car {
   return new DefaultCar(helia, init)
 }
