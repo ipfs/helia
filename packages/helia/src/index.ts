@@ -19,13 +19,15 @@
  * ```
  */
 
+import { bitswap, trustlessGateway } from '@helia/block-brokers'
+import { libp2pRouting } from '@helia/routers'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
-import { HeliaImpl } from './helia.js'
+import { HeliaP2P } from './helia-p2p.js'
 import { libp2pDefaults } from './utils/libp2p-defaults.js'
 import { createLibp2p } from './utils/libp2p.js'
 import type { DefaultLibp2pServices } from './utils/libp2p-defaults.js'
-import type { Helia } from '@helia/interface'
+import type { Helia } from '@helia/core'
 import type { BlockBroker } from '@helia/interface/blocks'
 import type { ComponentLogger, Libp2p } from '@libp2p/interface'
 import type { KeychainInit } from '@libp2p/keychain'
@@ -38,8 +40,6 @@ import type { MultihashHasher } from 'multiformats/hashes/interface'
 // re-export interface types so people don't have to depend on @helia/interface
 // if they don't want to
 export * from '@helia/interface'
-export * from '@helia/interface/blocks'
-export * from '@helia/interface/pins'
 
 export type { DefaultLibp2pServices }
 export { libp2pDefaults }
@@ -132,12 +132,16 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
   keychain?: KeychainInit
 }
 
+export interface HeliaLibp2p<T extends Libp2p = Libp2p<DefaultLibp2pServices>> extends Helia {
+  libp2p: T
+}
+
 /**
  * Create and return a Helia node
  */
-export async function createHelia <T extends Libp2p> (init: HeliaInit<T>): Promise<Helia<T>>
-export async function createHelia (init?: HeliaInit<Libp2p<DefaultLibp2pServices>>): Promise<Helia<Libp2p<DefaultLibp2pServices>>>
-export async function createHelia (init: HeliaInit = {}): Promise<Helia<unknown>> {
+export async function createHelia <T extends Libp2p> (init: HeliaInit<T>): Promise<HeliaLibp2p<T>>
+export async function createHelia (init?: HeliaInit<Libp2p<DefaultLibp2pServices>>): Promise<HeliaLibp2p<Libp2p<DefaultLibp2pServices>>>
+export async function createHelia (init: HeliaInit = {}): Promise<HeliaLibp2p> {
   const datastore = init.datastore ?? new MemoryDatastore()
   const blockstore = init.blockstore ?? new MemoryBlockstore()
 
@@ -153,11 +157,18 @@ export async function createHelia (init: HeliaInit = {}): Promise<Helia<unknown>
     })
   }
 
-  const helia = new HeliaImpl({
+  const helia = new HeliaP2P({
     ...init,
     libp2p,
     datastore,
-    blockstore
+    blockstore,
+    blockBrokers: init.blockBrokers ?? [
+      trustlessGateway(),
+      bitswap()
+    ],
+    routers: [
+      libp2pRouting(libp2p)
+    ]
   })
 
   if (init.start !== false) {

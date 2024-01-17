@@ -16,7 +16,8 @@
 
 import type { Blocks } from './blocks.js'
 import type { Pins } from './pins.js'
-import type { Libp2p, AbortOptions, ComponentLogger } from '@libp2p/interface'
+import type { Routing } from './routing.js'
+import type { AbortOptions, ComponentLogger } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
@@ -24,14 +25,9 @@ import type { ProgressEvent, ProgressOptions } from 'progress-events'
 export type { Await, AwaitIterable } from 'interface-store'
 
 /**
- * The API presented by a Helia node.
+ * The API presented by a Helia node
  */
-export interface Helia<T = Libp2p> {
-  /**
-   * The underlying libp2p node
-   */
-  libp2p: T
-
+export interface Helia {
   /**
    * Where the blocks are stored
    */
@@ -51,6 +47,12 @@ export interface Helia<T = Libp2p> {
    * A logging component that can be reused by consumers
    */
   logger: ComponentLogger
+
+  /**
+   * The routing component allows performing operations such as looking up
+   * content providers, information about peers, etc.
+   */
+  routing: Routing
 
   /**
    * Starts the Helia node
@@ -75,3 +77,15 @@ export type GcEvents =
 export interface GCOptions extends AbortOptions, ProgressOptions<GcEvents> {
 
 }
+
+/**
+ * DAGWalkers take a block and yield CIDs encoded in that block
+ */
+export interface DAGWalker {
+  codec: number
+  walk(block: Uint8Array): Generator<CID, void, undefined>
+}
+
+export * from './blocks.js'
+export * from './pins.js'
+export * from './routing.js'

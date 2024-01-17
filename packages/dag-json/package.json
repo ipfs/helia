@@ -140,14 +140,14 @@
   },
   "dependencies": {
     "@helia/interface": "^3.0.1",
-    "@ipld/dag-json": "^10.0.1",
+    "@ipld/dag-json": "^10.1.5",
     "@libp2p/interfaces": "^3.3.1",
     "multiformats": "^13.0.0",
     "progress-events": "^1.0.0"
   },
   "devDependencies": {
     "aegir": "^42.1.0",
-    "blockstore-core": "^4.3.8",
+    "blockstore-core": "^4.3.10",
     "interface-blockstore": "^5.2.9"
   }
 }

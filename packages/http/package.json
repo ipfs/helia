@@ -1,0 +1,71 @@
+{
+  "name": "@helia/http",
+  "version": "0.9.0",
+  "description": "A lightweight implementation of IPFS over HTTP in JavaScript",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/ipfs/helia/tree/main/packages/http#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ipfs/helia.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ipfs/helia/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "IPFS"
+  ],
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "project": true,
+      "sourceType": "module"
+    }
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "build": "aegir build",
+    "test": "aegir test",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main"
+  },
+  "dependencies": {
+    "@helia/block-brokers": "^1.0.0",
+    "@helia/core": "^0.0.0",
+    "@helia/interface": "^3.0.1",
+    "@helia/routers": "^0.0.0",
+    "blockstore-core": "^4.3.8",
+    "datastore-core": "^9.2.6"
+  },
+  "devDependencies": {
+    "@libp2p/interface": "^1.1.1",
+    "aegir": "^42.1.0",
+    "interface-datastore": "^8.2.10",
+    "multiformats": "^13.0.1",
+    "sinon": "^17.0.1",
+    "sinon-ts": "^2.0.0"
+  }
+}

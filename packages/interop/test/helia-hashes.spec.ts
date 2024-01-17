@@ -8,11 +8,11 @@ import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
-import type { Helia } from '@helia/interface'
+import type { HeliaLibp2p } from 'helia'
 import type { Controller } from 'ipfsd-ctl'
 
 describe('helia - hashes', () => {
-  let helia: Helia
+  let helia: HeliaLibp2p
   let kubo: Controller
 
   beforeEach(async () => {

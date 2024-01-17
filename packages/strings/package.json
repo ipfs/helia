@@ -149,7 +149,7 @@
   },
   "devDependencies": {
     "aegir": "^42.1.0",
-    "blockstore-core": "^4.3.8",
+    "blockstore-core": "^4.3.10",
     "interface-blockstore": "^5.2.9"
   }
 }

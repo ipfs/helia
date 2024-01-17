@@ -55,24 +55,15 @@
   "dependencies": {
     "@helia/interface": "^3.0.1",
     "@libp2p/interface": "^1.1.1",
-    "any-signal": "^4.1.1",
     "interface-blockstore": "^5.2.7",
-    "interface-store": "^5.1.5",
     "ipfs-bitswap": "^20.0.0",
-    "it-filter": "^3.0.4",
-    "it-foreach": "^2.0.6",
     "multiformats": "^13.0.0",
-    "progress-events": "^1.0.0",
-    "uint8arrays": "^5.0.1"
+    "progress-events": "^1.0.0"
   },
   "devDependencies": {
-    "@libp2p/logger": "^4.0.1",
+    "@libp2p/logger": "^4.0.4",
     "@types/sinon": "^17.0.2",
     "aegir": "^42.1.0",
-    "blockstore-core": "^4.3.8",
-    "delay": "^6.0.0",
-    "it-all": "^3.0.4",
-    "it-drain": "^3.0.5",
     "sinon": "^17.0.1",
     "sinon-ts": "^2.0.0"
   }

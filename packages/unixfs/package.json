@@ -160,7 +160,7 @@
   },
   "dependencies": {
     "@helia/interface": "^3.0.1",
-    "@ipld/dag-pb": "^4.0.3",
+    "@ipld/dag-pb": "^4.0.6",
     "@libp2p/interface": "^1.1.1",
     "@libp2p/logger": "^4.0.4",
     "@multiformats/murmur3": "^2.1.2",
@@ -179,7 +179,7 @@
   },
   "devDependencies": {
     "aegir": "^42.1.0",
-    "blockstore-core": "^4.3.8",
+    "blockstore-core": "^4.3.10",
     "delay": "^6.0.0",
     "interface-blockstore": "^5.2.9",
     "iso-url": "^1.2.1",

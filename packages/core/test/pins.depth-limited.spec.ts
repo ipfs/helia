@@ -1,14 +1,9 @@
 /* eslint-env mocha */
-import { noise } from '@chainsafe/libp2p-noise'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { webSockets } from '@libp2p/websockets'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
-import { MemoryDatastore } from 'datastore-core'
 import drain from 'it-drain'
-import { createLibp2p } from 'libp2p'
-import { createHelia } from '../src/index.js'
 import { createDag, type DAGNode } from './fixtures/create-dag.js'
+import { createHelia } from './fixtures/create-helia.js'
 import { dagWalker } from './fixtures/dag-walker.js'
 import type { Helia } from '@helia/interface'
 
@@ -28,20 +23,8 @@ describe('pins (depth limited)', () => {
     dag = await createDag(codec, blockstore, MAX_DEPTH, 3)
 
     helia = await createHelia({
-      blockBrokers: [],
-      datastore: new MemoryDatastore(),
       blockstore,
-      libp2p: await createLibp2p({
-        transports: [
-          webSockets()
-        ],
-        connectionEncryption: [
-          noise()
-        ],
-        streamMuxers: [
-          yamux()
-        ]
-      }),
+      blockBrokers: [],
       dagWalkers: [
         dagWalker(codec, dag)
       ]

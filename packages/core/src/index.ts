@@ -1,0 +1,214 @@
+/**
+ * @packageDocumentation
+ *
+ * Exports a `Helia` class that implements the {@link HeliaInterface} API.
+ *
+ * In general you should use the `helia` or `@helia/http` modules instead which
+ * pre-configure Helia for certain use-cases (p2p or pure-HTTP).
+ *
+ * @example
+ *
+ * ```typescript
+ * import { Helia } from '@helia/core'
+ *
+ * const node = new Helia({
+ *   // ...options
+ * })
+ * ```
+ */
+
+import { contentRoutingSymbol, peerRoutingSymbol, start, stop } from '@libp2p/interface'
+import { defaultLogger } from '@libp2p/logger'
+import drain from 'it-drain'
+import { CustomProgressEvent } from 'progress-events'
+import { PinsImpl } from './pins.js'
+import { Routing as RoutingClass } from './routing.js'
+import { BlockStorage } from './storage.js'
+import { defaultDagWalkers } from './utils/dag-walkers.js'
+import { assertDatastoreVersionIsCurrent } from './utils/datastore-version.js'
+import { defaultHashers } from './utils/default-hashers.js'
+import { NetworkedStorage } from './utils/networked-storage.js'
+import type { DAGWalker, GCOptions, Helia as HeliaInterface, Routing } from '@helia/interface'
+import type { BlockBroker } from '@helia/interface/blocks'
+import type { Pins } from '@helia/interface/pins'
+import type { ComponentLogger, Logger } from '@libp2p/interface'
+import type { Blockstore } from 'interface-blockstore'
+import type { Datastore } from 'interface-datastore'
+import type { CID } from 'multiformats/cid'
+import type { MultihashHasher } from 'multiformats/hashes/interface'
+
+/**
+ * Options used to create a Helia node.
+ */
+export interface HeliaInit {
+  /**
+   * The blockstore is where blocks are stored
+   */
+  blockstore: Blockstore
+
+  /**
+   * The datastore is where data is stored
+   */
+  datastore: Datastore
+
+  /**
+   * By default sha256, sha512 and identity hashes are supported for
+   * bitswap operations. To bitswap blocks with CIDs using other hashes
+   * pass appropriate MultihashHashers here.
+   */
+  hashers?: MultihashHasher[]
+
+  /**
+   * In order to pin CIDs that correspond to a DAG, it's necessary to know
+   * how to traverse that DAG.  DAGWalkers take a block and yield any CIDs
+   * encoded within that block.
+   */
+  dagWalkers?: DAGWalker[]
+
+  /**
+   * A list of strategies used to fetch blocks when they are not present in
+   * the local blockstore
+   */
+  blockBrokers: Array<(components: any) => BlockBroker>
+
+  /**
+   * Garbage collection requires preventing blockstore writes during searches
+   * for unpinned blocks as DAGs are typically pinned after they've been
+   * imported - without locking this could lead to the deletion of blocks while
+   * they are being added to the blockstore.
+   *
+   * By default this lock is held on the current process and other processes
+   * will contact this process for access.
+   *
+   * If Helia is being run in multiple processes, one process must hold the GC
+   * lock so use this option to control which process that is.
+   *
+   * @default true
+   */
+  holdGcLock?: boolean
+
+  /**
+   * An optional logging component to pass to libp2p. If not specified the
+   * default implementation from libp2p will be used.
+   */
+  logger?: ComponentLogger
+
+  /**
+   * Routers perform operations such as looking up content providers,
+   * information about network peers or getting/putting records.
+   */
+  routers?: Array<Partial<Routing>>
+
+  /**
+   * Components used by subclasses
+   */
+  components?: Record<string, any>
+}
+
+export class Helia implements HeliaInterface {
+  public blockstore: BlockStorage
+  public datastore: Datastore
+  public pins: Pins
+  public logger: ComponentLogger
+  public routing: Routing
+  private readonly log: Logger
+
+  constructor (init: HeliaInit) {
+    this.logger = init.logger ?? defaultLogger()
+    this.log = this.logger.forComponent('helia')
+    const hashers = defaultHashers(init.hashers)
+
+    const components = {
+      blockstore: init.blockstore,
+      datastore: init.datastore,
+      hashers,
+      logger: this.logger,
+      ...(init.components ?? {})
+    }
+
+    const blockBrokers = init.blockBrokers.map((fn) => {
+      return fn(components)
+    })
+
+    const networkedStorage = new NetworkedStorage(components, {
+      blockBrokers,
+      hashers
+    })
+
+    this.pins = new PinsImpl(init.datastore, networkedStorage, defaultDagWalkers(init.dagWalkers))
+
+    this.blockstore = new BlockStorage(networkedStorage, this.pins, {
+      holdGcLock: init.holdGcLock ?? true
+    })
+    this.datastore = init.datastore
+    this.routing = new RoutingClass(components, {
+      routers: (init.routers ?? []).flatMap((router: any) => {
+        // if the router itself is a router
+        const routers = [
+          router
+        ]
+
+        // if the router provides a libp2p-style ContentRouter
+        if (router[contentRoutingSymbol] != null) {
+          routers.push(router[contentRoutingSymbol])
+        }
+
+        // if the router provides a libp2p-style PeerRouter
+        if (router[peerRoutingSymbol] != null) {
+          routers.push(router[peerRoutingSymbol])
+        }
+
+        return routers
+      })
+    })
+  }
+
+  async start (): Promise<void> {
+    await assertDatastoreVersionIsCurrent(this.datastore)
+    await start(
+      this.blockstore,
+      this.datastore,
+      this.routing
+    )
+  }
+
+  async stop (): Promise<void> {
+    await stop(
+      this.blockstore,
+      this.datastore,
+      this.routing
+    )
+  }
+
+  async gc (options: GCOptions = {}): Promise<void> {
+    const releaseLock = await this.blockstore.lock.writeLock()
+
+    try {
+      const helia = this
+      const blockstore = this.blockstore.unwrap()
+
+      this.log('gc start')
+
+      await drain(blockstore.deleteMany((async function * (): AsyncGenerator<CID> {
+        for await (const { cid } of blockstore.getAll()) {
+          try {
+            if (await helia.pins.isPinned(cid, options)) {
+              continue
+            }
+
+            yield cid
+
+            options.onProgress?.(new CustomProgressEvent<CID>('helia:gc:deleted', cid))
+          } catch (err) {
+            helia.log.error('Error during gc', err)
+            options.onProgress?.(new CustomProgressEvent<Error>('helia:gc:error', err))
+          }
+        }
+      }())))
+    } finally {
+      releaseLock()
+    }
+
+    this.log('gc finished')
+  }
+}

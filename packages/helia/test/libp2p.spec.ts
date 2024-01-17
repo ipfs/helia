@@ -1,13 +1,11 @@
 /* eslint-env mocha */
 
-import { webSockets } from '@libp2p/websockets'
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
-import { createHelia } from '../src/index.js'
-import type { Helia } from '@helia/interface'
+import { createHelia, type HeliaLibp2p } from '../src/index.js'
 
 describe('libp2p', () => {
-  let helia: Helia
+  let helia: HeliaLibp2p<any>
 
   afterEach(async () => {
     if (helia != null) {
@@ -38,11 +36,7 @@ describe('libp2p', () => {
   })
 
   it('allows passing a libp2p node', async () => {
-    const libp2p = await createLibp2p({
-      transports: [
-        webSockets()
-      ]
-    })
+    const libp2p = await createLibp2p()
 
     helia = await createHelia({
       libp2p

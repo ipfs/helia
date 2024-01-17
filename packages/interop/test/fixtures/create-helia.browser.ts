@@ -5,11 +5,10 @@ import { webSockets } from '@libp2p/websockets'
 import { all } from '@libp2p/websockets/filters'
 import { sha3512 } from '@multiformats/sha3'
 import { createHelia, libp2pDefaults } from 'helia'
-import type { Helia } from '@helia/interface'
 import type { Libp2p } from '@libp2p/interface'
-import type { DefaultLibp2pServices } from 'helia'
+import type { DefaultLibp2pServices, HeliaLibp2p } from 'helia'
 
-export async function createHeliaNode (): Promise<Helia<Libp2p<DefaultLibp2pServices>>> {
+export async function createHeliaNode (): Promise<HeliaLibp2p<Libp2p<DefaultLibp2pServices>>> {
   const defaults = libp2pDefaults()
 
   // allow dialing insecure WebSockets

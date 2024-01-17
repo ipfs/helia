@@ -10,7 +10,7 @@ import { CID } from 'multiformats'
 import { base64 } from 'multiformats/bases/base64'
 import * as json from 'multiformats/codecs/json'
 import * as raw from 'multiformats/codecs/raw'
-import type { DAGWalker } from '../index.js'
+import type { DAGWalker } from '@helia/interface'
 
 /**
  * Dag walker for dag-pb CIDs
@@ -178,4 +178,14 @@ export const dagJsonWalker: DAGWalker = {
 export const jsonWalker: DAGWalker = {
   codec: json.code,
   * walk () {}
+}
+
+export function defaultDagWalkers (walkers: DAGWalker[] = []): DAGWalker[] {
+  return [
+    dagPbWalker,
+    rawWalker,
+    dagCborWalker,
+    dagJsonWalker,
+    ...walkers
+  ]
 }
