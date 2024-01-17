@@ -17,7 +17,7 @@
 
 `@helia/unixfs` is an implementation of a filesystem compatible with Helia.
 
-See the interface for all available operations.
+See the [API docs](https://ipfs.github.io/helia/modules/_helia_unixfs.html) for all available operations.
 
 ## Example - Creating files and directories
 

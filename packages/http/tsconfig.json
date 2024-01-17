@@ -12,13 +12,13 @@
       "path": "../block-brokers"
     },
     {
-      "path": "../core"
-    },
-    {
       "path": "../interface"
     },
     {
       "path": "../routers"
+    },
+    {
+      "path": "../utils"
     }
   ]
 }

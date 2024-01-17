@@ -146,11 +146,11 @@
     "interface-datastore": "^8.2.9",
     "ipfs-unixfs": "^11.0.0",
     "ipfs-unixfs-exporter": "^13.1.0",
-    "ipfs-unixfs-importer": "^15.1.0",
+    "ipfs-unixfs-importer": "^15.2.3",
     "multiformats": "^13.0.0"
   },
   "devDependencies": {
-    "@ipld/dag-pb": "^4.0.7",
+    "@ipld/dag-pb": "^4.0.8",
     "aegir": "^42.1.0",
     "blockstore-core": "^4.3.10",
     "datastore-core": "^9.2.7",

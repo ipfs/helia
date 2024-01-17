@@ -1,9 +1,9 @@
 {
-  "name": "@helia/core",
+  "name": "@helia/utils",
   "version": "0.0.0",
   "description": "Shared code that implements the Helia API",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/ipfs/helia/tree/main/packages/core#readme",
+  "homepage": "https://github.com/ipfs/helia/tree/main/packages/utils#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ipfs/helia.git"
@@ -54,7 +54,7 @@
   },
   "dependencies": {
     "@helia/interface": "^3.0.1",
-    "@ipld/dag-cbor": "^9.0.6",
+    "@ipld/dag-cbor": "^9.0.7",
     "@ipld/dag-json": "^10.1.5",
     "@ipld/dag-pb": "^4.0.6",
     "@libp2p/interface": "^1.1.1",

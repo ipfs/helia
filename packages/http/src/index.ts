@@ -44,8 +44,8 @@
  */
 
 import { trustlessGateway } from '@helia/block-brokers'
-import { Helia as HeliaClass, type HeliaInit } from '@helia/core'
 import { delegatedHTTPRouting } from '@helia/routers'
+import { Helia as HeliaClass, type HeliaInit } from '@helia/utils'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import type { Helia } from '@helia/interface'

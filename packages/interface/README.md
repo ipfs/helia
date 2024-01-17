@@ -11,6 +11,20 @@
 
 > The Helia API
 
+# About
+
+The API defined by a Helia node
+
+## Example
+
+```typescript
+import type { Helia } from '@helia/interface'
+
+export function doSomething(helia: Helia) {
+  // use helia node functions here
+}
+```
+
 # Install
 
 ```console

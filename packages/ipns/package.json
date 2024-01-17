@@ -168,12 +168,12 @@
     "@libp2p/interface": "^1.1.1",
     "@libp2p/kad-dht": "^12.0.2",
     "@libp2p/logger": "^4.0.4",
-    "@libp2p/peer-id": "^4.0.4",
+    "@libp2p/peer-id": "^4.0.5",
     "dns-over-http-resolver": "^3.0.0",
     "dns-packet": "^5.6.0",
     "hashlru": "^2.3.0",
     "interface-datastore": "^8.2.9",
-    "ipns": "^8.0.0",
+    "ipns": "^8.0.3",
     "is-ipfs": "^8.0.1",
     "multiformats": "^13.0.0",
     "p-queue": "^8.0.1",
@@ -181,7 +181,7 @@
     "uint8arrays": "^5.0.1"
   },
   "devDependencies": {
-    "@libp2p/peer-id-factory": "^4.0.3",
+    "@libp2p/peer-id-factory": "^4.0.5",
     "@types/dns-packet": "^5.6.4",
     "aegir": "^42.1.0",
     "datastore-core": "^9.2.7",

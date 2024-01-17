@@ -21,7 +21,7 @@ pre-configure Helia for certain use-cases (p2p or pure-HTTP).
 ## Example
 
 ```typescript
-import { Helia } from '@helia/core'
+import { Helia } from '@helia/utils'
 
 const node = new Helia({
   // ...options
@@ -31,20 +31,20 @@ const node = new Helia({
 # Install
 
 ```console
-$ npm i @helia/core
+$ npm i @helia/utils
 ```
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `HeliaCore` in the global namespace.
+Loading this module through a script tag will make it's exports available as `HeliaUtils` in the global namespace.
 
 ```html
-<script src="https://unpkg.com/@helia/core/dist/index.min.js"></script>
+<script src="https://unpkg.com/@helia/utils/dist/index.min.js"></script>
 ```
 
 # API Docs
 
-- <https://ipfs.github.io/helia/modules/_helia_core.html>
+- <https://ipfs.github.io/helia/modules/_helia_utils.html>
 
 # License
 

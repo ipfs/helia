@@ -1,4 +1,4 @@
-import { Helia, type HeliaInit } from '@helia/core'
+import { Helia, type HeliaInit } from '@helia/utils'
 import type { BlockBroker } from './index.js'
 import type { Libp2p } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'

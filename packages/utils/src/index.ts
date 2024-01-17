@@ -9,7 +9,7 @@
  * @example
  *
  * ```typescript
- * import { Helia } from '@helia/core'
+ * import { Helia } from '@helia/utils'
  *
  * const node = new Helia({
  *   // ...options
