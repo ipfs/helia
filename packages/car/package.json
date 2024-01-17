@@ -140,10 +140,10 @@
   },
   "dependencies": {
     "@helia/interface": "^3.0.1",
-    "@ipld/car": "^5.1.1",
+    "@ipld/car": "^5.2.5",
     "@libp2p/interfaces": "^3.3.1",
     "it-drain": "^3.0.5",
-    "it-map": "^3.0.3",
+    "it-map": "^3.0.5",
     "multiformats": "^13.0.0",
     "p-defer": "^4.0.0",
     "p-queue": "^8.0.1",

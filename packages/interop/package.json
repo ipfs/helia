@@ -70,7 +70,7 @@
     "@ipld/dag-cbor": "^9.0.7",
     "@libp2p/interface": "^1.1.1",
     "@libp2p/kad-dht": "^12.0.2",
-    "@libp2p/peer-id": "^4.0.3",
+    "@libp2p/peer-id": "^4.0.5",
     "@libp2p/peer-id-factory": "^4.0.3",
     "@libp2p/websockets": "^8.0.10",
     "@multiformats/sha3": "^3.0.0",

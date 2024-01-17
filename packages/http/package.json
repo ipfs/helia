@@ -54,9 +54,9 @@
   },
   "dependencies": {
     "@helia/block-brokers": "^1.0.0",
-    "@helia/core": "^0.0.0",
     "@helia/interface": "^3.0.1",
     "@helia/routers": "^0.0.0",
+    "@helia/utils": "^0.0.0",
     "blockstore-core": "^4.3.8",
     "datastore-core": "^9.2.6"
   },
