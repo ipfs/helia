@@ -1,4 +1,4 @@
-import type { Libp2pContentRoutingProgressEvents } from './libp2p.js'
+import type { HeliaRoutingProgressEvents } from './helia.js'
 import type { DatastoreProgressEvents } from './local-store.js'
 import type { PubSubProgressEvents } from './pubsub.js'
 import type { AbortOptions } from '@libp2p/interface'
@@ -19,8 +19,8 @@ export interface IPNSRouting {
 
 export type IPNSRoutingEvents =
   DatastoreProgressEvents |
-  Libp2pContentRoutingProgressEvents |
+  HeliaRoutingProgressEvents |
   PubSubProgressEvents
 
-export { libp2p } from './libp2p.js'
+export { helia } from './helia.js'
 export { pubsub } from './pubsub.js'

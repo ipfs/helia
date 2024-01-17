@@ -8,19 +8,22 @@ import Sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { ipns } from '../src/index.js'
 import type { IPNS, IPNSRouting } from '../src/index.js'
+import type { Routing } from '@helia/interface'
 
 const cid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
 
 describe('publish', () => {
   let name: IPNS
-  let routing: StubbedInstance<IPNSRouting>
+  let customRouting: StubbedInstance<IPNSRouting>
+  let heliaRouting: StubbedInstance<Routing>
 
   beforeEach(async () => {
     const datastore = new MemoryDatastore()
-    routing = stubInterface<IPNSRouting>()
-    routing.get.throws(new Error('Not found'))
+    customRouting = stubInterface<IPNSRouting>()
+    customRouting.get.throws(new Error('Not found'))
+    heliaRouting = stubInterface<Routing>()
 
-    name = ipns({ datastore }, { routers: [routing] })
+    name = ipns({ datastore, routing: heliaRouting }, { routers: [customRouting] })
   })
 
   it('should publish an IPNS record with the default params', async function () {
@@ -40,6 +43,9 @@ describe('publish', () => {
 
     expect(ipnsEntry).to.have.property('sequence', 1n)
     expect(ipnsEntry).to.have.property('ttl', BigInt(lifetime) * 100000n)
+
+    expect(heliaRouting.put.called).to.be.true()
+    expect(customRouting.put.called).to.be.true()
   })
 
   it('should publish a record offline', async () => {
@@ -48,7 +54,8 @@ describe('publish', () => {
       offline: true
     })
 
-    expect(routing.put.called).to.be.false()
+    expect(heliaRouting.put.called).to.be.false()
+    expect(customRouting.put.called).to.be.false()
   })
 
   it('should emit progress events', async function () {

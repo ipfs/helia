@@ -12,20 +12,23 @@ import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { ipns } from '../src/index.js'
 import type { IPNS, IPNSRouting } from '../src/index.js'
+import type { Routing } from '@helia/interface'
 
 const cid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
 
 describe('resolve', () => {
   let name: IPNS
-  let routing: StubbedInstance<IPNSRouting>
+  let customRouting: StubbedInstance<IPNSRouting>
   let datastore: Datastore
+  let heliaRouting: StubbedInstance<Routing>
 
   beforeEach(async () => {
     datastore = new MemoryDatastore()
-    routing = stubInterface<IPNSRouting>()
-    routing.get.throws(new Error('Not found'))
+    customRouting = stubInterface<IPNSRouting>()
+    customRouting.get.throws(new Error('Not found'))
+    heliaRouting = stubInterface<Routing>()
 
-    name = ipns({ datastore }, { routers: [routing] })
+    name = ipns({ datastore, routing: heliaRouting }, { routers: [customRouting] })
   })
 
   it('should resolve a record', async () => {
@@ -39,19 +42,24 @@ describe('resolve', () => {
     }
 
     expect(resolvedValue.toString()).to.equal(cid.toV1().toString())
+
+    expect(heliaRouting.get.called).to.be.true()
+    expect(customRouting.get.called).to.be.true()
   })
 
   it('should resolve a record offline', async () => {
     const key = await createEd25519PeerId()
     await name.publish(key, cid)
 
-    expect(routing.put.called).to.be.true()
+    expect(heliaRouting.put.called).to.be.true()
+    expect(customRouting.put.called).to.be.true()
 
     const resolvedValue = await name.resolve(key, {
       offline: true
     })
 
-    expect(routing.get.called).to.be.false()
+    expect(heliaRouting.get.called).to.be.false()
+    expect(customRouting.get.called).to.be.false()
 
     if (resolvedValue == null) {
       throw new Error('Did not resolve entry')
@@ -89,15 +97,15 @@ describe('resolve', () => {
 
   it('should cache a record', async function () {
     const peerId = await createEd25519PeerId()
-    const routingKey = peerIdToRoutingKey(peerId)
-    const dhtKey = new Key('/dht/record/' + uint8ArrayToString(routingKey, 'base32'), false)
+    const customRoutingKey = peerIdToRoutingKey(peerId)
+    const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
 
     expect(datastore.has(dhtKey)).to.be.false('already had record')
 
     const record = await create(peerId, cid, 0n, 60000)
     const marshalledRecord = marshal(record)
 
-    routing.get.withArgs(routingKey).resolves(marshalledRecord)
+    customRouting.get.withArgs(customRoutingKey).resolves(marshalledRecord)
 
     const result = await name.resolve(peerId)
     expect(result.toString()).to.equal(cid.toV1().toString(), 'incorrect record resolved')
@@ -107,8 +115,8 @@ describe('resolve', () => {
 
   it('should cache the most recent record', async function () {
     const peerId = await createEd25519PeerId()
-    const routingKey = peerIdToRoutingKey(peerId)
-    const dhtKey = new Key('/dht/record/' + uint8ArrayToString(routingKey, 'base32'), false)
+    const customRoutingKey = peerIdToRoutingKey(peerId)
+    const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
 
     const marshalledRecordA = marshal(await create(peerId, cid, 0n, 60000))
     const marshalledRecordB = marshal(await create(peerId, cid, 10n, 60000))
@@ -118,7 +126,7 @@ describe('resolve', () => {
 
     // cache has older record
     await datastore.put(dhtKey, marshalledRecordA)
-    routing.get.withArgs(routingKey).resolves(marshalledRecordB)
+    customRouting.get.withArgs(customRoutingKey).resolves(marshalledRecordB)
 
     const result = await name.resolve(peerId)
     expect(result.toString()).to.equal(cid.toV1().toString(), 'incorrect record resolved')
