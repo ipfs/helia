@@ -41,5 +41,6 @@ describe('vnd.ipld.raw - unixfs - multiblock-json', () => {
     expect(jsonObj).to.have.property('logoURI').equal('ipfs://QmNa8mQkrNKp1WEEeGjFezDmDeodkWRevGFN8JCV7b4Xir')
     expect(jsonObj).to.have.property('keywords').to.deep.equal(['uniswap', 'default'])
     expect(jsonObj.tokens).to.be.an('array').of.length(767)
+    await verifiedFetch.stop()
   })
 })

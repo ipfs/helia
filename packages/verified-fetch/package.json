@@ -72,6 +72,7 @@
     "aegir": "^42.1.0",
     "ipfs-unixfs": "^11.1.2",
     "ipfsd-ctl": "^13.0.0",
+    "it-drain": "^3.0.5",
     "kubo": "^0.25.0",
     "kubo-rpc-client": "^3.0.2"
   },

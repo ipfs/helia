@@ -8,7 +8,7 @@ export default {
     bundlesizeMax: '10kB',
   },
   test: {
-    files: './dist/test/*.spec.js',
+    files: './dist/test/**/*.spec.js',
     before: async (options) => {
       const ipfsdPort = await getPort()
       const ipfsdServer = await createServer({

@@ -55,10 +55,15 @@ import { VerifiedFetch } from './verified-fetch.js'
 import type { CreateVerifiedFetchWithOptions } from './interface.js'
 import type { Helia, Routing } from '@helia/interface'
 
+export type VerifiedFetchMethod = InstanceType<typeof VerifiedFetch>['fetch'] & {
+  start: InstanceType<typeof VerifiedFetch>['start']
+  stop: InstanceType<typeof VerifiedFetch>['stop']
+}
+
 /**
  * Create and return a Helia node
  */
-export async function createVerifiedFetch (init: Helia | CreateVerifiedFetchWithOptions): Promise<InstanceType<typeof VerifiedFetch>['fetch'] & { start: InstanceType<typeof VerifiedFetch>['start'], stop: InstanceType<typeof VerifiedFetch>['stop'] }> {
+export async function createVerifiedFetch (init: Helia | CreateVerifiedFetchWithOptions): Promise<VerifiedFetchMethod> {
   let heliaInstance: null | Helia = null
   if ((init as CreateVerifiedFetchWithOptions).gateways == null) {
     heliaInstance = init as Helia
