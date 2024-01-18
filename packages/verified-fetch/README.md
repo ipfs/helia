@@ -13,7 +13,7 @@
 
 # About
 
-`@helia/verified-fetch`` is a library that provides a fetch-like API for fetching content from IPFS. This library should act as a replacement for the `fetch()` API for fetching content from IPFS, and will return a [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) object that can be used in a similar manner to the `fetch()` API. This means browser and HTTP caching inside browser main threads, web-workers, and service workers, as well as other features of the `fetch()` API should work in a way familiar to developers.
+`@helia/verified-fetch` is a library that provides a fetch-like API for fetching content from IPFS. This library should act as a replacement for the `fetch()` API for fetching content from IPFS, and will return a [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) object that can be used in a similar manner to the `fetch()` API. This means browser and HTTP caching inside browser main threads, web-workers, and service workers, as well as other features of the `fetch()` API should work in a way familiar to developers.
 
 ## Example
 
