@@ -1,25 +1,25 @@
 import { expect } from 'aegir/chai'
-import drain from 'it-drain'
+// import drain from 'it-drain'
+// import { create } from 'kubo-rpc-client'
 import { CID } from 'multiformats/cid'
 import { createVerifiedFetch } from '../src/index.js'
-import { createKuboNode } from './fixtures/create-kubo.js'
-import { importContentToKuboNode } from './fixtures/import-content-to-kubo-node.js'
-import type { Controller } from 'ipfsd-ctl'
+// import { importContentToKuboNode } from './fixtures/import-content-to-kubo-node.js'
 
 describe('vnd.ipld.raw - unixfs - multiblock-json', () => {
-  let controller: Controller<'go'>
+  // let rpcClient: ReturnType<typeof create>
   let verifiedFetch: Awaited<ReturnType<typeof createVerifiedFetch>>
 
   before(async () => {
-    controller = await createKuboNode()
-    await controller.start()
+    // rpcClient = create({
+    //   url: `${process.env.KUBO_RPC_ENDPOINT}`
+    // })
+
     verifiedFetch = await createVerifiedFetch({
-      gateways: [`http://${controller.api.gatewayHost}:${controller.api.gatewayPort}`]
+      gateways: [`${process.env.KUBO_GATEWAY}`]
     })
   })
 
   after(async () => {
-    await controller.stop()
     await verifiedFetch.stop()
   })
 
@@ -29,7 +29,7 @@ describe('vnd.ipld.raw - unixfs - multiblock-json', () => {
   // child2: QmWNBJX6fZyNTLWNYBHxAHpBctCP43R2zeqV2G8uavqFZn // partial JSON
   it('handles uniswap tokens list json', async () => {
     // add the root node to the kubo node
-    await drain(await importContentToKuboNode(controller, '/ipfs/QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr'))
+    // await drain(await importContentToKuboNode(rpcClient, '/ipfs/QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr'))
 
     const resp = await verifiedFetch(CID.parse('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr'))
     expect(resp).to.be.ok()
