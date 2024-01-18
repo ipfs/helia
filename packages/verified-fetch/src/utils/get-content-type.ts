@@ -9,7 +9,7 @@ interface testInput {
 
 type testOutput = Promise<string | undefined>
 
-export const DEFAULT_MIME_TYPE = 'text/html'
+export const DEFAULT_MIME_TYPE = 'application/octet-stream'
 
 const xmlRegex = /^(<\?xml[^>]+>)?[^<^\w]+<svg/ig
 
