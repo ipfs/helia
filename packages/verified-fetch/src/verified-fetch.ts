@@ -108,12 +108,16 @@ export class VerifiedFetch {
 
   // handle vnd.ipfs.ipns-record
   private async handleIPNSRecord ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
-    return new Response('vnd.ipfs.ipns-record support is not implemented', { status: 501 })
+    const response = new Response('vnd.ipfs.ipns-record support is not implemented', { status: 501 })
+    response.headers.set('X-Content-Type-Options', 'nosniff') // see https://specs.ipfs.tech/http-gateways/path-gateway/#x-content-type-options-response-header
+    return response
   }
 
   // handle vnd.ipld.car
   private async handleIPLDCar ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
-    return new Response('vnd.ipld.car support is not implemented', { status: 501 })
+    const response = new Response('vnd.ipld.car support is not implemented', { status: 501 })
+    response.headers.set('X-Content-Type-Options', 'nosniff') // see https://specs.ipfs.tech/http-gateways/path-gateway/#x-content-type-options-response-header
+    return response
   }
 
   /**
@@ -148,12 +152,12 @@ export class VerifiedFetch {
       response = await this.handleIPLDRaw({ cid, path, options })
     }
 
-    response.headers.set('etag', cid.toString())
+    response.headers.set('etag', cid.toString()) // https://specs.ipfs.tech/http-gateways/path-gateway/#etag-response-header
     // response.headers.set('cache-cotrol', 'public, max-age=29030400, immutable')
     response.headers.set('cache-cotrol', 'no-cache') // disable caching when debugging
-    response.headers.set('x-ipfs-path', path)
-    response.headers.set('x-ipfs-cid', cid.toString())
-    response.headers.set('x-ipfs-protocol', 'ipfs')
+    response.headers.set('X-Ipfs-Path', resource.toString()) // https://specs.ipfs.tech/http-gateways/path-gateway/#x-ipfs-path-response-header
+    // response.headers.set('X-Ipfs-Roots', 'TODO') // https://specs.ipfs.tech/http-gateways/path-gateway/#x-ipfs-roots-response-header
+    // response.headers.set('Content-Disposition', `TODO`) // https://specs.ipfs.tech/http-gateways/path-gateway/#content-disposition-response-header
 
     return response
   }
