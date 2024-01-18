@@ -1,7 +1,7 @@
 import type { CID } from 'multiformats/cid'
 
 /**
- * Instead of passing a Helia instance, you can pass a list of gateways and routers, and a Helia instance will be created for you.
+ * Instead of passing a Helia instance, you can pass a list of gateways and routers, and a HeliaHTTP instance will be created for you.
  */
 export interface CreateVerifiedFetchWithOptions {
   gateways: string[]
