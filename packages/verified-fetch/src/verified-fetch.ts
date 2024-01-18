@@ -7,7 +7,6 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import { getContentType } from './utils/get-content-type.js';
 
 export class VerifiedFetch {
-  // @ts-expect-error - currently unused.
   private readonly helia: Helia;
   private readonly ipns: IPNS;
   private readonly unixfs: UnixFS;
@@ -37,7 +36,8 @@ export class VerifiedFetch {
           path,
           protocol,
         }
-      } catch {
+      } catch (err) {
+        console.error(err)
         // ignore non-CID
       }
 
@@ -48,7 +48,8 @@ export class VerifiedFetch {
           path,
           protocol,
         }
-      } catch {
+      } catch (err) {
+        console.error(err)
         // ignore non DNSLink
       }
 
@@ -60,7 +61,8 @@ export class VerifiedFetch {
           path,
           protocol,
         }
-      } catch {
+      } catch (err) {
+        console.error(err)
         // ignore non PeerId
       }
       throw new Error(`Invalid resource. Cannot determine CID from resource: ${resource}`)
@@ -78,11 +80,16 @@ export class VerifiedFetch {
     const reader = iterator[Symbol.asyncIterator]()
     const { value, done } = await reader.next()
     if (done) {
+      console.error('No content found')
       throw new Error('No content found')
     }
 
     const contentType = await getContentType({ bytes: value, path })
     const stream = new ReadableStream({
+      async start (controller) {
+        // the initial value is already available
+        controller.enqueue(value)
+      },
       async pull (controller) {
         const { value, done } = await reader.next()
         if (done) {
@@ -149,5 +156,19 @@ export class VerifiedFetch {
     response.headers.set('x-ipfs-protocol', 'ipfs')
 
     return response
+  }
+
+  /**
+   * Start the Helia instance
+   */
+  async start (): Promise<void> {
+    await this.helia.start()
+  }
+
+  /**
+   * Shut down the Helia instance
+   */
+  async stop (): Promise<void> {
+    await this.helia.stop()
   }
 }

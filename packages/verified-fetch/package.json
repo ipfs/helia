@@ -55,12 +55,12 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@helia/block-brokers": "^1.0.0-163df38",
+    "@helia/block-brokers": "next",
     "@helia/http": "next",
-    "@helia/interface": "^3.0.1",
-    "@helia/ipns": "^4.0.0",
-    "@helia/routers": "^0.0.0-163df38",
-    "@helia/unixfs": "^2.0.1",
+    "@helia/interface": "next",
+    "@helia/ipns": "next",
+    "@helia/routers": "next",
+    "@helia/unixfs": "next",
     "@libp2p/peer-id": "^4.0.5",
     "mime-types": "^2.1.35",
     "multiformats": "^13.0.0"
@@ -69,7 +69,8 @@
     "@types/mime-types": "^2.1.4",
     "@types/sinon": "^17.0.2",
     "aegir": "^42.1.0",
-    "helia": "^3.0.1",
+    "helia": "next",
+    "ipfs-unixfs": "^11.1.2",
     "ipfsd-ctl": "^13.0.0",
     "kubo": "^0.25.0",
     "kubo-rpc-client": "^3.0.2"

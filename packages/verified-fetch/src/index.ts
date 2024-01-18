@@ -75,7 +75,7 @@ import { delegatedHTTPRouting } from '@helia/routers'
 /**
  * Create and return a Helia node
  */
-export async function createVerifiedFetch (init: Helia | CreateVerifiedFetchWithOptions): Promise<InstanceType<typeof VerifiedFetch>['fetch']> {
+export async function createVerifiedFetch (init: Helia | CreateVerifiedFetchWithOptions): Promise<InstanceType<typeof VerifiedFetch>['fetch'] & { start: InstanceType<typeof VerifiedFetch>['start'], stop: InstanceType<typeof VerifiedFetch>['stop'] }> {
   let heliaInstance: null | Helia = null
   if ((init as CreateVerifiedFetchWithOptions).gateways == null) {
     heliaInstance = init as Helia
@@ -96,6 +96,11 @@ export async function createVerifiedFetch (init: Helia | CreateVerifiedFetchWith
   }
 
   const verifiedFetchInstance = new VerifiedFetch(heliaInstance)
+  async function verifiedFetch(...args: Parameters<typeof verifiedFetchInstance.fetch>): ReturnType<typeof verifiedFetchInstance.fetch> {
+    return verifiedFetchInstance.fetch(...args)
+  }
+  verifiedFetch.stop = verifiedFetchInstance.stop.bind(verifiedFetchInstance)
+  verifiedFetch.start = verifiedFetchInstance.start.bind(verifiedFetchInstance)
 
-  return verifiedFetchInstance.fetch.bind(verifiedFetchInstance)
+  return verifiedFetch
 }
