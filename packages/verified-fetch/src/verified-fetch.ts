@@ -108,12 +108,12 @@ export class VerifiedFetch {
 
   // handle vnd.ipfs.ipns-record
   private async handleIPNSRecord ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
-    return new Response('TODO: handleIPNSRecord', { status: 500 })
+    return new Response('vnd.ipfs.ipns-record support is not implemented', { status: 501 })
   }
 
   // handle vnd.ipld.car
   private async handleIPLDCar ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
-    return new Response('TODO: handleIPLDCar', { status: 500 })
+    return new Response('vnd.ipld.car support is not implemented', { status: 501 })
   }
 
   /**
