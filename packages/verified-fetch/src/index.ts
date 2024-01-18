@@ -5,26 +5,9 @@
  *
  * You may use any supported resource argument to fetch content:
  *
- * - CID string
  * - CID instance
  * - IPFS URL
  * - IPNS URL
- *
- * @example Use a CID string to fetch a text file
- *
- * ```typescript
- * import { createVerifiedFetch } from '@helia/verified-fetch'
- *
- * const verifiedFetch = await createVerifiedFetch({
- *  gateways: ['mygateway.info', 'trustless-gateway.link']
- * })
- *
- * const response = await verifiedFetch('bafyFoo') // CID for some text file
- * // OR const response = await verifiedFetch('ipfs://bafy...')
- * // OR const response = await verifiedFetch('ipns://mydomain.com/path/to/file')
- * // OR const response = await verifiedFetch('https://mygateway.info/ipfs/bafyFoo')
- * const text = await response.text()
- * ```
  *
  * @example Using a CID instance to fetch JSON
  *
@@ -33,7 +16,7 @@
  * import { CID } from 'multiformats/cid'
  *
  * const verifiedFetch = await createVerifiedFetch({
- *  gateways: ['mygateway.info', 'trustless-gateway.link']
+ *  gateways: ['http://mygateway.info', 'http://trustless-gateway.link']
  * })
  *
  * const cid = CID.parse('bafyFoo') // some image file
@@ -47,7 +30,7 @@
  * import { createVerifiedFetch } from '@helia/verified-fetch'
  *
  * const verifiedFetch = await createVerifiedFetch({
- *  gateways: ['mygateway.info', 'trustless-gateway.link']
+ *  gateways: ['http://mygateway.info', 'http://trustless-gateway.link']
  * })
  * const response = await verifiedFetch('ipfs://bafyFoo') // CID for some image file
  * const blob = await response.blob()
@@ -59,7 +42,7 @@
  * import { createVerifiedFetch } from '@helia/verified-fetch'
  *
  * const verifiedFetch = await createVerifiedFetch({
- *  gateways: ['mygateway.info', 'trustless-gateway.link']
+ *  gateways: ['http://mygateway.info', 'http://trustless-gateway.link']
  * })
  * const response = await verifiedFetch('ipns://mydomain.com/path/to/video.mp4')
  * const videoStreamReader = await response.body.getReader()

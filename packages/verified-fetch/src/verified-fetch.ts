@@ -106,15 +106,6 @@ export class VerifiedFetch {
     return { contentType, stream }
   }
 
-  // private async getHeliaModuleForCID (cid: CID) {
-  //   switch (cid.code) {
-  //     case 112: // unixfs
-  //       return this.unixfs
-  //     default:
-  //       return this.helia
-  //   }
-  // }
-
   // handle vnd.ipfs.ipns-record
   private async handleIPNSRecord ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
     return new Response('TODO: handleIPNSRecord', { status: 500 })
@@ -131,7 +122,6 @@ export class VerifiedFetch {
    */
   private async handleIPLDRaw ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
     const asyncIter = this.unixfs.cat(cid, { path, signal: options?.signal })
-    // const asyncIter = await this.helia.blockstore.get(cid, { signal: options?.signal })
     const { contentType, stream } = await this.getStreamAndContentType(asyncIter, path)
 
     const response = new Response(stream, { status: 200 })

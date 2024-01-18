@@ -89,9 +89,10 @@ This library intends to support the following methods of fetching web3 content f
 1. IPFS protocol: `ipfs://<cidv0>` & `ipfs://<cidv0>`
 2. IPNS protocol: `ipns://<peerId>` & `ipns://<publicKey>` & `ipns://<hostUri_Supporting_DnsLink_TxtRecords>`
 3. CID instances: An actual CID instance `CID.parse('bafy...')`
-4. CID strings: A CID string `bafy...`
 
-As well as support for pathing & params for all of the above according to [IPFS - Path Gateway Specification](https://specs.ipfs.tech/http-gateways/path-gateway) & [IPFS - Trustless Gateway Specification](https://specs.ipfs.tech/http-gateways/trustless-gateway/). Further refinement of those specifications specifically for web-based scenarios can be found in the [Web Pathing Specification IPIP](https://github.com/ipfs/specs/pull/453).
+As well as support for pathing & params for item 1&2 above according to [IPFS - Path Gateway Specification](https://specs.ipfs.tech/http-gateways/path-gateway) & [IPFS - Trustless Gateway Specification](https://specs.ipfs.tech/http-gateways/trustless-gateway/). Further refinement of those specifications specifically for web-based scenarios can be found in the [Web Pathing Specification IPIP](https://github.com/ipfs/specs/pull/453).
+
+If you pass a CID instance, we assume you want the content for that specific CID only, and do not support pathing or params for that CID.
 
 #### Options argument
 
