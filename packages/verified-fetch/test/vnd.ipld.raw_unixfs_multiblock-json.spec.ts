@@ -8,14 +8,19 @@ import type { Controller } from 'ipfsd-ctl'
 
 describe('vnd.ipld.raw - unixfs - multiblock-json', () => {
   let controller: Controller<'go'>
+  let verifiedFetch: Awaited<ReturnType<typeof createVerifiedFetch>>
 
-  beforeEach(async () => {
+  before(async () => {
     controller = await createKuboNode()
     await controller.start()
+    verifiedFetch = await createVerifiedFetch({
+      gateways: [`http://${controller.api.gatewayHost}:${controller.api.gatewayPort}`]
+    })
   })
 
-  afterEach(async () => {
+  after(async () => {
     await controller.stop()
+    await verifiedFetch.stop()
   })
 
   // As of 2024-01-18, https://cloudflare-ipfs.com/ipns/tokens.uniswap.org resolves to:
@@ -25,10 +30,6 @@ describe('vnd.ipld.raw - unixfs - multiblock-json', () => {
   it('handles uniswap tokens list json', async () => {
     // add the root node to the kubo node
     await drain(await importContentToKuboNode(controller, '/ipfs/QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr'))
-
-    const verifiedFetch = await createVerifiedFetch({
-      gateways: [`http://${controller.api.gatewayHost}:${controller.api.gatewayPort}`]
-    })
 
     const resp = await verifiedFetch(CID.parse('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr'))
     expect(resp).to.be.ok()
@@ -41,6 +42,5 @@ describe('vnd.ipld.raw - unixfs - multiblock-json', () => {
     expect(jsonObj).to.have.property('logoURI').equal('ipfs://QmNa8mQkrNKp1WEEeGjFezDmDeodkWRevGFN8JCV7b4Xir')
     expect(jsonObj).to.have.property('keywords').to.deep.equal(['uniswap', 'default'])
     expect(jsonObj.tokens).to.be.an('array').of.length(767)
-    await verifiedFetch.stop()
   })
 })

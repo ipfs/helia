@@ -1,10 +1,10 @@
 import { ipns, type IPNS } from '@helia/ipns'
 import { unixfs, type UnixFS as HeliaUnixFs } from '@helia/unixfs'
 import { logger } from '@libp2p/logger'
-import { peerIdFromString } from '@libp2p/peer-id'
 import { CID } from 'multiformats/cid'
 import { getContentType } from './utils/get-content-type.js'
 import { getUnixFsTransformStream } from './utils/get-unixfs-transform-stream.js'
+import { parseUrlString } from './utils/parse-url-string.js'
 import type { ResourceType, VerifiedFetchOptions } from './interface.js'
 import type { Helia } from '@helia/interface'
 
@@ -27,57 +27,18 @@ export class VerifiedFetch {
    */
   private async parseResource (resource: ResourceType): Promise<{ cid: CID, path: string, protocol?: string }> {
     if (typeof resource === 'string') {
-      // either an `ipfs://` or `ipns://` URL
-      const url = new URL(resource)
-      const protocol = url.protocol.slice(0, -1)
-      const urlPathParts = url.pathname.slice(2).split('/')
-      const cidOrPeerIdOrDnsLink = urlPathParts[0]
-      const path = urlPathParts.slice(1).join('/')
-      try {
-        const cid = CID.parse(cidOrPeerIdOrDnsLink)
-        return {
-          cid,
-          path,
-          protocol
-        }
-      } catch (err) {
-        log.error(err)
-        // ignore non-CID
-      }
-
-      try {
-        const cid = await this.ipns.resolveDns(cidOrPeerIdOrDnsLink)
-        return {
-          cid,
-          path,
-          protocol
-        }
-      } catch (err) {
-        log.error(err)
-        // ignore non DNSLink
-      }
-
-      try {
-        const peerId = peerIdFromString(cidOrPeerIdOrDnsLink)
-        const cid = await this.ipns.resolve(peerId)
-        return {
-          cid,
-          path,
-          protocol
-        }
-      } catch (err) {
-        log.error(err)
-        // ignore non PeerId
-      }
-      throw new Error(`Invalid resource. Cannot determine CID from resource: ${resource}`)
+      return parseUrlString({ urlString: resource, ipns: this.ipns })
     }
-
-    // an actual CID
-    return {
-      cid: resource,
-      protocol: 'ipfs',
-      path: ''
+    const cid = CID.asCID(resource)
+    if (cid != null) {
+      // an actual CID
+      return {
+        cid,
+        protocol: 'ipfs',
+        path: ''
+      }
     }
+    throw new TypeError(`Invalid resource. Cannot determine CID from resource: ${resource}`)
   }
 
   private async getStreamAndContentType (iterator: AsyncIterable<Uint8Array>, path: string): Promise<{ contentType: string, stream: ReadableStream<Uint8Array> }> {
@@ -126,14 +87,13 @@ export class VerifiedFetch {
    * This is the default method for fetched content.
    */
   private async handleIPLDRaw ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
-    // const finalFileStat = await this.unixfs.stat(cid, { path, signal: options?.signal })
-
-    const asyncIter = this.unixfs.cat(cid, { path, signal: options?.signal })
-    const { contentType, stream } = await this.getStreamAndContentType(asyncIter, path)
+    // const asyncIter = this.unixfs.cat(cid, { path, signal: options?.signal })
+    const stat = await this.unixfs.stat(cid, { path, signal: options?.signal })
+    const asyncIter = this.unixfs.cat(stat.cid, { signal: options?.signal })
     // now we need to pipe the stream through a transform to unmarshal unixfs data
+    const { contentType, stream } = await this.getStreamAndContentType(asyncIter, path)
 
     const readable = stream.pipeThrough(getUnixFsTransformStream())
-
     const response = new Response(readable, { status: 200 })
     response.headers.set('content-type', contentType)
 

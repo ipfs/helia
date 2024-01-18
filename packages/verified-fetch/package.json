@@ -63,6 +63,7 @@
     "@helia/unixfs": "next",
     "@libp2p/logger": "^4.0.5",
     "@libp2p/peer-id": "^4.0.5",
+    "ipfs-unixfs": "^11.1.2",
     "mime-types": "^2.1.35",
     "multiformats": "^13.0.0"
   },
@@ -70,11 +71,11 @@
     "@types/mime-types": "^2.1.4",
     "@types/sinon": "^17.0.2",
     "aegir": "^42.1.0",
-    "ipfs-unixfs": "^11.1.2",
     "ipfsd-ctl": "^13.0.0",
     "it-drain": "^3.0.5",
     "kubo": "^0.25.0",
-    "kubo-rpc-client": "^3.0.2"
+    "kubo-rpc-client": "^3.0.2",
+    "sinon-ts": "^2.0.0"
   },
   "browser": {
     "node:buffer": false,

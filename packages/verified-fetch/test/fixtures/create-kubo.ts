@@ -7,6 +7,9 @@ export async function createKuboNode (): Promise<Controller> {
     test: true,
     remote: true,
     endpoint: process.env.IPFSD_SERVER,
+    // env: {
+    //   IPFS_PATH: './tmp/kubo'
+    // },
     ipfsOptions: {
       config: {
         Addresses: {
