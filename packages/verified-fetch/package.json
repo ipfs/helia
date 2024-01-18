@@ -70,7 +70,6 @@
     "@types/mime-types": "^2.1.4",
     "@types/sinon": "^17.0.2",
     "aegir": "^42.1.0",
-    "helia": "next",
     "ipfs-unixfs": "^11.1.2",
     "ipfsd-ctl": "^13.0.0",
     "kubo": "^0.25.0",
