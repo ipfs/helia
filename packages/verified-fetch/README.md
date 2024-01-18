@@ -52,14 +52,20 @@ You can see variations of Helia and js-libp2p configuration options at https://h
 The `@helia/http` module is currently in-progress, but the init options should be a subset of the `helia` module's init options. See https://github.com/ipfs/helia/issues/289 for more information.
 
 ```ts
+import { trustlessGateway } from '@helia/block-brokers'
+import { createHeliaHTTP } from '@helia/http'
+import { delegatedHTTPRouting } from '@helia/routers'
 import { createVerifiedFetch } from '@helia/verified-fetch'
-import { CreateHelia as CreateHeliaHttpOnly } from '@helia/http'
 
 const verifiedFetch = await createVerifiedFetch(
-  CreateHeliaHttpOnly({
-    gateways: ['mygateway.info', 'trustless-gateway.link'],
-    routers: ['delegated-ipfs.dev'],
-  })
+  await createHeliaHTTP({
+      blockBrokers: [
+        trustlessGateway({
+          gateways: ['http://mygateway.info', 'http://trustless-gateway.link']
+        })
+      ],
+      routers: ['http://delegated-ipfs.dev'].map((routerUrl) => delegatedHTTPRouting(routerUrl))
+    })
 )
 
 const resp = await verifiedFetch('ipfs://bafy...')
