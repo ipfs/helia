@@ -24,6 +24,12 @@
       "path": "../helia"
     },
     {
+      "path": "../http"
+    },
+    {
+      "path": "../interface"
+    },
+    {
       "path": "../ipns"
     },
     {
@@ -31,6 +37,9 @@
     },
     {
       "path": "../mfs"
+    },
+    {
+      "path": "../routers"
     },
     {
       "path": "../strings"

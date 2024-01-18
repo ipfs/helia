@@ -1,7 +1,6 @@
 import { createDelegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
 import { CodeError } from '@libp2p/interface'
-import { peerIdFromBytes } from '@libp2p/peer-id'
-import { marshal, unmarshal } from 'ipns'
+import { marshal, unmarshal, peerIdFromRoutingKey } from 'ipns'
 import first from 'it-first'
 import map from 'it-map'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
@@ -15,10 +14,6 @@ const IPNS_PREFIX = uint8ArrayFromString('/ipns/')
 
 function isIPNSKey (key: Uint8Array): boolean {
   return uint8ArrayEquals(key.subarray(0, IPNS_PREFIX.byteLength), IPNS_PREFIX)
-}
-
-const peerIdFromRoutingKey = (key: Uint8Array): PeerId => {
-  return peerIdFromBytes(key.slice(IPNS_PREFIX.length))
 }
 
 class DelegatedHTTPRouter implements Routing {

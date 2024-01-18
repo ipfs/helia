@@ -420,21 +420,44 @@ class DefaultIPNS implements IPNS {
     }
 
     const records: Uint8Array[] = []
+    let foundInvalid = 0
 
     await Promise.all(
       routers.map(async (router) => {
+        let record: Uint8Array
+
         try {
-          const record = await router.get(routingKey, options)
+          record = await router.get(routingKey, {
+            ...options,
+            validate: false
+          })
+        } catch (err: any) {
+          if (router === this.localStore && err.code === 'ERR_NOT_FOUND') {
+            log('did not have record locally')
+          } else {
+            log.error('error finding IPNS record', err)
+          }
+
+          return
+        }
+
+        try {
           await ipnsValidator(routingKey, record)
 
           records.push(record)
         } catch (err) {
+          // we found a record, but the validator rejected it
+          foundInvalid++
           log.error('error finding IPNS record', err)
         }
       })
     )
 
     if (records.length === 0) {
+      if (foundInvalid > 0) {
+        throw new CodeError(`${foundInvalid > 1 ? `${foundInvalid} records` : 'Record'} found for routing key ${foundInvalid > 1 ? 'were' : 'was'} invalid`, 'ERR_RECORDS_FAILED_VALIDATION')
+      }
+
       throw new CodeError('Could not find record for routing key', 'ERR_NOT_FOUND')
     }
 
