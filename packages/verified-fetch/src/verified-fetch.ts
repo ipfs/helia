@@ -1,9 +1,10 @@
 import { ipns, type IPNS } from '@helia/ipns'
-import { unixfs, type UnixFS } from '@helia/unixfs'
+import { unixfs, type UnixFS as HeliaUnixFs } from '@helia/unixfs'
 import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { CID } from 'multiformats/cid'
 import { getContentType } from './utils/get-content-type.js'
+import { getUnixFsTransformStream } from './utils/get-unixfs-transform-stream.js'
 import type { ResourceType, VerifiedFetchOptions } from './interface.js'
 import type { Helia } from '@helia/interface'
 
@@ -12,7 +13,7 @@ const log = logger('helia:verified-fetch')
 export class VerifiedFetch {
   private readonly helia: Helia
   private readonly ipns: IPNS
-  private readonly unixfs: UnixFS
+  private readonly unixfs: HeliaUnixFs
   constructor (heliaInstance: Helia) {
     this.helia = heliaInstance
     this.ipns = ipns(heliaInstance)
@@ -125,10 +126,15 @@ export class VerifiedFetch {
    * This is the default method for fetched content.
    */
   private async handleIPLDRaw ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
+    // const finalFileStat = await this.unixfs.stat(cid, { path, signal: options?.signal })
+
     const asyncIter = this.unixfs.cat(cid, { path, signal: options?.signal })
     const { contentType, stream } = await this.getStreamAndContentType(asyncIter, path)
+    // now we need to pipe the stream through a transform to unmarshal unixfs data
 
-    const response = new Response(stream, { status: 200 })
+    const readable = stream.pipeThrough(getUnixFsTransformStream())
+
+    const response = new Response(readable, { status: 200 })
     response.headers.set('content-type', contentType)
 
     return response
