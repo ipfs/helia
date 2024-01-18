@@ -1,9 +1,9 @@
-import { createKuboNode } from './fixtures/create-kubo.js'
-import { createVerifiedFetch } from '../src/index.js'
 import { expect } from 'aegir/chai'
-import type { Controller } from 'ipfsd-ctl'
-import { addContentToKuboNode } from './fixtures/add-content-to-kubo-node.js'
 import { UnixFS } from 'ipfs-unixfs'
+import { createVerifiedFetch } from '../src/index.js'
+import { addContentToKuboNode } from './fixtures/add-content-to-kubo-node.js'
+import { createKuboNode } from './fixtures/create-kubo.js'
+import type { Controller } from 'ipfsd-ctl'
 
 describe('verified-fetch gateways', () => {
   let controller: Controller<'go'>
@@ -18,11 +18,11 @@ describe('verified-fetch gateways', () => {
 
   it('Uses the provided gateway', async () => {
     const verifiedFetch = await createVerifiedFetch({
-      gateways: [`http://${controller.api.gatewayHost}:${controller.api.gatewayPort}`],
+      gateways: [`http://${controller.api.gatewayHost}:${controller.api.gatewayPort}`]
     })
     const givenString = 'hello sgtpooki from verified-fetch test'
     const content = new UnixFS({ type: 'raw', data: Buffer.from(givenString) })
-    const {cid} = await addContentToKuboNode(controller, content.marshal())
+    const { cid } = await addContentToKuboNode(controller, content.marshal())
     expect(cid).to.be.ok()
     // @ts-expect-error - todo fix types
     const resp = await verifiedFetch(cid)

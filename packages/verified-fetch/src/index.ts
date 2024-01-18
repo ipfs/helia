@@ -65,12 +65,12 @@
  * const videoStreamReader = await response.body.getReader()
  */
 
-import type { Helia, Routing } from '@helia/interface'
-import { createHeliaHTTP } from '@helia/http'
 import { trustlessGateway } from '@helia/block-brokers'
+import { createHeliaHTTP } from '@helia/http'
+import { delegatedHTTPRouting } from '@helia/routers'
 import { VerifiedFetch } from './verified-fetch.js'
 import type { CreateVerifiedFetchWithOptions } from './interface.js'
-import { delegatedHTTPRouting } from '@helia/routers'
+import type { Helia, Routing } from '@helia/interface'
 
 /**
  * Create and return a Helia node
@@ -81,22 +81,22 @@ export async function createVerifiedFetch (init: Helia | CreateVerifiedFetchWith
     heliaInstance = init as Helia
   } else {
     const config = init as CreateVerifiedFetchWithOptions
-    let routers: undefined | Array<Partial<Routing>> = undefined
+    let routers: undefined | Array<Partial<Routing>>
     if (config.routers != null) {
       routers = config.routers.map((routerUrl) => delegatedHTTPRouting(routerUrl))
     }
     heliaInstance = await createHeliaHTTP({
       blockBrokers: [
         trustlessGateway({
-          gateways: config.gateways,
-        }),
+          gateways: config.gateways
+        })
       ],
-      routers,
+      routers
     })
   }
 
   const verifiedFetchInstance = new VerifiedFetch(heliaInstance)
-  async function verifiedFetch(...args: Parameters<typeof verifiedFetchInstance.fetch>): ReturnType<typeof verifiedFetchInstance.fetch> {
+  async function verifiedFetch (...args: Parameters<typeof verifiedFetchInstance.fetch>): ReturnType<typeof verifiedFetchInstance.fetch> {
     return verifiedFetchInstance.fetch(...args)
   }
   verifiedFetch.stop = verifiedFetchInstance.stop.bind(verifiedFetchInstance)

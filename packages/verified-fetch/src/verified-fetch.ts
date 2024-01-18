@@ -1,15 +1,18 @@
-import { CID } from 'multiformats/cid';
-import type { ResourceType, VerifiedFetchOptions } from './interface.js';
-import type { Helia } from '@helia/interface';
 import { ipns, type IPNS } from '@helia/ipns'
-import {unixfs, type UnixFS} from '@helia/unixfs'
+import { unixfs, type UnixFS } from '@helia/unixfs'
+import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { getContentType } from './utils/get-content-type.js';
+import { CID } from 'multiformats/cid'
+import { getContentType } from './utils/get-content-type.js'
+import type { ResourceType, VerifiedFetchOptions } from './interface.js'
+import type { Helia } from '@helia/interface'
+
+const log = logger('helia:verified-fetch')
 
 export class VerifiedFetch {
-  private readonly helia: Helia;
-  private readonly ipns: IPNS;
-  private readonly unixfs: UnixFS;
+  private readonly helia: Helia
+  private readonly ipns: IPNS
+  private readonly unixfs: UnixFS
   constructor (heliaInstance: Helia) {
     this.helia = heliaInstance
     this.ipns = ipns(heliaInstance)
@@ -34,10 +37,10 @@ export class VerifiedFetch {
         return {
           cid,
           path,
-          protocol,
+          protocol
         }
       } catch (err) {
-        console.error(err)
+        log.error(err)
         // ignore non-CID
       }
 
@@ -46,23 +49,23 @@ export class VerifiedFetch {
         return {
           cid,
           path,
-          protocol,
+          protocol
         }
       } catch (err) {
-        console.error(err)
+        log.error(err)
         // ignore non DNSLink
       }
 
       try {
-        const peerId = await peerIdFromString(cidOrPeerIdOrDnsLink)
+        const peerId = peerIdFromString(cidOrPeerIdOrDnsLink)
         const cid = await this.ipns.resolve(peerId)
         return {
           cid,
           path,
-          protocol,
+          protocol
         }
       } catch (err) {
-        console.error(err)
+        log.error(err)
         // ignore non PeerId
       }
       throw new Error(`Invalid resource. Cannot determine CID from resource: ${resource}`)
@@ -79,8 +82,8 @@ export class VerifiedFetch {
   private async getStreamAndContentType (iterator: AsyncIterable<Uint8Array>, path: string): Promise<{ contentType: string, stream: ReadableStream<Uint8Array> }> {
     const reader = iterator[Symbol.asyncIterator]()
     const { value, done } = await reader.next()
-    if (done) {
-      console.error('No content found')
+    if (done === true) {
+      log.error('No content found')
       throw new Error('No content found')
     }
 
@@ -92,7 +95,7 @@ export class VerifiedFetch {
       },
       async pull (controller) {
         const { value, done } = await reader.next()
-        if (done) {
+        if (done === true) {
           controller.close()
           return
         }
@@ -103,14 +106,22 @@ export class VerifiedFetch {
     return { contentType, stream }
   }
 
+  // private async getHeliaModuleForCID (cid: CID) {
+  //   switch (cid.code) {
+  //     case 112: // unixfs
+  //       return this.unixfs
+  //     default:
+  //       return this.helia
+  //   }
+  // }
 
   // handle vnd.ipfs.ipns-record
-  private async handleIPNSRecord ({cid, path, options}: {cid: CID, path: string, options?: VerifiedFetchOptions}): Promise<Response> {
+  private async handleIPNSRecord ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
     return new Response('TODO: handleIPNSRecord', { status: 500 })
   }
 
   // handle vnd.ipld.car
-  private async handleIPLDCar ({cid, path, options}: {cid: CID, path: string, options?: VerifiedFetchOptions}): Promise<Response> {
+  private async handleIPLDCar ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
     return new Response('TODO: handleIPLDCar', { status: 500 })
   }
 
@@ -118,16 +129,16 @@ export class VerifiedFetch {
    * handle vnd.ipld.raw
    * This is the default method for fetched content.
    */
-  private async handleIPLDRaw ({cid, path, options}: {cid: CID, path: string, options?: VerifiedFetchOptions}): Promise<Response> {
-    const asyncIter = await this.unixfs.cat(cid, { path, signal: options?.signal })
+  private async handleIPLDRaw ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
+    const asyncIter = this.unixfs.cat(cid, { path, signal: options?.signal })
+    // const asyncIter = await this.helia.blockstore.get(cid, { signal: options?.signal })
     const { contentType, stream } = await this.getStreamAndContentType(asyncIter, path)
 
     const response = new Response(stream, { status: 200 })
     response.headers.set('content-type', contentType)
 
-    return response;
+    return response
   }
-
 
   async fetch (resource: ResourceType, options?: VerifiedFetchOptions): Promise<Response> {
     const { cid, path } = await this.parseResource(resource)
@@ -136,16 +147,15 @@ export class VerifiedFetch {
       const contentType = new Headers(options.headers).get('content-type')
       if (contentType != null) {
         if (contentType.includes('vnd.ipld.car')) {
-          response = await this.handleIPLDCar({cid, path, options})
-
+          response = await this.handleIPLDCar({ cid, path, options })
         } else if (contentType.includes('vnd.ipfs.ipns-record')) {
-          response = await this.handleIPNSRecord({cid, path, options})
+          response = await this.handleIPNSRecord({ cid, path, options })
         }
       }
     }
 
     if (response == null) {
-      response = await this.handleIPLDRaw({cid, path, options})
+      response = await this.handleIPLDRaw({ cid, path, options })
     }
 
     response.headers.set('etag', cid.toString())

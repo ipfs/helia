@@ -25,7 +25,13 @@ const tests: Array<(input: testInput) => testOutput> = [
   // testing file-type from buffer
   // async ({ bytes }): testOutput => (await fileTypeFromBuffer(bytes))?.mime,
   // testing file-type from path
-  async ({ path }): testOutput => mime.lookup(path) || undefined,
+  async ({ path }): testOutput => {
+    const mimeType = mime.lookup(path)
+    if (mimeType !== false) {
+      return mimeType
+    }
+    return undefined
+  },
   // default
   async (): Promise<string> => DEFAULT_MIME_TYPE
 ]
