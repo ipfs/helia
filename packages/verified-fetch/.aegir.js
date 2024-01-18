@@ -33,12 +33,12 @@ export default {
 
       const kuboNode = await createController({
         kuboRpcModule: kuboRpcClient,
-        test: true,
+        // test: true,
         remote: true,
         endpoint: `http://127.0.0.1:${ipfsdPort}`,
-        // env: {
-        //   IPFS_PATH: './tmp/kubo'
-        // },
+        env: {
+          IPFS_PATH: './tmp/kubo'
+        },
         ipfsOptions: {
           config: {
             Addresses: {
