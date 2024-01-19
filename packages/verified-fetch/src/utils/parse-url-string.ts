@@ -38,20 +38,23 @@ export async function parseUrlString ({ urlString, ipns }: ParseUrlStringOptions
     }
   } else if (protocol === 'ipns') {
     if (cidOrPeerIdOrDnsLink.includes('.')) {
+      log.trace('Attempting to resolve DNSLink for %s', cidOrPeerIdOrDnsLink)
       try {
         cid = await ipns.resolveDns(cidOrPeerIdOrDnsLink)
+        log.trace('resolved %s to %c', cidOrPeerIdOrDnsLink, cid)
       } catch (err) {
         log.error(err)
         throw new TypeError('Invalid DNSLink for ipns://<dnslink> URL')
       }
-    }
-
-    try {
-      const peerId = peerIdFromString(cidOrPeerIdOrDnsLink)
-      cid = await ipns.resolve(peerId)
-    } catch (err) {
-      log.error(err)
-      // ignore non PeerId
+    } else {
+      log.trace('Attempting to resolve PeerId for %s', cidOrPeerIdOrDnsLink)
+      try {
+        const peerId = peerIdFromString(cidOrPeerIdOrDnsLink)
+        cid = await ipns.resolve(peerId)
+        log.trace('resolved %s to %c', cidOrPeerIdOrDnsLink, cid)
+      } catch (err) {
+        log.error(err)
+      }
     }
   } else {
     throw new TypeError('Invalid protocol for URL. Please use ipfs:// or ipns:// URLs only.')
