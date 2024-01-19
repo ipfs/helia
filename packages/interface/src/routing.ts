@@ -22,6 +22,13 @@ export interface RoutingOptions extends AbortOptions, ProgressOptions {
    * @default true
    */
   useCache?: boolean
+
+  /**
+   * Pass `false` to not perform validation
+   *
+   * @default true
+   */
+  validate?: boolean
 }
 
 /**

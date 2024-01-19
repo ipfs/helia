@@ -9,7 +9,12 @@ export interface PutOptions extends AbortOptions, ProgressOptions {
 }
 
 export interface GetOptions extends AbortOptions, ProgressOptions {
-
+  /**
+   * Pass false to not perform validation actions
+   *
+   * @default true
+   */
+  validate?: boolean
 }
 
 export interface IPNSRouting {
