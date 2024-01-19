@@ -1,3 +1,5 @@
+import { type PeerId } from '@libp2p/interface'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
 import { stubInterface } from 'sinon-ts'
@@ -29,12 +31,16 @@ describe('parseUrlString', () => {
   })
 
   describe('ipns://<dnsLinkDomain> URLs', () => {
-    const ipns = stubInterface<IPNS>({
-      resolveDns: async (dnsLink: string) => {
-        expect(dnsLink).to.equal('mydomain.com')
-        return CID.parse('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
-      }
+    let ipns: IPNS
+    before(async () => {
+      ipns = stubInterface<IPNS>({
+        resolveDns: async (dnsLink: string) => {
+          expect(dnsLink).to.equal('mydomain.com')
+          return CID.parse('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
+        }
+      })
     })
+
     it('can parse a URL with DNSLinkDomain only', async () => {
       const result = await parseUrlString({
         urlString: 'ipns://mydomain.com',
@@ -47,6 +53,39 @@ describe('parseUrlString', () => {
     it('can parse a URL with DNSLinkDomain+path', async () => {
       const result = await parseUrlString({
         urlString: 'ipns://mydomain.com/some/path/to/file.txt',
+        ipns
+      })
+      expect(result.protocol).to.equal('ipns')
+      expect(result.cid.toString()).to.equal('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
+      expect(result.path).to.equal('some/path/to/file.txt')
+    })
+  })
+
+  describe('ipns://<peerId> URLs', () => {
+    let ipns: IPNS
+    let testPeerId: PeerId
+    before(async () => {
+      testPeerId = await createEd25519PeerId()
+      ipns = stubInterface<IPNS>({
+        resolve: async (peerId: PeerId) => {
+          expect(peerId.toString()).to.equal(testPeerId.toString())
+          return CID.parse('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
+        }
+      })
+    })
+
+    it('can parse a URL with PeerId only', async () => {
+      const result = await parseUrlString({
+        urlString: `ipns://${testPeerId.toString()}`,
+        ipns
+      })
+      expect(result.protocol).to.equal('ipns')
+      expect(result.cid.toString()).to.equal('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
+      expect(result.path).to.equal('')
+    })
+    it('can parse a URL with PeerId+path', async () => {
+      const result = await parseUrlString({
+        urlString: `ipns://${testPeerId.toString()}/some/path/to/file.txt`,
         ipns
       })
       expect(result.protocol).to.equal('ipns')
