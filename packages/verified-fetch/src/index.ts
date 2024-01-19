@@ -83,7 +83,7 @@ export async function createVerifiedFetch (init: Helia | CreateVerifiedFetchWith
     })
   }
 
-  const verifiedFetchInstance = new VerifiedFetch(heliaInstance)
+  const verifiedFetchInstance = new VerifiedFetch({ helia: heliaInstance })
   async function verifiedFetch (...args: Parameters<typeof verifiedFetchInstance.fetch>): ReturnType<typeof verifiedFetchInstance.fetch> {
     return verifiedFetchInstance.fetch(...args)
   }

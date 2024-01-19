@@ -1,5 +1,6 @@
-import { ipns, type IPNS } from '@helia/ipns'
-import { unixfs, type UnixFS as HeliaUnixFs } from '@helia/unixfs'
+import { ipns as heliaIpns, type IPNS } from '@helia/ipns'
+import { dnsJsonOverHttps, dnsOverHttps } from '@helia/ipns/dns-resolvers'
+import { unixfs as heliaUnixFs, type UnixFS as HeliaUnixFs } from '@helia/unixfs'
 import { logger } from '@libp2p/logger'
 import { CID } from 'multiformats/cid'
 import { getContentType } from './utils/get-content-type.js'
@@ -10,14 +11,29 @@ import type { Helia } from '@helia/interface'
 
 const log = logger('helia:verified-fetch')
 
+interface VerifiedFetchConstructorOptions {
+  helia: Helia
+  ipns?: IPNS
+  unixfs?: HeliaUnixFs
+}
 export class VerifiedFetch {
   private readonly helia: Helia
   private readonly ipns: IPNS
   private readonly unixfs: HeliaUnixFs
-  constructor (heliaInstance: Helia) {
-    this.helia = heliaInstance
-    this.ipns = ipns(heliaInstance)
-    this.unixfs = unixfs(heliaInstance)
+  constructor ({ helia, ipns, unixfs }: VerifiedFetchConstructorOptions) {
+    this.helia = helia
+    this.ipns = ipns ?? heliaIpns(helia, {
+      resolvers: [
+        dnsJsonOverHttps('https://mozilla.cloudflare-dns.com/dns-query'),
+        dnsOverHttps('https://mozilla.cloudflare-dns.com/dns-query'),
+        dnsOverHttps('https://cloudflare-dns.com/dns-query'),
+        dnsOverHttps('https://dns.google/dns-query'),
+        dnsJsonOverHttps('https://dns.google/resolve'),
+        dnsOverHttps('https://dns.quad9.net/dns-query')
+      ]
+    })
+    this.unixfs = unixfs ?? heliaUnixFs(helia)
+    log.trace('created VerifiedFetch instance')
   }
 
   /**
