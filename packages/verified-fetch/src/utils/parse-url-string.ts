@@ -16,22 +16,17 @@ export interface ParseUrlStringOptions {
   ipns: IPNS
 }
 
+const URL_REGEX = /^(?<protocol>ip[fn]s):\/\/(?<cidOrPeerIdOrDnsLink>[^/$]+)\/?(?<path>[^$^?]*)/
+
 /**
  * A function that parses ipfs:// and ipns:// URLs, returning an object with easily recognizable properties.
  */
 export async function parseUrlString ({ urlString, ipns }: ParseUrlStringOptions): Promise<ParsedUrlStringResults> {
-  const url = new URL(urlString)
-  const protocol = url.protocol.slice(0, -1)
-  let hostnameRecognized = true
-  if (url.pathname.slice(0, 2) === '//') {
-    // Browser and NodeJS URL parser handles `ipfs://` URL hostnames differently.
-    hostnameRecognized = false
+  const match = urlString.match(URL_REGEX)
+  if (match == null || match.groups == null) {
+    throw new TypeError(`Invalid URL: ${urlString}`)
   }
-  const urlPathParts = hostnameRecognized ? url.pathname.slice(1).split('/') : url.pathname.slice(2).split('/')
-  const cidOrPeerIdOrDnsLink = hostnameRecognized ? url.hostname : urlPathParts.shift() as string
-
-  const remainderPath = urlPathParts.map(decodeURIComponent).join('/')
-  const path = remainderPath.length > 0 ? remainderPath : ''
+  const { protocol, cidOrPeerIdOrDnsLink, path } = match.groups
 
   let cid: CID | null = null
   if (protocol === 'ipfs') {
