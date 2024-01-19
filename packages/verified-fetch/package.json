@@ -68,6 +68,8 @@
     "multiformats": "^13.0.0"
   },
   "devDependencies": {
+    "@libp2p/interface": "^1.1.2",
+    "@libp2p/peer-id-factory": "^4.0.5",
     "@types/mime-types": "^2.1.4",
     "@types/sinon": "^17.0.2",
     "aegir": "^42.1.0",
