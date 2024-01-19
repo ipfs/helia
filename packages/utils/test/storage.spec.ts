@@ -10,13 +10,13 @@ import * as raw from 'multiformats/codecs/raw'
 import { PinsImpl } from '../src/pins.js'
 import { BlockStorage } from '../src/storage.js'
 import { createBlock } from './fixtures/create-block.js'
+import type { Blocks } from '@helia/interface'
 import type { Pins } from '@helia/interface/pins'
-import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 
 describe('storage', () => {
   let storage: BlockStorage
-  let blockstore: Blockstore
+  let blockstore: Blocks
   let pins: Pins
   let blocks: Array<{ cid: CID, block: Uint8Array }>
 

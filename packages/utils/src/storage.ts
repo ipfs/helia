@@ -1,4 +1,4 @@
-import { start, stop } from '@libp2p/interface'
+import { CodeError, start, stop } from '@libp2p/interface'
 import createMortice from 'mortice'
 import type { Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions } from '@helia/interface/blocks'
 import type { Pins } from '@helia/interface/pins'
@@ -24,14 +24,14 @@ export interface GetOptions extends AbortOptions {
  */
 export class BlockStorage implements Blocks, Startable {
   public lock: Mortice
-  private readonly child: Blockstore
+  private readonly child: Blocks
   private readonly pins: Pins
   private started: boolean
 
   /**
    * Create a new BlockStorage
    */
-  constructor (blockstore: Blockstore, pins: Pins, options: BlockStorageInit = {}) {
+  constructor (blockstore: Blocks, pins: Pins, options: BlockStorageInit = {}) {
     this.child = blockstore
     this.pins = pins
     this.lock = createMortice({
@@ -165,6 +165,22 @@ export class BlockStorage implements Blocks, Startable {
 
     try {
       yield * this.child.getAll(options)
+    } finally {
+      releaseLock()
+    }
+  }
+
+  async createSession (root: CID, options?: AbortOptions): Promise<Blocks> {
+    const releaseLock = await this.lock.readLock()
+
+    try {
+      const blocks = await this.child.createSession?.(root, options)
+
+      if (blocks == null) {
+        throw new CodeError('Sessions not supported', 'ERR_UNSUPPORTED')
+      }
+
+      return blocks
     } finally {
       releaseLock()
     }

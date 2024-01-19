@@ -44,7 +44,9 @@ export type DeleteManyBlocksProgressEvents =
 
 export interface GetOfflineOptions {
   /**
-   * If true, do not attempt to fetch any missing blocks from the network (default: false)
+   * If true, do not attempt to fetch any missing blocks from the network
+   *
+   * @default false
    */
   offline?: boolean
 }
@@ -54,7 +56,18 @@ ProgressOptions<PutBlockProgressEvents>, ProgressOptions<PutManyBlocksProgressEv
 GetOfflineOptions & ProgressOptions<GetBlockProgressEvents>, GetOfflineOptions & ProgressOptions<GetManyBlocksProgressEvents>, ProgressOptions<GetAllBlocksProgressEvents>,
 ProgressOptions<DeleteBlockProgressEvents>, ProgressOptions<DeleteManyBlocksProgressEvents>
 > {
-
+  /**
+   * A session blockstore is a special blockstore that only pulls content from a
+   * subset of network peers which respond as having the block for the initial
+   * root CID.
+   *
+   * Any blocks written to the blockstore as part of the session will propagate
+   * to the blockstore the session was created from.
+   *
+   * This method is optional to maintain compatibility with existing
+   * blockstores that do not support sessions.
+   */
+  createSession?(root: CID, options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): Promise<Blockstore>
 }
 
 export type BlockRetrievalOptions<GetProgressOptions extends ProgressOptions = ProgressOptions> = AbortOptions & GetProgressOptions & {
@@ -67,18 +80,19 @@ export type BlockRetrievalOptions<GetProgressOptions extends ProgressOptions = P
   validateFn?(block: Uint8Array): Promise<void>
 }
 
-export interface BlockRetriever<GetProgressOptions extends ProgressOptions = ProgressOptions> {
+export interface BlockBroker<GetProgressOptions extends ProgressOptions = ProgressOptions, NotifyProgressOptions extends ProgressOptions = ProgressOptions> {
   /**
    * Retrieve a block from a source
    */
-  retrieve(cid: CID, options?: BlockRetrievalOptions<GetProgressOptions>): Promise<Uint8Array>
-}
+  retrieve?(cid: CID, options?: BlockRetrievalOptions<GetProgressOptions>): Promise<Uint8Array>
 
-export interface BlockAnnouncer<NotifyProgressOptions extends ProgressOptions = ProgressOptions> {
   /**
    * Make a new block available to peers
    */
-  announce(cid: CID, block: Uint8Array, options?: NotifyProgressOptions): void
-}
+  announce?(cid: CID, block: Uint8Array, options?: NotifyProgressOptions): void
 
-export type BlockBroker = BlockRetriever | BlockAnnouncer
+  /**
+   * Create a new session
+   */
+  createSession?(root: CID, options?: BlockRetrievalOptions<GetProgressOptions>): Promise<BlockBroker<GetProgressOptions, NotifyProgressOptions>>
+}

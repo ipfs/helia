@@ -1,7 +1,7 @@
 import { TrustlessGateway } from './trustless-gateway.js'
 import { DEFAULT_TRUSTLESS_GATEWAYS } from './index.js'
 import type { TrustlessGatewayBlockBrokerInit, TrustlessGatewayComponents, TrustlessGatewayGetBlockProgressEvents } from './index.js'
-import type { BlockRetrievalOptions, BlockRetriever } from '@helia/interface/blocks'
+import type { BlockRetrievalOptions, BlockBroker } from '@helia/interface/blocks'
 import type { Logger } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 import type { ProgressOptions } from 'progress-events'
@@ -10,7 +10,7 @@ import type { ProgressOptions } from 'progress-events'
  * A class that accepts a list of trustless gateways that are queried
  * for blocks.
  */
-export class TrustlessGatewayBlockBroker implements BlockRetriever<
+export class TrustlessGatewayBlockBroker implements BlockBroker<
 ProgressOptions<TrustlessGatewayGetBlockProgressEvents>
 > {
   private readonly gateways: TrustlessGateway[]
