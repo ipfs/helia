@@ -1,32 +1,12 @@
 /* eslint-env mocha */
-import { noise } from '@chainsafe/libp2p-noise'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { webSockets } from '@libp2p/websockets'
 import { expect } from 'aegir/chai'
-import { MemoryBlockstore } from 'blockstore-core'
-import { MemoryDatastore } from 'datastore-core'
-import { createLibp2p } from 'libp2p'
 import { createHelia, type HeliaLibp2p } from '../src/index.js'
 
 describe('helia', () => {
   let helia: HeliaLibp2p<any>
 
   beforeEach(async () => {
-    helia = await createHelia({
-      datastore: new MemoryDatastore(),
-      blockstore: new MemoryBlockstore(),
-      libp2p: await createLibp2p({
-        transports: [
-          webSockets()
-        ],
-        connectionEncryption: [
-          noise()
-        ],
-        streamMuxers: [
-          yamux()
-        ]
-      })
-    })
+    helia = await createHelia()
   })
 
   afterEach(async () => {
@@ -53,5 +33,18 @@ describe('helia', () => {
 
   it('should have a libp2p', async () => {
     expect(helia).to.have.property('libp2p').that.is.ok()
+  })
+
+  it('should have the same peer id after a restart', async () => {
+    const datastore = helia.datastore
+    const peerId = helia.libp2p.peerId
+
+    await helia.stop()
+
+    helia = await createHelia({
+      datastore
+    })
+
+    expect(helia.libp2p.peerId.toString()).to.equal(peerId.toString())
   })
 })
