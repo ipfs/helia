@@ -154,16 +154,25 @@ export class VerifiedFetch {
   }
 
   async fetch (resource: ResourceType, options?: VerifiedFetchOptions): Promise<Response> {
-    const { cid, path } = await this.parseResource(resource)
+    const { cid, path, query } = await this.parseResource(resource)
     let response: Response | undefined
-    if (options?.headers != null) {
-      const contentType = new Headers(options.headers).get('content-type')
-      if (contentType != null) {
-        if (contentType.includes('vnd.ipld.car')) {
-          response = await this.handleIPLDCar({ cid, path, options })
-        } else if (contentType.includes('vnd.ipfs.ipns-record')) {
-          response = await this.handleIPNSRecord({ cid, path, options })
-        }
+    const format = new Headers(options?.headers).get('accept') ?? ''
+    // see https://specs.ipfs.tech/http-gateways/path-gateway/#format-request-query-parameter
+    if (format != null || query.format != null) {
+      if (query.format === 'car' || format.includes('vnd.ipld.car')) {
+        response = await this.handleIPLDCar({ cid, path, options })
+      } else if (query.format === 'ipns-record' || format.includes('vnd.ipfs.ipns-record')) {
+        response = await this.handleIPNSRecord({ cid, path, options })
+      } else if (query.format === 'tar' || format.includes('application/x-tar')) {
+        return new Response('application/x-tar support is not implemented', { status: 501 })
+      } else if (query.format === 'dag-json' || format.includes('application/vnd.ipld.dag-json')) {
+        return new Response('application/vnd.ipld.dag-json support is not implemented', { status: 501 })
+      } else if (query.format === 'dag-cbor' || format.includes('application/vnd.ipld.dag-cbor')) {
+        return new Response('application/vnd.ipld.dag-cbor support is not implemented', { status: 501 })
+      } else if (query.format === 'json' || format.includes('application/json')) {
+        return new Response('application/json support is not implemented', { status: 501 })
+      } else if (query.format === 'cbor' || format.includes('application/cbor')) {
+        return new Response('application/cbor support is not implemented', { status: 501 })
       }
     }
 
