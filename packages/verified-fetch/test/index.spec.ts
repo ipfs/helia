@@ -19,6 +19,7 @@ describe('createVerifiedFetch', () => {
 
     expect(verifiedFetch).to.be.ok()
     await heliaP2P.stop()
+    await verifiedFetch.stop()
   })
 
   it('Can be constructed with gateways', async () => {

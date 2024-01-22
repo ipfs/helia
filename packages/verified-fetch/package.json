@@ -73,7 +73,7 @@
     "@types/mime-types": "^2.1.4",
     "@types/sinon": "^17.0.2",
     "aegir": "^42.1.0",
-    "helia": "^3.0.1",
+    "helia": "next",
     "sinon-ts": "^2.0.0"
   },
   "browser": {
