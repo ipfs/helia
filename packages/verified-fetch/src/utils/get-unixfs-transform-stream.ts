@@ -9,7 +9,7 @@ export const getUnixFsTransformStream = (): TransformStream<Uint8Array, Uint8Arr
       const unmarshalled = UnixFS.unmarshal(chunk)
       controller.enqueue(unmarshalled.data)
     } catch (e) {
-      log.error(e)
+      log.trace('Unmarshalling unixfs chunk failed. Passing through.', e)
       // unmarshalling failed, so just pass the chunk through
       controller.enqueue(chunk)
     }
