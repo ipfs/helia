@@ -75,6 +75,7 @@ export default {
 
         return {
           env: {
+            RUNNER_ENV: options.runner,
             IPFSD_SERVER: `http://127.0.0.1:${ipfsdPort}`,
             FIXTURE_DATA_SERVER: `http://127.0.0.1:${httpPort}`
           },

@@ -21,7 +21,8 @@ describe('@helia/verified-fetch - json', () => {
       await loadFixtureDataCar(controller, 'QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr-tokens.uniswap.org-2024-01-18.car')
       verifiedFetch = await createVerifiedFetch({
         gateways: [`http://${controller.api.gatewayHost}:${controller.api.gatewayPort}`],
-        routers: [`http://${controller.api.gatewayHost}:${controller.api.gatewayPort}`]
+        // Temporarily disabling delegated routers in browser until CORS issue is fixed. see https://github.com/ipshipyard/waterworks-community/issues/4
+        routers: process.env.RUNNER_ENV === 'node' ? [`http://${controller.api.gatewayHost}:${controller.api.gatewayPort}`] : []
       })
     })
 
