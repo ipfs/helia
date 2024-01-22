@@ -103,13 +103,49 @@ export class VerifiedFetch {
    * This is the default method for fetched content.
    */
   private async handleIPLDRaw ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
-    // const asyncIter = this.unixfs.cat(cid, { path, signal: options?.signal })
-    const stat = await this.unixfs.stat(cid, { path, signal: options?.signal })
+    log.trace('fetching %c/%s', cid, path)
+    let stat = await this.unixfs.stat(cid, {
+      path,
+      signal: options?.signal,
+      onProgress: (evt) => {
+        log.trace('%s progress event for %c/%s', evt.type, cid, path)
+      }
+    })
+    if (stat.type === 'directory') {
+      const dirCid = stat.cid
+      // check for redirects
+
+      log.trace('found directory at %c/%s, looking for root files', cid, path)
+      for (const rootFilePath of ['index.html', 'index.htm', 'index.shtml']) {
+        try {
+          log.trace('looking for file: %c/%s', dirCid, rootFilePath)
+          stat = await this.unixfs.stat(dirCid, {
+            signal: options?.signal,
+            path: rootFilePath
+          })
+          log.trace('found root file at %c/%s with cid %c', dirCid, rootFilePath, stat.cid)
+
+          break
+        } catch (err: any) {
+          log('error loading path %c/%s', dirCid, rootFilePath, err)
+        }
+      }
+    }
+    if (stat.type === 'directory') {
+      log('Unable to find root file for directory at %c', cid)
+      throw new Error(`Unable to find root file for directory ${cid}`)
+    }
     const asyncIter = this.unixfs.cat(stat.cid, { signal: options?.signal })
+    log('got async iterator for %c/%s, stat: ', cid, path, stat)
     // now we need to pipe the stream through a transform to unmarshal unixfs data
     const { contentType, stream } = await this.getStreamAndContentType(asyncIter, path)
-
-    const readable = stream.pipeThrough(getUnixFsTransformStream())
+    let readable = stream
+    // if (stat.unixfs != null) {
+    // unixfs file type, so we need to pipe through a transform stream
+    readable = stream.pipeThrough(getUnixFsTransformStream())
+    // } else {
+    //   log('not a file, so not piping through unixfs transform stream', stat)
+    // }
     const response = new Response(readable, { status: 200 })
     response.headers.set('content-type', contentType)
 

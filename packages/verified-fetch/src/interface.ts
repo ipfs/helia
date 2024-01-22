@@ -18,4 +18,5 @@ export type ResourceType = string | CID
  */
 export interface VerifiedFetchOptions extends RequestInit {
   signal?: AbortSignal
+  // onProgress?: (progress: any) => void
 }
