@@ -28,8 +28,9 @@ describe('@helia/verified-fetch - unixfs directory', () => {
 
     it('fails to load when passed the root', async () => {
       // The spec says we should generate HTML with directory listings, but we don't do that yet, so expect a failure
-      // TODO: we should do a directory listing instead
-      await expect(verifiedFetch('ipfs://QmbQDovX7wRe9ek7u6QXe9zgCXkTzoUSsTFJEkrYV1HrVR')).to.be.rejected()
+      const resp = await verifiedFetch('ipfs://QmbQDovX7wRe9ek7u6QXe9zgCXkTzoUSsTFJEkrYV1HrVR')
+      expect(resp).to.be.ok()
+      expect(resp.status).to.equal(501) // TODO: we should do a directory listing instead
     })
 
     it('Can return a string for unixfs pathed data', async () => {
