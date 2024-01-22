@@ -133,7 +133,7 @@ export class VerifiedFetch {
     }
     if (stat.type === 'directory') {
       log('Unable to find root file for directory at %c', cid)
-      throw new Error(`Unable to find root file for directory ${cid}`)
+      return new Response('Support for directories with implicit root is not implemented', { status: 501 })
     }
     const asyncIter = this.unixfs.cat(stat.cid, { signal: options?.signal })
     log('got async iterator for %c/%s, stat: ', cid, path, stat)
