@@ -28,6 +28,9 @@
     },
     {
       "path": "../unixfs"
+    },
+    {
+      "path": "../helia"
     }
   ]
 }
