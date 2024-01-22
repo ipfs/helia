@@ -135,7 +135,7 @@ export class VerifiedFetch {
       log('Unable to find root file for directory at %c', cid)
       return new Response('Support for directories with implicit root is not implemented', { status: 501 })
     }
-    const asyncIter = this.unixfs.cat(stat.cid, { signal: options?.signal })
+    const asyncIter = this.unixfs.cat(stat.cid)
     log('got async iterator for %c/%s, stat: ', cid, path, stat)
     // now we need to pipe the stream through a transform to unmarshal unixfs data
     const { contentType, stream } = await this.getStreamAndContentType(asyncIter, path)
