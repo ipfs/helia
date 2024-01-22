@@ -20,3 +20,10 @@ export interface VerifiedFetchOptions extends RequestInit {
   signal?: AbortSignal
   // onProgress?: (progress: any) => void
 }
+
+export interface ParsedUrlStringResults {
+  protocol: string
+  path: string
+  cid: CID
+  query: Record<string, string>
+}

@@ -2,21 +2,16 @@ import { type IPNS } from '@helia/ipns'
 import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { CID } from 'multiformats/cid'
+import type { ParsedUrlStringResults } from '../interface.js'
 
 const log = logger('helia:verified-fetch:parse-url-string')
-
-export interface ParsedUrlStringResults {
-  protocol: string
-  path: string
-  cid: CID
-}
 
 export interface ParseUrlStringOptions {
   urlString: string
   ipns: IPNS
 }
 
-const URL_REGEX = /^(?<protocol>ip[fn]s):\/\/(?<cidOrPeerIdOrDnsLink>[^/$]+)\/?(?<path>[^$^?]*)/
+const URL_REGEX = /^(?<protocol>ip[fn]s):\/\/(?<cidOrPeerIdOrDnsLink>[^/$?]+)\/?(?<path>[^$?]*)\??(?<queryString>.*)$/
 
 /**
  * A function that parses ipfs:// and ipns:// URLs, returning an object with easily recognizable properties.
@@ -26,7 +21,7 @@ export async function parseUrlString ({ urlString, ipns }: ParseUrlStringOptions
   if (match == null || match.groups == null) {
     throw new TypeError(`Invalid URL: ${urlString}`)
   }
-  const { protocol, cidOrPeerIdOrDnsLink, path } = match.groups
+  const { protocol, cidOrPeerIdOrDnsLink, path, queryString } = match.groups
 
   let cid: CID | null = null
   if (protocol === 'ipfs') {
@@ -64,9 +59,20 @@ export async function parseUrlString ({ urlString, ipns }: ParseUrlStringOptions
     throw new TypeError(`Invalid resource. Cannot determine CID from URL: ${urlString}`)
   }
 
+  // parse query string
+  const query: Record<string, string> = {}
+  if (queryString != null && queryString.length > 0) {
+    const queryParts = queryString.split('&')
+    for (const part of queryParts) {
+      const [key, value] = part.split('=')
+      query[key] = decodeURIComponent(value)
+    }
+  }
+
   return {
     protocol,
     cid,
-    path
+    path,
+    query
   }
 }

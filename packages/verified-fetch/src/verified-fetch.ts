@@ -6,7 +6,7 @@ import { CID } from 'multiformats/cid'
 import { getContentType } from './utils/get-content-type.js'
 import { getUnixFsTransformStream } from './utils/get-unixfs-transform-stream.js'
 import { parseUrlString } from './utils/parse-url-string.js'
-import type { ResourceType, VerifiedFetchOptions } from './interface.js'
+import type { ResourceType, VerifiedFetchOptions, ParsedUrlStringResults } from './interface.js'
 import type { Helia } from '@helia/interface'
 
 const log = logger('helia:verified-fetch')
@@ -41,7 +41,7 @@ export class VerifiedFetch {
    * The resource can represent an IPFS path, IPNS path, or CID.
    * If the resource represents an IPNS path, we need to resolve it to a CID.
    */
-  private async parseResource (resource: ResourceType): Promise<{ cid: CID, path: string, protocol?: string }> {
+  private async parseResource (resource: ResourceType): Promise<ParsedUrlStringResults> {
     if (typeof resource === 'string') {
       return parseUrlString({ urlString: resource, ipns: this.ipns })
     }
@@ -51,7 +51,8 @@ export class VerifiedFetch {
       return {
         cid,
         protocol: 'ipfs',
-        path: ''
+        path: '',
+        query: {}
       }
     }
     throw new TypeError(`Invalid resource. Cannot determine CID from resource: ${resource}`)
