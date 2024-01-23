@@ -7,8 +7,11 @@ import { sha3512 } from '@multiformats/sha3'
 import { createHelia, libp2pDefaults } from 'helia'
 import type { Libp2p } from '@libp2p/interface'
 import type { DefaultLibp2pServices, HeliaLibp2p } from 'helia'
+import type { Libp2pOptions } from 'libp2p'
 
-export async function createHeliaNode (): Promise<HeliaLibp2p<Libp2p<DefaultLibp2pServices>>> {
+export async function createHeliaNode (): Promise<HeliaLibp2p<Libp2p<DefaultLibp2pServices>>>
+export async function createHeliaNode <Services extends Record<string, unknown>> (libp2pOptions: Libp2pOptions<Services>): Promise<HeliaLibp2p<Libp2p<Services & DefaultLibp2pServices>>>
+export async function createHeliaNode (libp2pOptions?: Libp2pOptions): Promise<HeliaLibp2p<Libp2p<DefaultLibp2pServices>>> {
   const defaults = libp2pDefaults()
 
   // allow dialing insecure WebSockets
@@ -28,6 +31,7 @@ export async function createHeliaNode (): Promise<HeliaLibp2p<Libp2p<DefaultLibp
   // use LAN DHT
   defaults.services = {
     ...(defaults.services ?? {}),
+    ...(libp2pOptions?.services ?? {}),
     dht: kadDHT({
       validators: {
         ipns: ipnsValidator

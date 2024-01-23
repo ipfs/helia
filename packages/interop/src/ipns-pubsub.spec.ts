@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 5] */
 
+import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 import { ipns } from '@helia/ipns'
 import { pubsub } from '@helia/ipns/routing'
 import { peerIdFromKeys } from '@libp2p/peer-id'
@@ -20,6 +21,8 @@ import { createKuboNode } from './fixtures/create-kubo.js'
 import { keyTypes } from './fixtures/key-types.js'
 import { waitFor } from './fixtures/wait-for.js'
 import type { IPNS } from '@helia/ipns'
+import type { Libp2p, PubSub } from '@libp2p/interface'
+import type { Keychain } from '@libp2p/keychain'
 import type { HeliaLibp2p } from 'helia'
 import type { Controller } from 'ipfsd-ctl'
 
@@ -30,12 +33,16 @@ const LIBP2P_KEY_CODEC = 0x72
 // resolution because Kubo will use the DHT as well
 keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
   describe(`@helia/ipns - pubsub routing with ${keyType} keys`, () => {
-    let helia: HeliaLibp2p
+    let helia: HeliaLibp2p<Libp2p<{ pubsub: PubSub, keychain: Keychain }>>
     let kubo: Controller
     let name: IPNS
 
     beforeEach(async () => {
-      helia = await createHeliaNode()
+      helia = await createHeliaNode({
+        services: {
+          pubsub: gossipsub()
+        }
+      })
       kubo = await createKuboNode()
 
       // connect the two nodes

@@ -5,7 +5,7 @@ import type { Controller } from 'ipfsd-ctl'
 /**
  * Connect the two nodes by dialing a protocol stream
  */
-export async function connect (helia: HeliaLibp2p, kubo: Controller, protocol: string): Promise<void> {
+export async function connect (helia: HeliaLibp2p<any>, kubo: Controller, protocol: string): Promise<void> {
   let connected = false
   for (const addr of kubo.peer.addresses) {
     try {
