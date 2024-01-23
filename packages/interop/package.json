@@ -87,7 +87,7 @@
     "it-last": "^3.0.4",
     "it-map": "^3.0.5",
     "it-to-buffer": "^4.0.2",
-    "kubo": "^0.25.0",
+    "kubo": "^0.26.0",
     "kubo-rpc-client": "^3.0.1",
     "multiformats": "^13.0.0",
     "p-defer": "^4.0.0",
