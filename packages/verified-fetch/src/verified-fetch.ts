@@ -69,10 +69,10 @@ export class VerifiedFetch {
     log.trace('fetching %c/%s', cid, path)
     let stat = await this.unixfs.stat(cid, {
       path,
-      signal: options?.signal,
-      onProgress: (evt) => {
-        log.trace('%s progress event for %c/%s', evt.type, cid, path)
-      }
+      signal: options?.signal
+      // onProgress: (evt) => {
+      //   log.trace('%s progress event for %c/%s', evt.type, cid, path)
+      // }
     })
     if (stat.type === 'directory') {
       const dirCid = stat.cid
