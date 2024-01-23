@@ -28,4 +28,30 @@ describe('getStreamAndContentType', () => {
     }
     expect(result).to.equal('Hello, world!')
   })
+
+  it('should include last value done is true', async () => {
+    // if done === true and there is a value
+    const LIMIT = 5
+    const iterator: AsyncIterable<Uint8Array> = {
+      [Symbol.asyncIterator] () {
+        let i = 0
+        return {
+          async next () {
+            const done = i === LIMIT
+            const value = new Uint8Array([i++])
+            return Promise.resolve({ value, done })
+          }
+        }
+      }
+    }
+    const { contentType, stream } = await getStreamAndContentType(iterator, 'test.txt')
+    expect(contentType).to.equal('text/plain')
+    const reader = stream.getReader()
+    const result = []
+    let chunk
+    while (!(chunk = await reader.read()).done) {
+      result.push(...chunk.value)
+    }
+    expect(result).to.deep.equal([...Array(LIMIT + 1).keys()])
+  })
 })

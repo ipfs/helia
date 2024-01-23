@@ -23,6 +23,9 @@ export async function getStreamAndContentType (iterator: AsyncIterable<Uint8Arra
     async pull (controller) {
       const { value, done } = await reader.next()
       if (done === true) {
+        if (value != null) {
+          controller.enqueue(value)
+        }
         controller.close()
         return
       }
