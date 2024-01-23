@@ -1,5 +1,3 @@
-// currently getting error from esbuild when trying to import file-type
-// import { fileTypeFromBuffer } from 'file-type';
 import mime from 'mime-types'
 
 interface testInput {
@@ -22,8 +20,6 @@ const tests: Array<(input: testInput) => testOutput> = [
   async ({ bytes }): testOutput => xmlRegex.test(new TextDecoder().decode(bytes.slice(0, 64)))
     ? 'image/svg+xml'
     : undefined,
-  // testing file-type from buffer
-  // async ({ bytes }): testOutput => (await fileTypeFromBuffer(bytes))?.mime,
   // testing file-type from path
   async ({ path }): testOutput => {
     const mimeType = mime.lookup(path)

@@ -63,7 +63,6 @@
     "@helia/unixfs": "next",
     "@libp2p/logger": "^4.0.5",
     "@libp2p/peer-id": "^4.0.5",
-    "ipfs-unixfs": "^11.1.2",
     "mime-types": "^2.1.35",
     "multiformats": "^13.0.0"
   },

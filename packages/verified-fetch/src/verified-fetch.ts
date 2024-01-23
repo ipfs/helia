@@ -4,7 +4,6 @@ import { unixfs as heliaUnixFs, type UnixFS as HeliaUnixFs } from '@helia/unixfs
 import { logger } from '@libp2p/logger'
 import { type CID } from 'multiformats/cid'
 import { getContentType } from './utils/get-content-type.js'
-import { getUnixFsTransformStream } from './utils/get-unixfs-transform-stream.js'
 import { parseResource } from './utils/parse-resource.js'
 import type { ResourceType, VerifiedFetchOptions } from './interface.js'
 import type { Helia } from '@helia/interface'
@@ -118,14 +117,7 @@ export class VerifiedFetch {
     log('got async iterator for %c/%s, stat: ', cid, path, stat)
     // now we need to pipe the stream through a transform to unmarshal unixfs data
     const { contentType, stream } = await this.getStreamAndContentType(asyncIter, path)
-    let readable = stream
-    // if (stat.unixfs != null) {
-    // unixfs file type, so we need to pipe through a transform stream
-    readable = stream.pipeThrough(getUnixFsTransformStream())
-    // } else {
-    //   log('not a file, so not piping through unixfs transform stream', stat)
-    // }
-    const response = new Response(readable, { status: 200 })
+    const response = new Response(stream, { status: 200 })
     response.headers.set('content-type', contentType)
 
     return response
