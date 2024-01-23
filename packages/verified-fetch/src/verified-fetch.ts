@@ -35,33 +35,6 @@ export class VerifiedFetch {
     log.trace('created VerifiedFetch instance')
   }
 
-  private async getStreamAndContentType (iterator: AsyncIterable<Uint8Array>, path: string): Promise<{ contentType: string, stream: ReadableStream<Uint8Array> }> {
-    const reader = iterator[Symbol.asyncIterator]()
-    const { value, done } = await reader.next()
-    if (done === true) {
-      log.error('No content found')
-      throw new Error('No content found')
-    }
-
-    const contentType = await getContentType({ bytes: value, path })
-    const stream = new ReadableStream({
-      async start (controller) {
-        // the initial value is already available
-        controller.enqueue(value)
-      },
-      async pull (controller) {
-        const { value, done } = await reader.next()
-        if (done === true) {
-          controller.close()
-          return
-        }
-        controller.enqueue(value)
-      }
-    })
-
-    return { contentType, stream }
-  }
-
   // handle vnd.ipfs.ipns-record
   private async handleIPNSRecord ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
     const response = new Response('vnd.ipfs.ipns-record support is not implemented', { status: 501 })
@@ -116,7 +89,7 @@ export class VerifiedFetch {
     const asyncIter = this.unixfs.cat(stat.cid)
     log('got async iterator for %c/%s, stat: ', cid, path, stat)
     // now we need to pipe the stream through a transform to unmarshal unixfs data
-    const { contentType, stream } = await this.getStreamAndContentType(asyncIter, path)
+    const { contentType, stream } = await getStreamAndContentType(asyncIter, path)
     const response = new Response(stream, { status: 200 })
     response.headers.set('content-type', contentType)
 

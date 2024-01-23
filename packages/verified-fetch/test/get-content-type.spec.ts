@@ -14,7 +14,13 @@ describe('get-content-type', () => {
     expect(output).to.equal('image/svg+xml')
   })
 
-  it('should return mime type based on file path', async () => {
+  it('should return audio/mpeg for "*.mp3"', async () => {
+    const input = { bytes: new Uint8Array(), path: 'foobar.mp3' }
+    const output = await getContentType(input)
+    expect(output).to.equal('audio/mpeg')
+  })
+
+  it('should return text/plain for "*.txt"', async () => {
     const input = { bytes: new Uint8Array(), path: 'test.txt' }
     const output = await getContentType(input)
     expect(output).to.equal('text/plain')
