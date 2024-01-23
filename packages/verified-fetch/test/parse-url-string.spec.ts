@@ -7,7 +7,47 @@ import { parseUrlString } from '../src/utils/parse-url-string.js'
 import type { IPNS } from '@helia/ipns'
 
 describe('parseUrlString', () => {
+  describe('invalid URLs', () => {
+    it('throws for invalid URLs', async () => {
+      const ipns = stubInterface<IPNS>({})
+      try {
+        await parseUrlString({
+          urlString: 'invalid',
+          ipns
+        })
+        throw new Error('Should have thrown')
+      } catch (err) {
+        expect((err as Error).message).to.equal('Invalid URL: invalid, please use ipfs:// or ipns:// URLs only.')
+      }
+    })
+    it('throws for invalid protocols', async () => {
+      const ipns = stubInterface<IPNS>({})
+      try {
+        await parseUrlString({
+          urlString: 'http://mydomain.com',
+          ipns
+        })
+        throw new Error('Should have thrown')
+      } catch (err) {
+        expect((err as Error).message).to.equal('Invalid URL: http://mydomain.com, please use ipfs:// or ipns:// URLs only.')
+      }
+    })
+  })
+
   describe('ipfs://<CID> URLs', () => {
+    it('handles invalid CIDs', async () => {
+      const ipns = stubInterface<IPNS>({})
+      try {
+        await parseUrlString({
+          urlString: 'ipfs://QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4i',
+          ipns
+        })
+        throw new Error('Should have thrown')
+      } catch (err) {
+        expect((err as Error).message).to.equal('Invalid CID for ipfs://<cid> URL')
+      }
+    })
+
     it('can parse a URL with CID only', async () => {
       const ipns = stubInterface<IPNS>({})
       const result = await parseUrlString({
@@ -54,13 +94,24 @@ describe('parseUrlString', () => {
 
   describe('ipns://<dnsLinkDomain> URLs', () => {
     let ipns: IPNS
-    before(async () => {
+    beforeEach(async () => {
       ipns = stubInterface<IPNS>({
         resolveDns: async (dnsLink: string) => {
           expect(dnsLink).to.equal('mydomain.com')
           return CID.parse('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
         }
       })
+    })
+
+    it('handles invalid DNSLinkDomains', async () => {
+      ipns = stubInterface<IPNS>({
+        resolveDns: async (_: string) => {
+          return Promise.reject(new Error('Unexpected failure from dns query'))
+        }
+      })
+
+      await expect(parseUrlString({ urlString: 'ipns://mydomain.com', ipns })).to.eventually.be.rejected()
+        .with.property('message', 'Unexpected failure from dns query')
     })
 
     it('can parse a URL with DNSLinkDomain only', async () => {
@@ -106,7 +157,7 @@ describe('parseUrlString', () => {
   describe('ipns://<peerId> URLs', () => {
     let ipns: IPNS
     let testPeerId: PeerId
-    before(async () => {
+    beforeEach(async () => {
       testPeerId = await createEd25519PeerId()
       ipns = stubInterface<IPNS>({
         resolve: async (peerId: PeerId) => {
@@ -114,6 +165,22 @@ describe('parseUrlString', () => {
           return CID.parse('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
         }
       })
+    })
+
+    it('handles invalid PeerIds', async () => {
+      await expect(parseUrlString({ urlString: 'ipns://123PeerIdIsFake456', ipns })).to.eventually.be.rejected()
+        .with.property('message').include('Invalid resource. Cannot determine CID from URL "ipns://123PeerIdIsFake456"')
+    })
+
+    it('handles valid PeerId resolve failures', async () => {
+      ipns = stubInterface<IPNS>({
+        resolve: async (_: PeerId) => {
+          return Promise.reject(new Error('Unexpected failure from ipns resolve method'))
+        }
+      })
+
+      await expect(parseUrlString({ urlString: `ipns://${testPeerId.toString()}`, ipns })).to.eventually.be.rejected()
+        .with.property('message', `Could not resolve PeerId "${testPeerId.toString()}", Unexpected failure from ipns resolve method`)
     })
 
     it('can parse a URL with PeerId only', async () => {
