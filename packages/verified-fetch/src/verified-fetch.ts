@@ -1,3 +1,4 @@
+import { dagJson as heliaDagJson, type DAGJSON } from '@helia/dag-json'
 import { ipns as heliaIpns, type IPNS } from '@helia/ipns'
 import { dnsJsonOverHttps, dnsOverHttps } from '@helia/ipns/dns-resolvers'
 import { unixfs as heliaUnixFs, type UnixFS as HeliaUnixFs } from '@helia/unixfs'
@@ -14,12 +15,14 @@ interface VerifiedFetchConstructorOptions {
   helia: Helia
   ipns?: IPNS
   unixfs?: HeliaUnixFs
+  dagJson?: DAGJSON
 }
 export class VerifiedFetch {
   private readonly helia: Helia
   private readonly ipns: IPNS
   private readonly unixfs: HeliaUnixFs
-  constructor ({ helia, ipns, unixfs }: VerifiedFetchConstructorOptions) {
+  private readonly dagJson: DAGJSON
+  constructor ({ helia, ipns, unixfs, dagJson }: VerifiedFetchConstructorOptions) {
     this.helia = helia
     this.ipns = ipns ?? heliaIpns(helia, {
       resolvers: [
@@ -32,6 +35,7 @@ export class VerifiedFetch {
       ]
     })
     this.unixfs = unixfs ?? heliaUnixFs(helia)
+    this.dagJson = dagJson ?? heliaDagJson(helia)
     log.trace('created VerifiedFetch instance')
   }
 
@@ -46,6 +50,14 @@ export class VerifiedFetch {
   private async handleIPLDCar ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
     const response = new Response('vnd.ipld.car support is not implemented', { status: 501 })
     response.headers.set('X-Content-Type-Options', 'nosniff') // see https://specs.ipfs.tech/http-gateways/path-gateway/#x-content-type-options-response-header
+    return response
+  }
+
+  private async handleDagJson ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
+    log.trace('fetching %c/%s', cid, path)
+    const result = await this.dagJson.get(cid)
+    const response = new Response(JSON.stringify(result), { status: 200 })
+    response.headers.set('content-type', 'application/json')
     return response
   }
 
@@ -96,6 +108,7 @@ export class VerifiedFetch {
     return response
   }
 
+  // eslint-disable-next-line complexity
   async fetch (resource: ResourceType, options?: VerifiedFetchOptions): Promise<Response> {
     const { cid, path, query } = await parseResource(resource, this.ipns)
     let response: Response | undefined
@@ -120,7 +133,15 @@ export class VerifiedFetch {
     }
 
     if (response == null) {
-      response = await this.handleIPLDRaw({ cid, path, options })
+      switch (cid.code) {
+        case 0x0129:
+          response = await this.handleDagJson({ cid, path, options })
+          break
+        case 0x70:
+        default:
+          response = await this.handleIPLDRaw({ cid, path, options })
+          break
+      }
     }
 
     response.headers.set('etag', cid.toString()) // https://specs.ipfs.tech/http-gateways/path-gateway/#etag-response-header

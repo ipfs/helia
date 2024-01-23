@@ -22,6 +22,22 @@
   ],
   "type": "module",
   "types": "./dist/src/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ],
+      "src/*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ]
+    }
+  },
   "files": [
     "src",
     "dist",
@@ -56,6 +72,7 @@
   },
   "dependencies": {
     "@helia/block-brokers": "next",
+    "@helia/dag-json": "^2.0.1",
     "@helia/http": "next",
     "@helia/interface": "next",
     "@helia/ipns": "next",

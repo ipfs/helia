@@ -1,4 +1,5 @@
 /* eslint-env mocha */
+import { type DAGJSON } from '@helia/dag-json'
 import { type IPNS } from '@helia/ipns'
 import { type UnixFS } from '@helia/unixfs'
 import { expect } from 'aegir/chai'
@@ -58,15 +59,21 @@ describe('VerifiedFetch', () => {
   describe('vnd.ipld.raw', () => {
     let verifiedFetch: InstanceType<typeof VerifiedFetch>
     let unixfsStub: ReturnType<typeof stubInterface<UnixFS>>
+    let dagJsonStub: ReturnType<typeof stubInterface<DAGJSON>>
     beforeEach(async () => {
       unixfsStub = stubInterface<UnixFS>({
         cat: sinon.stub(),
         stat: sinon.stub()
       })
+      dagJsonStub = stubInterface<DAGJSON>({
+        // @ts-expect-error - stub errors
+        get: sinon.stub()
+      })
       verifiedFetch = new VerifiedFetch({
         helia: stubInterface<Helia>(),
         ipns: stubInterface<IPNS>(),
-        unixfs: unixfsStub
+        unixfs: unixfsStub,
+        dagJson: dagJsonStub
       })
     })
     afterEach(async () => {
@@ -174,6 +181,45 @@ describe('VerifiedFetch', () => {
       expect(unixfsStub.cat.withArgs(testCID).callCount).to.equal(0)
       expect(resp).to.be.ok()
       expect(resp.status).to.equal(501)
+    })
+
+    it('should return dag-json encoded CID', async () => {
+      const abortSignal = new AbortController().signal
+      const cid = CID.parse('baguqeerasords4njcts6vs7qvdjfcvgnume4hqohf65zsfguprqphs3icwea')
+      dagJsonStub.get.withArgs(cid).returns(Promise.resolve({
+        hello: 'world'
+      }))
+      const resp = await verifiedFetch.fetch(cid, {
+        signal: abortSignal
+      })
+      expect(unixfsStub.stat.withArgs(cid).callCount).to.equal(0)
+      expect(unixfsStub.cat.withArgs(cid).callCount).to.equal(0)
+      expect(resp).to.be.ok()
+      expect(resp.status).to.equal(200)
+      const data = await resp.json()
+      expect(data).to.deep.equal({
+        hello: 'world'
+      })
+    })
+
+    it.skip('should return json encoded CID', async () => {
+      const abortSignal = new AbortController().signal
+      const cid = CID.parse('bagaaifcavabu6fzheerrmtxbbwv7jjhc3kaldmm7lbnvfopyrthcvod4m6ygpj3unrcggkzhvcwv5wnhc5ufkgzlsji7agnmofovc2g4a3ui7ja')
+      console.log(cid.code)
+      dagJsonStub.get.withArgs(cid).returns(Promise.resolve({
+        hello: 'world'
+      }))
+      const resp = await verifiedFetch.fetch(cid, {
+        signal: abortSignal
+      })
+      expect(unixfsStub.stat.withArgs(cid).callCount).to.equal(0)
+      expect(unixfsStub.cat.withArgs(cid).callCount).to.equal(0)
+      expect(resp).to.be.ok()
+      expect(resp.status).to.equal(200)
+      const data = await resp.json()
+      expect(data).to.deep.equal({
+        hello: 'world'
+      })
     })
   })
 })
