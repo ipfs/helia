@@ -8,8 +8,8 @@ import { VerifiedFetch } from '../src/verified-fetch.js'
 import type { Helia } from '@helia/interface'
 
 describe('VerifiedFetch', () => {
+  const testCID = CID.parse('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
   describe('Not implemented', () => {
-    const cid = CID.parse('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
     let verifiedFetch: InstanceType<typeof VerifiedFetch>
     before(async () => {
       verifiedFetch = new VerifiedFetch({
@@ -17,7 +17,7 @@ describe('VerifiedFetch', () => {
         ipns: stubInterface<IPNS>({
           resolveDns: async (dnsLink: string) => {
             expect(dnsLink).to.equal('mydomain.com')
-            return cid
+            return testCID
           }
         }),
         unixfs: stubInterface<UnixFS>()
@@ -43,7 +43,7 @@ describe('VerifiedFetch', () => {
         const resp = await verifiedFetch.fetch(`ipns://mydomain.com?format=${format}`)
         expect(resp).to.be.ok()
         expect(resp.status).to.equal(501)
-        const resp2 = await verifiedFetch.fetch(cid, {
+        const resp2 = await verifiedFetch.fetch(testCID, {
           headers: {
             accept: acceptHeader
           }

@@ -2,11 +2,11 @@ import { ipns as heliaIpns, type IPNS } from '@helia/ipns'
 import { dnsJsonOverHttps, dnsOverHttps } from '@helia/ipns/dns-resolvers'
 import { unixfs as heliaUnixFs, type UnixFS as HeliaUnixFs } from '@helia/unixfs'
 import { logger } from '@libp2p/logger'
-import { CID } from 'multiformats/cid'
+import { type CID } from 'multiformats/cid'
 import { getContentType } from './utils/get-content-type.js'
 import { getUnixFsTransformStream } from './utils/get-unixfs-transform-stream.js'
-import { parseUrlString } from './utils/parse-url-string.js'
-import type { ResourceType, VerifiedFetchOptions, ParsedUrlStringResults } from './interface.js'
+import { parseResource } from './utils/parse-resource.js'
+import type { ResourceType, VerifiedFetchOptions } from './interface.js'
 import type { Helia } from '@helia/interface'
 
 const log = logger('helia:verified-fetch')
@@ -34,28 +34,6 @@ export class VerifiedFetch {
     })
     this.unixfs = unixfs ?? heliaUnixFs(helia)
     log.trace('created VerifiedFetch instance')
-  }
-
-  /**
-   * Handles the different use cases for the `resource` argument.
-   * The resource can represent an IPFS path, IPNS path, or CID.
-   * If the resource represents an IPNS path, we need to resolve it to a CID.
-   */
-  private async parseResource (resource: ResourceType): Promise<ParsedUrlStringResults> {
-    if (typeof resource === 'string') {
-      return parseUrlString({ urlString: resource, ipns: this.ipns })
-    }
-    const cid = CID.asCID(resource)
-    if (cid != null) {
-      // an actual CID
-      return {
-        cid,
-        protocol: 'ipfs',
-        path: '',
-        query: {}
-      }
-    }
-    throw new TypeError(`Invalid resource. Cannot determine CID from resource: ${resource}`)
   }
 
   private async getStreamAndContentType (iterator: AsyncIterable<Uint8Array>, path: string): Promise<{ contentType: string, stream: ReadableStream<Uint8Array> }> {
@@ -154,7 +132,7 @@ export class VerifiedFetch {
   }
 
   async fetch (resource: ResourceType, options?: VerifiedFetchOptions): Promise<Response> {
-    const { cid, path, query } = await this.parseResource(resource)
+    const { cid, path, query } = await parseResource(resource, this.ipns)
     let response: Response | undefined
     const format = new Headers(options?.headers).get('accept') ?? ''
     // see https://specs.ipfs.tech/http-gateways/path-gateway/#format-request-query-parameter
