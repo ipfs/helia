@@ -146,5 +146,34 @@ describe('VerifiedFetch', () => {
       const data = await resp.arrayBuffer()
       expect(new Uint8Array(data)).to.deep.equal(finalRootFileContent)
     })
+
+    it('should not call unixfs.cat if root file is not found', async () => {
+      const abortSignal = new AbortController().signal
+      // first stat returns a directory
+      unixfsStub.stat.onCall(0).returns(Promise.resolve({
+        cid: testCID,
+        size: 3,
+        type: 'directory',
+        fileSize: BigInt(3),
+        dagSize: BigInt(1),
+        localFileSize: BigInt(3),
+        localDagSize: BigInt(1),
+        blocks: 1
+      }))
+
+      unixfsStub.stat.withArgs(testCID, { path: 'index.html', signal: abortSignal }).onCall(0).throws(new Error('not found'))
+      unixfsStub.stat.withArgs(testCID, { path: 'index.htm', signal: abortSignal }).onCall(0).throws(new Error('not found'))
+      unixfsStub.stat.withArgs(testCID, { path: 'index.shtml', signal: abortSignal }).onCall(0).throws(new Error('not found'))
+      const resp = await verifiedFetch.fetch(testCID, {
+        signal: abortSignal
+      })
+      expect(unixfsStub.stat.withArgs(testCID).callCount).to.equal(4)
+      expect(unixfsStub.stat.withArgs(testCID, { path: 'index.html', signal: abortSignal }).callCount).to.equal(1)
+      expect(unixfsStub.stat.withArgs(testCID, { path: 'index.htm', signal: abortSignal }).callCount).to.equal(1)
+      expect(unixfsStub.stat.withArgs(testCID, { path: 'index.shtml', signal: abortSignal }).callCount).to.equal(1)
+      expect(unixfsStub.cat.withArgs(testCID).callCount).to.equal(0)
+      expect(resp).to.be.ok()
+      expect(resp.status).to.equal(501)
+    })
   })
 })
