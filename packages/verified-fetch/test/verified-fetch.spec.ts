@@ -10,8 +10,27 @@ import { stubInterface } from 'sinon-ts'
 import { VerifiedFetch } from '../src/verified-fetch.js'
 import type { Helia } from '@helia/interface'
 
+const testCID = CID.parse('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
 describe('VerifiedFetch', () => {
-  const testCID = CID.parse('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
+  it('starts and stops the helia node', async () => {
+    const stopStub = sinon.stub()
+    const startStub = sinon.stub()
+    const verifiedFetch = new VerifiedFetch({
+      helia: stubInterface<Helia>({
+        start: startStub,
+        stop: stopStub
+      })
+    })
+    expect(stopStub.withArgs().callCount).to.equal(0)
+    expect(startStub.withArgs().callCount).to.equal(0)
+    await verifiedFetch.start()
+    expect(stopStub.withArgs().callCount).to.equal(0)
+    expect(startStub.withArgs().callCount).to.equal(1)
+    await verifiedFetch.stop()
+    expect(stopStub.withArgs().callCount).to.equal(1)
+    expect(startStub.withArgs().callCount).to.equal(1)
+  })
+
   describe('Not implemented', () => {
     let verifiedFetch: InstanceType<typeof VerifiedFetch>
     before(async () => {
