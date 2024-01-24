@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 import { type DAGJSON } from '@helia/dag-json'
 import { type IPNS } from '@helia/ipns'
+import { type JSON as HeliaJSON } from '@helia/json'
 import { type UnixFS } from '@helia/unixfs'
 import { expect } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
@@ -60,6 +61,7 @@ describe('VerifiedFetch', () => {
     let verifiedFetch: InstanceType<typeof VerifiedFetch>
     let unixfsStub: ReturnType<typeof stubInterface<UnixFS>>
     let dagJsonStub: ReturnType<typeof stubInterface<DAGJSON>>
+    let jsonStub: ReturnType<typeof stubInterface<HeliaJSON>>
     beforeEach(async () => {
       unixfsStub = stubInterface<UnixFS>({
         cat: sinon.stub(),
@@ -69,11 +71,16 @@ describe('VerifiedFetch', () => {
         // @ts-expect-error - stub errors
         get: sinon.stub()
       })
+      jsonStub = stubInterface<HeliaJSON>({
+        // @ts-expect-error - stub errors
+        get: sinon.stub()
+      })
       verifiedFetch = new VerifiedFetch({
         helia: stubInterface<Helia>(),
         ipns: stubInterface<IPNS>(),
         unixfs: unixfsStub,
-        dagJson: dagJsonStub
+        dagJson: dagJsonStub,
+        json: jsonStub
       })
     })
     afterEach(async () => {
@@ -194,6 +201,7 @@ describe('VerifiedFetch', () => {
       })
       expect(unixfsStub.stat.withArgs(cid).callCount).to.equal(0)
       expect(unixfsStub.cat.withArgs(cid).callCount).to.equal(0)
+      expect(dagJsonStub.get.withArgs(cid).callCount).to.equal(1)
       expect(resp).to.be.ok()
       expect(resp.status).to.equal(200)
       const data = await resp.json()
@@ -202,11 +210,10 @@ describe('VerifiedFetch', () => {
       })
     })
 
-    it.skip('should return json encoded CID', async () => {
+    it('should return json encoded CID', async () => {
       const abortSignal = new AbortController().signal
       const cid = CID.parse('bagaaifcavabu6fzheerrmtxbbwv7jjhc3kaldmm7lbnvfopyrthcvod4m6ygpj3unrcggkzhvcwv5wnhc5ufkgzlsji7agnmofovc2g4a3ui7ja')
-      console.log(cid.code)
-      dagJsonStub.get.withArgs(cid).returns(Promise.resolve({
+      jsonStub.get.withArgs(cid).returns(Promise.resolve({
         hello: 'world'
       }))
       const resp = await verifiedFetch.fetch(cid, {
@@ -214,6 +221,8 @@ describe('VerifiedFetch', () => {
       })
       expect(unixfsStub.stat.withArgs(cid).callCount).to.equal(0)
       expect(unixfsStub.cat.withArgs(cid).callCount).to.equal(0)
+      expect(dagJsonStub.get.withArgs(cid).callCount).to.equal(0)
+      expect(jsonStub.get.withArgs(cid).callCount).to.equal(1)
       expect(resp).to.be.ok()
       expect(resp.status).to.equal(200)
       const data = await resp.json()

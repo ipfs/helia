@@ -1,6 +1,7 @@
 import { dagJson as heliaDagJson, type DAGJSON } from '@helia/dag-json'
 import { ipns as heliaIpns, type IPNS } from '@helia/ipns'
 import { dnsJsonOverHttps, dnsOverHttps } from '@helia/ipns/dns-resolvers'
+import { json as heliaJson, type JSON as HeliaJSON } from '@helia/json'
 import { unixfs as heliaUnixFs, type UnixFS as HeliaUnixFs } from '@helia/unixfs'
 import { logger } from '@libp2p/logger'
 import { type CID } from 'multiformats/cid'
@@ -16,13 +17,16 @@ interface VerifiedFetchConstructorOptions {
   ipns?: IPNS
   unixfs?: HeliaUnixFs
   dagJson?: DAGJSON
+  json?: HeliaJSON
 }
 export class VerifiedFetch {
   private readonly helia: Helia
   private readonly ipns: IPNS
   private readonly unixfs: HeliaUnixFs
   private readonly dagJson: DAGJSON
-  constructor ({ helia, ipns, unixfs, dagJson }: VerifiedFetchConstructorOptions) {
+  private readonly json: HeliaJSON
+
+  constructor ({ helia, ipns, unixfs, dagJson, json }: VerifiedFetchConstructorOptions) {
     this.helia = helia
     this.ipns = ipns ?? heliaIpns(helia, {
       resolvers: [
@@ -36,6 +40,7 @@ export class VerifiedFetch {
     })
     this.unixfs = unixfs ?? heliaUnixFs(helia)
     this.dagJson = dagJson ?? heliaDagJson(helia)
+    this.json = json ?? heliaJson(helia)
     log.trace('created VerifiedFetch instance')
   }
 
@@ -55,7 +60,15 @@ export class VerifiedFetch {
 
   private async handleDagJson ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
     log.trace('fetching %c/%s', cid, path)
-    const result = await this.dagJson.get(cid)
+    const result = await this.dagJson.get(cid, { signal: options?.signal })
+    const response = new Response(JSON.stringify(result), { status: 200 })
+    response.headers.set('content-type', 'application/json')
+    return response
+  }
+
+  private async handleJson ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
+    log.trace('fetching %c/%s', cid, path)
+    const result: Record<any, any> = await this.json.get(cid, { signal: options?.signal })
     const response = new Response(JSON.stringify(result), { status: 200 })
     response.headers.set('content-type', 'application/json')
     return response
@@ -87,6 +100,7 @@ export class VerifiedFetch {
             path: rootFilePath
           })
           log.trace('found root file at %c/%s with cid %c', dirCid, rootFilePath, stat.cid)
+          path = rootFilePath
 
           break
         } catch (err: any) {
@@ -134,6 +148,9 @@ export class VerifiedFetch {
 
     if (response == null) {
       switch (cid.code) {
+        case 0x200:
+          response = await this.handleJson({ cid, path, options })
+          break
         case 0x0129:
           response = await this.handleDagJson({ cid, path, options })
           break

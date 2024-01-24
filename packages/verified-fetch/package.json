@@ -76,6 +76,7 @@
     "@helia/http": "next",
     "@helia/interface": "next",
     "@helia/ipns": "next",
+    "@helia/json": "^2.0.1-4836d52",
     "@helia/routers": "next",
     "@helia/unixfs": "next",
     "@libp2p/logger": "^4.0.5",
