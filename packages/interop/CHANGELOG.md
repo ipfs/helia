@@ -1,5 +1,47 @@
 # Changelog
 
+## [4.0.0](https://github.com/ipfs/helia/compare/interop-v3.0.1...interop-v4.0.0) (2024-01-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove gossipsub from default libp2p services ([#401](https://github.com/ipfs/helia/issues/401))
+* `helia.routing` is the default routing used, the `libp2p` routing has been removed as it is redundant
+* the `libp2p` property has been removed from the `Helia` interface in `@helia/interface` - it is still present on the return type of `createHelia` from the `helia` module
+
+### Features
+
+* add @helia/http to monorepo ([#372](https://github.com/ipfs/helia/issues/372)) ([76220cd](https://github.com/ipfs/helia/commit/76220cd5adf45af7fa61fd0a1321de4722b744d6))
+* export binary from @helia/interop ([#384](https://github.com/ipfs/helia/issues/384)) ([3477b27](https://github.com/ipfs/helia/commit/3477b2748d44a862e8afeae1a7a2668cdd8a7100))
+* use helia router for IPNS put/get ([#387](https://github.com/ipfs/helia/issues/387)) ([ce74026](https://github.com/ipfs/helia/commit/ce740268e83f50e6f144b74969a98d54005cd852))
+
+
+### Bug Fixes
+
+* include aegir config in interop and run from install dir ([#389](https://github.com/ipfs/helia/issues/389)) ([a2229bd](https://github.com/ipfs/helia/commit/a2229bd79d5c8b805604bb24bad222462a9ed8cc))
+* remove gossipsub from default libp2p services ([#401](https://github.com/ipfs/helia/issues/401)) ([99c94f4](https://github.com/ipfs/helia/commit/99c94f4b85c4ed826a6195207e3545cbbc87a6d1))
+* update ipns module to v9 and fix double verification of records ([#396](https://github.com/ipfs/helia/issues/396)) ([f2853f8](https://github.com/ipfs/helia/commit/f2853f8bd5bdcee8ab7a685355b0be47f29620e0))
+
+
+### Dependencies
+
+* bump kubo from 0.25.0 to 0.26.0 ([#400](https://github.com/ipfs/helia/issues/400)) ([a9c55f0](https://github.com/ipfs/helia/commit/a9c55f0e672e439cbcc6b938963ab150997c6e45))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^1.0.0 to ^2.0.0
+    * @helia/car bumped from ^2.0.1 to ^3.0.0
+    * @helia/dag-cbor bumped from ^2.0.1 to ^3.0.0
+    * @helia/dag-json bumped from ^2.0.1 to ^3.0.0
+    * @helia/http bumped from ^0.9.0 to ^1.0.0
+    * @helia/interface bumped from ^3.0.1 to ^4.0.0
+    * @helia/ipns bumped from ^4.0.0 to ^5.0.0
+    * @helia/json bumped from ^2.0.1 to ^3.0.0
+    * @helia/mfs bumped from ^2.0.1 to ^3.0.0
+    * @helia/routers bumped from ^0.0.0 to ^1.0.0
+    * @helia/strings bumped from ^2.0.1 to ^3.0.0
+    * @helia/unixfs bumped from ^2.0.1 to ^3.0.0
+    * helia bumped from ^3.0.1 to ^4.0.0
+
 ## [3.0.1](https://github.com/ipfs/helia/compare/interop-v3.0.0...interop-v3.0.1) (2024-01-16)
 
 
