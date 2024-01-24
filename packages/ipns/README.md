@@ -61,12 +61,18 @@ and multiple peers are listening on the topic(s), otherwise update messages
 may fail to be published with "Insufficient peers" errors.
 
 ```typescript
-import { createHelia } from 'helia'
+import { createHelia, libp2pDefaults } from 'helia'
 import { ipns } from '@helia/ipns'
 import { pubsub } from '@helia/ipns/routing'
 import { unixfs } from '@helia/unixfs'
+import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 
-const helia = await createHelia()
+const libp2pOptions = libp2pDefaults()
+libp2pOptions.services.pubsub = gossipsub()
+
+const helia = await createHelia({
+  libp2p: libp2pOptions
+})
 const name = ipns(helia, {
  routers: [
    pubsub(helia)
