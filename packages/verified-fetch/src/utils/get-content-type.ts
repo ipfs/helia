@@ -27,9 +27,7 @@ const tests: Array<(input: testInput) => testOutput> = [
       return mimeType
     }
     return undefined
-  },
-  // default
-  async (): Promise<string> => DEFAULT_MIME_TYPE
+  }
 ]
 
 const overrides: Record<string, string> = {
