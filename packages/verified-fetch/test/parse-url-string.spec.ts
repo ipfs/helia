@@ -20,6 +20,7 @@ describe('parseUrlString', () => {
         expect((err as Error).message).to.equal('Invalid URL: invalid, please use ipfs:// or ipns:// URLs only.')
       }
     })
+
     it('throws for invalid protocols', async () => {
       const ipns = stubInterface<IPNS>({})
       try {
@@ -30,6 +31,24 @@ describe('parseUrlString', () => {
         throw new Error('Should have thrown')
       } catch (err) {
         expect((err as Error).message).to.equal('Invalid URL: http://mydomain.com, please use ipfs:// or ipns:// URLs only.')
+      }
+    })
+
+    it('throws an error if resulting CID is invalid', async () => {
+      const ipns = stubInterface<IPNS>({
+        // @ts-expect-error - purposefully invalid response
+        resolveDns: async (_: string) => {
+          return null
+        }
+      })
+      try {
+        await parseUrlString({
+          urlString: 'ipns://mydomain.com',
+          ipns
+        })
+        throw new Error('Should have thrown')
+      } catch (err) {
+        expect((err as Error).message).to.equal('Invalid resource. Cannot determine CID from URL: ipns://mydomain.com')
       }
     })
   })

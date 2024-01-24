@@ -31,7 +31,8 @@ export async function parseUrlString ({ urlString, ipns }: ParseUrlStringOptions
       log.error(err)
       throw new TypeError('Invalid CID for ipfs://<cid> URL')
     }
-  } else if (protocol === 'ipns') {
+  } else {
+    // protocol is ipns
     if (cidOrPeerIdOrDnsLink.includes('.')) {
       log.trace('Attempting to resolve DNSLink for %s', cidOrPeerIdOrDnsLink)
       try {
@@ -57,8 +58,6 @@ export async function parseUrlString ({ urlString, ipns }: ParseUrlStringOptions
         throw new TypeError(`Could not resolve PeerId "${cidOrPeerIdOrDnsLink}", ${(err as Error).message}`)
       }
     }
-  } else {
-    throw new TypeError(`Invalid protocol for URL ${urlString}. Please use ipfs:// or ipns:// URLs only.`)
   }
 
   if (cid == null) {
