@@ -20,4 +20,9 @@ describe('parseResource', () => {
     expect(path).to.equal('')
     expect(query).to.deep.equal({})
   })
+
+  it('throws an error if given an invalid resource', async () => {
+    // @ts-expect-error - purposefully invalid input
+    await expect(parseResource({}, stubInterface<IPNS>())).to.be.rejectedWith('Invalid resource.')
+  })
 })
