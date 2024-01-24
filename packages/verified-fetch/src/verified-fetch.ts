@@ -34,8 +34,7 @@ export class VerifiedFetch {
         dnsOverHttps('https://mozilla.cloudflare-dns.com/dns-query'),
         dnsOverHttps('https://cloudflare-dns.com/dns-query'),
         dnsOverHttps('https://dns.google/dns-query'),
-        dnsJsonOverHttps('https://dns.google/resolve'),
-        dnsOverHttps('https://dns.quad9.net/dns-query')
+        dnsJsonOverHttps('https://dns.google/resolve')
       ]
     })
     this.unixfs = unixfs ?? heliaUnixFs(helia)
