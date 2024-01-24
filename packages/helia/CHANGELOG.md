@@ -6,6 +6,37 @@
 * **dev:** bump aegir from 39.0.13 to 40.0.8 ([#198](https://github.com/ipfs/helia/issues/198)) ([4d75ecf](https://github.com/ipfs/helia/commit/4d75ecffb79e5177da35d3106e42dac7bc63153a))
 * update sibling dependencies ([beb10b5](https://github.com/ipfs/helia/commit/beb10b5590d66d1d5bef9b5e890b888263df2c92))
 
+## [4.0.0](https://github.com/ipfs/helia/compare/helia-v3.0.1...helia-v4.0.0) (2024-01-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove gossipsub from default libp2p services ([#401](https://github.com/ipfs/helia/issues/401))
+* the `libp2p` property has been removed from the `Helia` interface in `@helia/interface` - it is still present on the return type of `createHelia` from the `helia` module
+
+### Features
+
+* add @helia/http to monorepo ([#372](https://github.com/ipfs/helia/issues/372)) ([76220cd](https://github.com/ipfs/helia/commit/76220cd5adf45af7fa61fd0a1321de4722b744d6))
+
+
+### Bug Fixes
+
+* add a test for reading the peer id from the datastore ([#397](https://github.com/ipfs/helia/issues/397)) ([4836d52](https://github.com/ipfs/helia/commit/4836d52bf721bc0c3e5920ebd0a05186fb19c6c6))
+* ignore libp2p start param in helia factory ([#382](https://github.com/ipfs/helia/issues/382)) ([c8d2fac](https://github.com/ipfs/helia/commit/c8d2fac002ef73fc3eba83914de12d2e73074c64)), closes [#344](https://github.com/ipfs/helia/issues/344)
+* remove gossipsub from default libp2p services ([#401](https://github.com/ipfs/helia/issues/401)) ([99c94f4](https://github.com/ipfs/helia/commit/99c94f4b85c4ed826a6195207e3545cbbc87a6d1))
+* update ipns module to v9 and fix double verification of records ([#396](https://github.com/ipfs/helia/issues/396)) ([f2853f8](https://github.com/ipfs/helia/commit/f2853f8bd5bdcee8ab7a685355b0be47f29620e0))
+
+
+### Dependencies
+
+* bump @chainsafe/libp2p-noise from 14.1.0 to 15.0.0 ([#393](https://github.com/ipfs/helia/issues/393)) ([4943c5b](https://github.com/ipfs/helia/commit/4943c5b7e8779bc326ee156b1d80152225189343))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^1.0.0 to ^2.0.0
+    * @helia/interface bumped from ^3.0.1 to ^4.0.0
+    * @helia/routers bumped from ^0.0.0 to ^1.0.0
+    * @helia/utils bumped from ^0.0.0 to ^0.0.1
+
 ## [3.0.1](https://github.com/ipfs/helia/compare/helia-v3.0.0...helia-v3.0.1) (2024-01-09)
 
 

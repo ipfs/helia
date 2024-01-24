@@ -14,6 +14,33 @@
 
 * make @libp2p/interface a dependency ([#159](https://github.com/ipfs/helia-ipns/issues/159)) ([546ecf0](https://github.com/ipfs/helia-ipns/commit/546ecf023bd619d32e187fa6a55d39fcf12e4bbe)), closes [#158](https://github.com/ipfs/helia-ipns/issues/158)
 
+## [5.0.0](https://github.com/ipfs/helia/compare/ipns-v4.0.0...ipns-v5.0.0) (2024-01-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove gossipsub from default libp2p services ([#401](https://github.com/ipfs/helia/issues/401))
+* `helia.routing` is the default routing used, the `libp2p` routing has been removed as it is redundant
+* the `libp2p` property has been removed from the `Helia` interface in `@helia/interface` - it is still present on the return type of `createHelia` from the `helia` module
+
+### Features
+
+* add @helia/http to monorepo ([#372](https://github.com/ipfs/helia/issues/372)) ([76220cd](https://github.com/ipfs/helia/commit/76220cd5adf45af7fa61fd0a1321de4722b744d6))
+* use helia router for IPNS put/get ([#387](https://github.com/ipfs/helia/issues/387)) ([ce74026](https://github.com/ipfs/helia/commit/ce740268e83f50e6f144b74969a98d54005cd852))
+
+
+### Bug Fixes
+
+* remove gossipsub from default libp2p services ([#401](https://github.com/ipfs/helia/issues/401)) ([99c94f4](https://github.com/ipfs/helia/commit/99c94f4b85c4ed826a6195207e3545cbbc87a6d1))
+* update ipns module to v9 and fix double verification of records ([#396](https://github.com/ipfs/helia/issues/396)) ([f2853f8](https://github.com/ipfs/helia/commit/f2853f8bd5bdcee8ab7a685355b0be47f29620e0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^3.0.1 to ^4.0.0
+
 ## [@helia/ipns-v3.0.1](https://github.com/ipfs/helia-ipns/compare/@helia/ipns-v3.0.0...@helia/ipns-v3.0.1) (2023-12-08)
 
 
