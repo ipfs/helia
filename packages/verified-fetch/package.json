@@ -79,13 +79,14 @@
     "@helia/json": "^3.0.0",
     "@helia/routers": "^1.0.0",
     "@helia/unixfs": "^3.0.0",
+    "@libp2p/interface": "^1.1.2",
     "@libp2p/logger": "^4.0.5",
     "@libp2p/peer-id": "^4.0.5",
     "mime-types": "^2.1.35",
-    "multiformats": "^13.0.0"
+    "multiformats": "^13.0.0",
+    "progress-events": "^1.0.0"
   },
   "devDependencies": {
-    "@libp2p/interface": "^1.1.2",
     "@libp2p/peer-id-factory": "^4.0.5",
     "@types/mime-types": "^2.1.4",
     "@types/sinon": "^17.0.2",
