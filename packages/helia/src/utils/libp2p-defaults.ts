@@ -1,4 +1,3 @@
-import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { createDelegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
@@ -22,7 +21,6 @@ import * as libp2pInfo from 'libp2p/version'
 import { name, version } from '../version.js'
 import { bootstrapConfig } from './bootstrappers.js'
 import type { Libp2pDefaultsOptions } from './libp2p.js'
-import type { PubSub } from '@libp2p/interface'
 import type { Libp2pOptions } from 'libp2p'
 
 export interface DefaultLibp2pServices extends Record<string, unknown> {
@@ -33,7 +31,6 @@ export interface DefaultLibp2pServices extends Record<string, unknown> {
   identify: Identify
   keychain: Keychain
   ping: PingService
-  pubsub: PubSub
   relay: CircuitRelayService
   upnp: unknown
 }
@@ -85,7 +82,6 @@ export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOpti
       }),
       keychain: keychain(options.keychain),
       ping: ping(),
-      pubsub: gossipsub(),
       relay: circuitRelayServer({
         advertise: true
       }),

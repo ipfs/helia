@@ -17,6 +17,27 @@
   * devDependencies
     * @helia/unixfs bumped from ^2.0.0 to ^2.0.1
 
+## [3.0.0](https://github.com/ipfs/helia/compare/car-v2.0.1...car-v3.0.0) (2024-01-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `libp2p` property has been removed from the `Helia` interface in `@helia/interface` - it is still present on the return type of `createHelia` from the `helia` module
+
+### Features
+
+* add @helia/http to monorepo ([#372](https://github.com/ipfs/helia/issues/372)) ([76220cd](https://github.com/ipfs/helia/commit/76220cd5adf45af7fa61fd0a1321de4722b744d6))
+* expose configured dag walkers and hashers on helia interface ([#381](https://github.com/ipfs/helia/issues/381)) ([843fba4](https://github.com/ipfs/helia/commit/843fba467ebb032907c888da499147a5349ec10e)), closes [#375](https://github.com/ipfs/helia/issues/375)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^3.0.1 to ^4.0.0
+  * devDependencies
+    * @helia/unixfs bumped from ^2.0.1 to ^3.0.0
+
 ## [@helia/car-v1.0.4](https://github.com/ipfs/helia-car/compare/@helia/car-v1.0.3...@helia/car-v1.0.4) (2023-10-07)
 
 
