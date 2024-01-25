@@ -34,6 +34,7 @@ export interface CidDetailError extends CidDetail {
 
 export type VerifiedFetchProgressEvents =
   ProgressEvent<'verified-fetch:request:start', CidDetail> |
+  ProgressEvent<'verified-fetch:request:info', string> |
   ProgressEvent<'verified-fetch:request:progress:chunk', CidDetail> |
   ProgressEvent<'verified-fetch:request:end', CidDetail> |
   ProgressEvent<'verified-fetch:request:error', CidDetailError>
