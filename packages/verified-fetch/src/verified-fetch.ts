@@ -91,25 +91,13 @@ export class VerifiedFetch {
    */
   private async handleIPLDRaw ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
     log.trace('fetching %c/%s', cid, path)
-    options?.onProgress?.(new CustomProgressEvent<CidDetail>('verified-fetch:request:start', { detail: { cid: cid.toString(), path: '' } }))
+    options?.onProgress?.(new CustomProgressEvent<CidDetail>('verified-fetch:request:start', { detail: { cid: cid.toString(), path } }))
     let stat = await this.unixfs.stat(cid, {
+      path,
       signal: options?.signal,
       onProgress: options?.onProgress
     })
-    if (stat.unixfs?.type === 'hamt-sharded-directory') {
-      options?.onProgress?.(new CustomProgressEvent<CidDetail>('verified-fetch:request:info', 'Found HAMT sharded-directory'))
-    }
     options?.onProgress?.(new CustomProgressEvent<CidDetail>('verified-fetch:request:end', { detail: { cid: cid.toString(), path } }))
-
-    if (path !== '' && path !== '/') {
-      options?.onProgress?.(new CustomProgressEvent<CidDetail>('verified-fetch:request:start', { detail: { cid: cid.toString(), path } }))
-      stat = await this.unixfs.stat(cid, {
-        path,
-        signal: options?.signal,
-        onProgress: options?.onProgress
-      })
-      options?.onProgress?.(new CustomProgressEvent<CidDetail>('verified-fetch:request:end', { detail: { cid: cid.toString(), path } }))
-    }
 
     if (stat.type === 'directory') {
       const dirCid = stat.cid
