@@ -134,7 +134,8 @@ describe('VerifiedFetch', () => {
 
     it('should look for root files when directory is returned', async () => {
       const finalRootFileContent = new Uint8Array([0x01, 0x02, 0x03])
-      const abortSignal = new AbortController().signal
+      const signal = sinon.match.any as unknown as AbortSignal
+      const onProgress = sinon.match.any as unknown as (evt: any) => void
       // first stat returns a directory
       unixfsStub.stat.onCall(0).returns(Promise.resolve({
         cid: testCID,
@@ -147,9 +148,9 @@ describe('VerifiedFetch', () => {
         blocks: 1
       }))
       // next stat attempts to find root file index.html, let's make it fail 2 times so we can see that it tries the other root files
-      unixfsStub.stat.withArgs(testCID, { path: 'index.html', signal: abortSignal }).onCall(0).throws(new Error('not found'))
-      unixfsStub.stat.withArgs(testCID, { path: 'index.htm', signal: abortSignal }).onCall(0).throws(new Error('not found'))
-      unixfsStub.stat.withArgs(testCID, { path: 'index.shtml', signal: abortSignal }).onCall(0)
+      unixfsStub.stat.withArgs(testCID, { path: 'index.html', signal, onProgress }).onCall(0).throws(new Error('not found'))
+      unixfsStub.stat.withArgs(testCID, { path: 'index.htm', signal, onProgress }).onCall(0).throws(new Error('not found'))
+      unixfsStub.stat.withArgs(testCID, { path: 'index.shtml', signal, onProgress }).onCall(0)
         .returns(Promise.resolve({
           cid: CID.parse('Qmc3zqKcwzbbvw3MQm3hXdg8BQoFjGdZiGdAfXAyAGGdLi'),
           size: 3,
@@ -165,15 +166,15 @@ describe('VerifiedFetch', () => {
           yield finalRootFileContent
         }
       })
-      const resp = await verifiedFetch.fetch(testCID, {
-        signal: abortSignal
-      })
-      expect(unixfsStub.stat.withArgs(testCID).callCount).to.equal(4)
-      expect(unixfsStub.stat.withArgs(testCID, { path: 'index.html', signal: abortSignal }).callCount).to.equal(1)
-      expect(unixfsStub.stat.withArgs(testCID, { path: 'index.htm', signal: abortSignal }).callCount).to.equal(1)
-      expect(unixfsStub.stat.withArgs(testCID, { path: 'index.shtml', signal: abortSignal }).callCount).to.equal(1)
+      const resp = await verifiedFetch.fetch(testCID)
+      expect(unixfsStub.stat.callCount).to.equal(4)
+      expect(unixfsStub.stat.getCall(0).args[1]).to.have.property('path', '')
+      expect(unixfsStub.stat.getCall(1).args[1]).to.have.property('path', 'index.html')
+      expect(unixfsStub.stat.getCall(2).args[1]).to.have.property('path', 'index.htm')
+      expect(unixfsStub.stat.getCall(3).args[1]).to.have.property('path', 'index.shtml')
+      expect(unixfsStub.cat.callCount).to.equal(1)
       expect(unixfsStub.cat.withArgs(testCID).callCount).to.equal(0)
-      expect(unixfsStub.cat.withArgs(CID.parse('Qmc3zqKcwzbbvw3MQm3hXdg8BQoFjGdZiGdAfXAyAGGdLi')).callCount).to.equal(1)
+      expect(unixfsStub.cat.withArgs(CID.parse('Qmc3zqKcwzbbvw3MQm3hXdg8BQoFjGdZiGdAfXAyAGGdLi'), sinon.match.any).callCount).to.equal(1)
       expect(resp).to.be.ok()
       expect(resp.status).to.equal(200)
       const data = await resp.arrayBuffer()
@@ -181,7 +182,8 @@ describe('VerifiedFetch', () => {
     })
 
     it('should not call unixfs.cat if root file is not found', async () => {
-      const abortSignal = new AbortController().signal
+      const signal = sinon.match.any as unknown as AbortSignal
+      const onProgress = sinon.match.any as unknown as (evt: any) => void
       // first stat returns a directory
       unixfsStub.stat.onCall(0).returns(Promise.resolve({
         cid: testCID,
@@ -194,16 +196,14 @@ describe('VerifiedFetch', () => {
         blocks: 1
       }))
 
-      unixfsStub.stat.withArgs(testCID, { path: 'index.html', signal: abortSignal }).onCall(0).throws(new Error('not found'))
-      unixfsStub.stat.withArgs(testCID, { path: 'index.htm', signal: abortSignal }).onCall(0).throws(new Error('not found'))
-      unixfsStub.stat.withArgs(testCID, { path: 'index.shtml', signal: abortSignal }).onCall(0).throws(new Error('not found'))
-      const resp = await verifiedFetch.fetch(testCID, {
-        signal: abortSignal
-      })
+      unixfsStub.stat.withArgs(testCID, { path: 'index.html', signal, onProgress }).onCall(0).throws(new Error('not found'))
+      unixfsStub.stat.withArgs(testCID, { path: 'index.htm', signal, onProgress }).onCall(0).throws(new Error('not found'))
+      unixfsStub.stat.withArgs(testCID, { path: 'index.shtml', signal, onProgress }).onCall(0).throws(new Error('not found'))
+      const resp = await verifiedFetch.fetch(testCID)
       expect(unixfsStub.stat.withArgs(testCID).callCount).to.equal(4)
-      expect(unixfsStub.stat.withArgs(testCID, { path: 'index.html', signal: abortSignal }).callCount).to.equal(1)
-      expect(unixfsStub.stat.withArgs(testCID, { path: 'index.htm', signal: abortSignal }).callCount).to.equal(1)
-      expect(unixfsStub.stat.withArgs(testCID, { path: 'index.shtml', signal: abortSignal }).callCount).to.equal(1)
+      expect(unixfsStub.stat.withArgs(testCID, { path: 'index.html', signal, onProgress }).callCount).to.equal(1)
+      expect(unixfsStub.stat.withArgs(testCID, { path: 'index.htm', signal, onProgress }).callCount).to.equal(1)
+      expect(unixfsStub.stat.withArgs(testCID, { path: 'index.shtml', signal, onProgress }).callCount).to.equal(1)
       expect(unixfsStub.cat.withArgs(testCID).callCount).to.equal(0)
       expect(resp).to.be.ok()
       expect(resp.status).to.equal(501)
