@@ -70,6 +70,7 @@
     "@helia/routers": "^1.0.0",
     "@helia/strings": "^3.0.0",
     "@helia/unixfs": "^3.0.0",
+    "@helia/verified-fetch": "^0.0.0",
     "@ipld/car": "^5.2.5",
     "@ipld/dag-cbor": "^9.0.7",
     "@libp2p/interface": "^1.1.1",
