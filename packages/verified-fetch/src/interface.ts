@@ -23,12 +23,12 @@ export type BubbledProgressEvents =
   // ipns
   ResolveProgressEvents | ResolveDnsLinkProgressEvents
 
-export interface CidDetail {
+export interface CIDDetail {
   cid: string
   path: string
 }
 
-export interface CidDetailError extends CidDetail {
+export interface CIDDetailError extends CIDDetail {
   error: Error
 }
 
@@ -42,7 +42,7 @@ export type VerifiedFetchProgressEvents =
 /**
  * The second argument of the `verifiedFetch` function.
  */
-export interface VerifiedFetchOptions extends Omit<RequestInit, 'signal'>, AbortOptions, ProgressOptions<BubbledProgressEvents | VerifiedFetchProgressEvents> {
+export interface VerifiedFetchOptions extends RequestInit, ProgressOptions<BubbledProgressEvents | VerifiedFetchProgressEvents> {
 }
 
 export interface ParsedUrlStringResults {
