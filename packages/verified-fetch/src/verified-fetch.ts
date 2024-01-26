@@ -68,12 +68,12 @@ export class VerifiedFetch {
 
   private async handleDagJson ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
     log.trace('fetching %c/%s', cid, path)
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { detail: { cid: cid.toString(), path } }))
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: cid.toString(), path }))
     const result = await this.dagJson.get(cid, {
       signal: options?.signal,
       onProgress: options?.onProgress
     })
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { detail: { cid: cid.toString(), path } }))
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: cid.toString(), path }))
     const response = new Response(JSON.stringify(result), { status: 200 })
     response.headers.set('content-type', 'application/json')
     return response
@@ -81,12 +81,12 @@ export class VerifiedFetch {
 
   private async handleJson ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
     log.trace('fetching %c/%s', cid, path)
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { detail: { cid: cid.toString(), path } }))
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: cid.toString(), path }))
     const result: Record<any, any> = await this.json.get(cid, {
       signal: options?.signal,
       onProgress: options?.onProgress
     })
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { detail: { cid: cid.toString(), path } }))
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: cid.toString(), path }))
     const response = new Response(JSON.stringify(result), { status: 200 })
     response.headers.set('content-type', 'application/json')
     return response
@@ -94,13 +94,13 @@ export class VerifiedFetch {
 
   private async handleDagPb ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
     log.trace('fetching %c/%s', cid, path)
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { detail: { cid: cid.toString(), path } }))
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: cid.toString(), path }))
     let stat = await this.unixfs.stat(cid, {
       path,
       signal: options?.signal,
       onProgress: options?.onProgress
     })
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { detail: { cid: cid.toString(), path } }))
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: cid.toString(), path }))
 
     if (stat.type === 'directory') {
       const dirCid = stat.cid
@@ -110,7 +110,7 @@ export class VerifiedFetch {
       for (const rootFilePath of ['index.html', 'index.htm', 'index.shtml']) {
         try {
           log.trace('looking for file: %c/%s', dirCid, rootFilePath)
-          options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { detail: { cid: dirCid.toString(), path: rootFilePath } }))
+          options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: dirCid.toString(), path: rootFilePath }))
           stat = await this.unixfs.stat(dirCid, {
             path: rootFilePath,
             signal: options?.signal,
@@ -123,7 +123,7 @@ export class VerifiedFetch {
         } catch (err: any) {
           log('error loading path %c/%s', dirCid, rootFilePath, err)
         } finally {
-          options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { detail: { cid: dirCid.toString(), path: rootFilePath } }))
+          options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: dirCid.toString(), path: rootFilePath }))
         }
       }
     }
@@ -133,12 +133,12 @@ export class VerifiedFetch {
       return new Response('Support for directories with implicit root is not implemented', { status: 501 })
     }
 
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { detail: { cid: stat.cid.toString(), path: '' } }))
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: stat.cid.toString(), path: '' }))
     const asyncIter = this.unixfs.cat(stat.cid, {
       signal: options?.signal,
       onProgress: options?.onProgress
     })
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { detail: { cid: stat.cid.toString(), path: '' } }))
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: stat.cid.toString(), path: '' }))
     log('got async iterator for %c/%s, stat: ', cid, path, stat)
     // now we need to pipe the stream through a transform to unmarshal unixfs data
     const { contentType, stream } = await getStreamAndContentType(asyncIter, path, {

@@ -11,6 +11,8 @@ import { VerifiedFetch } from '../src/verified-fetch.js'
 import type { Helia } from '@helia/interface'
 
 const testCID = CID.parse('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
+const anyOnProgressMatcher = sinon.match.any as unknown as () => void
+
 describe('VerifiedFetch', () => {
   it('starts and stops the helia node', async () => {
     const stopStub = sinon.stub()
@@ -135,7 +137,7 @@ describe('VerifiedFetch', () => {
     it('should look for root files when directory is returned', async () => {
       const finalRootFileContent = new Uint8Array([0x01, 0x02, 0x03])
       const signal = sinon.match.any as unknown as AbortSignal
-      const onProgress = sinon.match.any as unknown as (evt: any) => void
+      const onProgress = sinon.spy()
       // first stat returns a directory
       unixfsStub.stat.onCall(0).returns(Promise.resolve({
         cid: testCID,
@@ -148,9 +150,9 @@ describe('VerifiedFetch', () => {
         blocks: 1
       }))
       // next stat attempts to find root file index.html, let's make it fail 2 times so we can see that it tries the other root files
-      unixfsStub.stat.withArgs(testCID, { path: 'index.html', signal, onProgress }).onCall(0).throws(new Error('not found'))
-      unixfsStub.stat.withArgs(testCID, { path: 'index.htm', signal, onProgress }).onCall(0).throws(new Error('not found'))
-      unixfsStub.stat.withArgs(testCID, { path: 'index.shtml', signal, onProgress }).onCall(0)
+      unixfsStub.stat.withArgs(testCID, { path: 'index.html', signal, onProgress: anyOnProgressMatcher }).onCall(0).throws(new Error('not found'))
+      unixfsStub.stat.withArgs(testCID, { path: 'index.htm', signal, onProgress: anyOnProgressMatcher }).onCall(0).throws(new Error('not found'))
+      unixfsStub.stat.withArgs(testCID, { path: 'index.shtml', signal, onProgress: anyOnProgressMatcher }).onCall(0)
         .returns(Promise.resolve({
           cid: CID.parse('Qmc3zqKcwzbbvw3MQm3hXdg8BQoFjGdZiGdAfXAyAGGdLi'),
           size: 3,
@@ -166,7 +168,7 @@ describe('VerifiedFetch', () => {
           yield finalRootFileContent
         }
       })
-      const resp = await verifiedFetch.fetch(testCID)
+      const resp = await verifiedFetch.fetch(testCID, { onProgress })
       expect(unixfsStub.stat.callCount).to.equal(4)
       expect(unixfsStub.stat.getCall(0).args[1]).to.have.property('path', '')
       expect(unixfsStub.stat.getCall(1).args[1]).to.have.property('path', 'index.html')
@@ -175,6 +177,21 @@ describe('VerifiedFetch', () => {
       expect(unixfsStub.cat.callCount).to.equal(1)
       expect(unixfsStub.cat.withArgs(testCID).callCount).to.equal(0)
       expect(unixfsStub.cat.withArgs(CID.parse('Qmc3zqKcwzbbvw3MQm3hXdg8BQoFjGdZiGdAfXAyAGGdLi'), sinon.match.any).callCount).to.equal(1)
+      expect(onProgress.callCount).to.equal(11)
+      const onProgressEvents = onProgress.getCalls().map(call => call.args[0])
+      expect(onProgressEvents[0]).to.include({ type: 'verified-fetch:request:start' }).and.to.have.property('detail').that.deep.equals({
+        cid: testCID.toString(),
+        path: ''
+      })
+      expect(onProgressEvents[1]).to.include({ type: 'verified-fetch:request:end' }).and.to.have.property('detail').that.deep.equals({
+        cid: testCID.toString(),
+        path: ''
+      })
+      expect(onProgressEvents[9]).to.include({ type: 'verified-fetch:request:end' }).and.to.have.property('detail').that.deep.equals({
+        cid: 'Qmc3zqKcwzbbvw3MQm3hXdg8BQoFjGdZiGdAfXAyAGGdLi',
+        path: ''
+      })
+      expect(onProgressEvents[10]).to.include({ type: 'verified-fetch:request:progress:chunk' }).and.to.have.property('detail').that.is.undefined()
       expect(resp).to.be.ok()
       expect(resp.status).to.equal(200)
       const data = await resp.arrayBuffer()
@@ -183,7 +200,7 @@ describe('VerifiedFetch', () => {
 
     it('should not call unixfs.cat if root file is not found', async () => {
       const signal = sinon.match.any as unknown as AbortSignal
-      const onProgress = sinon.match.any as unknown as (evt: any) => void
+      const onProgress = sinon.spy()
       // first stat returns a directory
       unixfsStub.stat.onCall(0).returns(Promise.resolve({
         cid: testCID,
@@ -196,31 +213,47 @@ describe('VerifiedFetch', () => {
         blocks: 1
       }))
 
-      unixfsStub.stat.withArgs(testCID, { path: 'index.html', signal, onProgress }).onCall(0).throws(new Error('not found'))
-      unixfsStub.stat.withArgs(testCID, { path: 'index.htm', signal, onProgress }).onCall(0).throws(new Error('not found'))
-      unixfsStub.stat.withArgs(testCID, { path: 'index.shtml', signal, onProgress }).onCall(0).throws(new Error('not found'))
+      unixfsStub.stat.withArgs(testCID, { path: 'index.html', signal, onProgress: anyOnProgressMatcher }).onCall(0).throws(new Error('not found'))
+      unixfsStub.stat.withArgs(testCID, { path: 'index.htm', signal, onProgress: anyOnProgressMatcher }).onCall(0).throws(new Error('not found'))
+      unixfsStub.stat.withArgs(testCID, { path: 'index.shtml', signal, onProgress: anyOnProgressMatcher }).onCall(0).throws(new Error('not found'))
       const resp = await verifiedFetch.fetch(testCID)
+
       expect(unixfsStub.stat.withArgs(testCID).callCount).to.equal(4)
-      expect(unixfsStub.stat.withArgs(testCID, { path: 'index.html', signal, onProgress }).callCount).to.equal(1)
-      expect(unixfsStub.stat.withArgs(testCID, { path: 'index.htm', signal, onProgress }).callCount).to.equal(1)
-      expect(unixfsStub.stat.withArgs(testCID, { path: 'index.shtml', signal, onProgress }).callCount).to.equal(1)
+      expect(unixfsStub.stat.withArgs(testCID, { path: 'index.html', signal, onProgress: anyOnProgressMatcher }).callCount).to.equal(1)
+      expect(unixfsStub.stat.withArgs(testCID, { path: 'index.htm', signal, onProgress: anyOnProgressMatcher }).callCount).to.equal(1)
+      expect(unixfsStub.stat.withArgs(testCID, { path: 'index.shtml', signal, onProgress: anyOnProgressMatcher }).callCount).to.equal(1)
       expect(unixfsStub.cat.withArgs(testCID).callCount).to.equal(0)
+      expect(onProgress.callCount).to.equal(0)
       expect(resp).to.be.ok()
       expect(resp.status).to.equal(501)
     })
 
     it('should return dag-json encoded CID', async () => {
       const abortSignal = new AbortController().signal
+      const onProgress = sinon.spy()
       const cid = CID.parse('baguqeerasords4njcts6vs7qvdjfcvgnume4hqohf65zsfguprqphs3icwea')
       dagJsonStub.get.withArgs(cid).returns(Promise.resolve({
         hello: 'world'
       }))
       const resp = await verifiedFetch.fetch(cid, {
-        signal: abortSignal
+        signal: abortSignal,
+        onProgress
       })
       expect(unixfsStub.stat.withArgs(cid).callCount).to.equal(0)
       expect(unixfsStub.cat.withArgs(cid).callCount).to.equal(0)
       expect(dagJsonStub.get.withArgs(cid).callCount).to.equal(1)
+      expect(onProgress.callCount).to.equal(2)
+      const onProgressEvents = onProgress.getCalls().map(call => call.args[0])
+      expect(onProgressEvents[0]).to.have.property('type', 'verified-fetch:request:start')
+      expect(onProgressEvents[0]).to.have.property('detail').that.deep.equals({
+        cid: cid.toString(),
+        path: ''
+      })
+      expect(onProgressEvents[1]).to.have.property('type', 'verified-fetch:request:end')
+      expect(onProgressEvents[1]).to.have.property('detail').that.deep.equals({
+        cid: cid.toString(),
+        path: ''
+      })
       expect(resp).to.be.ok()
       expect(resp.status).to.equal(200)
       const data = await resp.json()
@@ -231,17 +264,30 @@ describe('VerifiedFetch', () => {
 
     it('should return json encoded CID', async () => {
       const abortSignal = new AbortController().signal
+      const onProgress = sinon.spy()
       const cid = CID.parse('bagaaifcavabu6fzheerrmtxbbwv7jjhc3kaldmm7lbnvfopyrthcvod4m6ygpj3unrcggkzhvcwv5wnhc5ufkgzlsji7agnmofovc2g4a3ui7ja')
       jsonStub.get.withArgs(cid).returns(Promise.resolve({
         hello: 'world'
       }))
       const resp = await verifiedFetch.fetch(cid, {
-        signal: abortSignal
+        signal: abortSignal,
+        onProgress
       })
       expect(unixfsStub.stat.withArgs(cid).callCount).to.equal(0)
       expect(unixfsStub.cat.withArgs(cid).callCount).to.equal(0)
       expect(dagJsonStub.get.withArgs(cid).callCount).to.equal(0)
       expect(jsonStub.get.withArgs(cid).callCount).to.equal(1)
+      const onProgressEvents = onProgress.getCalls().map(call => call.args[0])
+      expect(onProgressEvents[0]).to.have.property('type', 'verified-fetch:request:start')
+      expect(onProgressEvents[0]).to.have.property('detail').that.deep.equals({
+        cid: cid.toString(),
+        path: ''
+      })
+      expect(onProgressEvents[1]).to.have.property('type', 'verified-fetch:request:end')
+      expect(onProgressEvents[1]).to.have.property('detail').that.deep.equals({
+        cid: cid.toString(),
+        path: ''
+      })
       expect(resp).to.be.ok()
       expect(resp.status).to.equal(200)
       const data = await resp.json()
