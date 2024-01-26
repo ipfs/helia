@@ -24,6 +24,10 @@ interface VerifiedFetchConstructorOptions {
   json?: HeliaJSON
 }
 
+interface FetchHandlerFunction {
+  (options: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response>
+}
+
 export class VerifiedFetch {
   private readonly helia: Helia
   private readonly ipns: IPNS
@@ -145,44 +149,73 @@ export class VerifiedFetch {
     return response
   }
 
-  // eslint-disable-next-line complexity
+  /**
+   * Determines the format requested by the client, defaults to 'raw' for 'application/vnd.ipld.raw`
+   *
+   * @see https://specs.ipfs.tech/http-gateways/path-gateway/#format-request-query-parameter
+   * @default 'raw'
+   */
+  private getFormat ({ headerFormat, queryFormat }: { headerFormat: string | null, queryFormat: string | null }): string {
+    const formatMap: Record<string, string> = {
+      'vnd.ipld.raw': 'raw',
+      'vnd.ipld.car': 'car',
+      'application/x-tar': 'tar',
+      'application/vnd.ipld.dag-json': 'dag-json',
+      'application/vnd.ipld.dag-cbor': 'dag-cbor',
+      'application/json': 'json',
+      'application/cbor': 'cbor',
+      'vnd.ipfs.ipns-record': 'ipns-record'
+    }
+
+    if (headerFormat != null) {
+      for (const format in formatMap) {
+        if (headerFormat.includes(format)) {
+          return formatMap[format]
+        }
+      }
+    } else if (queryFormat != null) {
+      return queryFormat
+    }
+
+    return 'raw'
+  }
+
+  /**
+   * Map of format to specific handlers for that format.
+   */
+  private readonly formatHandlers: Record<string, FetchHandlerFunction> = {
+    car: this.handleIPLDCar,
+    'ipns-record': this.handleIPNSRecord,
+    tar: async () => new Response('application/x-tar support is not implemented', { status: 501 }),
+    'dag-json': async () => new Response('application/vnd.ipld.dag-json support is not implemented', { status: 501 }),
+    'dag-cbor': async () => new Response('application/vnd.ipld.dag-cbor support is not implemented', { status: 501 }),
+    json: async () => new Response('application/json support is not implemented', { status: 501 }),
+    cbor: async () => new Response('application/cbor support is not implemented', { status: 501 })
+  }
+
+  private readonly codecHandlers: Record<number, FetchHandlerFunction> = {
+    [dagJsonCode]: this.handleDagJson,
+    [dagPbCode]: this.handleDagPb,
+    [jsonCode]: this.handleJson
+  }
+
   async fetch (resource: ResourceType, options?: VerifiedFetchOptions): Promise<Response> {
     const { cid, path, query } = await parseResource(resource, this.ipns)
     let response: Response | undefined
-    const format = new Headers(options?.headers).get('accept') ?? ''
-    // see https://specs.ipfs.tech/http-gateways/path-gateway/#format-request-query-parameter
-    if (format != null || query.format != null) {
-      if (query.format === 'car' || format.includes('vnd.ipld.car')) {
-        response = await this.handleIPLDCar({ cid, path, options })
-      } else if (query.format === 'ipns-record' || format.includes('vnd.ipfs.ipns-record')) {
-        response = await this.handleIPNSRecord({ cid, path, options })
-      } else if (query.format === 'tar' || format.includes('application/x-tar')) {
-        return new Response('application/x-tar support is not implemented', { status: 501 })
-      } else if (query.format === 'dag-json' || format.includes('application/vnd.ipld.dag-json')) {
-        return new Response('application/vnd.ipld.dag-json support is not implemented', { status: 501 })
-      } else if (query.format === 'dag-cbor' || format.includes('application/vnd.ipld.dag-cbor')) {
-        return new Response('application/vnd.ipld.dag-cbor support is not implemented', { status: 501 })
-      } else if (query.format === 'json' || format.includes('application/json')) {
-        return new Response('application/json support is not implemented', { status: 501 })
-      } else if (query.format === 'cbor' || format.includes('application/cbor')) {
-        return new Response('application/cbor support is not implemented', { status: 501 })
-      }
+    const format = this.getFormat({ headerFormat: new Headers(options?.headers).get('accept'), queryFormat: query.format ?? null })
+
+    const formatHandler = this.formatHandlers[format]
+
+    if (formatHandler != null) {
+      response = await formatHandler.call(this, { cid, path, options })
     }
 
     if (response == null) {
-      switch (cid.code) {
-        case jsonCode:
-          response = await this.handleJson({ cid, path, options })
-          break
-        case dagJsonCode:
-          response = await this.handleDagJson({ cid, path, options })
-          break
-        case dagPbCode:
-          response = await this.handleDagPb({ cid, path, options })
-          break
-        default:
-          response = new Response(`Support for codec with code ${cid.code} is not yet implemented. Please open an issue at https://github.com/ipfs/helia/issues/new`, { status: 501 })
-          break
+      const codecHandler = this.codecHandlers[cid.code]
+      if (codecHandler != null) {
+        response = await codecHandler.call(this, { cid, path, options })
+      } else {
+        response = new Response(`Support for codec with code ${cid.code} is not yet implemented. Please open an issue at https://github.com/ipfs/helia/issues/new`, { status: 501 })
       }
     }
 
