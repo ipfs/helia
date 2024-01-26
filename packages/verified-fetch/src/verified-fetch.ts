@@ -3,8 +3,11 @@ import { ipns as heliaIpns, type IPNS } from '@helia/ipns'
 import { dnsJsonOverHttps, dnsOverHttps } from '@helia/ipns/dns-resolvers'
 import { json as heliaJson, type JSON as HeliaJSON } from '@helia/json'
 import { unixfs as heliaUnixFs, type UnixFS as HeliaUnixFs } from '@helia/unixfs'
+import { code as dagJsonCode } from '@ipld/dag-json'
+import { code as dagPbCode } from '@ipld/dag-pb'
 import { logger } from '@libp2p/logger'
 import { type CID } from 'multiformats/cid'
+import { code as jsonCode } from 'multiformats/codecs/json'
 import { CustomProgressEvent } from 'progress-events'
 import { getStreamAndContentType } from './utils/get-stream-and-content-type.js'
 import { parseResource } from './utils/parse-resource.js'
@@ -85,11 +88,7 @@ export class VerifiedFetch {
     return response
   }
 
-  /**
-   * handle vnd.ipld.raw
-   * This is the default method for fetched content.
-   */
-  private async handleIPLDRaw ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
+  private async handleDagPb ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
     log.trace('fetching %c/%s', cid, path)
     options?.onProgress?.(new CustomProgressEvent<CidDetail>('verified-fetch:request:start', { detail: { cid: cid.toString(), path } }))
     let stat = await this.unixfs.stat(cid, {
@@ -172,15 +171,17 @@ export class VerifiedFetch {
 
     if (response == null) {
       switch (cid.code) {
-        case 0x200:
+        case jsonCode:
           response = await this.handleJson({ cid, path, options })
           break
-        case 0x0129:
+        case dagJsonCode:
           response = await this.handleDagJson({ cid, path, options })
           break
-        case 0x70:
+        case dagPbCode:
+          response = await this.handleDagPb({ cid, path, options })
+          break
         default:
-          response = await this.handleIPLDRaw({ cid, path, options })
+          response = new Response(`Support for codec with code ${cid.code} is not yet implemented. Please open an issue at https://github.com/ipfs/helia/issues/new`, { status: 501 })
           break
       }
     }

@@ -79,6 +79,8 @@
     "@helia/json": "^3.0.0",
     "@helia/routers": "^1.0.0",
     "@helia/unixfs": "^3.0.0",
+    "@ipld/dag-json": "^10.1.7",
+    "@ipld/dag-pb": "^4.0.8",
     "@libp2p/interface": "^1.1.2",
     "@libp2p/logger": "^4.0.5",
     "@libp2p/peer-id": "^4.0.5",
