@@ -21,6 +21,11 @@ const URL_REGEX = /^(?<protocol>ip[fn]s):\/\/(?<cidOrPeerIdOrDnsLink>[^/$?]+)\/?
 
 /**
  * A function that parses ipfs:// and ipns:// URLs, returning an object with easily recognizable properties.
+ *
+ * After determining the protocol successfully, we process the cidOrPeerIdOrDnsLink:
+ * * If it's ipfs, it parses the CID or throws an Aggregate error
+ * * If it's ipns, it attempts to resolve the PeerId and then the DNSLink. If both fail, an Aggregate error is thrown.
+ *
  */
 export async function parseUrlString ({ urlString, ipns }: ParseUrlStringOptions): Promise<ParsedUrlStringResults> {
   const match = urlString.match(URL_REGEX)
@@ -30,44 +35,46 @@ export async function parseUrlString ({ urlString, ipns }: ParseUrlStringOptions
   const { protocol, cidOrPeerIdOrDnsLink, path, queryString } = match.groups
 
   let cid: CID | null = null
+  const errors: Error[] = []
   if (protocol === 'ipfs') {
     try {
       cid = CID.parse(cidOrPeerIdOrDnsLink)
     } catch (err) {
       log.error(err)
-      throw new TypeError('Invalid CID for ipfs://<cid> URL')
+      errors.push(new TypeError('Invalid CID for ipfs://<cid> URL'))
     }
   } else {
     // protocol is ipns
-    if (cidOrPeerIdOrDnsLink.includes('.')) {
+    log.trace('Attempting to resolve PeerId for %s', cidOrPeerIdOrDnsLink)
+    let peerId = null
+    try {
+      peerId = peerIdFromString(cidOrPeerIdOrDnsLink)
+      cid = await ipns.resolve(peerId)
+      log.trace('resolved %s to %c', cidOrPeerIdOrDnsLink, cid)
+    } catch (err) {
+      if (peerId == null) {
+        log.error('Could not parse PeerId string "%s"', cidOrPeerIdOrDnsLink, err)
+        errors.push(new TypeError(`Could not parse PeerId in ipns url "${cidOrPeerIdOrDnsLink}", ${(err as Error).message}`))
+      } else {
+        log.error('Could not resolve PeerId %c', peerId, err)
+        errors.push(new TypeError(`Could not resolve PeerId "${cidOrPeerIdOrDnsLink}", ${(err as Error).message}`))
+      }
+    }
+
+    if (cid == null) {
       log.trace('Attempting to resolve DNSLink for %s', cidOrPeerIdOrDnsLink)
       try {
         cid = await ipns.resolveDns(cidOrPeerIdOrDnsLink)
         log.trace('resolved %s to %c', cidOrPeerIdOrDnsLink, cid)
       } catch (err) {
-        log.error(err)
-        throw err
-      }
-    } else {
-      log.trace('Attempting to resolve PeerId for %s', cidOrPeerIdOrDnsLink)
-      let peerId = null
-      try {
-        peerId = peerIdFromString(cidOrPeerIdOrDnsLink)
-        cid = await ipns.resolve(peerId)
-        log.trace('resolved %s to %c', cidOrPeerIdOrDnsLink, cid)
-      } catch (err) {
-        if (peerId == null) {
-          log.error('Could not parse PeerId string "%s"', cidOrPeerIdOrDnsLink, err)
-          throw new TypeError(`Invalid resource. Cannot determine CID from URL "${urlString}", ${(err as Error).message}`)
-        }
-        log.error('Could not resolve PeerId %c', peerId, err)
-        throw new TypeError(`Could not resolve PeerId "${cidOrPeerIdOrDnsLink}", ${(err as Error).message}`)
+        log.error('Could not resolve DnsLink for "%s"', cidOrPeerIdOrDnsLink, err)
+        errors.push(err as Error)
       }
     }
   }
 
   if (cid == null) {
-    throw new TypeError(`Invalid resource. Cannot determine CID from URL: ${urlString}`)
+    throw new AggregateError(errors, `Invalid resource. Cannot determine CID from URL "${urlString}"`)
   }
 
   // parse query string

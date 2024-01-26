@@ -48,7 +48,7 @@ describe('parseUrlString', () => {
         })
         throw new Error('Should have thrown')
       } catch (err) {
-        expect((err as Error).message).to.equal('Invalid resource. Cannot determine CID from URL: ipns://mydomain.com')
+        expect((err as Error).message).to.equal('Invalid resource. Cannot determine CID from URL "ipns://mydomain.com"')
       }
     })
   })
@@ -62,8 +62,11 @@ describe('parseUrlString', () => {
           ipns
         })
         throw new Error('Should have thrown')
-      } catch (err) {
-        expect((err as Error).message).to.equal('Invalid CID for ipfs://<cid> URL')
+      } catch (aggErr) {
+        expect(aggErr).to.have.property('message', 'Invalid resource. Cannot determine CID from URL "ipfs://QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4i"')
+        expect(aggErr).to.have.property('errors').with.lengthOf(1).that.deep.equals([
+          new TypeError('Invalid CID for ipfs://<cid> URL')
+        ])
       }
     })
 
@@ -124,13 +127,24 @@ describe('parseUrlString', () => {
 
     it('handles invalid DNSLinkDomains', async () => {
       ipns = stubInterface<IPNS>({
+        resolve: async (peerId: PeerId) => {
+          throw new Error('Unexpected failure from ipns resolve method')
+        },
         resolveDns: async (_: string) => {
           return Promise.reject(new Error('Unexpected failure from dns query'))
         }
       })
 
-      await expect(parseUrlString({ urlString: 'ipns://mydomain.com', ipns })).to.eventually.be.rejected()
-        .with.property('message', 'Unexpected failure from dns query')
+      try {
+        await parseUrlString({ urlString: 'ipns://mydomain.com', ipns })
+        throw new Error('Should have thrown')
+      } catch (aggErr) {
+        expect(aggErr).to.have.property('message', 'Invalid resource. Cannot determine CID from URL "ipns://mydomain.com"')
+        expect(aggErr).to.have.property('errors').with.lengthOf(2).that.deep.equals([
+          new TypeError('Could not parse PeerId in ipns url "mydomain.com", Non-base64 character'),
+          new Error('Unexpected failure from dns query')
+        ])
+      }
     })
 
     it('can parse a URL with DNSLinkDomain only', async () => {
@@ -187,19 +201,50 @@ describe('parseUrlString', () => {
     })
 
     it('handles invalid PeerIds', async () => {
-      await expect(parseUrlString({ urlString: 'ipns://123PeerIdIsFake456', ipns })).to.eventually.be.rejected()
-        .with.property('message').include('Invalid resource. Cannot determine CID from URL "ipns://123PeerIdIsFake456"')
+      ipns = stubInterface<IPNS>({
+        resolve: async (peerId: PeerId) => {
+          throw new Error('Unexpected failure from ipns resolve method')
+        },
+        resolveDns: async (_: string) => {
+          return Promise.reject(new Error('Unexpected failure from dns query'))
+        }
+      })
+
+      try {
+        await parseUrlString({ urlString: 'ipns://123PeerIdIsFake456', ipns })
+        throw new Error('Should have thrown')
+      } catch (aggErr) {
+        expect(aggErr).to.have.property('message', 'Invalid resource. Cannot determine CID from URL "ipns://123PeerIdIsFake456"')
+        expect(aggErr).to.have.property('errors').with.lengthOf(2).that.deep.equals([
+          new TypeError('Could not parse PeerId in ipns url "123PeerIdIsFake456", Non-base58btc character'),
+          new Error('Unexpected failure from dns query')
+        ])
+      }
     })
 
     it('handles valid PeerId resolve failures', async () => {
       ipns = stubInterface<IPNS>({
         resolve: async (_: PeerId) => {
           return Promise.reject(new Error('Unexpected failure from ipns resolve method'))
+        },
+        resolveDns: async (_: string) => {
+          return Promise.reject(new Error('Unexpected failure from dns query'))
         }
       })
 
-      await expect(parseUrlString({ urlString: `ipns://${testPeerId.toString()}`, ipns })).to.eventually.be.rejected()
-        .with.property('message', `Could not resolve PeerId "${testPeerId.toString()}", Unexpected failure from ipns resolve method`)
+      // await expect(parseUrlString({ urlString: `ipns://${testPeerId.toString()}`, ipns })).to.eventually.be.rejected()
+      //   .with.property('message', `Could not resolve PeerId "${testPeerId.toString()}", Unexpected failure from ipns resolve method`)
+
+      try {
+        await parseUrlString({ urlString: `ipns://${testPeerId.toString()}`, ipns })
+        throw new Error('Should have thrown')
+      } catch (aggErr) {
+        expect(aggErr).to.have.property('message', `Invalid resource. Cannot determine CID from URL "ipns://${testPeerId.toString()}"`)
+        expect(aggErr).to.have.property('errors').with.lengthOf(2).that.deep.equals([
+          new TypeError(`Could not resolve PeerId "${testPeerId.toString()}", Unexpected failure from ipns resolve method`),
+          new Error('Unexpected failure from dns query')
+        ])
+      }
     })
 
     it('can parse a URL with PeerId only', async () => {
