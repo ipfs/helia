@@ -4,13 +4,6 @@ import type { AbortOptions } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
-/**
- * Instead of passing a Helia instance, you can pass a list of gateways and routers, and a HeliaHTTP instance will be created for you.
- */
-export interface CreateVerifiedFetchWithOptions {
-  gateways: string[]
-  routers?: string[]
-}
 
 /**
  * The types for the first argument of the `verifiedFetch` function.

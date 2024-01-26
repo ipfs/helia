@@ -52,12 +52,19 @@ import { trustlessGateway } from '@helia/block-brokers'
 import { createHeliaHTTP } from '@helia/http'
 import { delegatedHTTPRouting } from '@helia/routers'
 import { VerifiedFetch } from './verified-fetch.js'
-import type { CreateVerifiedFetchWithOptions } from './interface.js'
 import type { Helia, Routing } from '@helia/interface'
 
 export type VerifiedFetchMethod = InstanceType<typeof VerifiedFetch>['fetch'] & {
   start: InstanceType<typeof VerifiedFetch>['start']
   stop: InstanceType<typeof VerifiedFetch>['stop']
+}
+
+/**
+ * Instead of passing a Helia instance, you can pass a list of gateways and routers, and a HeliaHTTP instance will be created for you.
+ */
+export interface CreateVerifiedFetchWithOptions {
+  gateways: string[]
+  routers?: string[]
 }
 
 /**
