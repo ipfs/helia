@@ -1,6 +1,7 @@
 import { CID } from 'multiformats/cid'
 import { parseUrlString } from './parse-url-string.js'
-import type { ParsedUrlStringResults, ResourceType } from '../interface.js'
+import type { ParsedUrlStringResults } from './parse-url-string.js'
+import type { ResourceType } from '../interface.js'
 import type { IPNS } from '@helia/ipns'
 /**
  * Handles the different use cases for the `resource` argument.

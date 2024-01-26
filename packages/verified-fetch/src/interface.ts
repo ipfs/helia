@@ -47,10 +47,3 @@ export type VerifiedFetchProgressEvents =
  */
 export interface VerifiedFetchOptions extends Omit<RequestInit, 'signal'>, AbortOptions, ProgressOptions<BubbledProgressEvents | VerifiedFetchProgressEvents> {
 }
-
-export interface ParsedUrlStringResults {
-  protocol: string
-  path: string
-  cid: CID
-  query: Record<string, string>
-}

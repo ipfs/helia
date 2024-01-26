@@ -2,13 +2,19 @@ import { type IPNS } from '@helia/ipns'
 import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { CID } from 'multiformats/cid'
-import type { ParsedUrlStringResults } from '../interface.js'
 
 const log = logger('helia:verified-fetch:parse-url-string')
 
 export interface ParseUrlStringOptions {
   urlString: string
   ipns: IPNS
+}
+
+export interface ParsedUrlStringResults {
+  protocol: string
+  path: string
+  cid: CID
+  query: Record<string, string>
 }
 
 const URL_REGEX = /^(?<protocol>ip[fn]s):\/\/(?<cidOrPeerIdOrDnsLink>[^/$?]+)\/?(?<path>[^$?]*)\??(?<queryString>.*)$/
