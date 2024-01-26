@@ -11,7 +11,7 @@ import { code as jsonCode } from 'multiformats/codecs/json'
 import { CustomProgressEvent } from 'progress-events'
 import { getStreamAndContentType } from './utils/get-stream-and-content-type.js'
 import { parseResource } from './utils/parse-resource.js'
-import type { CidDetail, ResourceType, VerifiedFetchOptions } from './interface.js'
+import type { CIDDetail, ResourceType, VerifiedFetchOptions } from './interface.js'
 import type { Helia } from '@helia/interface'
 
 const log = logger('helia:verified-fetch')
@@ -64,12 +64,12 @@ export class VerifiedFetch {
 
   private async handleDagJson ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
     log.trace('fetching %c/%s', cid, path)
-    options?.onProgress?.(new CustomProgressEvent<CidDetail>('verified-fetch:request:start', { detail: { cid: cid.toString(), path } }))
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { detail: { cid: cid.toString(), path } }))
     const result = await this.dagJson.get(cid, {
       signal: options?.signal,
       onProgress: options?.onProgress
     })
-    options?.onProgress?.(new CustomProgressEvent<CidDetail>('verified-fetch:request:end', { detail: { cid: cid.toString(), path } }))
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { detail: { cid: cid.toString(), path } }))
     const response = new Response(JSON.stringify(result), { status: 200 })
     response.headers.set('content-type', 'application/json')
     return response
@@ -77,12 +77,12 @@ export class VerifiedFetch {
 
   private async handleJson ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
     log.trace('fetching %c/%s', cid, path)
-    options?.onProgress?.(new CustomProgressEvent<CidDetail>('verified-fetch:request:start', { detail: { cid: cid.toString(), path } }))
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { detail: { cid: cid.toString(), path } }))
     const result: Record<any, any> = await this.json.get(cid, {
       signal: options?.signal,
       onProgress: options?.onProgress
     })
-    options?.onProgress?.(new CustomProgressEvent<CidDetail>('verified-fetch:request:end', { detail: { cid: cid.toString(), path } }))
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { detail: { cid: cid.toString(), path } }))
     const response = new Response(JSON.stringify(result), { status: 200 })
     response.headers.set('content-type', 'application/json')
     return response
@@ -90,13 +90,13 @@ export class VerifiedFetch {
 
   private async handleDagPb ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
     log.trace('fetching %c/%s', cid, path)
-    options?.onProgress?.(new CustomProgressEvent<CidDetail>('verified-fetch:request:start', { detail: { cid: cid.toString(), path } }))
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { detail: { cid: cid.toString(), path } }))
     let stat = await this.unixfs.stat(cid, {
       path,
       signal: options?.signal,
       onProgress: options?.onProgress
     })
-    options?.onProgress?.(new CustomProgressEvent<CidDetail>('verified-fetch:request:end', { detail: { cid: cid.toString(), path } }))
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { detail: { cid: cid.toString(), path } }))
 
     if (stat.type === 'directory') {
       const dirCid = stat.cid
@@ -106,7 +106,7 @@ export class VerifiedFetch {
       for (const rootFilePath of ['index.html', 'index.htm', 'index.shtml']) {
         try {
           log.trace('looking for file: %c/%s', dirCid, rootFilePath)
-          options?.onProgress?.(new CustomProgressEvent<CidDetail>('verified-fetch:request:start', { detail: { cid: dirCid.toString(), path: rootFilePath } }))
+          options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { detail: { cid: dirCid.toString(), path: rootFilePath } }))
           stat = await this.unixfs.stat(dirCid, {
             path: rootFilePath,
             signal: options?.signal,
@@ -119,7 +119,7 @@ export class VerifiedFetch {
         } catch (err: any) {
           log('error loading path %c/%s', dirCid, rootFilePath, err)
         } finally {
-          options?.onProgress?.(new CustomProgressEvent<CidDetail>('verified-fetch:request:end', { detail: { cid: dirCid.toString(), path: rootFilePath } }))
+          options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { detail: { cid: dirCid.toString(), path: rootFilePath } }))
         }
       }
     }
@@ -129,7 +129,7 @@ export class VerifiedFetch {
       return new Response('Support for directories with implicit root is not implemented', { status: 501 })
     }
 
-    options?.onProgress?.(new CustomProgressEvent<CidDetail>('verified-fetch:request:start', { detail: { cid: stat.cid.toString(), path: '' } }))
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { detail: { cid: stat.cid.toString(), path: '' } }))
     const asyncIter = this.unixfs.cat(stat.cid, {
       signal: options?.signal,
       onProgress: options?.onProgress
@@ -191,7 +191,7 @@ export class VerifiedFetch {
     response.headers.set('X-Ipfs-Path', resource.toString()) // https://specs.ipfs.tech/http-gateways/path-gateway/#x-ipfs-path-response-header
     // response.headers.set('X-Ipfs-Roots', 'TODO') // https://specs.ipfs.tech/http-gateways/path-gateway/#x-ipfs-roots-response-header
     // response.headers.set('Content-Disposition', `TODO`) // https://specs.ipfs.tech/http-gateways/path-gateway/#content-disposition-response-header
-    options?.onProgress?.(new CustomProgressEvent<CidDetail>('verified-fetch:request:end', { detail: { cid: cid.toString(), path } }))
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { detail: { cid: cid.toString(), path } }))
     return response
   }
 

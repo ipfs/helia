@@ -33,16 +33,19 @@ export interface CIDDetailError extends CIDDetail {
 }
 
 export type VerifiedFetchProgressEvents =
-  ProgressEvent<'verified-fetch:request:start', CidDetail> |
+  ProgressEvent<'verified-fetch:request:start', CIDDetail> |
   ProgressEvent<'verified-fetch:request:info', string> |
-  ProgressEvent<'verified-fetch:request:progress:chunk', CidDetail> |
-  ProgressEvent<'verified-fetch:request:end', CidDetail> |
-  ProgressEvent<'verified-fetch:request:error', CidDetailError>
+  ProgressEvent<'verified-fetch:request:progress:chunk', CIDDetail> |
+  ProgressEvent<'verified-fetch:request:end', CIDDetail> |
+  ProgressEvent<'verified-fetch:request:error', CIDDetailError>
 
 /**
  * The second argument of the `verifiedFetch` function.
+ *
+ * `Omit<RequestInit, 'signal'>` is the same as `RequestInit` but without the `signal` property because
+ * RequestInit.signal accepts `AbortSignal | null | undefined` and AbortOptions.signal accepts `AbortSignal | undefined`.
  */
-export interface VerifiedFetchOptions extends RequestInit, ProgressOptions<BubbledProgressEvents | VerifiedFetchProgressEvents> {
+export interface VerifiedFetchOptions extends Omit<RequestInit, 'signal'>, AbortOptions, ProgressOptions<BubbledProgressEvents | VerifiedFetchProgressEvents> {
 }
 
 export interface ParsedUrlStringResults {
