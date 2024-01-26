@@ -80,9 +80,5 @@
     "helia": "next",
     "sinon": "^17.0.1",
     "sinon-ts": "^2.0.0"
-  },
-  "browser": {
-    "node:buffer": false,
-    "node:stream": false
   }
 }
