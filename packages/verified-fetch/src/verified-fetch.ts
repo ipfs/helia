@@ -11,7 +11,7 @@ import { code as jsonCode } from 'multiformats/codecs/json'
 import { CustomProgressEvent } from 'progress-events'
 import { getStreamAndContentType } from './utils/get-stream-and-content-type.js'
 import { parseResource } from './utils/parse-resource.js'
-import type { CIDDetail, ResourceType, VerifiedFetchOptions } from './interface.js'
+import type { CIDDetail, ResourceType, VerifiedFetchOptions } from './index.js'
 import type { Helia } from '@helia/interface'
 
 const log = logger('helia:verified-fetch')
@@ -138,6 +138,7 @@ export class VerifiedFetch {
       signal: options?.signal,
       onProgress: options?.onProgress
     })
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { detail: { cid: stat.cid.toString(), path: '' } }))
     log('got async iterator for %c/%s, stat: ', cid, path, stat)
     // now we need to pipe the stream through a transform to unmarshal unixfs data
     const { contentType, stream } = await getStreamAndContentType(asyncIter, path, {
@@ -215,7 +216,7 @@ export class VerifiedFetch {
       if (codecHandler != null) {
         response = await codecHandler.call(this, { cid, path, options })
       } else {
-        response = new Response(`Support for codec with code ${cid.code} is not yet implemented. Please open an issue at https://github.com/ipfs/helia/issues/new`, { status: 501 })
+        return new Response(`Support for codec with code ${cid.code} is not yet implemented. Please open an issue at https://github.com/ipfs/helia/issues/new`, { status: 501 })
       }
     }
 
@@ -224,7 +225,7 @@ export class VerifiedFetch {
     response.headers.set('X-Ipfs-Path', resource.toString()) // https://specs.ipfs.tech/http-gateways/path-gateway/#x-ipfs-path-response-header
     // response.headers.set('X-Ipfs-Roots', 'TODO') // https://specs.ipfs.tech/http-gateways/path-gateway/#x-ipfs-roots-response-header
     // response.headers.set('Content-Disposition', `TODO`) // https://specs.ipfs.tech/http-gateways/path-gateway/#content-disposition-response-header
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { detail: { cid: cid.toString(), path } }))
+
     return response
   }
 

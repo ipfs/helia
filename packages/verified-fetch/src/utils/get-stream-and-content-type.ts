@@ -1,7 +1,7 @@
 import { logger } from '@libp2p/logger'
 import { CustomProgressEvent } from 'progress-events'
 import { getContentType } from './get-content-type.js'
-import type { VerifiedFetchOptions } from '../interface.js'
+import type { VerifiedFetchOptions } from '../index.js'
 
 const log = logger('helia:verified-fetch:get-stream-and-content-type')
 

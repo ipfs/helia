@@ -53,6 +53,25 @@ import { createHeliaHTTP } from '@helia/http'
 import { delegatedHTTPRouting } from '@helia/routers'
 import { VerifiedFetch } from './verified-fetch.js'
 import type { Helia, Routing } from '@helia/interface'
+import type { ResolveDnsLinkProgressEvents, ResolveProgressEvents } from '@helia/ipns'
+import type { GetEvents } from '@helia/unixfs'
+import type { AbortOptions } from '@libp2p/interface'
+import type { CID } from 'multiformats/cid'
+import type { ProgressEvent, ProgressOptions } from 'progress-events'
+
+/**
+ * The types for the first argument of the `verifiedFetch` function.
+ */
+export type ResourceType = string | CID
+
+export interface CIDDetail {
+  cid: string
+  path: string
+}
+
+export interface CIDDetailError extends CIDDetail {
+  error: Error
+}
 
 export type VerifiedFetchMethod = InstanceType<typeof VerifiedFetch>['fetch'] & {
   start: InstanceType<typeof VerifiedFetch>['start']
@@ -65,6 +84,29 @@ export type VerifiedFetchMethod = InstanceType<typeof VerifiedFetch>['fetch'] & 
 export interface CreateVerifiedFetchWithOptions {
   gateways: string[]
   routers?: string[]
+}
+
+export type BubbledProgressEvents =
+  // unixfs
+  GetEvents |
+  // ipns
+  ResolveProgressEvents | ResolveDnsLinkProgressEvents
+
+export type VerifiedFetchProgressEvents =
+  ProgressEvent<'verified-fetch:request:start', CIDDetail> |
+  ProgressEvent<'verified-fetch:request:info', string> |
+  ProgressEvent<'verified-fetch:request:progress:chunk', CIDDetail> |
+  ProgressEvent<'verified-fetch:request:end', CIDDetail> |
+  ProgressEvent<'verified-fetch:request:error', CIDDetailError>
+
+/**
+ * Options for the `fetch` function returned by `createVerifiedFetch`.
+ *
+ * This method accepts all the same options as the `fetch` function in the browser, plus an `onProgress` option to
+ * listen for progress events. The only diferrence is that the `signal` property is a subset of the fetch options
+ * `signal` property. The signal property received here cannot be `null`, only `AbortSignal | undefined`.
+ */
+export interface VerifiedFetchOptions extends Omit<RequestInit, 'signal'>, AbortOptions, ProgressOptions<BubbledProgressEvents | VerifiedFetchProgressEvents> {
 }
 
 /**
@@ -91,8 +133,8 @@ export async function createVerifiedFetch (init: Helia | CreateVerifiedFetchWith
   }
 
   const verifiedFetchInstance = new VerifiedFetch({ helia: heliaInstance })
-  async function verifiedFetch (...args: Parameters<typeof verifiedFetchInstance.fetch>): ReturnType<typeof verifiedFetchInstance.fetch> {
-    return verifiedFetchInstance.fetch(...args)
+  async function verifiedFetch (resource: ResourceType, options: VerifiedFetchOptions): Promise<Response> {
+    return verifiedFetchInstance.fetch(resource, options)
   }
   verifiedFetch.stop = verifiedFetchInstance.stop.bind(verifiedFetchInstance)
   verifiedFetch.start = verifiedFetchInstance.start.bind(verifiedFetchInstance)
