@@ -65,10 +65,10 @@ export type VerifiedFetchMethod = InstanceType<typeof VerifiedFetch>['fetch'] & 
  */
 export async function createVerifiedFetch (init: Helia | CreateVerifiedFetchWithOptions): Promise<VerifiedFetchMethod> {
   let heliaInstance: null | Helia = null
-  if ((init as CreateVerifiedFetchWithOptions).gateways == null) {
-    heliaInstance = init as Helia
+  if (isHelia(init)) {
+    heliaInstance = init
   } else {
-    const config = init as CreateVerifiedFetchWithOptions
+    const config = init
     let routers: undefined | Array<Partial<Routing>>
     if (config.routers != null) {
       routers = config.routers.map((routerUrl) => delegatedHTTPRouting(routerUrl))
@@ -91,4 +91,13 @@ export async function createVerifiedFetch (init: Helia | CreateVerifiedFetchWith
   verifiedFetch.start = verifiedFetchInstance.start.bind(verifiedFetchInstance)
 
   return verifiedFetch
+}
+
+function isHelia (obj: any): obj is Helia {
+  // test for the presence of known Helia properties, return a boolean value
+  return obj?.blockstore != null &&
+    obj?.datastore != null &&
+    obj?.gc != null &&
+    obj?.stop != null &&
+    obj?.start != null
 }
