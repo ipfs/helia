@@ -1,13 +1,17 @@
-import { type IPNS } from '@helia/ipns'
+import { type IPNS, type ResolveProgressEvents } from '@helia/ipns'
 import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { CID } from 'multiformats/cid'
+import type { ProgressOptions } from 'progress-events'
 
 const log = logger('helia:verified-fetch:parse-url-string')
 
-export interface ParseUrlStringOptions {
+export interface ParseUrlStringInput {
   urlString: string
   ipns: IPNS
+}
+export interface ParseUrlStringOptions extends ProgressOptions<ResolveProgressEvents> {
+
 }
 
 export interface ParsedUrlStringResults {
@@ -27,7 +31,7 @@ const URL_REGEX = /^(?<protocol>ip[fn]s):\/\/(?<cidOrPeerIdOrDnsLink>[^/$?]+)\/?
  * * If it's ipns, it attempts to resolve the PeerId and then the DNSLink. If both fail, an Aggregate error is thrown.
  *
  */
-export async function parseUrlString ({ urlString, ipns }: ParseUrlStringOptions): Promise<ParsedUrlStringResults> {
+export async function parseUrlString ({ urlString, ipns }: ParseUrlStringInput, options?: ParseUrlStringOptions): Promise<ParsedUrlStringResults> {
   const match = urlString.match(URL_REGEX)
   if (match == null || match.groups == null) {
     throw new TypeError(`Invalid URL: ${urlString}, please use ipfs:// or ipns:// URLs only.`)
@@ -49,7 +53,8 @@ export async function parseUrlString ({ urlString, ipns }: ParseUrlStringOptions
     let peerId = null
     try {
       peerId = peerIdFromString(cidOrPeerIdOrDnsLink)
-      cid = await ipns.resolve(peerId)
+      // @ts-expect-error - onProgress typing is wrong
+      cid = await ipns.resolve(peerId, { onProgress: options?.onProgress })
       log.trace('resolved %s to %c', cidOrPeerIdOrDnsLink, cid)
     } catch (err) {
       if (peerId == null) {
@@ -64,7 +69,8 @@ export async function parseUrlString ({ urlString, ipns }: ParseUrlStringOptions
     if (cid == null) {
       log.trace('Attempting to resolve DNSLink for %s', cidOrPeerIdOrDnsLink)
       try {
-        cid = await ipns.resolveDns(cidOrPeerIdOrDnsLink)
+        // @ts-expect-error - onProgress typing is wrong
+        cid = await ipns.resolveDns(cidOrPeerIdOrDnsLink, { onProgress: options?.onProgress })
         log.trace('resolved %s to %c', cidOrPeerIdOrDnsLink, cid)
       } catch (err) {
         log.error('Could not resolve DnsLink for "%s"', cidOrPeerIdOrDnsLink, err)

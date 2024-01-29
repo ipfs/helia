@@ -201,7 +201,7 @@ export class VerifiedFetch {
   }
 
   async fetch (resource: ResourceType, options?: VerifiedFetchOptions): Promise<Response> {
-    const { cid, path, query } = await parseResource(resource, this.ipns)
+    const { cid, path, query } = await parseResource(resource, this.ipns, { onProgress: options?.onProgress })
     let response: Response | undefined
     const format = this.getFormat({ headerFormat: new Headers(options?.headers).get('accept'), queryFormat: query.format ?? null })
 
