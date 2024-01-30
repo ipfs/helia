@@ -89,7 +89,7 @@ export interface BlockBroker<GetProgressOptions extends ProgressOptions = Progre
   /**
    * Make a new block available to peers
    */
-  announce?(cid: CID, block: Uint8Array, options?: NotifyProgressOptions): void
+  announce?(cid: CID, block: Uint8Array, options?: NotifyProgressOptions): Promise<void>
 
   /**
    * Create a new session

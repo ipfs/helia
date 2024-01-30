@@ -63,7 +63,7 @@ class BitswapBlockBroker implements BlockBroker<ProgressOptions<BitswapWantBlock
     this.started = false
   }
 
-  announce (cid: CID, block: Uint8Array, options?: ProgressOptions<BitswapNotifyProgressEvents>): void {
+  async announce (cid: CID, block: Uint8Array, options?: ProgressOptions<BitswapNotifyProgressEvents>): Promise<void> {
     this.bitswap.notify(cid, block, options)
   }
 

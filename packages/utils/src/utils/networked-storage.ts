@@ -11,7 +11,7 @@ import type { AwaitIterable } from 'interface-store'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 
-export interface NetworkedStorageStorageInit {
+export interface NetworkedStorageInit {
   root?: CID
 }
 
@@ -41,7 +41,7 @@ export class NetworkedStorage implements Blocks, Startable {
   /**
    * Create a new BlockStorage
    */
-  constructor (components: NetworkedStorageComponents, init: NetworkedStorageStorageInit = {}) {
+  constructor (components: NetworkedStorageComponents, init: NetworkedStorageInit = {}) {
     this.log = components.logger.forComponent(`helia:networked-storage${init.root == null ? '' : `:${init.root}`}`)
     this.logger = components.logger
     this.child = components.blockstore
@@ -79,9 +79,13 @@ export class NetworkedStorage implements Blocks, Startable {
 
     options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:providers:notify', cid))
 
-    this.blockBrokers.forEach(broker => {
-      broker.announce?.(cid, block, options)
-    })
+    await Promise.all(
+      this.blockBrokers.map(broker => broker.announce?.(cid, block, options))
+    )
+
+    await Promise.all(
+      this.blockBrokers.map(broker => broker.announce?.(cid, block, options))
+    )
 
     options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:blockstore:put', cid))
 
@@ -102,11 +106,11 @@ export class NetworkedStorage implements Blocks, Startable {
       return !has
     })
 
-    const notifyEach = forEach(missingBlocks, ({ cid, block }): void => {
+    const notifyEach = forEach(missingBlocks, async ({ cid, block }): Promise<void> => {
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:put-many:providers:notify', cid))
-      this.blockBrokers.forEach(broker => {
-        broker.announce?.(cid, block, options)
-      })
+      await Promise.all(
+        this.blockBrokers.map(broker => broker.announce?.(cid, block, options))
+      )
     })
 
     options.onProgress?.(new CustomProgressEvent('blocks:put-many:blockstore:put-many'))
@@ -129,9 +133,9 @@ export class NetworkedStorage implements Blocks, Startable {
 
       // notify other block providers of the new block
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:providers:notify', cid))
-      this.blockBrokers.forEach(broker => {
-        broker.announce?.(cid, block, options)
-      })
+      await Promise.all(
+        this.blockBrokers.map(broker => broker.announce?.(cid, block, options))
+      )
 
       return block
     }
@@ -160,9 +164,9 @@ export class NetworkedStorage implements Blocks, Startable {
 
         // notify other block providers of the new block
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:providers:notify', cid))
-        this.blockBrokers.forEach(broker => {
-          broker.announce?.(cid, block, options)
-        })
+        await Promise.all(
+          this.blockBrokers.map(broker => broker.announce?.(cid, block, options))
+        )
       }
     }))
   }
