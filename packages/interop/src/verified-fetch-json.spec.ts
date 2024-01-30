@@ -31,7 +31,7 @@ describe('@helia/verified-fetch - json', () => {
       await verifiedFetch.stop()
     })
 
-    it('handles uniswap tokens list json', async () => {
+    it('handles UnixFS-chunked JSON file', async () => {
       const resp = await verifiedFetch(CID.parse('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr'))
       expect(resp).to.be.ok()
       const jsonObj = await resp.json()
