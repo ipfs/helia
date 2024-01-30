@@ -397,16 +397,18 @@ class DefaultIPNS implements IPNS {
   }
 
   async #resolve (ipfsPath: string, options: ResolveOptions = {}): Promise<CID> {
+    // TODO: https://github.com/ipfs/helia/issues/402
     const parts = ipfsPath.split('/')
-
-    if (parts.length === 3) {
+    try {
       const scheme = parts[1]
 
       if (scheme === 'ipns') {
-        return this.resolve(peerIdFromString(parts[2]), options)
+        return await this.resolve(peerIdFromString(parts[2]), options)
       } else if (scheme === 'ipfs') {
         return CID.parse(parts[2])
       }
+    } catch (err) {
+      log.error('error parsing ipfs path', err)
     }
 
     log.error('invalid ipfs path %s', ipfsPath)
