@@ -1,6 +1,6 @@
 import { dagJson as heliaDagJson, type DAGJSON } from '@helia/dag-json'
 import { ipns as heliaIpns, type IPNS } from '@helia/ipns'
-import { dnsJsonOverHttps, dnsOverHttps } from '@helia/ipns/dns-resolvers'
+import { dnsJsonOverHttps } from '@helia/ipns/dns-resolvers'
 import { json as heliaJson, type JSON as HeliaJSON } from '@helia/json'
 import { unixfs as heliaUnixFs, type UnixFS as HeliaUnixFs } from '@helia/unixfs'
 import { code as dagJsonCode } from '@ipld/dag-json'
@@ -40,9 +40,6 @@ export class VerifiedFetch {
     this.ipns = ipns ?? heliaIpns(helia, {
       resolvers: [
         dnsJsonOverHttps('https://mozilla.cloudflare-dns.com/dns-query'),
-        dnsOverHttps('https://mozilla.cloudflare-dns.com/dns-query'),
-        dnsOverHttps('https://cloudflare-dns.com/dns-query'),
-        dnsOverHttps('https://dns.google/dns-query'),
         dnsJsonOverHttps('https://dns.google/resolve')
       ]
     })

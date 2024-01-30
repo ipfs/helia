@@ -2,9 +2,11 @@ import { type IPNS, type ResolveProgressEvents } from '@helia/ipns'
 import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { CID } from 'multiformats/cid'
+import { TLRU } from './tlru.js'
 import type { ProgressOptions } from 'progress-events'
 
 const log = logger('helia:verified-fetch:parse-url-string')
+const ipnsCache = new TLRU<CID>(1000)
 
 export interface ParseUrlStringInput {
   urlString: string
@@ -38,7 +40,7 @@ export async function parseUrlString ({ urlString, ipns }: ParseUrlStringInput, 
   }
   const { protocol, cidOrPeerIdOrDnsLink, path, queryString } = match.groups
 
-  let cid: CID | null = null
+  let cid: CID | undefined
   const errors: Error[] = []
   if (protocol === 'ipfs') {
     try {
@@ -48,33 +50,40 @@ export async function parseUrlString ({ urlString, ipns }: ParseUrlStringInput, 
       errors.push(new TypeError('Invalid CID for ipfs://<cid> URL'))
     }
   } else {
-    // protocol is ipns
-    log.trace('Attempting to resolve PeerId for %s', cidOrPeerIdOrDnsLink)
-    let peerId = null
-    try {
-      peerId = peerIdFromString(cidOrPeerIdOrDnsLink)
-      // @ts-expect-error - onProgress typing is wrong
-      cid = await ipns.resolve(peerId, { onProgress: options?.onProgress })
-      log.trace('resolved %s to %c', cidOrPeerIdOrDnsLink, cid)
-    } catch (err) {
-      if (peerId == null) {
-        log.error('Could not parse PeerId string "%s"', cidOrPeerIdOrDnsLink, err)
-        errors.push(new TypeError(`Could not parse PeerId in ipns url "${cidOrPeerIdOrDnsLink}", ${(err as Error).message}`))
-      } else {
-        log.error('Could not resolve PeerId %c', peerId, err)
-        errors.push(new TypeError(`Could not resolve PeerId "${cidOrPeerIdOrDnsLink}", ${(err as Error).message}`))
-      }
-    }
-
-    if (cid == null) {
-      log.trace('Attempting to resolve DNSLink for %s', cidOrPeerIdOrDnsLink)
+    cid = ipnsCache.get(cidOrPeerIdOrDnsLink)
+    if (cid != null) {
+      log.trace('resolved %s to %c from cache', cidOrPeerIdOrDnsLink, cid)
+    } else {
+      // protocol is ipns
+      log.trace('Attempting to resolve PeerId for %s', cidOrPeerIdOrDnsLink)
+      let peerId = null
       try {
+        peerId = peerIdFromString(cidOrPeerIdOrDnsLink)
         // @ts-expect-error - onProgress typing is wrong
-        cid = await ipns.resolveDns(cidOrPeerIdOrDnsLink, { onProgress: options?.onProgress })
+        cid = await ipns.resolve(peerId, { onProgress: options?.onProgress })
         log.trace('resolved %s to %c', cidOrPeerIdOrDnsLink, cid)
+        ipnsCache.set(cidOrPeerIdOrDnsLink, cid, 60 * 1000 * 2)
       } catch (err) {
-        log.error('Could not resolve DnsLink for "%s"', cidOrPeerIdOrDnsLink, err)
-        errors.push(err as Error)
+        if (peerId == null) {
+          log.error('Could not parse PeerId string "%s"', cidOrPeerIdOrDnsLink, err)
+          errors.push(new TypeError(`Could not parse PeerId in ipns url "${cidOrPeerIdOrDnsLink}", ${(err as Error).message}`))
+        } else {
+          log.error('Could not resolve PeerId %c', peerId, err)
+          errors.push(new TypeError(`Could not resolve PeerId "${cidOrPeerIdOrDnsLink}", ${(err as Error).message}`))
+        }
+      }
+
+      if (cid == null) {
+        log.trace('Attempting to resolve DNSLink for %s', cidOrPeerIdOrDnsLink)
+        try {
+          // @ts-expect-error - onProgress typing is wrong
+          cid = await ipns.resolveDns(cidOrPeerIdOrDnsLink, { onProgress: options?.onProgress })
+          log.trace('resolved %s to %c', cidOrPeerIdOrDnsLink, cid)
+          ipnsCache.set(cidOrPeerIdOrDnsLink, cid, 60 * 1000 * 2)
+        } catch (err) {
+          log.error('Could not resolve DnsLink for "%s"', cidOrPeerIdOrDnsLink, err)
+          errors.push(err as Error)
+        }
       }
     }
   }
