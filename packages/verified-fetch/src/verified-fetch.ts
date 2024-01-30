@@ -11,7 +11,7 @@ import { code as jsonCode } from 'multiformats/codecs/json'
 import { CustomProgressEvent } from 'progress-events'
 import { getStreamAndContentType } from './utils/get-stream-and-content-type.js'
 import { parseResource } from './utils/parse-resource.js'
-import type { CIDDetail, ResourceType, VerifiedFetchOptions } from './index.js'
+import type { CIDDetail, ResourceType, VerifiedFetchOptionsMod } from './index.js'
 import type { Helia } from '@helia/interface'
 
 const log = logger('helia:verified-fetch')
@@ -33,7 +33,7 @@ interface VerifiedFetchConstructorOptions {
 }
 
 interface FetchHandlerFunction {
-  (options: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response>
+  (options: { cid: CID, path: string, options?: VerifiedFetchOptionsMod }): Promise<Response>
 }
 
 export class VerifiedFetch {
@@ -58,20 +58,20 @@ export class VerifiedFetch {
   }
 
   // handle vnd.ipfs.ipns-record
-  private async handleIPNSRecord ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
+  private async handleIPNSRecord ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptionsMod }): Promise<Response> {
     const response = new Response('vnd.ipfs.ipns-record support is not implemented', { status: 501 })
     response.headers.set('X-Content-Type-Options', 'nosniff') // see https://specs.ipfs.tech/http-gateways/path-gateway/#x-content-type-options-response-header
     return response
   }
 
   // handle vnd.ipld.car
-  private async handleIPLDCar ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
+  private async handleIPLDCar ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptionsMod }): Promise<Response> {
     const response = new Response('vnd.ipld.car support is not implemented', { status: 501 })
     response.headers.set('X-Content-Type-Options', 'nosniff') // see https://specs.ipfs.tech/http-gateways/path-gateway/#x-content-type-options-response-header
     return response
   }
 
-  private async handleDagJson ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
+  private async handleDagJson ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptionsMod }): Promise<Response> {
     log.trace('fetching %c/%s', cid, path)
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: cid.toString(), path }))
     const result = await this.dagJson.get(cid, {
@@ -84,7 +84,7 @@ export class VerifiedFetch {
     return response
   }
 
-  private async handleJson ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
+  private async handleJson ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptionsMod }): Promise<Response> {
     log.trace('fetching %c/%s', cid, path)
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: cid.toString(), path }))
     const result: Record<any, any> = await this.json.get(cid, {
@@ -97,7 +97,7 @@ export class VerifiedFetch {
     return response
   }
 
-  private async handleDagPb ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptions }): Promise<Response> {
+  private async handleDagPb ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptionsMod }): Promise<Response> {
     log.trace('fetching %c/%s', cid, path)
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: cid.toString(), path }))
     let stat = await this.unixfs.stat(cid, {
@@ -205,7 +205,7 @@ export class VerifiedFetch {
     [jsonCode]: this.handleJson
   }
 
-  async fetch (resource: ResourceType, options?: VerifiedFetchOptions): Promise<Response> {
+  async fetch (resource: ResourceType, options?: VerifiedFetchOptionsMod): Promise<Response> {
     const { cid, path, query } = await parseResource(resource, this.ipns, { onProgress: options?.onProgress })
     let response: Response | undefined
     const format = this.getFormat({ headerFormat: new Headers(options?.headers).get('accept'), queryFormat: query.format ?? null })

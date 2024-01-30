@@ -240,7 +240,8 @@ export interface CIDDetailError extends CIDDetail {
   error: Error
 }
 
-export type VerifiedFetchMethod = InstanceType<typeof VerifiedFetch>['fetch'] & {
+export interface VerifiedFetchMethod {
+  (resource: ResourceType, options?: VerifiedFetchOptions): Promise<Response>
   start: InstanceType<typeof VerifiedFetch>['start']
   stop: InstanceType<typeof VerifiedFetch>['stop']
 }
@@ -270,10 +271,29 @@ export type VerifiedFetchProgressEvents =
  * Options for the `fetch` function returned by `createVerifiedFetch`.
  *
  * This method accepts all the same options as the `fetch` function in the browser, plus an `onProgress` option to
- * listen for progress events. The only diferrence is that the `signal` property is a subset of the fetch options
- * `signal` property. The signal property received here cannot be `null`, only `AbortSignal | undefined`.
+ * listen for progress events.
  */
-export interface VerifiedFetchOptions extends Omit<RequestInit, 'signal'>, AbortOptions, ProgressOptions<BubbledProgressEvents | VerifiedFetchProgressEvents> {
+export interface VerifiedFetchOptions extends RequestInit, ProgressOptions<BubbledProgressEvents | VerifiedFetchProgressEvents> {
+}
+/**
+ * Because RequestInit['signal'] is not compatible with AbortOptions, we need to create a new type that is compatible
+ * in order to pass options through to Helia modules more easily.
+ */
+
+export interface VerifiedFetchOptionsMod extends Omit<VerifiedFetchOptions, 'signal'>, AbortOptions {
+}
+
+function convertOptions (options?: VerifiedFetchOptions): VerifiedFetchOptionsMod | undefined {
+  if (options == null) return undefined
+
+  let signal: AbortSignal | undefined
+  if (options?.signal === null) {
+    signal = undefined
+  }
+  return {
+    ...options,
+    signal
+  }
 }
 
 /**
@@ -301,12 +321,12 @@ export async function createVerifiedFetch (init: Helia | CreateVerifiedFetchWith
 
   const verifiedFetchInstance = new VerifiedFetch({ helia: heliaInstance })
   async function verifiedFetch (resource: ResourceType, options: VerifiedFetchOptions): Promise<Response> {
-    return verifiedFetchInstance.fetch(resource, options)
+    return verifiedFetchInstance.fetch(resource, convertOptions(options))
   }
   verifiedFetch.stop = verifiedFetchInstance.stop.bind(verifiedFetchInstance)
   verifiedFetch.start = verifiedFetchInstance.start.bind(verifiedFetchInstance)
 
-  return verifiedFetch
+  return verifiedFetch as VerifiedFetchMethod
 }
 
 function isHelia (obj: any): obj is Helia {
