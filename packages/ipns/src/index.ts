@@ -484,5 +484,5 @@ export function ipns (components: IPNSComponents, { routers = [], resolvers = []
   return new DefaultIPNS(components, routers, resolvers)
 }
 
-export { ipnsValidator }
+export { ipnsValidator, type IPNSRoutingEvents }
 export { ipnsSelector } from 'ipns/selector'
