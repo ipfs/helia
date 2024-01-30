@@ -77,7 +77,7 @@
  * await name.publish(peerId, cid)
  *
  * // resolve the name
- * const cid = name.resolve(peerId)
+ * const {cid, path} = name.resolve(peerId)
  * ```
  *
  * @example Using custom DNS over HTTPS resolvers
@@ -97,7 +97,7 @@
  *  ]
  * })
  *
- * const cid = name.resolveDns('some-domain-with-dnslink-entry.com')
+ * const {cid, path} = name.resolveDns('some-domain-with-dnslink-entry.com')
  * ```
  *
  * @example Resolving a domain with a dnslink entry
@@ -114,7 +114,7 @@
  * // ;; ANSWER SECTION:
  * // _dnslink.website.ipfs.io.  60     IN      TXT     "dnslink=/ipfs/QmWebsite"
  *
- * const cid = name.resolveDns('ipfs.io')
+ * const {cid, path} = name.resolveDns('ipfs.io')
  *
  * console.info(cid)
  * // QmWebsite
@@ -132,7 +132,7 @@
  * // use DNS-Over-HTTPS
  * import { dnsOverHttps } from '@helia/ipns/dns-resolvers'
  *
- * const cid = name.resolveDns('ipfs.io', {
+ * const {cid, path} = name.resolveDns('ipfs.io', {
  *   resolvers: [
  *     dnsOverHttps('https://mozilla.cloudflare-dns.com/dns-query')
  *   ]
@@ -148,7 +148,7 @@
  * // use DNS-JSON-Over-HTTPS
  * import { dnsJsonOverHttps } from '@helia/ipns/dns-resolvers'
  *
- * const cid = name.resolveDns('ipfs.io', {
+ * const {cid, path} = name.resolveDns('ipfs.io', {
  *   resolvers: [
  *     dnsJsonOverHttps('https://mozilla.cloudflare-dns.com/dns-query')
  *   ]
@@ -266,6 +266,11 @@ export interface RepublishOptions extends AbortOptions, ProgressOptions<Republis
   interval?: number
 }
 
+export interface ResolveResult {
+  cid: CID
+  path: string
+}
+
 export interface IPNS {
   /**
    * Creates an IPNS record signed by the passed PeerId that will resolve to the passed value
@@ -278,12 +283,12 @@ export interface IPNS {
    * Accepts a public key formatted as a libp2p PeerID and resolves the IPNS record
    * corresponding to that public key until a value is found
    */
-  resolve(key: PeerId, options?: ResolveOptions): Promise<CID>
+  resolve(key: PeerId, options?: ResolveOptions): Promise<ResolveResult>
 
   /**
    * Resolve a CID from a dns-link style IPNS record
    */
-  resolveDns(domain: string, options?: ResolveDNSOptions): Promise<CID>
+  resolveDns(domain: string, options?: ResolveDNSOptions): Promise<ResolveResult>
 
   /**
    * Periodically republish all IPNS records found in the datastore
@@ -343,14 +348,14 @@ class DefaultIPNS implements IPNS {
     }
   }
 
-  async resolve (key: PeerId, options: ResolveOptions = {}): Promise<CID> {
+  async resolve (key: PeerId, options: ResolveOptions = {}): Promise<ResolveResult> {
     const routingKey = peerIdToRoutingKey(key)
     const record = await this.#findIpnsRecord(routingKey, options)
 
     return this.#resolve(record.value, options)
   }
 
-  async resolveDns (domain: string, options: ResolveDNSOptions = {}): Promise<CID> {
+  async resolveDns (domain: string, options: ResolveDNSOptions = {}): Promise<ResolveResult> {
     const resolvers = options.resolvers ?? this.defaultResolvers
 
     const dnslink = await Promise.any(
@@ -396,16 +401,25 @@ class DefaultIPNS implements IPNS {
     }, options.interval ?? DEFAULT_REPUBLISH_INTERVAL_MS)
   }
 
-  async #resolve (ipfsPath: string, options: ResolveOptions = {}): Promise<CID> {
-    // TODO: https://github.com/ipfs/helia/issues/402
+  async #resolve (ipfsPath: string, options: ResolveOptions = {}): Promise<ResolveResult> {
     const parts = ipfsPath.split('/')
     try {
       const scheme = parts[1]
 
       if (scheme === 'ipns') {
-        return await this.resolve(peerIdFromString(parts[2]), options)
+        const { cid } = await this.resolve(peerIdFromString(parts[2]), options)
+        const path = parts.slice(3).join('/')
+        return {
+          cid,
+          path
+        }
       } else if (scheme === 'ipfs') {
-        return CID.parse(parts[2])
+        const cid = CID.parse(parts[2])
+        const path = parts.slice(3).join('/')
+        return {
+          cid,
+          path
+        }
       }
     } catch (err) {
       log.error('error parsing ipfs path', err)
