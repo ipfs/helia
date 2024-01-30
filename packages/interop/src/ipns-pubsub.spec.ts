@@ -20,7 +20,7 @@ import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import { keyTypes } from './fixtures/key-types.js'
 import { waitFor } from './fixtures/wait-for.js'
-import type { IPNS } from '@helia/ipns'
+import type { IPNS, ResolveResult } from '@helia/ipns'
 import type { Libp2p, PubSub } from '@libp2p/interface'
 import type { Keychain } from '@libp2p/keychain'
 import type { HeliaLibp2p } from 'helia'
@@ -161,7 +161,7 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
         key: keyName
       })
 
-      let resolvedCid: CID | undefined
+      let resolvedCid: ResolveResult | undefined
 
       // we should get an update eventually
       await waitFor(async () => {
@@ -181,7 +181,7 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
         throw new Error('Failed to resolve CID')
       }
 
-      expect(resolvedCid.toString()).to.equal(cid.toString())
+      expect(resolvedCid.cid.toString()).to.equal(cid.toString())
     })
   })
 })
