@@ -56,6 +56,7 @@
   },
   "dependencies": {
     "@helia/block-brokers": "^2.0.0",
+    "@helia/dag-cbor": "^3.0.0",
     "@helia/dag-json": "^3.0.0",
     "@helia/http": "^1.0.0",
     "@helia/interface": "^4.0.0",
@@ -63,6 +64,7 @@
     "@helia/json": "^3.0.0",
     "@helia/routers": "^1.0.0",
     "@helia/unixfs": "^3.0.0",
+    "@ipld/dag-cbor": "^9.1.0",
     "@ipld/dag-json": "^10.1.7",
     "@ipld/dag-pb": "^4.0.8",
     "@libp2p/interface": "^1.1.2",

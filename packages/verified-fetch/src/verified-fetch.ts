@@ -1,8 +1,10 @@
+import { dagCbor as heliaDagCbor, type DAGCBOR } from '@helia/dag-cbor'
 import { dagJson as heliaDagJson, type DAGJSON } from '@helia/dag-json'
 import { ipns as heliaIpns, type IPNS } from '@helia/ipns'
 import { dnsJsonOverHttps } from '@helia/ipns/dns-resolvers'
 import { json as heliaJson, type JSON as HeliaJSON } from '@helia/json'
 import { unixfs as heliaUnixFs, type UnixFS as HeliaUnixFs } from '@helia/unixfs'
+import { code as dagCborCode } from '@ipld/dag-cbor'
 import { code as dagJsonCode } from '@ipld/dag-json'
 import { code as dagPbCode } from '@ipld/dag-pb'
 import { logger } from '@libp2p/logger'
@@ -22,6 +24,7 @@ interface VerifiedFetchConstructorComponents {
   unixfs?: HeliaUnixFs
   dagJson?: DAGJSON
   json?: HeliaJSON
+  dagCbor?: DAGCBOR
 }
 
 /**
@@ -41,9 +44,10 @@ export class VerifiedFetch {
   private readonly ipns: IPNS
   private readonly unixfs: HeliaUnixFs
   private readonly dagJson: DAGJSON
+  private readonly dagCbor: DAGCBOR
   private readonly json: HeliaJSON
 
-  constructor ({ helia, ipns, unixfs, dagJson, json }: VerifiedFetchConstructorComponents, options?: VerifiedFetchConstructorOptions) {
+  constructor ({ helia, ipns, unixfs, dagJson, json, dagCbor }: VerifiedFetchConstructorComponents, options?: VerifiedFetchConstructorOptions) {
     this.helia = helia
     this.ipns = ipns ?? heliaIpns(helia, {
       resolvers: [
@@ -54,6 +58,7 @@ export class VerifiedFetch {
     this.unixfs = unixfs ?? heliaUnixFs(helia)
     this.dagJson = dagJson ?? heliaDagJson(helia)
     this.json = json ?? heliaJson(helia)
+    this.dagCbor = dagCbor ?? heliaDagCbor(helia)
     log.trace('created VerifiedFetch instance')
   }
 
@@ -88,6 +93,19 @@ export class VerifiedFetch {
     log.trace('fetching %c/%s', cid, path)
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: cid.toString(), path }))
     const result: Record<any, any> = await this.json.get(cid, {
+      signal: options?.signal,
+      onProgress: options?.onProgress
+    })
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: cid.toString(), path }))
+    const response = new Response(JSON.stringify(result), { status: 200 })
+    response.headers.set('content-type', 'application/json')
+    return response
+  }
+
+  private async handleDagCbor ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptionsMod }): Promise<Response> {
+    log.trace('fetching %c/%s', cid, path)
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: cid.toString(), path }))
+    const result = await this.dagCbor.get(cid, {
       signal: options?.signal,
       onProgress: options?.onProgress
     })
@@ -202,7 +220,8 @@ export class VerifiedFetch {
   private readonly codecHandlers: Record<number, FetchHandlerFunction> = {
     [dagJsonCode]: this.handleDagJson,
     [dagPbCode]: this.handleDagPb,
-    [jsonCode]: this.handleJson
+    [jsonCode]: this.handleJson,
+    [dagCborCode]: this.handleDagCbor
   }
 
   async fetch (resource: ResourceType, options?: VerifiedFetchOptionsMod): Promise<Response> {

@@ -1,4 +1,5 @@
 /* eslint-env mocha */
+import { type DAGCBOR } from '@helia/dag-cbor'
 import { type DAGJSON } from '@helia/dag-json'
 import { type IPNS } from '@helia/ipns'
 import { type JSON as HeliaJSON } from '@helia/json'
@@ -83,6 +84,7 @@ describe('VerifiedFetch', () => {
     let unixfsStub: ReturnType<typeof stubInterface<UnixFS>>
     let dagJsonStub: ReturnType<typeof stubInterface<DAGJSON>>
     let jsonStub: ReturnType<typeof stubInterface<HeliaJSON>>
+    let dagCborStub: ReturnType<typeof stubInterface<DAGCBOR>>
     beforeEach(async () => {
       unixfsStub = stubInterface<UnixFS>({
         cat: sinon.stub(),
@@ -96,12 +98,17 @@ describe('VerifiedFetch', () => {
         // @ts-expect-error - stub errors
         get: sinon.stub()
       })
+      dagCborStub = stubInterface<DAGCBOR>({
+        // @ts-expect-error - stub errors
+        get: sinon.stub()
+      })
       verifiedFetch = new VerifiedFetch({
         helia: stubInterface<Helia>(),
         ipns: stubInterface<IPNS>(),
         unixfs: unixfsStub,
         dagJson: dagJsonStub,
-        json: jsonStub
+        json: jsonStub,
+        dagCbor: dagCborStub
       })
     })
     afterEach(async () => {
@@ -256,6 +263,40 @@ describe('VerifiedFetch', () => {
       })
       expect(resp).to.be.ok()
       expect(resp.status).to.equal(200)
+      const data = await resp.json()
+      expect(data).to.deep.equal({
+        hello: 'world'
+      })
+    })
+
+    it('should return dag-cbor encoded CID', async () => {
+      const abortSignal = new AbortController().signal
+      const onProgress = sinon.spy()
+      const cid = CID.parse('bafyreidykglsfhoixmivffc5uwhcgshx4j465xwqntbmu43nb2dzqwfvae')
+      dagCborStub.get.withArgs(cid).returns(Promise.resolve({
+        hello: 'world'
+      }))
+      const resp = await verifiedFetch.fetch(cid, {
+        signal: abortSignal,
+        onProgress
+      })
+      expect(resp).to.be.ok()
+      expect(resp.status).to.equal(200)
+      expect(unixfsStub.stat.withArgs(cid).callCount).to.equal(0)
+      expect(unixfsStub.cat.withArgs(cid).callCount).to.equal(0)
+      expect(dagCborStub.get.withArgs(cid).callCount).to.equal(1)
+      expect(onProgress.callCount).to.equal(2)
+      const onProgressEvents = onProgress.getCalls().map(call => call.args[0])
+      expect(onProgressEvents[0]).to.have.property('type', 'verified-fetch:request:start')
+      expect(onProgressEvents[0]).to.have.property('detail').that.deep.equals({
+        cid: cid.toString(),
+        path: ''
+      })
+      expect(onProgressEvents[1]).to.have.property('type', 'verified-fetch:request:end')
+      expect(onProgressEvents[1]).to.have.property('detail').that.deep.equals({
+        cid: cid.toString(),
+        path: ''
+      })
       const data = await resp.json()
       expect(data).to.deep.equal({
         hello: 'world'
