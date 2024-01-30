@@ -16,12 +16,20 @@ import type { Helia } from '@helia/interface'
 
 const log = logger('helia:verified-fetch')
 
-interface VerifiedFetchConstructorOptions {
+interface VerifiedFetchConstructorComponents {
   helia: Helia
   ipns?: IPNS
   unixfs?: HeliaUnixFs
   dagJson?: DAGJSON
   json?: HeliaJSON
+}
+
+/**
+ * Potential future options for the VerifiedFetch constructor.
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface VerifiedFetchConstructorOptions {
+
 }
 
 interface FetchHandlerFunction {
@@ -35,7 +43,7 @@ export class VerifiedFetch {
   private readonly dagJson: DAGJSON
   private readonly json: HeliaJSON
 
-  constructor ({ helia, ipns, unixfs, dagJson, json }: VerifiedFetchConstructorOptions) {
+  constructor ({ helia, ipns, unixfs, dagJson, json }: VerifiedFetchConstructorComponents, options?: VerifiedFetchConstructorOptions) {
     this.helia = helia
     this.ipns = ipns ?? heliaIpns(helia, {
       resolvers: [
