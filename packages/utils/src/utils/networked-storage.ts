@@ -80,11 +80,11 @@ export class NetworkedStorage implements Blocks, Startable {
     options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:providers:notify', cid))
 
     await Promise.all(
-      this.blockBrokers.map(broker => broker.announce?.(cid, block, options))
+      this.blockBrokers.map(async broker => broker.announce?.(cid, block, options))
     )
 
     await Promise.all(
-      this.blockBrokers.map(broker => broker.announce?.(cid, block, options))
+      this.blockBrokers.map(async broker => broker.announce?.(cid, block, options))
     )
 
     options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:blockstore:put', cid))
@@ -109,7 +109,7 @@ export class NetworkedStorage implements Blocks, Startable {
     const notifyEach = forEach(missingBlocks, async ({ cid, block }): Promise<void> => {
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:put-many:providers:notify', cid))
       await Promise.all(
-        this.blockBrokers.map(broker => broker.announce?.(cid, block, options))
+        this.blockBrokers.map(async broker => broker.announce?.(cid, block, options))
       )
     })
 
@@ -134,7 +134,7 @@ export class NetworkedStorage implements Blocks, Startable {
       // notify other block providers of the new block
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:providers:notify', cid))
       await Promise.all(
-        this.blockBrokers.map(broker => broker.announce?.(cid, block, options))
+        this.blockBrokers.map(async broker => broker.announce?.(cid, block, options))
       )
 
       return block
@@ -165,7 +165,7 @@ export class NetworkedStorage implements Blocks, Startable {
         // notify other block providers of the new block
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:providers:notify', cid))
         await Promise.all(
-          this.blockBrokers.map(broker => broker.announce?.(cid, block, options))
+          this.blockBrokers.map(async broker => broker.announce?.(cid, block, options))
         )
       }
     }))
