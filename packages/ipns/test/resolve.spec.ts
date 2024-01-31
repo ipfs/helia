@@ -41,7 +41,7 @@ describe('resolve', () => {
       throw new Error('Did not resolve entry')
     }
 
-    expect(resolvedValue.toString()).to.equal(cid.toV1().toString())
+    expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
 
     expect(heliaRouting.get.called).to.be.true()
     expect(customRouting.get.called).to.be.true()
@@ -65,7 +65,7 @@ describe('resolve', () => {
       throw new Error('Did not resolve entry')
     }
 
-    expect(resolvedValue.toString()).to.equal(cid.toV1().toString())
+    expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
   })
 
   it('should resolve a recursive record', async () => {
@@ -80,7 +80,22 @@ describe('resolve', () => {
       throw new Error('Did not resolve entry')
     }
 
-    expect(resolvedValue.toString()).to.equal(cid.toV1().toString())
+    expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
+  })
+
+  it('should resolve a recursive record with path', async () => {
+    const key1 = await createEd25519PeerId()
+    const key2 = await createEd25519PeerId()
+    await name.publish(key2, cid)
+    await name.publish(key1, key2)
+
+    const resolvedValue = await name.resolve(key1)
+
+    if (resolvedValue == null) {
+      throw new Error('Did not resolve entry')
+    }
+
+    expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
   })
 
   it('should emit progress events', async function () {
@@ -108,7 +123,7 @@ describe('resolve', () => {
     customRouting.get.withArgs(customRoutingKey).resolves(marshalledRecord)
 
     const result = await name.resolve(peerId)
-    expect(result.toString()).to.equal(cid.toV1().toString(), 'incorrect record resolved')
+    expect(result.cid.toString()).to.equal(cid.toV1().toString(), 'incorrect record resolved')
 
     expect(datastore.has(dhtKey)).to.be.true('did not cache record locally')
   })
@@ -129,7 +144,7 @@ describe('resolve', () => {
     customRouting.get.withArgs(customRoutingKey).resolves(marshalledRecordB)
 
     const result = await name.resolve(peerId)
-    expect(result.toString()).to.equal(cid.toV1().toString(), 'incorrect record resolved')
+    expect(result.cid.toString()).to.equal(cid.toV1().toString(), 'incorrect record resolved')
 
     const cached = await datastore.get(dhtKey)
     const record = Record.deserialize(cached)

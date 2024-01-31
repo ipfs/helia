@@ -176,7 +176,7 @@ keyTypes.forEach(type => {
         key: keyName
       })
 
-      const resolvedCid = await name.resolve(key)
+      const { cid: resolvedCid } = await name.resolve(key)
       expect(resolvedCid.toString()).to.equal(cid.toString())
     })
   })

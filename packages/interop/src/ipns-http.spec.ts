@@ -62,7 +62,7 @@ describe('@helia/ipns - http', () => {
 
     const key = peerIdFromString(res.name)
 
-    const resolvedCid = await name.resolve(key)
+    const { cid: resolvedCid } = await name.resolve(key)
     expect(resolvedCid.toString()).to.equal(cid.toString())
   })
 })
