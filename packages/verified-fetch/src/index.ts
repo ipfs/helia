@@ -220,7 +220,7 @@ import { createHeliaHTTP } from '@helia/http'
 import { delegatedHTTPRouting } from '@helia/routers'
 import { VerifiedFetch } from './verified-fetch.js'
 import type { Helia, Routing } from '@helia/interface'
-import type { ResolveDnsLinkProgressEvents, ResolveProgressEvents } from '@helia/ipns'
+import type { IPNSRoutingEvents, ResolveDnsLinkProgressEvents, ResolveProgressEvents } from '@helia/ipns'
 import type { GetEvents } from '@helia/unixfs'
 import type { AbortOptions } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
@@ -258,7 +258,7 @@ export type BubbledProgressEvents =
   // unixfs
   GetEvents |
   // ipns
-  ResolveProgressEvents | ResolveDnsLinkProgressEvents
+  ResolveProgressEvents | ResolveDnsLinkProgressEvents | IPNSRoutingEvents
 
 export type VerifiedFetchProgressEvents =
   ProgressEvent<'verified-fetch:request:start', CIDDetail> |

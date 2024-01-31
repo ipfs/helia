@@ -2,10 +2,10 @@ import { CID } from 'multiformats/cid'
 import { parseUrlString } from './parse-url-string.js'
 import type { ParsedUrlStringResults } from './parse-url-string.js'
 import type { ResourceType } from '../index.js'
-import type { IPNS, ResolveProgressEvents } from '@helia/ipns'
+import type { IPNS, IPNSRoutingEvents, ResolveDnsLinkProgressEvents, ResolveProgressEvents } from '@helia/ipns'
 import type { ProgressOptions } from 'progress-events'
 
-export interface ParseResourceOptions extends ProgressOptions<ResolveProgressEvents> {
+export interface ParseResourceOptions extends ProgressOptions<ResolveProgressEvents | IPNSRoutingEvents | ResolveDnsLinkProgressEvents> {
 
 }
 /**

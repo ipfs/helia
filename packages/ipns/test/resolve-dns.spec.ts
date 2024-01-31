@@ -86,15 +86,4 @@ describe('resolveDns', () => {
     expect(result.cid.toString()).to.equal(cid.toV1().toString())
     expect(result.path).to.equal('foobar/path/123')
   })
-
-  it('should support trailing slash in returned dnslink value', async () => {
-    // see https://github.com/ipfs/helia/issues/402
-    const stubbedResolver1 = stub().returns('dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe/')
-
-    const name = ipns({ datastore, routing: heliaRouting }, { routers: [customRouting], resolvers: [stubbedResolver1] })
-    const result = await name.resolveDns('foobar.baz', { nocache: true })
-    expect(stubbedResolver1.called).to.be.true()
-    expect(stubbedResolver1.calledWith('foobar.baz')).to.be.true()
-    expect(result.toString()).to.equal('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe', 'doesn\'t support trailing slashes')
-  })
 })

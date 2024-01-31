@@ -1,4 +1,4 @@
-import { type IPNS, type ResolveProgressEvents } from '@helia/ipns'
+import { type IPNS, type IPNSRoutingEvents, type ResolveDnsLinkProgressEvents, type ResolveProgressEvents, type ResolveResult } from '@helia/ipns'
 import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { CID } from 'multiformats/cid'
@@ -6,13 +6,13 @@ import { TLRU } from './tlru.js'
 import type { ProgressOptions } from 'progress-events'
 
 const log = logger('helia:verified-fetch:parse-url-string')
-const ipnsCache = new TLRU<CID>(1000)
+const ipnsCache = new TLRU<ResolveResult>(1000)
 
 export interface ParseUrlStringInput {
   urlString: string
   ipns: IPNS
 }
-export interface ParseUrlStringOptions extends ProgressOptions<ResolveProgressEvents> {
+export interface ParseUrlStringOptions extends ProgressOptions<ResolveProgressEvents | IPNSRoutingEvents | ResolveDnsLinkProgressEvents> {
 
 }
 
@@ -38,9 +38,10 @@ export async function parseUrlString ({ urlString, ipns }: ParseUrlStringInput, 
   if (match == null || match.groups == null) {
     throw new TypeError(`Invalid URL: ${urlString}, please use ipfs:// or ipns:// URLs only.`)
   }
-  const { protocol, cidOrPeerIdOrDnsLink, path, queryString } = match.groups
+  const { protocol, cidOrPeerIdOrDnsLink, path: urlPath, queryString } = match.groups
 
   let cid: CID | undefined
+  let resolvedPath: string | undefined
   const errors: Error[] = []
   if (protocol === 'ipfs') {
     try {
@@ -50,8 +51,10 @@ export async function parseUrlString ({ urlString, ipns }: ParseUrlStringInput, 
       errors.push(new TypeError('Invalid CID for ipfs://<cid> URL'))
     }
   } else {
-    cid = ipnsCache.get(cidOrPeerIdOrDnsLink)
-    if (cid != null) {
+    let resolveResult = ipnsCache.get(cidOrPeerIdOrDnsLink)
+    if (resolveResult != null) {
+      cid = resolveResult.cid
+      resolvedPath = resolveResult.path
       log.trace('resolved %s to %c from cache', cidOrPeerIdOrDnsLink, cid)
     } else {
       // protocol is ipns
@@ -59,10 +62,11 @@ export async function parseUrlString ({ urlString, ipns }: ParseUrlStringInput, 
       let peerId = null
       try {
         peerId = peerIdFromString(cidOrPeerIdOrDnsLink)
-        // @ts-expect-error - onProgress typing is wrong
-        cid = await ipns.resolve(peerId, { onProgress: options?.onProgress })
+        resolveResult = await ipns.resolve(peerId, { onProgress: options?.onProgress })
+        cid = resolveResult?.cid
+        resolvedPath = resolveResult?.path
         log.trace('resolved %s to %c', cidOrPeerIdOrDnsLink, cid)
-        ipnsCache.set(cidOrPeerIdOrDnsLink, cid, 60 * 1000 * 2)
+        ipnsCache.set(cidOrPeerIdOrDnsLink, resolveResult, 60 * 1000 * 2)
       } catch (err) {
         if (peerId == null) {
           log.error('Could not parse PeerId string "%s"', cidOrPeerIdOrDnsLink, err)
@@ -76,10 +80,11 @@ export async function parseUrlString ({ urlString, ipns }: ParseUrlStringInput, 
       if (cid == null) {
         log.trace('Attempting to resolve DNSLink for %s', cidOrPeerIdOrDnsLink)
         try {
-          // @ts-expect-error - onProgress typing is wrong
-          cid = await ipns.resolveDns(cidOrPeerIdOrDnsLink, { onProgress: options?.onProgress })
+          resolveResult = await ipns.resolveDns(cidOrPeerIdOrDnsLink, { onProgress: options?.onProgress })
+          cid = resolveResult?.cid
+          resolvedPath = resolveResult?.path
           log.trace('resolved %s to %c', cidOrPeerIdOrDnsLink, cid)
-          ipnsCache.set(cidOrPeerIdOrDnsLink, cid, 60 * 1000 * 2)
+          ipnsCache.set(cidOrPeerIdOrDnsLink, resolveResult, 60 * 1000 * 2)
         } catch (err) {
           log.error('Could not resolve DnsLink for "%s"', cidOrPeerIdOrDnsLink, err)
           errors.push(err as Error)
@@ -101,6 +106,20 @@ export async function parseUrlString ({ urlString, ipns }: ParseUrlStringInput, 
       query[key] = decodeURIComponent(value)
     }
   }
+
+  /**
+   * join the path from resolve result & given path.
+   * e.g. /ipns/<peerId>/ that is resolved to /ipfs/<cid>/<path1>, when requested as /ipns/<peerId>/<path2>, should be
+   * resolved to /ipfs/<cid>/<path1>/<path2>
+   */
+  const pathParts = []
+  if (urlPath.length > 0) {
+    pathParts.push(urlPath)
+  }
+  if (resolvedPath != null && resolvedPath.length > 0) {
+    pathParts.push(resolvedPath)
+  }
+  const path = pathParts.join('/')
 
   return {
     protocol,

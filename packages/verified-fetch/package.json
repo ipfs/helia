@@ -60,7 +60,7 @@
     "@helia/dag-json": "^3.0.0",
     "@helia/http": "^1.0.0",
     "@helia/interface": "^4.0.0",
-    "@helia/ipns": "^5.0.0",
+    "@helia/ipns": "^6.0.0",
     "@helia/json": "^3.0.0",
     "@helia/routers": "^1.0.0",
     "@helia/unixfs": "^3.0.0",

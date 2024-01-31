@@ -120,7 +120,10 @@ describe('parseUrlString', () => {
       ipns = stubInterface<IPNS>({
         resolveDns: async (dnsLink: string) => {
           expect(dnsLink).to.equal('mydomain.com')
-          return CID.parse('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
+          return {
+            cid: CID.parse('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr'),
+            path: ''
+          }
         }
       })
     })
@@ -195,7 +198,10 @@ describe('parseUrlString', () => {
       ipns = stubInterface<IPNS>({
         resolve: async (peerId: PeerId) => {
           expect(peerId.toString()).to.equal(testPeerId.toString())
-          return CID.parse('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
+          return {
+            cid: CID.parse('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr'),
+            path: ''
+          }
         }
       })
     })

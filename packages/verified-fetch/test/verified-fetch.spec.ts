@@ -42,7 +42,10 @@ describe('VerifiedFetch', () => {
         ipns: stubInterface<IPNS>({
           resolveDns: async (dnsLink: string) => {
             expect(dnsLink).to.equal('mydomain.com')
-            return testCID
+            return {
+              cid: testCID,
+              path: ''
+            }
           }
         }),
         unixfs: stubInterface<UnixFS>()
