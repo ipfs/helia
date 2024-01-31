@@ -161,12 +161,12 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
         key: keyName
       })
 
-      let resolvedCid: ResolveResult | undefined
+      let resolveResult: ResolveResult | undefined
 
       // we should get an update eventually
       await waitFor(async () => {
         try {
-          resolvedCid = await name.resolve(peerId)
+          resolveResult = await name.resolve(peerId)
 
           return true
         } catch {
@@ -177,11 +177,11 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
         message: 'Helia could not resolve the IPNS record'
       })
 
-      if (resolvedCid == null) {
+      if (resolveResult == null) {
         throw new Error('Failed to resolve CID')
       }
 
-      expect(resolvedCid.cid.toString()).to.equal(cid.toString())
+      expect(resolveResult.cid.toString()).to.equal(cid.toString())
     })
   })
 })

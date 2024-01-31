@@ -3,6 +3,7 @@
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
+import { base36 } from 'multiformats/bases/base36'
 import { CID } from 'multiformats/cid'
 import Sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
@@ -66,5 +67,41 @@ describe('publish', () => {
     })
 
     expect(onProgress).to.have.property('called', true)
+  })
+
+  it('should publish recursively', async () => {
+    const key = await createEd25519PeerId()
+    const record = await name.publish(key, cid, {
+      offline: true
+    })
+
+    expect(record.value).to.equal(`/ipfs/${cid.toV1().toString()}`)
+
+    const recursiveKey = await createEd25519PeerId()
+    const recursiveRecord = await name.publish(recursiveKey, key, {
+      offline: true
+    })
+
+    expect(recursiveRecord.value).to.equal(`/ipns/${key.toCID().toString(base36)}`)
+
+    const recursiveResult = await name.resolve(recursiveKey)
+    expect(recursiveResult.cid.toString()).to.equal(cid.toV1().toString())
+  })
+
+  it('should publish record with a path', async () => {
+    const path = '/foo/bar/baz'
+    const fullPath = `/ipfs/${cid}/${path}`
+
+    const key = await createEd25519PeerId()
+    const record = await name.publish(key, fullPath, {
+      offline: true
+    })
+
+    expect(record.value).to.equal(fullPath)
+
+    const result = await name.resolve(key)
+
+    expect(result.cid.toString()).to.equal(cid.toString())
+    expect(result.path).to.equal(path)
   })
 })

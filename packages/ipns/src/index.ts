@@ -7,7 +7,7 @@
  *
  * With {@link IPNSRouting} routers:
  *
- * ```typescript
+ * ```TypeScript
  * import { createHelia } from 'helia'
  * import { ipns } from '@helia/ipns'
  * import { unixfs } from '@helia/unixfs'
@@ -27,7 +27,78 @@
  * await name.publish(peerId, cid)
  *
  * // resolve the name
- * const cid = name.resolve(peerId)
+ * const result = name.resolve(peerId)
+ *
+ * console.info(result.cid, result.path)
+ * ```
+ *
+ * @example Publishing a recursive record
+ *
+ * A recursive record is a one that points to another record rather than to a
+ * value.
+ *
+ * ```TypeScript
+ * import { createHelia } from 'helia'
+ * import { ipns } from '@helia/ipns'
+ * import { unixfs } from '@helia/unixfs'
+ *
+ * const helia = await createHelia()
+ * const name = ipns(helia)
+ *
+ * // create a public key to publish as an IPNS name
+ * const keyInfo = await helia.libp2p.services.keychain.createKey('my-key')
+ * const peerId = await helia.libp2p.services.keychain.exportPeerId(keyInfo.name)
+ *
+ * // store some data to publish
+ * const fs = unixfs(helia)
+ * const cid = await fs.add(Uint8Array.from([0, 1, 2, 3, 4]))
+ *
+ * // publish the name
+ * await name.publish(peerId, cid)
+ *
+ * // create another public key to re-publish the original record
+ * const recursiveKeyInfo = await helia.libp2p.services.keychain.createKey('my-recursive-key')
+ * const recursivePeerId = await helia.libp2p.services.keychain.exportPeerId(recursiveKeyInfo.name)
+ *
+ * // publish the recursive name
+ * await name.publish(recursivePeerId, peerId)
+ *
+ * // resolve the name recursively - it resolves until a CID is found
+ * const result = name.resolve(recursivePeerId)
+ * console.info(result.cid.toString() === cid.toString()) // true
+ * ```
+ *
+ * @example Publishing a record with a path
+ *
+ * It is possible to publish CIDs with an associated path.
+ *
+ * ```TypeScript
+ * import { createHelia } from 'helia'
+ * import { ipns } from '@helia/ipns'
+ * import { unixfs } from '@helia/unixfs'
+ *
+ * const helia = await createHelia()
+ * const name = ipns(helia)
+ *
+ * // create a public key to publish as an IPNS name
+ * const keyInfo = await helia.libp2p.services.keychain.createKey('my-key')
+ * const peerId = await helia.libp2p.services.keychain.exportPeerId(keyInfo.name)
+ *
+ * // store some data to publish
+ * const fs = unixfs(helia)
+ * const fileCid = await fs.add(Uint8Array.from([0, 1, 2, 3, 4]))
+ *
+ * // store the file in a directory
+ * const dirCid = await fs.mkdir()
+ * const finalDirCid = await fs.cp(fileCid, dirCid, '/foo.txt')
+ *
+ * // publish the name
+ * await name.publish(peerId, `/ipfs/${finalDirCid}/foo.txt)
+ *
+ * // resolve the name
+ * const result = name.resolve(peerId)
+ *
+ * console.info(result.cid, result.path) // QmFoo.. 'foo.txt'
  * ```
  *
  * @example Using custom PubSub router
@@ -46,7 +117,7 @@
  * and multiple peers are listening on the topic(s), otherwise update messages
  * may fail to be published with "Insufficient peers" errors.
  *
- * ```typescript
+ * ```TypeScript
  * import { createHelia, libp2pDefaults } from 'helia'
  * import { ipns } from '@helia/ipns'
  * import { pubsub } from '@helia/ipns/routing'
@@ -77,14 +148,14 @@
  * await name.publish(peerId, cid)
  *
  * // resolve the name
- * const {cid, path} = name.resolve(peerId)
+ * const { cid, path } = name.resolve(peerId)
  * ```
  *
  * @example Using custom DNS over HTTPS resolvers
  *
  * With default {@link DNSResolver} resolvers:
  *
- * ```typescript
+ * ```TypeScript
  * import { createHelia } from 'helia'
  * import { ipns } from '@helia/ipns'
  * import { unixfs } from '@helia/unixfs'
@@ -97,14 +168,14 @@
  *  ]
  * })
  *
- * const {cid, path} = name.resolveDns('some-domain-with-dnslink-entry.com')
+ * const { cid, path } = name.resolveDns('some-domain-with-dnslink-entry.com')
  * ```
  *
  * @example Resolving a domain with a dnslink entry
  *
  * Calling `resolveDns` with the `@helia/ipns` instance:
  *
- * ```typescript
+ * ```TypeScript
  * // resolve a CID from a TXT record in a DNS zone file, using the default
  * // resolver for the current platform eg:
  * // > dig _dnslink.ipfs.io TXT
@@ -114,7 +185,7 @@
  * // ;; ANSWER SECTION:
  * // _dnslink.website.ipfs.io.  60     IN      TXT     "dnslink=/ipfs/QmWebsite"
  *
- * const {cid, path} = name.resolveDns('ipfs.io')
+ * const { cid, path } = name.resolveDns('ipfs.io')
  *
  * console.info(cid)
  * // QmWebsite
@@ -128,11 +199,11 @@
  *
  * If this is a concern, use the DNS-JSON-Over-HTTPS resolver instead.
  *
- * ```typescript
+ * ```TypeScript
  * // use DNS-Over-HTTPS
  * import { dnsOverHttps } from '@helia/ipns/dns-resolvers'
  *
- * const {cid, path} = name.resolveDns('ipfs.io', {
+ * const { cid, path } = name.resolveDns('ipfs.io', {
  *   resolvers: [
  *     dnsOverHttps('https://mozilla.cloudflare-dns.com/dns-query')
  *   ]
@@ -144,11 +215,11 @@
  * DNS-JSON-Over-HTTPS resolvers use the RFC 8427 `application/dns-json` and can
  * result in a smaller browser bundle due to the response being plain JSON.
  *
- * ```typescript
+ * ```TypeScript
  * // use DNS-JSON-Over-HTTPS
  * import { dnsJsonOverHttps } from '@helia/ipns/dns-resolvers'
  *
- * const {cid, path} = name.resolveDns('ipfs.io', {
+ * const { cid, path } = name.resolveDns('ipfs.io', {
  *   resolvers: [
  *     dnsJsonOverHttps('https://mozilla.cloudflare-dns.com/dns-query')
  *   ]
@@ -277,7 +348,7 @@ export interface IPNS {
    *
    * If the value is a PeerId, a recursive IPNS record will be created.
    */
-  publish(key: PeerId, value: CID | PeerId, options?: PublishOptions): Promise<IPNSRecord>
+  publish(key: PeerId, value: CID | PeerId | string, options?: PublishOptions): Promise<IPNSRecord>
 
   /**
    * Accepts a public key formatted as a libp2p PeerID and resolves the IPNS record
@@ -318,7 +389,7 @@ class DefaultIPNS implements IPNS {
     this.defaultResolvers = resolvers.length > 0 ? resolvers : [defaultResolver()]
   }
 
-  async publish (key: PeerId, value: CID | PeerId, options: PublishOptions = {}): Promise<IPNSRecord> {
+  async publish (key: PeerId, value: CID | PeerId | string, options: PublishOptions = {}): Promise<IPNSRecord> {
     try {
       let sequenceNumber = 1n
       const routingKey = peerIdToRoutingKey(key)
