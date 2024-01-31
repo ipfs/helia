@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/ipfs/helia/compare/block-brokers-v2.0.0...block-brokers-v2.0.1) (2024-01-31)
+
+
+### Bug Fixes
+
+* @helia/block-brokers gateways uses path gateways ([#374](https://github.com/ipfs/helia/issues/374)) ([94b0cd1](https://github.com/ipfs/helia/commit/94b0cd162ce864d44726a1d486389b0a1fdd3efc))
+
 ## [2.0.0](https://github.com/ipfs/helia/compare/block-brokers-v1.0.0...block-brokers-v2.0.0) (2024-01-24)
 
 

@@ -1,17 +1,17 @@
 {
-  "packages/block-brokers": "2.0.0",
+  "packages/block-brokers": "2.0.1",
   "packages/car": "3.0.0",
   "packages/dag-cbor": "3.0.0",
   "packages/dag-json": "3.0.0",
-  "packages/helia": "4.0.0",
+  "packages/helia": "4.0.1",
   "packages/interface": "4.0.0",
-  "packages/interop": "4.0.0",
-  "packages/ipns": "5.0.0",
+  "packages/interop": "5.0.0",
+  "packages/ipns": "6.0.0",
   "packages/json": "3.0.0",
   "packages/mfs": "3.0.0",
   "packages/strings": "3.0.0",
   "packages/unixfs": "3.0.0",
   "packages/utils": "0.0.1",
-  "packages/http": "1.0.0",
+  "packages/http": "1.0.1",
   "packages/routers": "1.0.0"
 }
