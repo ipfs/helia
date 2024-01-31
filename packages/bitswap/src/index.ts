@@ -68,7 +68,7 @@ export interface CreateSessionOptions extends AbortOptions, ProgressOptions<Bits
 
   /**
    * After this many providers for the root CID have been found, stop searching
-   * for more providers.
+   * for more providers
    *
    * @default 3
    */
@@ -76,11 +76,18 @@ export interface CreateSessionOptions extends AbortOptions, ProgressOptions<Bits
 
   /**
    * If true, query connected peers before searching for providers in the
-   * routing.
+   * routing
    *
    * @default true
    */
   queryConnectedPeers?: boolean
+
+  /**
+   * If true, search for providers in the routing to query for the root CID
+   *
+   * @default true
+   */
+  queryRoutingPeers?: boolean
 
   /**
    * The priority to use when querying availability of the root CID

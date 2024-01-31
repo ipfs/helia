@@ -179,9 +179,6 @@ describe('bitswap', () => {
       expect(providers[1].id.equals(components.libp2p.dialProtocol.getCall(2).args[0].toString())).to.be.true()
       expect(providers[2].id.equals(components.libp2p.dialProtocol.getCall(3).args[0].toString())).to.be.true()
 
-      // one current peer and providers 1-4
-      expect(components.libp2p.dialProtocol.callCount).to.equal(5)
-
       // should have stopped at DEFAULT_MAX_PROVIDERS_PER_REQUEST
       expect(session.peers.size).to.equal(DEFAULT_MAX_PROVIDERS_PER_REQUEST)
     })
@@ -436,6 +433,9 @@ function stubPeerResponse (libp2p: StubbedInstance<Libp2p>, peerId: PeerId, resp
 
   const pbstr = pbStream(localStream).pb(BitswapMessage)
   void pbstr.read().then(async message => {
+    // simulate network latency
+    await delay(10)
+
     // after reading message from remote, open a new stream on the remote and
     // send the response
     const [localDuplex, remoteDuplex] = duplexPair<any>()

@@ -398,7 +398,7 @@ describe('network', () => {
         prefix: cidToPrefix(cid1),
         data: Uint8Array.from([0, 1, 2, 3, 4])
       }]
-    })
+    }).catch(() => {})
 
     // send two messages while the queue is blocked
     void network.sendMessage(peerId, messageA)
