@@ -1,5 +1,26 @@
 # Changelog
 
+## [5.0.0](https://github.com/ipfs/helia/compare/interop-v4.0.0...interop-v5.0.0) (2024-01-31)
+
+
+### ⚠ BREAKING CHANGES
+
+* to support paths in `@helia/ipns`, the return type of `ipns.resolve` is now `{ path: string, cid: CID }` instead of just `CID`
+
+### Features
+
+* support paths in @helia/ipns ([#410](https://github.com/ipfs/helia/issues/410)) ([ca8d5eb](https://github.com/ipfs/helia/commit/ca8d5ebdf587574c7fb84517b558226c3479caa9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^2.0.0 to ^2.0.1
+    * @helia/http bumped from ^1.0.0 to ^1.0.1
+    * @helia/ipns bumped from ^5.0.0 to ^6.0.0
+    * helia bumped from ^4.0.0 to ^4.0.1
+
 ## [4.0.0](https://github.com/ipfs/helia/compare/interop-v3.0.1...interop-v4.0.0) (2024-01-24)
 
 

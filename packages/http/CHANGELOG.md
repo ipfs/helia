@@ -1,5 +1,11 @@
 # Changelog
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^2.0.0 to ^2.0.1
+
 ## 1.0.0 (2024-01-24)
 
 
