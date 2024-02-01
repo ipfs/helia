@@ -19,7 +19,7 @@
  *
  * @example
  *
- * ```ts
+ * ```typescript
  * import { createVerifiedFetch } from '@helia/verified-fetch'
  *
  * const fetch = await createVerifiedFetch({
@@ -57,9 +57,12 @@
  * })
  * const response = await fetch('ipfs://bafyFoo') // CID for some image file
  * const blob = await response.blob()
+ * const image = document.createElement('img')
+ * image.src = URL.createObjectURL(blob)
+ * document.body.appendChild(image)
  * ```
  *
- * @example Using ipns protocol to fetch a video
+ * @example Using ipns protocol to stream a big file
  *
  * ```typescript
  * import { createVerifiedFetch } from '@helia/verified-fetch'
@@ -67,9 +70,9 @@
  * const fetch = await createVerifiedFetch({
  *  gateways: ['https://mygateway.example.net', 'https://trustless-gateway.link']
  * })
- * const response = await fetch('ipns://mydomain.com/path/to/video.mp4')
+ * const response = await fetch('ipns://mydomain.com/path/to/very-long-file.log')
  * const bigFileStreamReader = await response.body.getReader()
-``` 
+ * ```
  *
  * ### Configuration
  *
@@ -79,7 +82,7 @@
  *
  * The `@helia/http` module is currently in-progress, but the init options should be a subset of the `helia` module's init options. See https://github.com/ipfs/helia/issues/289 for more information.
  *
- * ```ts
+ * ```typescript
  * import { trustlessGateway } from '@helia/block-brokers'
  * import { createHeliaHTTP } from '@helia/http'
  * import { delegatedHTTPRouting } from '@helia/routers'
