@@ -6,13 +6,14 @@ import { type JSON as HeliaJSON } from '@helia/json'
 import { type UnixFS } from '@helia/unixfs'
 import { expect } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
+import { encode } from 'multiformats/codecs/raw'
 import sinon, { type SinonStub } from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { VerifiedFetch } from '../src/verified-fetch.js'
 import type { PathWalkerFn } from '../src/utils/walk-path'
 import type { Helia } from '@helia/interface'
+import type { Blockstore } from 'interface-blockstore'
 import type { UnixFSDirectory, UnixFSEntry } from 'ipfs-unixfs-exporter'
-
 const testCID = CID.parse('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
 const anyOnProgressMatcher = sinon.match.any as unknown as () => void
 
@@ -92,7 +93,9 @@ describe('VerifiedFetch', () => {
     let jsonStub: ReturnType<typeof stubInterface<HeliaJSON>>
     let dagCborStub: ReturnType<typeof stubInterface<DAGCBOR>>
     let pathWalkerStub: SinonStub<Parameters<PathWalkerFn>, ReturnType<PathWalkerFn>>
+    let blockstoreStub: ReturnType<typeof stubInterface<Blockstore>>
     beforeEach(async () => {
+      blockstoreStub = stubInterface<Blockstore>()
       unixfsStub = stubInterface<UnixFS>({
         cat: sinon.stub(),
         stat: sinon.stub()
@@ -111,7 +114,7 @@ describe('VerifiedFetch', () => {
       })
       pathWalkerStub = sinon.stub<Parameters<PathWalkerFn>, ReturnType<PathWalkerFn>>()
       verifiedFetch = new VerifiedFetch({
-        helia: stubInterface<Helia>(),
+        helia: stubInterface<Helia>({ blockstore: blockstoreStub }),
         ipns: stubInterface<IPNS>(),
         unixfs: unixfsStub,
         dagJson: dagJsonStub,
@@ -356,6 +359,23 @@ describe('VerifiedFetch', () => {
       expect(data).to.deep.equal({
         hello: 'world'
       })
+    })
+
+    it('should handle raw identity CID', async () => {
+      const abortSignal = new AbortController().signal
+      const onProgress = sinon.spy()
+      const cid = CID.parse('bafkqac3imvwgy3zao5xxe3de')
+      const textEncoder = new TextEncoder()
+      blockstoreStub.get.withArgs(cid).returns(Promise.resolve(encode(textEncoder.encode('hello world'))))
+      const resp = await verifiedFetch.fetch(cid, {
+        signal: abortSignal,
+        onProgress
+      })
+      expect(resp).to.be.ok()
+      // expect(resp.statusText).to.equal('OK')
+      expect(resp.status).to.equal(200)
+      const data = await resp.text()
+      expect(data).to.equal('hello world')
     })
   })
 })

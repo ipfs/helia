@@ -10,6 +10,7 @@ import { code as dagPbCode } from '@ipld/dag-pb'
 import { logger } from '@libp2p/logger'
 import { type CID } from 'multiformats/cid'
 import { code as jsonCode } from 'multiformats/codecs/json'
+import { decode, code as rawCode } from 'multiformats/codecs/raw'
 import { CustomProgressEvent } from 'progress-events'
 import { getStreamAndContentType } from './utils/get-stream-and-content-type.js'
 import { parseResource } from './utils/parse-resource.js'
@@ -172,6 +173,16 @@ export class VerifiedFetch {
     return response
   }
 
+  private async handleRaw ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
+    log.trace('fetching %c/%s', cid, path)
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: cid.toString(), path }))
+    const result = await this.helia.blockstore.get(cid)
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: cid.toString(), path }))
+    const response = new Response(decode(result), { status: 200 })
+    response.headers.set('content-type', 'application/octet-stream')
+    return response
+  }
+
   /**
    * Determines the format requested by the client, defaults to `null` if no format is requested.
    *
@@ -222,7 +233,8 @@ export class VerifiedFetch {
     [dagJsonCode]: this.handleDagJson,
     [dagPbCode]: this.handleDagPb,
     [jsonCode]: this.handleJson,
-    [dagCborCode]: this.handleDagCbor
+    [dagCborCode]: this.handleDagCbor,
+    [rawCode]: this.handleRaw
   }
 
   async fetch (resource: ResourceType, options?: VerifiedFetchOptionsMod): Promise<Response> {
