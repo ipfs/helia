@@ -171,12 +171,12 @@ export class VerifiedFetch {
   }
 
   /**
-   * Determines the format requested by the client, defaults to 'raw' for 'application/vnd.ipld.raw`
+   * Determines the format requested by the client, defaults to `null` if no format is requested.
    *
    * @see https://specs.ipfs.tech/http-gateways/path-gateway/#format-request-query-parameter
    * @default 'raw'
    */
-  private getFormat ({ headerFormat, queryFormat }: { headerFormat: string | null, queryFormat: string | null }): string {
+  private getFormat ({ headerFormat, queryFormat }: { headerFormat: string | null, queryFormat: string | null }): string | null {
     const formatMap: Record<string, string> = {
       'vnd.ipld.raw': 'raw',
       'vnd.ipld.car': 'car',
@@ -198,13 +198,15 @@ export class VerifiedFetch {
       return queryFormat
     }
 
-    return 'raw'
+    return null
   }
 
   /**
    * Map of format to specific handlers for that format.
+   * These format handlers should adjust the response headers as specified in https://specs.ipfs.tech/http-gateways/path-gateway/#response-headers
    */
   private readonly formatHandlers: Record<string, FetchHandlerFunction> = {
+    raw: async () => new Response('application/vnd.ipld.raw support is not implemented', { status: 501 }),
     car: this.handleIPLDCar,
     'ipns-record': this.handleIPNSRecord,
     tar: async () => new Response('application/x-tar support is not implemented', { status: 501 }),
@@ -226,10 +228,12 @@ export class VerifiedFetch {
     let response: Response | undefined
     const format = this.getFormat({ headerFormat: new Headers(options?.headers).get('accept'), queryFormat: query.format ?? null })
 
-    const formatHandler = this.formatHandlers[format]
+    if (format != null) {
+      const formatHandler = this.formatHandlers[format]
 
-    if (formatHandler != null) {
-      response = await formatHandler.call(this, { cid, path, options })
+      if (formatHandler != null) {
+        response = await formatHandler.call(this, { cid, path, options })
+      }
     }
 
     if (response == null) {
