@@ -129,25 +129,22 @@ export class VerifiedFetch {
       const dirCid = stat.cid
       // check for redirects
 
-      log.trace('found directory at %c/%s, looking for root files', cid, path)
-      for (const rootFilePath of ['index.html', 'index.htm', 'index.shtml']) {
-        try {
-          log.trace('looking for file: %c/%s', dirCid, rootFilePath)
-          options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: dirCid.toString(), path: rootFilePath }))
-          stat = await this.unixfs.stat(dirCid, {
-            path: rootFilePath,
-            signal: options?.signal,
-            onProgress: options?.onProgress
-          })
-          log.trace('found root file at %c/%s with cid %c', dirCid, rootFilePath, stat.cid)
-          path = rootFilePath
-
-          break
-        } catch (err: any) {
-          log('error loading path %c/%s', dirCid, rootFilePath, err)
-        } finally {
-          options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: dirCid.toString(), path: rootFilePath }))
-        }
+      log.trace('found directory at %c/%s, looking for index.html', cid, path)
+      const rootFilePath = 'index.html'
+      try {
+        log.trace('looking for file: %c/%s', dirCid, rootFilePath)
+        options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: dirCid.toString(), path: rootFilePath }))
+        stat = await this.unixfs.stat(dirCid, {
+          path: rootFilePath,
+          signal: options?.signal,
+          onProgress: options?.onProgress
+        })
+        log.trace('found root file at %c/%s with cid %c', dirCid, rootFilePath, stat.cid)
+        path = rootFilePath
+      } catch (err: any) {
+        log('error loading path %c/%s', dirCid, rootFilePath, err)
+      } finally {
+        options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: dirCid.toString(), path: rootFilePath }))
       }
     }
 

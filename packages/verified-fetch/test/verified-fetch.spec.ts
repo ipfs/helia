@@ -160,9 +160,7 @@ describe('VerifiedFetch', () => {
         blocks: 1
       }))
       // next stat attempts to find root file index.html, let's make it fail 2 times so we can see that it tries the other root files
-      unixfsStub.stat.withArgs(testCID, { path: 'index.html', signal, onProgress: anyOnProgressMatcher }).onCall(0).throws(new Error('not found'))
-      unixfsStub.stat.withArgs(testCID, { path: 'index.htm', signal, onProgress: anyOnProgressMatcher }).onCall(0).throws(new Error('not found'))
-      unixfsStub.stat.withArgs(testCID, { path: 'index.shtml', signal, onProgress: anyOnProgressMatcher }).onCall(0)
+      unixfsStub.stat.withArgs(testCID, { path: 'index.html', signal, onProgress: anyOnProgressMatcher }).onCall(0)
         .returns(Promise.resolve({
           cid: CID.parse('Qmc3zqKcwzbbvw3MQm3hXdg8BQoFjGdZiGdAfXAyAGGdLi'),
           size: 3,
@@ -179,15 +177,13 @@ describe('VerifiedFetch', () => {
         }
       })
       const resp = await verifiedFetch.fetch(testCID, { onProgress })
-      expect(unixfsStub.stat.callCount).to.equal(4)
+      expect(unixfsStub.stat.callCount).to.equal(2)
       expect(unixfsStub.stat.getCall(0).args[1]).to.have.property('path', '')
       expect(unixfsStub.stat.getCall(1).args[1]).to.have.property('path', 'index.html')
-      expect(unixfsStub.stat.getCall(2).args[1]).to.have.property('path', 'index.htm')
-      expect(unixfsStub.stat.getCall(3).args[1]).to.have.property('path', 'index.shtml')
       expect(unixfsStub.cat.callCount).to.equal(1)
       expect(unixfsStub.cat.withArgs(testCID).callCount).to.equal(0)
       expect(unixfsStub.cat.withArgs(CID.parse('Qmc3zqKcwzbbvw3MQm3hXdg8BQoFjGdZiGdAfXAyAGGdLi'), sinon.match.any).callCount).to.equal(1)
-      expect(onProgress.callCount).to.equal(11)
+      expect(onProgress.callCount).to.equal(7)
       const onProgressEvents = onProgress.getCalls().map(call => call.args[0])
       expect(onProgressEvents[0]).to.include({ type: 'verified-fetch:request:start' }).and.to.have.property('detail').that.deep.equals({
         cid: testCID.toString(),
@@ -197,11 +193,11 @@ describe('VerifiedFetch', () => {
         cid: testCID.toString(),
         path: ''
       })
-      expect(onProgressEvents[9]).to.include({ type: 'verified-fetch:request:end' }).and.to.have.property('detail').that.deep.equals({
+      expect(onProgressEvents[5]).to.include({ type: 'verified-fetch:request:end' }).and.to.have.property('detail').that.deep.equals({
         cid: 'Qmc3zqKcwzbbvw3MQm3hXdg8BQoFjGdZiGdAfXAyAGGdLi',
         path: ''
       })
-      expect(onProgressEvents[10]).to.include({ type: 'verified-fetch:request:progress:chunk' }).and.to.have.property('detail').that.is.undefined()
+      expect(onProgressEvents[6]).to.include({ type: 'verified-fetch:request:progress:chunk' }).and.to.have.property('detail').that.is.undefined()
       expect(resp).to.be.ok()
       expect(resp.status).to.equal(200)
       const data = await resp.arrayBuffer()
@@ -224,14 +220,10 @@ describe('VerifiedFetch', () => {
       }))
 
       unixfsStub.stat.withArgs(testCID, { path: 'index.html', signal, onProgress: anyOnProgressMatcher }).onCall(0).throws(new Error('not found'))
-      unixfsStub.stat.withArgs(testCID, { path: 'index.htm', signal, onProgress: anyOnProgressMatcher }).onCall(0).throws(new Error('not found'))
-      unixfsStub.stat.withArgs(testCID, { path: 'index.shtml', signal, onProgress: anyOnProgressMatcher }).onCall(0).throws(new Error('not found'))
       const resp = await verifiedFetch.fetch(testCID)
 
-      expect(unixfsStub.stat.withArgs(testCID).callCount).to.equal(4)
+      expect(unixfsStub.stat.withArgs(testCID).callCount).to.equal(2)
       expect(unixfsStub.stat.withArgs(testCID, { path: 'index.html', signal, onProgress: anyOnProgressMatcher }).callCount).to.equal(1)
-      expect(unixfsStub.stat.withArgs(testCID, { path: 'index.htm', signal, onProgress: anyOnProgressMatcher }).callCount).to.equal(1)
-      expect(unixfsStub.stat.withArgs(testCID, { path: 'index.shtml', signal, onProgress: anyOnProgressMatcher }).callCount).to.equal(1)
       expect(unixfsStub.cat.withArgs(testCID).callCount).to.equal(0)
       expect(onProgress.callCount).to.equal(0)
       expect(resp).to.be.ok()
