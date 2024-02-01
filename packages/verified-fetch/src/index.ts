@@ -68,7 +68,8 @@
  *  gateways: ['http://mygateway.info', 'http://trustless-gateway.link']
  * })
  * const response = await fetch('ipns://mydomain.com/path/to/video.mp4')
- * const videoStreamReader = await response.body.getReader()
+ * const bigFileStreamReader = await response.body.getReader()
+``` 
  *
  * ### Configuration
  *
