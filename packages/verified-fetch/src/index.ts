@@ -23,7 +23,7 @@
  * import { createVerifiedFetch } from '@helia/verified-fetch'
  *
  * const fetch = await createVerifiedFetch({
- *  gateways: ['mygateway.info', 'trustless-gateway.link']
+ *  gateways: ['https://mygateway.example.net', 'https://trustless-gateway.link']
  *})
  *
  * const resp = await fetch('ipfs://bafy...')
@@ -39,7 +39,7 @@
  * import { CID } from 'multiformats/cid'
  *
  * const fetch = await createVerifiedFetch({
- *  gateways: ['http://mygateway.info', 'http://trustless-gateway.link']
+ *  gateways: ['https://mygateway.example.net', 'https://trustless-gateway.link']
  * })
  *
  * const cid = CID.parse('bafyFoo') // some image file
@@ -53,7 +53,7 @@
  * import { createVerifiedFetch } from '@helia/verified-fetch'
  *
  * const fetch = await createVerifiedFetch({
- *  gateways: ['http://mygateway.info', 'http://trustless-gateway.link']
+ *  gateways: ['https://mygateway.example.net', 'https://trustless-gateway.link']
  * })
  * const response = await fetch('ipfs://bafyFoo') // CID for some image file
  * const blob = await response.blob()
@@ -65,7 +65,7 @@
  * import { createVerifiedFetch } from '@helia/verified-fetch'
  *
  * const fetch = await createVerifiedFetch({
- *  gateways: ['http://mygateway.info', 'http://trustless-gateway.link']
+ *  gateways: ['https://mygateway.example.net', 'https://trustless-gateway.link']
  * })
  * const response = await fetch('ipns://mydomain.com/path/to/video.mp4')
  * const bigFileStreamReader = await response.body.getReader()
@@ -89,7 +89,7 @@
  *   await createHeliaHTTP({
  *       blockBrokers: [
  *         trustlessGateway({
- *           gateways: ['http://mygateway.info', 'http://trustless-gateway.link']
+ *           gateways: ['https://mygateway.example.net', 'https://trustless-gateway.link']
  *         })
  *       ],
  *       routers: ['http://delegated-ipfs.dev'].map((routerUrl) => delegatedHTTPRouting(routerUrl))
