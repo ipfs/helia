@@ -6,10 +6,12 @@ import { type JSON as HeliaJSON } from '@helia/json'
 import { type UnixFS } from '@helia/unixfs'
 import { expect } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
-import sinon from 'sinon'
+import sinon, { type SinonStub } from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { VerifiedFetch } from '../src/verified-fetch.js'
+import type { PathWalkerFn } from '../src/utils/walk-path'
 import type { Helia } from '@helia/interface'
+import type { UnixFSDirectory, UnixFSEntry } from 'ipfs-unixfs-exporter'
 
 const testCID = CID.parse('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
 const anyOnProgressMatcher = sinon.match.any as unknown as () => void
@@ -34,7 +36,7 @@ describe('VerifiedFetch', () => {
     expect(startStub.withArgs().callCount).to.equal(1)
   })
 
-  describe('Not implemented', () => {
+  describe('Format not implemented', () => {
     let verifiedFetch: InstanceType<typeof VerifiedFetch>
     before(async () => {
       verifiedFetch = new VerifiedFetch({
@@ -56,6 +58,7 @@ describe('VerifiedFetch', () => {
     })
 
     const formatsAndAcceptHeaders = [
+      ['raw', 'application/vnd.ipld.raw'],
       ['car', 'application/vnd.ipld.car'],
       ['tar', 'application/x-tar'],
       ['dag-json', 'application/vnd.ipld.dag-json'],
@@ -82,12 +85,13 @@ describe('VerifiedFetch', () => {
     }
   })
 
-  describe('vnd.ipld.raw', () => {
+  describe('Implicit format', () => {
     let verifiedFetch: InstanceType<typeof VerifiedFetch>
     let unixfsStub: ReturnType<typeof stubInterface<UnixFS>>
     let dagJsonStub: ReturnType<typeof stubInterface<DAGJSON>>
     let jsonStub: ReturnType<typeof stubInterface<HeliaJSON>>
     let dagCborStub: ReturnType<typeof stubInterface<DAGCBOR>>
+    let pathWalkerStub: SinonStub<Parameters<PathWalkerFn>, ReturnType<PathWalkerFn>>
     beforeEach(async () => {
       unixfsStub = stubInterface<UnixFS>({
         cat: sinon.stub(),
@@ -105,30 +109,35 @@ describe('VerifiedFetch', () => {
         // @ts-expect-error - stub errors
         get: sinon.stub()
       })
+      pathWalkerStub = sinon.stub<Parameters<PathWalkerFn>, ReturnType<PathWalkerFn>>()
       verifiedFetch = new VerifiedFetch({
         helia: stubInterface<Helia>(),
         ipns: stubInterface<IPNS>(),
         unixfs: unixfsStub,
         dagJson: dagJsonStub,
         json: jsonStub,
-        dagCbor: dagCborStub
+        dagCbor: dagCborStub,
+        pathWalker: pathWalkerStub
       })
     })
     afterEach(async () => {
       await verifiedFetch.stop()
     })
 
-    it('should return raw data for vnd.ipld.raw', async () => {
+    it('should return raw data', async () => {
       const finalRootFileContent = new Uint8Array([0x01, 0x02, 0x03])
-      unixfsStub.stat.returns(Promise.resolve({
-        cid: testCID,
-        size: 3,
-        type: 'raw',
-        fileSize: BigInt(3),
-        dagSize: BigInt(1),
-        localFileSize: BigInt(3),
-        localDagSize: BigInt(1),
-        blocks: 1
+      pathWalkerStub.returns(Promise.resolve({
+        ipfsRoots: [testCID.toString()],
+        terminalElement: {
+          cid: testCID,
+          size: BigInt(3),
+          depth: 1,
+          content: async function * () { yield finalRootFileContent },
+          name: 'index.html',
+          path: '',
+          type: 'raw',
+          node: finalRootFileContent
+        }
       }))
       unixfsStub.cat.returns({
         [Symbol.asyncIterator]: async function * () {
@@ -136,8 +145,8 @@ describe('VerifiedFetch', () => {
         }
       })
       const resp = await verifiedFetch.fetch(testCID)
-      expect(unixfsStub.stat.called).to.be.true()
-      expect(unixfsStub.cat.called).to.be.true()
+      expect(pathWalkerStub.callCount).to.equal(1)
+      expect(unixfsStub.cat.callCount).to.equal(1)
       expect(resp).to.be.ok()
       expect(resp.status).to.equal(200)
       const data = await resp.arrayBuffer()
@@ -148,18 +157,24 @@ describe('VerifiedFetch', () => {
       const finalRootFileContent = new Uint8Array([0x01, 0x02, 0x03])
       const signal = sinon.match.any as unknown as AbortSignal
       const onProgress = sinon.spy()
-      // first stat returns a directory
-      unixfsStub.stat.onCall(0).returns(Promise.resolve({
-        cid: testCID,
-        size: 3,
-        type: 'directory',
-        fileSize: BigInt(3),
-        dagSize: BigInt(1),
-        localFileSize: BigInt(3),
-        localDagSize: BigInt(1),
-        blocks: 1
+      // @ts-expect-error - stubbed type is incorrect
+      pathWalkerStub.onCall(0).returns(Promise.resolve({
+        ipfsRoots: [testCID.toString()],
+        terminalElement: {
+          cid: testCID,
+          size: BigInt(3),
+          depth: 1,
+          // @ts-expect-error - stubbed type is incorrect
+          content: sinon.stub() as unknown as AsyncGenerator<UnixFSEntry, void, unknown>,
+          // @ts-expect-error - stubbed type is incorrect
+          unixfs: {} as unknown as UnixFS,
+          name: 'dirName',
+          path: '',
+          type: 'directory',
+          // @ts-expect-error - stubbed type is incorrect
+          node: {}
+        } satisfies UnixFSDirectory
       }))
-      // next stat attempts to find root file index.html, let's make it fail 2 times so we can see that it tries the other root files
       unixfsStub.stat.withArgs(testCID, { path: 'index.html', signal, onProgress: anyOnProgressMatcher }).onCall(0)
         .returns(Promise.resolve({
           cid: CID.parse('Qmc3zqKcwzbbvw3MQm3hXdg8BQoFjGdZiGdAfXAyAGGdLi'),
@@ -176,28 +191,33 @@ describe('VerifiedFetch', () => {
           yield finalRootFileContent
         }
       })
+      unixfsStub.cat.returns({
+        [Symbol.asyncIterator]: async function * () {
+          yield finalRootFileContent
+        }
+      })
       const resp = await verifiedFetch.fetch(testCID, { onProgress })
-      expect(unixfsStub.stat.callCount).to.equal(2)
-      expect(unixfsStub.stat.getCall(0).args[1]).to.have.property('path', '')
-      expect(unixfsStub.stat.getCall(1).args[1]).to.have.property('path', 'index.html')
+      expect(unixfsStub.stat.callCount).to.equal(1)
+      expect(pathWalkerStub.callCount).to.equal(1)
+      expect(pathWalkerStub.getCall(0).args[1]).to.equal(`${testCID.toString()}/`)
       expect(unixfsStub.cat.callCount).to.equal(1)
       expect(unixfsStub.cat.withArgs(testCID).callCount).to.equal(0)
       expect(unixfsStub.cat.withArgs(CID.parse('Qmc3zqKcwzbbvw3MQm3hXdg8BQoFjGdZiGdAfXAyAGGdLi'), sinon.match.any).callCount).to.equal(1)
-      expect(onProgress.callCount).to.equal(7)
+      expect(onProgress.callCount).to.equal(5)
       const onProgressEvents = onProgress.getCalls().map(call => call.args[0])
       expect(onProgressEvents[0]).to.include({ type: 'verified-fetch:request:start' }).and.to.have.property('detail').that.deep.equals({
         cid: testCID.toString(),
-        path: ''
+        path: 'index.html'
       })
       expect(onProgressEvents[1]).to.include({ type: 'verified-fetch:request:end' }).and.to.have.property('detail').that.deep.equals({
         cid: testCID.toString(),
-        path: ''
+        path: 'index.html'
       })
-      expect(onProgressEvents[5]).to.include({ type: 'verified-fetch:request:end' }).and.to.have.property('detail').that.deep.equals({
+      expect(onProgressEvents[3]).to.include({ type: 'verified-fetch:request:end' }).and.to.have.property('detail').that.deep.equals({
         cid: 'Qmc3zqKcwzbbvw3MQm3hXdg8BQoFjGdZiGdAfXAyAGGdLi',
         path: ''
       })
-      expect(onProgressEvents[6]).to.include({ type: 'verified-fetch:request:progress:chunk' }).and.to.have.property('detail').that.is.undefined()
+      expect(onProgressEvents[4]).to.include({ type: 'verified-fetch:request:progress:chunk' }).and.to.have.property('detail').that.is.undefined()
       expect(resp).to.be.ok()
       expect(resp.status).to.equal(200)
       const data = await resp.arrayBuffer()
@@ -207,22 +227,28 @@ describe('VerifiedFetch', () => {
     it('should not call unixfs.cat if root file is not found', async () => {
       const signal = sinon.match.any as unknown as AbortSignal
       const onProgress = sinon.spy()
-      // first stat returns a directory
-      unixfsStub.stat.onCall(0).returns(Promise.resolve({
-        cid: testCID,
-        size: 3,
-        type: 'directory',
-        fileSize: BigInt(3),
-        dagSize: BigInt(1),
-        localFileSize: BigInt(3),
-        localDagSize: BigInt(1),
-        blocks: 1
+      // @ts-expect-error - stubbed type is incorrect
+      pathWalkerStub.onCall(0).returns(Promise.resolve({
+        ipfsRoots: [testCID.toString()],
+        terminalElement: {
+          cid: testCID,
+          size: BigInt(3),
+          depth: 1,
+          // @ts-expect-error - stubbed type is incorrect
+          content: sinon.stub() as unknown as AsyncGenerator<UnixFSEntry, void, unknown>,
+          // @ts-expect-error - stubbed type is incorrect
+          unixfs: {} as unknown as UnixFS,
+          name: 'dirName',
+          path: '',
+          type: 'directory',
+          // @ts-expect-error - stubbed type is incorrect
+          node: {}
+        } satisfies UnixFSDirectory
       }))
 
       unixfsStub.stat.withArgs(testCID, { path: 'index.html', signal, onProgress: anyOnProgressMatcher }).onCall(0).throws(new Error('not found'))
       const resp = await verifiedFetch.fetch(testCID)
 
-      expect(unixfsStub.stat.withArgs(testCID).callCount).to.equal(2)
       expect(unixfsStub.stat.withArgs(testCID, { path: 'index.html', signal, onProgress: anyOnProgressMatcher }).callCount).to.equal(1)
       expect(unixfsStub.cat.withArgs(testCID).callCount).to.equal(0)
       expect(onProgress.callCount).to.equal(0)

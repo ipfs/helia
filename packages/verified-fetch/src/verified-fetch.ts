@@ -3,7 +3,7 @@ import { dagJson as heliaDagJson, type DAGJSON } from '@helia/dag-json'
 import { ipns as heliaIpns, type IPNS } from '@helia/ipns'
 import { dnsJsonOverHttps } from '@helia/ipns/dns-resolvers'
 import { json as heliaJson, type JSON as HeliaJSON } from '@helia/json'
-import { unixfs as heliaUnixFs, type UnixFS as HeliaUnixFs } from '@helia/unixfs'
+import { unixfs as heliaUnixFs, type UnixFS as HeliaUnixFs, type UnixFSStats } from '@helia/unixfs'
 import { code as dagCborCode } from '@ipld/dag-cbor'
 import { code as dagJsonCode } from '@ipld/dag-json'
 import { code as dagPbCode } from '@ipld/dag-pb'
@@ -13,8 +13,10 @@ import { code as jsonCode } from 'multiformats/codecs/json'
 import { CustomProgressEvent } from 'progress-events'
 import { getStreamAndContentType } from './utils/get-stream-and-content-type.js'
 import { parseResource } from './utils/parse-resource.js'
+import { walkPath, type PathWalkerFn } from './utils/walk-path.js'
 import type { CIDDetail, ResourceType, VerifiedFetchOptionsMod } from './index.js'
 import type { Helia } from '@helia/interface'
+import type { UnixFSEntry } from 'ipfs-unixfs-exporter'
 
 const log = logger('helia:verified-fetch')
 
@@ -25,6 +27,7 @@ interface VerifiedFetchConstructorComponents {
   dagJson?: DAGJSON
   json?: HeliaJSON
   dagCbor?: DAGCBOR
+  pathWalker?: PathWalkerFn
 }
 
 /**
@@ -35,8 +38,15 @@ interface VerifiedFetchConstructorOptions {
 
 }
 
+interface FetchHandlerFunctionArg {
+  cid: CID
+  path: string
+  terminalElement?: UnixFSEntry
+  options?: VerifiedFetchOptionsMod
+}
+
 interface FetchHandlerFunction {
-  (options: { cid: CID, path: string, options?: VerifiedFetchOptionsMod }): Promise<Response>
+  (options: FetchHandlerFunctionArg): Promise<Response>
 }
 
 export class VerifiedFetch {
@@ -46,8 +56,9 @@ export class VerifiedFetch {
   private readonly dagJson: DAGJSON
   private readonly dagCbor: DAGCBOR
   private readonly json: HeliaJSON
+  private readonly pathWalker: PathWalkerFn
 
-  constructor ({ helia, ipns, unixfs, dagJson, json, dagCbor }: VerifiedFetchConstructorComponents, options?: VerifiedFetchConstructorOptions) {
+  constructor ({ helia, ipns, unixfs, dagJson, json, dagCbor, pathWalker }: VerifiedFetchConstructorComponents, options?: VerifiedFetchConstructorOptions) {
     this.helia = helia
     this.ipns = ipns ?? heliaIpns(helia, {
       resolvers: [
@@ -59,24 +70,25 @@ export class VerifiedFetch {
     this.dagJson = dagJson ?? heliaDagJson(helia)
     this.json = json ?? heliaJson(helia)
     this.dagCbor = dagCbor ?? heliaDagCbor(helia)
+    this.pathWalker = pathWalker ?? walkPath
     log.trace('created VerifiedFetch instance')
   }
 
   // handle vnd.ipfs.ipns-record
-  private async handleIPNSRecord ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptionsMod }): Promise<Response> {
+  private async handleIPNSRecord ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
     const response = new Response('vnd.ipfs.ipns-record support is not implemented', { status: 501 })
     response.headers.set('X-Content-Type-Options', 'nosniff') // see https://specs.ipfs.tech/http-gateways/path-gateway/#x-content-type-options-response-header
     return response
   }
 
   // handle vnd.ipld.car
-  private async handleIPLDCar ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptionsMod }): Promise<Response> {
+  private async handleIPLDCar ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
     const response = new Response('vnd.ipld.car support is not implemented', { status: 501 })
     response.headers.set('X-Content-Type-Options', 'nosniff') // see https://specs.ipfs.tech/http-gateways/path-gateway/#x-content-type-options-response-header
     return response
   }
 
-  private async handleDagJson ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptionsMod }): Promise<Response> {
+  private async handleDagJson ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
     log.trace('fetching %c/%s', cid, path)
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: cid.toString(), path }))
     const result = await this.dagJson.get(cid, {
@@ -89,7 +101,7 @@ export class VerifiedFetch {
     return response
   }
 
-  private async handleJson ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptionsMod }): Promise<Response> {
+  private async handleJson ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
     log.trace('fetching %c/%s', cid, path)
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: cid.toString(), path }))
     const result: Record<any, any> = await this.json.get(cid, {
@@ -102,7 +114,7 @@ export class VerifiedFetch {
     return response
   }
 
-  private async handleDagCbor ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptionsMod }): Promise<Response> {
+  private async handleDagCbor ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
     log.trace('fetching %c/%s', cid, path)
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: cid.toString(), path }))
     const result = await this.dagCbor.get(cid, {
@@ -115,24 +127,16 @@ export class VerifiedFetch {
     return response
   }
 
-  private async handleDagPb ({ cid, path, options }: { cid: CID, path: string, options?: VerifiedFetchOptionsMod }): Promise<Response> {
+  private async handleDagPb ({ cid, path, options, terminalElement }: FetchHandlerFunctionArg): Promise<Response> {
     log.trace('fetching %c/%s', cid, path)
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: cid.toString(), path }))
-    let stat = await this.unixfs.stat(cid, {
-      path,
-      signal: options?.signal,
-      onProgress: options?.onProgress
-    })
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: cid.toString(), path }))
+    let resolvedCID = terminalElement?.cid ?? cid
+    let stat: UnixFSStats
+    if (terminalElement?.type === 'directory') {
+      const dirCid = terminalElement.cid
 
-    if (stat.type === 'directory') {
-      const dirCid = stat.cid
-      // check for redirects
-
-      log.trace('found directory at %c/%s, looking for index.html', cid, path)
       const rootFilePath = 'index.html'
       try {
-        log.trace('looking for file: %c/%s', dirCid, rootFilePath)
+        log.trace('found directory at %c/%s, looking for index.html', cid, path)
         options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: dirCid.toString(), path: rootFilePath }))
         stat = await this.unixfs.stat(dirCid, {
           path: rootFilePath,
@@ -141,27 +145,25 @@ export class VerifiedFetch {
         })
         log.trace('found root file at %c/%s with cid %c', dirCid, rootFilePath, stat.cid)
         path = rootFilePath
+        resolvedCID = stat.cid
+        // terminalElement = stat
       } catch (err: any) {
         log('error loading path %c/%s', dirCid, rootFilePath, err)
+        return new Response('Unable to find index.html for directory at given path. Support for directories with implicit root is not implemented', { status: 501 })
       } finally {
         options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: dirCid.toString(), path: rootFilePath }))
       }
     }
 
-    if (stat == null || stat.type === 'directory') {
-      log('Unable to find root file for directory at %c', cid)
-      return new Response('Support for directories with implicit root is not implemented', { status: 501 })
-    }
-
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: stat.cid.toString(), path: '' }))
-    const asyncIter = this.unixfs.cat(stat.cid, {
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: resolvedCID.toString(), path: '' }))
+    const asyncIter = this.unixfs.cat(resolvedCID, {
       signal: options?.signal,
       onProgress: options?.onProgress
     })
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: stat.cid.toString(), path: '' }))
-    log('got async iterator for %c/%s, stat: ', cid, path, stat)
-    // now we need to pipe the stream through a transform to unmarshal unixfs data
-    const { contentType, stream } = await getStreamAndContentType(asyncIter, path, {
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: resolvedCID.toString(), path: '' }))
+    log('got async iterator for %c/%s', cid, path)
+
+    const { contentType, stream } = await getStreamAndContentType(asyncIter, path ?? '', {
       onProgress: options?.onProgress
     })
     const response = new Response(stream, { status: 200 })
@@ -224,22 +226,38 @@ export class VerifiedFetch {
   }
 
   async fetch (resource: ResourceType, options?: VerifiedFetchOptionsMod): Promise<Response> {
-    const { cid, path, query } = await parseResource(resource, this.ipns, { onProgress: options?.onProgress })
+    const { path, query, ...rest } = await parseResource(resource, this.ipns, { onProgress: options?.onProgress })
+    const cid = rest.cid
     let response: Response | undefined
-    const format = this.getFormat({ headerFormat: new Headers(options?.headers).get('accept'), queryFormat: query.format ?? null })
 
+    const format = this.getFormat({ headerFormat: new Headers(options?.headers).get('accept'), queryFormat: query.format ?? null })
     if (format != null) {
+      // TODO: These should be handled last when they're returning something other than 501
       const formatHandler = this.formatHandlers[format]
 
       if (formatHandler != null) {
         response = await formatHandler.call(this, { cid, path, options })
+        if (response.status === 501) {
+          return response
+        }
       }
+    }
+
+    let terminalElement: UnixFSEntry | undefined
+    let ipfsRoots: string | undefined
+    try {
+      const pathDetails = await this.pathWalker(this.helia.blockstore, `${cid.toString()}/${path}`, options)
+      ipfsRoots = pathDetails.ipfsRoots.join(',')
+      terminalElement = pathDetails.terminalElement
+    } catch (err) {
+      log.error('Error walking path %s', path, err)
+      // return new Response(`Error walking path: ${(err as Error).message}`, { status: 500 })
     }
 
     if (response == null) {
       const codecHandler = this.codecHandlers[cid.code]
       if (codecHandler != null) {
-        response = await codecHandler.call(this, { cid, path, options })
+        response = await codecHandler.call(this, { cid, path, options, terminalElement })
       } else {
         return new Response(`Support for codec with code ${cid.code} is not yet implemented. Please open an issue at https://github.com/ipfs/helia/issues/new`, { status: 501 })
       }
@@ -248,7 +266,9 @@ export class VerifiedFetch {
     response.headers.set('etag', cid.toString()) // https://specs.ipfs.tech/http-gateways/path-gateway/#etag-response-header
     response.headers.set('cache-cotrol', 'public, max-age=29030400, immutable')
     response.headers.set('X-Ipfs-Path', resource.toString()) // https://specs.ipfs.tech/http-gateways/path-gateway/#x-ipfs-path-response-header
-    // response.headers.set('X-Ipfs-Roots', 'TODO') // https://specs.ipfs.tech/http-gateways/path-gateway/#x-ipfs-roots-response-header
+    if (ipfsRoots != null) {
+      response.headers.set('X-Ipfs-Roots', ipfsRoots) // https://specs.ipfs.tech/http-gateways/path-gateway/#x-ipfs-roots-response-header
+    }
     // response.headers.set('Content-Disposition', `TODO`) // https://specs.ipfs.tech/http-gateways/path-gateway/#content-disposition-response-header
 
     return response

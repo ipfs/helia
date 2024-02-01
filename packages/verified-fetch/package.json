@@ -71,6 +71,7 @@
     "@libp2p/logger": "^4.0.5",
     "@libp2p/peer-id": "^4.0.5",
     "hashlru": "^2.3.0",
+    "ipfs-unixfs-exporter": "^13.4.0",
     "mime-types": "^2.1.35",
     "multiformats": "^13.0.0",
     "progress-events": "^1.0.0"
