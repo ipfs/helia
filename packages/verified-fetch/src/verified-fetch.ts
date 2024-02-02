@@ -274,11 +274,11 @@ export class VerifiedFetch {
     }
 
     let terminalElement: UnixFSEntry | undefined
-    let ipfsRoots: string | undefined
+    let ipfsRoots: CID[] | undefined
 
     try {
       const pathDetails = await this.pathWalker(this.helia.blockstore, `${cid.toString()}/${path}`, options)
-      ipfsRoots = pathDetails.ipfsRoots.join(',')
+      ipfsRoots = pathDetails.ipfsRoots
       terminalElement = pathDetails.terminalElement
     } catch (err) {
       this.log.error('Error walking path %s', path, err)
@@ -300,7 +300,7 @@ export class VerifiedFetch {
     response.headers.set('X-Ipfs-Path', resource.toString()) // https://specs.ipfs.tech/http-gateways/path-gateway/#x-ipfs-path-response-header
 
     if (ipfsRoots != null) {
-      response.headers.set('X-Ipfs-Roots', ipfsRoots) // https://specs.ipfs.tech/http-gateways/path-gateway/#x-ipfs-roots-response-header
+      response.headers.set('X-Ipfs-Roots', ipfsRoots.map(cid => cid.toV1().toString()).join(',')) // https://specs.ipfs.tech/http-gateways/path-gateway/#x-ipfs-roots-response-header
     }
     // response.headers.set('Content-Disposition', `TODO`) // https://specs.ipfs.tech/http-gateways/path-gateway/#content-disposition-response-header
 

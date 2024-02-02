@@ -144,7 +144,7 @@ describe('@helia/verifed-fetch', () => {
     it('should return raw data', async () => {
       const finalRootFileContent = new Uint8Array([0x01, 0x02, 0x03])
       pathWalkerStub.returns(Promise.resolve({
-        ipfsRoots: [testCID.toString()],
+        ipfsRoots: [testCID],
         terminalElement: {
           cid: testCID,
           size: BigInt(3),
@@ -176,7 +176,7 @@ describe('@helia/verifed-fetch', () => {
       const onProgress = sinon.spy()
       // @ts-expect-error - stubbed type is incorrect
       pathWalkerStub.onCall(0).returns(Promise.resolve({
-        ipfsRoots: [testCID.toString()],
+        ipfsRoots: [testCID],
         terminalElement: {
           cid: testCID,
           size: BigInt(3),
@@ -249,7 +249,7 @@ describe('@helia/verifed-fetch', () => {
       const onProgress = sinon.spy()
       // @ts-expect-error - stubbed type is incorrect
       pathWalkerStub.onCall(0).returns(Promise.resolve({
-        ipfsRoots: [testCID.toString()],
+        ipfsRoots: [testCID],
         terminalElement: {
           cid: testCID,
           size: BigInt(3),

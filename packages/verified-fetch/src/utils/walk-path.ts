@@ -1,10 +1,11 @@
 import { walkPath as exporterWalk, type ExporterOptions, type ReadableStorage, type UnixFSEntry } from 'ipfs-unixfs-exporter'
+import type { CID } from 'multiformats/cid'
 
 export interface PathWalkerOptions extends ExporterOptions {
 
 }
 export interface PathWalkerResponse {
-  ipfsRoots: string[]
+  ipfsRoots: CID[]
   terminalElement: UnixFSEntry
 
 }
@@ -15,12 +16,12 @@ export interface PathWalkerFn {
 
 export async function walkPath (blockstore: ReadableStorage, path: string, options?: PathWalkerOptions): Promise<PathWalkerResponse> {
   const entries: UnixFSEntry[] = []
-  const ipfsRoots: string[] = []
+  const ipfsRoots: CID[] = []
   let terminalElement: UnixFSEntry | undefined
 
   for await (const entry of exporterWalk(path, blockstore, options)) {
     entries.push(entry)
-    ipfsRoots.push(entry.cid.toString())
+    ipfsRoots.push(entry.cid)
     terminalElement = entry
   }
 
