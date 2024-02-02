@@ -10,7 +10,6 @@ export async function getStreamAndContentType (iterator: AsyncIterable<Uint8Arra
   const log = logger.forComponent('helia:verified-fetch:get-stream-and-content-type')
   const reader = iterator[Symbol.asyncIterator]()
   const { value, done } = await reader.next()
-  options?.onProgress?.(new CustomProgressEvent<void>('verified-fetch:request:progress:chunk'))
 
   if (done === true) {
     log.error('No content found for path', path)
@@ -21,6 +20,7 @@ export async function getStreamAndContentType (iterator: AsyncIterable<Uint8Arra
   const stream = new ReadableStream({
     async start (controller) {
       // the initial value is already available
+      options?.onProgress?.(new CustomProgressEvent<void>('verified-fetch:request:progress:chunk'))
       controller.enqueue(value)
     },
     async pull (controller) {

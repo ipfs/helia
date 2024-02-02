@@ -15,12 +15,10 @@ export interface PathWalkerFn {
 }
 
 export async function walkPath (blockstore: ReadableStorage, path: string, options?: PathWalkerOptions): Promise<PathWalkerResponse> {
-  const entries: UnixFSEntry[] = []
   const ipfsRoots: CID[] = []
   let terminalElement: UnixFSEntry | undefined
 
   for await (const entry of exporterWalk(path, blockstore, options)) {
-    entries.push(entry)
     ipfsRoots.push(entry.cid)
     terminalElement = entry
   }

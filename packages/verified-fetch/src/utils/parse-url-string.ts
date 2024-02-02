@@ -31,7 +31,6 @@ const URL_REGEX = /^(?<protocol>ip[fn]s):\/\/(?<cidOrPeerIdOrDnsLink>[^/$?]+)\/?
  * After determining the protocol successfully, we process the cidOrPeerIdOrDnsLink:
  * * If it's ipfs, it parses the CID or throws an Aggregate error
  * * If it's ipns, it attempts to resolve the PeerId and then the DNSLink. If both fail, an Aggregate error is thrown.
- *
  */
 export async function parseUrlString ({ urlString, ipns, logger }: ParseUrlStringInput, options?: ParseUrlStringOptions): Promise<ParsedUrlStringResults> {
   const log = logger.forComponent('helia:verified-fetch:parse-url-string')
