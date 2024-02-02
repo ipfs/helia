@@ -219,7 +219,7 @@ import { trustlessGateway } from '@helia/block-brokers'
 import { createHeliaHTTP } from '@helia/http'
 import { delegatedHTTPRouting } from '@helia/routers'
 import { VerifiedFetch as VerifiedFetchClass } from './verified-fetch.js'
-import type { Helia, Routing } from '@helia/interface'
+import type { Helia } from '@helia/interface'
 import type { IPNSRoutingEvents, ResolveDnsLinkProgressEvents, ResolveProgressEvents } from '@helia/ipns'
 import type { GetEvents } from '@helia/unixfs'
 import type { CID } from 'multiformats/cid'
@@ -280,20 +280,13 @@ export interface VerifiedFetchInit extends RequestInit, ProgressOptions<BubbledP
  */
 export async function createVerifiedFetch (init: Helia | CreateVerifiedFetchWithOptions): Promise<VerifiedFetch> {
   if (!isHelia(init)) {
-    const config = init
-    let routers: undefined | Array<Partial<Routing>>
-
-    if (config.routers != null) {
-      routers = config.routers.map((routerUrl) => delegatedHTTPRouting(routerUrl))
-    }
-
     init = await createHeliaHTTP({
       blockBrokers: [
         trustlessGateway({
-          gateways: config.gateways
+          gateways: init.gateways
         })
       ],
-      routers
+      routers: init.routers?.map((routerUrl) => delegatedHTTPRouting(routerUrl))
     })
   }
 
