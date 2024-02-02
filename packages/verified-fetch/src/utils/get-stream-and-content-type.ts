@@ -1,14 +1,13 @@
-import { logger } from '@libp2p/logger'
 import { CustomProgressEvent } from 'progress-events'
 import { getContentType } from './get-content-type.js'
 import type { VerifiedFetchInit } from '../index.js'
-
-const log = logger('helia:verified-fetch:get-stream-and-content-type')
+import type { ComponentLogger } from '@libp2p/interface'
 
 /**
  * Converts an async iterator of Uint8Array bytes to a stream and attempts to determine the content type of those bytes.
  */
-export async function getStreamAndContentType (iterator: AsyncIterable<Uint8Array>, path: string, options?: Pick<VerifiedFetchInit, 'onProgress'>): Promise<{ contentType: string, stream: ReadableStream<Uint8Array> }> {
+export async function getStreamAndContentType (iterator: AsyncIterable<Uint8Array>, path: string, logger: ComponentLogger, options?: Pick<VerifiedFetchInit, 'onProgress'>): Promise<{ contentType: string, stream: ReadableStream<Uint8Array> }> {
+  const log = logger.forComponent('helia:verified-fetch:get-stream-and-content-type')
   const reader = iterator[Symbol.asyncIterator]()
   const { value, done } = await reader.next()
   options?.onProgress?.(new CustomProgressEvent<void>('verified-fetch:request:progress:chunk'))

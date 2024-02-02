@@ -1,4 +1,5 @@
 import { type PeerId } from '@libp2p/interface'
+import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
@@ -13,7 +14,8 @@ describe('parseUrlString', () => {
       try {
         await parseUrlString({
           urlString: 'invalid',
-          ipns
+          ipns,
+          logger: defaultLogger()
         })
         throw new Error('Should have thrown')
       } catch (err) {
@@ -26,7 +28,8 @@ describe('parseUrlString', () => {
       try {
         await parseUrlString({
           urlString: 'http://mydomain.com',
-          ipns
+          ipns,
+          logger: defaultLogger()
         })
         throw new Error('Should have thrown')
       } catch (err) {
@@ -44,7 +47,8 @@ describe('parseUrlString', () => {
       try {
         await parseUrlString({
           urlString: 'ipns://mydomain.com',
-          ipns
+          ipns,
+          logger: defaultLogger()
         })
         throw new Error('Should have thrown')
       } catch (err) {
@@ -59,7 +63,8 @@ describe('parseUrlString', () => {
       try {
         await parseUrlString({
           urlString: 'ipfs://QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4i',
-          ipns
+          ipns,
+          logger: defaultLogger()
         })
         throw new Error('Should have thrown')
       } catch (aggErr) {
@@ -74,7 +79,8 @@ describe('parseUrlString', () => {
       const ipns = stubInterface<IPNS>({})
       const result = await parseUrlString({
         urlString: 'ipfs://QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr',
-        ipns
+        ipns,
+        logger: defaultLogger()
       })
       expect(result.protocol).to.equal('ipfs')
       expect(result.cid.toString()).to.equal('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
@@ -85,7 +91,8 @@ describe('parseUrlString', () => {
       const ipns = stubInterface<IPNS>({})
       const result = await parseUrlString({
         urlString: 'ipfs://QmdmQXB2mzChmMeKY47C43LxUdg1NDJ5MWcKMKxDu7RgQm/1 - Barrel - Part 1/1 - Barrel - Part 1 - alt.txt',
-        ipns
+        ipns,
+        logger: defaultLogger()
       })
       expect(result.protocol).to.equal('ipfs')
       expect(result.cid.toString()).to.equal('QmdmQXB2mzChmMeKY47C43LxUdg1NDJ5MWcKMKxDu7RgQm')
@@ -96,7 +103,8 @@ describe('parseUrlString', () => {
       const ipns = stubInterface<IPNS>({})
       const result = await parseUrlString({
         urlString: 'ipfs://QmdmQXB2mzChmMeKY47C43LxUdg1NDJ5MWcKMKxDu7RgQm?format=car',
-        ipns
+        ipns,
+        logger: defaultLogger()
       })
       expect(result.protocol).to.equal('ipfs')
       expect(result.cid.toString()).to.equal('QmdmQXB2mzChmMeKY47C43LxUdg1NDJ5MWcKMKxDu7RgQm')
@@ -108,7 +116,8 @@ describe('parseUrlString', () => {
       const ipns = stubInterface<IPNS>({})
       const result = await parseUrlString({
         urlString: 'ipfs://QmdmQXB2mzChmMeKY47C43LxUdg1NDJ5MWcKMKxDu7RgQm/1 - Barrel - Part 1/1 - Barrel - Part 1 - alt.txt?format=tar',
-        ipns
+        ipns,
+        logger: defaultLogger()
       })
       expect(result.protocol).to.equal('ipfs')
       expect(result.cid.toString()).to.equal('QmdmQXB2mzChmMeKY47C43LxUdg1NDJ5MWcKMKxDu7RgQm')
@@ -143,7 +152,7 @@ describe('parseUrlString', () => {
       })
 
       try {
-        await parseUrlString({ urlString: 'ipns://mydomain.com', ipns })
+        await parseUrlString({ urlString: 'ipns://mydomain.com', ipns, logger: defaultLogger() })
         throw new Error('Should have thrown')
       } catch (aggErr) {
         expect(aggErr).to.have.property('message', 'Invalid resource. Cannot determine CID from URL "ipns://mydomain.com"')
@@ -157,7 +166,8 @@ describe('parseUrlString', () => {
     it('can parse a URL with DNSLinkDomain only', async () => {
       const result = await parseUrlString({
         urlString: 'ipns://mydomain.com',
-        ipns
+        ipns,
+        logger: defaultLogger()
       })
       expect(result.protocol).to.equal('ipns')
       expect(result.cid.toString()).to.equal('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
@@ -167,7 +177,8 @@ describe('parseUrlString', () => {
     it('can parse a URL with DNSLinkDomain+path', async () => {
       const result = await parseUrlString({
         urlString: 'ipns://mydomain.com/some/path/to/file.txt',
-        ipns
+        ipns,
+        logger: defaultLogger()
       })
       expect(result.protocol).to.equal('ipns')
       expect(result.cid.toString()).to.equal('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
@@ -177,7 +188,8 @@ describe('parseUrlString', () => {
     it('can parse a URL with DNSLinkDomain+queryString', async () => {
       const result = await parseUrlString({
         urlString: 'ipns://mydomain.com?format=json',
-        ipns
+        ipns,
+        logger: defaultLogger()
       })
       expect(result.protocol).to.equal('ipns')
       expect(result.cid.toString()).to.equal('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
@@ -188,7 +200,8 @@ describe('parseUrlString', () => {
     it('can parse a URL with DNSLinkDomain+path+queryString', async () => {
       const result = await parseUrlString({
         urlString: 'ipns://mydomain.com/some/path/to/file.txt?format=json',
-        ipns
+        ipns,
+        logger: defaultLogger()
       })
       expect(result.protocol).to.equal('ipns')
       expect(result.cid.toString()).to.equal('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
@@ -225,7 +238,7 @@ describe('parseUrlString', () => {
       })
 
       try {
-        await parseUrlString({ urlString: 'ipns://123PeerIdIsFake456', ipns })
+        await parseUrlString({ urlString: 'ipns://123PeerIdIsFake456', ipns, logger: defaultLogger() })
         throw new Error('Should have thrown')
       } catch (aggErr) {
         expect(aggErr).to.have.property('message', 'Invalid resource. Cannot determine CID from URL "ipns://123PeerIdIsFake456"')
@@ -250,7 +263,7 @@ describe('parseUrlString', () => {
       //   .with.property('message', `Could not resolve PeerId "${testPeerId.toString()}", Unexpected failure from ipns resolve method`)
 
       try {
-        await parseUrlString({ urlString: `ipns://${testPeerId.toString()}`, ipns })
+        await parseUrlString({ urlString: `ipns://${testPeerId.toString()}`, ipns, logger: defaultLogger() })
         throw new Error('Should have thrown')
       } catch (aggErr) {
         expect(aggErr).to.have.property('message', `Invalid resource. Cannot determine CID from URL "ipns://${testPeerId.toString()}"`)
@@ -264,7 +277,8 @@ describe('parseUrlString', () => {
     it('can parse a URL with PeerId only', async () => {
       const result = await parseUrlString({
         urlString: `ipns://${testPeerId.toString()}`,
-        ipns
+        ipns,
+        logger: defaultLogger()
       })
       expect(result.protocol).to.equal('ipns')
       expect(result.cid.toString()).to.equal('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
@@ -274,7 +288,8 @@ describe('parseUrlString', () => {
     it('can parse a URL with PeerId+path', async () => {
       const result = await parseUrlString({
         urlString: `ipns://${testPeerId.toString()}/some/path/to/file.txt`,
-        ipns
+        ipns,
+        logger: defaultLogger()
       })
       expect(result.protocol).to.equal('ipns')
       expect(result.cid.toString()).to.equal('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
@@ -284,7 +299,8 @@ describe('parseUrlString', () => {
     it('can parse a URL with PeerId+queryString', async () => {
       const result = await parseUrlString({
         urlString: `ipns://${testPeerId.toString()}?fomat=dag-cbor`,
-        ipns
+        ipns,
+        logger: defaultLogger()
       })
       expect(result.protocol).to.equal('ipns')
       expect(result.cid.toString()).to.equal('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
@@ -295,7 +311,8 @@ describe('parseUrlString', () => {
     it('can parse a URL with PeerId+path+queryString', async () => {
       const result = await parseUrlString({
         urlString: `ipns://${testPeerId.toString()}/some/path/to/file.txt?fomat=dag-cbor`,
-        ipns
+        ipns,
+        logger: defaultLogger()
       })
       expect(result.protocol).to.equal('ipns')
       expect(result.cid.toString()).to.equal('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')

@@ -7,7 +7,6 @@ import { unixfs as heliaUnixFs, type UnixFS as HeliaUnixFs, type UnixFSStats } f
 import { code as dagCborCode } from '@ipld/dag-cbor'
 import { code as dagJsonCode } from '@ipld/dag-json'
 import { code as dagPbCode } from '@ipld/dag-pb'
-import { logger } from '@libp2p/logger'
 import { code as jsonCode } from 'multiformats/codecs/json'
 import { decode, code as rawCode } from 'multiformats/codecs/raw'
 import { CustomProgressEvent } from 'progress-events'
@@ -16,11 +15,9 @@ import { parseResource } from './utils/parse-resource.js'
 import { walkPath, type PathWalkerFn } from './utils/walk-path.js'
 import type { CIDDetail, Resource, VerifiedFetchInit as VerifiedFetchOptions } from './index.js'
 import type { Helia } from '@helia/interface'
-import type { AbortOptions } from '@libp2p/interface'
+import type { AbortOptions, Logger } from '@libp2p/interface'
 import type { UnixFSEntry } from 'ipfs-unixfs-exporter'
 import type { CID } from 'multiformats/cid'
-
-const log = logger('helia:verified-fetch')
 
 interface VerifiedFetchComponents {
   helia: Helia
@@ -74,9 +71,11 @@ export class VerifiedFetch {
   private readonly dagCbor: DAGCBOR
   private readonly json: JSON
   private readonly pathWalker: PathWalkerFn
+  private readonly log: Logger
 
   constructor ({ helia, ipns, unixfs, dagJson, json, dagCbor, pathWalker }: VerifiedFetchComponents, init?: VerifiedFetchInit) {
     this.helia = helia
+    this.log = helia.logger.forComponent('helia:verified-fetch')
     this.ipns = ipns ?? heliaIpns(helia, {
       resolvers: [
         dnsJsonOverHttps('https://mozilla.cloudflare-dns.com/dns-query'),
@@ -88,7 +87,7 @@ export class VerifiedFetch {
     this.json = json ?? heliaJson(helia)
     this.dagCbor = dagCbor ?? heliaDagCbor(helia)
     this.pathWalker = pathWalker ?? walkPath
-    log.trace('created VerifiedFetch instance')
+    this.log.trace('created VerifiedFetch instance')
   }
 
   // handle vnd.ipfs.ipns-record
@@ -106,7 +105,7 @@ export class VerifiedFetch {
   }
 
   private async handleDagJson ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
-    log.trace('fetching %c/%s', cid, path)
+    this.log.trace('fetching %c/%s', cid, path)
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: cid.toString(), path }))
     const result = await this.dagJson.get(cid, {
       signal: options?.signal,
@@ -119,7 +118,7 @@ export class VerifiedFetch {
   }
 
   private async handleJson ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
-    log.trace('fetching %c/%s', cid, path)
+    this.log.trace('fetching %c/%s', cid, path)
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: cid.toString(), path }))
     const result: Record<any, any> = await this.json.get(cid, {
       signal: options?.signal,
@@ -132,7 +131,7 @@ export class VerifiedFetch {
   }
 
   private async handleDagCbor ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
-    log.trace('fetching %c/%s', cid, path)
+    this.log.trace('fetching %c/%s', cid, path)
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: cid.toString(), path }))
     const result = await this.dagCbor.get(cid, {
       signal: options?.signal,
@@ -145,7 +144,7 @@ export class VerifiedFetch {
   }
 
   private async handleDagPb ({ cid, path, options, terminalElement }: FetchHandlerFunctionArg): Promise<Response> {
-    log.trace('fetching %c/%s', cid, path)
+    this.log.trace('fetching %c/%s', cid, path)
     let resolvedCID = terminalElement?.cid ?? cid
     let stat: UnixFSStats
     if (terminalElement?.type === 'directory') {
@@ -153,19 +152,19 @@ export class VerifiedFetch {
 
       const rootFilePath = 'index.html'
       try {
-        log.trace('found directory at %c/%s, looking for index.html', cid, path)
+        this.log.trace('found directory at %c/%s, looking for index.html', cid, path)
         options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: dirCid.toString(), path: rootFilePath }))
         stat = await this.unixfs.stat(dirCid, {
           path: rootFilePath,
           signal: options?.signal,
           onProgress: options?.onProgress
         })
-        log.trace('found root file at %c/%s with cid %c', dirCid, rootFilePath, stat.cid)
+        this.log.trace('found root file at %c/%s with cid %c', dirCid, rootFilePath, stat.cid)
         path = rootFilePath
         resolvedCID = stat.cid
         // terminalElement = stat
       } catch (err: any) {
-        log('error loading path %c/%s', dirCid, rootFilePath, err)
+        this.log('error loading path %c/%s', dirCid, rootFilePath, err)
         return new Response('Unable to find index.html for directory at given path. Support for directories with implicit root is not implemented', { status: 501 })
       } finally {
         options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: dirCid.toString(), path: rootFilePath }))
@@ -178,9 +177,9 @@ export class VerifiedFetch {
       onProgress: options?.onProgress
     })
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: resolvedCID.toString(), path: '' }))
-    log('got async iterator for %c/%s', cid, path)
+    this.log('got async iterator for %c/%s', cid, path)
 
-    const { contentType, stream } = await getStreamAndContentType(asyncIter, path ?? '', {
+    const { contentType, stream } = await getStreamAndContentType(asyncIter, path ?? '', this.helia.logger, {
       onProgress: options?.onProgress
     })
     const response = new Response(stream, { status: 200 })
@@ -190,7 +189,7 @@ export class VerifiedFetch {
   }
 
   private async handleRaw ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
-    log.trace('fetching %c/%s', cid, path)
+    this.log.trace('fetching %c/%s', cid, path)
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: cid.toString(), path }))
     const result = await this.helia.blockstore.get(cid)
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: cid.toString(), path }))
@@ -255,7 +254,7 @@ export class VerifiedFetch {
 
   async fetch (resource: Resource, opts?: VerifiedFetchOptions): Promise<Response> {
     const options = convertOptions(opts)
-    const { path, query, ...rest } = await parseResource(resource, this.ipns, options)
+    const { path, query, ...rest } = await parseResource(resource, { ipns: this.ipns, logger: this.helia.logger }, options)
     const cid = rest.cid
     let response: Response | undefined
 
@@ -282,7 +281,7 @@ export class VerifiedFetch {
       ipfsRoots = pathDetails.ipfsRoots.join(',')
       terminalElement = pathDetails.terminalElement
     } catch (err) {
-      log.error('Error walking path %s', path, err)
+      this.log.error('Error walking path %s', path, err)
       // return new Response(`Error walking path: ${(err as Error).message}`, { status: 500 })
     }
 

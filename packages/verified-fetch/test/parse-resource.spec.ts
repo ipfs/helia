@@ -1,3 +1,4 @@
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
 import sinon from 'sinon'
@@ -10,10 +11,13 @@ describe('parseResource', () => {
     const testCID = CID.parse('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
     const shouldNotBeCalled1 = sinon.stub().throws(new Error('should not be called'))
     const shouldNotBeCalled2 = sinon.stub().throws(new Error('should not be called'))
-    const { cid, path, query } = await parseResource(testCID, stubInterface<IPNS>({
-      resolveDns: shouldNotBeCalled1,
-      resolve: shouldNotBeCalled2
-    }))
+    const { cid, path, query } = await parseResource(testCID, {
+      ipns: stubInterface<IPNS>({
+        resolveDns: shouldNotBeCalled1,
+        resolve: shouldNotBeCalled2
+      }),
+      logger: defaultLogger()
+    })
     expect(shouldNotBeCalled1.called).to.be.false()
     expect(shouldNotBeCalled2.called).to.be.false()
     expect(cid.toString()).to.equal(testCID.toString())

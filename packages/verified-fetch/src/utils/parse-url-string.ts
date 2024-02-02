@@ -1,16 +1,16 @@
-import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { CID } from 'multiformats/cid'
 import { TLRU } from './tlru.js'
 import type { IPNS, IPNSRoutingEvents, ResolveDnsLinkProgressEvents, ResolveProgressEvents, ResolveResult } from '@helia/ipns'
+import type { ComponentLogger } from '@libp2p/interface'
 import type { ProgressOptions } from 'progress-events'
 
-const log = logger('helia:verified-fetch:parse-url-string')
 const ipnsCache = new TLRU<ResolveResult>(1000)
 
 export interface ParseUrlStringInput {
   urlString: string
   ipns: IPNS
+  logger: ComponentLogger
 }
 export interface ParseUrlStringOptions extends ProgressOptions<ResolveProgressEvents | IPNSRoutingEvents | ResolveDnsLinkProgressEvents> {
 
@@ -33,7 +33,8 @@ const URL_REGEX = /^(?<protocol>ip[fn]s):\/\/(?<cidOrPeerIdOrDnsLink>[^/$?]+)\/?
  * * If it's ipns, it attempts to resolve the PeerId and then the DNSLink. If both fail, an Aggregate error is thrown.
  *
  */
-export async function parseUrlString ({ urlString, ipns }: ParseUrlStringInput, options?: ParseUrlStringOptions): Promise<ParsedUrlStringResults> {
+export async function parseUrlString ({ urlString, ipns, logger }: ParseUrlStringInput, options?: ParseUrlStringOptions): Promise<ParsedUrlStringResults> {
+  const log = logger.forComponent('helia:verified-fetch:parse-url-string')
   const match = urlString.match(URL_REGEX)
 
   if (match == null || match.groups == null) {
