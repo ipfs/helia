@@ -4,6 +4,7 @@ import { type DAGJSON } from '@helia/dag-json'
 import { type IPNS } from '@helia/ipns'
 import { type JSON as HeliaJSON } from '@helia/json'
 import { type UnixFS } from '@helia/unixfs'
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
 import { encode } from 'multiformats/codecs/raw'
@@ -12,6 +13,7 @@ import { stubInterface } from 'sinon-ts'
 import { VerifiedFetch } from '../src/verified-fetch.js'
 import type { PathWalkerFn } from '../src/utils/walk-path'
 import type { Helia } from '@helia/interface'
+import type { Logger, ComponentLogger } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { UnixFSDirectory, UnixFSEntry } from 'ipfs-unixfs-exporter'
 const testCID = CID.parse('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
@@ -24,7 +26,8 @@ describe('@helia/verifed-fetch', () => {
     const verifiedFetch = new VerifiedFetch({
       helia: stubInterface<Helia>({
         start: startStub,
-        stop: stopStub
+        stop: stopStub,
+        logger: defaultLogger()
       })
     })
     expect(stopStub.withArgs().callCount).to.equal(0)
@@ -38,11 +41,15 @@ describe('@helia/verifed-fetch', () => {
   })
 
   describe('format not implemented', () => {
-    let verifiedFetch: InstanceType<typeof VerifiedFetch>
+    let verifiedFetch: VerifiedFetch
 
     before(async () => {
       verifiedFetch = new VerifiedFetch({
-        helia: stubInterface<Helia>(),
+        helia: stubInterface<Helia>({
+          logger: stubInterface<ComponentLogger>({
+            forComponent: () => stubInterface<Logger>()
+          })
+        }),
         ipns: stubInterface<IPNS>({
           resolveDns: async (dnsLink: string) => {
             expect(dnsLink).to.equal('mydomain.com')
@@ -89,7 +96,7 @@ describe('@helia/verifed-fetch', () => {
   })
 
   describe('implicit format', () => {
-    let verifiedFetch: InstanceType<typeof VerifiedFetch>
+    let verifiedFetch: VerifiedFetch
     let unixfsStub: ReturnType<typeof stubInterface<UnixFS>>
     let dagJsonStub: ReturnType<typeof stubInterface<DAGJSON>>
     let jsonStub: ReturnType<typeof stubInterface<HeliaJSON>>
@@ -117,7 +124,10 @@ describe('@helia/verifed-fetch', () => {
       })
       pathWalkerStub = sinon.stub<Parameters<PathWalkerFn>, ReturnType<PathWalkerFn>>()
       verifiedFetch = new VerifiedFetch({
-        helia: stubInterface<Helia>({ blockstore: blockstoreStub }),
+        helia: stubInterface<Helia>({
+          blockstore: blockstoreStub,
+          logger: defaultLogger()
+        }),
         ipns: stubInterface<IPNS>(),
         unixfs: unixfsStub,
         dagJson: dagJsonStub,
