@@ -300,6 +300,8 @@ export async function createVerifiedFetch (init?: Helia | CreateVerifiedFetchWit
   return verifiedFetch
 }
 
+export { verifiedFetch } from './singleton.js'
+
 function isHelia (obj: any): obj is Helia {
   // test for the presence of known Helia properties, return a boolean value
   return obj?.blockstore != null &&
