@@ -13,7 +13,7 @@ const singleton: VerifiedFetchSingleton = async function verifiedFetch (resource
   return singleton._impl(resource, options)
 }
 singleton.start = async function () {
-  await singleton._impl?.stop()
+  await singleton._impl?.start()
 }
 singleton.stop = async function () {
   await singleton._impl?.stop()
