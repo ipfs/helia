@@ -37,7 +37,7 @@ describe('@helia/verified-fetch - unixfs directory', () => {
       expect(resp.status).to.equal(501) // TODO: we should do a directory listing instead
     })
 
-     it('can return a string for unixfs pathed data', async () => {
+    it('can return a string for unixfs pathed data', async () => {
       const resp = await verifiedFetch('ipfs://QmbQDovX7wRe9ek7u6QXe9zgCXkTzoUSsTFJEkrYV1HrVR/1 - Barrel - Part 1 - alt.txt')
       expect(resp).to.be.ok()
       const text = await resp.text()
@@ -45,7 +45,7 @@ describe('@helia/verified-fetch - unixfs directory', () => {
       expect(resp.headers.get('content-type')).to.equal('text/plain')
     })
 
-     it('can return an image for unixfs pathed data', async () => {
+    it('can return an image for unixfs pathed data', async () => {
       const resp = await verifiedFetch('ipfs://QmbQDovX7wRe9ek7u6QXe9zgCXkTzoUSsTFJEkrYV1HrVR/1 - Barrel - Part 1.png')
       expect(resp).to.be.ok()
       expect(resp.headers.get('content-type')).to.equal('image/png')

@@ -1,13 +1,9 @@
 /**
  * @packageDocumentation
  *
- * `@helia/verified-fetch` is a library that provides a fetch-like API for fetching trustless content from IPFS and
- * verifying it.
+ * `@helia/verified-fetch` is a library that provides a fetch-like API for fetching trustless content from IPFS and verifying it.
  *
- * This library should act as a replacement for the `fetch()` API for fetching content from IPFS, and will return a
- * [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) object that can be used in a similar manner
- * to the `fetch()` API. This means browser and HTTP caching inside browser main threads, web-workers, and service
- * workers, as well as other features of the `fetch()` API should work in a way familiar to developers.
+ * This library should act as a replacement for the `fetch()` API for fetching content from IPFS, and will return a [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) object that can be used in a similar manner to the `fetch()` API. This means browser and HTTP caching inside browser main threads, web-workers, and service workers, as well as other features of the `fetch()` API should work in a way familiar to developers.
  *
  * Exports a `createVerifiedFetch` function that returns a `fetch()` like API method {@link Helia} for fetching IPFS content.
  *
@@ -47,7 +43,7 @@
  * const json = await response.json()
  * ```
  *
- * @example Using ipfs protocol to fetch an image
+ * @example Using IPFS protocol to fetch an image
  *
  * ```typescript
  * import { createVerifiedFetch } from '@helia/verified-fetch'
@@ -62,7 +58,7 @@
  * document.body.appendChild(image)
  * ```
  *
- * @example Using ipns protocol to stream a big file
+ * @example Using IPNS protocol to stream a big file
  *
  * ```typescript
  * import { createVerifiedFetch } from '@helia/verified-fetch'
@@ -127,7 +123,7 @@
  *
  * #### Options argument
  *
- * This library will not plan to support the exact Fetch API options object, as some of the arguments don't make sense. Instead, it will only support options necessary to meet [IPFS specs](https://specs.ipfs.tech/) related to specifying the resultant shape of desired content.
+ * This library does not plan to support the exact Fetch API options object, as some of the arguments don't make sense. Instead, it will only support options necessary to meet [IPFS specs](https://specs.ipfs.tech/) related to specifying the resultant shape of desired content.
  *
  * Some of those header specifications are:
  *
@@ -163,7 +159,7 @@
  *     - `helia:verified-fetch:response:complete` - The response stream has completed.
  *     - `helia:verified-fetch:response:error` - An error occurred while building the response.
  *
- * Some in-flight specs (IPIPs) that will affect the options object this library supports in the future can be seen at https://specs.ipfs.tech/ipips, but a few that I'm aware of are:
+ * Some in-flight specs (IPIPs) that will affect the options object this library supports in the future can be seen at https://specs.ipfs.tech/ipips, a subset are:
  *
  * 1. [IPIP-0412: Signaling Block Order in CARs on HTTP Gateways](https://specs.ipfs.tech/ipips/ipip-0412/)
  * 2. [IPIP-0402: Partial CAR Support on Trustless Gateways](https://specs.ipfs.tech/ipips/ipip-0402/)
