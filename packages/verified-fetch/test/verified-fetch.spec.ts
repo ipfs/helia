@@ -17,7 +17,7 @@ import type { UnixFSDirectory, UnixFSEntry } from 'ipfs-unixfs-exporter'
 const testCID = CID.parse('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
 const anyOnProgressMatcher = sinon.match.any as unknown as () => void
 
-describe('VerifiedFetch', () => {
+describe('@helia/verifed-fetch', () => {
   it('starts and stops the helia node', async () => {
     const stopStub = sinon.stub()
     const startStub = sinon.stub()
@@ -37,8 +37,9 @@ describe('VerifiedFetch', () => {
     expect(startStub.withArgs().callCount).to.equal(1)
   })
 
-  describe('Format not implemented', () => {
+  describe('format not implemented', () => {
     let verifiedFetch: InstanceType<typeof VerifiedFetch>
+
     before(async () => {
       verifiedFetch = new VerifiedFetch({
         helia: stubInterface<Helia>(),
@@ -54,6 +55,7 @@ describe('VerifiedFetch', () => {
         unixfs: stubInterface<UnixFS>()
       })
     })
+
     after(async () => {
       await verifiedFetch.stop()
     })
@@ -71,7 +73,7 @@ describe('VerifiedFetch', () => {
 
     for (const [format, acceptHeader] of formatsAndAcceptHeaders) {
       // eslint-disable-next-line no-loop-func
-      it(`Returns 501 for ${acceptHeader}`, async () => {
+      it(`returns 501 for ${acceptHeader}`, async () => {
         const resp = await verifiedFetch.fetch(`ipns://mydomain.com?format=${format}`)
         expect(resp).to.be.ok()
         expect(resp.status).to.equal(501)
@@ -86,7 +88,7 @@ describe('VerifiedFetch', () => {
     }
   })
 
-  describe('Implicit format', () => {
+  describe('implicit format', () => {
     let verifiedFetch: InstanceType<typeof VerifiedFetch>
     let unixfsStub: ReturnType<typeof stubInterface<UnixFS>>
     let dagJsonStub: ReturnType<typeof stubInterface<DAGJSON>>
@@ -94,6 +96,7 @@ describe('VerifiedFetch', () => {
     let dagCborStub: ReturnType<typeof stubInterface<DAGCBOR>>
     let pathWalkerStub: SinonStub<Parameters<PathWalkerFn>, ReturnType<PathWalkerFn>>
     let blockstoreStub: ReturnType<typeof stubInterface<Blockstore>>
+
     beforeEach(async () => {
       blockstoreStub = stubInterface<Blockstore>()
       unixfsStub = stubInterface<UnixFS>({
@@ -123,6 +126,7 @@ describe('VerifiedFetch', () => {
         pathWalker: pathWalkerStub
       })
     })
+
     afterEach(async () => {
       await verifiedFetch.stop()
     })
@@ -199,6 +203,7 @@ describe('VerifiedFetch', () => {
           yield finalRootFileContent
         }
       })
+
       const resp = await verifiedFetch.fetch(testCID, { onProgress })
       expect(unixfsStub.stat.callCount).to.equal(1)
       expect(pathWalkerStub.callCount).to.equal(1)
@@ -207,6 +212,7 @@ describe('VerifiedFetch', () => {
       expect(unixfsStub.cat.withArgs(testCID).callCount).to.equal(0)
       expect(unixfsStub.cat.withArgs(CID.parse('Qmc3zqKcwzbbvw3MQm3hXdg8BQoFjGdZiGdAfXAyAGGdLi'), sinon.match.any).callCount).to.equal(1)
       expect(onProgress.callCount).to.equal(5)
+
       const onProgressEvents = onProgress.getCalls().map(call => call.args[0])
       expect(onProgressEvents[0]).to.include({ type: 'verified-fetch:request:start' }).and.to.have.property('detail').that.deep.equals({
         cid: testCID.toString(),
@@ -223,6 +229,7 @@ describe('VerifiedFetch', () => {
       expect(onProgressEvents[4]).to.include({ type: 'verified-fetch:request:progress:chunk' }).and.to.have.property('detail').that.is.undefined()
       expect(resp).to.be.ok()
       expect(resp.status).to.equal(200)
+
       const data = await resp.arrayBuffer()
       expect(new Uint8Array(data)).to.deep.equal(finalRootFileContent)
     })

@@ -23,6 +23,7 @@
     "packages/routers": {},
     "packages/strings": {},
     "packages/unixfs": {},
-    "packages/utils": {}
+    "packages/utils": {},
+    "packages/verified-fetch": {}
   }
 }

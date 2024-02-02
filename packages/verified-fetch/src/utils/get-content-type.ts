@@ -1,11 +1,11 @@
 import mime from 'mime-types'
 
-interface testInput {
+interface TestInput {
   bytes: Uint8Array
   path: string
 }
 
-type testOutput = Promise<string | undefined>
+type TestOutput = Promise<string | undefined>
 
 export const DEFAULT_MIME_TYPE = 'application/octet-stream'
 
@@ -15,13 +15,13 @@ const xmlRegex = /^(<\?xml[^>]+>)?[^<^\w]+<svg/ig
  * Tests to determine the content type of the input.
  * The order is important on this one.
  */
-const tests: Array<(input: testInput) => testOutput> = [
+const tests: Array<(input: TestInput) => TestOutput> = [
   // svg
-  async ({ bytes }): testOutput => xmlRegex.test(new TextDecoder().decode(bytes.slice(0, 64)))
+  async ({ bytes }): TestOutput => xmlRegex.test(new TextDecoder().decode(bytes.slice(0, 64)))
     ? 'image/svg+xml'
     : undefined,
   // testing file-type from path
-  async ({ path }): testOutput => {
+  async ({ path }): TestOutput => {
     const mimeType = mime.lookup(path)
     if (mimeType !== false) {
       return mimeType
@@ -44,7 +44,7 @@ function overrideContentType (type: string): string {
 /**
  * Get the content type from the input based on the tests.
  */
-export async function getContentType (input: testInput): Promise<string> {
+export async function getContentType (input: TestInput): Promise<string> {
   for (const test of tests) {
     const type = await test(input)
     if (type !== undefined) {

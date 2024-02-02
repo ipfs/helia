@@ -4,9 +4,11 @@ import { getStreamAndContentType } from '../src/utils/get-stream-and-content-typ
 
 describe('getStreamAndContentType', () => {
   let onProgressSpy: sinon.SinonSpy
+
   beforeEach(() => {
     onProgressSpy = sinon.spy()
   })
+
   it('should throw an error if no content is found', async () => {
     const iterator = (async function * () { })()
     await expect(getStreamAndContentType(iterator, 'test')).to.be.rejectedWith('No content found')

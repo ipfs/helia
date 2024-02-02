@@ -2,31 +2,32 @@ import { dagCbor as heliaDagCbor, type DAGCBOR } from '@helia/dag-cbor'
 import { dagJson as heliaDagJson, type DAGJSON } from '@helia/dag-json'
 import { ipns as heliaIpns, type IPNS } from '@helia/ipns'
 import { dnsJsonOverHttps } from '@helia/ipns/dns-resolvers'
-import { json as heliaJson, type JSON as HeliaJSON } from '@helia/json'
+import { json as heliaJson, type JSON } from '@helia/json'
 import { unixfs as heliaUnixFs, type UnixFS as HeliaUnixFs, type UnixFSStats } from '@helia/unixfs'
 import { code as dagCborCode } from '@ipld/dag-cbor'
 import { code as dagJsonCode } from '@ipld/dag-json'
 import { code as dagPbCode } from '@ipld/dag-pb'
 import { logger } from '@libp2p/logger'
-import { type CID } from 'multiformats/cid'
 import { code as jsonCode } from 'multiformats/codecs/json'
 import { decode, code as rawCode } from 'multiformats/codecs/raw'
 import { CustomProgressEvent } from 'progress-events'
 import { getStreamAndContentType } from './utils/get-stream-and-content-type.js'
 import { parseResource } from './utils/parse-resource.js'
 import { walkPath, type PathWalkerFn } from './utils/walk-path.js'
-import type { CIDDetail, ResourceType, VerifiedFetchOptionsMod } from './index.js'
+import type { CIDDetail, Resource, VerifiedFetchInit as VerifiedFetchOptions } from './index.js'
 import type { Helia } from '@helia/interface'
+import type { AbortOptions } from '@libp2p/interface'
 import type { UnixFSEntry } from 'ipfs-unixfs-exporter'
+import type { CID } from 'multiformats/cid'
 
 const log = logger('helia:verified-fetch')
 
-interface VerifiedFetchConstructorComponents {
+interface VerifiedFetchComponents {
   helia: Helia
   ipns?: IPNS
   unixfs?: HeliaUnixFs
   dagJson?: DAGJSON
-  json?: HeliaJSON
+  json?: JSON
   dagCbor?: DAGCBOR
   pathWalker?: PathWalkerFn
 }
@@ -35,7 +36,7 @@ interface VerifiedFetchConstructorComponents {
  * Potential future options for the VerifiedFetch constructor.
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface VerifiedFetchConstructorOptions {
+interface VerifiedFetchInit {
 
 }
 
@@ -43,11 +44,26 @@ interface FetchHandlerFunctionArg {
   cid: CID
   path: string
   terminalElement?: UnixFSEntry
-  options?: VerifiedFetchOptionsMod
+  options?: Omit<VerifiedFetchOptions, 'signal'> & AbortOptions
 }
 
 interface FetchHandlerFunction {
   (options: FetchHandlerFunctionArg): Promise<Response>
+}
+
+function convertOptions (options?: VerifiedFetchOptions): (Omit<VerifiedFetchOptions, 'signal'> & AbortOptions) | undefined {
+  if (options == null) {
+    return undefined
+  }
+
+  let signal: AbortSignal | undefined
+  if (options?.signal === null) {
+    signal = undefined
+  }
+  return {
+    ...options,
+    signal
+  }
 }
 
 export class VerifiedFetch {
@@ -56,10 +72,10 @@ export class VerifiedFetch {
   private readonly unixfs: HeliaUnixFs
   private readonly dagJson: DAGJSON
   private readonly dagCbor: DAGCBOR
-  private readonly json: HeliaJSON
+  private readonly json: JSON
   private readonly pathWalker: PathWalkerFn
 
-  constructor ({ helia, ipns, unixfs, dagJson, json, dagCbor, pathWalker }: VerifiedFetchConstructorComponents, options?: VerifiedFetchConstructorOptions) {
+  constructor ({ helia, ipns, unixfs, dagJson, json, dagCbor, pathWalker }: VerifiedFetchComponents, init?: VerifiedFetchInit) {
     this.helia = helia
     this.ipns = ipns ?? heliaIpns(helia, {
       resolvers: [
@@ -237,18 +253,21 @@ export class VerifiedFetch {
     [rawCode]: this.handleRaw
   }
 
-  async fetch (resource: ResourceType, options?: VerifiedFetchOptionsMod): Promise<Response> {
-    const { path, query, ...rest } = await parseResource(resource, this.ipns, { onProgress: options?.onProgress })
+  async fetch (resource: Resource, opts?: VerifiedFetchOptions): Promise<Response> {
+    const options = convertOptions(opts)
+    const { path, query, ...rest } = await parseResource(resource, this.ipns, options)
     const cid = rest.cid
     let response: Response | undefined
 
     const format = this.getFormat({ headerFormat: new Headers(options?.headers).get('accept'), queryFormat: query.format ?? null })
+
     if (format != null) {
       // TODO: These should be handled last when they're returning something other than 501
       const formatHandler = this.formatHandlers[format]
 
       if (formatHandler != null) {
         response = await formatHandler.call(this, { cid, path, options })
+
         if (response.status === 501) {
           return response
         }
@@ -257,6 +276,7 @@ export class VerifiedFetch {
 
     let terminalElement: UnixFSEntry | undefined
     let ipfsRoots: string | undefined
+
     try {
       const pathDetails = await this.pathWalker(this.helia.blockstore, `${cid.toString()}/${path}`, options)
       ipfsRoots = pathDetails.ipfsRoots.join(',')
@@ -268,6 +288,7 @@ export class VerifiedFetch {
 
     if (response == null) {
       const codecHandler = this.codecHandlers[cid.code]
+
       if (codecHandler != null) {
         response = await codecHandler.call(this, { cid, path, options, terminalElement })
       } else {
@@ -278,6 +299,7 @@ export class VerifiedFetch {
     response.headers.set('etag', cid.toString()) // https://specs.ipfs.tech/http-gateways/path-gateway/#etag-response-header
     response.headers.set('cache-cotrol', 'public, max-age=29030400, immutable')
     response.headers.set('X-Ipfs-Path', resource.toString()) // https://specs.ipfs.tech/http-gateways/path-gateway/#x-ipfs-path-response-header
+
     if (ipfsRoots != null) {
       response.headers.set('X-Ipfs-Roots', ipfsRoots) // https://specs.ipfs.tech/http-gateways/path-gateway/#x-ipfs-roots-response-header
     }

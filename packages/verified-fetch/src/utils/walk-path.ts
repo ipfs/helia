@@ -23,6 +23,7 @@ export async function walkPath (blockstore: ReadableStorage, path: string, optio
     ipfsRoots.push(entry.cid.toString())
     terminalElement = entry
   }
+
   if (terminalElement == null) {
     throw new Error('No terminal element found')
   }

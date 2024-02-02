@@ -5,7 +5,7 @@ import { createHelia } from 'helia'
 import { createVerifiedFetch } from '../src/index.js'
 
 describe('createVerifiedFetch', () => {
-  it('Can be constructed with a HeliaHttp instance', async () => {
+  it('can be constructed with a HeliaHttp instance', async () => {
     const heliaHttp = await createHeliaHTTP()
     const verifiedFetch = await createVerifiedFetch(heliaHttp)
 
@@ -13,7 +13,7 @@ describe('createVerifiedFetch', () => {
     await verifiedFetch.stop()
   })
 
-  it('Can be constructed with a HeliaP2P instance', async () => {
+  it('can be constructed with a HeliaP2P instance', async () => {
     const heliaP2P = await createHelia()
     const verifiedFetch = await createVerifiedFetch(heliaP2P)
 
@@ -22,7 +22,7 @@ describe('createVerifiedFetch', () => {
     await verifiedFetch.stop()
   })
 
-  it('Can be constructed with gateways', async () => {
+  it('can be constructed with gateways', async () => {
     const verifiedFetch = await createVerifiedFetch({
       gateways: ['https://127.0.0.1']
     })
@@ -30,7 +30,7 @@ describe('createVerifiedFetch', () => {
     await verifiedFetch.stop()
   })
 
-  it('Can be constructed with gateways & routers', async () => {
+  it('can be constructed with gateways & routers', async () => {
     const verifiedFetch = await createVerifiedFetch({
       gateways: ['https://127.0.0.1'],
       routers: ['https://127.0.0.1']

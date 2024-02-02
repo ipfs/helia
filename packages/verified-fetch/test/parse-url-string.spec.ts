@@ -80,6 +80,7 @@ describe('parseUrlString', () => {
       expect(result.cid.toString()).to.equal('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
       expect(result.path).to.equal('')
     })
+
     it('can parse URL with CID+path', async () => {
       const ipns = stubInterface<IPNS>({})
       const result = await parseUrlString({
@@ -90,6 +91,7 @@ describe('parseUrlString', () => {
       expect(result.cid.toString()).to.equal('QmdmQXB2mzChmMeKY47C43LxUdg1NDJ5MWcKMKxDu7RgQm')
       expect(result.path).to.equal('1 - Barrel - Part 1/1 - Barrel - Part 1 - alt.txt')
     })
+
     it('can parse URL with CID+queryString', async () => {
       const ipns = stubInterface<IPNS>({})
       const result = await parseUrlString({
@@ -101,6 +103,7 @@ describe('parseUrlString', () => {
       expect(result.path).to.equal('')
       expect(result.query).to.deep.equal({ format: 'car' })
     })
+
     it('can parse URL with CID+path+queryString', async () => {
       const ipns = stubInterface<IPNS>({})
       const result = await parseUrlString({
@@ -116,6 +119,7 @@ describe('parseUrlString', () => {
 
   describe('ipns://<dnsLinkDomain> URLs', () => {
     let ipns: IPNS
+
     beforeEach(async () => {
       ipns = stubInterface<IPNS>({
         resolveDns: async (dnsLink: string) => {
@@ -159,6 +163,7 @@ describe('parseUrlString', () => {
       expect(result.cid.toString()).to.equal('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
       expect(result.path).to.equal('')
     })
+
     it('can parse a URL with DNSLinkDomain+path', async () => {
       const result = await parseUrlString({
         urlString: 'ipns://mydomain.com/some/path/to/file.txt',
@@ -168,6 +173,7 @@ describe('parseUrlString', () => {
       expect(result.cid.toString()).to.equal('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
       expect(result.path).to.equal('some/path/to/file.txt')
     })
+
     it('can parse a URL with DNSLinkDomain+queryString', async () => {
       const result = await parseUrlString({
         urlString: 'ipns://mydomain.com?format=json',
@@ -178,6 +184,7 @@ describe('parseUrlString', () => {
       expect(result.path).to.equal('')
       expect(result.query).to.deep.equal({ format: 'json' })
     })
+
     it('can parse a URL with DNSLinkDomain+path+queryString', async () => {
       const result = await parseUrlString({
         urlString: 'ipns://mydomain.com/some/path/to/file.txt?format=json',
@@ -193,6 +200,7 @@ describe('parseUrlString', () => {
   describe('ipns://<peerId> URLs', () => {
     let ipns: IPNS
     let testPeerId: PeerId
+
     beforeEach(async () => {
       testPeerId = await createEd25519PeerId()
       ipns = stubInterface<IPNS>({
@@ -262,6 +270,7 @@ describe('parseUrlString', () => {
       expect(result.cid.toString()).to.equal('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
       expect(result.path).to.equal('')
     })
+
     it('can parse a URL with PeerId+path', async () => {
       const result = await parseUrlString({
         urlString: `ipns://${testPeerId.toString()}/some/path/to/file.txt`,
@@ -271,6 +280,7 @@ describe('parseUrlString', () => {
       expect(result.cid.toString()).to.equal('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
       expect(result.path).to.equal('some/path/to/file.txt')
     })
+
     it('can parse a URL with PeerId+queryString', async () => {
       const result = await parseUrlString({
         urlString: `ipns://${testPeerId.toString()}?fomat=dag-cbor`,
@@ -281,6 +291,7 @@ describe('parseUrlString', () => {
       expect(result.path).to.equal('')
       expect(result.query).to.deep.equal({ fomat: 'dag-cbor' })
     })
+
     it('can parse a URL with PeerId+path+queryString', async () => {
       const result = await parseUrlString({
         urlString: `ipns://${testPeerId.toString()}/some/path/to/file.txt?fomat=dag-cbor`,

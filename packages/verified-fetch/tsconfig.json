@@ -9,28 +9,34 @@
   ],
   "references": [
     {
-      "path": "../interface"
+      "path": "../block-brokers"
     },
     {
-      "path": "../utils"
+      "path": "../dag-cbor"
+    },
+    {
+      "path": "../dag-json"
+    },
+    {
+      "path": "../helia"
     },
     {
       "path": "../http"
     },
     {
-      "path": "../routers"
-    },
-    {
-      "path": "../block-brokers"
+      "path": "../interface"
     },
     {
       "path": "../ipns"
     },
     {
-      "path": "../unixfs"
+      "path": "../json"
     },
     {
-      "path": "../helia"
+      "path": "../routers"
+    },
+    {
+      "path": "../unixfs"
     }
   ]
 }

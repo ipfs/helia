@@ -6,7 +6,7 @@ import { parseResource } from '../src/utils/parse-resource.js'
 import type { IPNS } from '@helia/ipns'
 
 describe('parseResource', () => {
-  it('Does not call @helia/ipns for CID', async () => {
+  it('does not call @helia/ipns for CID', async () => {
     const testCID = CID.parse('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
     const shouldNotBeCalled1 = sinon.stub().throws(new Error('should not be called'))
     const shouldNotBeCalled2 = sinon.stub().throws(new Error('should not be called'))

@@ -13,5 +13,6 @@
   "packages/unixfs": "3.0.0",
   "packages/utils": "0.0.1",
   "packages/http": "1.0.1",
-  "packages/routers": "1.0.0"
+  "packages/routers": "1.0.0",
+  "packages/verified-fetch": "0.0.0"
 }

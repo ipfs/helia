@@ -1,8 +1,8 @@
-import { type IPNS, type IPNSRoutingEvents, type ResolveDnsLinkProgressEvents, type ResolveProgressEvents, type ResolveResult } from '@helia/ipns'
 import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { CID } from 'multiformats/cid'
 import { TLRU } from './tlru.js'
+import type { IPNS, IPNSRoutingEvents, ResolveDnsLinkProgressEvents, ResolveProgressEvents, ResolveResult } from '@helia/ipns'
 import type { ProgressOptions } from 'progress-events'
 
 const log = logger('helia:verified-fetch:parse-url-string')
@@ -35,14 +35,17 @@ const URL_REGEX = /^(?<protocol>ip[fn]s):\/\/(?<cidOrPeerIdOrDnsLink>[^/$?]+)\/?
  */
 export async function parseUrlString ({ urlString, ipns }: ParseUrlStringInput, options?: ParseUrlStringOptions): Promise<ParsedUrlStringResults> {
   const match = urlString.match(URL_REGEX)
+
   if (match == null || match.groups == null) {
     throw new TypeError(`Invalid URL: ${urlString}, please use ipfs:// or ipns:// URLs only.`)
   }
+
   const { protocol, cidOrPeerIdOrDnsLink, path: urlPath, queryString } = match.groups
 
   let cid: CID | undefined
   let resolvedPath: string | undefined
   const errors: Error[] = []
+
   if (protocol === 'ipfs') {
     try {
       cid = CID.parse(cidOrPeerIdOrDnsLink)
@@ -52,6 +55,7 @@ export async function parseUrlString ({ urlString, ipns }: ParseUrlStringInput, 
     }
   } else {
     let resolveResult = ipnsCache.get(cidOrPeerIdOrDnsLink)
+
     if (resolveResult != null) {
       cid = resolveResult.cid
       resolvedPath = resolveResult.path
@@ -60,6 +64,7 @@ export async function parseUrlString ({ urlString, ipns }: ParseUrlStringInput, 
       // protocol is ipns
       log.trace('Attempting to resolve PeerId for %s', cidOrPeerIdOrDnsLink)
       let peerId = null
+
       try {
         peerId = peerIdFromString(cidOrPeerIdOrDnsLink)
         resolveResult = await ipns.resolve(peerId, { onProgress: options?.onProgress })
@@ -79,6 +84,7 @@ export async function parseUrlString ({ urlString, ipns }: ParseUrlStringInput, 
 
       if (cid == null) {
         log.trace('Attempting to resolve DNSLink for %s', cidOrPeerIdOrDnsLink)
+
         try {
           resolveResult = await ipns.resolveDns(cidOrPeerIdOrDnsLink, { onProgress: options?.onProgress })
           cid = resolveResult?.cid
@@ -99,6 +105,7 @@ export async function parseUrlString ({ urlString, ipns }: ParseUrlStringInput, 
 
   // parse query string
   const query: Record<string, string> = {}
+
   if (queryString != null && queryString.length > 0) {
     const queryParts = queryString.split('&')
     for (const part of queryParts) {
@@ -113,9 +120,11 @@ export async function parseUrlString ({ urlString, ipns }: ParseUrlStringInput, 
    * resolved to /ipfs/<cid>/<path1>/<path2>
    */
   const pathParts = []
+
   if (urlPath.length > 0) {
     pathParts.push(urlPath)
   }
+
   if (resolvedPath != null && resolvedPath.length > 0) {
     pathParts.push(resolvedPath)
   }
