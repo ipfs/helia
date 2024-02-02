@@ -38,4 +38,11 @@ describe('createVerifiedFetch', () => {
     expect(verifiedFetch).to.be.ok()
     await verifiedFetch.stop()
   })
+
+  it('can be constructed with no options', async () => {
+    const verifiedFetch = await createVerifiedFetch()
+
+    expect(verifiedFetch).to.be.ok()
+    await verifiedFetch.stop()
+  })
 })
