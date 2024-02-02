@@ -278,15 +278,15 @@ export interface VerifiedFetchInit extends RequestInit, ProgressOptions<BubbledP
 /**
  * Create and return a Helia node
  */
-export async function createVerifiedFetch (init: Helia | CreateVerifiedFetchWithOptions): Promise<VerifiedFetch> {
+export async function createVerifiedFetch (init?: Helia | CreateVerifiedFetchWithOptions): Promise<VerifiedFetch> {
   if (!isHelia(init)) {
     init = await createHeliaHTTP({
       blockBrokers: [
         trustlessGateway({
-          gateways: init.gateways
+          gateways: init?.gateways
         })
       ],
-      routers: init.routers?.map((routerUrl) => delegatedHTTPRouting(routerUrl))
+      routers: (init?.routers ?? ['https://delegated-ipfs.dev']).map((routerUrl) => delegatedHTTPRouting(routerUrl))
     })
   }
 
