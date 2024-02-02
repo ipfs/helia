@@ -1,0 +1,176 @@
+{
+  "name": "@helia/verified-fetch",
+  "version": "0.0.0",
+  "description": "A fetch-like API for obtaining verified & trustless IPFS content on the web.",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/ipfs/helia/tree/main/packages/verified-fetch#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ipfs/helia.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ipfs/helia/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "IPFS",
+    "fetch",
+    "helia"
+  ],
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "project": true,
+      "sourceType": "module"
+    }
+  },
+  "release": {
+    "branches": [
+      "main"
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "preset": "conventionalcommits",
+          "releaseRules": [
+            {
+              "breaking": true,
+              "release": "major"
+            },
+            {
+              "revert": true,
+              "release": "patch"
+            },
+            {
+              "type": "feat",
+              "release": "minor"
+            },
+            {
+              "type": "fix",
+              "release": "patch"
+            },
+            {
+              "type": "docs",
+              "release": "patch"
+            },
+            {
+              "type": "test",
+              "release": "patch"
+            },
+            {
+              "type": "deps",
+              "release": "patch"
+            },
+            {
+              "scope": "no-release",
+              "release": false
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "conventionalcommits",
+          "presetConfig": {
+            "types": [
+              {
+                "type": "feat",
+                "section": "Features"
+              },
+              {
+                "type": "fix",
+                "section": "Bug Fixes"
+              },
+              {
+                "type": "chore",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "docs",
+                "section": "Documentation"
+              },
+              {
+                "type": "deps",
+                "section": "Dependencies"
+              },
+              {
+                "type": "test",
+                "section": "Tests"
+              }
+            ]
+          }
+        }
+      ],
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+      "@semantic-release/git"
+    ]
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "build": "aegir build",
+    "test": "aegir test",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main",
+    "release": "aegir release"
+  },
+  "dependencies": {
+    "@helia/block-brokers": "^2.0.1",
+    "@helia/dag-cbor": "^3.0.0",
+    "@helia/dag-json": "^3.0.0",
+    "@helia/http": "^1.0.1",
+    "@helia/interface": "^4.0.0",
+    "@helia/ipns": "^6.0.0",
+    "@helia/json": "^3.0.0",
+    "@helia/routers": "^1.0.0",
+    "@helia/unixfs": "^3.0.0",
+    "@ipld/dag-cbor": "^9.1.0",
+    "@ipld/dag-json": "^10.1.7",
+    "@ipld/dag-pb": "^4.0.8",
+    "@libp2p/interface": "^1.1.2",
+    "@libp2p/peer-id": "^4.0.5",
+    "hashlru": "^2.3.0",
+    "ipfs-unixfs-exporter": "^13.4.0",
+    "mime-types": "^2.1.35",
+    "multiformats": "^13.0.0",
+    "progress-events": "^1.0.0"
+  },
+  "devDependencies": {
+    "@libp2p/logger": "^4.0.5",
+    "@libp2p/peer-id-factory": "^4.0.5",
+    "@types/mime-types": "^2.1.4",
+    "@types/sinon": "^17.0.2",
+    "aegir": "^42.1.0",
+    "helia": "^4.0.1",
+    "interface-blockstore": "^5.2.9",
+    "sinon": "^17.0.1",
+    "sinon-ts": "^2.0.0"
+  },
+  "sideEffects": false
+}
