@@ -30,6 +30,10 @@
     ".": {
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
+    },
+    "./dag-walkers": {
+      "types": "./dist/src/utils/dag-walkers.d.ts",
+      "import": "./dist/src/utils/dag-walkers.js"
     }
   },
   "eslintConfig": {
