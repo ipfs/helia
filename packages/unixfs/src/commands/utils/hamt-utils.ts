@@ -14,8 +14,8 @@ import {
 } from './hamt-constants.js'
 import { persist } from './persist.js'
 import type { PersistOptions } from './persist.js'
-import type { Blocks } from '@helia/interface/blocks'
 import type { AbortOptions } from '@libp2p/interface'
+import type { Blockstore } from 'interface-blockstore'
 import type { Mtime } from 'ipfs-unixfs'
 import type { ImportResult } from 'ipfs-unixfs-importer'
 import type { CID, Version } from 'multiformats/cid'
@@ -40,7 +40,7 @@ export interface CreateShardOptions {
   cidVersion: Version
 }
 
-export const createShard = async (blockstore: Blocks, contents: Array<{ name: string, size: bigint, cid: CID }>, options: CreateShardOptions): Promise<ImportResult> => {
+export const createShard = async (blockstore: Blockstore, contents: Array<{ name: string, size: bigint, cid: CID }>, options: CreateShardOptions): Promise<ImportResult> => {
   const shard = new DirSharded({
     root: true,
     dir: true,
@@ -75,7 +75,7 @@ export interface HAMTPath {
   node: dagPB.PBNode
 }
 
-export const updateShardedDirectory = async (path: HAMTPath[], blockstore: Blocks, options: PersistOptions): Promise<{ cid: CID, node: dagPB.PBNode }> => {
+export const updateShardedDirectory = async (path: HAMTPath[], blockstore: Blockstore, options: PersistOptions): Promise<{ cid: CID, node: dagPB.PBNode }> => {
   // persist any metadata on the shard root
   const shardRoot = UnixFS.unmarshal(path[0].node.Data ?? new Uint8Array(0))
 
@@ -142,7 +142,7 @@ export const updateShardedDirectory = async (path: HAMTPath[], blockstore: Block
   return { cid, node }
 }
 
-export const recreateShardedDirectory = async (cid: CID, fileName: string, blockstore: Blocks, options: AbortOptions): Promise<{ path: HAMTPath[], hash: InfiniteHash }> => {
+export const recreateShardedDirectory = async (cid: CID, fileName: string, blockstore: Blockstore, options: AbortOptions): Promise<{ path: HAMTPath[], hash: InfiniteHash }> => {
   const wrapped = wrapHash(hamtHashFn)
   const hash = wrapped(uint8ArrayFromString(fileName))
   const path: HAMTPath[] = []

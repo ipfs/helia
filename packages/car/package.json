@@ -142,6 +142,7 @@
     "@helia/interface": "^4.0.0",
     "@ipld/car": "^5.2.5",
     "@libp2p/interfaces": "^3.3.1",
+    "interface-blockstore": "^5.2.9",
     "it-drain": "^3.0.5",
     "it-map": "^3.0.5",
     "multiformats": "^13.0.0",
@@ -154,7 +155,6 @@
     "@ipld/dag-pb": "^4.0.8",
     "aegir": "^42.1.0",
     "blockstore-core": "^4.3.10",
-    "interface-blockstore": "^5.2.9",
     "ipfs-unixfs-importer": "^15.2.3",
     "it-to-buffer": "^4.0.2"
   }

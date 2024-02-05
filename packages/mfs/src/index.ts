@@ -36,9 +36,9 @@ import { Key } from 'interface-datastore'
 import { UnixFS as IPFSUnixFS, type Mtime } from 'ipfs-unixfs'
 import { CID } from 'multiformats/cid'
 import { basename } from './utils/basename.js'
-import type { Blocks } from '@helia/interface/blocks'
 import type { AddOptions, CatOptions, ChmodOptions, CpOptions, LsOptions, MkdirOptions as UnixFsMkdirOptions, RmOptions as UnixFsRmOptions, StatOptions, TouchOptions, UnixFS, UnixFSStats } from '@helia/unixfs'
 import type { AbortOptions } from '@libp2p/interfaces'
+import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { UnixFSEntry } from 'ipfs-unixfs-exporter'
 import type { ByteStream } from 'ipfs-unixfs-importer'
@@ -46,7 +46,7 @@ import type { ByteStream } from 'ipfs-unixfs-importer'
 const log = logger('helia:mfs')
 
 export interface MFSComponents {
-  blockstore: Blocks
+  blockstore: Blockstore
   datastore: Datastore
 }
 
@@ -590,6 +590,6 @@ class DefaultMFS implements MFS {
 /**
  * Create a {@link MFS} instance powered by {@link https://github.com/ipfs/helia Helia}
  */
-export function mfs (helia: { blockstore: Blocks, datastore: Datastore }, init: MFSInit = {}): MFS {
+export function mfs (helia: { blockstore: Blockstore, datastore: Datastore }, init: MFSInit = {}): MFS {
   return new DefaultMFS(helia, init)
 }

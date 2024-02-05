@@ -14,8 +14,8 @@ import { SHARD_SPLIT_THRESHOLD_BYTES } from './utils/constants.js'
 import { persist } from './utils/persist.js'
 import { resolve, updatePathCids } from './utils/resolve.js'
 import type { ChmodOptions } from '../index.js'
-import type { Blocks } from '@helia/interface/blocks'
 import type { PBNode, PBLink } from '@ipld/dag-pb'
+import type { Blockstore } from 'interface-blockstore'
 
 const mergeOptions = mergeOpts.bind({ ignoreUndefined: true })
 const log = logger('helia:unixfs:chmod')
@@ -25,7 +25,7 @@ const defaultOptions: ChmodOptions = {
   shardSplitThresholdBytes: SHARD_SPLIT_THRESHOLD_BYTES
 }
 
-export async function chmod (cid: CID, mode: number, blockstore: Blocks, options: Partial<ChmodOptions> = {}): Promise<CID> {
+export async function chmod (cid: CID, mode: number, blockstore: Blockstore, options: Partial<ChmodOptions> = {}): Promise<CID> {
   const opts: ChmodOptions = mergeOptions(defaultOptions, options)
   const resolved = await resolve(cid, opts.path, blockstore, options)
 

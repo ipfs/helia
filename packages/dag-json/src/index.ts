@@ -26,14 +26,15 @@
 import * as codec from '@ipld/dag-json'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
-import type { Blocks, GetBlockProgressEvents, PutBlockProgressEvents } from '@helia/interface/blocks'
+import type { GetBlockProgressEvents, PutBlockProgressEvents } from '@helia/interface/blocks'
 import type { AbortOptions } from '@libp2p/interfaces'
+import type { Blockstore } from 'interface-blockstore'
 import type { BlockCodec } from 'multiformats/codecs/interface'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 import type { ProgressOptions } from 'progress-events'
 
 export interface DAGJSONComponents {
-  blockstore: Blocks
+  blockstore: Blockstore
 }
 
 export interface AddOptions extends AbortOptions, ProgressOptions<PutBlockProgressEvents> {
@@ -115,6 +116,6 @@ class DefaultDAGJSON implements DAGJSON {
 /**
  * Create a {@link DAGJSON} instance for use with {@link https://github.com/ipfs/helia Helia}
  */
-export function dagJson (helia: { blockstore: Blocks }): DAGJSON {
+export function dagJson (helia: { blockstore: Blockstore }): DAGJSON {
   return new DefaultDAGJSON(helia)
 }
