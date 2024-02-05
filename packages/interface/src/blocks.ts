@@ -67,7 +67,7 @@ ProgressOptions<DeleteBlockProgressEvents>, ProgressOptions<DeleteManyBlocksProg
    * This method is optional to maintain compatibility with existing
    * blockstores that do not support sessions.
    */
-  createSession?(root: CID, options?: CreateSessionOptions<GetBlockProgressEvents>): Promise<Blockstore>
+  createSession(root: CID, options?: CreateSessionOptions<GetBlockProgressEvents>): Promise<Blockstore>
 }
 
 export interface BlockRetrievalOptions <ProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> extends AbortOptions, ProgressOptions<ProgressEvents> {
