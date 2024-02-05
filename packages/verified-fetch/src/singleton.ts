@@ -1,23 +1,20 @@
 import { createVerifiedFetch } from './index.js'
 import type { Resource, VerifiedFetch, VerifiedFetchInit } from './index.js'
 
-interface VerifiedFetchSingleton extends VerifiedFetch {
-  _impl?: VerifiedFetch
-}
+let impl: VerifiedFetch | undefined
 
-const singleton: VerifiedFetchSingleton = async function verifiedFetch (resource: Resource, options?: VerifiedFetchInit): Promise<Response> {
-  if (singleton._impl == null) {
-    singleton._impl = await createVerifiedFetch()
+export const verifiedFetch: VerifiedFetch = async function verifiedFetch (resource: Resource, options?: VerifiedFetchInit): Promise<Response> {
+  if (impl == null) {
+    impl = await createVerifiedFetch()
   }
 
-  return singleton._impl(resource, options)
+  return impl(resource, options)
 }
-singleton.start = async function () {
-  await singleton._impl?.start()
-}
-singleton.stop = async function () {
-  await singleton._impl?.stop()
-}
-const verifiedFetchSingleton: VerifiedFetch = singleton
 
-export { verifiedFetchSingleton as verifiedFetch }
+verifiedFetch.start = async function () {
+  await impl?.start()
+}
+
+verifiedFetch.stop = async function () {
+  await impl?.stop()
+}
