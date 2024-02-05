@@ -1,3 +1,4 @@
+import { fileTypeFromBuffer } from '@sgtpooki/file-type'
 import mime from 'mime-types'
 
 interface TestInput {
@@ -20,6 +21,8 @@ const tests: Array<(input: TestInput) => TestOutput> = [
   async ({ bytes }): TestOutput => xmlRegex.test(new TextDecoder().decode(bytes.slice(0, 64)))
     ? 'image/svg+xml'
     : undefined,
+  // testing file-type from buffer
+  async ({ bytes }): TestOutput => (await fileTypeFromBuffer(bytes))?.mime,
   // testing file-type from path
   async ({ path }): TestOutput => {
     const mimeType = mime.lookup(path)

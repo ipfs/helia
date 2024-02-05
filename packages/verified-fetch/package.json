@@ -155,6 +155,7 @@
     "@ipld/dag-pb": "^4.0.8",
     "@libp2p/interface": "^1.1.2",
     "@libp2p/peer-id": "^4.0.5",
+    "@sgtpooki/file-type": "^1.0.0-1e871f8",
     "hashlru": "^2.3.0",
     "ipfs-unixfs-exporter": "^13.4.0",
     "mime-types": "^2.1.35",
