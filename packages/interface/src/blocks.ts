@@ -67,10 +67,10 @@ ProgressOptions<DeleteBlockProgressEvents>, ProgressOptions<DeleteManyBlocksProg
    * This method is optional to maintain compatibility with existing
    * blockstores that do not support sessions.
    */
-  createSession?(root: CID, options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): Promise<Blockstore>
+  createSession?(root: CID, options?: CreateSessionOptions<GetBlockProgressEvents>): Promise<Blockstore>
 }
 
-export type BlockRetrievalOptions<GetProgressOptions extends ProgressOptions = ProgressOptions> = AbortOptions & GetProgressOptions & {
+export interface BlockRetrievalOptions <ProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> extends AbortOptions, ProgressOptions<ProgressEvents> {
   /**
    * A function that blockBrokers should call prior to returning a block to ensure it can maintain control
    * of the block request flow. e.g. TrustedGatewayBlockBroker will use this to ensure that the block
@@ -80,19 +80,39 @@ export type BlockRetrievalOptions<GetProgressOptions extends ProgressOptions = P
   validateFn?(block: Uint8Array): Promise<void>
 }
 
-export interface BlockBroker<GetProgressOptions extends ProgressOptions = ProgressOptions, NotifyProgressOptions extends ProgressOptions = ProgressOptions> {
+export interface BlockAnnounceOptions <ProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> extends AbortOptions, ProgressOptions<ProgressEvents> {
+
+}
+
+export interface CreateSessionOptions <ProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> extends AbortOptions, ProgressOptions<ProgressEvents> {
+  /**
+   * The minimum number of providers for the root CID that are required for
+   * successful session creation.
+   */
+  providers?: number
+
+  /**
+   * How long each queried provider has to respond either that they have the
+   * root block or to send it to us.
+   *
+   * @default 5000
+   */
+  timeout?: number
+}
+
+export interface BlockBroker<RetrieveProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>, AnnounceProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> {
   /**
    * Retrieve a block from a source
    */
-  retrieve?(cid: CID, options?: BlockRetrievalOptions<GetProgressOptions>): Promise<Uint8Array>
+  retrieve?(cid: CID, options?: BlockRetrievalOptions<RetrieveProgressEvents>): Promise<Uint8Array>
 
   /**
    * Make a new block available to peers
    */
-  announce?(cid: CID, block: Uint8Array, options?: NotifyProgressOptions): Promise<void>
+  announce?(cid: CID, block: Uint8Array, options?: BlockAnnounceOptions<AnnounceProgressEvents>): Promise<void>
 
   /**
    * Create a new session
    */
-  createSession?(root: CID, options?: BlockRetrievalOptions<GetProgressOptions>): Promise<BlockBroker<GetProgressOptions, NotifyProgressOptions>>
+  createSession?(root: CID, options?: CreateSessionOptions<RetrieveProgressEvents>): Promise<BlockBroker<RetrieveProgressEvents, AnnounceProgressEvents>>
 }
