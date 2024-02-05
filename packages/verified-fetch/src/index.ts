@@ -1,57 +1,49 @@
 /**
  * @packageDocumentation
  *
- * `@helia/verified-fetch` is a library that provides a fetch-like API for fetching trustless content from IPFS and verifying it.
+ * `@helia/verified-fetch` provides a [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)-like API for retrieving content from the [IPFS](https://ipfs.tech/) network.
  *
- * This library should act as a replacement for the `fetch()` API for fetching content from IPFS, and will return a [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) object that can be used in a similar manner to the `fetch()` API. This means browser and HTTP caching inside browser main threads, web-workers, and service workers, as well as other features of the `fetch()` API should work in a way familiar to developers.
+ * All content is retrieved in a [trustless manner](https://www.techopedia.com/definition/trustless), and the integrity of all bytes are verified by comparing hashes of the data.
  *
- * Exports a `createVerifiedFetch` function that returns a `fetch()` like API method {@link Helia} for fetching IPFS content.
+ * This is a marked improvement over `fetch` which offers no such protections and is vulnerable to all sorts of attacks like [Content Spoofing](https://owasp.org/www-community/attacks/Content_Spoofing), [DNS Hijacking](https://en.wikipedia.org/wiki/DNS_hijacking), etc.
+ *
+ * A `verifiedFetch` function is exported to get up and running quickly, and a `createVerifiedFetch` function is also available that allows customizing the underlying [Helia](https://helia.io/) node for complete control over how content is retrieved.
+ *
+ * Browser-cache-friendly [Response](https://developer.mozilla.org/en-US/docs/Web/API/Response) objects are returned which should be instantly familiar to web developers.
  *
  * You may use any supported resource argument to fetch content:
  *
- * - CID instance
+ * - [CID](https://multiformats.github.io/js-multiformats/classes/cid.CID.html) instance
  * - IPFS URL
  * - IPNS URL
  *
- * @example
+ * @example Getting started
  *
  * ```typescript
- * import { createVerifiedFetch } from '@helia/verified-fetch'
+ * import { verifiedFetch } from '@helia/verified-fetch'
  *
- * const fetch = await createVerifiedFetch({
- *  gateways: ['https://mygateway.example.net', 'https://trustless-gateway.link']
- *})
- *
- * const resp = await fetch('ipfs://bafy...')
+ * const resp = await verifiedFetch('ipfs://bafy...')
  *
  * const json = await resp.json()
  *```
  *
- *
  * @example Using a CID instance to fetch JSON
  *
  * ```typescript
- * import { createVerifiedFetch } from '@helia/verified-fetch'
+ * import { verifiedFetch } from '@helia/verified-fetch'
  * import { CID } from 'multiformats/cid'
  *
- * const fetch = await createVerifiedFetch({
- *  gateways: ['https://mygateway.example.net', 'https://trustless-gateway.link']
- * })
- *
  * const cid = CID.parse('bafyFoo') // some image file
- * const response = await fetch(cid)
+ * const response = await verifiedFetch(cid)
  * const json = await response.json()
  * ```
  *
  * @example Using IPFS protocol to fetch an image
  *
  * ```typescript
- * import { createVerifiedFetch } from '@helia/verified-fetch'
+ * import { verifiedFetch } from '@helia/verified-fetch'
  *
- * const fetch = await createVerifiedFetch({
- *  gateways: ['https://mygateway.example.net', 'https://trustless-gateway.link']
- * })
- * const response = await fetch('ipfs://bafyFoo') // CID for some image file
+ * const response = await verifiedFetch('ipfs://bafyFoo') // CID for some image file
  * const blob = await response.blob()
  * const image = document.createElement('img')
  * image.src = URL.createObjectURL(blob)
@@ -61,22 +53,42 @@
  * @example Using IPNS protocol to stream a big file
  *
  * ```typescript
- * import { createVerifiedFetch } from '@helia/verified-fetch'
+ * import { verifiedFetch } from '@helia/verified-fetch'
  *
- * const fetch = await createVerifiedFetch({
- *  gateways: ['https://mygateway.example.net', 'https://trustless-gateway.link']
- * })
- * const response = await fetch('ipns://mydomain.com/path/to/very-long-file.log')
+ * const response = await verifiedFetch('ipns://mydomain.com/path/to/very-long-file.log')
  * const bigFileStreamReader = await response.body.getReader()
  * ```
  *
- * ### Configuration
+ * ## Configuration
  *
- * #### Usage with customized Helia
+ * ### Custom HTTP gateways and routers
+ *
+ * Out of the box `@helia/verified-fetch` uses a default set of [trustless gateways](https://specs.ipfs.tech/http-gateways/trustless-gateway/) for fetching blocks and [HTTP delegated routers](https://specs.ipfs.tech/routing/http-routing-v1/) for performing routing tasks - looking up peers, resolving/publishing [IPNS](https://docs.ipfs.tech/concepts/ipns/) names, etc.
+ *
+ * It's possible to override these by passing `gateways` and `routers` keys to the `createVerifiedFetch` function:
+ *
+ * @example Configuring gateways and routers
+ *
+ * ```typescript
+ * import { createVerifiedFetch } from '@helia/verified-fetch'
+ *
+ * const fetch = await createVerifiedFetch({
+ *  gateways: ['https://trustless-gateway.link'],
+ *  routers: ['http://delegated-ipfs.dev']
+ *})
+ *
+ * const resp = await fetch('ipfs://bafy...')
+ *
+ * const json = await resp.json()
+ *```
+ *
+ * ### Usage with customized Helia
+ *
+ * For full control of how `@helia/verified-fetch` fetches content from the distributed web you can pass a preconfigured Helia node to `createVerifiedFetch`.
+ *
+ * The [helia](https://www.npmjs.com/package/helia) module is configured with a libp2p node that is suited for decentralized applications, alternatively [@helia/http](https://www.npmjs.com/package/@helia/http) is available which uses HTTP gateways for all network operations.
  *
  * You can see variations of Helia and js-libp2p configuration options at https://helia.io/interfaces/helia.index.HeliaInit.html.
- *
- * The `@helia/http` module is currently in-progress, but the init options should be a subset of the `helia` module's init options. See https://github.com/ipfs/helia/issues/289 for more information.
  *
  * ```typescript
  * import { trustlessGateway } from '@helia/block-brokers'
@@ -100,28 +112,28 @@
  * const json = await resp.json()
  * ```
  *
- * ### Comparison to fetch
+ * ## Comparison to fetch
  *
- * First, this library will require instantiation in order to configure the gateways and delegated routers, or potentially a custom Helia instance. Secondly, once your verified-fetch method is created, it will act as similar to the `fetch()` API as possible.
+ * This module attempts to act as similarly to the `fetch()` API as possible.
  *
  * [The `fetch()` API](https://developer.mozilla.org/en-US/docs/Web/API/fetch) takes two parameters:
  *
  * 1. A [resource](https://developer.mozilla.org/en-US/docs/Web/API/fetch#resource)
  * 2. An [options object](https://developer.mozilla.org/en-US/docs/Web/API/fetch#options)
  *
- * #### Resource argument
+ * ### Resource argument
  *
- * This library intends to support the following methods of fetching web3 content from IPFS:
+ * This library supports the following methods of fetching web3 content from IPFS:
  *
  * 1. IPFS protocol: `ipfs://<cidv0>` & `ipfs://<cidv0>`
  * 2. IPNS protocol: `ipns://<peerId>` & `ipns://<publicKey>` & `ipns://<hostUri_Supporting_DnsLink_TxtRecords>`
  * 3. CID instances: An actual CID instance `CID.parse('bafy...')`
  *
- * As well as support for pathing & params for item 1&2 above according to [IPFS - Path Gateway Specification](https://specs.ipfs.tech/http-gateways/path-gateway) & [IPFS - Trustless Gateway Specification](https://specs.ipfs.tech/http-gateways/trustless-gateway/). Further refinement of those specifications specifically for web-based scenarios can be found in the [Web Pathing Specification IPIP](https://github.com/ipfs/specs/pull/453).
+ * As well as support for pathing & params for item 1 & 2 above according to [IPFS - Path Gateway Specification](https://specs.ipfs.tech/http-gateways/path-gateway) & [IPFS - Trustless Gateway Specification](https://specs.ipfs.tech/http-gateways/trustless-gateway/). Further refinement of those specifications specifically for web-based scenarios can be found in the [Web Pathing Specification IPIP](https://github.com/ipfs/specs/pull/453).
  *
- * If you pass a CID instance, we assume you want the content for that specific CID only, and do not support pathing or params for that CID.
+ * If you pass a CID instance, it assumes you want the content for that specific CID only, and does not support pathing or params for that CID.
  *
- * #### Options argument
+ * ### Options argument
  *
  * This library does not plan to support the exact Fetch API options object, as some of the arguments don't make sense. Instead, it will only support options necessary to meet [IPFS specs](https://specs.ipfs.tech/) related to specifying the resultant shape of desired content.
  *
@@ -146,7 +158,6 @@
  * 5. `body` - An object that specifies the body of the request. Best effort to adhere to the [Fetch API body](https://developer.mozilla.org/en-US/docs/Web/API/fetch#body) parameter.
  * 6. `cache` - Will basically act as `force-cache` for the request. Best effort to adhere to the [Fetch API cache](https://developer.mozilla.org/en-US/docs/Web/API/fetch#cache) parameter.
  *
- *
  * Non-Fetch API options that will be supported:
  *
  * 1. `onProgress` - Similar to Helia `onProgress` options, this will be a function that will be called with a progress event. Supported progress events are:
@@ -167,7 +178,7 @@
  * 4. [IPIP-0328: JSON and CBOR Response Formats on HTTP Gateways](https://specs.ipfs.tech/ipips/ipip-0328/)
  * 5. [IPIP-0288: TAR Response Format on HTTP Gateways](https://specs.ipfs.tech/ipips/ipip-0288/)
  *
- * #### Response types
+ * ### Response types
  *
  * This library's purpose is to return reasonably representable content from IPFS. In other words, fetching content is intended for leaf-node content -- such as images/videos/audio & other assets, or other IPLD content (with link) -- that can be represented by https://developer.mozilla.org/en-US/docs/Web/API/Response#instance_methods. The content type you receive back will depend upon the CID you request as well as the `Accept` header value you provide.
  *
@@ -175,7 +186,7 @@
  *
  * If your content doesn't have a mime-type or an [IPFS spec](https://specs.ipfs.tech), this library will not support it, but you can use the [`helia`](https://github.com/ipfs/helia) library directly for those use cases. See [Unsupported response types](#unsupported-response-types) for more information.
  *
- * ##### Handling response types
+ * #### Handling response types
  *
  * For handling responses we want to follow conventions/abstractions from Fetch API where possible:
  *
@@ -184,12 +195,12 @@
  * - For plain text in utf-8, you would call `.text()`
  * - For streaming response data, use something like `response.body.getReader()` to get a [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API/Using_readable_streams#consuming_a_fetch_as_a_stream).
  *
- * ##### Unsupported response types
+ * #### Unsupported response types
  *
  * * Returning IPLD nodes or DAGs as JS objects is not supported, as there is no currently well-defined structure for representing this data in an [HTTP Response](https://developer.mozilla.org/en-US/docs/Web/API/Response). Instead, users should request `aplication/vnd.ipld.car` or use the [`helia`](https://github.com/ipfs/helia) library directly for this use case.
  * * Others? Open an issue or PR!
  *
- * #### Response headers
+ * ### Response headers
  *
  * This library will set the [HTTP Response](https://developer.mozilla.org/en-US/docs/Web/API/Response) headers to the appropriate values for the content type according to the appropriate [IPFS Specifications](https://specs.ipfs.tech/).
  *
@@ -199,13 +210,13 @@
  * * https://specs.ipfs.tech/http-gateways/trustless-gateway/#response-headers
  * * https://specs.ipfs.tech/http-gateways/subdomain-gateway/#response-headers
  *
- * #### Possible Scenarios that could cause confusion
+ * ### Possible Scenarios that could cause confusion
  *
- * ##### Attempting to fetch the CID for content that does not make sense
+ * #### Attempting to fetch the CID for content that does not make sense
  *
  * If you request `bafybeiaysi4s6lnjev27ln5icwm6tueaw2vdykrtjkwiphwekaywqhcjze`, which points to the root of the en.wikipedia.org mirror, a response object does not make sense.
  *
- * #### Errors
+ * ### Errors
  *
  * Known Errors that can be thrown:
  *
