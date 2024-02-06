@@ -54,14 +54,14 @@
   },
   "dependencies": {
     "@helia/interface": "^4.0.0",
-    "@libp2p/interface": "^1.1.1",
-    "interface-blockstore": "^5.2.7",
+    "@libp2p/interface": "^1.1.2",
+    "interface-blockstore": "^5.2.9",
     "ipfs-bitswap": "^20.0.0",
     "multiformats": "^13.0.0",
     "progress-events": "^1.0.0"
   },
   "devDependencies": {
-    "@libp2p/logger": "^4.0.4",
+    "@libp2p/logger": "^4.0.5",
     "@types/sinon": "^17.0.2",
     "aegir": "^42.1.0",
     "sinon": "^17.0.1",

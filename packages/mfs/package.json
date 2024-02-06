@@ -145,7 +145,7 @@
     "interface-blockstore": "^5.2.9",
     "interface-datastore": "^8.2.9",
     "ipfs-unixfs": "^11.0.0",
-    "ipfs-unixfs-exporter": "^13.1.0",
+    "ipfs-unixfs-exporter": "^13.4.0",
     "ipfs-unixfs-importer": "^15.2.3",
     "multiformats": "^13.0.0"
   },
