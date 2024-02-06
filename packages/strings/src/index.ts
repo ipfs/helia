@@ -26,14 +26,15 @@ import * as raw from 'multiformats/codecs/raw'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { Blocks, GetBlockProgressEvents, PutBlockProgressEvents } from '@helia/interface/blocks'
+import type { GetBlockProgressEvents, PutBlockProgressEvents } from '@helia/interface/blocks'
 import type { AbortOptions } from '@libp2p/interfaces'
+import type { Blockstore } from 'interface-blockstore'
 import type { BlockCodec } from 'multiformats/codecs/interface'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 import type { ProgressOptions } from 'progress-events'
 
 export interface StringsComponents {
-  blockstore: Blocks
+  blockstore: Blockstore
 }
 
 export interface AddOptions extends AbortOptions, ProgressOptions<PutBlockProgressEvents> {
@@ -117,6 +118,6 @@ class DefaultStrings implements Strings {
 /**
  * Create a {@link Strings} instance for use with {@link https://github.com/ipfs/helia Helia}
  */
-export function strings (helia: { blockstore: Blocks }): Strings {
+export function strings (helia: { blockstore: Blockstore }): Strings {
   return new DefaultStrings(helia)
 }
