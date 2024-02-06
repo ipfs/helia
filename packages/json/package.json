@@ -141,12 +141,12 @@
   "dependencies": {
     "@helia/interface": "^4.0.0",
     "@libp2p/interfaces": "^3.3.1",
+    "interface-blockstore": "^5.2.9",
     "multiformats": "^13.0.0",
     "progress-events": "^1.0.0"
   },
   "devDependencies": {
     "aegir": "^42.1.0",
-    "blockstore-core": "^4.3.10",
-    "interface-blockstore": "^5.2.9"
+    "blockstore-core": "^4.3.10"
   }
 }

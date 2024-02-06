@@ -4,8 +4,8 @@ import { DoesNotExistError, InvalidParametersError } from '../../errors.js'
 import { addLink } from './add-link.js'
 import { cidToDirectory } from './cid-to-directory.js'
 import { cidToPBLink } from './cid-to-pblink.js'
-import type { Blocks } from '@helia/interface/blocks'
 import type { AbortOptions } from '@libp2p/interface'
+import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 
 const log = logger('helia:unixfs:components:utils:resolve')
@@ -32,7 +32,7 @@ export interface ResolveResult {
   segments?: Segment[]
 }
 
-export async function resolve (cid: CID, path: string | undefined, blockstore: Blocks, options: AbortOptions): Promise<ResolveResult> {
+export async function resolve (cid: CID, path: string | undefined, blockstore: Blockstore, options: AbortOptions): Promise<ResolveResult> {
   if (path == null || path === '') {
     return { cid }
   }
@@ -101,7 +101,7 @@ export interface UpdatePathCidsOptions extends AbortOptions {
  * Where we have descended into a DAG to update a child node, ascend up the DAG creating
  * new hashes and blocks for the changed content
  */
-export async function updatePathCids (cid: CID, result: ResolveResult, blockstore: Blocks, options: UpdatePathCidsOptions): Promise<CID> {
+export async function updatePathCids (cid: CID, result: ResolveResult, blockstore: Blockstore, options: UpdatePathCidsOptions): Promise<CID> {
   if (result.segments == null || result.segments.length === 0) {
     return cid
   }

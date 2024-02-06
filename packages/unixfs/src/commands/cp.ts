@@ -6,7 +6,7 @@ import { cidToDirectory } from './utils/cid-to-directory.js'
 import { cidToPBLink } from './utils/cid-to-pblink.js'
 import { SHARD_SPLIT_THRESHOLD_BYTES } from './utils/constants.js'
 import type { CpOptions } from '../index.js'
-import type { Blocks } from '@helia/interface/blocks'
+import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 
 const mergeOptions = mergeOpts.bind({ ignoreUndefined: true })
@@ -17,7 +17,7 @@ const defaultOptions: CpOptions = {
   shardSplitThresholdBytes: SHARD_SPLIT_THRESHOLD_BYTES
 }
 
-export async function cp (source: CID, target: CID, name: string, blockstore: Blocks, options: Partial<CpOptions> = {}): Promise<CID> {
+export async function cp (source: CID, target: CID, name: string, blockstore: Blockstore, options: Partial<CpOptions> = {}): Promise<CID> {
   const opts: CpOptions = mergeOptions(defaultOptions, options)
 
   if (name.includes('/')) {

@@ -63,14 +63,15 @@ import map from 'it-map'
 import defer from 'p-defer'
 import PQueue from 'p-queue'
 import type { DAGWalker } from '@helia/interface'
-import type { Blocks, GetBlockProgressEvents, PutManyBlocksProgressEvents } from '@helia/interface/blocks'
+import type { GetBlockProgressEvents, PutManyBlocksProgressEvents } from '@helia/interface/blocks'
 import type { CarReader, CarWriter } from '@ipld/car'
 import type { AbortOptions } from '@libp2p/interfaces'
+import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 import type { ProgressOptions } from 'progress-events'
 
 export interface CarComponents {
-  blockstore: Blocks
+  blockstore: Blockstore
   dagWalkers: Record<number, DAGWalker>
 }
 
@@ -204,6 +205,6 @@ class DefaultCar implements Car {
 /**
  * Create a {@link Car} instance for use with {@link https://github.com/ipfs/helia Helia}
  */
-export function car (helia: { blockstore: Blocks, dagWalkers: Record<number, DAGWalker> }, init: any = {}): Car {
+export function car (helia: { blockstore: Blockstore, dagWalkers: Record<number, DAGWalker> }, init: any = {}): Car {
   return new DefaultCar(helia, init)
 }

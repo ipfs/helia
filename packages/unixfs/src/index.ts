@@ -52,8 +52,9 @@ import { mkdir } from './commands/mkdir.js'
 import { rm } from './commands/rm.js'
 import { stat } from './commands/stat.js'
 import { touch } from './commands/touch.js'
-import type { Blocks, GetBlockProgressEvents, PutBlockProgressEvents } from '@helia/interface/blocks'
+import type { GetBlockProgressEvents, PutBlockProgressEvents } from '@helia/interface/blocks'
 import type { AbortOptions } from '@libp2p/interface'
+import type { Blockstore } from 'interface-blockstore'
 import type { Mtime, UnixFS as IPFSUnixFS } from 'ipfs-unixfs'
 import type { ExporterProgressEvents, UnixFSEntry } from 'ipfs-unixfs-exporter'
 import type { ByteStream, DirectoryCandidate, FileCandidate, ImportCandidateStream, ImporterOptions, ImporterProgressEvents, ImportResult } from 'ipfs-unixfs-importer'
@@ -61,7 +62,7 @@ import type { CID, Version } from 'multiformats/cid'
 import type { ProgressOptions } from 'progress-events'
 
 export interface UnixFSComponents {
-  blockstore: Blocks
+  blockstore: Blockstore
 }
 
 export type AddEvents = PutBlockProgressEvents
@@ -616,7 +617,7 @@ class DefaultUnixFS implements UnixFS {
 /**
  * Create a {@link UnixFS} instance for use with {@link https://github.com/ipfs/helia Helia}
  */
-export function unixfs (helia: { blockstore: Blocks }): UnixFS {
+export function unixfs (helia: { blockstore: Blockstore }): UnixFS {
   return new DefaultUnixFS(helia)
 }
 
