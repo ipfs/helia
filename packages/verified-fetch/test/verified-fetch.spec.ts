@@ -12,10 +12,10 @@ import sinon, { type SinonStub } from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { VerifiedFetch } from '../src/verified-fetch.js'
 import type { PathWalkerFn } from '../src/utils/walk-path'
-import type { Helia } from '@helia/interface'
+import type { Blocks, Helia } from '@helia/interface'
 import type { Logger, ComponentLogger } from '@libp2p/interface'
-import type { Blockstore } from 'interface-blockstore'
 import type { UnixFSDirectory, UnixFSEntry } from 'ipfs-unixfs-exporter'
+
 const testCID = CID.parse('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
 const anyOnProgressMatcher = sinon.match.any as unknown as () => void
 
@@ -102,10 +102,10 @@ describe('@helia/verifed-fetch', () => {
     let jsonStub: ReturnType<typeof stubInterface<HeliaJSON>>
     let dagCborStub: ReturnType<typeof stubInterface<DAGCBOR>>
     let pathWalkerStub: SinonStub<Parameters<PathWalkerFn>, ReturnType<PathWalkerFn>>
-    let blockstoreStub: ReturnType<typeof stubInterface<Blockstore>>
+    let blockstoreStub: ReturnType<typeof stubInterface<Blocks>>
 
     beforeEach(async () => {
-      blockstoreStub = stubInterface<Blockstore>()
+      blockstoreStub = stubInterface<Blocks>()
       unixfsStub = stubInterface<UnixFS>({
         cat: sinon.stub(),
         stat: sinon.stub()
