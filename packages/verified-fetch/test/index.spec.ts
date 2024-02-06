@@ -2,7 +2,7 @@
 import { createHeliaHTTP } from '@helia/http'
 import { expect } from 'aegir/chai'
 import { createHelia } from 'helia'
-import { createVerifiedFetch } from '../src/index.js'
+import { createVerifiedFetch, verifiedFetch } from '../src/index.js'
 
 describe('createVerifiedFetch', () => {
   it('can be constructed with a HeliaHttp instance', async () => {
@@ -44,5 +44,11 @@ describe('createVerifiedFetch', () => {
 
     expect(verifiedFetch).to.be.ok()
     await verifiedFetch.stop()
+  })
+
+  it('can be used as a singleton', () => {
+    expect(verifiedFetch).to.be.a('function')
+    expect(verifiedFetch.stop).to.be.a('function')
+    expect(verifiedFetch.start).to.be.a('function')
   })
 })
