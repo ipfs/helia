@@ -59,13 +59,13 @@
     "ipns": "^9.0.0",
     "it-first": "^3.0.4",
     "it-map": "^3.0.5",
-    "multiformats": "^13.0.0",
+    "multiformats": "^13.0.1",
     "uint8arrays": "^5.0.1"
   },
   "devDependencies": {
     "@libp2p/peer-id": "^4.0.5",
     "@libp2p/peer-id-factory": "^4.0.5",
-    "aegir": "^42.1.0",
+    "aegir": "^42.2.2",
     "it-drain": "^3.0.5",
     "sinon-ts": "^2.0.0"
   },
