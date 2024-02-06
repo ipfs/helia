@@ -170,11 +170,11 @@ export class BlockStorage implements Blocks, Startable {
     }
   }
 
-  async createSession (root: CID, options?: AbortOptions): Promise<Blocks> {
+  async createSession (root: CID, options?: AbortOptions): Promise<Blockstore> {
     const releaseLock = await this.lock.readLock()
 
     try {
-      const blocks = await this.child.createSession?.(root, options)
+      const blocks = await this.child.createSession(root, options)
 
       if (blocks == null) {
         throw new CodeError('Sessions not supported', 'ERR_UNSUPPORTED')

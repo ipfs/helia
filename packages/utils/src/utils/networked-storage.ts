@@ -83,10 +83,6 @@ export class NetworkedStorage implements Blocks, Startable {
       this.blockBrokers.map(async broker => broker.announce?.(cid, block, options))
     )
 
-    await Promise.all(
-      this.blockBrokers.map(async broker => broker.announce?.(cid, block, options))
-    )
-
     options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:blockstore:put', cid))
 
     return this.child.put(cid, block, options)

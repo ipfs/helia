@@ -12,7 +12,14 @@ import { BlockStorage } from '../src/storage.js'
 import { createBlock } from './fixtures/create-block.js'
 import type { Blocks } from '@helia/interface'
 import type { Pins } from '@helia/interface/pins'
+import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
+
+class MemoryBlocks extends MemoryBlockstore implements Blocks {
+  async createSession (): Promise<Blockstore> {
+    throw new Error('Not implemented')
+  }
+}
 
 describe('storage', () => {
   let storage: BlockStorage
@@ -29,7 +36,7 @@ describe('storage', () => {
 
     const datastore = new MemoryDatastore()
 
-    blockstore = new MemoryBlockstore()
+    blockstore = new MemoryBlocks()
     pins = new PinsImpl(datastore, blockstore, [])
     storage = new BlockStorage(blockstore, pins, {
       holdGcLock: true
