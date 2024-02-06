@@ -70,14 +70,14 @@
     "build": "aegir build"
   },
   "dependencies": {
-    "@libp2p/interface": "^1.1.1",
-    "interface-blockstore": "^5.2.7",
-    "interface-datastore": "^8.2.9",
-    "interface-store": "^5.1.5",
-    "multiformats": "^13.0.0",
+    "@libp2p/interface": "^1.1.2",
+    "interface-blockstore": "^5.2.9",
+    "interface-datastore": "^8.2.10",
+    "interface-store": "^5.1.7",
+    "multiformats": "^13.0.1",
     "progress-events": "^1.0.0"
   },
   "devDependencies": {
-    "aegir": "^42.1.0"
+    "aegir": "^42.2.2"
   }
 }
