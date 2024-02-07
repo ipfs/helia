@@ -10,7 +10,7 @@ import { code as dagPbCode } from '@ipld/dag-pb'
 import { code as jsonCode } from 'multiformats/codecs/json'
 import { decode, code as rawCode } from 'multiformats/codecs/raw'
 import { CustomProgressEvent } from 'progress-events'
-import { getStreamAndContentType } from './utils/get-stream-and-content-type.js'
+import { getStreamFromAsyncIterable } from './utils/get-stream-from-async-iterable.js'
 import { parseResource } from './utils/parse-resource.js'
 import { walkPath, type PathWalkerFn } from './utils/walk-path.js'
 import type { CIDDetail, Resource, VerifiedFetchInit as VerifiedFetchOptions } from './index.js'
@@ -29,12 +29,15 @@ interface VerifiedFetchComponents {
   pathWalker?: PathWalkerFn
 }
 
+export interface ContentTypeParser {
+  (bytes: Uint8Array): Promise<string>
+}
+
 /**
  * Potential future options for the VerifiedFetch constructor.
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface VerifiedFetchInit {
-
+  contentTypeParser?: ContentTypeParser
 }
 
 interface FetchHandlerFunctionArg {
@@ -72,6 +75,7 @@ export class VerifiedFetch {
   private readonly json: JSON
   private readonly pathWalker: PathWalkerFn
   private readonly log: Logger
+  private readonly contentTypeParser: ContentTypeParser | undefined
 
   constructor ({ helia, ipns, unixfs, dagJson, json, dagCbor, pathWalker }: VerifiedFetchComponents, init?: VerifiedFetchInit) {
     this.helia = helia
@@ -87,6 +91,7 @@ export class VerifiedFetch {
     this.json = json ?? heliaJson(helia)
     this.dagCbor = dagCbor ?? heliaDagCbor(helia)
     this.pathWalker = pathWalker ?? walkPath
+    this.contentTypeParser = init?.contentTypeParser
     this.log.trace('created VerifiedFetch instance')
   }
 
@@ -133,13 +138,13 @@ export class VerifiedFetch {
   private async handleDagCbor ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
     this.log.trace('fetching %c/%s', cid, path)
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: cid.toString(), path }))
-    const result = await this.dagCbor.get(cid, {
+    const result = await this.dagCbor.get<Uint8Array>(cid, {
       signal: options?.signal,
       onProgress: options?.onProgress
     })
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: cid.toString(), path }))
-    const response = new Response(JSON.stringify(result), { status: 200 })
-    response.headers.set('content-type', 'application/json')
+    const response = new Response(result, { status: 200 })
+    await this.setContentType(result, response)
     return response
   }
 
@@ -179,11 +184,11 @@ export class VerifiedFetch {
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: resolvedCID.toString(), path: '' }))
     this.log('got async iterator for %c/%s', cid, path)
 
-    const { contentType, stream } = await getStreamAndContentType(asyncIter, path ?? '', this.helia.logger, {
+    const { stream, firstChunk } = await getStreamFromAsyncIterable(asyncIter, path ?? '', this.helia.logger, {
       onProgress: options?.onProgress
     })
     const response = new Response(stream, { status: 200 })
-    response.headers.set('content-type', contentType)
+    await this.setContentType(firstChunk, response)
 
     return response
   }
@@ -194,8 +199,18 @@ export class VerifiedFetch {
     const result = await this.helia.blockstore.get(cid)
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: cid.toString(), path }))
     const response = new Response(decode(result), { status: 200 })
-    response.headers.set('content-type', 'application/octet-stream')
+    await this.setContentType(result, response)
     return response
+  }
+
+  private async setContentType (bytes: Uint8Array, response: Response): Promise<void> {
+    if (this.contentTypeParser != null) {
+      try {
+        response.headers.set('content-type', await this.contentTypeParser(bytes))
+      } catch (err) {
+        this.log.error('Error parsing content type', err)
+      }
+    }
   }
 
   /**

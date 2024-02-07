@@ -229,7 +229,7 @@
 import { trustlessGateway } from '@helia/block-brokers'
 import { createHeliaHTTP } from '@helia/http'
 import { delegatedHTTPRouting } from '@helia/routers'
-import { VerifiedFetch as VerifiedFetchClass } from './verified-fetch.js'
+import { VerifiedFetch as VerifiedFetchClass, type ContentTypeParser } from './verified-fetch.js'
 import type { Helia } from '@helia/interface'
 import type { IPNSRoutingEvents, ResolveDnsLinkProgressEvents, ResolveProgressEvents } from '@helia/ipns'
 import type { GetEvents } from '@helia/unixfs'
@@ -262,7 +262,15 @@ export interface VerifiedFetch {
 export interface CreateVerifiedFetchWithOptions {
   gateways: string[]
   routers?: string[]
+  /**
+   * A function to handle parsing content type from bytes. The function you provide will be passed the first set of
+   * bytes we receive from the network, and should return a string that will be used as the value for the `Content-Type`
+   * header in the response.
+   */
+  contentTypeParser?: ContentTypeParser
 }
+
+export type { ContentTypeParser }
 
 export type BubbledProgressEvents =
   // unixfs
