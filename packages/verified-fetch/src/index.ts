@@ -75,7 +75,7 @@
  * const fetch = await createVerifiedFetch({
  *  gateways: ['https://trustless-gateway.link'],
  *  routers: ['http://delegated-ipfs.dev']
- *})
+ * })
  *
  * const resp = await fetch('ipfs://bafy...')
  *
@@ -110,6 +110,26 @@
  * const resp = await fetch('ipfs://bafy...')
  *
  * const json = await resp.json()
+ * ```
+ *
+ * ### Custom content-type parsing
+ *
+ * By default, `@helia/verified-fetch` does not set the `Content-Type` header. This is because the `.json()`, `.text()`, `.blob()`, and `.arrayBuffer()` methods will usually work as expected. You can provide a `contentTypeParser` function to the `createVerifiedFetch` function to handle parsing the content type. The function you provide will be passed the first bytes we receive from the network.
+ *
+ * @example Customizing content-type parsing
+ *
+ * ```typescript
+ * import { createVerifiedFetch } from '@helia/verified-fetch'
+ * import { fileTypeFromBuffer } from '@sgtpooki/file-type'
+ *
+ * const fetch = await createVerifiedFetch({
+ *  gateways: ['https://trustless-gateway.link'],
+ *  routers: ['http://delegated-ipfs.dev'],
+ *  contentTypeParser: async (bytes) => {
+ *    // call to some magic-byte recognition library like magic-bytes, file-type, or your own custom byte recognition
+ *    return fileTypeFromBuffer(bytes)?.mime ?? 'application/octet-stream'
+ *  }
+ * })
  * ```
  *
  * ## Comparison to fetch
