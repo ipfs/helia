@@ -174,7 +174,6 @@
     "hashlru": "^2.3.0",
     "interface-datastore": "^8.2.10",
     "ipns": "^9.0.0",
-    "is-ipfs": "^8.0.1",
     "multiformats": "^13.0.1",
     "p-queue": "^8.0.1",
     "progress-events": "^1.0.0",
