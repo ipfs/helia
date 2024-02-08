@@ -22,8 +22,8 @@ export interface GetOptions extends AbortOptions {
 export interface NetworkedStorageComponents {
   blockstore: Blockstore
   logger: ComponentLogger
-  blockBrokers?: BlockBroker[]
-  hashers?: Record<number, MultihashHasher>
+  blockBrokers: BlockBroker[]
+  hashers: Record<number, MultihashHasher>
 }
 
 /**
@@ -32,11 +32,11 @@ export interface NetworkedStorageComponents {
  */
 export class NetworkedStorage implements Blocks, Startable {
   private readonly child: Blockstore
-  private readonly blockBrokers: BlockBroker[]
   private readonly hashers: Record<number, MultihashHasher>
   private started: boolean
   private readonly log: Logger
   private readonly logger: ComponentLogger
+  private readonly components: NetworkedStorageComponents
 
   /**
    * Create a new BlockStorage
@@ -45,7 +45,7 @@ export class NetworkedStorage implements Blocks, Startable {
     this.log = components.logger.forComponent(`helia:networked-storage${init.root == null ? '' : `:${init.root}`}`)
     this.logger = components.logger
     this.child = components.blockstore
-    this.blockBrokers = components.blockBrokers ?? []
+    this.components = components
     this.hashers = components.hashers ?? {}
     this.started = false
   }
@@ -55,12 +55,12 @@ export class NetworkedStorage implements Blocks, Startable {
   }
 
   async start (): Promise<void> {
-    await start(this.child, ...this.blockBrokers)
+    await start(this.child, ...this.components.blockBrokers)
     this.started = true
   }
 
   async stop (): Promise<void> {
-    await stop(this.child, ...this.blockBrokers)
+    await stop(this.child, ...this.components.blockBrokers)
     this.started = false
   }
 
@@ -80,7 +80,7 @@ export class NetworkedStorage implements Blocks, Startable {
     options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:providers:notify', cid))
 
     await Promise.all(
-      this.blockBrokers.map(async broker => broker.announce?.(cid, block, options))
+      this.components.blockBrokers.map(async broker => broker.announce?.(cid, block, options))
     )
 
     options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:blockstore:put', cid))
@@ -105,7 +105,7 @@ export class NetworkedStorage implements Blocks, Startable {
     const notifyEach = forEach(missingBlocks, async ({ cid, block }): Promise<void> => {
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:put-many:providers:notify', cid))
       await Promise.all(
-        this.blockBrokers.map(async broker => broker.announce?.(cid, block, options))
+        this.components.blockBrokers.map(async broker => broker.announce?.(cid, block, options))
       )
     })
 
@@ -120,7 +120,7 @@ export class NetworkedStorage implements Blocks, Startable {
     if (options.offline !== true && !(await this.child.has(cid))) {
       // we do not have the block locally, get it from a block provider
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:providers:get', cid))
-      const block = await raceBlockRetrievers(cid, this.blockBrokers, this.hashers[cid.multihash.code], {
+      const block = await raceBlockRetrievers(cid, this.components.blockBrokers, this.hashers[cid.multihash.code], {
         ...options,
         log: this.log
       })
@@ -130,7 +130,7 @@ export class NetworkedStorage implements Blocks, Startable {
       // notify other block providers of the new block
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:providers:notify', cid))
       await Promise.all(
-        this.blockBrokers.map(async broker => broker.announce?.(cid, block, options))
+        this.components.blockBrokers.map(async broker => broker.announce?.(cid, block, options))
       )
 
       return block
@@ -151,7 +151,7 @@ export class NetworkedStorage implements Blocks, Startable {
       if (options.offline !== true && !(await this.child.has(cid))) {
         // we do not have the block locally, get it from a block provider
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:providers:get', cid))
-        const block = await raceBlockRetrievers(cid, this.blockBrokers, this.hashers[cid.multihash.code], {
+        const block = await raceBlockRetrievers(cid, this.components.blockBrokers, this.hashers[cid.multihash.code], {
           ...options,
           log: this.log
         })
@@ -161,7 +161,7 @@ export class NetworkedStorage implements Blocks, Startable {
         // notify other block providers of the new block
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:providers:notify', cid))
         await Promise.all(
-          this.blockBrokers.map(async broker => broker.announce?.(cid, block, options))
+          this.components.blockBrokers.map(async broker => broker.announce?.(cid, block, options))
         )
       }
     }))
@@ -198,7 +198,7 @@ export class NetworkedStorage implements Blocks, Startable {
   }
 
   async createSession (root: CID, options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): Promise<Blocks> {
-    const blockBrokers = await Promise.all(this.blockBrokers.map(async broker => {
+    const blockBrokers = await Promise.all(this.components.blockBrokers.map(async broker => {
       if (broker.createSession == null) {
         return broker
       }

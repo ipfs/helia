@@ -112,6 +112,7 @@ interface Components {
   dagWalkers: Record<number, DAGWalker>
   logger: ComponentLogger
   blockBrokers: BlockBroker[]
+  routing: Routing
 }
 
 export class Helia implements HeliaInterface {
@@ -130,6 +131,7 @@ export class Helia implements HeliaInterface {
     this.hashers = defaultHashers(init.hashers)
     this.dagWalkers = defaultDagWalkers(init.dagWalkers)
 
+    // @ts-expect-error routing is not set
     const components: Components = {
       blockstore: init.blockstore,
       datastore: init.datastore,
@@ -140,19 +142,7 @@ export class Helia implements HeliaInterface {
       ...(init.components ?? {})
     }
 
-    components.blockBrokers = init.blockBrokers.map((fn) => {
-      return fn(components)
-    })
-
-    const networkedStorage = new NetworkedStorage(components)
-
-    this.pins = new PinsImpl(init.datastore, networkedStorage, this.dagWalkers)
-
-    this.blockstore = new BlockStorage(networkedStorage, this.pins, {
-      holdGcLock: init.holdGcLock ?? true
-    })
-    this.datastore = init.datastore
-    this.routing = new RoutingClass(components, {
+    this.routing = components.routing = new RoutingClass(components, {
       routers: (init.routers ?? []).flatMap((router: any) => {
         // if the router itself is a router
         const routers = [
@@ -171,6 +161,17 @@ export class Helia implements HeliaInterface {
 
         return routers
       })
+    })
+
+    const networkedStorage = new NetworkedStorage(components)
+    this.pins = new PinsImpl(init.datastore, networkedStorage, this.dagWalkers)
+    this.blockstore = new BlockStorage(networkedStorage, this.pins, {
+      holdGcLock: init.holdGcLock ?? true
+    })
+    this.datastore = init.datastore
+
+    components.blockBrokers = init.blockBrokers.map((fn) => {
+      return fn(components)
     })
   }
 
