@@ -12,7 +12,6 @@ import type { CID } from 'multiformats/cid'
 describe('content-type-parser', () => {
   let helia: Helia
   let cid: CID
-  let dirCid: CID
   let verifiedFetch: VerifiedFetch
 
   beforeEach(async () => {
@@ -21,10 +20,6 @@ describe('content-type-parser', () => {
     cid = await fs.addByteStream((async function * () {
       yield uint8ArrayFromString('H4sICIlTHVIACw', 'base64')
     })())
-
-    const dir = await fs.addDirectory()
-    const index = await fs.addBytes(uint8ArrayFromString('<html><body>Hello world</body></html>'))
-    dirCid = await fs.cp(index, dir, 'index.html')
   })
 
   afterEach(async () => {
@@ -60,6 +55,11 @@ describe('content-type-parser', () => {
   })
 
   it('is passed a filename if it is available', async () => {
+    const fs = unixfs(helia)
+    const dir = await fs.addDirectory()
+    const index = await fs.addBytes(uint8ArrayFromString('<html><body>Hello world</body></html>'))
+    const dirCid = await fs.cp(index, dir, 'index.html')
+
     verifiedFetch = new VerifiedFetch({
       helia
     }, {
@@ -67,6 +67,22 @@ describe('content-type-parser', () => {
     })
     const resp = await verifiedFetch.fetch(`ipfs://${dirCid}/index.html`)
     expect(resp.headers.get('content-type')).to.equal('index.html')
+  })
+
+  it('is passed a filename from a deep traversal if it is available', async () => {
+    const fs = unixfs(helia)
+    const deepDirCid = await fs.addFile({
+      path: 'foo/bar/a-file.html',
+      content: uint8ArrayFromString('<html><body>Hello world</body></html>')
+    })
+
+    verifiedFetch = new VerifiedFetch({
+      helia
+    }, {
+      contentTypeParser: async (data, fileName) => fileName
+    })
+    const resp = await verifiedFetch.fetch(`ipfs://${deepDirCid}/foo/bar/a-file.html`)
+    expect(resp.headers.get('content-type')).to.equal('a-file.html')
   })
 
   it('sets content type if contentTypeParser is passed', async () => {
