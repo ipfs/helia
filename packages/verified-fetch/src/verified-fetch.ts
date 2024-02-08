@@ -13,7 +13,7 @@ import { CustomProgressEvent } from 'progress-events'
 import { getStreamFromAsyncIterable } from './utils/get-stream-from-async-iterable.js'
 import { parseResource } from './utils/parse-resource.js'
 import { walkPath, type PathWalkerFn } from './utils/walk-path.js'
-import type { CIDDetail, Resource, VerifiedFetchInit as VerifiedFetchOptions } from './index.js'
+import type { CIDDetail, ContentTypeParser, Resource, VerifiedFetchInit as VerifiedFetchOptions } from './index.js'
 import type { Helia } from '@helia/interface'
 import type { AbortOptions, Logger } from '@libp2p/interface'
 import type { UnixFSEntry } from 'ipfs-unixfs-exporter'
@@ -27,10 +27,6 @@ interface VerifiedFetchComponents {
   json?: JSON
   dagCbor?: DAGCBOR
   pathWalker?: PathWalkerFn
-}
-
-export interface ContentTypeParser {
-  (bytes: Uint8Array): Promise<string | undefined> | string | undefined
 }
 
 /**
@@ -144,7 +140,7 @@ export class VerifiedFetch {
     })
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: cid.toString(), path }))
     const response = new Response(result, { status: 200 })
-    await this.setContentType(result, response)
+    await this.setContentType(result, path, response)
     return response
   }
 
@@ -188,7 +184,7 @@ export class VerifiedFetch {
       onProgress: options?.onProgress
     })
     const response = new Response(stream, { status: 200 })
-    await this.setContentType(firstChunk, response)
+    await this.setContentType(firstChunk, path, response)
 
     return response
   }
@@ -199,16 +195,18 @@ export class VerifiedFetch {
     const result = await this.helia.blockstore.get(cid)
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: cid.toString(), path }))
     const response = new Response(decode(result), { status: 200 })
-    await this.setContentType(result, response)
+    await this.setContentType(result, path, response)
     return response
   }
 
-  private async setContentType (bytes: Uint8Array, response: Response): Promise<void> {
+  private async setContentType (bytes: Uint8Array, path: string, response: Response): Promise<void> {
     let contentType = 'application/octet-stream'
 
     if (this.contentTypeParser != null) {
       try {
-        const parsed = this.contentTypeParser(bytes)
+        let fileName = path.split('/').pop()?.trim()
+        fileName = fileName === '' ? undefined : fileName
+        const parsed = this.contentTypeParser(bytes, fileName)
 
         if (isPromise(parsed)) {
           const result = await parsed

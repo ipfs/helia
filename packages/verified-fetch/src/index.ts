@@ -254,7 +254,7 @@
 import { trustlessGateway } from '@helia/block-brokers'
 import { createHeliaHTTP } from '@helia/http'
 import { delegatedHTTPRouting } from '@helia/routers'
-import { VerifiedFetch as VerifiedFetchClass, type ContentTypeParser } from './verified-fetch.js'
+import { VerifiedFetch as VerifiedFetchClass } from './verified-fetch.js'
 import type { Helia } from '@helia/interface'
 import type { IPNSRoutingEvents, ResolveDnsLinkProgressEvents, ResolveProgressEvents } from '@helia/ipns'
 import type { GetEvents } from '@helia/unixfs'
@@ -298,7 +298,19 @@ export interface CreateVerifiedFetchOptions {
   contentTypeParser?: ContentTypeParser
 }
 
-export type { ContentTypeParser }
+/**
+ * A ContentTypeParser attempts to return the mime type of a given file. It
+ * receives the first chunk of the file data and the file name, if it is
+ * available.  The function can be sync or async and if it returns/resolves to
+ * `undefined`, `application/octet-stream` will be used.
+ */
+export interface ContentTypeParser {
+  /**
+   * Attempt to determine a mime type, either via of the passed bytes or the
+   * filename if it is available.
+   */
+  (bytes: Uint8Array, fileName?: string): Promise<string | undefined> | string | undefined
+}
 
 export type BubbledProgressEvents =
   // unixfs
