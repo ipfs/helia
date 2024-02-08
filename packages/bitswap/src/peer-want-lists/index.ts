@@ -6,7 +6,7 @@ import { Ledger } from './ledger.js'
 import type { BitswapNotifyProgressEvents, WantListEntry } from '../index.js'
 import type { Network } from '../network.js'
 import type { BitswapMessage } from '../pb/message.js'
-import type { ComponentLogger, Metrics, PeerId } from '@libp2p/interface'
+import type { ComponentLogger, Logger, Metrics, PeerId } from '@libp2p/interface'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { Blockstore } from 'interface-blockstore'
 import type { AbortOptions } from 'it-length-prefixed-stream'
@@ -36,11 +36,13 @@ export class PeerWantLists {
   public network: Network
   public readonly ledgerMap: PeerMap<Ledger>
   private readonly maxSizeReplaceHasWithBlock?: number
+  private readonly log: Logger
 
   constructor (components: PeerWantListsComponents, init: PeerWantListsInit = {}) {
     this.blockstore = components.blockstore
     this.network = components.network
     this.maxSizeReplaceHasWithBlock = init.maxSizeReplaceHasWithBlock
+    this.log = components.logger.forComponent('helia:bitswap:peer-want-lists')
 
     this.ledgerMap = trackedPeerMap({
       name: 'ipfs_bitswap_ledger_map',
@@ -110,8 +112,16 @@ export class PeerWantLists {
         const cidStr = uint8ArrayToString(cid.multihash.bytes, 'base64')
 
         if (entry.cancel === true) {
+          this.log('peer %p cancelled want of block for %c', peerId, cid)
+
           ledger.wants.delete(cidStr)
         } else {
+          if (entry.wantType === WantType.WantHave) {
+            this.log('peer %p wanted block presence for %c', peerId, cid)
+          } else {
+            this.log('peer %p wanted block for %c', peerId, cid)
+          }
+
           ledger.wants.set(cidStr, {
             cid,
             session: new PeerSet(),

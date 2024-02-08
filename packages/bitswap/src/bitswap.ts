@@ -56,7 +56,7 @@ export class Bitswap implements BitswapInterface {
 
   constructor (components: BitswapComponents, init: BitswapOptions = {}) {
     this.logger = components.logger
-    this.log = components.logger.forComponent('bitswap')
+    this.log = components.logger.forComponent('helia:bitswap')
     this.status = 'stopped'
     this.libp2p = components.libp2p
     this.blockstore = components.blockstore

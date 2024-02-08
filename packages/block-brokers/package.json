@@ -57,7 +57,6 @@
     "@helia/interface": "^4.0.0",
     "@libp2p/interface": "^1.1.2",
     "interface-blockstore": "^5.2.9",
-    "ipfs-bitswap": "^20.0.2",
     "multiformats": "^13.0.1",
     "progress-events": "^1.0.0"
   },

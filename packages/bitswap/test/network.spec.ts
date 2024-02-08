@@ -17,7 +17,7 @@ import { BITSWAP_120 } from '../src/constants.js'
 import { Network } from '../src/network.js'
 import { BitswapMessage, BlockPresenceType } from '../src/pb/message.js'
 import { cidToPrefix } from '../src/utils/cid-prefix.js'
-import type { Routing } from '@helia/interface'
+import type { Routing } from '@helia/interface/routing'
 import type { Connection, Libp2p, PeerId } from '@libp2p/interface'
 
 interface StubbedNetworkComponents {

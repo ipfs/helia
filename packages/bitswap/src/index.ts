@@ -7,7 +7,7 @@
 import { Bitswap as BitswapClass } from './bitswap.js'
 import type { BitswapNetworkNotifyProgressEvents, BitswapNetworkWantProgressEvents } from './network.js'
 import type { WantType } from './pb/message.js'
-import type { Routing } from '@helia/interface'
+import type { Routing } from '@helia/interface/routing'
 import type { Libp2p, AbortOptions, Startable, ComponentLogger, Metrics, PeerId } from '@libp2p/interface'
 import type { PeerSet } from '@libp2p/peer-collections'
 import type { Blockstore } from 'interface-blockstore'

@@ -65,7 +65,7 @@ class BitswapBlockBroker implements BlockBroker<BitswapWantBlockProgressEvents, 
   }
 
   async announce (cid: CID, block: Uint8Array, options?: BlockAnnounceOptions<BitswapNotifyProgressEvents>): Promise<void> {
-    this.bitswap.notify(cid, block, options)
+    await this.bitswap.notify(cid, block, options)
   }
 
   async retrieve (cid: CID, options: BlockRetrievalOptions<BitswapWantBlockProgressEvents> = {}): Promise<Uint8Array> {
