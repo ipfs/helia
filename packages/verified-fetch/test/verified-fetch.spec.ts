@@ -314,9 +314,9 @@ describe('@helia/verifed-fetch', () => {
       const abortSignal = new AbortController().signal
       const onProgress = sinon.spy()
       const cid = CID.parse('bafyreidykglsfhoixmivffc5uwhcgshx4j465xwqntbmu43nb2dzqwfvae')
-      dagCborStub.get.withArgs(cid).returns(Promise.resolve({
+      dagCborStub.get.withArgs(cid).returns(Promise.resolve(JSON.stringify({
         hello: 'world'
-      }))
+      })))
       const resp = await verifiedFetch.fetch(cid, {
         signal: abortSignal,
         onProgress

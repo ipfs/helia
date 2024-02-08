@@ -75,7 +75,7 @@
  * const fetch = await createVerifiedFetch({
  *  gateways: ['https://trustless-gateway.link'],
  *  routers: ['http://delegated-ipfs.dev']
- *})
+ * })
  *
  * const resp = await fetch('ipfs://bafy...')
  *
@@ -110,6 +110,31 @@
  * const resp = await fetch('ipfs://bafy...')
  *
  * const json = await resp.json()
+ * ```
+ *
+ * ### Custom content-type parsing
+ *
+ * By default, `@helia/verified-fetch` sets the `Content-Type` header as `application/octet-stream` - this is because the `.json()`, `.text()`, `.blob()`, and `.arrayBuffer()` methods will usually work as expected without a detailed content type.
+ *
+ * If you require an accurate content-type you can provide a `contentTypeParser` function as an option to `createVerifiedFetch` to handle parsing the content type.
+ *
+ * The function you provide will be called with the first chunk of bytes from the file and should return a string or a promise of a string.
+ *
+ * @example Customizing content-type parsing
+ *
+ * ```typescript
+ * import { createVerifiedFetch } from '@helia/verified-fetch'
+ * import { fileTypeFromBuffer } from '@sgtpooki/file-type'
+ *
+ * const fetch = await createVerifiedFetch({
+ *  gateways: ['https://trustless-gateway.link'],
+ *  routers: ['http://delegated-ipfs.dev'],
+ *  contentTypeParser: async (bytes) => {
+ *    // call to some magic-byte recognition library like magic-bytes, file-type, or your own custom byte recognition
+ *    const result = await fileTypeFromBuffer(bytes)
+ *    return result?.mime
+ *  }
+ * })
  * ```
  *
  * ## Comparison to fetch
@@ -257,11 +282,34 @@ export interface VerifiedFetch {
 }
 
 /**
- * Instead of passing a Helia instance, you can pass a list of gateways and routers, and a HeliaHTTP instance will be created for you.
+ * Instead of passing a Helia instance, you can pass a list of gateways and
+ * routers, and a HeliaHTTP instance will be created for you.
  */
-export interface CreateVerifiedFetchWithOptions {
+export interface CreateVerifiedFetchOptions {
   gateways: string[]
   routers?: string[]
+
+  /**
+   * A function to handle parsing content type from bytes. The function you
+   * provide will be passed the first set of bytes we receive from the network,
+   * and should return a string that will be used as the value for the
+   * `Content-Type` header in the response.
+   */
+  contentTypeParser?: ContentTypeParser
+}
+
+/**
+ * A ContentTypeParser attempts to return the mime type of a given file. It
+ * receives the first chunk of the file data and the file name, if it is
+ * available.  The function can be sync or async and if it returns/resolves to
+ * `undefined`, `application/octet-stream` will be used.
+ */
+export interface ContentTypeParser {
+  /**
+   * Attempt to determine a mime type, either via of the passed bytes or the
+   * filename if it is available.
+   */
+  (bytes: Uint8Array, fileName?: string): Promise<string | undefined> | string | undefined
 }
 
 export type BubbledProgressEvents =
@@ -280,8 +328,9 @@ export type VerifiedFetchProgressEvents =
 /**
  * Options for the `fetch` function returned by `createVerifiedFetch`.
  *
- * This method accepts all the same options as the `fetch` function in the browser, plus an `onProgress` option to
- * listen for progress events.
+ * This interface contains all the same fields as the [options object](https://developer.mozilla.org/en-US/docs/Web/API/fetch#options)
+ * passed to `fetch` in browsers, plus an `onProgress` option to listen for
+ * progress events.
  */
 export interface VerifiedFetchInit extends RequestInit, ProgressOptions<BubbledProgressEvents | VerifiedFetchProgressEvents> {
 }
@@ -289,8 +338,11 @@ export interface VerifiedFetchInit extends RequestInit, ProgressOptions<BubbledP
 /**
  * Create and return a Helia node
  */
-export async function createVerifiedFetch (init?: Helia | CreateVerifiedFetchWithOptions): Promise<VerifiedFetch> {
+export async function createVerifiedFetch (init?: Helia | CreateVerifiedFetchOptions): Promise<VerifiedFetch> {
+  let contentTypeParser: ContentTypeParser | undefined
+
   if (!isHelia(init)) {
+    contentTypeParser = init?.contentTypeParser
     init = await createHeliaHTTP({
       blockBrokers: [
         trustlessGateway({
@@ -301,7 +353,7 @@ export async function createVerifiedFetch (init?: Helia | CreateVerifiedFetchWit
     })
   }
 
-  const verifiedFetchInstance = new VerifiedFetchClass({ helia: init })
+  const verifiedFetchInstance = new VerifiedFetchClass({ helia: init }, { contentTypeParser })
   async function verifiedFetch (resource: Resource, options?: VerifiedFetchInit): Promise<Response> {
     return verifiedFetchInstance.fetch(resource, options)
   }

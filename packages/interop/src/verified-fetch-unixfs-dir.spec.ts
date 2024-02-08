@@ -1,17 +1,20 @@
 /* eslint-env mocha */
 import { createVerifiedFetch } from '@helia/verified-fetch'
 import { expect } from 'aegir/chai'
+import { filetypemime } from 'magic-bytes.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import { loadFixtureDataCar } from './fixtures/load-fixture-data.js'
+import type { VerifiedFetch } from '@helia/verified-fetch'
 import type { Controller } from 'ipfsd-ctl'
 
 describe('@helia/verified-fetch - unixfs directory', () => {
   let controller: Controller
-  let verifiedFetch: Awaited<ReturnType<typeof createVerifiedFetch>>
+  let verifiedFetch: VerifiedFetch
 
   before(async () => {
     controller = await createKuboNode()
     await controller.start()
+
     verifiedFetch = await createVerifiedFetch({
       gateways: [`http://${controller.api.gatewayHost}:${controller.api.gatewayPort}`],
       // Temporarily disabling delegated routers in browser until CORS issue is fixed. see https://github.com/ipshipyard/waterworks-community/issues/4
@@ -42,16 +45,34 @@ describe('@helia/verified-fetch - unixfs directory', () => {
       expect(resp).to.be.ok()
       const text = await resp.text()
       expect(text).to.equal('Don\'t we all.')
-      expect(resp.headers.get('content-type')).to.equal('text/plain')
     })
 
     it('can return an image for unixfs pathed data', async () => {
       const resp = await verifiedFetch('ipfs://QmbQDovX7wRe9ek7u6QXe9zgCXkTzoUSsTFJEkrYV1HrVR/1 - Barrel - Part 1.png')
       expect(resp).to.be.ok()
-      expect(resp.headers.get('content-type')).to.equal('image/png')
       const imgData = await resp.blob()
       expect(imgData).to.be.ok()
       expect(imgData.size).to.equal(24848)
+    })
+  })
+
+  describe('content type parser', () => {
+    before(async () => {
+      await verifiedFetch.stop()
+      verifiedFetch = await createVerifiedFetch({
+        gateways: [`http://${controller.api.gatewayHost}:${controller.api.gatewayPort}`],
+        // Temporarily disabling delegated routers in browser until CORS issue is fixed. see https://github.com/ipshipyard/waterworks-community/issues/4
+        routers: process.env.RUNNER_ENV === 'node' ? [`http://${controller.api.gatewayHost}:${controller.api.gatewayPort}`] : [],
+        contentTypeParser: (bytes) => {
+          return filetypemime(bytes)?.[0]
+        }
+      })
+    })
+
+    it('can return an image content-type for unixfs pathed data', async () => {
+      const resp = await verifiedFetch('ipfs://QmbQDovX7wRe9ek7u6QXe9zgCXkTzoUSsTFJEkrYV1HrVR/1 - Barrel - Part 1.png')
+      // tediously this is actually a jpeg file with a .png extension
+      expect(resp.headers.get('content-type')).to.equal('image/jpeg')
     })
   })
 
@@ -65,7 +86,6 @@ describe('@helia/verified-fetch - unixfs directory', () => {
     it('loads path /ipfs/bafybeidbclfqleg2uojchspzd4bob56dqetqjsj27gy2cq3klkkgxtpn4i/685.txt', async () => {
       const resp = await verifiedFetch('ipfs://bafybeidbclfqleg2uojchspzd4bob56dqetqjsj27gy2cq3klkkgxtpn4i/685.txt')
       expect(resp).to.be.ok()
-      expect(resp.headers.get('content-type')).to.equal('text/plain')
       const text = await resp.text()
       // npx kubo@0.25.0 cat '/ipfs/bafybeidbclfqleg2uojchspzd4bob56dqetqjsj27gy2cq3klkkgxtpn4i/685.txt'
       expect(text).to.equal(`Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc non imperdiet nunc. Proin ac quam ut nibh eleifend aliquet. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Sed ligula dolor, imperdiet sagittis arcu et, semper tincidunt urna. Donec et tempor augue, quis sollicitudin metus. Curabitur semper ullamcorper aliquet. Mauris hendrerit sodales lectus eget fermentum. Proin sollicitudin vestibulum commodo. Vivamus nec lectus eu augue aliquet dignissim nec condimentum justo. In hac habitasse platea dictumst. Mauris vel sem neque.

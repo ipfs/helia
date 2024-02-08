@@ -124,6 +124,30 @@ const resp = await fetch('ipfs://bafy...')
 const json = await resp.json()
 ```
 
+### Custom content-type parsing
+
+By default, `@helia/verified-fetch` sets the `Content-Type` header as `application/octet-stream` - this is because the `.json()`, `.text()`, `.blob()`, and `.arrayBuffer()` methods will usually work as expected without a detailed content type.
+
+If you require an accurate content-type you can provide a `contentTypeParser` function as an option to `createVerifiedFetch` to handle parsing the content type.
+
+The function you provide will be called with the first chunk of bytes from the file and should return a string or a promise of a string.
+
+## Example - Customizing content-type parsing
+
+```typescript
+import { createVerifiedFetch } from '@helia/verified-fetch'
+import { fileTypeFromBuffer } from '@sgtpooki/file-type'
+
+const fetch = await createVerifiedFetch({
+ gateways: ['https://trustless-gateway.link'],
+ routers: ['http://delegated-ipfs.dev'],
+ contentTypeParser: async (bytes) => {
+   // call to some magic-byte recognition library like magic-bytes, file-type, or your own custom byte recognition
+   return fileTypeFromBuffer(bytes)?.mime
+ }
+})
+```
+
 ## Comparison to fetch
 
 This module attempts to act as similarly to the `fetch()` API as possible.
