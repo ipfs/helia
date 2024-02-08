@@ -93,6 +93,7 @@
     "kubo": "^0.26.0",
     "kubo-rpc-client": "^3.0.2",
     "libp2p": "^1.2.1",
+    "magic-bytes.js": "^1.8.0",
     "multiformats": "^13.0.1",
     "p-defer": "^4.0.0",
     "uint8arrays": "^5.0.1",

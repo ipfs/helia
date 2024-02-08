@@ -327,7 +327,10 @@ export interface VerifiedFetchInit extends RequestInit, ProgressOptions<BubbledP
  * Create and return a Helia node
  */
 export async function createVerifiedFetch (init?: Helia | CreateVerifiedFetchOptions): Promise<VerifiedFetch> {
+  let contentTypeParser: ContentTypeParser | undefined
+
   if (!isHelia(init)) {
+    contentTypeParser = init?.contentTypeParser
     init = await createHeliaHTTP({
       blockBrokers: [
         trustlessGateway({
@@ -338,7 +341,7 @@ export async function createVerifiedFetch (init?: Helia | CreateVerifiedFetchOpt
     })
   }
 
-  const verifiedFetchInstance = new VerifiedFetchClass({ helia: init })
+  const verifiedFetchInstance = new VerifiedFetchClass({ helia: init }, { contentTypeParser })
   async function verifiedFetch (resource: Resource, options?: VerifiedFetchInit): Promise<Response> {
     return verifiedFetchInstance.fetch(resource, options)
   }
