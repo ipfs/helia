@@ -163,10 +163,11 @@
   "devDependencies": {
     "@libp2p/logger": "^4.0.5",
     "@libp2p/peer-id-factory": "^4.0.5",
-    "@types/mime-types": "^2.1.4",
+    "@sgtpooki/file-type": "^1.0.1",
     "@types/sinon": "^17.0.3",
     "aegir": "^42.2.2",
     "helia": "^4.0.1",
+    "magic-bytes.js": "^1.8.0",
     "sinon": "^17.0.1",
     "sinon-ts": "^2.0.0"
   },

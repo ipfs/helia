@@ -114,7 +114,11 @@
  *
  * ### Custom content-type parsing
  *
- * By default, `@helia/verified-fetch` does not set the `Content-Type` header. This is because the `.json()`, `.text()`, `.blob()`, and `.arrayBuffer()` methods will usually work as expected. You can provide a `contentTypeParser` function to the `createVerifiedFetch` function to handle parsing the content type. The function you provide will be passed the first bytes we receive from the network.
+ * By default, `@helia/verified-fetch` sets the `Content-Type` header as `application/octet-stream` - this is because the `.json()`, `.text()`, `.blob()`, and `.arrayBuffer()` methods will usually work as expected without a detailed content type.
+ *
+ * If you require an accurate content-type you can provide a `contentTypeParser` function as an option to `createVerifiedFetch` to handle parsing the content type.
+ *
+ * The function you provide will be called with the first chunk of bytes from the file and should return a string or a promise of a string.
  *
  * @example Customizing content-type parsing
  *
@@ -127,7 +131,7 @@
  *  routers: ['http://delegated-ipfs.dev'],
  *  contentTypeParser: async (bytes) => {
  *    // call to some magic-byte recognition library like magic-bytes, file-type, or your own custom byte recognition
- *    return fileTypeFromBuffer(bytes)?.mime ?? 'application/octet-stream'
+ *    return fileTypeFromBuffer(bytes)?.mime
  *  }
  * })
  * ```
@@ -277,15 +281,18 @@ export interface VerifiedFetch {
 }
 
 /**
- * Instead of passing a Helia instance, you can pass a list of gateways and routers, and a HeliaHTTP instance will be created for you.
+ * Instead of passing a Helia instance, you can pass a list of gateways and
+ * routers, and a HeliaHTTP instance will be created for you.
  */
-export interface CreateVerifiedFetchWithOptions {
+export interface CreateVerifiedFetchOptions {
   gateways: string[]
   routers?: string[]
+
   /**
-   * A function to handle parsing content type from bytes. The function you provide will be passed the first set of
-   * bytes we receive from the network, and should return a string that will be used as the value for the `Content-Type`
-   * header in the response.
+   * A function to handle parsing content type from bytes. The function you
+   * provide will be passed the first set of bytes we receive from the network,
+   * and should return a string that will be used as the value for the
+   * `Content-Type` header in the response.
    */
   contentTypeParser?: ContentTypeParser
 }
@@ -308,8 +315,9 @@ export type VerifiedFetchProgressEvents =
 /**
  * Options for the `fetch` function returned by `createVerifiedFetch`.
  *
- * This method accepts all the same options as the `fetch` function in the browser, plus an `onProgress` option to
- * listen for progress events.
+ * This interface contains all the same fields as the [options object](https://developer.mozilla.org/en-US/docs/Web/API/fetch#options)
+ * passed to `fetch` in browsers, plus an `onProgress` option to listen for
+ * progress events.
  */
 export interface VerifiedFetchInit extends RequestInit, ProgressOptions<BubbledProgressEvents | VerifiedFetchProgressEvents> {
 }
@@ -317,7 +325,7 @@ export interface VerifiedFetchInit extends RequestInit, ProgressOptions<BubbledP
 /**
  * Create and return a Helia node
  */
-export async function createVerifiedFetch (init?: Helia | CreateVerifiedFetchWithOptions): Promise<VerifiedFetch> {
+export async function createVerifiedFetch (init?: Helia | CreateVerifiedFetchOptions): Promise<VerifiedFetch> {
   if (!isHelia(init)) {
     init = await createHeliaHTTP({
       blockBrokers: [

@@ -30,7 +30,7 @@ interface VerifiedFetchComponents {
 }
 
 export interface ContentTypeParser {
-  (bytes: Uint8Array): Promise<string>
+  (bytes: Uint8Array): Promise<string> | string
 }
 
 /**
@@ -204,13 +204,23 @@ export class VerifiedFetch {
   }
 
   private async setContentType (bytes: Uint8Array, response: Response): Promise<void> {
+    let contentType = 'application/octet-stream'
+
     if (this.contentTypeParser != null) {
       try {
-        response.headers.set('content-type', await this.contentTypeParser(bytes))
+        const res = this.contentTypeParser(bytes)
+
+        if (isPromise(res)) {
+          contentType = await res
+        } else {
+          contentType = res
+        }
       } catch (err) {
         this.log.error('Error parsing content type', err)
       }
     }
+
+    response.headers.set('content-type', contentType)
   }
 
   /**
@@ -335,4 +345,8 @@ export class VerifiedFetch {
   async stop (): Promise<void> {
     await this.helia.stop()
   }
+}
+
+function isPromise <T> (p?: any): p is Promise<T> {
+  return p?.then != null
 }
