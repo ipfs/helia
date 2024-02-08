@@ -30,7 +30,7 @@ interface VerifiedFetchComponents {
 }
 
 export interface ContentTypeParser {
-  (bytes: Uint8Array): Promise<string> | string
+  (bytes: Uint8Array): Promise<string | undefined> | string | undefined
 }
 
 /**
@@ -208,12 +208,16 @@ export class VerifiedFetch {
 
     if (this.contentTypeParser != null) {
       try {
-        const res = this.contentTypeParser(bytes)
+        const parsed = this.contentTypeParser(bytes)
 
-        if (isPromise(res)) {
-          contentType = await res
-        } else {
-          contentType = res
+        if (isPromise(parsed)) {
+          const result = await parsed
+
+          if (result != null) {
+            contentType = result
+          }
+        } else if (parsed != null) {
+          contentType = parsed
         }
       } catch (err) {
         this.log.error('Error parsing content type', err)

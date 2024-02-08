@@ -169,7 +169,8 @@
     "helia": "^4.0.1",
     "magic-bytes.js": "^1.8.0",
     "sinon": "^17.0.1",
-    "sinon-ts": "^2.0.0"
+    "sinon-ts": "^2.0.0",
+    "uint8arrays": "^5.0.1"
   },
   "sideEffects": false
 }

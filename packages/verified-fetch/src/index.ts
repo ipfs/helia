@@ -131,7 +131,8 @@
  *  routers: ['http://delegated-ipfs.dev'],
  *  contentTypeParser: async (bytes) => {
  *    // call to some magic-byte recognition library like magic-bytes, file-type, or your own custom byte recognition
- *    return fileTypeFromBuffer(bytes)?.mime
+ *    const result = await fileTypeFromBuffer(bytes)
+ *    return result?.mime
  *  }
  * })
  * ```
