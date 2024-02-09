@@ -118,7 +118,7 @@ export interface CreateSessionOptions <ProgressEvents extends ProgressEvent<any,
    *
    * @default 5000
    */
-  timeout?: number
+  providerQueryTimeout?: number
 }
 
 export interface BlockBroker<RetrieveProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>, AnnounceProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> {
@@ -138,6 +138,7 @@ export interface BlockBroker<RetrieveProgressEvents extends ProgressEvent<any, a
   createSession?(root: CID, options?: CreateSessionOptions<RetrieveProgressEvents>): Promise<BlockBroker<RetrieveProgressEvents, AnnounceProgressEvents>>
 }
 
-export const DEFAULT_MIN_SESSION_PROVIDERS = 1
-export const DEFAULT_MAX_SESSION_PROVIDERS = 5
+export const DEFAULT_SESSION_MIN_PROVIDERS = 1
+export const DEFAULT_SESSION_MAX_PROVIDERS = 5
 export const DEFAULT_SESSION_QUERY_CONCURRENCY = 5
+export const DEFAULT_SESSION_PROVIDER_QUERY_TIMEOUT = 5000
