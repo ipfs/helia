@@ -137,3 +137,7 @@ export interface BlockBroker<RetrieveProgressEvents extends ProgressEvent<any, a
    */
   createSession?(root: CID, options?: CreateSessionOptions<RetrieveProgressEvents>): Promise<BlockBroker<RetrieveProgressEvents, AnnounceProgressEvents>>
 }
+
+export const DEFAULT_MIN_SESSION_PROVIDERS = 1
+export const DEFAULT_MAX_SESSION_PROVIDERS = 5
+export const DEFAULT_SESSION_QUERY_CONCURRENCY = 5
