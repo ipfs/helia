@@ -1,4 +1,5 @@
 /* eslint-disable no-loop-func */
+import { DEFAULT_SESSION_MAX_PROVIDERS, DEFAULT_SESSION_MIN_PROVIDERS, DEFAULT_SESSION_QUERY_CONCURRENCY } from '@helia/interface'
 import { setMaxListeners } from '@libp2p/interface'
 import { PeerSet } from '@libp2p/peer-collections'
 import { PeerQueue } from '@libp2p/utils/peer-queue'
@@ -9,7 +10,7 @@ import { sha256 } from 'multiformats/hashes/sha2'
 import pDefer from 'p-defer'
 import { CodeError } from 'protons-runtime'
 import { raceSignal } from 'race-signal'
-import { DEFAULT_MAX_PROVIDERS_PER_REQUEST, DEFAULT_MIN_PROVIDERS_BEFORE_SESSION_READY, DEFAULT_SESSION_QUERY_CONCURRENCY, DEFAULT_SESSION_ROOT_PRIORITY } from './constants.js'
+import { DEFAULT_SESSION_ROOT_PRIORITY } from './constants.js'
 import { Network } from './network.js'
 import { Notifications, receivedBlockEvent, type ReceivedBlockListener, type HaveBlockListener, haveEvent, type DoNotHaveBlockListener, doNotHaveEvent } from './notifications.js'
 import { BlockPresenceType, WantType } from './pb/message.js'
@@ -18,7 +19,7 @@ import { createBitswapSession } from './session.js'
 import { Stats } from './stats.js'
 import vd from './utils/varint-decoder.js'
 import { WantList } from './want-list.js'
-import type { BitswapOptions, Bitswap as BitswapInterface, MultihashHasherLoader, BitswapWantProgressEvents, BitswapNotifyProgressEvents, BitswapSession, WantListEntry, CreateSessionOptions, BitswapComponents } from './index.js'
+import type { BitswapOptions, Bitswap as BitswapInterface, MultihashHasherLoader, BitswapWantProgressEvents, BitswapNotifyProgressEvents, BitswapSession, WantListEntry, BitswapComponents, CreateBitswapSessionOptions } from './index.js'
 import type { BitswapMessage } from './pb/message.js'
 import type { ComponentLogger, Libp2p, PeerId } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
@@ -187,9 +188,9 @@ export class Bitswap implements BitswapInterface {
     }
   }
 
-  async createSession (root: CID, options?: CreateSessionOptions): Promise<BitswapSession> {
-    const minProviders = options?.minProviders ?? DEFAULT_MIN_PROVIDERS_BEFORE_SESSION_READY
-    const maxProviders = options?.maxProviders ?? DEFAULT_MAX_PROVIDERS_PER_REQUEST
+  async createSession (root: CID, options?: CreateBitswapSessionOptions): Promise<BitswapSession> {
+    const minProviders = options?.minProviders ?? DEFAULT_SESSION_MIN_PROVIDERS
+    const maxProviders = options?.maxProviders ?? DEFAULT_SESSION_MAX_PROVIDERS
 
     // normalize to v1 CID
     root = root.toV1()

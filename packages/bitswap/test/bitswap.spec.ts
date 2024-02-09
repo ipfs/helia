@@ -1,3 +1,4 @@
+import { DEFAULT_SESSION_MAX_PROVIDERS, DEFAULT_SESSION_MIN_PROVIDERS } from '@helia/interface'
 import { start, stop } from '@libp2p/interface'
 import { matchPeerId } from '@libp2p/interface-compliance-tests/matchers'
 import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
@@ -14,7 +15,6 @@ import { sha256 } from 'multiformats/hashes/sha2'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { Bitswap } from '../src/bitswap.js'
-import { DEFAULT_MAX_PROVIDERS_PER_REQUEST, DEFAULT_MIN_PROVIDERS_BEFORE_SESSION_READY } from '../src/constants.js'
 import { BitswapMessage, BlockPresenceType } from '../src/pb/message.js'
 import { cidToPrefix } from '../src/utils/cid-prefix.js'
 import type { Routing } from '@helia/interface/routing'
@@ -163,7 +163,7 @@ describe('bitswap', () => {
       })
 
       const session = await bitswap.createSession(cid)
-      expect(session.peers.size).to.equal(DEFAULT_MIN_PROVIDERS_BEFORE_SESSION_READY)
+      expect(session.peers.size).to.equal(DEFAULT_SESSION_MIN_PROVIDERS)
       expect([...session.peers].map(p => p.toString())).to.include(providers[0].id.toString())
 
       // dialed connected peer first
@@ -175,12 +175,12 @@ describe('bitswap', () => {
       // the query continues after the session is ready
       await delay(100)
 
-      // should have continued querying until we reach DEFAULT_MAX_PROVIDERS_PER_REQUEST
+      // should have continued querying until we reach DEFAULT_SESSION_MAX_PROVIDERS
       expect(providers[1].id.equals(components.libp2p.dialProtocol.getCall(2).args[0].toString())).to.be.true()
       expect(providers[2].id.equals(components.libp2p.dialProtocol.getCall(3).args[0].toString())).to.be.true()
 
-      // should have stopped at DEFAULT_MAX_PROVIDERS_PER_REQUEST
-      expect(session.peers.size).to.equal(DEFAULT_MAX_PROVIDERS_PER_REQUEST)
+      // should have stopped at DEFAULT_SESSION_MAX_PROVIDERS
+      expect(session.peers.size).to.equal(DEFAULT_SESSION_MAX_PROVIDERS)
     })
 
     it('should error when creating a session when no peers or providers have the block', async () => {

@@ -7,6 +7,7 @@
 import { Bitswap as BitswapClass } from './bitswap.js'
 import type { BitswapNetworkNotifyProgressEvents, BitswapNetworkWantProgressEvents } from './network.js'
 import type { WantType } from './pb/message.js'
+import type { CreateSessionOptions } from '@helia/interface'
 import type { Routing } from '@helia/interface/routing'
 import type { Libp2p, AbortOptions, Startable, ComponentLogger, Metrics, PeerId } from '@libp2p/interface'
 import type { PeerSet } from '@libp2p/peer-collections'
@@ -56,24 +57,7 @@ export interface WantListEntry {
   sentDontHave?: boolean
 }
 
-export interface CreateSessionOptions extends AbortOptions, ProgressOptions<BitswapWantProgressEvents> {
-  /**
-   * The session will be ready after this many providers for the root CID have
-   * been found. Providers will continue to be added to the session after this
-   * until they reach `maxProviders`.
-   *
-   * @default 1
-   */
-  minProviders?: number
-
-  /**
-   * After this many providers for the root CID have been found, stop searching
-   * for more providers
-   *
-   * @default 3
-   */
-  maxProviders?: number
-
+export interface CreateBitswapSessionOptions extends CreateSessionOptions<BitswapWantProgressEvents> {
   /**
    * If true, query connected peers before searching for providers in the
    * routing
@@ -95,14 +79,6 @@ export interface CreateSessionOptions extends AbortOptions, ProgressOptions<Bits
    * @default 1
    */
   priority?: number
-
-  /**
-   * How many peers/providers to send the initial query for the root CID to at
-   * the same time
-   *
-   * @default 5
-   */
-  queryConcurrency?: number
 }
 
 export interface Bitswap extends Startable {
