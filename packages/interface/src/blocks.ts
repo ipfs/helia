@@ -88,8 +88,29 @@ export interface CreateSessionOptions <ProgressEvents extends ProgressEvent<any,
   /**
    * The minimum number of providers for the root CID that are required for
    * successful session creation.
+   *
+   * The session will become usable once this many providers have been
+   * discovered, up to `maxProviders` providers will continue to be added.
+   *
+   * @default 1
    */
-  providers?: number
+  minProviders?: number
+
+  /**
+   * The maximum number of providers for the root CID to be added to a session.
+   *
+   * @default 5
+   */
+  maxProviders?: number
+
+  /**
+   * When searching for providers of the root CID, implementations can check
+   * that providers are still online and have the requested block. This setting
+   * controls how many peers to query at the same time.
+   *
+   * @default 5
+   */
+  queryConcurrency?: number
 
   /**
    * How long each queried provider has to respond either that they have the
@@ -116,3 +137,7 @@ export interface BlockBroker<RetrieveProgressEvents extends ProgressEvent<any, a
    */
   createSession?(root: CID, options?: CreateSessionOptions<RetrieveProgressEvents>): Promise<BlockBroker<RetrieveProgressEvents, AnnounceProgressEvents>>
 }
+
+export const DEFAULT_MIN_SESSION_PROVIDERS = 1
+export const DEFAULT_MAX_SESSION_PROVIDERS = 5
+export const DEFAULT_SESSION_QUERY_CONCURRENCY = 5
