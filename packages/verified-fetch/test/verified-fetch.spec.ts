@@ -224,6 +224,22 @@ describe('@helia/verifed-fetch', () => {
       await expect(resp.json()).to.eventually.deep.equal(obj)
     })
 
+    it('should return dag-json data with embedded CID', async () => {
+      const obj = {
+        hello: 'world',
+        link: CID.parse('QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN')
+      }
+      const j = dagJson(helia)
+      const cid = await j.add(obj)
+
+      const resp = await verifiedFetch.fetch(cid)
+      const data = await resp.json()
+      expect(data).to.deep.equal({
+        hello: 'world',
+        link: CID.parse('QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN')
+      })
+    })
+
     it('should handle dag-cbor block', async () => {
       const obj = {
         hello: 'world'
@@ -236,6 +252,22 @@ describe('@helia/verifed-fetch', () => {
       expect(resp.status).to.equal(200)
       expect(resp.statusText).to.equal('OK')
       await expect(resp.json()).to.eventually.deep.equal(obj)
+    })
+
+    it('should return dag-cbor data with embedded CID', async () => {
+      const obj = {
+        hello: 'world',
+        link: CID.parse('QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN')
+      }
+      const c = dagCbor(helia)
+      const cid = await c.add(obj)
+
+      const resp = await verifiedFetch.fetch(cid)
+      const data = await resp.json()
+      expect(data).to.deep.equal({
+        hello: 'world',
+        link: CID.parse('QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN')
+      })
     })
 
     it('should handle json block', async () => {

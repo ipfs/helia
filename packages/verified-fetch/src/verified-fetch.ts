@@ -128,7 +128,11 @@ export class VerifiedFetch {
       onProgress: options?.onProgress
     })
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid, path }))
-    const response = okResponse(JSON.stringify(result))
+    // return body as binary
+    const body = await this.helia.blockstore.get(cid)
+    const response = okResponse(body)
+    // return pre-parsed object with embedded CIDs as objects
+    response.json = async () => result
     response.headers.set('content-type', 'application/json')
     return response
   }
@@ -154,7 +158,11 @@ export class VerifiedFetch {
       onProgress: options?.onProgress
     })
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid, path }))
-    const response = okResponse(JSON.stringify(result))
+    // return body as binary
+    const body = await this.helia.blockstore.get(cid)
+    const response = okResponse(body)
+    // return pre-parsed object with embedded CIDs as objects
+    response.json = async () => result
     await this.setContentType(result, path, response)
     return response
   }
