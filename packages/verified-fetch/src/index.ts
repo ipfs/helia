@@ -128,7 +128,8 @@
  *
  * const fetch = await createVerifiedFetch({
  *  gateways: ['https://trustless-gateway.link'],
- *  routers: ['http://delegated-ipfs.dev'],
+ *  routers: ['http://delegated-ipfs.dev']
+ * }, {
  *  contentTypeParser: async (bytes) => {
  *    // call to some magic-byte recognition library like magic-bytes, file-type, or your own custom byte recognition
  *    const result = await fileTypeFromBuffer(bytes)
@@ -285,10 +286,12 @@ export interface VerifiedFetch {
  * Instead of passing a Helia instance, you can pass a list of gateways and
  * routers, and a HeliaHTTP instance will be created for you.
  */
-export interface CreateVerifiedFetchOptions {
+export interface CreateVerifiedFetchInit {
   gateways: string[]
   routers?: string[]
+}
 
+export interface CreateVerifiedFetchOptions {
   /**
    * A function to handle parsing content type from bytes. The function you
    * provide will be passed the first set of bytes we receive from the network,
@@ -338,11 +341,10 @@ export interface VerifiedFetchInit extends RequestInit, ProgressOptions<BubbledP
 /**
  * Create and return a Helia node
  */
-export async function createVerifiedFetch (init?: Helia | CreateVerifiedFetchOptions): Promise<VerifiedFetch> {
-  let contentTypeParser: ContentTypeParser | undefined
+export async function createVerifiedFetch (init?: Helia | CreateVerifiedFetchInit, options?: CreateVerifiedFetchOptions): Promise<VerifiedFetch> {
+  const contentTypeParser: ContentTypeParser | undefined = options?.contentTypeParser
 
   if (!isHelia(init)) {
-    contentTypeParser = init?.contentTypeParser
     init = await createHeliaHTTP({
       blockBrokers: [
         trustlessGateway({
