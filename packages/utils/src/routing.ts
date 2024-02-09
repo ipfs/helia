@@ -1,5 +1,4 @@
 import { CodeError, start, stop } from '@libp2p/interface'
-import { PeerSet } from '@libp2p/peer-collections'
 import merge from 'it-merge'
 import type { Routing as RoutingInterface, Provider, RoutingOptions } from '@helia/interface'
 import type { AbortOptions, ComponentLogger, Logger, PeerId, PeerInfo, Startable } from '@libp2p/interface'
@@ -38,8 +37,6 @@ export class Routing implements RoutingInterface, Startable {
       throw new CodeError('No content routers available', 'ERR_NO_ROUTERS_AVAILABLE')
     }
 
-    const seen = new PeerSet()
-
     for await (const peer of merge(
       ...supports(this.routers, 'findProviders')
         .map(router => router.findProviders(key, options))
@@ -49,13 +46,6 @@ export class Routing implements RoutingInterface, Startable {
       if (peer == null) {
         continue
       }
-
-      // deduplicate peers
-      if (seen.has(peer.id)) {
-        continue
-      }
-
-      seen.add(peer.id)
 
       yield peer
     }
@@ -142,8 +132,6 @@ export class Routing implements RoutingInterface, Startable {
       throw new CodeError('No peer routers available', 'ERR_NO_ROUTERS_AVAILABLE')
     }
 
-    const seen = new PeerSet()
-
     for await (const peer of merge(
       ...supports(this.routers, 'getClosestPeers')
         .map(router => router.getClosestPeers(key, options))
@@ -151,13 +139,6 @@ export class Routing implements RoutingInterface, Startable {
       if (peer == null) {
         continue
       }
-
-      // deduplicate peers
-      if (seen.has(peer.id)) {
-        continue
-      }
-
-      seen.add(peer.id)
 
       yield peer
     }
