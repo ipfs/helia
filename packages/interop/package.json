@@ -57,7 +57,7 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@chainsafe/libp2p-gossipsub": "^11.2.0",
+    "@chainsafe/libp2p-gossipsub": "^12.0.0",
     "@helia/block-brokers": "^2.0.1",
     "@helia/car": "^3.0.0",
     "@helia/dag-cbor": "^3.0.0",
