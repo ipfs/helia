@@ -1,5 +1,7 @@
 import { CodeError, start, stop } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
+import { IdentityBlockstore } from 'blockstore-core/identity'
+import { TieredBlockstore } from 'blockstore-core/tiered'
 import filter from 'it-filter'
 import forEach from 'it-foreach'
 import { CustomProgressEvent, type ProgressOptions } from 'progress-events'
@@ -47,7 +49,10 @@ export class NetworkedStorage implements Blocks, Startable {
    */
   constructor (components: NetworkedStorageComponents) {
     this.log = components.logger.forComponent('helia:networked-storage')
-    this.child = components.blockstore
+    this.child = new TieredBlockstore([
+      new IdentityBlockstore(),
+      components.blockstore
+    ])
     this.blockRetrievers = (components.blockBrokers ?? []).filter(isBlockRetriever)
     this.blockAnnouncers = (components.blockBrokers ?? []).filter(isBlockAnnouncer)
     this.hashers = components.hashers ?? {}

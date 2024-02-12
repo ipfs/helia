@@ -6,15 +6,18 @@ import { MemoryBlockstore } from 'blockstore-core'
 import delay from 'delay'
 import all from 'it-all'
 import drain from 'it-drain'
+import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
+import { identity } from 'multiformats/hashes/identity'
 import Sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { defaultHashers } from '../../src/utils/default-hashers.js'
 import { NetworkedStorage } from '../../src/utils/networked-storage.js'
 import { createBlock } from '../fixtures/create-block.js'
 import type { BlockAnnouncer, BlockRetriever } from '@helia/interface/blocks'
 import type { Blockstore } from 'interface-blockstore'
-import type { CID } from 'multiformats/cid'
 
 describe('networked-storage', () => {
   let storage: NetworkedStorage
@@ -184,5 +187,13 @@ describe('networked-storage', () => {
     for (let i = 0; i < count; i++) {
       expect(await blockstore.has(blocks[i].cid)).to.be.true()
     }
+  })
+
+  it('supports identity CIDs', async () => {
+    const data = uint8ArrayFromString('hello world')
+    const cid = CID.createV1(identity.code, identity.digest(data))
+
+    const block = await storage.get(cid)
+    expect(uint8ArrayToString(block)).to.equal('hello world')
   })
 })
