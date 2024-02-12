@@ -154,7 +154,7 @@
     "@helia/unixfs": "^3.0.0",
     "@ipld/dag-pb": "^4.0.8",
     "aegir": "^42.2.2",
-    "blockstore-core": "^4.3.10",
+    "blockstore-core": "^4.4.0",
     "ipfs-unixfs-importer": "^15.2.4",
     "it-to-buffer": "^4.0.5"
   }

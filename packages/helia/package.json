@@ -78,7 +78,7 @@
     "@libp2p/webrtc": "^4.0.17",
     "@libp2p/websockets": "^8.0.13",
     "@libp2p/webtransport": "^4.0.17",
-    "blockstore-core": "^4.3.10",
+    "blockstore-core": "^4.4.0",
     "datastore-core": "^9.2.7",
     "interface-blockstore": "^5.2.9",
     "interface-datastore": "^8.2.10",
