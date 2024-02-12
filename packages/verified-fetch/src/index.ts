@@ -268,7 +268,7 @@ import type { ProgressEvent, ProgressOptions } from 'progress-events'
 export type Resource = string | CID
 
 export interface CIDDetail {
-  cid: string
+  cid: CID
   path: string
 }
 

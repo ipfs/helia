@@ -225,15 +225,15 @@ describe('@helia/verifed-fetch', () => {
 
       const onProgressEvents = onProgress.getCalls().map(call => call.args[0])
       expect(onProgressEvents[0]).to.include({ type: 'verified-fetch:request:start' }).and.to.have.property('detail').that.deep.equals({
-        cid: testCID.toString(),
+        cid: testCID,
         path: 'index.html'
       })
       expect(onProgressEvents[1]).to.include({ type: 'verified-fetch:request:end' }).and.to.have.property('detail').that.deep.equals({
-        cid: testCID.toString(),
+        cid: testCID,
         path: 'index.html'
       })
       expect(onProgressEvents[3]).to.include({ type: 'verified-fetch:request:end' }).and.to.have.property('detail').that.deep.equals({
-        cid: 'Qmc3zqKcwzbbvw3MQm3hXdg8BQoFjGdZiGdAfXAyAGGdLi',
+        cid: CID.parse('Qmc3zqKcwzbbvw3MQm3hXdg8BQoFjGdZiGdAfXAyAGGdLi'),
         path: ''
       })
       expect(onProgressEvents[4]).to.include({ type: 'verified-fetch:request:progress:chunk' }).and.to.have.property('detail').that.is.undefined()
@@ -294,12 +294,12 @@ describe('@helia/verifed-fetch', () => {
       const onProgressEvents = onProgress.getCalls().map(call => call.args[0])
       expect(onProgressEvents[0]).to.have.property('type', 'verified-fetch:request:start')
       expect(onProgressEvents[0]).to.have.property('detail').that.deep.equals({
-        cid: cid.toString(),
+        cid,
         path: ''
       })
       expect(onProgressEvents[1]).to.have.property('type', 'verified-fetch:request:end')
       expect(onProgressEvents[1]).to.have.property('detail').that.deep.equals({
-        cid: cid.toString(),
+        cid,
         path: ''
       })
       expect(resp).to.be.ok()
@@ -330,12 +330,12 @@ describe('@helia/verifed-fetch', () => {
       const onProgressEvents = onProgress.getCalls().map(call => call.args[0])
       expect(onProgressEvents[0]).to.have.property('type', 'verified-fetch:request:start')
       expect(onProgressEvents[0]).to.have.property('detail').that.deep.equals({
-        cid: cid.toString(),
+        cid,
         path: ''
       })
       expect(onProgressEvents[1]).to.have.property('type', 'verified-fetch:request:end')
       expect(onProgressEvents[1]).to.have.property('detail').that.deep.equals({
-        cid: cid.toString(),
+        cid,
         path: ''
       })
       const data = await resp.json()
@@ -362,12 +362,12 @@ describe('@helia/verifed-fetch', () => {
       const onProgressEvents = onProgress.getCalls().map(call => call.args[0])
       expect(onProgressEvents[0]).to.have.property('type', 'verified-fetch:request:start')
       expect(onProgressEvents[0]).to.have.property('detail').that.deep.equals({
-        cid: cid.toString(),
+        cid,
         path: ''
       })
       expect(onProgressEvents[1]).to.have.property('type', 'verified-fetch:request:end')
       expect(onProgressEvents[1]).to.have.property('detail').that.deep.equals({
-        cid: cid.toString(),
+        cid,
         path: ''
       })
       expect(resp).to.be.ok()

@@ -107,12 +107,12 @@ export class VerifiedFetch {
 
   private async handleDagJson ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
     this.log.trace('fetching %c/%s', cid, path)
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: cid.toString(), path }))
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid, path }))
     const result = await this.dagJson.get(cid, {
       signal: options?.signal,
       onProgress: options?.onProgress
     })
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: cid.toString(), path }))
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid, path }))
     const response = new Response(JSON.stringify(result), { status: 200 })
     response.headers.set('content-type', 'application/json')
     return response
@@ -120,12 +120,12 @@ export class VerifiedFetch {
 
   private async handleJson ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
     this.log.trace('fetching %c/%s', cid, path)
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: cid.toString(), path }))
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid, path }))
     const result: Record<any, any> = await this.json.get(cid, {
       signal: options?.signal,
       onProgress: options?.onProgress
     })
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: cid.toString(), path }))
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid, path }))
     const response = new Response(JSON.stringify(result), { status: 200 })
     response.headers.set('content-type', 'application/json')
     return response
@@ -133,12 +133,12 @@ export class VerifiedFetch {
 
   private async handleDagCbor ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
     this.log.trace('fetching %c/%s', cid, path)
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: cid.toString(), path }))
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid, path }))
     const result = await this.dagCbor.get<Uint8Array>(cid, {
       signal: options?.signal,
       onProgress: options?.onProgress
     })
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: cid.toString(), path }))
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid, path }))
     const response = new Response(result, { status: 200 })
     await this.setContentType(result, path, response)
     return response
@@ -154,7 +154,7 @@ export class VerifiedFetch {
       const rootFilePath = 'index.html'
       try {
         this.log.trace('found directory at %c/%s, looking for index.html', cid, path)
-        options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: dirCid.toString(), path: rootFilePath }))
+        options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: dirCid, path: rootFilePath }))
         stat = await this.unixfs.stat(dirCid, {
           path: rootFilePath,
           signal: options?.signal,
@@ -168,16 +168,16 @@ export class VerifiedFetch {
         this.log('error loading path %c/%s', dirCid, rootFilePath, err)
         return new Response('Unable to find index.html for directory at given path. Support for directories with implicit root is not implemented', { status: 501 })
       } finally {
-        options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: dirCid.toString(), path: rootFilePath }))
+        options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: dirCid, path: rootFilePath }))
       }
     }
 
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: resolvedCID.toString(), path: '' }))
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: resolvedCID, path: '' }))
     const asyncIter = this.unixfs.cat(resolvedCID, {
       signal: options?.signal,
       onProgress: options?.onProgress
     })
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: resolvedCID.toString(), path: '' }))
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: resolvedCID, path: '' }))
     this.log('got async iterator for %c/%s', cid, path)
 
     const { stream, firstChunk } = await getStreamFromAsyncIterable(asyncIter, path ?? '', this.helia.logger, {
@@ -191,9 +191,9 @@ export class VerifiedFetch {
 
   private async handleRaw ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
     this.log.trace('fetching %c/%s', cid, path)
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid: cid.toString(), path }))
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid, path }))
     const result = await this.helia.blockstore.get(cid)
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: cid.toString(), path }))
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid, path }))
     const response = new Response(decode(result), { status: 200 })
     await this.setContentType(result, path, response)
     return response
