@@ -9,6 +9,7 @@ import { code as dagJsonCode } from '@ipld/dag-json'
 import { code as dagPbCode } from '@ipld/dag-pb'
 import { code as jsonCode } from 'multiformats/codecs/json'
 import { decode, code as rawCode } from 'multiformats/codecs/raw'
+import { identity } from 'multiformats/hashes/identity'
 import { CustomProgressEvent } from 'progress-events'
 import { getStreamFromAsyncIterable } from './utils/get-stream-from-async-iterable.js'
 import { parseResource } from './utils/parse-resource.js'
@@ -62,6 +63,20 @@ function convertOptions (options?: VerifiedFetchOptions): (Omit<VerifiedFetchOpt
   }
 }
 
+function okResponse (body?: BodyInit | null): Response {
+  return new Response(body, {
+    status: 200,
+    statusText: 'OK'
+  })
+}
+
+function notSupportedResponse (body?: BodyInit | null): Response {
+  return new Response(body, {
+    status: 501,
+    statusText: 'Not Implemented'
+  })
+}
+
 export class VerifiedFetch {
   private readonly helia: Helia
   private readonly ipns: IPNS
@@ -93,14 +108,14 @@ export class VerifiedFetch {
 
   // handle vnd.ipfs.ipns-record
   private async handleIPNSRecord ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
-    const response = new Response('vnd.ipfs.ipns-record support is not implemented', { status: 501 })
+    const response = notSupportedResponse('vnd.ipfs.ipns-record support is not implemented')
     response.headers.set('X-Content-Type-Options', 'nosniff') // see https://specs.ipfs.tech/http-gateways/path-gateway/#x-content-type-options-response-header
     return response
   }
 
   // handle vnd.ipld.car
   private async handleIPLDCar ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
-    const response = new Response('vnd.ipld.car support is not implemented', { status: 501 })
+    const response = notSupportedResponse('vnd.ipld.car support is not implemented')
     response.headers.set('X-Content-Type-Options', 'nosniff') // see https://specs.ipfs.tech/http-gateways/path-gateway/#x-content-type-options-response-header
     return response
   }
@@ -113,7 +128,7 @@ export class VerifiedFetch {
       onProgress: options?.onProgress
     })
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid, path }))
-    const response = new Response(JSON.stringify(result), { status: 200 })
+    const response = okResponse(JSON.stringify(result))
     response.headers.set('content-type', 'application/json')
     return response
   }
@@ -126,7 +141,7 @@ export class VerifiedFetch {
       onProgress: options?.onProgress
     })
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid, path }))
-    const response = new Response(JSON.stringify(result), { status: 200 })
+    const response = okResponse(JSON.stringify(result))
     response.headers.set('content-type', 'application/json')
     return response
   }
@@ -139,7 +154,7 @@ export class VerifiedFetch {
       onProgress: options?.onProgress
     })
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid, path }))
-    const response = new Response(result, { status: 200 })
+    const response = okResponse(JSON.stringify(result))
     await this.setContentType(result, path, response)
     return response
   }
@@ -166,7 +181,7 @@ export class VerifiedFetch {
         // terminalElement = stat
       } catch (err: any) {
         this.log('error loading path %c/%s', dirCid, rootFilePath, err)
-        return new Response('Unable to find index.html for directory at given path. Support for directories with implicit root is not implemented', { status: 501 })
+        return notSupportedResponse('Unable to find index.html for directory at given path. Support for directories with implicit root is not implemented')
       } finally {
         options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: dirCid, path: rootFilePath }))
       }
@@ -183,7 +198,7 @@ export class VerifiedFetch {
     const { stream, firstChunk } = await getStreamFromAsyncIterable(asyncIter, path ?? '', this.helia.logger, {
       onProgress: options?.onProgress
     })
-    const response = new Response(stream, { status: 200 })
+    const response = okResponse(stream)
     await this.setContentType(firstChunk, path, response)
 
     return response
@@ -194,7 +209,7 @@ export class VerifiedFetch {
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid, path }))
     const result = await this.helia.blockstore.get(cid)
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid, path }))
-    const response = new Response(decode(result), { status: 200 })
+    const response = okResponse(decode(result))
     await this.setContentType(result, path, response)
     return response
   }
@@ -261,14 +276,14 @@ export class VerifiedFetch {
    * These format handlers should adjust the response headers as specified in https://specs.ipfs.tech/http-gateways/path-gateway/#response-headers
    */
   private readonly formatHandlers: Record<string, FetchHandlerFunction> = {
-    raw: async () => new Response('application/vnd.ipld.raw support is not implemented', { status: 501 }),
+    raw: async () => notSupportedResponse('application/vnd.ipld.raw support is not implemented'),
     car: this.handleIPLDCar,
     'ipns-record': this.handleIPNSRecord,
-    tar: async () => new Response('application/x-tar support is not implemented', { status: 501 }),
-    'dag-json': async () => new Response('application/vnd.ipld.dag-json support is not implemented', { status: 501 }),
-    'dag-cbor': async () => new Response('application/vnd.ipld.dag-cbor support is not implemented', { status: 501 }),
-    json: async () => new Response('application/json support is not implemented', { status: 501 }),
-    cbor: async () => new Response('application/cbor support is not implemented', { status: 501 })
+    tar: async () => notSupportedResponse('application/x-tar support is not implemented'),
+    'dag-json': async () => notSupportedResponse('application/vnd.ipld.dag-json support is not implemented'),
+    'dag-cbor': async () => notSupportedResponse('application/vnd.ipld.dag-cbor support is not implemented'),
+    json: async () => notSupportedResponse('application/json support is not implemented'),
+    cbor: async () => notSupportedResponse('application/cbor support is not implemented')
   }
 
   private readonly codecHandlers: Record<number, FetchHandlerFunction> = {
@@ -276,7 +291,8 @@ export class VerifiedFetch {
     [dagPbCode]: this.handleDagPb,
     [jsonCode]: this.handleJson,
     [dagCborCode]: this.handleDagCbor,
-    [rawCode]: this.handleRaw
+    [rawCode]: this.handleRaw,
+    [identity.code]: this.handleRaw
   }
 
   async fetch (resource: Resource, opts?: VerifiedFetchOptions): Promise<Response> {
@@ -318,7 +334,7 @@ export class VerifiedFetch {
       if (codecHandler != null) {
         response = await codecHandler.call(this, { cid, path, options, terminalElement })
       } else {
-        return new Response(`Support for codec with code ${cid.code} is not yet implemented. Please open an issue at https://github.com/ipfs/helia/issues/new`, { status: 501 })
+        return notSupportedResponse(`Support for codec with code ${cid.code} is not yet implemented. Please open an issue at https://github.com/ipfs/helia/issues/new`)
       }
     }
 
