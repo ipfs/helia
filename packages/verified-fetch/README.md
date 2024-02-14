@@ -312,6 +312,8 @@ When it cannot, the `Content-Type` will be `application/octet-stream` - in this 
 
 ##### Detecting JSON-safe DAG-CBOR
 
+If the `Content-Type` header of the response is `application/json`, the `.json()` method may be used to access the response body in object form, otherwise the `.arrayBuffer()` method must be used to decode the raw bytes using the `@ipld/dag-cbor` module.
+
 ```TypeScript
 import { verifiedFetch } from '@helia/verified-fetch'
 import * as dagCbor from '@ipld/dag-cbor'
