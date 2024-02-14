@@ -256,6 +256,34 @@
  *
  * When the `DAG-JSON` codec is encountered, the `Content-Type` header of the response will be set to `application/json`.
  *
+ * `DAG-JSON` data can be parsed from the response by using the `.json()` function, which will return `CID`s/byte arrays as plain `{ "/": ... }` objects:
+ *
+ * ```TypeScript
+ * import { verifiedFetch } from '@helia/verified-fetch'
+ * import * as dagJson from '@ipld/dag-json'
+ *
+ * const res = await verifiedFetch('ipfs://bafyDAGJSON')
+ *
+ * // either:
+ * const obj = await res.json()
+ * console.info(obj.cid) // { "/": "baeaaac3imvwgy3zao5xxe3de" }
+ * console.info(obj.buf) // { "/": { "bytes": "AAECAwQ" } }
+ * ```
+ *
+ * Alternatively or it can be decoded using the `@ipld/dag-json` module and the `.arrayBuffer()` method, in which case you will get  CID` objects and `Uint8Array`s:
+ *
+ *```TypeScript
+ * import { verifiedFetch } from '@helia/verified-fetch'
+ * import * as dagJson from '@ipld/dag-json'
+ *
+ * const res = await verifiedFetch('ipfs://bafyDAGJSON')
+ *
+ * // or:
+ * const obj = dagJson.decode(new Uint8Array(await res.arrayBuffer()))
+ * console.info(obj.cid) // CID(baeaaac3imvwgy3zao5xxe3de)
+ * console.info(obj.buf) // Uint8Array(5) [ 0, 1, 2, 3, 4 ]
+ * ```
+ *
  * #### DAG-CBOR
  *
  * [DAG-CBOR](https://ipld.io/docs/codecs/known/dag-cbor/) uses the [Concise Binary Object Representation](https://cbor.io/) format for serialization instead of JSON.
