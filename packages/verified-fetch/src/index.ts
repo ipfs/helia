@@ -270,7 +270,7 @@
  * console.info(obj.buf) // { "/": { "bytes": "AAECAwQ" } }
  * ```
  *
- * Alternatively or it can be decoded using the `@ipld/dag-json` module and the `.arrayBuffer()` method, in which case you will get  CID` objects and `Uint8Array`s:
+ * Alternatively or it can be decoded using the `@ipld/dag-json` module and the `.arrayBuffer()` method, in which case you will get `CID` objects and `Uint8Array`s:
  *
  *```TypeScript
  * import { verifiedFetch } from '@helia/verified-fetch'
