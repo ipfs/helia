@@ -1,6 +1,5 @@
 import { ipns as heliaIpns, type IPNS } from '@helia/ipns'
 import { dnsJsonOverHttps } from '@helia/ipns/dns-resolvers'
-import { json as heliaJson, type JSON } from '@helia/json'
 import { unixfs as heliaUnixFs, type UnixFS as HeliaUnixFs, type UnixFSStats } from '@helia/unixfs'
 import { code as dagCborCode } from '@ipld/dag-cbor'
 import { code as dagJsonCode } from '@ipld/dag-json'
@@ -23,7 +22,6 @@ interface VerifiedFetchComponents {
   helia: Helia
   ipns?: IPNS
   unixfs?: HeliaUnixFs
-  json?: JSON
   pathWalker?: PathWalkerFn
 }
 
@@ -78,12 +76,11 @@ export class VerifiedFetch {
   private readonly helia: Helia
   private readonly ipns: IPNS
   private readonly unixfs: HeliaUnixFs
-  private readonly json: JSON
   private readonly pathWalker: PathWalkerFn
   private readonly log: Logger
   private readonly contentTypeParser: ContentTypeParser | undefined
 
-  constructor ({ helia, ipns, unixfs, json, pathWalker }: VerifiedFetchComponents, init?: VerifiedFetchInit) {
+  constructor ({ helia, ipns, unixfs, pathWalker }: VerifiedFetchComponents, init?: VerifiedFetchInit) {
     this.helia = helia
     this.log = helia.logger.forComponent('helia:verified-fetch')
     this.ipns = ipns ?? heliaIpns(helia, {
@@ -93,7 +90,6 @@ export class VerifiedFetch {
       ]
     })
     this.unixfs = unixfs ?? heliaUnixFs(helia)
-    this.json = json ?? heliaJson(helia)
     this.pathWalker = pathWalker ?? walkPath
     this.contentTypeParser = init?.contentTypeParser
     this.log.trace('created VerifiedFetch instance')
@@ -116,11 +112,11 @@ export class VerifiedFetch {
   private async handleJson ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
     this.log.trace('fetching %c/%s', cid, path)
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid, path }))
-    const result: Record<any, any> = await this.json.get(cid, {
+    const result = await this.helia.blockstore.get(cid, {
       signal: options?.signal,
       onProgress: options?.onProgress
     })
-    const response = okResponse(JSON.stringify(result))
+    const response = okResponse(result)
     response.headers.set('content-type', 'application/json')
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid, path }))
     return response
