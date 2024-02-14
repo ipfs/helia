@@ -339,7 +339,7 @@ export class VerifiedFetch {
     }
 
     response.headers.set('etag', cid.toString()) // https://specs.ipfs.tech/http-gateways/path-gateway/#etag-response-header
-    response.headers.set('cache-cotrol', 'public, max-age=29030400, immutable')
+    response.headers.set('cache-control', 'public, max-age=29030400, immutable')
     response.headers.set('X-Ipfs-Path', resource.toString()) // https://specs.ipfs.tech/http-gateways/path-gateway/#x-ipfs-path-response-header
 
     if (ipfsRoots != null) {
