@@ -4,6 +4,7 @@ import { dagJson } from '@helia/dag-json'
 import { type IPNS } from '@helia/ipns'
 import { json } from '@helia/json'
 import { unixfs, type UnixFS } from '@helia/unixfs'
+import * as ipldDagCbor from '@ipld/dag-cbor'
 import { stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
@@ -221,6 +222,8 @@ describe('@helia/verifed-fetch', () => {
       expect(resp).to.be.ok()
       expect(resp.status).to.equal(200)
       expect(resp.statusText).to.equal('OK')
+      expect(resp.headers.get('content-type')).to.equal('application/json')
+
       await expect(resp.json()).to.eventually.deep.equal(obj)
     })
 
@@ -233,14 +236,40 @@ describe('@helia/verifed-fetch', () => {
       const cid = await j.add(obj)
 
       const resp = await verifiedFetch.fetch(cid)
+      expect(resp.headers.get('content-type')).to.equal('application/json')
+
       const data = await resp.json()
       expect(data).to.deep.equal({
         hello: 'world',
-        link: CID.parse('QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN')
+        link: {
+          '/': 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'
+        }
       })
     })
 
-    it('should handle dag-cbor block', async () => {
+    it('should return dag-json data with embedded bytes', async () => {
+      const obj = {
+        hello: 'world',
+        bytes: Uint8Array.from([0, 1, 2, 3, 4])
+      }
+      const j = dagJson(helia)
+      const cid = await j.add(obj)
+
+      const resp = await verifiedFetch.fetch(cid)
+      expect(resp.headers.get('content-type')).to.equal('application/json')
+
+      const data = await resp.json()
+      expect(data).to.deep.equal({
+        hello: 'world',
+        bytes: {
+          '/': {
+            bytes: 'AAECAwQ'
+          }
+        }
+      })
+    })
+
+    it('should handle JSON-compliant dag-cbor block', async () => {
       const obj = {
         hello: 'world'
       }
@@ -251,6 +280,7 @@ describe('@helia/verifed-fetch', () => {
       expect(resp).to.be.ok()
       expect(resp.status).to.equal(200)
       expect(resp.statusText).to.equal('OK')
+      expect(resp.headers.get('content-type')).to.equal('application/json')
       await expect(resp.json()).to.eventually.deep.equal(obj)
     })
 
@@ -263,11 +293,70 @@ describe('@helia/verifed-fetch', () => {
       const cid = await c.add(obj)
 
       const resp = await verifiedFetch.fetch(cid)
+      expect(resp.headers.get('content-type')).to.equal('application/json')
+
       const data = await resp.json()
       expect(data).to.deep.equal({
         hello: 'world',
-        link: CID.parse('QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN')
+        link: {
+          '/': 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'
+        }
       })
+    })
+
+    it('should return dag-cbor data with embedded bytes', async () => {
+      const obj = {
+        hello: 'world',
+        bytes: Uint8Array.from([0, 1, 2, 3, 4])
+      }
+      const c = dagCbor(helia)
+      const cid = await c.add(obj)
+
+      const resp = await verifiedFetch.fetch(cid)
+      expect(resp.headers.get('content-type')).to.equal('application/json')
+
+      const data = await resp.json()
+      expect(data).to.deep.equal({
+        hello: 'world',
+        bytes: {
+          '/': {
+            bytes: 'AAECAwQ'
+          }
+        }
+      })
+    })
+
+    it('should return dag-cbor with a small BigInt as application/json', async () => {
+      const obj = {
+        hello: 'world',
+        bigInt: 10n
+      }
+      const c = dagCbor(helia)
+      const cid = await c.add(obj)
+
+      const resp = await verifiedFetch.fetch(cid)
+      expect(resp.headers.get('content-type')).to.equal('application/json')
+
+      const data = await resp.json()
+      expect(data).to.deep.equal({
+        hello: 'world',
+        bigInt: 10
+      })
+    })
+
+    it('should return dag-cbor with a large BigInt as application/octet-stream', async () => {
+      const obj = {
+        hello: 'world',
+        bigInt: BigInt(Number.MAX_SAFE_INTEGER) + 1n
+      }
+      const c = dagCbor(helia)
+      const cid = await c.add(obj)
+
+      const resp = await verifiedFetch.fetch(cid)
+      expect(resp.headers.get('content-type')).to.equal('application/octet-stream')
+
+      const data = ipldDagCbor.decode(new Uint8Array(await resp.arrayBuffer()))
+      expect(data).to.deep.equal(obj)
     })
 
     it('should handle json block', async () => {
