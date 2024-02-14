@@ -2,11 +2,11 @@ import { ipns as heliaIpns, type IPNS } from '@helia/ipns'
 import { dnsJsonOverHttps } from '@helia/ipns/dns-resolvers'
 import { json as heliaJson, type JSON } from '@helia/json'
 import { unixfs as heliaUnixFs, type UnixFS as HeliaUnixFs, type UnixFSStats } from '@helia/unixfs'
-import * as dagCbor from '@ipld/dag-cbor'
-import * as dagJson from '@ipld/dag-json'
-import * as dagPb from '@ipld/dag-pb'
-import * as json from 'multiformats/codecs/json'
-import * as raw from 'multiformats/codecs/raw'
+import { code as dagCborCode } from '@ipld/dag-cbor'
+import { code as dagJsonCode } from '@ipld/dag-json'
+import { code as dagPbCode } from '@ipld/dag-pb'
+import { code as jsonCode } from 'multiformats/codecs/json'
+import { code as rawCode } from 'multiformats/codecs/raw'
 import { identity } from 'multiformats/hashes/identity'
 import { CustomProgressEvent } from 'progress-events'
 import { dagCborToSafeJSON } from './utils/dag-cbor-to-safe-json.js'
@@ -195,7 +195,7 @@ export class VerifiedFetch {
     this.log.trace('fetching %c/%s', cid, path)
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid, path }))
     const result = await this.helia.blockstore.get(cid)
-    const response = okResponse(raw.decode(result))
+    const response = okResponse(result)
     await this.setContentType(result, path, response)
 
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid, path }))
@@ -275,11 +275,11 @@ export class VerifiedFetch {
   }
 
   private readonly codecHandlers: Record<number, FetchHandlerFunction> = {
-    [dagPb.code]: this.handleDagPb,
-    [dagJson.code]: this.handleJson,
-    [json.code]: this.handleJson,
-    [dagCbor.code]: this.handleDagCbor,
-    [raw.code]: this.handleRaw,
+    [dagPbCode]: this.handleDagPb,
+    [dagJsonCode]: this.handleJson,
+    [jsonCode]: this.handleJson,
+    [dagCborCode]: this.handleDagCbor,
+    [rawCode]: this.handleRaw,
     [identity.code]: this.handleRaw
   }
 
