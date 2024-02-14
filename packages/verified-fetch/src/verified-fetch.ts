@@ -131,7 +131,8 @@ export class VerifiedFetch {
 
     try {
       body = dagCborToSafeJSON(block)
-    } catch {
+    } catch (err) {
+      this.log('could not decode DAG-CBOR as JSON-safe, falling back to `application/octet-stream`', err)
       body = block
     }
 
