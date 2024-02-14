@@ -11,10 +11,12 @@ import { code as jsonCode } from 'multiformats/codecs/json'
 import { decode, code as rawCode } from 'multiformats/codecs/raw'
 import { identity } from 'multiformats/hashes/identity'
 import { CustomProgressEvent } from 'progress-events'
+import { getETag } from './utils/get-e-tag.js'
 import { getStreamFromAsyncIterable } from './utils/get-stream-from-async-iterable.js'
 import { parseResource } from './utils/parse-resource.js'
 import { walkPath, type PathWalkerFn } from './utils/walk-path.js'
 import type { CIDDetail, ContentTypeParser, Resource, VerifiedFetchInit as VerifiedFetchOptions } from './index.js'
+import type { RequestFormatShorthand } from './types.js'
 import type { Helia } from '@helia/interface'
 import type { AbortOptions, Logger } from '@libp2p/interface'
 import type { UnixFSEntry } from 'ipfs-unixfs-exporter'
@@ -246,8 +248,8 @@ export class VerifiedFetch {
    * @see https://specs.ipfs.tech/http-gateways/path-gateway/#format-request-query-parameter
    * @default 'raw'
    */
-  private getFormat ({ headerFormat, queryFormat }: { headerFormat: string | null, queryFormat: string | null }): string | null {
-    const formatMap: Record<string, string> = {
+  private getFormat ({ headerFormat, queryFormat }: { headerFormat: string | null, queryFormat: RequestFormatShorthand | null }): RequestFormatShorthand | null {
+    const formatMap: Record<string, RequestFormatShorthand> = {
       'vnd.ipld.raw': 'raw',
       'vnd.ipld.car': 'car',
       'application/x-tar': 'tar',
@@ -338,7 +340,7 @@ export class VerifiedFetch {
       }
     }
 
-    response.headers.set('etag', cid.toString()) // https://specs.ipfs.tech/http-gateways/path-gateway/#etag-response-header
+    response.headers.set('etag', getETag({ cid, reqFormat: format ?? undefined, weak: false }))
     response.headers.set('cache-control', 'public, max-age=29030400, immutable')
     response.headers.set('X-Ipfs-Path', resource.toString()) // https://specs.ipfs.tech/http-gateways/path-gateway/#x-ipfs-path-response-header
 
