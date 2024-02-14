@@ -114,7 +114,7 @@
  *
  * ### Custom content-type parsing
  *
- * By default, `@helia/verified-fetch` sets the `Content-Type` header as `application/octet-stream` - this is because the `.json()`, `.text()`, `.blob()`, and `.arrayBuffer()` methods will usually work as expected without a detailed content type.
+ * By default, if the response can be parsed as JSON, `@helia/verified-fetch` sets the `Content-Type` header as `application/json`, otherwise it sets it as `application/octet-stream` - this is because the `.json()`, `.text()`, `.blob()`, and `.arrayBuffer()` methods will usually work as expected without a detailed content type.
  *
  * If you require an accurate content-type you can provide a `contentTypeParser` function as an option to `createVerifiedFetch` to handle parsing the content type.
  *
@@ -136,6 +136,158 @@
  *    return result?.mime
  *  }
  * })
+ * ```
+ *
+ * ### IPLD codec handling
+ *
+ * IPFS supports several data formats and `@helia/verified-fetch` attempts to abstract away some of the details.
+ *
+ * #### DAG-PB
+ *
+ * [DAG-PB](https://ipld.io/docs/codecs/known/dag-pb/) is the codec we are most likely to encounter, it is what [UnixFS](https://github.com/ipfs/specs/blob/main/UNIXFS.md) uses under the hood.
+ *
+ * ##### Using the DAG-PB codec as a Blob
+ *
+ * ```TypeScript
+ * import { verifiedFetch } from '@helia/verified-fetch'
+ *
+ * const res = await verifiedFetch('ipfs://Qmfoo')
+ * const blob = await res.blob()
+ *
+ * console.info(blob) // Blob { size: x, type: 'application/octet-stream' }
+ * ```
+ *
+ * ##### Using the DAG-PB codec as an ArrayBuffer
+ *
+ * ```TypeScript
+ * import { verifiedFetch } from '@helia/verified-fetch'
+ *
+ * const res = await verifiedFetch('ipfs://Qmfoo')
+ * const buf = await res.arrayBuffer()
+ *
+ * console.info(buf) // ArrayBuffer { [Uint8Contents]: < ... >, byteLength: x }
+ * ```
+ *
+ * ##### Using the DAG-PB codec as a stream
+ *
+ * ```TypeScript
+ * import { verifiedFetch } from '@helia/verified-fetch'
+ *
+ * const res = await verifiedFetch('ipfs://Qmfoo')
+ * const reader = res.body?.getReader()
+ *
+ * while (true) {
+ *   const next = await reader.read()
+ *
+ *   if (next?.done === true) {
+ *     break
+ *   }
+ *
+ *   if (next?.value != null) {
+ *     console.info(next.value) // Uint8Array(x) [ ... ]
+ *   }
+ * }
+ * ```
+ *
+ * ##### Content-Type
+ *
+ * When fetching `DAG-PB` data, the content type will be set to `application/octet-stream` unless a custom content-type parser is configured.
+ *
+ * #### JSON
+ *
+ * The JSON codec is a very simple codec, a block parseable with this codec is a JSON string encoded into a `Uint8Array`.
+ *
+ * ##### Using the JSON codec
+ *
+ * ```TypeScript
+ * import * as json from 'multiformats/codecs/json'
+ *
+ * const block = new TextEncoder().encode('{ "hello": "world" }')
+ * const obj = json.decode(block)
+ *
+ * console.info(obj) // { hello: 'world' }
+ * ```
+ *
+ * ##### Content-Type
+ *
+ * When the `JSON` codec is encountered, the `Content-Type` header of the response will be set to `application/json`.
+ *
+ * ### DAG-JSON
+ *
+ * [DAG-JSON](https://ipld.io/docs/codecs/known/dag-json/) expands on the `JSON` codec, adding the ability to contain [CID](https://docs.ipfs.tech/concepts/content-addressing/)s which act as links to other blocks, and byte arrays.
+ *
+ * `CID`s and byte arrays are represented using special object structures with a single `"/"` property.
+ *
+ * Using `DAG-JSON` has two important caveats:
+ *
+ * 1. Your `JSON` structure cannot contain an object with only a `"/"` property, as it will be interpreted as a special type.
+ * 2. Since `JSON` has no technical limit on number sizes, `DAG-JSON` also allows numbers larger than `Number.MAX_SAFE_INTEGER`. JavaScript requires use of `BigInt`s to represent numbers larger than this, and `JSON.parse` does not support them, so precision will be lost.
+ *
+ * Otherwise this codec follows the same rules as the `JSON` codec.
+ *
+ * ##### Using the DAG-JSON codec
+ *
+ * ```TypeScript
+ * import * as dagJson from '@ipld/dag-json'
+ *
+ * const block = new TextEncoder().encode(`{
+ *   "hello": "world",
+ *   "cid": {
+ *     "/": "baeaaac3imvwgy3zao5xxe3de"
+ *   },
+ *   "buf": {
+ *     "/": {
+ *       "bytes": "AAECAwQ"
+ *     }
+ *   }
+ * }`)
+ *
+ * const obj = dagJson.decode(block)
+ *
+ * console.info(obj)
+ * // {
+ * // hello: 'world',
+ * // cid: CID(baeaaac3imvwgy3zao5xxe3de),
+ * // buf: Uint8Array(5) [ 0, 1, 2, 3, 4 ]
+ * // }
+ * ```
+ *
+ * ##### Content-Type
+ *
+ * When the `DAG-JSON` codec is encountered, the `Content-Type` header of the response will be set to `application/json`.
+ *
+ * #### DAG-CBOR
+ *
+ * [DAG-CBOR](https://ipld.io/docs/codecs/known/dag-cbor/) uses the [Concise Binary Object Representation](https://cbor.io/) format for serialization instead of JSON.
+ *
+ * This supports more datatypes in a safer way than JSON and is smaller on the wire to boot so is usually preferable to JSON or DAG-JSON.
+ *
+ * ##### Content-Type
+ *
+ * Not all data types supported by `DAG-CBOR` can be successfully turned into JSON and back.
+ *
+ * When a decoded block can be round-tripped to JSON, the `Content-Type` will be set to `application/json`. In this case the `.json()` method on the `Response` object can be used to obtain an object representation of the response.
+ *
+ * When it cannot, the `Content-Type` will be `application/octet-stream` - in this case the `@ipld/dag-json` module must be used to deserialize the return value from `.arrayBuffer()`.
+ *
+ * ##### Detecting JSON-safe DAG-CBOR
+ *
+ * ```TypeScript
+ * import { verifiedFetch } from '@helia/verified-fetch'
+ * import * as dagCbor from '@ipld/dag-cbor'
+ *
+ * const res = await verifiedFetch('ipfs://bafyDagCborCID')
+ * let obj
+ *
+ * if (res.headers.get('Content-Type') === 'application/json') {
+ *   // DAG-CBOR data can be safely decoded as JSON
+ *   obj = await res.json()
+ * } else {
+ *   // response contains non-JSON friendly data types
+ *   obj = dagCbor.decode(new Uint8Array(await res.arrayBuffer()))
+ * }
+ *
+ * console.info(obj) // ...
  * ```
  *
  * ## Comparison to fetch

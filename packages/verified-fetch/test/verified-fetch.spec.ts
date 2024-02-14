@@ -5,10 +5,12 @@ import { type IPNS } from '@helia/ipns'
 import { json } from '@helia/json'
 import { unixfs, type UnixFS } from '@helia/unixfs'
 import * as ipldDagCbor from '@ipld/dag-cbor'
+import * as ipldDagJson from '@ipld/dag-json'
 import { stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import last from 'it-last'
+import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
 import { identity } from 'multiformats/hashes/identity'
@@ -187,6 +189,31 @@ describe('@helia/verifed-fetch', () => {
       expect(new Uint8Array(data)).to.equalBytes(finalRootFileContent)
     })
 
+    it('should allow use as a stream', async () => {
+      const content = new Uint8Array([0x01, 0x02, 0x03])
+
+      const fs = unixfs(helia)
+      const cid = await fs.addBytes(content)
+
+      const res = await verifiedFetch.fetch(cid)
+      const reader = res.body?.getReader()
+      const output: Uint8Array[] = []
+
+      while (true) {
+        const next = await reader?.read()
+
+        if (next?.done === true) {
+          break
+        }
+
+        if (next?.value != null) {
+          output.push(next.value)
+        }
+      }
+
+      expect(toBuffer(output)).to.equalBytes(content)
+    })
+
     it('should return 501 if index file is not found', async () => {
       const finalRootFileContent = new Uint8Array([0x01, 0x02, 0x03])
 
@@ -293,15 +320,10 @@ describe('@helia/verifed-fetch', () => {
       const cid = await c.add(obj)
 
       const resp = await verifiedFetch.fetch(cid)
-      expect(resp.headers.get('content-type')).to.equal('application/json')
+      expect(resp.headers.get('content-type')).to.equal('application/octet-stream')
 
-      const data = await resp.json()
-      expect(data).to.deep.equal({
-        hello: 'world',
-        link: {
-          '/': 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'
-        }
-      })
+      const data = await ipldDagCbor.decode(new Uint8Array(await resp.arrayBuffer()))
+      expect(data).to.deep.equal(obj)
     })
 
     it('should return dag-cbor data with embedded bytes', async () => {
@@ -313,17 +335,24 @@ describe('@helia/verifed-fetch', () => {
       const cid = await c.add(obj)
 
       const resp = await verifiedFetch.fetch(cid)
+      expect(resp.headers.get('content-type')).to.equal('application/octet-stream')
+
+      const data = await ipldDagCbor.decode(new Uint8Array(await resp.arrayBuffer()))
+      expect(data).to.deep.equal(obj)
+    })
+
+    it('should allow parsing dag-cbor object array buffer as dag-json', async () => {
+      const obj = {
+        hello: 'world'
+      }
+      const c = dagCbor(helia)
+      const cid = await c.add(obj)
+
+      const resp = await verifiedFetch.fetch(cid)
       expect(resp.headers.get('content-type')).to.equal('application/json')
 
-      const data = await resp.json()
-      expect(data).to.deep.equal({
-        hello: 'world',
-        bytes: {
-          '/': {
-            bytes: 'AAECAwQ'
-          }
-        }
-      })
+      const data = ipldDagJson.decode(new Uint8Array(await resp.arrayBuffer()))
+      expect(data).to.deep.equal(obj)
     })
 
     it('should return dag-cbor with a small BigInt as application/json', async () => {
