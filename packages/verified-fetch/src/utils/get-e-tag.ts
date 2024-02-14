@@ -7,7 +7,8 @@ interface GetETagArg {
   rangeStart?: number
   rangeEnd?: number
   /**
-   * If non-determinictic, weak should be true. Some examples:
+   * Weak Etag is used when we can't guarantee byte-for-byte-determinism (generated, or mutable content).
+   * Some examples:
    * - IPNS requests
    * - CAR streamed with blocks in non-deterministic order
    * - TAR streamed with files in non-deterministic order
