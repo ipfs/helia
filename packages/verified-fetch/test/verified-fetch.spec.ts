@@ -12,6 +12,7 @@ import { expect } from 'aegir/chai'
 import last from 'it-last'
 import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
+import * as ipldJson from 'multiformats/codecs/json'
 import * as raw from 'multiformats/codecs/raw'
 import { identity } from 'multiformats/hashes/identity'
 import { sha256 } from 'multiformats/hashes/sha2'
@@ -238,6 +239,34 @@ describe('@helia/verifed-fetch', () => {
       expect(resp.statusText).to.equal('Not Implemented')
     })
 
+    it('can round trip json via .json()', async () => {
+      const obj = {
+        hello: 'world'
+      }
+      const j = json(helia)
+      const cid = await j.add(obj)
+
+      const resp = await verifiedFetch.fetch(cid)
+      expect(resp.headers.get('content-type')).to.equal('application/json')
+
+      const output = await resp.json()
+      await expect(j.add(output)).to.eventually.deep.equal(cid)
+    })
+
+    it('can round trip json via .arrayBuffer()', async () => {
+      const obj = {
+        hello: 'world'
+      }
+      const j = json(helia)
+      const cid = await j.add(obj)
+
+      const resp = await verifiedFetch.fetch(cid)
+      expect(resp.headers.get('content-type')).to.equal('application/json')
+
+      const output = ipldJson.decode(new Uint8Array(await resp.arrayBuffer()))
+      await expect(j.add(output)).to.eventually.deep.equal(cid)
+    })
+
     it('should handle dag-json block', async () => {
       const obj = {
         hello: 'world'
@@ -294,6 +323,40 @@ describe('@helia/verifed-fetch', () => {
           }
         }
       })
+    })
+
+    it('can round trip dag-json via .json()', async () => {
+      const obj = {
+        hello: 'world',
+        // n.b. cannot round-trip larger than Number.MAX_SAFE_INTEGER because
+        // parsing DAG-JSON as using JSON.parse loses precision
+        bigInt: 10n,
+        link: CID.parse('QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN')
+      }
+      const j = dagJson(helia)
+      const cid = await j.add(obj)
+
+      const resp = await verifiedFetch.fetch(cid)
+      expect(resp.headers.get('content-type')).to.equal('application/json')
+
+      const output = await resp.json()
+      await expect(j.add(output)).to.eventually.deep.equal(cid)
+    })
+
+    it('can round trip dag-json via .arrayBuffer()', async () => {
+      const obj = {
+        hello: 'world',
+        bigInt: BigInt(Number.MAX_SAFE_INTEGER) + 1n,
+        link: CID.parse('QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN')
+      }
+      const j = dagJson(helia)
+      const cid = await j.add(obj)
+
+      const resp = await verifiedFetch.fetch(cid)
+      expect(resp.headers.get('content-type')).to.equal('application/json')
+
+      const output = ipldDagJson.decode(new Uint8Array(await resp.arrayBuffer()))
+      await expect(j.add(output)).to.eventually.deep.equal(cid)
     })
 
     it('should handle JSON-compliant dag-cbor block', async () => {
@@ -386,6 +449,53 @@ describe('@helia/verifed-fetch', () => {
 
       const data = ipldDagCbor.decode(new Uint8Array(await resp.arrayBuffer()))
       expect(data).to.deep.equal(obj)
+    })
+
+    it('can round trip JSON-compliant dag-cbor via .json()', async () => {
+      const obj = {
+        hello: 'world'
+      }
+      const c = dagCbor(helia)
+      const cid = await c.add(obj)
+
+      const resp = await verifiedFetch.fetch(cid)
+      expect(resp.headers.get('content-type')).to.equal('application/json')
+
+      const output = await resp.json()
+      await expect(c.add(output)).to.eventually.deep.equal(cid)
+    })
+
+    // N.b. this is not possible because the incoming block is turned into JSON
+    // and returned as the response body, so `.arrayBufer()` returns a string
+    // encoded into a Uint8Array which we can't parse as CBOR
+    it.skip('can round trip JSON-compliant dag-cbor via .arrayBuffer()', async () => {
+      const obj = {
+        hello: 'world'
+      }
+      const c = dagCbor(helia)
+      const cid = await c.add(obj)
+
+      const resp = await verifiedFetch.fetch(cid)
+      expect(resp.headers.get('content-type')).to.equal('application/json')
+
+      const output = ipldDagCbor.decode(new Uint8Array(await resp.arrayBuffer()))
+      await expect(c.add(output)).to.eventually.deep.equal(cid)
+    })
+
+    it('can round trip dag-cbor via .arrayBuffer()', async () => {
+      const obj = {
+        hello: 'world',
+        bigInt: BigInt(Number.MAX_SAFE_INTEGER) + 1n,
+        link: CID.parse('QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN')
+      }
+      const c = dagCbor(helia)
+      const cid = await c.add(obj)
+
+      const resp = await verifiedFetch.fetch(cid)
+      expect(resp.headers.get('content-type')).to.equal('application/octet-stream')
+
+      const output = ipldDagCbor.decode(new Uint8Array(await resp.arrayBuffer()))
+      await expect(c.add(output)).to.eventually.deep.equal(cid)
     })
 
     it('should handle json block', async () => {
