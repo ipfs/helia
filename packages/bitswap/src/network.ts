@@ -12,6 +12,7 @@ import take from 'it-take'
 import { base64 } from 'multiformats/bases/base64'
 import { CID } from 'multiformats/cid'
 import { CustomProgressEvent } from 'progress-events'
+import { raceEvent } from 'race-event'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { BITSWAP_120, DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS, DEFAULT_MAX_PROVIDERS_PER_REQUEST, DEFAULT_MESSAGE_RECEIVE_TIMEOUT, DEFAULT_MESSAGE_SEND_TIMEOUT, DEFAULT_RUN_ON_TRANSIENT_CONNECTIONS } from './constants.js'
 import { BitswapMessage } from './pb/message.js'
@@ -19,7 +20,7 @@ import type { WantOptions } from './bitswap.js'
 import type { MultihashHasherLoader } from './index.js'
 import type { Block, BlockPresence, WantlistEntry } from './pb/message.js'
 import type { Provider, Routing } from '@helia/interface/routing'
-import type { Libp2p, AbortOptions, Connection, PeerId, IncomingStreamData, Topology, MetricGroup, ComponentLogger, Metrics } from '@libp2p/interface'
+import type { Libp2p, AbortOptions, Connection, PeerId, IncomingStreamData, Topology, MetricGroup, ComponentLogger, Metrics, IdentifyResult } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
@@ -79,6 +80,11 @@ export interface NetworkComponents {
   logger: ComponentLogger
   libp2p: Libp2p
   metrics?: Metrics
+}
+
+export interface BitswapMessageEventDetail {
+  peer: PeerId
+  message: BitswapMessage
 }
 
 export interface NetworkEvents {
@@ -255,7 +261,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
   }
 
   /**
-   * Find providers given a `cid`.
+   * Find bitswap providers for a given `cid`.
    */
   async * findProviders (cid: CID, options?: AbortOptions & ProgressOptions<BitswapNetworkWantProgressEvents>): AsyncIterable<Provider> {
     options?.onProgress?.(new CustomProgressEvent<PeerId>('bitswap:network:find-providers', cid))
@@ -267,7 +273,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
         let hasDirectAddress = false
 
         for (let ma of provider.multiaddrs) {
-          if (ma.getPeerId() === null) {
+          if (ma.getPeerId() == null) {
             ma = ma.encapsulate(`/p2p/${provider.id}`)
           }
 
@@ -282,6 +288,11 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
         }
       }
 
+      // ignore non-bitswap providers
+      if (provider.protocols?.includes('transport-bitswap') === false) {
+        continue
+      }
+
       yield provider
     }
   }
@@ -292,11 +303,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
   async findAndConnect (cid: CID, options?: WantOptions): Promise<void> {
     await drain(
       take(
-        map(this.findProviders(cid, options), async provider => this.connectTo(provider.id, options)
-          .catch(err => {
-            // Prevent unhandled promise rejection
-            this.log.error(err)
-          })),
+        map(this.findProviders(cid, options), async provider => this.connectTo(provider.id, options)),
         options?.maxProviders ?? DEFAULT_MAX_PROVIDERS_PER_REQUEST
       )
     )
@@ -384,7 +391,30 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
     }
 
     options?.onProgress?.(new CustomProgressEvent<PeerId>('bitswap:network:dial', peer))
-    return this.libp2p.dial(peer, options)
+
+    // dial and wait for identify - this is to avoid opening a protocol stream
+    // that we are not going to use but depends on the remote node running the
+    // identitfy protocol
+    const [
+      connection
+    ] = await Promise.all([
+      this.libp2p.dial(peer, options),
+      raceEvent(this.libp2p, 'peer:identify', options?.signal, {
+        filter: (evt: CustomEvent<IdentifyResult>): boolean => {
+          if (!evt.detail.peerId.equals(peer)) {
+            return false
+          }
+
+          if (evt.detail.protocols.includes(BITSWAP_120)) {
+            return true
+          }
+
+          throw new CodeError(`${peer} did not support ${BITSWAP_120}`, 'ERR_BITSWAP_UNSUPPORTED_BY_PEER')
+        }
+      })
+    ])
+
+    return connection
   }
 
   _updateSentStats (peerId: PeerId, blocks: Block[] = []): void {

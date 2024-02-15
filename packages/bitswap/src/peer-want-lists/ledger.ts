@@ -2,11 +2,11 @@
 import { DEFAULT_MAX_SIZE_REPLACE_HAS_WITH_BLOCK } from '../constants.js'
 import { BlockPresenceType, type BitswapMessage, WantType } from '../pb/message.js'
 import { cidToPrefix } from '../utils/cid-prefix.js'
-import type { WantListEntry } from '../index.js'
 import type { Network } from '../network.js'
 import type { PeerId } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { AbortOptions } from 'it-length-prefixed-stream'
+import type { CID } from 'multiformats/cid'
 
 export interface LedgerComponents {
   peerId: PeerId
@@ -18,11 +18,39 @@ export interface LedgerInit {
   maxSizeReplaceHasWithBlock?: number
 }
 
+export interface PeerWantListEntry {
+  /**
+   * The CID the peer has requested
+   */
+  cid: CID
+
+  /**
+   * The priority with which the remote should return the block
+   */
+  priority: number
+
+  /**
+   * If we want the block or if we want the remote to tell us if they have the
+   * block - note if the block is small they'll send it to us anyway.
+   */
+  wantType: WantType
+
+  /**
+   * Whether the remote should tell us if they have the block or not
+   */
+  sendDontHave: boolean
+
+  /**
+   * If we don't have the block and we've told them we don't have the block
+   */
+  sentDontHave?: boolean
+}
+
 export class Ledger {
   public peerId: PeerId
   private readonly blockstore: Blockstore
   private readonly network: Network
-  public wants: Map<string, WantListEntry>
+  public wants: Map<string, PeerWantListEntry>
   public exchangeCount: number
   public bytesSent: number
   public bytesReceived: number
@@ -65,22 +93,17 @@ export class Ledger {
     const sentBlocks = new Set<string>()
 
     for (const [key, entry] of this.wants.entries()) {
-      let block: Uint8Array | undefined
-      let has = false
-
-      try {
-        block = await this.blockstore.get(entry.cid, options)
-        has = true
-      } catch (err: any) {
-        if (err.code !== 'ERR_NOT_FOUND') {
-          throw err
-        }
-      }
+      const has = await this.blockstore.has(entry.cid, options)
 
       if (!has) {
         // we don't have the requested block and the remote is not interested
         // in us telling them that
         if (!entry.sendDontHave) {
+          continue
+        }
+
+        // we have already told them we don't have the block
+        if (entry.sentDontHave === true) {
           continue
         }
 
@@ -93,31 +116,31 @@ export class Ledger {
         continue
       }
 
-      if (block != null) {
-        // have the requested block
-        if (entry.wantType === WantType.WantHave) {
-          if (block.byteLength < this.maxSizeReplaceHasWithBlock) {
-            // send it anyway
-            sentBlocks.add(key)
-            message.blocks.push({
-              data: block,
-              prefix: cidToPrefix(entry.cid)
-            })
-          } else {
-            // tell them we have the block
-            message.blockPresences.push({
-              cid: entry.cid.bytes,
-              type: BlockPresenceType.HaveBlock
-            })
-          }
-        } else {
-          // they want the block, send it to them
+      const block = await this.blockstore.get(entry.cid, options)
+
+      // do they want the block or just us to tell them we have the block
+      if (entry.wantType === WantType.WantHave) {
+        if (block.byteLength < this.maxSizeReplaceHasWithBlock) {
+          // if the block is small we just send it to them
           sentBlocks.add(key)
           message.blocks.push({
             data: block,
             prefix: cidToPrefix(entry.cid)
           })
+        } else {
+          // otherwise tell them we have the block
+          message.blockPresences.push({
+            cid: entry.cid.bytes,
+            type: BlockPresenceType.HaveBlock
+          })
         }
+      } else {
+        // they want the block, send it to them
+        sentBlocks.add(key)
+        message.blocks.push({
+          data: block,
+          prefix: cidToPrefix(entry.cid)
+        })
       }
     }
 

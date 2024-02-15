@@ -1,3 +1,4 @@
+import { CustomEvent, isPeerId } from '@libp2p/interface'
 import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -18,7 +19,7 @@ import { Network } from '../src/network.js'
 import { BitswapMessage, BlockPresenceType } from '../src/pb/message.js'
 import { cidToPrefix } from '../src/utils/cid-prefix.js'
 import type { Routing } from '@helia/interface/routing'
-import type { Connection, Libp2p, PeerId } from '@libp2p/interface'
+import type { Connection, Libp2p, PeerId, IdentifyResult } from '@libp2p/interface'
 
 interface StubbedNetworkComponents {
   routing: StubbedInstance<Routing>
@@ -254,6 +255,36 @@ describe('network', () => {
       yield * providers
     })())
 
+    components.libp2p.dial.callsFake(async (peerId) => {
+      // fake a network delay
+      await delay(100)
+
+      const connection = stubInterface<Connection>()
+
+      // simulate identify having run
+      setTimeout(() => {
+        const call = components.libp2p.addEventListener.getCall(0)
+
+        expect(call.args[0]).to.equal('peer:identify')
+        const callback = call.args[1]
+
+        if (isPeerId(peerId) && typeof callback === 'function') {
+          callback(new CustomEvent<IdentifyResult>('peer:identify', {
+            detail: {
+              peerId,
+              protocols: [
+                BITSWAP_120
+              ],
+              listenAddrs: [],
+              connection
+            }
+          }))
+        }
+      }, 100)
+
+      return connection
+    })
+
     await network.findAndConnect(cid)
 
     expect(components.libp2p.dial.calledWith(peerId)).to.be.true()
@@ -282,6 +313,36 @@ describe('network', () => {
     components.routing.findProviders.withArgs(cid).returns((async function * () {
       yield * providers
     })())
+
+    components.libp2p.dial.callsFake(async (peerId) => {
+      // fake a network delay
+      await delay(100)
+
+      const connection = stubInterface<Connection>()
+
+      // simulate identify having run
+      setTimeout(() => {
+        const call = components.libp2p.addEventListener.getCall(0)
+
+        expect(call.args[0]).to.equal('peer:identify')
+        const callback = call.args[1]
+
+        if (isPeerId(peerId) && typeof callback === 'function') {
+          callback(new CustomEvent<IdentifyResult>('peer:identify', {
+            detail: {
+              peerId,
+              protocols: [
+                BITSWAP_120
+              ],
+              listenAddrs: [],
+              connection
+            }
+          }))
+        }
+      }, 100)
+
+      return connection
+    })
 
     await network.findAndConnect(cid)
 

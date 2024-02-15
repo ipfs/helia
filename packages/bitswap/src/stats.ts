@@ -1,19 +1,16 @@
-import { EventEmitter } from 'events'
 import type { MetricGroup, Metrics, PeerId } from '@libp2p/interface'
 
 export interface StatsComponents {
   metrics?: Metrics
 }
 
-export class Stats extends EventEmitter {
+export class Stats {
   private readonly blocksReceived?: MetricGroup
   private readonly duplicateBlocksReceived?: MetricGroup
   private readonly dataReceived?: MetricGroup
   private readonly duplicateDataReceived?: MetricGroup
 
   constructor (components: StatsComponents) {
-    super()
-
     this.blocksReceived = components.metrics?.registerMetricGroup('ipfs_bitswap_received_blocks')
     this.duplicateBlocksReceived = components.metrics?.registerMetricGroup('ipfs_bitswap_duplicate_received_blocks')
     this.dataReceived = components.metrics?.registerMetricGroup('ipfs_bitswap_data_received_bytes')

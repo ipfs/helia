@@ -5,31 +5,43 @@ import { MemoryBlockstore } from 'blockstore-core'
 import delay from 'delay'
 import { CID } from 'multiformats/cid'
 import pRetry from 'p-retry'
-import { stubInterface, type StubbedInstance } from 'sinon-ts'
-import { DEFAULT_MAX_SIZE_REPLACE_HAS_WITH_BLOCK } from '../src/constants.js'
+import Sinon from 'sinon'
+import { stubInterface } from 'sinon-ts'
+import { DEFAULT_MAX_SIZE_REPLACE_HAS_WITH_BLOCK, DEFAULT_MESSAGE_SEND_DELAY } from '../src/constants.js'
+import { Network } from '../src/network.js'
 import { BlockPresenceType, WantType } from '../src/pb/message.js'
 import { PeerWantLists } from '../src/peer-want-lists/index.js'
 import ve from '../src/utils/varint-encoder.js'
-import type { Network } from '../src/network.js'
-import type { ComponentLogger, PeerId } from '@libp2p/interface'
+import type { Routing } from '@helia/interface'
+import type { Libp2p, ComponentLogger, PeerId } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 
 interface PeerWantListsComponentStubs {
   peerId: PeerId
   blockstore: Blockstore
-  network: StubbedInstance<Network>
+  network: Network
   logger: ComponentLogger
 }
 
 describe('peer-want-lists', () => {
   let components: PeerWantListsComponentStubs
   let wantLists: PeerWantLists
+  let network: Network
 
   beforeEach(async () => {
+    const logger = defaultLogger()
+    network = new Network({
+      routing: stubInterface<Routing>(),
+      logger,
+      libp2p: stubInterface<Libp2p>({
+        getConnections: () => []
+      })
+    })
+
     components = {
       peerId: await createEd25519PeerId(),
       blockstore: new MemoryBlockstore(),
-      network: stubInterface<Network>(),
+      network,
       logger: defaultLogger()
     }
 
@@ -43,16 +55,21 @@ describe('peer-want-lists', () => {
 
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
 
-    await wantLists.messageReceived(remotePeer, {
-      blocks: [],
-      blockPresences: [],
-      pendingBytes: 0,
-      wantlist: {
-        full: true,
-        entries: [{
-          cid: cid.bytes,
-          priority: 1
-        }]
+    network.safeDispatchEvent('bitswap:message', {
+      detail: {
+        peer: remotePeer,
+        message: {
+          blocks: [],
+          blockPresences: [],
+          pendingBytes: 0,
+          wantlist: {
+            full: true,
+            entries: [{
+              cid: cid.bytes,
+              priority: 1
+            }]
+          }
+        }
       }
     })
 
@@ -72,15 +89,20 @@ describe('peer-want-lists', () => {
     const cid2 = CID.parse('bafyreidykglsfhoixmivffc5uwhcgshx4j465xwqntbmu43nb2dzqwfvae')
 
     // first wantlist
-    await wantLists.messageReceived(remotePeer, {
-      blocks: [],
-      blockPresences: [],
-      pendingBytes: 0,
-      wantlist: {
-        entries: [{
-          cid: cid1.bytes,
-          priority: 1
-        }]
+    network.safeDispatchEvent('bitswap:message', {
+      detail: {
+        peer: remotePeer,
+        message: {
+          blocks: [],
+          blockPresences: [],
+          pendingBytes: 0,
+          wantlist: {
+            entries: [{
+              cid: cid1.bytes,
+              priority: 1
+            }]
+          }
+        }
       }
     })
 
@@ -88,16 +110,21 @@ describe('peer-want-lists', () => {
 
     expect(entries?.map(entry => entry.cid.toString())).to.include(cid1.toString())
 
-    await wantLists.messageReceived(remotePeer, {
-      blocks: [],
-      blockPresences: [],
-      pendingBytes: 0,
-      wantlist: {
-        full: true,
-        entries: [{
-          cid: cid2.bytes,
-          priority: 1
-        }]
+    network.safeDispatchEvent('bitswap:message', {
+      detail: {
+        peer: remotePeer,
+        message: {
+          blocks: [],
+          blockPresences: [],
+          pendingBytes: 0,
+          wantlist: {
+            full: true,
+            entries: [{
+              cid: cid2.bytes,
+              priority: 1
+            }]
+          }
+        }
       }
     })
 
@@ -115,15 +142,20 @@ describe('peer-want-lists', () => {
     const cid2 = CID.parse('bafyreidykglsfhoixmivffc5uwhcgshx4j465xwqntbmu43nb2dzqwfvae')
 
     // first wantlist
-    await wantLists.messageReceived(remotePeer, {
-      blocks: [],
-      blockPresences: [],
-      pendingBytes: 0,
-      wantlist: {
-        entries: [{
-          cid: cid1.bytes,
-          priority: 1
-        }]
+    network.safeDispatchEvent('bitswap:message', {
+      detail: {
+        peer: remotePeer,
+        message: {
+          blocks: [],
+          blockPresences: [],
+          pendingBytes: 0,
+          wantlist: {
+            entries: [{
+              cid: cid1.bytes,
+              priority: 1
+            }]
+          }
+        }
       }
     })
 
@@ -131,15 +163,20 @@ describe('peer-want-lists', () => {
 
     expect(entries?.map(entry => entry.cid.toString())).to.include(cid1.toString())
 
-    await wantLists.messageReceived(remotePeer, {
-      blocks: [],
-      blockPresences: [],
-      pendingBytes: 0,
-      wantlist: {
-        entries: [{
-          cid: cid2.bytes,
-          priority: 1
-        }]
+    network.safeDispatchEvent('bitswap:message', {
+      detail: {
+        peer: remotePeer,
+        message: {
+          blocks: [],
+          blockPresences: [],
+          pendingBytes: 0,
+          wantlist: {
+            entries: [{
+              cid: cid2.bytes,
+              priority: 1
+            }]
+          }
+        }
       }
     })
 
@@ -153,16 +190,21 @@ describe('peer-want-lists', () => {
   it('should record the amount of incoming data', async () => {
     const remotePeer = await createEd25519PeerId()
 
-    await wantLists.messageReceived(remotePeer, {
-      blocks: [{
-        prefix: Uint8Array.from([0, 1, 2, 3, 4]),
-        data: Uint8Array.from([0, 1, 2, 3, 4])
-      }, {
-        prefix: Uint8Array.from([0, 1, 2]),
-        data: Uint8Array.from([0, 1, 2])
-      }],
-      blockPresences: [],
-      pendingBytes: 0
+    network.safeDispatchEvent('bitswap:message', {
+      detail: {
+        peer: remotePeer,
+        message: {
+          blocks: [{
+            prefix: Uint8Array.from([0, 1, 2, 3, 4]),
+            data: Uint8Array.from([0, 1, 2, 3, 4])
+          }, {
+            prefix: Uint8Array.from([0, 1, 2]),
+            data: Uint8Array.from([0, 1, 2])
+          }],
+          blockPresences: [],
+          pendingBytes: 0
+        }
+      }
     })
 
     const ledger = wantLists.ledgerForPeer(remotePeer)
@@ -171,6 +213,7 @@ describe('peer-want-lists', () => {
   })
 
   it('should send requested blocks to peer', async () => {
+    const sendMessageStub = network.sendMessage = Sinon.stub()
     const remotePeer = await createEd25519PeerId()
 
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
@@ -179,26 +222,32 @@ describe('peer-want-lists', () => {
     // we have block
     await components.blockstore.put(cid, block)
 
-    await wantLists.messageReceived(remotePeer, {
-      blocks: [],
-      blockPresences: [],
-      pendingBytes: 0,
-      wantlist: {
-        entries: [{
-          cid: cid.bytes,
-          priority: 1
-        }]
+    // incoming message
+    network.safeDispatchEvent('bitswap:message', {
+      detail: {
+        peer: remotePeer,
+        message: {
+          blocks: [],
+          blockPresences: [],
+          pendingBytes: 0,
+          wantlist: {
+            entries: [{
+              cid: cid.bytes,
+              priority: 1
+            }]
+          }
+        }
       }
     })
 
     // wait for network send
     await pRetry(() => {
-      if (!components.network.sendMessage.called) {
+      if (!sendMessageStub.called) {
         throw new Error('Network message not sent')
       }
     })
 
-    const message = components.network.sendMessage.getCall(0).args[1]
+    const message = sendMessageStub.getCall(0).args[1]
 
     expect(message.blocks).to.have.lengthOf(1)
     expect(message.blocks?.[0].data).to.equalBytes(block)
@@ -207,12 +256,13 @@ describe('peer-want-lists', () => {
     ]))
 
     // have to wait for network send
-    await delay(1)
+    await delay(DEFAULT_MESSAGE_SEND_DELAY * 3)
 
     expect(wantLists.wantListForPeer(remotePeer)?.map(entry => entry.cid.toString())).to.not.include(cid.toString())
   })
 
   it('should send requested block presences to peer', async () => {
+    const sendMessageStub = network.sendMessage = Sinon.stub()
     const remotePeer = await createEd25519PeerId()
 
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
@@ -221,27 +271,32 @@ describe('peer-want-lists', () => {
     // we have block
     await components.blockstore.put(cid, block)
 
-    await wantLists.messageReceived(remotePeer, {
-      blocks: [],
-      blockPresences: [],
-      pendingBytes: 0,
-      wantlist: {
-        entries: [{
-          cid: cid.bytes,
-          priority: 1,
-          wantType: WantType.WantHave
-        }]
+    network.safeDispatchEvent('bitswap:message', {
+      detail: {
+        peer: remotePeer,
+        message: {
+          blocks: [],
+          blockPresences: [],
+          pendingBytes: 0,
+          wantlist: {
+            entries: [{
+              cid: cid.bytes,
+              priority: 1,
+              wantType: WantType.WantHave
+            }]
+          }
+        }
       }
     })
 
     // wait for network send
     await pRetry(() => {
-      if (!components.network.sendMessage.called) {
+      if (!sendMessageStub.called) {
         throw new Error('Network message not sent')
       }
     })
 
-    const message = components.network.sendMessage.getCall(0).args[1]
+    const message = sendMessageStub.getCall(0).args[1]
 
     expect(message.blocks).to.be.empty('should not have sent blocks')
     expect(message.blockPresences).to.have.lengthOf(1)
@@ -250,33 +305,39 @@ describe('peer-want-lists', () => {
   })
 
   it('should send requested lack of block presences to peer', async () => {
+    const sendMessageStub = network.sendMessage = Sinon.stub()
     const remotePeer = await createEd25519PeerId()
 
     // CID for a block we don't have
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
 
-    await wantLists.messageReceived(remotePeer, {
-      blocks: [],
-      blockPresences: [],
-      pendingBytes: 0,
-      wantlist: {
-        entries: [{
-          cid: cid.bytes,
-          priority: 1,
-          wantType: WantType.WantBlock,
-          sendDontHave: true
-        }]
+    network.safeDispatchEvent('bitswap:message', {
+      detail: {
+        peer: remotePeer,
+        message: {
+          blocks: [],
+          blockPresences: [],
+          pendingBytes: 0,
+          wantlist: {
+            entries: [{
+              cid: cid.bytes,
+              priority: 1,
+              wantType: WantType.WantBlock,
+              sendDontHave: true
+            }]
+          }
+        }
       }
     })
 
     // wait for network send
     await pRetry(() => {
-      if (!components.network.sendMessage.called) {
+      if (!sendMessageStub.called) {
         throw new Error('Network message not sent')
       }
     })
 
-    const message = components.network.sendMessage.getCall(0).args[1]
+    const message = sendMessageStub.getCall(0).args[1]
 
     expect(message.blocks).to.be.empty('should not have sent blocks')
     expect(message.blockPresences).to.have.lengthOf(1)
@@ -285,6 +346,7 @@ describe('peer-want-lists', () => {
   })
 
   it('should send requested blocks to peer when presence was requested but block size is less than maxSizeReplaceHasWithBlock', async () => {
+    const sendMessageStub = network.sendMessage = Sinon.stub()
     const remotePeer = await createEd25519PeerId()
 
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
@@ -293,27 +355,32 @@ describe('peer-want-lists', () => {
     // we have block
     await components.blockstore.put(cid, block)
 
-    await wantLists.messageReceived(remotePeer, {
-      blocks: [],
-      blockPresences: [],
-      pendingBytes: 0,
-      wantlist: {
-        entries: [{
-          cid: cid.bytes,
-          priority: 1,
-          wantType: WantType.WantHave
-        }]
+    network.safeDispatchEvent('bitswap:message', {
+      detail: {
+        peer: remotePeer,
+        message: {
+          blocks: [],
+          blockPresences: [],
+          pendingBytes: 0,
+          wantlist: {
+            entries: [{
+              cid: cid.bytes,
+              priority: 1,
+              wantType: WantType.WantHave
+            }]
+          }
+        }
       }
     })
 
     // wait for network send
     await pRetry(() => {
-      if (!components.network.sendMessage.called) {
+      if (!sendMessageStub.called) {
         throw new Error('Network message not sent')
       }
     })
 
-    const message = components.network.sendMessage.getCall(0).args[1]
+    const message = sendMessageStub.getCall(0).args[1]
 
     expect(message.blockPresences).to.be.empty()
     expect(message.blocks).to.have.lengthOf(1)
@@ -329,32 +396,38 @@ describe('peer-want-lists', () => {
   })
 
   it('should send requested block presences to peer for blocks we don\'t have', async () => {
+    const sendMessageStub = network.sendMessage = Sinon.stub()
     const remotePeer = await createEd25519PeerId()
 
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
 
-    await wantLists.messageReceived(remotePeer, {
-      blocks: [],
-      blockPresences: [],
-      pendingBytes: 0,
-      wantlist: {
-        entries: [{
-          cid: cid.bytes,
-          priority: 1,
-          wantType: WantType.WantHave,
-          sendDontHave: true
-        }]
+    network.safeDispatchEvent('bitswap:message', {
+      detail: {
+        peer: remotePeer,
+        message: {
+          blocks: [],
+          blockPresences: [],
+          pendingBytes: 0,
+          wantlist: {
+            entries: [{
+              cid: cid.bytes,
+              priority: 1,
+              wantType: WantType.WantHave,
+              sendDontHave: true
+            }]
+          }
+        }
       }
     })
 
     // wait for network send
     await pRetry(() => {
-      if (!components.network.sendMessage.called) {
+      if (!sendMessageStub.called) {
         throw new Error('Network message not sent')
       }
     })
 
-    const message = components.network.sendMessage.getCall(0).args[1]
+    const message = sendMessageStub.getCall(0).args[1]
 
     expect(message.blocks).to.be.empty('should not have sent blocks')
     expect(message.blockPresences).to.have.lengthOf(1)
@@ -367,30 +440,40 @@ describe('peer-want-lists', () => {
 
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
 
-    await wantLists.messageReceived(remotePeer, {
-      blocks: [],
-      blockPresences: [],
-      pendingBytes: 0,
-      wantlist: {
-        entries: [{
-          cid: cid.bytes,
-          priority: 1
-        }]
+    network.safeDispatchEvent('bitswap:message', {
+      detail: {
+        peer: remotePeer,
+        message: {
+          blocks: [],
+          blockPresences: [],
+          pendingBytes: 0,
+          wantlist: {
+            entries: [{
+              cid: cid.bytes,
+              priority: 1
+            }]
+          }
+        }
       }
     })
 
     expect(wantLists.wantListForPeer(remotePeer)?.map(entry => entry.cid.toString())).to.include(cid.toString())
 
-    await wantLists.messageReceived(remotePeer, {
-      blocks: [],
-      blockPresences: [],
-      pendingBytes: 0,
-      wantlist: {
-        entries: [{
-          cid: cid.bytes,
-          priority: 1,
-          cancel: true
-        }]
+    network.safeDispatchEvent('bitswap:message', {
+      detail: {
+        peer: remotePeer,
+        message: {
+          blocks: [],
+          blockPresences: [],
+          pendingBytes: 0,
+          wantlist: {
+            entries: [{
+              cid: cid.bytes,
+              priority: 1,
+              cancel: true
+            }]
+          }
+        }
       }
     })
 
@@ -406,15 +489,20 @@ describe('peer-want-lists', () => {
     // we have block
     await components.blockstore.put(cid, block)
 
-    await wantLists.messageReceived(remotePeer, {
-      blocks: [],
-      blockPresences: [],
-      pendingBytes: 0,
-      wantlist: {
-        entries: [{
-          cid: cid.bytes,
-          priority: 1
-        }]
+    network.safeDispatchEvent('bitswap:message', {
+      detail: {
+        peer: remotePeer,
+        message: {
+          blocks: [],
+          blockPresences: [],
+          pendingBytes: 0,
+          wantlist: {
+            entries: [{
+              cid: cid.bytes,
+              priority: 1
+            }]
+          }
+        }
       }
     })
 
@@ -432,36 +520,47 @@ describe('peer-want-lists', () => {
 
     expect(wantLists.peers()).to.be.empty()
 
-    await wantLists.messageReceived(remotePeer, {
-      blocks: [{
-        prefix: Uint8Array.from([0, 1, 2, 3, 4]),
-        data: Uint8Array.from([0, 1, 2, 3, 4])
-      }, {
-        prefix: Uint8Array.from([0, 1, 2]),
-        data: Uint8Array.from([0, 1, 2])
-      }],
-      blockPresences: [],
-      pendingBytes: 0
+    network.safeDispatchEvent('bitswap:message', {
+      detail: {
+        peer: remotePeer,
+        message: {
+          blocks: [{
+            prefix: Uint8Array.from([0, 1, 2, 3, 4]),
+            data: Uint8Array.from([0, 1, 2, 3, 4])
+          }, {
+            prefix: Uint8Array.from([0, 1, 2]),
+            data: Uint8Array.from([0, 1, 2])
+          }],
+          blockPresences: [],
+          pendingBytes: 0
+        }
+      }
     })
 
     expect(wantLists.peers().map(p => p.toString())).to.include(remotePeer.toString())
   })
 
   it('should send requested blocks to peer when they are received', async () => {
+    const sendMessageStub = network.sendMessage = Sinon.stub()
     const remotePeer = await createEd25519PeerId()
 
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
     const block = Uint8Array.from([0, 1, 2, 3, 4])
 
-    await wantLists.messageReceived(remotePeer, {
-      blocks: [],
-      blockPresences: [],
-      pendingBytes: 0,
-      wantlist: {
-        entries: [{
-          cid: cid.bytes,
-          priority: 1
-        }]
+    network.safeDispatchEvent('bitswap:message', {
+      detail: {
+        peer: remotePeer,
+        message: {
+          blocks: [],
+          blockPresences: [],
+          pendingBytes: 0,
+          wantlist: {
+            entries: [{
+              cid: cid.bytes,
+              priority: 1
+            }]
+          }
+        }
       }
     })
 
@@ -475,12 +574,12 @@ describe('peer-want-lists', () => {
 
     // wait for network send
     await pRetry(() => {
-      if (!components.network.sendMessage.called) {
+      if (!sendMessageStub.called) {
         throw new Error('Network message not sent')
       }
     })
 
-    const message = components.network.sendMessage.getCall(0).args[1]
+    const message = sendMessageStub.getCall(0).args[1]
 
     expect(message.blocks).to.have.lengthOf(1)
     expect(message.blocks?.[0].data).to.equalBytes(block)
@@ -496,6 +595,6 @@ describe('peer-want-lists', () => {
 
     // should only have sent one message
     await delay(100)
-    expect(components.network.sendMessage.callCount).to.equal(1)
+    expect(sendMessageStub.callCount).to.equal(1)
   })
 })

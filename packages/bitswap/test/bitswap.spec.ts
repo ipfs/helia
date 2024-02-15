@@ -17,6 +17,7 @@ import { stubInterface } from 'sinon-ts'
 import { Bitswap } from '../src/bitswap.js'
 import { BitswapMessage, BlockPresenceType } from '../src/pb/message.js'
 import { cidToPrefix } from '../src/utils/cid-prefix.js'
+import type { BitswapMessageEventDetail } from '../src/network.js'
 import type { Routing } from '@helia/interface/routing'
 import type { Connection, Libp2p, PeerId } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
@@ -83,37 +84,17 @@ describe('bitswap', () => {
       })
 
       // providers found via routing
-      const providers = [{
-        id: await createEd25519PeerId(),
-        multiaddrs: [
-          multiaddr('/ip4/41.41.41.41/tcp/1234')
-        ],
-        protocols: ['transport-bitswap']
-      }, {
-        id: await createEd25519PeerId(),
-        multiaddrs: [
-          multiaddr('/ip4/42.42.42.42/tcp/1234')
-        ],
-        protocols: ['transport-bitswap']
-      }, {
-        id: await createEd25519PeerId(),
-        multiaddrs: [
-          multiaddr('/ip4/43.43.43.43/tcp/1234')
-        ],
-        protocols: ['transport-bitswap']
-      }, {
-        id: await createEd25519PeerId(),
-        multiaddrs: [
-          multiaddr('/ip4/44.44.44.44/tcp/1234')
-        ],
-        protocols: ['transport-bitswap']
-      }, {
-        id: await createEd25519PeerId(),
-        multiaddrs: [
-          multiaddr('/ip4/45.45.45.45/tcp/1234')
-        ],
-        protocols: ['transport-bitswap']
-      }]
+      const providers = await Promise.all(
+        new Array(10).fill(0).map(async (_, i) => {
+          return {
+            id: await createEd25519PeerId(),
+            multiaddrs: [
+              multiaddr(`/ip4/4${i}.4${i}.4${i}.4${i}/tcp/${1234 + i}`)
+            ],
+            protocols: ['transport-bitswap']
+          }
+        })
+      )
 
       components.routing.findProviders.withArgs(cid).returns((async function * () {
         yield * providers
@@ -154,6 +135,14 @@ describe('bitswap', () => {
         pendingBytes: 0
       })
       stubPeerResponse(components.libp2p, providers[4].id, {
+        blockPresences: [{
+          cid: cid.bytes,
+          type: BlockPresenceType.HaveBlock
+        }],
+        blocks: [],
+        pendingBytes: 0
+      })
+      stubPeerResponse(components.libp2p, providers[5].id, {
         blockPresences: [{
           cid: cid.bytes,
           type: BlockPresenceType.HaveBlock
@@ -289,67 +278,50 @@ describe('bitswap', () => {
   })
 
   describe('want', () => {
-    it('should want a block that is in the blockstore', async () => {
-      await components.blockstore.put(cid, block)
-
-      const b = await bitswap.want(cid)
-
-      expect(b).to.equalBytes(block)
-    })
-
     it('should want a block that is available on the network', async () => {
       const remotePeer = await createEd25519PeerId()
-      const wantBlockSpy = Sinon.spy(bitswap.notifications, 'wantBlock')
-      const addToWantlistSpy = Sinon.spy(bitswap.wantList, 'wantBlocks')
       const findProvsSpy = Sinon.spy(bitswap.network, 'findAndConnect')
 
       const p = bitswap.want(cid)
 
       // provider sends message
-      await bitswap._receiveMessage(remotePeer, {
-        blocks: [{
-          prefix: cidToPrefix(cid),
-          data: block
-        }],
-        blockPresences: [],
-        pendingBytes: 0
+      bitswap.network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
+        detail: {
+          peer: remotePeer,
+          message: {
+            blocks: [{
+              prefix: cidToPrefix(cid),
+              data: block
+            }],
+            blockPresences: [],
+            pendingBytes: 0
+          }
+        }
       })
 
       const b = await p
 
       // should have added cid to wantlist and searched for providers
-      expect(addToWantlistSpy.called).to.be.true()
       expect(findProvsSpy.called).to.be.true()
 
       // should have cancelled the notification request
-      expect(wantBlockSpy.called).to.be.true()
-      expect(wantBlockSpy.getCall(0)).to.have.nested.property('args[1].signal.aborted', true)
-
       expect(b).to.equalBytes(block)
     })
 
     it('should abort wanting a block that is not available on the network', async () => {
-      const wantBlockSpy = Sinon.spy(bitswap.notifications, 'wantBlock')
-
       const p = bitswap.want(cid, {
         signal: AbortSignal.timeout(100)
       })
 
       await expect(p).to.eventually.be.rejected
-        .with.property('code', 'ERR_ABORTED')
-
-      // should have cancelled the notification request
-      expect(wantBlockSpy.called).to.be.true()
-      expect(wantBlockSpy.getCall(0)).to.have.nested.property('args[1].signal.aborted', true)
+        .with.property('code', 'ABORT_ERR')
     })
 
     it('should notify peers we have a block', async () => {
-      const wantEventListener = bitswap.notifications.wantBlock(cid)
       const receivedBlockSpy = Sinon.spy(bitswap.peerWantLists, 'receivedBlock')
 
       await bitswap.notify(cid, block)
 
-      await expect(wantEventListener).to.eventually.deep.equal(block)
       expect(receivedBlockSpy.called).to.be.true()
     })
   })
@@ -364,13 +336,18 @@ describe('bitswap', () => {
       expect(bitswap.getWantlist().map(w => w.cid)).to.include(cid)
 
       // provider sends message
-      await bitswap._receiveMessage(remotePeer, {
-        blocks: [{
-          prefix: cidToPrefix(cid),
-          data: block
-        }],
-        blockPresences: [],
-        pendingBytes: 0
+      bitswap.network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
+        detail: {
+          peer: remotePeer,
+          message: {
+            blocks: [{
+              prefix: cidToPrefix(cid),
+              data: block
+            }],
+            blockPresences: [],
+            pendingBytes: 0
+          }
+        }
       })
 
       const b = await p
@@ -379,7 +356,7 @@ describe('bitswap', () => {
       expect(b).to.equalBytes(block)
     })
 
-    it('should remove CIDs from the wantlist when the want is cancelled', async () => {
+    it('should remove CIDs from the wantlist when the want is aborted', async () => {
       expect(bitswap.getWantlist()).to.be.empty()
 
       const p = bitswap.want(cid, {
@@ -389,7 +366,7 @@ describe('bitswap', () => {
       expect(bitswap.getWantlist().map(w => w.cid)).to.include(cid)
 
       await expect(p).to.eventually.be.rejected
-        .with.property('code', 'ERR_ABORTED')
+        .with.property('code', 'ABORT_ERR')
 
       expect(bitswap.getWantlist()).to.be.empty()
     })
@@ -402,17 +379,23 @@ describe('bitswap', () => {
       // don't have this peer yet
       expect(bitswap.getPeerWantlist(remotePeer)).to.be.undefined()
 
-      await bitswap.peerWantLists.messageReceived(remotePeer, {
-        wantlist: {
-          full: false,
-          entries: [{
-            cid: cid.bytes,
-            priority: 100
-          }]
-        },
-        blockPresences: [],
-        blocks: [],
-        pendingBytes: 0
+      // peers sends message with wantlist
+      bitswap.network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
+        detail: {
+          peer: remotePeer,
+          message: {
+            wantlist: {
+              full: false,
+              entries: [{
+                cid: cid.bytes,
+                priority: 100
+              }]
+            },
+            blockPresences: [],
+            blocks: [],
+            pendingBytes: 0
+          }
+        }
       })
 
       expect(bitswap.getPeerWantlist(remotePeer)?.map(entry => entry.cid)).to.deep.equal([cid])

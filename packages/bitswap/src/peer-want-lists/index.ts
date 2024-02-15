@@ -1,4 +1,4 @@
-import { trackedPeerMap, PeerSet } from '@libp2p/peer-collections'
+import { trackedPeerMap } from '@libp2p/peer-collections'
 import { CID } from 'multiformats/cid'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { WantType } from '../pb/message.js'
@@ -48,6 +48,16 @@ export class PeerWantLists {
       name: 'ipfs_bitswap_ledger_map',
       metrics: components.metrics
     })
+
+    this.network.addEventListener('bitswap:message', (evt) => {
+      this.receiveMessage(evt.detail.peer, evt.detail.message)
+        .catch(err => {
+          this.log.error('error receiving bitswap message from %p', evt.detail.peer, err)
+        })
+    })
+    this.network.addEventListener('peer:disconnected', evt => {
+      this.peerDisconnected(evt.detail)
+    })
   }
 
   ledgerForPeer (peerId: PeerId): PeerLedger | undefined {
@@ -83,7 +93,7 @@ export class PeerWantLists {
   /**
    * Handle incoming messages
    */
-  async messageReceived (peerId: PeerId, message: BitswapMessage): Promise<void> {
+  async receiveMessage (peerId: PeerId, message: BitswapMessage): Promise<void> {
     let ledger = this.ledgerMap.get(peerId)
 
     if (ledger == null) {
@@ -113,7 +123,6 @@ export class PeerWantLists {
 
         if (entry.cancel === true) {
           this.log('peer %p cancelled want of block for %c', peerId, cid)
-
           ledger.wants.delete(cidStr)
         } else {
           if (entry.wantType === WantType.WantHave) {
@@ -124,11 +133,9 @@ export class PeerWantLists {
 
           ledger.wants.set(cidStr, {
             cid,
-            session: new PeerSet(),
             priority: entry.priority,
             wantType: entry.wantType ?? WantType.WantBlock,
-            sendDontHave: entry.sendDontHave ?? false,
-            cancel: entry.cancel ?? false
+            sendDontHave: entry.sendDontHave ?? false
           })
         }
       }

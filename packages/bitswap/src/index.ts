@@ -45,16 +45,8 @@ export interface BitswapSession {
 
 export interface WantListEntry {
   cid: CID
-  session: PeerSet
   priority: number
   wantType: WantType
-  cancel: boolean
-  sendDontHave: boolean
-
-  /**
-   * Whether we have sent the dont-have block presence
-   */
-  sentDontHave?: boolean
 }
 
 export interface CreateBitswapSessionOptions extends CreateSessionOptions<BitswapWantProgressEvents> {

@@ -1,18 +1,25 @@
+import { AbortError } from '@libp2p/interface'
 import { trackedPeerMap, PeerSet } from '@libp2p/peer-collections'
 import { trackedMap } from '@libp2p/utils/tracked-map'
 import all from 'it-all'
 import filter from 'it-filter'
 import map from 'it-map'
 import { pipe } from 'it-pipe'
+import { CID } from 'multiformats/cid'
+import { sha256 } from 'multiformats/hashes/sha2'
+import pDefer from 'p-defer'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { WantType } from './pb/message.js'
-import type { WantListEntry } from './index.js'
-import type { Network } from './network.js'
+import { DEFAULT_MESSAGE_SEND_DELAY } from './constants.js'
+import { BlockPresenceType, WantType } from './pb/message.js'
+import vd from './utils/varint-decoder.js'
+import type { MultihashHasherLoader } from './index.js'
+import type { BitswapNetworkWantProgressEvents, Network } from './network.js'
 import type { BitswapMessage } from './pb/message.js'
-import type { ComponentLogger, Metrics, PeerId, Startable } from '@libp2p/interface'
+import type { ComponentLogger, Metrics, PeerId, Startable, AbortOptions } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
 import type { PeerMap } from '@libp2p/peer-collections'
-import type { CID } from 'multiformats/cid'
+import type { DeferredPromise } from 'p-defer'
+import type { ProgressOptions } from 'progress-events'
 
 export interface WantListComponents {
   network: Network
@@ -20,34 +27,86 @@ export interface WantListComponents {
   metrics?: Metrics
 }
 
-export interface WantBlocksOptions {
+export interface WantListInit {
+  sendMessagesDelay?: number
+  hashLoader?: MultihashHasherLoader
+}
+
+export interface WantListEntry {
   /**
-   * If set, this wantlist entry will only be sent to peers in the peer set
+   * The CID we send to the remote
    */
-  session?: PeerSet
+  cid: CID
 
   /**
-   * Allow prioritsing blocks
+   * The priority with which the remote should return the block
+   */
+  priority: number
+
+  /**
+   * If we want the block or if we want the remote to tell us if they have the
+   * block - note if the block is small they'll send it to us anyway.
+   */
+  wantType: WantType
+
+  /**
+   * Whether we are cancelling the block want or not
+   */
+  cancel: boolean
+
+  /**
+   * Whether the remote should tell us if they have the block or not
+   */
+  sendDontHave: boolean
+
+  /**
+   * If this set has members, the want will only be sent to these peers
+   */
+  session: PeerSet
+
+  /**
+   * Promises returned from `.wantBlock` for this block
+   */
+  blockWantListeners: Array<DeferredPromise<WantBlockResult>>
+
+  /**
+   * Promises returned from `.wantPresence` for this block
+   */
+  blockPresenceListeners: Array<DeferredPromise<WantPresenceResult>>
+}
+
+export interface WantOptions extends AbortOptions, ProgressOptions<BitswapNetworkWantProgressEvents> {
+  /**
+   * If set, this WantList entry will only be sent to this peer
+   */
+  peerId?: PeerId
+
+  /**
+   * Allow prioritising blocks
    */
   priority?: number
-
-  /**
-   * Specify if the remote should send us the block or just tell us they have
-   * the block
-   */
-  wantType?: WantType
-
-  /**
-   * Pass true to get the remote to tell us if they don't have the block rather
-   * than not replying at all
-   */
-  sendDontHave?: boolean
-
-  /**
-   * Pass true to cancel wants with peers
-   */
-  cancel?: boolean
 }
+
+export interface WantBlockResult {
+  sender: PeerId
+  cid: CID
+  block: Uint8Array
+}
+
+export interface WantDontHaveResult {
+  sender: PeerId
+  cid: CID
+  has: false
+}
+
+export interface WantHaveResult {
+  sender: PeerId
+  cid: CID
+  has: true
+  block?: Uint8Array
+}
+
+export type WantPresenceResult = WantDontHaveResult | WantHaveResult
 
 export class WantList implements Startable {
   /**
@@ -57,8 +116,11 @@ export class WantList implements Startable {
   public readonly wants: Map<string, WantListEntry>
   private readonly network: Network
   private readonly log: Logger
+  private readonly sendMessagesDelay: number
+  private sendMessagesTimeout?: ReturnType<typeof setTimeout>
+  private readonly hashLoader?: MultihashHasherLoader
 
-  constructor (components: WantListComponents) {
+  constructor (components: WantListComponents, init: WantListInit = {}) {
     this.peers = trackedPeerMap({
       name: 'ipfs_bitswap_peers',
       metrics: components.metrics
@@ -68,54 +130,123 @@ export class WantList implements Startable {
       metrics: components.metrics
     })
     this.network = components.network
-    this.log = components.logger.forComponent('helia:bitswap:wantlist:self')
+    this.sendMessagesDelay = init.sendMessagesDelay ?? DEFAULT_MESSAGE_SEND_DELAY
+    this.log = components.logger.forComponent('helia:bitswap:wantlist')
+    this.hashLoader = init.hashLoader
+
+    this.network.addEventListener('bitswap:message', (evt) => {
+      this.receiveMessage(evt.detail.peer, evt.detail.message)
+        .catch(err => {
+          this.log.error('error receiving bitswap message from %p', evt.detail.peer, err)
+        })
+    })
+    this.network.addEventListener('peer:connected', evt => {
+      this.peerConnected(evt.detail)
+        .catch(err => {
+          this.log.error('error processing newly connected bitswap peer %p', evt.detail, err)
+        })
+    })
+    this.network.addEventListener('peer:disconnected', evt => {
+      this.peerDisconnected(evt.detail)
+    })
   }
 
-  async _addEntries (cids: CID[], options: WantBlocksOptions = {}): Promise<void> {
-    for (const cid of cids) {
-      const cidStr = uint8ArrayToString(cid.multihash.bytes, 'base64')
-      let entry = this.wants.get(cidStr)
+  private async addEntry (cid: CID, options: WantOptions & { wantType: WantType.WantBlock }): Promise<WantBlockResult>
+  private async addEntry (cid: CID, options: WantOptions & { wantType: WantType.WantHave }): Promise<WantPresenceResult>
+  private async addEntry (cid: CID, options: WantOptions & { wantType: WantType }): Promise<WantBlockResult | WantPresenceResult> {
+    const cidStr = uint8ArrayToString(cid.multihash.bytes, 'base64')
+    let entry = this.wants.get(cidStr)
 
-      if (entry == null) {
-        // we are cancelling a want that's not in our wantlist
-        if (options.cancel === true) {
-          continue
-        }
-
-        entry = {
-          cid,
-          session: options.session ?? new PeerSet(),
-          priority: options.priority ?? 1,
-          wantType: options.wantType ?? WantType.WantBlock,
-          cancel: Boolean(options.cancel),
-          sendDontHave: Boolean(options.sendDontHave)
-        }
+    if (entry == null) {
+      entry = {
+        cid,
+        session: new PeerSet(),
+        priority: options.priority ?? 1,
+        wantType: options.wantType ?? WantType.WantBlock,
+        cancel: false,
+        sendDontHave: true,
+        blockWantListeners: [],
+        blockPresenceListeners: []
       }
 
-      // upgrade want-have to want-block
-      if (entry.wantType === WantType.WantHave && options.wantType === WantType.WantBlock) {
-        entry.wantType = WantType.WantBlock
-      }
-
-      // cancel the want if requested to do so
-      if (options.cancel === true) {
-        entry.cancel = true
-      }
-
-      // if this entry has previously been part of a session but the new want
-      // is not, make this want a non-session want
-      if (options.session == null) {
-        entry.session = new PeerSet()
+      if (options.peerId != null) {
+        entry.session.add(options.peerId)
       }
 
       this.wants.set(cidStr, entry)
     }
 
+    // upgrade want-have to want-block if the new want is a WantBlock but the
+    // previous want was a WantHave
+    if (entry.wantType === WantType.WantHave && options.wantType === WantType.WantBlock) {
+      entry.wantType = WantType.WantBlock
+    }
+
+    // if this want was part of a session..
+    if (entry.session.size > 0) {
+      // if the new want is also part of a session, expand the want session to
+      // include both sets of peers
+      if (options.peerId != null) {
+        entry.session.add(options.peerId)
+      }
+
+      // if the new want is not part of a session, make this want a non-session
+      // want - nb. this will cause this WantList entry to be sent to every peer
+      // instead of just the ones in the session
+      if (options.peerId == null) {
+        entry.session.clear()
+      }
+    }
+
+    // add a promise that will be resolved or rejected when the response arrives
+    let deferred: DeferredPromise<WantBlockResult | WantPresenceResult>
+
+    if (options.wantType === WantType.WantBlock) {
+      const p = deferred = pDefer<WantBlockResult>()
+
+      entry.blockWantListeners.push(p)
+    } else {
+      const p = deferred = pDefer<WantPresenceResult>()
+
+      entry.blockPresenceListeners.push(p)
+    }
+
+    // reject the promise if the want is rejected
+    const abortListener = (): void => {
+      this.log('want for %c was aborted, cancelling want', cid)
+
+      if (entry != null) {
+        entry.cancel = true
+      }
+
+      deferred.reject(new AbortError('Want was aborted'))
+    }
+    options.signal?.addEventListener('abort', abortListener)
+
     // broadcast changes
-    await this.sendMessages()
+    clearTimeout(this.sendMessagesTimeout)
+    this.sendMessagesTimeout = setTimeout(() => {
+      void this.sendMessages()
+        .catch(err => {
+          this.log('error sending messages to peers', err)
+        })
+    }, this.sendMessagesDelay)
+
+    try {
+      return await deferred.promise
+    } finally {
+      // remove listener
+      options.signal?.removeEventListener('abort', abortListener)
+      // remove deferred promise
+      if (options.wantType === WantType.WantBlock) {
+        entry.blockWantListeners = entry.blockWantListeners.filter(recipient => recipient !== deferred)
+      } else {
+        entry.blockPresenceListeners = entry.blockPresenceListeners.filter(recipient => recipient !== deferred)
+      }
+    }
   }
 
-  async sendMessages (): Promise<void> {
+  private async sendMessages (): Promise<void> {
     for (const [peerId, sentWants] of this.peers) {
       const sent = new Set<string>()
       const message: Partial<BitswapMessage> = {
@@ -185,36 +316,159 @@ export class WantList implements Startable {
     }
   }
 
-  /**
-   * Add all the CIDs to the wantlist
-   */
-  async wantBlocks (cids: CID[], options: WantBlocksOptions = {}): Promise<void> {
-    await this._addEntries(cids, options)
+  has (cid: CID): boolean {
+    const cidStr = uint8ArrayToString(cid.multihash.bytes, 'base64')
+    return this.wants.has(cidStr)
   }
 
   /**
-   * Remove CIDs from the wantlist without sending cancel messages
+   * Add a CID to the wantlist
    */
-  unwantBlocks (cids: CID[], options: WantBlocksOptions = {}): void {
-    cids.forEach(cid => {
+  async wantPresence (cid: CID, options: WantOptions = {}): Promise<WantPresenceResult> {
+    if (options.peerId != null && this.peers.get(options.peerId) == null) {
       const cidStr = uint8ArrayToString(cid.multihash.bytes, 'base64')
 
-      this.wants.delete(cidStr)
+      try {
+        // if we don't have them as a peer, add them
+        this.peers.set(options.peerId, new Set([cidStr]))
+
+        // sending WantHave directly to peer
+        await this.network.sendMessage(options.peerId, {
+          wantlist: {
+            full: false,
+            entries: [{
+              cid: cid.bytes,
+              sendDontHave: true,
+              wantType: WantType.WantHave,
+              priority: 1
+            }]
+          }
+        })
+      } catch (err) {
+        // sending failed, remove them as a peer
+        this.peers.delete(options.peerId)
+
+        throw err
+      }
+    }
+
+    return this.addEntry(cid, {
+      ...options,
+      wantType: WantType.WantHave
     })
   }
 
   /**
-   * Send cancel messages to peers for the passed CIDs
+   * Add a CID to the wantlist
    */
-  async cancelWants (cids: CID[], options: WantBlocksOptions = {}): Promise<void> {
-    this.log('cancel wants: %s', cids.length)
-    await this._addEntries(cids, {
+  async wantBlock (cid: CID, options: WantOptions = {}): Promise<WantBlockResult> {
+    return this.addEntry(cid, {
       ...options,
-      cancel: true
+      wantType: WantType.WantBlock
     })
   }
 
-  async connected (peerId: PeerId): Promise<void> {
+  /**
+   * Invoked when a message is received from a bitswap peer
+   */
+  private async receiveMessage (sender: PeerId, message: BitswapMessage): Promise<void> {
+    this.log('received message from %p', sender)
+
+    // blocks received
+    const blockResults: WantBlockResult[] = []
+    const presenceResults: WantPresenceResult[] = []
+
+    // process blocks
+    for (const block of message.blocks) {
+      if (block.prefix == null || block.data == null) {
+        continue
+      }
+
+      this.log('received block')
+      const values = vd(block.prefix)
+      const cidVersion = values[0]
+      const multicodec = values[1]
+      const hashAlg = values[2]
+      // const hashLen = values[3] // We haven't need to use this so far
+
+      const hasher = hashAlg === sha256.code ? sha256 : await this.hashLoader?.getHasher(hashAlg)
+
+      if (hasher == null) {
+        this.log.error('unknown hash algorithm', hashAlg)
+        continue
+      }
+
+      const hash = await hasher.digest(block.data)
+      const cid = CID.create(cidVersion === 0 ? 0 : 1, multicodec, hash)
+
+      this.log('received block from %p for %c', sender, cid)
+
+      blockResults.push({
+        sender,
+        cid,
+        block: block.data
+      })
+
+      presenceResults.push({
+        sender,
+        cid,
+        has: true
+      })
+    }
+
+    // process block presences
+    for (const { cid: cidBytes, type } of message.blockPresences) {
+      const cid = CID.decode(cidBytes)
+
+      this.log('received %s from %p for %c', type, sender, cid)
+
+      presenceResults.push({
+        sender,
+        cid,
+        has: type === BlockPresenceType.HaveBlock
+      })
+    }
+
+    for (const result of blockResults) {
+      const cidStr = uint8ArrayToString(result.cid.multihash.bytes, 'base64')
+      const entry = this.wants.get(cidStr)
+
+      if (entry == null) {
+        return
+      }
+
+      const recipients = entry.blockWantListeners
+      entry.blockWantListeners = []
+      recipients.forEach((p) => {
+        p.resolve(result)
+      })
+
+      // since we received the block, flip the cancel flag to send cancels to
+      // any peers on the next message sending iteration, this will remove it
+      // from the internal want list
+      entry.cancel = true
+    }
+
+    for (const result of presenceResults) {
+      const cidStr = uint8ArrayToString(result.cid.multihash.bytes, 'base64')
+      const entry = this.wants.get(cidStr)
+
+      if (entry == null) {
+        return
+      }
+
+      const recipients = entry.blockPresenceListeners
+      entry.blockPresenceListeners = []
+      recipients.forEach((p) => {
+        p.resolve(result)
+      })
+    }
+  }
+
+  /**
+   * Invoked when the network topology notices a new peer that supports Bitswap
+   */
+  async peerConnected (peerId: PeerId): Promise<void> {
     const sentWants = new Set<string>()
 
     // new peer, give them the full wantlist
@@ -257,7 +511,11 @@ export class WantList implements Startable {
     }
   }
 
-  disconnected (peerId: PeerId): void {
+  /**
+   * Invoked when the network topology notices peer that supports Bitswap has
+   * disconnected
+   */
+  peerDisconnected (peerId: PeerId): void {
     this.peers.delete(peerId)
   }
 

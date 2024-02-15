@@ -1,5 +1,5 @@
+import { matchPeerId } from '@libp2p/interface-compliance-tests/matchers'
 import { defaultLogger } from '@libp2p/logger'
-import { PeerSet } from '@libp2p/peer-collections'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
@@ -38,7 +38,7 @@ describe('wantlist', () => {
   it('should add peers to peer list on connect', async () => {
     const peerId = await createEd25519PeerId()
 
-    await wantList.connected(peerId)
+    await wantList.peerConnected(peerId)
 
     expect(wantList.peers.has(peerId)).to.be.true()
   })
@@ -46,11 +46,11 @@ describe('wantlist', () => {
   it('should remove peers to peer list on disconnect', async () => {
     const peerId = await createEd25519PeerId()
 
-    await wantList.connected(peerId)
+    await wantList.peerConnected(peerId)
 
     expect(wantList.peers.has(peerId)).to.be.true()
 
-    wantList.disconnected(peerId)
+    wantList.peerDisconnected(peerId)
 
     expect(wantList.peers.has(peerId)).to.be.false()
   })
@@ -59,10 +59,14 @@ describe('wantlist', () => {
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
     const peerId = await createEd25519PeerId()
 
-    await wantList.connected(peerId)
+    await wantList.peerConnected(peerId)
 
-    components.network.sendMessage.withArgs(peerId).resolves()
-    await wantList.wantBlocks([cid])
+    components.network.sendMessage.withArgs(matchPeerId(peerId))
+
+    await expect(wantList.wantBlock(cid, {
+      signal: AbortSignal.timeout(500)
+    })).to.eventually.be.rejected
+      .with.property('code', 'ABORT_ERR')
 
     const sentToPeer = components.network.sendMessage.getCall(0).args[0]
     expect(sentToPeer.toString()).equal(peerId.toString())
@@ -74,43 +78,19 @@ describe('wantlist', () => {
     expect(sentMessage).to.have.nested.property('wantlist.entries[0].cancel', false)
   })
 
-  it('should cancel wants', async () => {
-    const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
-    const peerId = await createEd25519PeerId()
-    components.network.sendMessage.withArgs(peerId).resolves()
-
-    await wantList.connected(peerId)
-
-    await wantList.wantBlocks([cid])
-
-    expect([...wantList.wants.values()].find(want => want.cid.equals(cid))).to.be.ok()
-
-    // now cancel
-    await wantList.cancelWants([cid])
-
-    const sentToPeer = components.network.sendMessage.getCall(1).args[0]
-    expect(sentToPeer.toString()).equal(peerId.toString())
-
-    const sentMessage = components.network.sendMessage.getCall(1).args[1]
-    expect(sentMessage).to.have.nested.property('wantlist.full', false)
-    expect(sentMessage).to.have.deep.nested.property('wantlist.entries[0].cid').that.equalBytes(cid.bytes)
-    expect(sentMessage).to.have.nested.property('wantlist.entries[0].wantType', WantType.WantBlock)
-    expect(sentMessage).to.have.nested.property('wantlist.entries[0].cancel', true)
-
-    expect([...wantList.wants.values()].find(want => want.cid.equals(cid))).to.be.undefined()
-  })
-
   it('should not send session block wants to non-session peers', async () => {
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
     const sessionPeer = await createEd25519PeerId()
     const nonSessionPeer = await createEd25519PeerId()
 
-    await wantList.connected(sessionPeer)
-    await wantList.connected(nonSessionPeer)
+    await wantList.peerConnected(sessionPeer)
+    await wantList.peerConnected(nonSessionPeer)
 
-    await wantList.wantBlocks([cid], {
-      session: new PeerSet([sessionPeer])
-    })
+    await expect(wantList.wantBlock(cid, {
+      peerId: sessionPeer,
+      signal: AbortSignal.timeout(500)
+    })).to.eventually.be.rejected
+      .with.property('code', 'ABORT_ERR')
 
     expect(components.network.sendMessage.callCount).to.equal(1)
 
