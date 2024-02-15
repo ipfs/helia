@@ -3,7 +3,7 @@
  *
  * `@helia/verified-fetch` provides a [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)-like API for retrieving content from the [IPFS](https://ipfs.tech/) network.
  *
- * All content is retrieved in a [trustless manner](https://www.techopedia.com/definition/trustless), and the integrity of all bytes are verified by comparing hashes of the data.
+ * All content is retrieved in a [trustless manner](https://www.techopedia.com/definition/trustless), and the integrity of all bytes are verified by comparing hashes of the data. By default, CIDs are retrieved over HTTP from [trustless gateways](https://specs.ipfs.tech/http-gateways/trustless-gateway/).
  *
  * This is a marked improvement over `fetch` which offers no such protections and is vulnerable to all sorts of attacks like [Content Spoofing](https://owasp.org/www-community/attacks/Content_Spoofing), [DNS Hijacking](https://en.wikipedia.org/wiki/DNS_hijacking), etc.
  *
@@ -33,7 +33,7 @@
  * import { verifiedFetch } from '@helia/verified-fetch'
  * import { CID } from 'multiformats/cid'
  *
- * const cid = CID.parse('bafyFoo') // some image file
+ * const cid = CID.parse('bafyFoo') // some json file
  * const response = await verifiedFetch(cid)
  * const json = await response.json()
  * ```
@@ -140,7 +140,7 @@
  *
  * ### IPLD codec handling
  *
- * IPFS supports several data formats and `@helia/verified-fetch` attempts to abstract away some of the details.
+ * IPFS supports several data formats (typically referred to as codecs) which are included in the CID. `@helia/verified-fetch` attempts to abstract away some of the details for easier consumption.
  *
  * #### DAG-PB
  *
@@ -148,7 +148,7 @@
  *
  * ##### Using the DAG-PB codec as a Blob
  *
- * ```TypeScript
+ * ```typescript
  * import { verifiedFetch } from '@helia/verified-fetch'
  *
  * const res = await verifiedFetch('ipfs://Qmfoo')
@@ -159,7 +159,7 @@
  *
  * ##### Using the DAG-PB codec as an ArrayBuffer
  *
- * ```TypeScript
+ * ```typescript
  * import { verifiedFetch } from '@helia/verified-fetch'
  *
  * const res = await verifiedFetch('ipfs://Qmfoo')
@@ -170,7 +170,7 @@
  *
  * ##### Using the DAG-PB codec as a stream
  *
- * ```TypeScript
+ * ```typescript
  * import { verifiedFetch } from '@helia/verified-fetch'
  *
  * const res = await verifiedFetch('ipfs://Qmfoo')
@@ -199,7 +199,7 @@
  *
  * ##### Using the JSON codec
  *
- * ```TypeScript
+ * ```typescript
  * import * as json from 'multiformats/codecs/json'
  *
  * const block = new TextEncoder().encode('{ "hello": "world" }')
@@ -227,7 +227,7 @@
  *
  * ##### Using the DAG-JSON codec
  *
- * ```TypeScript
+ * ```typescript
  * import * as dagJson from '@ipld/dag-json'
  *
  * const block = new TextEncoder().encode(`{
@@ -254,11 +254,11 @@
  *
  * ##### Content-Type
  *
- * When the `DAG-JSON` codec is encountered, the `Content-Type` header of the response will be set to `application/json`.
+ * When the `DAG-JSON` codec is encountered in the requested CID, the `Content-Type` header of the response will be set to `application/json`.
  *
  * `DAG-JSON` data can be parsed from the response by using the `.json()` function, which will return `CID`s/byte arrays as plain `{ "/": ... }` objects:
  *
- * ```TypeScript
+ * ```typescript
  * import { verifiedFetch } from '@helia/verified-fetch'
  * import * as dagJson from '@ipld/dag-json'
  *
@@ -270,9 +270,9 @@
  * console.info(obj.buf) // { "/": { "bytes": "AAECAwQ" } }
  * ```
  *
- * Alternatively or it can be decoded using the `@ipld/dag-json` module and the `.arrayBuffer()` method, in which case you will get `CID` objects and `Uint8Array`s:
+ * Alternatively, it can be decoded using the `@ipld/dag-json` module and the `.arrayBuffer()` method, in which case you will get `CID` objects and `Uint8Array`s:
  *
- *```TypeScript
+ *```typescript
  * import { verifiedFetch } from '@helia/verified-fetch'
  * import * as dagJson from '@ipld/dag-json'
  *
@@ -292,7 +292,7 @@
  *
  * ##### Content-Type
  *
- * Not all data types supported by `DAG-CBOR` can be successfully turned into JSON and back.
+ * Not all data types supported by `DAG-CBOR` can be successfully turned into JSON and back into the same binary form.
  *
  * When a decoded block can be round-tripped to JSON, the `Content-Type` will be set to `application/json`. In this case the `.json()` method on the `Response` object can be used to obtain an object representation of the response.
  *
@@ -302,7 +302,7 @@
  *
  * If the `Content-Type` header of the response is `application/json`, the `.json()` method may be used to access the response body in object form, otherwise the `.arrayBuffer()` method must be used to decode the raw bytes using the `@ipld/dag-cbor` module.
  *
- * ```TypeScript
+ * ```typescript
  * import { verifiedFetch } from '@helia/verified-fetch'
  * import * as dagCbor from '@ipld/dag-cbor'
  *
@@ -337,7 +337,7 @@
  * 2. IPNS protocol: `ipns://<peerId>` & `ipns://<publicKey>` & `ipns://<hostUri_Supporting_DnsLink_TxtRecords>`
  * 3. CID instances: An actual CID instance `CID.parse('bafy...')`
  *
- * As well as support for pathing & params for item 1 & 2 above according to [IPFS - Path Gateway Specification](https://specs.ipfs.tech/http-gateways/path-gateway) & [IPFS - Trustless Gateway Specification](https://specs.ipfs.tech/http-gateways/trustless-gateway/). Further refinement of those specifications specifically for web-based scenarios can be found in the [Web Pathing Specification IPIP](https://github.com/ipfs/specs/pull/453).
+ * As well as support for pathing & params for items 1 & 2 above according to [IPFS - Path Gateway Specification](https://specs.ipfs.tech/http-gateways/path-gateway) & [IPFS - Trustless Gateway Specification](https://specs.ipfs.tech/http-gateways/trustless-gateway/). Further refinement of those specifications specifically for web-based scenarios can be found in the [Web Pathing Specification IPIP](https://github.com/ipfs/specs/pull/453).
  *
  * If you pass a CID instance, it assumes you want the content for that specific CID only, and does not support pathing or params for that CID.
  *
