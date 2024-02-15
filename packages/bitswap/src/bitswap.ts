@@ -61,7 +61,7 @@ export class Bitswap implements BitswapInterface {
     this.wantList = new WantList({
       ...components,
       network: this.network
-    })
+    }, init)
   }
 
   // TODO: remove me
