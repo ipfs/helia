@@ -9,6 +9,7 @@ import { code as rawCode } from 'multiformats/codecs/raw'
 import { identity } from 'multiformats/hashes/identity'
 import { CustomProgressEvent } from 'progress-events'
 import { dagCborToSafeJSON } from './utils/dag-cbor-to-safe-json.js'
+import { getFormat } from './utils/get-format.js'
 import { getStreamFromAsyncIterable } from './utils/get-stream-from-async-iterable.js'
 import { parseResource } from './utils/parse-resource.js'
 import { walkPath, type PathWalkerFn } from './utils/walk-path.js'
@@ -37,6 +38,12 @@ interface FetchHandlerFunctionArg {
   path: string
   terminalElement?: UnixFSEntry
   options?: Omit<VerifiedFetchOptions, 'signal'> & AbortOptions
+
+  /**
+   * If present, the user has sent an accept header with this value - if the
+   * content cannot be represented in this format a 406 should be returned
+   */
+  accept?: string
 }
 
 interface FetchHandlerFunction {
@@ -70,6 +77,47 @@ function notSupportedResponse (body?: BodyInit | null): Response {
     status: 501,
     statusText: 'Not Implemented'
   })
+}
+
+function notAcceptableResponse (body?: BodyInit | null): Response {
+  return new Response(body, {
+    status: 406,
+    statusText: '406 Not Acceptable'
+  })
+}
+
+/**
+ * These are Accept header values that will cause content type sniffing to be
+ * skipped and set to these values.
+ */
+const RAW_HEADERS = [
+  'application/vnd.ipld.raw',
+  'application/octet-stream'
+]
+
+/**
+ * if the user has specified an `Accept` header, and it's in our list of
+ * allowable "raw" format headers, use that instead of detecting the content
+ * type, to avoid the user signalling that they will Accepting one mime type
+ * and then receiving something different.
+ */
+function getOverridenRawContentType (headers?: HeadersInit): string | undefined {
+  const acceptHeader = new Headers(headers).get('accept') ?? ''
+
+  // e.g. "Accept: text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8"
+  const acceptHeaders = acceptHeader.split(',')
+    .map(s => s.split(';')[0])
+    .map(s => s.trim())
+
+  for (const mimeType of acceptHeaders) {
+    if (mimeType === '*/*') {
+      return
+    }
+
+    if (RAW_HEADERS.includes(mimeType ?? '')) {
+      return mimeType
+    }
+  }
 }
 
 export class VerifiedFetch {
@@ -112,17 +160,17 @@ export class VerifiedFetch {
   private async handleJson ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
     this.log.trace('fetching %c/%s', cid, path)
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid, path }))
-    const result = await this.helia.blockstore.get(cid, {
+    const block = await this.helia.blockstore.get(cid, {
       signal: options?.signal,
       onProgress: options?.onProgress
     })
-    const response = okResponse(result)
+    const response = okResponse(block)
     response.headers.set('content-type', 'application/json')
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid, path }))
     return response
   }
 
-  private async handleDagCbor ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
+  private async handleDagCbor ({ cid, path, accept, options }: FetchHandlerFunctionArg): Promise<Response> {
     this.log.trace('fetching %c/%s', cid, path)
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid, path }))
     // return body as binary
@@ -132,6 +180,12 @@ export class VerifiedFetch {
     try {
       body = dagCborToSafeJSON(block)
     } catch (err) {
+      if (accept === 'application/json') {
+        this.log('could not decode DAG-CBOR as JSON-safe, but the client sent "Accept: application/json"', err)
+
+        return notAcceptableResponse()
+      }
+
       this.log('could not decode DAG-CBOR as JSON-safe, falling back to `application/octet-stream`', err)
       body = block
     }
@@ -193,7 +247,16 @@ export class VerifiedFetch {
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid, path }))
     const result = await this.helia.blockstore.get(cid)
     const response = okResponse(result)
-    await this.setContentType(result, path, response)
+
+    // if the user has specified an `Accept` header that corresponds to a raw
+    // type, honour that header, so they don't request `vnd.ipld.raw` and get
+    // `octet-stream` or vice versa
+    const overriddenContentType = getOverridenRawContentType(options?.headers)
+    if (overriddenContentType != null) {
+      response.headers.set('content-type', overriddenContentType)
+    } else {
+      await this.setContentType(result, path, response)
+    }
 
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid, path }))
     return response
@@ -226,51 +289,26 @@ export class VerifiedFetch {
   }
 
   /**
-   * Determines the format requested by the client, defaults to `null` if no format is requested.
-   *
-   * @see https://specs.ipfs.tech/http-gateways/path-gateway/#format-request-query-parameter
-   * @default 'raw'
-   */
-  private getFormat ({ headerFormat, queryFormat }: { headerFormat: string | null, queryFormat: string | null }): string | null {
-    const formatMap: Record<string, string> = {
-      'vnd.ipld.raw': 'raw',
-      'vnd.ipld.car': 'car',
-      'application/x-tar': 'tar',
-      'application/vnd.ipld.dag-json': 'dag-json',
-      'application/vnd.ipld.dag-cbor': 'dag-cbor',
-      'application/json': 'json',
-      'application/cbor': 'cbor',
-      'vnd.ipfs.ipns-record': 'ipns-record'
-    }
-
-    if (headerFormat != null) {
-      for (const format in formatMap) {
-        if (headerFormat.includes(format)) {
-          return formatMap[format]
-        }
-      }
-    } else if (queryFormat != null) {
-      return queryFormat
-    }
-
-    return null
-  }
-
-  /**
    * Map of format to specific handlers for that format.
-   * These format handlers should adjust the response headers as specified in https://specs.ipfs.tech/http-gateways/path-gateway/#response-headers
+   *
+   * These format handlers should adjust the response headers as specified in
+   * https://specs.ipfs.tech/http-gateways/path-gateway/#response-headers
    */
   private readonly formatHandlers: Record<string, FetchHandlerFunction> = {
-    raw: async () => notSupportedResponse('application/vnd.ipld.raw support is not implemented'),
+    raw: this.handleRaw,
     car: this.handleIPLDCar,
     'ipns-record': this.handleIPNSRecord,
     tar: async () => notSupportedResponse('application/x-tar support is not implemented'),
-    'dag-json': async () => notSupportedResponse('application/vnd.ipld.dag-json support is not implemented'),
-    'dag-cbor': async () => notSupportedResponse('application/vnd.ipld.dag-cbor support is not implemented'),
-    json: async () => notSupportedResponse('application/json support is not implemented'),
-    cbor: async () => notSupportedResponse('application/cbor support is not implemented')
+    'dag-json': this.handleJson,
+    'dag-cbor': this.handleDagCbor,
+    json: this.handleJson,
+    cbor: this.handleDagCbor
   }
 
+  /**
+   * If the user has not specified an Accept header or format query string arg,
+   * use the CID codec to choose an appropriate handler for the block data.
+   */
   private readonly codecHandlers: Record<number, FetchHandlerFunction> = {
     [dagPbCode]: this.handleDagPb,
     [dagJsonCode]: this.handleJson,
@@ -281,19 +319,32 @@ export class VerifiedFetch {
   }
 
   async fetch (resource: Resource, opts?: VerifiedFetchOptions): Promise<Response> {
+    this.log('fetch', resource)
+
     const options = convertOptions(opts)
     const { path, query, ...rest } = await parseResource(resource, { ipns: this.ipns, logger: this.helia.logger }, options)
     const cid = rest.cid
     let response: Response | undefined
 
-    const format = this.getFormat({ headerFormat: new Headers(options?.headers).get('accept'), queryFormat: query.format ?? null })
+    const acceptHeader = new Headers(options?.headers).get('accept')
+    this.log('accept header %s', acceptHeader)
+
+    const format = getFormat({ cid, headerFormat: acceptHeader, queryFormat: query.format ?? null })
+    this.log('format %s, mime type %s', format?.format, format?.mimeType)
+
+    if (format == null && acceptHeader != null) {
+      this.log('no format found for accept header %s', acceptHeader)
+
+      // user specified an Accept header but we had no handler for it
+      return notAcceptableResponse()
+    }
 
     if (format != null) {
       // TODO: These should be handled last when they're returning something other than 501
-      const formatHandler = this.formatHandlers[format]
+      const formatHandler = this.formatHandlers[format.format]
 
       if (formatHandler != null) {
-        response = await formatHandler.call(this, { cid, path, options })
+        response = await formatHandler.call(this, { cid, path, accept: format.mimeType, options })
 
         if (response.status === 501) {
           return response
@@ -321,6 +372,15 @@ export class VerifiedFetch {
       } else {
         return notSupportedResponse(`Support for codec with code ${cid.code} is not yet implemented. Please open an issue at https://github.com/ipfs/helia/issues/new`)
       }
+    }
+
+    const contentType = response.headers.get('content-type')
+
+    if (format != null && format.mimeType !== '*/*' && contentType !== format.mimeType) {
+      // the user requested a specific, non-wildcard representation type, but
+      // the data cannot be represented as that type so return a
+      // "Not Acceptable" response
+      return notAcceptableResponse()
     }
 
     response.headers.set('etag', cid.toString()) // https://specs.ipfs.tech/http-gateways/path-gateway/#etag-response-header
