@@ -1,6 +1,7 @@
 import { peerIdFromString } from '@libp2p/peer-id'
 import { CID } from 'multiformats/cid'
 import { TLRU } from './tlru.js'
+import type { RequestFormatShorthand } from '../types.js'
 import type { IPNS, IPNSRoutingEvents, ResolveDnsLinkProgressEvents, ResolveProgressEvents, ResolveResult } from '@helia/ipns'
 import type { ComponentLogger } from '@libp2p/interface'
 import type { ProgressOptions } from 'progress-events'
@@ -16,11 +17,15 @@ export interface ParseUrlStringOptions extends ProgressOptions<ResolveProgressEv
 
 }
 
+export interface ParsedUrlQuery extends Record<string, string | unknown> {
+  format?: RequestFormatShorthand
+}
+
 export interface ParsedUrlStringResults {
   protocol: string
   path: string
   cid: CID
-  query: Record<string, string>
+  query: ParsedUrlQuery
 }
 
 const URL_REGEX = /^(?<protocol>ip[fn]s):\/\/(?<cidOrPeerIdOrDnsLink>[^/$?]+)\/?(?<path>[^$?]*)\??(?<queryString>.*)$/
