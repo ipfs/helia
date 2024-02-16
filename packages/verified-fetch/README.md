@@ -306,9 +306,9 @@ This supports more datatypes in a safer way than JSON and is smaller on the wire
 
 Not all data types supported by `DAG-CBOR` can be successfully turned into JSON and back.
 
-When a decoded block can be round-tripped to JSON, the `Content-Type` will be set to `application/json`. In this case the `.json()` method on the `Response` object can be used to obtain an object representation of the response.
+When a decoded block can be round-tripped to JSON, the response body will be a JSON string and the `Content-Type` header will be set to `application/json`. In this case the `.json()` method on the `Response` object can be used to obtain an object representation of the response and the `.arrayBuffer()` method will return the JSON string as a byte array - note that this will not be parsable by the `@ipld/dag-cbor` module.
 
-When it cannot, the `Content-Type` will be `application/octet-stream` - in this case the `@ipld/dag-json` module must be used to deserialize the return value from `.arrayBuffer()`.
+When it cannot, the `Content-Type` will be `application/octet-stream` - in this case the `@ipld/dag-json` module must be used to deserialize the return value from `.arrayBuffer()` and the `.json()` method cannot be used since the response body will be unparsed `CBOR` bytes.
 
 ##### Detecting JSON-safe DAG-CBOR
 

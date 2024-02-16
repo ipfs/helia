@@ -466,7 +466,7 @@ describe('@helia/verifed-fetch', () => {
     })
 
     // N.b. this is not possible because the incoming block is turned into JSON
-    // and returned as the response body, so `.arrayBufer()` returns a string
+    // and returned as the response body, so `.arrayBuffer()` returns a string
     // encoded into a Uint8Array which we can't parse as CBOR
     it.skip('can round trip JSON-compliant dag-cbor via .arrayBuffer()', async () => {
       const obj = {
