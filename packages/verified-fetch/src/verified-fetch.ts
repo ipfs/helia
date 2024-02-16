@@ -1,16 +1,14 @@
-import { dagCbor as heliaDagCbor, type DAGCBOR } from '@helia/dag-cbor'
-import { dagJson as heliaDagJson, type DAGJSON } from '@helia/dag-json'
 import { ipns as heliaIpns, type IPNS } from '@helia/ipns'
 import { dnsJsonOverHttps } from '@helia/ipns/dns-resolvers'
-import { json as heliaJson, type JSON } from '@helia/json'
 import { unixfs as heliaUnixFs, type UnixFS as HeliaUnixFs, type UnixFSStats } from '@helia/unixfs'
 import { code as dagCborCode } from '@ipld/dag-cbor'
 import { code as dagJsonCode } from '@ipld/dag-json'
 import { code as dagPbCode } from '@ipld/dag-pb'
 import { code as jsonCode } from 'multiformats/codecs/json'
-import { decode, code as rawCode } from 'multiformats/codecs/raw'
+import { code as rawCode } from 'multiformats/codecs/raw'
 import { identity } from 'multiformats/hashes/identity'
 import { CustomProgressEvent } from 'progress-events'
+import { dagCborToSafeJSON } from './utils/dag-cbor-to-safe-json.js'
 import { getETag } from './utils/get-e-tag.js'
 import { getStreamFromAsyncIterable } from './utils/get-stream-from-async-iterable.js'
 import { parseResource } from './utils/parse-resource.js'
@@ -26,9 +24,6 @@ interface VerifiedFetchComponents {
   helia: Helia
   ipns?: IPNS
   unixfs?: HeliaUnixFs
-  dagJson?: DAGJSON
-  json?: JSON
-  dagCbor?: DAGCBOR
   pathWalker?: PathWalkerFn
 }
 
@@ -83,14 +78,11 @@ export class VerifiedFetch {
   private readonly helia: Helia
   private readonly ipns: IPNS
   private readonly unixfs: HeliaUnixFs
-  private readonly dagJson: DAGJSON
-  private readonly dagCbor: DAGCBOR
-  private readonly json: JSON
   private readonly pathWalker: PathWalkerFn
   private readonly log: Logger
   private readonly contentTypeParser: ContentTypeParser | undefined
 
-  constructor ({ helia, ipns, unixfs, dagJson, json, dagCbor, pathWalker }: VerifiedFetchComponents, init?: VerifiedFetchInit) {
+  constructor ({ helia, ipns, unixfs, pathWalker }: VerifiedFetchComponents, init?: VerifiedFetchInit) {
     this.helia = helia
     this.log = helia.logger.forComponent('helia:verified-fetch')
     this.ipns = ipns ?? heliaIpns(helia, {
@@ -100,9 +92,6 @@ export class VerifiedFetch {
       ]
     })
     this.unixfs = unixfs ?? heliaUnixFs(helia)
-    this.dagJson = dagJson ?? heliaDagJson(helia)
-    this.json = json ?? heliaJson(helia)
-    this.dagCbor = dagCbor ?? heliaDagCbor(helia)
     this.pathWalker = pathWalker ?? walkPath
     this.contentTypeParser = init?.contentTypeParser
     this.log.trace('created VerifiedFetch instance')
@@ -122,42 +111,36 @@ export class VerifiedFetch {
     return response
   }
 
-  private async handleDagJson ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
-    this.log.trace('fetching %c/%s', cid, path)
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid, path }))
-    const result = await this.dagJson.get(cid, {
-      signal: options?.signal,
-      onProgress: options?.onProgress
-    })
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid, path }))
-    const response = okResponse(JSON.stringify(result))
-    response.headers.set('content-type', 'application/json')
-    return response
-  }
-
   private async handleJson ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
     this.log.trace('fetching %c/%s', cid, path)
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid, path }))
-    const result: Record<any, any> = await this.json.get(cid, {
+    const result = await this.helia.blockstore.get(cid, {
       signal: options?.signal,
       onProgress: options?.onProgress
     })
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid, path }))
-    const response = okResponse(JSON.stringify(result))
+    const response = okResponse(result)
     response.headers.set('content-type', 'application/json')
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid, path }))
     return response
   }
 
   private async handleDagCbor ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
     this.log.trace('fetching %c/%s', cid, path)
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid, path }))
-    const result = await this.dagCbor.get<Uint8Array>(cid, {
-      signal: options?.signal,
-      onProgress: options?.onProgress
-    })
+    // return body as binary
+    const block = await this.helia.blockstore.get(cid)
+    let body: string | Uint8Array
+
+    try {
+      body = dagCborToSafeJSON(block)
+    } catch (err) {
+      this.log('could not decode DAG-CBOR as JSON-safe, falling back to `application/octet-stream`', err)
+      body = block
+    }
+
+    const response = okResponse(body)
+    response.headers.set('content-type', body instanceof Uint8Array ? 'application/octet-stream' : 'application/json')
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid, path }))
-    const response = okResponse(JSON.stringify(result))
-    await this.setContentType(result, path, response)
     return response
   }
 
@@ -194,7 +177,6 @@ export class VerifiedFetch {
       signal: options?.signal,
       onProgress: options?.onProgress
     })
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: resolvedCID, path: '' }))
     this.log('got async iterator for %c/%s', cid, path)
 
     const { stream, firstChunk } = await getStreamFromAsyncIterable(asyncIter, path ?? '', this.helia.logger, {
@@ -203,6 +185,8 @@ export class VerifiedFetch {
     const response = okResponse(stream)
     await this.setContentType(firstChunk, path, response)
 
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid: resolvedCID, path: '' }))
+
     return response
   }
 
@@ -210,9 +194,10 @@ export class VerifiedFetch {
     this.log.trace('fetching %c/%s', cid, path)
     options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:start', { cid, path }))
     const result = await this.helia.blockstore.get(cid)
-    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid, path }))
-    const response = okResponse(decode(result))
+    const response = okResponse(result)
     await this.setContentType(result, path, response)
+
+    options?.onProgress?.(new CustomProgressEvent<CIDDetail>('verified-fetch:request:end', { cid, path }))
     return response
   }
 
@@ -289,8 +274,8 @@ export class VerifiedFetch {
   }
 
   private readonly codecHandlers: Record<number, FetchHandlerFunction> = {
-    [dagJsonCode]: this.handleDagJson,
     [dagPbCode]: this.handleDagPb,
+    [dagJsonCode]: this.handleJson,
     [jsonCode]: this.handleJson,
     [dagCborCode]: this.handleDagCbor,
     [rawCode]: this.handleRaw,

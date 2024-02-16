@@ -3,7 +3,7 @@
  *
  * `@helia/verified-fetch` provides a [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)-like API for retrieving content from the [IPFS](https://ipfs.tech/) network.
  *
- * All content is retrieved in a [trustless manner](https://www.techopedia.com/definition/trustless), and the integrity of all bytes are verified by comparing hashes of the data.
+ * All content is retrieved in a [trustless manner](https://www.techopedia.com/definition/trustless), and the integrity of all bytes are verified by comparing hashes of the data. By default, CIDs are retrieved over HTTP from [trustless gateways](https://specs.ipfs.tech/http-gateways/trustless-gateway/).
  *
  * This is a marked improvement over `fetch` which offers no such protections and is vulnerable to all sorts of attacks like [Content Spoofing](https://owasp.org/www-community/attacks/Content_Spoofing), [DNS Hijacking](https://en.wikipedia.org/wiki/DNS_hijacking), etc.
  *
@@ -33,7 +33,7 @@
  * import { verifiedFetch } from '@helia/verified-fetch'
  * import { CID } from 'multiformats/cid'
  *
- * const cid = CID.parse('bafyFoo') // some image file
+ * const cid = CID.parse('bafyFoo') // some json file
  * const response = await verifiedFetch(cid)
  * const json = await response.json()
  * ```
@@ -114,7 +114,7 @@
  *
  * ### Custom content-type parsing
  *
- * By default, `@helia/verified-fetch` sets the `Content-Type` header as `application/octet-stream` - this is because the `.json()`, `.text()`, `.blob()`, and `.arrayBuffer()` methods will usually work as expected without a detailed content type.
+ * By default, if the response can be parsed as JSON, `@helia/verified-fetch` sets the `Content-Type` header as `application/json`, otherwise it sets it as `application/octet-stream` - this is because the `.json()`, `.text()`, `.blob()`, and `.arrayBuffer()` methods will usually work as expected without a detailed content type.
  *
  * If you require an accurate content-type you can provide a `contentTypeParser` function as an option to `createVerifiedFetch` to handle parsing the content type.
  *
@@ -138,6 +138,188 @@
  * })
  * ```
  *
+ * ### IPLD codec handling
+ *
+ * IPFS supports several data formats (typically referred to as codecs) which are included in the CID. `@helia/verified-fetch` attempts to abstract away some of the details for easier consumption.
+ *
+ * #### DAG-PB
+ *
+ * [DAG-PB](https://ipld.io/docs/codecs/known/dag-pb/) is the codec we are most likely to encounter, it is what [UnixFS](https://github.com/ipfs/specs/blob/main/UNIXFS.md) uses under the hood.
+ *
+ * ##### Using the DAG-PB codec as a Blob
+ *
+ * ```typescript
+ * import { verifiedFetch } from '@helia/verified-fetch'
+ *
+ * const res = await verifiedFetch('ipfs://Qmfoo')
+ * const blob = await res.blob()
+ *
+ * console.info(blob) // Blob { size: x, type: 'application/octet-stream' }
+ * ```
+ *
+ * ##### Using the DAG-PB codec as an ArrayBuffer
+ *
+ * ```typescript
+ * import { verifiedFetch } from '@helia/verified-fetch'
+ *
+ * const res = await verifiedFetch('ipfs://Qmfoo')
+ * const buf = await res.arrayBuffer()
+ *
+ * console.info(buf) // ArrayBuffer { [Uint8Contents]: < ... >, byteLength: x }
+ * ```
+ *
+ * ##### Using the DAG-PB codec as a stream
+ *
+ * ```typescript
+ * import { verifiedFetch } from '@helia/verified-fetch'
+ *
+ * const res = await verifiedFetch('ipfs://Qmfoo')
+ * const reader = res.body?.getReader()
+ *
+ * while (true) {
+ *   const next = await reader.read()
+ *
+ *   if (next?.done === true) {
+ *     break
+ *   }
+ *
+ *   if (next?.value != null) {
+ *     console.info(next.value) // Uint8Array(x) [ ... ]
+ *   }
+ * }
+ * ```
+ *
+ * ##### Content-Type
+ *
+ * When fetching `DAG-PB` data, the content type will be set to `application/octet-stream` unless a custom content-type parser is configured.
+ *
+ * #### JSON
+ *
+ * The JSON codec is a very simple codec, a block parseable with this codec is a JSON string encoded into a `Uint8Array`.
+ *
+ * ##### Using the JSON codec
+ *
+ * ```typescript
+ * import * as json from 'multiformats/codecs/json'
+ *
+ * const block = new TextEncoder().encode('{ "hello": "world" }')
+ * const obj = json.decode(block)
+ *
+ * console.info(obj) // { hello: 'world' }
+ * ```
+ *
+ * ##### Content-Type
+ *
+ * When the `JSON` codec is encountered, the `Content-Type` header of the response will be set to `application/json`.
+ *
+ * ### DAG-JSON
+ *
+ * [DAG-JSON](https://ipld.io/docs/codecs/known/dag-json/) expands on the `JSON` codec, adding the ability to contain [CID](https://docs.ipfs.tech/concepts/content-addressing/)s which act as links to other blocks, and byte arrays.
+ *
+ * `CID`s and byte arrays are represented using special object structures with a single `"/"` property.
+ *
+ * Using `DAG-JSON` has two important caveats:
+ *
+ * 1. Your `JSON` structure cannot contain an object with only a `"/"` property, as it will be interpreted as a special type.
+ * 2. Since `JSON` has no technical limit on number sizes, `DAG-JSON` also allows numbers larger than `Number.MAX_SAFE_INTEGER`. JavaScript requires use of `BigInt`s to represent numbers larger than this, and `JSON.parse` does not support them, so precision will be lost.
+ *
+ * Otherwise this codec follows the same rules as the `JSON` codec.
+ *
+ * ##### Using the DAG-JSON codec
+ *
+ * ```typescript
+ * import * as dagJson from '@ipld/dag-json'
+ *
+ * const block = new TextEncoder().encode(`{
+ *   "hello": "world",
+ *   "cid": {
+ *     "/": "baeaaac3imvwgy3zao5xxe3de"
+ *   },
+ *   "buf": {
+ *     "/": {
+ *       "bytes": "AAECAwQ"
+ *     }
+ *   }
+ * }`)
+ *
+ * const obj = dagJson.decode(block)
+ *
+ * console.info(obj)
+ * // {
+ * // hello: 'world',
+ * // cid: CID(baeaaac3imvwgy3zao5xxe3de),
+ * // buf: Uint8Array(5) [ 0, 1, 2, 3, 4 ]
+ * // }
+ * ```
+ *
+ * ##### Content-Type
+ *
+ * When the `DAG-JSON` codec is encountered in the requested CID, the `Content-Type` header of the response will be set to `application/json`.
+ *
+ * `DAG-JSON` data can be parsed from the response by using the `.json()` function, which will return `CID`s/byte arrays as plain `{ "/": ... }` objects:
+ *
+ * ```typescript
+ * import { verifiedFetch } from '@helia/verified-fetch'
+ * import * as dagJson from '@ipld/dag-json'
+ *
+ * const res = await verifiedFetch('ipfs://bafyDAGJSON')
+ *
+ * // either:
+ * const obj = await res.json()
+ * console.info(obj.cid) // { "/": "baeaaac3imvwgy3zao5xxe3de" }
+ * console.info(obj.buf) // { "/": { "bytes": "AAECAwQ" } }
+ * ```
+ *
+ * Alternatively, it can be decoded using the `@ipld/dag-json` module and the `.arrayBuffer()` method, in which case you will get `CID` objects and `Uint8Array`s:
+ *
+ *```typescript
+ * import { verifiedFetch } from '@helia/verified-fetch'
+ * import * as dagJson from '@ipld/dag-json'
+ *
+ * const res = await verifiedFetch('ipfs://bafyDAGJSON')
+ *
+ * // or:
+ * const obj = dagJson.decode(await res.arrayBuffer())
+ * console.info(obj.cid) // CID(baeaaac3imvwgy3zao5xxe3de)
+ * console.info(obj.buf) // Uint8Array(5) [ 0, 1, 2, 3, 4 ]
+ * ```
+ *
+ * #### DAG-CBOR
+ *
+ * [DAG-CBOR](https://ipld.io/docs/codecs/known/dag-cbor/) uses the [Concise Binary Object Representation](https://cbor.io/) format for serialization instead of JSON.
+ *
+ * This supports more datatypes in a safer way than JSON and is smaller on the wire to boot so is usually preferable to JSON or DAG-JSON.
+ *
+ * ##### Content-Type
+ *
+ * Not all data types supported by `DAG-CBOR` can be successfully turned into JSON and back into the same binary form.
+ *
+ * When a decoded block can be round-tripped to JSON, the `Content-Type` will be set to `application/json`. In this case the `.json()` method on the `Response` object can be used to obtain an object representation of the response.
+ *
+ * When it cannot, the `Content-Type` will be `application/octet-stream` - in this case the `@ipld/dag-json` module must be used to deserialize the return value from `.arrayBuffer()`.
+ *
+ * ##### Detecting JSON-safe DAG-CBOR
+ *
+ * If the `Content-Type` header of the response is `application/json`, the `.json()` method may be used to access the response body in object form, otherwise the `.arrayBuffer()` method must be used to decode the raw bytes using the `@ipld/dag-cbor` module.
+ *
+ * ```typescript
+ * import { verifiedFetch } from '@helia/verified-fetch'
+ * import * as dagCbor from '@ipld/dag-cbor'
+ *
+ * const res = await verifiedFetch('ipfs://bafyDagCborCID')
+ * let obj
+ *
+ * if (res.headers.get('Content-Type') === 'application/json') {
+ *   // DAG-CBOR data can be safely decoded as JSON
+ *   obj = await res.json()
+ * } else {
+ *   // response contains non-JSON friendly data types
+ *   obj = dagCbor.decode(await res.arrayBuffer())
+ * }
+ *
+ * console.info(obj) // ...
+ * ```
+ *
  * ## Comparison to fetch
  *
  * This module attempts to act as similarly to the `fetch()` API as possible.
@@ -155,7 +337,7 @@
  * 2. IPNS protocol: `ipns://<peerId>` & `ipns://<publicKey>` & `ipns://<hostUri_Supporting_DnsLink_TxtRecords>`
  * 3. CID instances: An actual CID instance `CID.parse('bafy...')`
  *
- * As well as support for pathing & params for item 1 & 2 above according to [IPFS - Path Gateway Specification](https://specs.ipfs.tech/http-gateways/path-gateway) & [IPFS - Trustless Gateway Specification](https://specs.ipfs.tech/http-gateways/trustless-gateway/). Further refinement of those specifications specifically for web-based scenarios can be found in the [Web Pathing Specification IPIP](https://github.com/ipfs/specs/pull/453).
+ * As well as support for pathing & params for items 1 & 2 above according to [IPFS - Path Gateway Specification](https://specs.ipfs.tech/http-gateways/path-gateway) & [IPFS - Trustless Gateway Specification](https://specs.ipfs.tech/http-gateways/trustless-gateway/). Further refinement of those specifications specifically for web-based scenarios can be found in the [Web Pathing Specification IPIP](https://github.com/ipfs/specs/pull/453).
  *
  * If you pass a CID instance, it assumes you want the content for that specific CID only, and does not support pathing or params for that CID.
  *
