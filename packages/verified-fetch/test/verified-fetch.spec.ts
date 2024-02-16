@@ -263,7 +263,7 @@ describe('@helia/verifed-fetch', () => {
       const resp = await verifiedFetch.fetch(cid)
       expect(resp.headers.get('content-type')).to.equal('application/json')
 
-      const output = ipldJson.decode(new Uint8Array(await resp.arrayBuffer()))
+      const output = ipldJson.decode(await resp.arrayBuffer())
       await expect(j.add(output)).to.eventually.deep.equal(cid)
     })
 
@@ -355,7 +355,7 @@ describe('@helia/verifed-fetch', () => {
       const resp = await verifiedFetch.fetch(cid)
       expect(resp.headers.get('content-type')).to.equal('application/json')
 
-      const output = ipldDagJson.decode(new Uint8Array(await resp.arrayBuffer()))
+      const output = ipldDagJson.decode(await resp.arrayBuffer())
       await expect(j.add(output)).to.eventually.deep.equal(cid)
     })
 
@@ -385,7 +385,7 @@ describe('@helia/verifed-fetch', () => {
       const resp = await verifiedFetch.fetch(cid)
       expect(resp.headers.get('content-type')).to.equal('application/octet-stream')
 
-      const data = await ipldDagCbor.decode(new Uint8Array(await resp.arrayBuffer()))
+      const data = await ipldDagCbor.decode(await resp.arrayBuffer())
       expect(data).to.deep.equal(obj)
     })
 
@@ -400,7 +400,7 @@ describe('@helia/verifed-fetch', () => {
       const resp = await verifiedFetch.fetch(cid)
       expect(resp.headers.get('content-type')).to.equal('application/octet-stream')
 
-      const data = await ipldDagCbor.decode(new Uint8Array(await resp.arrayBuffer()))
+      const data = await ipldDagCbor.decode(await resp.arrayBuffer())
       expect(data).to.deep.equal(obj)
     })
 
@@ -414,7 +414,7 @@ describe('@helia/verifed-fetch', () => {
       const resp = await verifiedFetch.fetch(cid)
       expect(resp.headers.get('content-type')).to.equal('application/json')
 
-      const data = ipldDagJson.decode(new Uint8Array(await resp.arrayBuffer()))
+      const data = ipldDagJson.decode(await resp.arrayBuffer())
       expect(data).to.deep.equal(obj)
     })
 
@@ -447,7 +447,7 @@ describe('@helia/verifed-fetch', () => {
       const resp = await verifiedFetch.fetch(cid)
       expect(resp.headers.get('content-type')).to.equal('application/octet-stream')
 
-      const data = ipldDagCbor.decode(new Uint8Array(await resp.arrayBuffer()))
+      const data = ipldDagCbor.decode(await resp.arrayBuffer())
       expect(data).to.deep.equal(obj)
     })
 
@@ -478,7 +478,7 @@ describe('@helia/verifed-fetch', () => {
       const resp = await verifiedFetch.fetch(cid)
       expect(resp.headers.get('content-type')).to.equal('application/json')
 
-      const output = ipldDagCbor.decode(new Uint8Array(await resp.arrayBuffer()))
+      const output = ipldDagCbor.decode(await resp.arrayBuffer())
       await expect(c.add(output)).to.eventually.deep.equal(cid)
     })
 
@@ -494,7 +494,7 @@ describe('@helia/verifed-fetch', () => {
       const resp = await verifiedFetch.fetch(cid)
       expect(resp.headers.get('content-type')).to.equal('application/octet-stream')
 
-      const output = ipldDagCbor.decode(new Uint8Array(await resp.arrayBuffer()))
+      const output = ipldDagCbor.decode(await resp.arrayBuffer())
       await expect(c.add(output)).to.eventually.deep.equal(cid)
     })
 

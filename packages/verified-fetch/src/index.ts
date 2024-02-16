@@ -279,7 +279,7 @@
  * const res = await verifiedFetch('ipfs://bafyDAGJSON')
  *
  * // or:
- * const obj = dagJson.decode(new Uint8Array(await res.arrayBuffer()))
+ * const obj = dagJson.decode(await res.arrayBuffer())
  * console.info(obj.cid) // CID(baeaaac3imvwgy3zao5xxe3de)
  * console.info(obj.buf) // Uint8Array(5) [ 0, 1, 2, 3, 4 ]
  * ```
@@ -314,7 +314,7 @@
  *   obj = await res.json()
  * } else {
  *   // response contains non-JSON friendly data types
- *   obj = dagCbor.decode(new Uint8Array(await res.arrayBuffer()))
+ *   obj = dagCbor.decode(await res.arrayBuffer())
  * }
  *
  * console.info(obj) // ...
