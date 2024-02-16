@@ -9,6 +9,7 @@ import { code as rawCode } from 'multiformats/codecs/raw'
 import { identity } from 'multiformats/hashes/identity'
 import { CustomProgressEvent } from 'progress-events'
 import { dagCborToSafeJSON } from './utils/dag-cbor-to-safe-json.js'
+import { getETag } from './utils/get-e-tag.js'
 import { getFormat } from './utils/get-format.js'
 import { getStreamFromAsyncIterable } from './utils/get-stream-from-async-iterable.js'
 import { parseResource } from './utils/parse-resource.js'
@@ -383,7 +384,7 @@ export class VerifiedFetch {
       return notAcceptableResponse()
     }
 
-    response.headers.set('etag', cid.toString()) // https://specs.ipfs.tech/http-gateways/path-gateway/#etag-response-header
+    response.headers.set('etag', getETag({ cid, reqFormat: format?.format, weak: false }))
     response.headers.set('cache-control', 'public, max-age=29030400, immutable')
     response.headers.set('X-Ipfs-Path', resource.toString()) // https://specs.ipfs.tech/http-gateways/path-gateway/#x-ipfs-path-response-header
 

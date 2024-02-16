@@ -1,18 +1,17 @@
 import { code as dagCborCode } from '@ipld/dag-cbor'
 import { code as dagJsonCode } from '@ipld/dag-json'
+import type { RequestFormatShorthand } from '../types.js'
 import type { CID } from 'multiformats/cid'
-
-export type FORMAT = 'raw' | 'car' | 'dag-json' | 'dag-cbor' | 'json' | 'cbor' | 'ipns-record' | 'tar'
 
 const FORMATS: string[] = [
   'raw', 'car', 'dag-json', 'dag-cbor', 'json', 'cbor', 'ipns-record', 'tar'
 ]
 
-function isSupportedFormat (format: string): format is FORMAT {
+function isSupportedFormat (format: string): format is RequestFormatShorthand {
   return FORMATS.includes(format)
 }
 
-const FORMAT_MAP: Record<string, FORMAT> = {
+const FORMAT_MAP: Record<string, RequestFormatShorthand> = {
   // https://www.iana.org/assignments/media-types/application/vnd.ipld.raw
   'application/vnd.ipld.raw': 'raw',
   'application/octet-stream': 'raw',
@@ -33,7 +32,7 @@ const FORMAT_MAP: Record<string, FORMAT> = {
   'application/x-tar': 'tar'
 }
 
-const MIME_TYPE_MAP: Record<FORMAT, string> = {
+const MIME_TYPE_MAP: Record<RequestFormatShorthand, string> = {
   raw: 'application/octet-stream',
   car: 'application/vnd.ipld.car',
   'dag-json': 'application/vnd.ipld.dag-json',
@@ -45,7 +44,7 @@ const MIME_TYPE_MAP: Record<FORMAT, string> = {
 }
 
 interface UserFormat {
-  format: FORMAT
+  format: RequestFormatShorthand
   mimeType: string
 }
 
