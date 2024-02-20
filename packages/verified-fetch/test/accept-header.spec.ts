@@ -1,4 +1,3 @@
-import { car } from '@helia/car'
 import { dagCbor } from '@helia/dag-cbor'
 import { dagJson } from '@helia/dag-json'
 import { ipns } from '@helia/ipns'
@@ -10,7 +9,6 @@ import { expect } from 'aegir/chai'
 import { marshal } from 'ipns'
 import { VerifiedFetch } from '../src/verified-fetch.js'
 import { createHelia } from './fixtures/create-offline-helia.js'
-import { memoryCarWriter } from './fixtures/memory-car.js'
 import type { Helia } from '@helia/interface'
 
 describe('accept header', () => {
@@ -247,28 +245,5 @@ describe('accept header', () => {
     const buf = await resp.arrayBuffer()
 
     expect(buf).to.equalBytes(marshal(record))
-  })
-
-  it.skip('should support fetching a CAR file', async () => {
-    const obj = {
-      hello: 'world'
-    }
-    const c = dagCbor(helia)
-    const cid = await c.add(obj)
-
-    const ca = car(helia)
-    const writer = memoryCarWriter(cid)
-    await ca.export(cid, writer)
-
-    const resp = await verifiedFetch.fetch(cid, {
-      headers: {
-        accept: 'application/vnd.ipld.car'
-      }
-    })
-    expect(resp.status).to.equal(200)
-    expect(resp.headers.get('content-type')).to.equal('application/vnd.ipld.car; version=1')
-    const buf = await resp.arrayBuffer()
-
-    expect(buf).to.equalBytes(await writer.bytes())
   })
 })

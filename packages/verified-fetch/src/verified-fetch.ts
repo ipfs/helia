@@ -1,9 +1,12 @@
+import { car } from '@helia/car'
 import { ipns as heliaIpns, type IPNS } from '@helia/ipns'
 import { dnsJsonOverHttps } from '@helia/ipns/dns-resolvers'
 import { unixfs as heliaUnixFs, type UnixFS as HeliaUnixFs, type UnixFSStats } from '@helia/unixfs'
+import { CarWriter } from '@ipld/car'
 import * as ipldDagCbor from '@ipld/dag-cbor'
 import * as ipldDagJson from '@ipld/dag-json'
 import { code as dagPbCode } from '@ipld/dag-pb'
+import toBrowserReadableStream from 'it-to-browser-readablestream'
 import { code as jsonCode } from 'multiformats/codecs/json'
 import { code as rawCode } from 'multiformats/codecs/raw'
 import { identity } from 'multiformats/hashes/identity'
@@ -157,7 +160,27 @@ export class VerifiedFetch {
    * of the `DAG` referenced by the `CID`.
    */
   private async handleCar ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
-    return notSupportedResponse('vnd.ipld.car support is not implemented')
+    const c = car(this.helia)
+    const { writer, out } = CarWriter.create(cid)
+
+    const stream = toBrowserReadableStream<Uint8Array>(async function * () {
+      yield * out
+    }())
+
+    // write the DAG behind `cid` into the writer
+    c.export(cid, writer, options)
+      .catch(err => {
+        this.log.error('could not write car', err)
+        stream.cancel(err)
+          .catch(err => {
+            this.log.error('could not cancel stream after car export error', err)
+          })
+      })
+
+    const response = okResponse(stream)
+    response.headers.set('content-type', 'application/vnd.ipld.car; version=1')
+
+    return response
   }
 
   /**

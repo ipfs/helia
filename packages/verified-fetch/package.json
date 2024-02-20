@@ -155,6 +155,7 @@
     "cborg": "^4.0.9",
     "hashlru": "^2.3.0",
     "ipfs-unixfs-exporter": "^13.5.0",
+    "it-to-browser-readablestream": "^2.0.6",
     "multiformats": "^13.1.0",
     "progress-events": "^1.0.0"
   },
