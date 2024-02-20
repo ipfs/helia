@@ -19,8 +19,8 @@ ProgressOptions<TrustlessGatewayGetBlockProgressEvents>
   constructor (components: TrustlessGatewayComponents, init: TrustlessGatewayBlockBrokerInit = {}) {
     this.log = components.logger.forComponent('helia:trustless-gateway-block-broker')
     this.gateways = (init.gateways ?? DEFAULT_TRUSTLESS_GATEWAYS)
-      .map((gatewayOrUrl) => {
-        return new TrustlessGateway(gatewayOrUrl)
+      .map((gw) => {
+        return new TrustlessGateway(gw.url, gw.isSubdomain)
       })
   }
 
