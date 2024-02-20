@@ -20,6 +20,11 @@ ProgressOptions<TrustlessGatewayGetBlockProgressEvents>
     this.log = components.logger.forComponent('helia:trustless-gateway-block-broker')
     this.gateways = (init.gateways ?? DEFAULT_TRUSTLESS_GATEWAYS)
       .map((gw) => {
+        if(typeof gw === 'string' || gw instanceof URL) {
+          // backward compatibility defaults to path gateway
+          return new TrustlessGateway(gw, false)
+        }
+
         return new TrustlessGateway(gw.url, gw.isSubdomain)
       })
   }

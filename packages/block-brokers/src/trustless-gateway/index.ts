@@ -23,7 +23,7 @@ export type TrustlessGatewayGetBlockProgressEvents =
   ProgressEvent<'trustless-gateway:get-block:fetch', URL>
 
 export interface TrustlessGatewayBlockBrokerInit {
-  gateways?: Array<TrustlessGatewayUrl>
+  gateways?: Array<string | URL | TrustlessGatewayUrl>
 }
 
 export interface TrustlessGatewayComponents {
