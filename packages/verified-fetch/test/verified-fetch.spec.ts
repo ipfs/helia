@@ -1,4 +1,3 @@
-/* eslint-env mocha */
 import { dagCbor } from '@helia/dag-cbor'
 import { dagJson } from '@helia/dag-json'
 import { type IPNS } from '@helia/ipns'
@@ -138,15 +137,18 @@ describe('@helia/verifed-fetch', () => {
         onProgress
       })
 
-      expect(onProgress.callCount).to.equal(3)
+      expect(onProgress.callCount).to.equal(4)
 
       const onProgressEvents = onProgress.getCalls().map(call => call.args[0])
-      expect(onProgressEvents[0]).to.include({ type: 'blocks:get:blockstore:get' }).and.to.have.property('detail').that.deep.equals(cid)
-      expect(onProgressEvents[1]).to.include({ type: 'verified-fetch:request:start' }).and.to.have.property('detail').that.deep.equals({
+      expect(onProgressEvents[0]).to.include({ type: 'verified-fetch:request:start' }).and.to.have.property('detail').that.deep.equals({
+        resource: `ipfs://${cid}`
+      })
+      expect(onProgressEvents[1]).to.include({ type: 'verified-fetch:request:resolve' }).and.to.have.property('detail').that.deep.equals({
         cid,
         path: ''
       })
-      expect(onProgressEvents[2]).to.include({ type: 'verified-fetch:request:end' }).and.to.have.property('detail').that.deep.equals({
+      expect(onProgressEvents[2]).to.include({ type: 'blocks:get:blockstore:get' }).and.to.have.property('detail').that.deep.equals(cid)
+      expect(onProgressEvents[3]).to.include({ type: 'verified-fetch:request:end' }).and.to.have.property('detail').that.deep.equals({
         cid,
         path: ''
       })
