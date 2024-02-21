@@ -52,7 +52,8 @@ const CID_TYPE_MAP: Record<number, string[]> = {
     'application/octet-stream',
     'application/vnd.ipld.raw',
     'application/vnd.ipfs.ipns-record',
-    'application/vnd.ipld.car'
+    'application/vnd.ipld.car',
+    'application/x-tar'
   ]
 }
 

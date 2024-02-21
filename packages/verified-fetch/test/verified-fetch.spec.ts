@@ -80,7 +80,7 @@ describe('@helia/verifed-fetch', () => {
     })
 
     const formatsAndAcceptHeaders = [
-      ['tar', 'application/x-tar']
+      ['ipns-record', 'application/vnd.ipfs.ipns-record']
     ]
 
     for (const [format, acceptHeader] of formatsAndAcceptHeaders) {

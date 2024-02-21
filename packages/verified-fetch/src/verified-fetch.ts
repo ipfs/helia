@@ -15,6 +15,7 @@ import { dagCborToSafeJSON } from './utils/dag-cbor-to-safe-json.js'
 import { getContentDispositionFilename } from './utils/get-content-disposition-filename.js'
 import { getETag } from './utils/get-e-tag.js'
 import { getStreamFromAsyncIterable } from './utils/get-stream-from-async-iterable.js'
+import { tarStream } from './utils/get-tar-stream.js'
 import { parseResource } from './utils/parse-resource.js'
 import { selectOutputType, queryFormatToAcceptHeader } from './utils/select-output-type.js'
 import { walkPath } from './utils/walk-path.js'
@@ -188,11 +189,16 @@ export class VerifiedFetch {
    * directory structure referenced by the `CID`.
    */
   private async handleTar ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
-    if (cid.code !== dagPbCode) {
-      return notAcceptableResponse('only dag-pb CIDs can be returned in TAR files')
+    if (cid.code !== dagPbCode && cid.code !== rawCode) {
+      return notAcceptableResponse('only UnixFS data can be returned in a TAR file')
     }
 
-    return notSupportedResponse('application/tar support is not implemented')
+    const stream = toBrowserReadableStream<Uint8Array>(tarStream(`/ipfs/${cid}/${path}`, this.helia.blockstore, options))
+
+    const response = okResponse(stream)
+    response.headers.set('content-type', 'application/x-tar')
+
+    return response
   }
 
   private async handleJson ({ cid, path, accept, options }: FetchHandlerFunctionArg): Promise<Response> {
@@ -435,6 +441,8 @@ export class VerifiedFetch {
     } else if (accept === 'application/x-tar') {
       // the user requested a TAR file
       reqFormat = 'tar'
+      query.download = true
+      query.filename = query.filename ?? `${cid.toString()}.tar`
       response = await this.handleTar({ cid, path, options })
     } else {
       // derive the handler from the CID type
