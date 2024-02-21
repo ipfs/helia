@@ -61,7 +61,6 @@
 import { CarWriter } from '@ipld/car'
 import drain from 'it-drain'
 import map from 'it-map'
-import merge from 'it-merge'
 import defer from 'p-defer'
 import PQueue from 'p-queue'
 import type { DAGWalker } from '@helia/interface'
@@ -193,9 +192,8 @@ class DefaultCar implements Car {
           await writer.put({ cid, bytes })
         }, options)
       })
+        .catch(() => {})
     }
-
-    let exportError: Error | undefined
 
     // wait for the writer to end
     try {
@@ -203,39 +201,19 @@ class DefaultCar implements Car {
     } finally {
       await writer.close()
     }
-
-    if (exportError != null) {
-      throw exportError
-    }
   }
 
   async * stream (root: CID | CID[], options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): AsyncGenerator<Uint8Array, void, undefined> {
     const { writer, out } = CarWriter.create(root)
-    const deferred = defer<Error | undefined>()
 
     // has to be done async so we write to `writer` and read from `out` at the
     // same time
     this.export(root, writer, options)
-      .then(() => {
-        deferred.resolve()
-      })
-      .catch((err) => {
-        deferred.reject(err)
-      })
+      .catch(() => {})
 
-    yield * merge(
-      (async function * () {
-        // out is AsyncIterable<Uint8Array> not AsyncIterator<Uint8Array> so we
-        // can't just `yield * out`
-        for await (const buf of out) {
-          yield buf
-        }
-      })(),
-      // eslint-disable-next-line require-yield
-      (async function * () {
-        await deferred.promise
-      })()
-    )
+    for await (const buf of out) {
+      yield buf
+    }
   }
 
   /**

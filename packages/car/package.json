@@ -145,7 +145,6 @@
     "interface-blockstore": "^5.2.9",
     "it-drain": "^3.0.5",
     "it-map": "^3.0.5",
-    "it-merge": "^3.0.3",
     "multiformats": "^13.0.1",
     "p-defer": "^4.0.0",
     "p-queue": "^8.0.1",
@@ -157,7 +156,6 @@
     "aegir": "^42.2.2",
     "blockstore-core": "^4.4.0",
     "ipfs-unixfs-importer": "^15.2.4",
-    "it-to-buffer": "^4.0.5",
-    "sinon": "^17.0.1"
+    "it-to-buffer": "^4.0.5"
   }
 }
