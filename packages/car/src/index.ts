@@ -58,13 +58,14 @@
  * ```
  */
 
+import { CarWriter } from '@ipld/car'
 import drain from 'it-drain'
 import map from 'it-map'
 import defer from 'p-defer'
 import PQueue from 'p-queue'
 import type { DAGWalker } from '@helia/interface'
 import type { GetBlockProgressEvents, PutManyBlocksProgressEvents } from '@helia/interface/blocks'
-import type { CarReader, CarWriter } from '@ipld/car'
+import type { CarReader } from '@ipld/car'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
@@ -129,6 +130,28 @@ export interface Car {
    * ```
    */
   export(root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): Promise<void>
+
+  /**
+   * Returns an AsyncGenerator that yields CAR file bytes.
+   *
+   * @example
+   *
+   * ```typescript
+   * import { createHelia } from 'helia'
+   * import { car } from '@helia/car
+   * import { CID } from 'multiformats/cid'
+   *
+   * const helia = await createHelia()
+   * const cid = CID.parse('QmFoo...')
+   *
+   * const c = car(helia)
+   *
+   * for (const buf of c.stream(cid)) {
+   *   // store or send `buf` somewhere
+   * }
+   * ```
+   */
+  stream(root: CID | CID[], options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): AsyncGenerator<Uint8Array>
 }
 
 const DAG_WALK_QUEUE_CONCURRENCY = 1
@@ -148,7 +171,7 @@ class DefaultCar implements Car {
   }
 
   async export (root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): Promise<void> {
-    const deferred = defer()
+    const deferred = defer<Error | undefined>()
     const roots = Array.isArray(root) ? root : [root]
 
     // use a queue to walk the DAG instead of recursion so we can traverse very large DAGs
@@ -159,6 +182,7 @@ class DefaultCar implements Car {
       deferred.resolve()
     })
     queue.on('error', (err) => {
+      queue.clear()
       deferred.reject(err)
     })
 
@@ -168,6 +192,7 @@ class DefaultCar implements Car {
           await writer.put({ cid, bytes })
         }, options)
       })
+        .catch(() => {})
     }
 
     // wait for the writer to end
@@ -175,6 +200,19 @@ class DefaultCar implements Car {
       await deferred.promise
     } finally {
       await writer.close()
+    }
+  }
+
+  async * stream (root: CID | CID[], options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): AsyncGenerator<Uint8Array, void, undefined> {
+    const { writer, out } = CarWriter.create(root)
+
+    // has to be done async so we write to `writer` and read from `out` at the
+    // same time
+    this.export(root, writer, options)
+      .catch(() => {})
+
+    for await (const buf of out) {
+      yield buf
     }
   }
 
