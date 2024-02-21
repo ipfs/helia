@@ -159,15 +159,14 @@ export class VerifiedFetch {
    * Accepts a `CID` and returns a `Response` with a body stream that is a CAR
    * of the `DAG` referenced by the `CID`.
    */
-  private async handleCar ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
+  private async handleCar ({ cid, options }: FetchHandlerFunctionArg): Promise<Response> {
     const c = car(this.helia)
     const { writer, out } = CarWriter.create(cid)
 
-    const stream = toBrowserReadableStream<Uint8Array>(async function * () {
-      yield * out
-    }())
+    // convert AsyncIterable<Uint8Array> -> AsyncIterator<Uint8Array> -> ReadableStream<Uint8Array>
+    const stream = toBrowserReadableStream<Uint8Array>(out[Symbol.asyncIterator]())
 
-    // write the DAG behind `cid` into the writer
+    // write all blocks from the DAG into the car writer
     c.export(cid, writer, options)
       .catch(err => {
         this.log.error('could not write car', err)
