@@ -33,7 +33,7 @@ const rawWalker: DAGWalker = {
   }
 }
 
-describe('import', () => {
+describe('import/export car file', () => {
   let blockstore: Blockstore
   let c: Car
   let u: UnixFS

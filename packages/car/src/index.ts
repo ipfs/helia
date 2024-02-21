@@ -58,13 +58,14 @@
  * ```
  */
 
+import { CarWriter } from '@ipld/car'
 import drain from 'it-drain'
 import map from 'it-map'
 import defer from 'p-defer'
 import PQueue from 'p-queue'
 import type { DAGWalker } from '@helia/interface'
 import type { GetBlockProgressEvents, PutManyBlocksProgressEvents } from '@helia/interface/blocks'
-import type { CarReader, CarWriter } from '@ipld/car'
+import type { CarReader } from '@ipld/car'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
@@ -129,6 +130,31 @@ export interface Car {
    * ```
    */
   export(root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): Promise<void>
+
+  /**
+   * Returns an AsyncGenerator that yields CAR file bytes.
+   *
+   * @example
+   *
+   * ```typescript
+   * import fs from 'node:fs'
+   * import { Readable } from 'stream'
+   * import { createHelia } from 'helia'
+   * import { car } from '@helia/car
+   * import { CID } from 'multiformats/cid'
+   * import pEvent from 'p-event'
+   *
+   * const helia = await createHelia()
+   * const cid = CID.parse('QmFoo...')
+   *
+   * const c = car(helia)
+   *
+   * for (const buf of c.stream(cid)) {
+   *   // store or send `buf` somewhere
+   * }
+   * ```
+   */
+  stream(root: CID | CID[], options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): AsyncGenerator<Uint8Array>
 }
 
 const DAG_WALK_QUEUE_CONCURRENCY = 1
@@ -175,6 +201,53 @@ class DefaultCar implements Car {
       await deferred.promise
     } finally {
       await writer.close()
+    }
+  }
+
+  async * stream (root: CID | CID[], options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): AsyncGenerator<Uint8Array> {
+    const { writer, out } = CarWriter.create(root)
+    const deferred = defer()
+    const roots = Array.isArray(root) ? root : [root]
+
+    // use a queue to walk the DAG instead of recursion so we can traverse very large DAGs
+    const queue = new PQueue({
+      concurrency: DAG_WALK_QUEUE_CONCURRENCY
+    })
+    queue.on('idle', () => {
+      deferred.resolve()
+    })
+    queue.on('error', (err) => {
+      deferred.reject(err)
+    })
+
+    for (const root of roots) {
+      void queue.add(async () => {
+        await this.#walkDag(root, queue, async (cid, bytes) => {
+          await writer.put({ cid, bytes })
+        }, options)
+      })
+    }
+
+    let writerError: Error | undefined
+
+    // end the writer after the queue ends
+    deferred.promise
+      .then(async () => {
+        await writer.close()
+      }, async (err) => {
+        await writer.close()
+        throw err
+      })
+      .catch((err) => {
+        writerError = err
+      })
+
+    for await (const buf of out) {
+      yield buf
+    }
+
+    if (writerError != null) {
+      throw writerError
     }
   }
 
