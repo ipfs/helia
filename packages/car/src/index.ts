@@ -138,12 +138,9 @@ export interface Car {
    * @example
    *
    * ```typescript
-   * import fs from 'node:fs'
-   * import { Readable } from 'stream'
    * import { createHelia } from 'helia'
    * import { car } from '@helia/car
    * import { CID } from 'multiformats/cid'
-   * import pEvent from 'p-event'
    *
    * const helia = await createHelia()
    * const cid = CID.parse('QmFoo...')
