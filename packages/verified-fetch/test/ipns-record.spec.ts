@@ -9,7 +9,7 @@ import { createHelia } from './fixtures/create-offline-helia.js'
 import type { Helia } from '@helia/interface'
 import type { IPNS } from '@helia/ipns'
 
-describe.only('ipns records', () => {
+describe('ipns records', () => {
   let helia: Helia
   let name: IPNS
   let verifiedFetch: VerifiedFetch
