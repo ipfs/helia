@@ -208,6 +208,8 @@ class DefaultCar implements Car {
     const { writer, out } = CarWriter.create(root)
     let exportError: Error | undefined
 
+    // has to be done async so we write to `writer` and read from `out` at the
+    // same time
     this.export(root, writer, options)
       .catch((err) => {
         exportError = err
