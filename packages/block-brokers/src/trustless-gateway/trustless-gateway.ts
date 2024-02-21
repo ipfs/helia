@@ -1,5 +1,5 @@
-import type { CID } from 'multiformats/cid'
 import { base32 } from 'multiformats/bases/base32'
+import type { CID } from 'multiformats/cid'
 
 /**
  * A `TrustlessGateway` keeps track of the number of attempts, errors, and
@@ -13,7 +13,7 @@ export class TrustlessGateway {
   /**
    * Whether this gateway is a subdomain resolution style gateway
    */
-  public isSubdomain: boolean
+  public supportsSubdomains: boolean
 
   /**
    * The number of times this gateway has been attempted to be used to fetch a
@@ -43,16 +43,16 @@ export class TrustlessGateway {
    */
   #successes = 0
 
-  constructor(url: URL | string, isSubdomain: boolean = false) {
+  constructor (url: URL | string, supportsSubdomains: boolean = false) {
     this.url = url instanceof URL ? url : new URL(url)
-    this.isSubdomain = isSubdomain
+    this.supportsSubdomains = supportsSubdomains
   }
 
   /**
    * Fetch a raw block from `this.url` following the specification defined at
    * https://specs.ipfs.tech/http-gateways/trustless-gateway/
    */
-  async getRawBlock(cid: CID, signal?: AbortSignal): Promise<Uint8Array> {
+  async getRawBlock (cid: CID, signal?: AbortSignal): Promise<Uint8Array> {
     const gwUrl = this.getGwUrl(cid)
 
     // necessary as not every gateway supports dag-cbor, but every should support
@@ -60,9 +60,7 @@ export class TrustlessGateway {
     gwUrl.search = '?format=raw'
 
     if (signal?.aborted === true) {
-      throw new Error(
-        `Signal to fetch raw block for CID ${cid} from gateway ${this.url} was aborted prior to fetch`,
-      )
+      throw new Error(`Signal to fetch raw block for CID ${cid} from gateway ${this.url} was aborted prior to fetch`)
     }
 
     try {
@@ -72,7 +70,7 @@ export class TrustlessGateway {
         headers: {
           // also set header, just in case ?format= is filtered out by some
           // reverse proxy
-          Accept: 'application/vnd.ipld.raw',
+          Accept: 'application/vnd.ipld.raw'
         },
         cache: 'force-cache'
       })
@@ -96,10 +94,10 @@ export class TrustlessGateway {
   /**
    * Construct the Gateway URL for a CID
    */
-  getGwUrl(cid: CID): URL {
+  getGwUrl (cid: CID): URL {
     const gwUrl = new URL(this.url)
 
-    if (this.isSubdomain) {
+    if (this.supportsSubdomains) {
       gwUrl.hostname = `${cid.toString(base32)}.ipfs.${gwUrl.hostname}`
     } else {
       gwUrl.pathname = `/ipfs/${cid.toString()}`
@@ -137,7 +135,7 @@ export class TrustlessGateway {
      *
      * Play around with the below reliability function at https://www.desmos.com/calculator/d6hfhf5ukm
      */
-    return this.#successes / (this.#attempts + (this.#errors * 3))
+    return this.#successes / (this.#attempts + this.#errors * 3)
   }
 
   /**
