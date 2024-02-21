@@ -68,11 +68,7 @@ describe('import/export car file', () => {
     const otherBlockstore = new MemoryBlockstore()
     const otherUnixFS = unixfs({ blockstore: otherBlockstore })
     const otherCar = car({ blockstore: otherBlockstore, dagWalkers })
-    const cid = await otherUnixFS.addBytes(largeFile, {
-      chunker: fixedSize({
-        chunkSize: 1024
-      })
-    })
+    const cid = await otherUnixFS.addBytes(largeFile)
 
     const writer = memoryCarWriter(cid)
     await otherCar.export(cid, writer)
