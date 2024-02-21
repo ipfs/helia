@@ -160,7 +160,7 @@ export class VerifiedFetch {
    */
   private async handleCar ({ cid, options }: FetchHandlerFunctionArg): Promise<Response> {
     const c = car(this.helia)
-    const stream = toBrowserReadableStream<Uint8Array>(c.stream(cid, options))
+    const stream = toBrowserReadableStream(c.stream(cid, options))
 
     const response = okResponse(stream)
     response.headers.set('content-type', 'application/vnd.ipld.car; version=1')
