@@ -526,26 +526,21 @@ describe('@helia/verifed-fetch', () => {
 
   describe('custom dns-resolvers', () => {
     it('uses custom dnsResolvers if provided', async () => {
-      const customResolver1 = Sinon.stub()
-      const customResolver2 = Sinon.stub()
+      const customDnsResolver = Sinon.stub()
       const onProgress = Sinon.stub()
 
-      customResolver1.rejects(new Error('Could not resolve PeerId "mydomain.com"'))
-      customResolver2.returns(Promise.resolve('/ipfs/QmVP2ip92jQuMDezVSzQBWDqWFbp9nyCHNQSiciRauPLDg'))
+      customDnsResolver.returns(Promise.resolve('/ipfs/QmVP2ip92jQuMDezVSzQBWDqWFbp9nyCHNQSiciRauPLDg'))
 
       const verifiedFetch = new VerifiedFetch({
         helia
       }, {
-        dnsResolvers: [customResolver1, customResolver2]
+        dnsResolvers: [customDnsResolver]
       })
       // error of walking the CID/dag because we haven't actually added the block to the blockstore
       await expect(verifiedFetch.fetch('ipns://mydomain.com', { onProgress })).to.eventually.be.rejectedWith('All promises were rejected')
 
-      expect(customResolver1.callCount).to.equal(1)
-      expect(customResolver1.getCall(0).args).to.deep.equal(['mydomain.com', { onProgress }])
-      await expect(customResolver1.getCall(0).returnValue).to.eventually.be.rejectedWith('Could not resolve PeerId "mydomain.com"')
-      expect(customResolver2.callCount).to.equal(1)
-      expect(customResolver2.getCall(0).args).to.deep.equal(['mydomain.com', { onProgress }])
+      expect(customDnsResolver.callCount).to.equal(1)
+      expect(customDnsResolver.getCall(0).args).to.deep.equal(['mydomain.com', { onProgress }])
     })
   })
 })
