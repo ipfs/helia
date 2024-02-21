@@ -206,48 +206,21 @@ class DefaultCar implements Car {
 
   async * stream (root: CID | CID[], options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): AsyncGenerator<Uint8Array> {
     const { writer, out } = CarWriter.create(root)
-    const deferred = defer()
-    const roots = Array.isArray(root) ? root : [root]
+    let exportError: Error | undefined
 
-    // use a queue to walk the DAG instead of recursion so we can traverse very large DAGs
-    const queue = new PQueue({
-      concurrency: DAG_WALK_QUEUE_CONCURRENCY
-    })
-    queue.on('idle', () => {
-      deferred.resolve()
-    })
-    queue.on('error', (err) => {
-      deferred.reject(err)
-    })
-
-    for (const root of roots) {
-      void queue.add(async () => {
-        await this.#walkDag(root, queue, async (cid, bytes) => {
-          await writer.put({ cid, bytes })
-        }, options)
-      })
-    }
-
-    let writerError: Error | undefined
-
-    // end the writer after the queue ends
-    deferred.promise
-      .then(async () => {
-        await writer.close()
-      }, async (err) => {
-        await writer.close()
-        throw err
-      })
+    this.export(root, writer, options)
       .catch((err) => {
-        writerError = err
+        exportError = err
       })
 
+    // out is AsyncIterable<Uint8Array> not AsyncIterator<Uint8Array> so we
+    // can't just `yield * out`
     for await (const buf of out) {
       yield buf
     }
 
-    if (writerError != null) {
-      throw writerError
+    if (exportError != null) {
+      throw exportError
     }
   }
 
