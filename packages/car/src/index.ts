@@ -61,6 +61,7 @@
 import { CarWriter } from '@ipld/car'
 import drain from 'it-drain'
 import map from 'it-map'
+import merge from 'it-merge'
 import defer from 'p-defer'
 import PQueue from 'p-queue'
 import type { DAGWalker } from '@helia/interface'
@@ -174,7 +175,7 @@ class DefaultCar implements Car {
   }
 
   async export (root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): Promise<void> {
-    const deferred = defer()
+    const deferred = defer<Error | undefined>()
     const roots = Array.isArray(root) ? root : [root]
 
     // use a queue to walk the DAG instead of recursion so we can traverse very large DAGs
@@ -185,6 +186,7 @@ class DefaultCar implements Car {
       deferred.resolve()
     })
     queue.on('error', (err) => {
+      queue.clear()
       deferred.reject(err)
     })
 
@@ -196,34 +198,47 @@ class DefaultCar implements Car {
       })
     }
 
+    let exportError: Error | undefined
+
     // wait for the writer to end
     try {
       await deferred.promise
     } finally {
       await writer.close()
     }
-  }
-
-  async * stream (root: CID | CID[], options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): AsyncGenerator<Uint8Array> {
-    const { writer, out } = CarWriter.create(root)
-    let exportError: Error | undefined
-
-    // has to be done async so we write to `writer` and read from `out` at the
-    // same time
-    this.export(root, writer, options)
-      .catch((err) => {
-        exportError = err
-      })
-
-    // out is AsyncIterable<Uint8Array> not AsyncIterator<Uint8Array> so we
-    // can't just `yield * out`
-    for await (const buf of out) {
-      yield buf
-    }
 
     if (exportError != null) {
       throw exportError
     }
+  }
+
+  async * stream (root: CID | CID[], options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): AsyncGenerator<Uint8Array, void, undefined> {
+    const { writer, out } = CarWriter.create(root)
+    const deferred = defer<Error | undefined>()
+
+    // has to be done async so we write to `writer` and read from `out` at the
+    // same time
+    this.export(root, writer, options)
+      .then(() => {
+        deferred.resolve()
+      })
+      .catch((err) => {
+        deferred.reject(err)
+      })
+
+    yield * merge(
+      (async function * () {
+        // out is AsyncIterable<Uint8Array> not AsyncIterator<Uint8Array> so we
+        // can't just `yield * out`
+        for await (const buf of out) {
+          yield buf
+        }
+      })(),
+      // eslint-disable-next-line require-yield
+      (async function * () {
+        await deferred.promise
+      })()
+    )
   }
 
   /**
