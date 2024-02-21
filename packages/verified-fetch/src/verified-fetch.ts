@@ -1,4 +1,4 @@
-import { ipns as heliaIpns, type IPNS } from '@helia/ipns'
+import { ipns as heliaIpns, type DNSResolver, type IPNS } from '@helia/ipns'
 import { dnsJsonOverHttps } from '@helia/ipns/dns-resolvers'
 import { unixfs as heliaUnixFs, type UnixFS as HeliaUnixFs, type UnixFSStats } from '@helia/unixfs'
 import { code as dagCborCode } from '@ipld/dag-cbor'
@@ -32,6 +32,7 @@ interface VerifiedFetchComponents {
  */
 interface VerifiedFetchInit {
   contentTypeParser?: ContentTypeParser
+  dnsResolvers?: DNSResolver[]
 }
 
 interface FetchHandlerFunctionArg {
@@ -86,7 +87,7 @@ export class VerifiedFetch {
     this.helia = helia
     this.log = helia.logger.forComponent('helia:verified-fetch')
     this.ipns = ipns ?? heliaIpns(helia, {
-      resolvers: [
+      resolvers: init?.dnsResolvers ?? [
         dnsJsonOverHttps('https://mozilla.cloudflare-dns.com/dns-query'),
         dnsJsonOverHttps('https://dns.google/resolve')
       ]
