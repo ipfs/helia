@@ -538,11 +538,9 @@ describe('@helia/verifed-fetch', () => {
       }, {
         dnsResolvers: [customResolver1, customResolver2]
       })
-      try {
-        await verifiedFetch.fetch('ipns://mydomain.com', { onProgress })
-      } catch {
-        // ignoring error of walking the CID because we haven't actually added the block to the blockstore
-      }
+      // ignoring error of walking the CID because we haven't actually added the block to the blockstore
+      await expect(verifiedFetch.fetch('ipns://mydomain.com', { onProgress })).to.eventually.be.rejected
+        .with.property('code', 'ERR_EXPECTED_ERR_CODE')
       expect(customResolver1.callCount).to.equal(1)
       expect(customResolver1.getCall(0).args).to.deep.equal(['mydomain.com', { onProgress }])
       await expect(customResolver1.getCall(0).returnValue).to.eventually.be.rejectedWith('Could not resolve PeerId "mydomain.com"')
