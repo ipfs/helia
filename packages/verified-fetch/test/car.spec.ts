@@ -46,7 +46,7 @@ describe('car files', () => {
     expect(buf).to.equalBytes(await writer.bytes())
   })
 
-  it('should support specify a filename for a CAR file', async () => {
+  it('should support specifying a filename for a CAR file', async () => {
     const obj = {
       hello: 'world'
     }
