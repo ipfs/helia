@@ -51,4 +51,5 @@ describe('stream car file', () => {
     writer.put = async () => {
       throw new Error('Urk!')
     }
+  })
 })
