@@ -141,12 +141,14 @@
     "release": "aegir release"
   },
   "dependencies": {
+    "@helia/car": "^3.0.0",
     "@helia/block-brokers": "^2.0.1",
     "@helia/http": "^1.0.1",
     "@helia/interface": "^4.0.0",
     "@helia/ipns": "^6.0.0",
     "@helia/routers": "^1.0.0",
     "@helia/unixfs": "^3.0.0",
+    "@ipld/car": "^5.2.6",
     "@ipld/dag-cbor": "^9.2.0",
     "@ipld/dag-json": "^10.2.0",
     "@ipld/dag-pb": "^4.1.0",
@@ -160,12 +162,10 @@
     "progress-events": "^1.0.0"
   },
   "devDependencies": {
-    "@helia/car": "^3.0.0",
     "@helia/dag-cbor": "^3.0.0",
     "@helia/dag-json": "^3.0.0",
     "@helia/json": "^3.0.0",
     "@helia/utils": "^0.0.1",
-    "@ipld/car": "^5.2.6",
     "@libp2p/logger": "^4.0.5",
     "@libp2p/peer-id-factory": "^4.0.5",
     "@sgtpooki/file-type": "^1.0.1",
