@@ -351,7 +351,7 @@ console.info(obj) // ...
 
 The `Accept` header can be passed to override certain response processing, or to ensure that the final `Content-Type` of the response is the one that is expected.
 
-If the final `Content-Type` does not match the `Accept` header, or if the content cannot be represented in the format dictated by the `Accept` header, or you have configured a custom content type parser, and that parser returns a value that isn't in the accept header, a [406: Not Acceptible](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/406) response will be returned:
+If the final `Content-Type` does not match the `Accept` header, or if the content cannot be represented in the format dictated by the `Accept` header, or you have configured a custom content type parser, and that parser returns a value that isn't in the accept header, a [406: Not Acceptable](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/406) response will be returned:
 
 ```typescript
 import { verifiedFetch } from '@helia/verified-fetch'

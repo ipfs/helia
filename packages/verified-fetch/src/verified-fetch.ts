@@ -2,7 +2,6 @@ import { car } from '@helia/car'
 import { ipns as heliaIpns, type IPNS } from '@helia/ipns'
 import { dnsJsonOverHttps } from '@helia/ipns/dns-resolvers'
 import { unixfs as heliaUnixFs, type UnixFS as HeliaUnixFs, type UnixFSStats } from '@helia/unixfs'
-import { CarWriter } from '@ipld/car'
 import * as ipldDagCbor from '@ipld/dag-cbor'
 import * as ipldDagJson from '@ipld/dag-json'
 import { code as dagPbCode } from '@ipld/dag-pb'
@@ -23,6 +22,7 @@ import { getETag } from './utils/get-e-tag.js'
 import { getStreamFromAsyncIterable } from './utils/get-stream-from-async-iterable.js'
 import { tarStream } from './utils/get-tar-stream.js'
 import { parseResource } from './utils/parse-resource.js'
+import { badRequestResponse, notAcceptableResponse, notSupportedResponse, okResponse } from './utils/responses.js'
 import { selectOutputType, queryFormatToAcceptHeader } from './utils/select-output-type.js'
 import { walkPath } from './utils/walk-path.js'
 import type { CIDDetail, ContentTypeParser, Resource, VerifiedFetchInit as VerifiedFetchOptions } from './index.js'
@@ -81,36 +81,6 @@ function convertOptions (options?: VerifiedFetchOptions): (Omit<VerifiedFetchOpt
   }
 }
 
-function okResponse (body?: BodyInit | null): Response {
-  return new Response(body, {
-    status: 200,
-    statusText: 'OK'
-  })
-}
-
-function notSupportedResponse (body?: BodyInit | null): Response {
-  const response = new Response(body, {
-    status: 501,
-    statusText: 'Not Implemented'
-  })
-  response.headers.set('X-Content-Type-Options', 'nosniff') // see https://specs.ipfs.tech/http-gateways/path-gateway/#x-content-type-options-response-header
-  return response
-}
-
-function notAcceptableResponse (body?: BodyInit | null): Response {
-  return new Response(body, {
-    status: 406,
-    statusText: '406 Not Acceptable'
-  })
-}
-
-function badRequestResponse (body?: BodyInit | null): Response {
-  return new Response(body, {
-    status: 400,
-    statusText: '400 Bad Request'
-  })
-}
-
 /**
  * These are Accept header values that will cause content type sniffing to be
  * skipped and set to these values.
@@ -123,8 +93,8 @@ const RAW_HEADERS = [
 /**
  * if the user has specified an `Accept` header, and it's in our list of
  * allowable "raw" format headers, use that instead of detecting the content
- * type, to avoid the user signalling that they will Accepting one mime type
- * and then receiving something different.
+ * type. This avoids the user from receiving something different when they
+ * signal that they want to `Accept` a specific mime type.
  */
 function getOverridenRawContentType (headers?: HeadersInit): string | undefined {
   const acceptHeader = new Headers(headers).get('accept') ?? ''
@@ -206,23 +176,9 @@ export class VerifiedFetch {
    * Accepts a `CID` and returns a `Response` with a body stream that is a CAR
    * of the `DAG` referenced by the `CID`.
    */
-  private async handleCar ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
+  private async handleCar ({ cid, options }: FetchHandlerFunctionArg): Promise<Response> {
     const c = car(this.helia)
-    const { writer, out } = CarWriter.create(cid)
-
-    const stream = toBrowserReadableStream<Uint8Array>(async function * () {
-      yield * out
-    }())
-
-    // write the DAG behind `cid` into the writer
-    c.export(cid, writer, options)
-      .catch(err => {
-        this.log.error('could not write car', err)
-        stream.cancel(err)
-          .catch(err => {
-            this.log.error('could not cancel stream after car export error', err)
-          })
-      })
+    const stream = toBrowserReadableStream(c.stream(cid, options))
 
     const response = okResponse(stream)
     response.headers.set('content-type', 'application/vnd.ipld.car; version=1')
@@ -329,7 +285,6 @@ export class VerifiedFetch {
       terminalElement = pathDetails.terminalElement
     } catch (err) {
       this.log.error('Error walking path %s', path, err)
-      // return new Response(`Error walking path: ${(err as Error).message}`, { status: 500 })
     }
 
     let resolvedCID = terminalElement?.cid ?? cid
