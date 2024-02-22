@@ -15,6 +15,7 @@ import { getContentDispositionFilename } from './utils/get-content-disposition-f
 import { getETag } from './utils/get-e-tag.js'
 import { getStreamFromAsyncIterable } from './utils/get-stream-from-async-iterable.js'
 import { parseResource } from './utils/parse-resource.js'
+import { notAcceptableResponse, notSupportedResponse, okResponse } from './utils/responses.js'
 import { selectOutputType, queryFormatToAcceptHeader } from './utils/select-output-type.js'
 import { walkPath } from './utils/walk-path.js'
 import type { CIDDetail, ContentTypeParser, Resource, VerifiedFetchInit as VerifiedFetchOptions } from './index.js'
@@ -68,29 +69,6 @@ function convertOptions (options?: VerifiedFetchOptions): (Omit<VerifiedFetchOpt
   }
 }
 
-function okResponse (body?: BodyInit | null): Response {
-  return new Response(body, {
-    status: 200,
-    statusText: 'OK'
-  })
-}
-
-function notSupportedResponse (body?: BodyInit | null): Response {
-  const response = new Response(body, {
-    status: 501,
-    statusText: 'Not Implemented'
-  })
-  response.headers.set('X-Content-Type-Options', 'nosniff') // see https://specs.ipfs.tech/http-gateways/path-gateway/#x-content-type-options-response-header
-  return response
-}
-
-function notAcceptableResponse (body?: BodyInit | null): Response {
-  return new Response(body, {
-    status: 406,
-    statusText: '406 Not Acceptable'
-  })
-}
-
 /**
  * These are Accept header values that will cause content type sniffing to be
  * skipped and set to these values.
@@ -103,8 +81,8 @@ const RAW_HEADERS = [
 /**
  * if the user has specified an `Accept` header, and it's in our list of
  * allowable "raw" format headers, use that instead of detecting the content
- * type, to avoid the user signalling that they will Accepting one mime type
- * and then receiving something different.
+ * type. This avoids the user from receiving something different when they
+ * signal that they want to `Accept` a specific mime type.
  */
 function getOverridenRawContentType (headers?: HeadersInit): string | undefined {
   const acceptHeader = new Headers(headers).get('accept') ?? ''
@@ -262,7 +240,6 @@ export class VerifiedFetch {
       terminalElement = pathDetails.terminalElement
     } catch (err) {
       this.log.error('Error walking path %s', path, err)
-      // return new Response(`Error walking path: ${(err as Error).message}`, { status: 500 })
     }
 
     let resolvedCID = terminalElement?.cid ?? cid

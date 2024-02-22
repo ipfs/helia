@@ -138,7 +138,7 @@ describe('accept header', () => {
     expect(output).to.deep.equal(obj)
   })
 
-  it('should return 406 Not Acceptable if the accept header cannot be honoured', async () => {
+  it('should return 406 Not Acceptable if the accept header cannot be adhered to', async () => {
     const obj = {
       hello: 'world'
     }
@@ -151,7 +151,7 @@ describe('accept header', () => {
       }
     })
     expect(resp.status).to.equal(406)
-    expect(resp.statusText).to.equal('406 Not Acceptable')
+    expect(resp.statusText).to.equal('Not Acceptable')
   })
 
   it('should support wildcards', async () => {

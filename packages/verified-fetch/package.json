@@ -161,6 +161,7 @@
     "progress-events": "^1.0.0"
   },
   "devDependencies": {
+    "@helia/car": "^3.0.0",
     "@helia/dag-cbor": "^3.0.0",
     "@helia/dag-json": "^3.0.0",
     "@helia/json": "^3.0.0",
