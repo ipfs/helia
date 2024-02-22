@@ -138,6 +138,29 @@
  * })
  * ```
  *
+ * ### Custom DNS resolvers
+ *
+ * If you don't want to leek DNS queries to the default resolvers, you can provide your own list of DNS resolvers to `createVerifiedFetch`.
+ *
+ * Note that you do not need to provide both a DNS-over-HTTPS and a DNS-over-JSON resolver, and you should prefer `dnsJsonOverHttps` resolvers for usage in the browser for a smaller bundle size. See https://github.com/ipfs/helia/tree/main/packages/ipns#example---using-dns-json-over-https for more information.
+ *
+ * @example Customizing DNS resolvers
+ *
+ * ```typescript
+ * import { createVerifiedFetch } from '@helia/verified-fetch'
+ * import { dnsJsonOverHttps, dnsOverHttps } from '@helia/ipns/dns-resolvers'
+ *
+ * const fetch = await createVerifiedFetch({
+ *  gateways: ['https://trustless-gateway.link'],
+ *  routers: ['http://delegated-ipfs.dev']
+ * }, {
+ *  dnsResolvers: [
+ *    dnsJsonOverHttps('https://my-dns-resolver.example.com/dns-json'),
+ *    dnsOverHttps('https://my-dns-resolver.example.com/dns-query')
+ *  ]
+ * })
+ * ```
+ *
  * ### IPLD codec handling
  *
  * IPFS supports several data formats (typically referred to as codecs) which are included in the CID. `@helia/verified-fetch` attempts to abstract away some of the details for easier consumption.
@@ -439,7 +462,7 @@ import { createHeliaHTTP } from '@helia/http'
 import { delegatedHTTPRouting } from '@helia/routers'
 import { VerifiedFetch as VerifiedFetchClass } from './verified-fetch.js'
 import type { Helia } from '@helia/interface'
-import type { IPNSRoutingEvents, ResolveDnsLinkProgressEvents, ResolveProgressEvents } from '@helia/ipns'
+import type { DNSResolver, IPNSRoutingEvents, ResolveDnsLinkProgressEvents, ResolveProgressEvents } from '@helia/ipns'
 import type { GetEvents } from '@helia/unixfs'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
@@ -479,8 +502,22 @@ export interface CreateVerifiedFetchOptions {
    * provide will be passed the first set of bytes we receive from the network,
    * and should return a string that will be used as the value for the
    * `Content-Type` header in the response.
+   *
+   * @default undefined
    */
   contentTypeParser?: ContentTypeParser
+
+  /**
+   * In order to parse DNSLink records, we need to resolve DNS queries. You can
+   * pass a list of DNS resolvers that we will provide to the @helia/ipns
+   * instance for you. You must construct them using the `dnsJsonOverHttps` or
+   * `dnsOverHttps` functions exported from `@helia/ipns/dns-resolvers`.
+   *
+   * We use cloudflare and google's dnsJsonOverHttps resolvers by default.
+   *
+   * @default [dnsJsonOverHttps('https://mozilla.cloudflare-dns.com/dns-query'),dnsJsonOverHttps('https://dns.google/resolve')]
+   */
+  dnsResolvers?: DNSResolver[]
 }
 
 /**
@@ -524,8 +561,6 @@ export interface VerifiedFetchInit extends RequestInit, ProgressOptions<BubbledP
  * Create and return a Helia node
  */
 export async function createVerifiedFetch (init?: Helia | CreateVerifiedFetchInit, options?: CreateVerifiedFetchOptions): Promise<VerifiedFetch> {
-  const contentTypeParser: ContentTypeParser | undefined = options?.contentTypeParser
-
   if (!isHelia(init)) {
     init = await createHeliaHTTP({
       blockBrokers: [
@@ -537,7 +572,7 @@ export async function createVerifiedFetch (init?: Helia | CreateVerifiedFetchIni
     })
   }
 
-  const verifiedFetchInstance = new VerifiedFetchClass({ helia: init }, { contentTypeParser })
+  const verifiedFetchInstance = new VerifiedFetchClass({ helia: init }, options)
   async function verifiedFetch (resource: Resource, options?: VerifiedFetchInit): Promise<Response> {
     return verifiedFetchInstance.fetch(resource, options)
   }

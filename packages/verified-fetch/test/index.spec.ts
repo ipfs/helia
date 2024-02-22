@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 import { createHeliaHTTP } from '@helia/http'
+import { dnsJsonOverHttps, dnsOverHttps } from '@helia/ipns/dns-resolvers'
 import { expect } from 'aegir/chai'
 import { createHelia } from 'helia'
 import { createVerifiedFetch, verifiedFetch } from '../src/index.js'
@@ -50,5 +51,24 @@ describe('createVerifiedFetch', () => {
     expect(verifiedFetch).to.be.a('function')
     expect(verifiedFetch.stop).to.be.a('function')
     expect(verifiedFetch.start).to.be.a('function')
+  })
+
+  it('can be passed a contentTypeParser', async () => {
+    const contentTypeParser = (_bytes: Uint8Array): string => 'application/json'
+    const verifiedFetch = await createVerifiedFetch(undefined, {
+      contentTypeParser
+    })
+    expect(verifiedFetch).to.be.ok()
+    await verifiedFetch.stop()
+  })
+
+  it('can be passed custom dnsResolvers', async () => {
+    const dnsResolver = dnsOverHttps('https://example.com/dns-query')
+    const dnsJsonResolver = dnsJsonOverHttps('https://example.com/dns-json')
+    const verifiedFetch = await createVerifiedFetch(undefined, {
+      dnsResolvers: [dnsResolver, dnsJsonResolver]
+    })
+    expect(verifiedFetch).to.be.ok()
+    await verifiedFetch.stop()
   })
 })
