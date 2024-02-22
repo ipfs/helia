@@ -19,6 +19,8 @@ export interface ParseUrlStringOptions extends ProgressOptions<ResolveProgressEv
 
 export interface ParsedUrlQuery extends Record<string, string | unknown> {
   format?: RequestFormatShorthand
+  download?: boolean
+  filename?: string
 }
 
 export interface ParsedUrlStringResults {
@@ -109,13 +111,21 @@ export async function parseUrlString ({ urlString, ipns, logger }: ParseUrlStrin
   }
 
   // parse query string
-  const query: Record<string, string> = {}
+  const query: Record<string, any> = {}
 
   if (queryString != null && queryString.length > 0) {
     const queryParts = queryString.split('&')
     for (const part of queryParts) {
       const [key, value] = part.split('=')
       query[key] = decodeURIComponent(value)
+    }
+
+    if (query.download != null) {
+      query.download = query.download === 'true'
+    }
+
+    if (query.filename != null) {
+      query.filename = query.filename.toString()
     }
   }
 

@@ -347,6 +347,39 @@ if (res.headers.get('Content-Type') === 'application/json') {
 console.info(obj) // ...
 ```
 
+## The `Accept` header
+
+The `Accept` header can be passed to override certain response processing, or to ensure that the final `Content-Type` of the response is the one that is expected.
+
+If the final `Content-Type` does not match the `Accept` header, or if the content cannot be represented in the format dictated by the `Accept` header, or you have configured a custom content type parser, and that parser returns a value that isn't in the accept header, a [406: Not Acceptible](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/406) response will be returned:
+
+```typescript
+import { verifiedFetch } from '@helia/verified-fetch'
+
+const res = await verifiedFetch('ipfs://bafyJPEGImageCID', {
+  headers: {
+    accept: 'image/png'
+  }
+})
+
+console.info(res.status) // 406 - the image was a JPEG but we specified PNG as the accept header
+```
+
+It can also be used to skip processing the data from some formats such as `DAG-CBOR` if you wish to handle decoding it yourself:
+
+```typescript
+import { verifiedFetch } from '@helia/verified-fetch'
+
+const res = await verifiedFetch('ipfs://bafyDAGCBORCID', {
+  headers: {
+    accept: 'application/octet-stream'
+  }
+})
+
+console.info(res.headers.get('accept')) // application/octet-stream
+const buf = await res.arrayBuffer() // raw bytes, not processed as JSON
+```
+
 ## Comparison to fetch
 
 This module attempts to act as similarly to the `fetch()` API as possible.
