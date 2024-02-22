@@ -51,15 +51,15 @@ export interface WantListEntry {
 
 export interface CreateBitswapSessionOptions extends CreateSessionOptions<BitswapWantProgressEvents> {
   /**
-   * If true, query connected peers before searching for providers in the
-   * routing
+   * If true, query connected peers before searching for providers via
+   * Helia routers
    *
    * @default true
    */
   queryConnectedPeers?: boolean
 
   /**
-   * If true, search for providers in the routing to query for the root CID
+   * If true, search for providers via Helia routers to query for the root CID
    *
    * @default true
    */
@@ -179,15 +179,17 @@ export interface BitswapOptions {
   sendBlocksConcurrency?: number
 
   /**
-   * When sending want list updates to peers, how many messages to send at once
+   * When sending blocks to peers, timeout after this many milliseconds.
+   * This is useful for preventing slow/large peer-connections from consuming
+   * your bandwidth/streams.
    *
    * @default 10000
    */
   sendBlocksTimeout?: number
 
   /**
-   * When a block is added to the blockstore and we are about to sending that
-   * block to peers who have it in their wantlist, wait this long before
+   * When a block is added to the blockstore and we are about to send that
+   * block to peers who have it in their wantlist, wait this many milliseconds before
    * queueing the send job in case more blocks are added that they want
    *
    * @default 10
