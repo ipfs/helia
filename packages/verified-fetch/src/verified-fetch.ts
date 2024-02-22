@@ -101,8 +101,8 @@ const RAW_HEADERS = [
 /**
  * if the user has specified an `Accept` header, and it's in our list of
  * allowable "raw" format headers, use that instead of detecting the content
- * type, to avoid the user signalling that they will Accepting one mime type
- * and then receiving something different.
+ * type. This avoids the user from receiving something different when they 
+ * signal that they want to `Accept` a specific mime type.
  */
 function getOverridenRawContentType (headers?: HeadersInit): string | undefined {
   const acceptHeader = new Headers(headers).get('accept') ?? ''
@@ -254,7 +254,6 @@ export class VerifiedFetch {
       terminalElement = pathDetails.terminalElement
     } catch (err) {
       this.log.error('Error walking path %s', path, err)
-      // return new Response(`Error walking path: ${(err as Error).message}`, { status: 500 })
     }
 
     let resolvedCID = terminalElement?.cid ?? cid
