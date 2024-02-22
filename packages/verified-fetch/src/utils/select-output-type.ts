@@ -6,6 +6,9 @@ import { code as rawCode } from 'multiformats/codecs/raw'
 import type { RequestFormatShorthand } from '../types.js'
 import type { CID } from 'multiformats/cid'
 
+/**
+ * This maps supported response types for each codec supported by verified-fetch
+ */
 const CID_TYPE_MAP: Record<number, string[]> = {
   [dagCborCode]: [
     'application/json',
