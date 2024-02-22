@@ -1,9 +1,11 @@
+import { car } from '@helia/car'
 import { ipns as heliaIpns, type IPNS } from '@helia/ipns'
 import { dnsJsonOverHttps } from '@helia/ipns/dns-resolvers'
 import { unixfs as heliaUnixFs, type UnixFS as HeliaUnixFs, type UnixFSStats } from '@helia/unixfs'
 import * as ipldDagCbor from '@ipld/dag-cbor'
 import * as ipldDagJson from '@ipld/dag-json'
 import { code as dagPbCode } from '@ipld/dag-pb'
+import toBrowserReadableStream from 'it-to-browser-readablestream'
 import { code as jsonCode } from 'multiformats/codecs/json'
 import { code as rawCode } from 'multiformats/codecs/raw'
 import { identity } from 'multiformats/hashes/identity'
@@ -134,8 +136,14 @@ export class VerifiedFetch {
    * Accepts a `CID` and returns a `Response` with a body stream that is a CAR
    * of the `DAG` referenced by the `CID`.
    */
-  private async handleCar ({ cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
-    return notSupportedResponse('vnd.ipld.car support is not implemented')
+  private async handleCar ({ cid, options }: FetchHandlerFunctionArg): Promise<Response> {
+    const c = car(this.helia)
+    const stream = toBrowserReadableStream(c.stream(cid, options))
+
+    const response = okResponse(stream)
+    response.headers.set('content-type', 'application/vnd.ipld.car; version=1')
+
+    return response
   }
 
   /**

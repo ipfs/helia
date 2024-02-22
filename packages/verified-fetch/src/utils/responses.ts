@@ -17,6 +17,6 @@ export function notSupportedResponse (body?: BodyInit | null): Response {
 export function notAcceptableResponse (body?: BodyInit | null): Response {
   return new Response(body, {
     status: 406,
-    statusText: '406 Not Acceptable'
+    statusText: 'Not Acceptable'
   })
 }
