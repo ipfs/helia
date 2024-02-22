@@ -121,7 +121,7 @@ describe('tar files', () => {
     expect(resp.headers.get('content-disposition')).to.equal(`attachment; filename="${cid.toString()}.tar"`)
   })
 
-  it('should support specify a filename for a TAR file', async () => {
+  it('should support specifying a filename for a TAR file', async () => {
     const file = Uint8Array.from([0, 1, 2, 3, 4])
     const fs = unixfs(helia)
     const cid = await fs.addBytes(file)
