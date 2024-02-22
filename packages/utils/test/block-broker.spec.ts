@@ -9,7 +9,7 @@ import all from 'it-all'
 import * as raw from 'multiformats/codecs/raw'
 import Sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
-import { defaultHashers } from '../src/utils/default-hashers.js'
+import { getHasher } from '../src/utils/get-hasher.js'
 import { NetworkedStorage } from '../src/utils/networked-storage.js'
 import { createBlock } from './fixtures/create-block.js'
 import type { BlockBroker, BlockRetriever } from '@helia/interface/blocks'
@@ -39,9 +39,8 @@ describe('block-broker', () => {
       blockBrokers: [
         bitswapBlockBroker,
         gatewayBlockBroker
-      ],
-      hashers: defaultHashers()
-    })
+      ]
+    }, getHasher())
   })
 
   afterEach(async () => {
@@ -127,9 +126,8 @@ describe('block-broker', () => {
       logger: defaultLogger(),
       blockBrokers: [
         gatewayBlockBroker
-      ],
-      hashers: defaultHashers()
-    })
+      ]
+    }, getHasher())
 
     gatewayBlockBroker.retrieve.withArgs(cid, Sinon.match.any).resolves(block)
 

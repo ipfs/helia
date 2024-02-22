@@ -6,12 +6,14 @@ import filter from 'it-filter'
 import forEach from 'it-foreach'
 import { CustomProgressEvent, type ProgressOptions } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import { isPromise } from './is-promise.js'
+import type { HasherLoader } from '@helia/interface'
 import type { BlockBroker, Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions, BlockRetriever, BlockAnnouncer, BlockRetrievalOptions } from '@helia/interface/blocks'
 import type { AbortOptions, ComponentLogger, Logger, LoggerOptions, Startable } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { AwaitIterable } from 'interface-store'
 import type { CID } from 'multiformats/cid'
-import type { MultihashHasher } from 'multiformats/hashes/interface'
+import type { MultihashDigest, MultihashHasher } from 'multiformats/hashes/interface'
 
 export interface GetOptions extends AbortOptions {
   progress?(evt: Event): void
@@ -40,14 +42,14 @@ export class NetworkedStorage implements Blocks, Startable {
   private readonly child: Blockstore
   private readonly blockRetrievers: BlockRetriever[]
   private readonly blockAnnouncers: BlockAnnouncer[]
-  private readonly hashers: Record<number, MultihashHasher>
+  private readonly getHasher: HasherLoader
   private started: boolean
   private readonly log: Logger
 
   /**
    * Create a new BlockStorage
    */
-  constructor (components: NetworkedStorageComponents) {
+  constructor (components: NetworkedStorageComponents, getHasher: HasherLoader) {
     this.log = components.logger.forComponent('helia:networked-storage')
     this.child = new TieredBlockstore([
       new IdentityBlockstore(),
@@ -55,7 +57,7 @@ export class NetworkedStorage implements Blocks, Startable {
     ])
     this.blockRetrievers = (components.blockBrokers ?? []).filter(isBlockRetriever)
     this.blockAnnouncers = (components.blockBrokers ?? []).filter(isBlockAnnouncer)
-    this.hashers = components.hashers ?? {}
+    this.getHasher = getHasher
     this.started = false
   }
 
@@ -127,9 +129,11 @@ export class NetworkedStorage implements Blocks, Startable {
    */
   async get (cid: CID, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetBlockProgressEvents> = {}): Promise<Uint8Array> {
     if (options.offline !== true && !(await this.child.has(cid))) {
+      const hasher = await this.getHasher(cid.multihash.code)
+
       // we do not have the block locally, get it from a block provider
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:providers:get', cid))
-      const block = await raceBlockRetrievers(cid, this.blockRetrievers, this.hashers[cid.multihash.code], {
+      const block = await raceBlockRetrievers(cid, this.blockRetrievers, hasher, {
         ...options,
         log: this.log
       })
@@ -158,9 +162,11 @@ export class NetworkedStorage implements Blocks, Startable {
 
     yield * this.child.getMany(forEach(cids, async (cid): Promise<void> => {
       if (options.offline !== true && !(await this.child.has(cid))) {
+        const hasher = await this.getHasher(cid.multihash.code)
+
         // we do not have the block locally, get it from a block provider
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:providers:get', cid))
-        const block = await raceBlockRetrievers(cid, this.blockRetrievers, this.hashers[cid.multihash.code], {
+        const block = await raceBlockRetrievers(cid, this.blockRetrievers, hasher, {
           ...options,
           log: this.log
         })
@@ -208,13 +214,16 @@ export class NetworkedStorage implements Blocks, Startable {
 }
 
 export const getCidBlockVerifierFunction = (cid: CID, hasher: MultihashHasher): Required<BlockRetrievalOptions>['validateFn'] => {
-  if (hasher == null) {
-    throw new CodeError(`No hasher configured for multihash code 0x${cid.multihash.code.toString(16)}, please configure one. You can look up which hash this is at https://github.com/multiformats/multicodec/blob/master/table.csv`, 'ERR_UNKNOWN_HASH_ALG')
-  }
-
   return async (block: Uint8Array): Promise<void> => {
     // verify block
-    const hash = await hasher.digest(block)
+    let hash: MultihashDigest<number>
+    const res = hasher.digest(block)
+
+    if (isPromise(res)) {
+      hash = await res
+    } else {
+      hash = res
+    }
 
     if (!uint8ArrayEquals(hash.digest, cid.multihash.digest)) {
       // if a hash mismatch occurs for a TrustlessGatewayBlockBroker, we should try another gateway

@@ -5,7 +5,6 @@ import all from 'it-all'
 import drain from 'it-drain'
 import { createDag, type DAGNode } from './fixtures/create-dag.js'
 import { createHelia } from './fixtures/create-helia.js'
-import { dagWalker } from './fixtures/dag-walker.js'
 import type { Helia } from '@helia/interface'
 import type { AddPinEvents } from '@helia/interface/pins'
 
@@ -16,18 +15,12 @@ describe('pins (recursive)', () => {
   beforeEach(async () => {
     const blockstore = new MemoryBlockstore()
 
-    // arbitrary CID codec value
-    const codec = 7
-
     // create a DAG, two levels deep with each level having three children
-    dag = await createDag(codec, blockstore, 2, 3)
+    dag = await createDag(blockstore, 2, 3)
 
     helia = await createHelia({
       blockstore,
-      blockBrokers: [],
-      dagWalkers: [
-        dagWalker(codec, dag)
-      ]
+      blockBrokers: []
     })
   })
 

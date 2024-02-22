@@ -9,6 +9,7 @@ import drain from 'it-drain'
 import * as raw from 'multiformats/codecs/raw'
 import { PinsImpl } from '../src/pins.js'
 import { BlockStorage } from '../src/storage.js'
+import { getCodec } from '../src/utils/get-codec.js'
 import { createBlock } from './fixtures/create-block.js'
 import type { Pins } from '@helia/interface/pins'
 import type { Blockstore } from 'interface-blockstore'
@@ -30,7 +31,7 @@ describe('storage', () => {
     const datastore = new MemoryDatastore()
 
     blockstore = new MemoryBlockstore()
-    pins = new PinsImpl(datastore, blockstore, [])
+    pins = new PinsImpl(datastore, blockstore, getCodec())
     storage = new BlockStorage(blockstore, pins, {
       holdGcLock: true
     })

@@ -2,10 +2,11 @@ import { Queue } from '@libp2p/utils/queue'
 import * as cborg from 'cborg'
 import { type Datastore, Key } from 'interface-datastore'
 import { base36 } from 'multiformats/bases/base36'
+import { createUnsafe } from 'multiformats/block'
 import { CID, type Version } from 'multiformats/cid'
 import { CustomProgressEvent, type ProgressOptions } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import type { DAGWalker } from '@helia/interface'
+import type { CodecLoader } from '@helia/interface'
 import type { GetBlockProgressEvents } from '@helia/interface/blocks'
 import type { AddOptions, AddPinEvents, IsPinnedOptions, LsOptions, Pin, Pins, RmOptions } from '@helia/interface/pins'
 import type { AbortOptions } from '@libp2p/interface'
@@ -59,12 +60,12 @@ function toDSKey (cid: CID): Key {
 export class PinsImpl implements Pins {
   private readonly datastore: Datastore
   private readonly blockstore: Blockstore
-  private readonly dagWalkers: Record<number, DAGWalker>
+  private readonly getCodec: CodecLoader
 
-  constructor (datastore: Datastore, blockstore: Blockstore, dagWalkers: Record<number, DAGWalker>) {
+  constructor (datastore: Datastore, blockstore: Blockstore, getCodec: CodecLoader) {
     this.datastore = datastore
     this.blockstore = blockstore
-    this.dagWalkers = dagWalkers
+    this.getCodec = getCodec
   }
 
   async * add (cid: CID<unknown, number, number, Version>, options: AddOptions = {}): AsyncGenerator<CID, void, undefined> {
@@ -119,18 +120,14 @@ export class PinsImpl implements Pins {
       return
     }
 
-    const dagWalker = this.dagWalkers[cid.code]
-
-    if (dagWalker == null) {
-      throw new Error(`No dag walker found for cid codec ${cid.code}`)
-    }
-
-    const block = await this.blockstore.get(cid, options)
+    const codec = await this.getCodec(cid.code)
+    const bytes = await this.blockstore.get(cid, options)
+    const block = createUnsafe({ bytes, cid, codec })
 
     yield cid
 
     // walk dag, ensure all blocks are present
-    for await (const cid of dagWalker.walk(block)) {
+    for await (const [,cid] of block.links()) {
       yield * await queue.add(async () => {
         return this.#walkDag(cid, queue, {
           ...options,
