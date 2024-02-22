@@ -20,3 +20,10 @@ export function notAcceptableResponse (body?: BodyInit | null): Response {
     statusText: 'Not Acceptable'
   })
 }
+
+export function badRequestResponse (body?: BodyInit | null): Response {
+  return new Response(body, {
+    status: 400,
+    statusText: 'Bad Request'
+  })
+}

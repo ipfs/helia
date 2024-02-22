@@ -152,17 +152,20 @@
     "@ipld/dag-json": "^10.2.0",
     "@ipld/dag-pb": "^4.1.0",
     "@libp2p/interface": "^1.1.2",
+    "@libp2p/kad-dht": "^12.0.7",
     "@libp2p/peer-id": "^4.0.5",
     "cborg": "^4.0.9",
     "hashlru": "^2.3.0",
     "interface-blockstore": "^5.2.10",
+    "interface-datastore": "^8.2.11",
     "ipfs-unixfs-exporter": "^13.5.0",
     "it-map": "^3.0.5",
     "it-pipe": "^3.0.1",
     "it-tar": "^6.0.4",
     "it-to-browser-readablestream": "^2.0.6",
     "multiformats": "^13.1.0",
-    "progress-events": "^1.0.0"
+    "progress-events": "^1.0.0",
+    "uint8arrays": "^5.0.2"
   },
   "devDependencies": {
     "@helia/car": "^3.0.0",
@@ -188,8 +191,7 @@
     "magic-bytes.js": "^1.8.0",
     "p-defer": "^4.0.0",
     "sinon": "^17.0.1",
-    "sinon-ts": "^2.0.0",
-    "uint8arrays": "^5.0.1"
+    "sinon-ts": "^2.0.0"
   },
   "sideEffects": false
 }

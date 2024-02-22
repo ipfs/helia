@@ -1,8 +1,7 @@
 import { dagCbor } from '@helia/dag-cbor'
 import { dagJson } from '@helia/dag-json'
-import { type IPNS } from '@helia/ipns'
 import { json } from '@helia/json'
-import { unixfs, type UnixFS } from '@helia/unixfs'
+import { unixfs } from '@helia/unixfs'
 import * as ipldDagCbor from '@ipld/dag-cbor'
 import * as ipldDagJson from '@ipld/dag-json'
 import { stop } from '@libp2p/interface'
@@ -19,7 +18,6 @@ import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { VerifiedFetch } from '../src/verified-fetch.js'
-import { cids } from './fixtures/cids.js'
 import { createHelia } from './fixtures/create-offline-helia.js'
 import type { Helia } from '@helia/interface'
 
@@ -52,52 +50,6 @@ describe('@helia/verifed-fetch', () => {
     await verifiedFetch.stop()
     expect(helia.stop.callCount).to.equal(1)
     expect(helia.start.callCount).to.equal(1)
-  })
-
-  describe('format not implemented', () => {
-    let verifiedFetch: VerifiedFetch
-
-    before(async () => {
-      verifiedFetch = new VerifiedFetch({
-        helia: stubInterface<Helia>({
-          logger: defaultLogger()
-        }),
-        ipns: stubInterface<IPNS>({
-          resolveDns: async (dnsLink: string) => {
-            expect(dnsLink).to.equal('mydomain.com')
-            return {
-              cid: cids.file,
-              path: ''
-            }
-          }
-        }),
-        unixfs: stubInterface<UnixFS>()
-      })
-    })
-
-    after(async () => {
-      await verifiedFetch.stop()
-    })
-
-    const formatsAndAcceptHeaders = [
-      ['ipns-record', 'application/vnd.ipfs.ipns-record']
-    ]
-
-    for (const [format, acceptHeader] of formatsAndAcceptHeaders) {
-      // eslint-disable-next-line no-loop-func
-      it(`returns 501 for ${acceptHeader}`, async () => {
-        const resp = await verifiedFetch.fetch(`ipns://mydomain.com?format=${format}`)
-        expect(resp).to.be.ok()
-        expect(resp.status).to.equal(501)
-        const resp2 = await verifiedFetch.fetch(cids.file, {
-          headers: {
-            accept: acceptHeader
-          }
-        })
-        expect(resp2).to.be.ok()
-        expect(resp2.status).to.equal(501)
-      })
-    }
   })
 
   describe('implicit format', () => {

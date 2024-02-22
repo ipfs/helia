@@ -5,24 +5,30 @@ import { unixfs as heliaUnixFs, type UnixFS as HeliaUnixFs, type UnixFSStats } f
 import * as ipldDagCbor from '@ipld/dag-cbor'
 import * as ipldDagJson from '@ipld/dag-json'
 import { code as dagPbCode } from '@ipld/dag-pb'
+import { Record as DHTRecord } from '@libp2p/kad-dht'
+import { peerIdFromString } from '@libp2p/peer-id'
+import { Key } from 'interface-datastore'
 import toBrowserReadableStream from 'it-to-browser-readablestream'
 import { code as jsonCode } from 'multiformats/codecs/json'
 import { code as rawCode } from 'multiformats/codecs/raw'
 import { identity } from 'multiformats/hashes/identity'
 import { CustomProgressEvent } from 'progress-events'
+import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { dagCborToSafeJSON } from './utils/dag-cbor-to-safe-json.js'
 import { getContentDispositionFilename } from './utils/get-content-disposition-filename.js'
 import { getETag } from './utils/get-e-tag.js'
 import { getStreamFromAsyncIterable } from './utils/get-stream-from-async-iterable.js'
 import { tarStream } from './utils/get-tar-stream.js'
 import { parseResource } from './utils/parse-resource.js'
-import { notAcceptableResponse, notSupportedResponse, okResponse } from './utils/responses.js'
+import { badRequestResponse, notAcceptableResponse, notSupportedResponse, okResponse } from './utils/responses.js'
 import { selectOutputType, queryFormatToAcceptHeader } from './utils/select-output-type.js'
 import { walkPath } from './utils/walk-path.js'
 import type { CIDDetail, ContentTypeParser, Resource, VerifiedFetchInit as VerifiedFetchOptions } from './index.js'
 import type { RequestFormatShorthand } from './types.js'
 import type { Helia } from '@helia/interface'
-import type { AbortOptions, Logger } from '@libp2p/interface'
+import type { AbortOptions, Logger, PeerId } from '@libp2p/interface'
 import type { UnixFSEntry } from 'ipfs-unixfs-exporter'
 import type { CID } from 'multiformats/cid'
 
@@ -49,6 +55,11 @@ interface FetchHandlerFunctionArg {
    * content cannot be represented in this format a 406 should be returned
    */
   accept?: string
+
+  /**
+   * The originally requested resource
+   */
+  resource: string
 }
 
 interface FetchHandlerFunction {
@@ -129,8 +140,36 @@ export class VerifiedFetch {
    * Accepts an `ipns://...` URL as a string and returns a `Response` containing
    * a raw IPNS record.
    */
-  private async handleIPNSRecord (resource: string, opts?: VerifiedFetchOptions): Promise<Response> {
-    return notSupportedResponse('vnd.ipfs.ipns-record support is not implemented')
+  private async handleIPNSRecord ({ resource, cid, path, options }: FetchHandlerFunctionArg): Promise<Response> {
+    if (path !== '' || !resource.startsWith('ipns://')) {
+      return badRequestResponse('Invalid IPNS name')
+    }
+
+    let peerId: PeerId
+
+    try {
+      peerId = peerIdFromString(resource.replace('ipns://', ''))
+    } catch (err) {
+      this.log.error('could not parse peer id from IPNS url %s', resource)
+
+      return badRequestResponse('Invalid IPNS name')
+    }
+
+    // since this call happens after parseResource, we've already resolved the
+    // IPNS name so a local copy should be in the helia datastore, so we can
+    // just read it out..
+    const routingKey = uint8ArrayConcat([
+      uint8ArrayFromString('/ipns/'),
+      peerId.toBytes()
+    ])
+    const datastoreKey = new Key('/dht/record/' + uint8ArrayToString(routingKey, 'base32'), false)
+    const buf = await this.helia.datastore.get(datastoreKey, options)
+    const record = DHTRecord.deserialize(buf)
+
+    const response = okResponse(record.value)
+    response.headers.set('content-type', 'application/vnd.ipfs.ipns-record')
+
+    return response
   }
 
   /**
@@ -384,28 +423,30 @@ export class VerifiedFetch {
     let response: Response
     let reqFormat: RequestFormatShorthand | undefined
 
+    const handlerArgs = { resource: resource.toString(), cid, path, accept, options }
+
     if (accept === 'application/vnd.ipfs.ipns-record') {
       // the user requested a raw IPNS record
       reqFormat = 'ipns-record'
-      response = await this.handleIPNSRecord(resource.toString(), options)
+      response = await this.handleIPNSRecord(handlerArgs)
     } else if (accept === 'application/vnd.ipld.car') {
       // the user requested a CAR file
       reqFormat = 'car'
       query.download = true
       query.filename = query.filename ?? `${cid.toString()}.car`
-      response = await this.handleCar({ cid, path, options })
+      response = await this.handleCar(handlerArgs)
     } else if (accept === 'application/vnd.ipld.raw') {
       // the user requested a raw block
       reqFormat = 'raw'
       query.download = true
       query.filename = query.filename ?? `${cid.toString()}.bin`
-      response = await this.handleRaw({ cid, path, options })
+      response = await this.handleRaw(handlerArgs)
     } else if (accept === 'application/x-tar') {
       // the user requested a TAR file
       reqFormat = 'tar'
       query.download = true
       query.filename = query.filename ?? `${cid.toString()}.tar`
-      response = await this.handleTar({ cid, path, options })
+      response = await this.handleTar(handlerArgs)
     } else {
       // derive the handler from the CID type
       const codecHandler = this.codecHandlers[cid.code]
@@ -414,7 +455,7 @@ export class VerifiedFetch {
         return notSupportedResponse(`Support for codec with code ${cid.code} is not yet implemented. Please open an issue at https://github.com/ipfs/helia/issues/new`)
       }
 
-      response = await codecHandler.call(this, { cid, path, accept, options })
+      response = await codecHandler.call(this, handlerArgs)
     }
 
     response.headers.set('etag', getETag({ cid, reqFormat, weak: false }))
