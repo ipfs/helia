@@ -151,13 +151,13 @@
  * import { dnsJsonOverHttps, dnsOverHttps } from '@helia/ipns/dns-resolvers'
  *
  * const fetch = await createVerifiedFetch({
- *  gateways: ['https://trustless-gateway.link'],
- *  routers: ['http://delegated-ipfs.dev']
+ *   gateways: ['https://trustless-gateway.link'],
+ *   routers: ['http://delegated-ipfs.dev']
  * }, {
- *  dnsResolvers: [
- *    dnsJsonOverHttps('https://my-dns-resolver.example.com/dns-json'),
- *    dnsOverHttps('https://my-dns-resolver.example.com/dns-query')
- *  ]
+ *   dnsResolvers: [
+ *     dnsJsonOverHttps('https://my-dns-resolver.example.com/dns-json'),
+ *     dnsOverHttps('https://my-dns-resolver.example.com/dns-query')
+ *   ]
  * })
  * ```
  *
