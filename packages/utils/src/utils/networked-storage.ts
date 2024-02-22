@@ -32,6 +32,7 @@ export interface NetworkedStorageComponents {
   logger: ComponentLogger
   blockBrokers?: BlockBroker[]
   hashers?: Record<number, MultihashHasher>
+  getHasher: HasherLoader
 }
 
 /**
@@ -49,7 +50,7 @@ export class NetworkedStorage implements Blocks, Startable {
   /**
    * Create a new BlockStorage
    */
-  constructor (components: NetworkedStorageComponents, getHasher: HasherLoader) {
+  constructor (components: NetworkedStorageComponents) {
     this.log = components.logger.forComponent('helia:networked-storage')
     this.child = new TieredBlockstore([
       new IdentityBlockstore(),
@@ -57,7 +58,7 @@ export class NetworkedStorage implements Blocks, Startable {
     ])
     this.blockRetrievers = (components.blockBrokers ?? []).filter(isBlockRetriever)
     this.blockAnnouncers = (components.blockBrokers ?? []).filter(isBlockAnnouncer)
-    this.getHasher = getHasher
+    this.getHasher = components.getHasher
     this.started = false
   }
 

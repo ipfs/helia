@@ -157,7 +157,7 @@ export class Helia implements HeliaInterface {
       return fn(components)
     })
 
-    const networkedStorage = new NetworkedStorage(components, this.getHasher)
+    const networkedStorage = new NetworkedStorage(components)
 
     this.pins = new PinsImpl(init.datastore, networkedStorage, this.getCodec)
 

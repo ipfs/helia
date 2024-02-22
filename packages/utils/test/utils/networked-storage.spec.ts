@@ -39,8 +39,9 @@ describe('networked-storage', () => {
       logger: defaultLogger(),
       blockBrokers: [
         bitswap
-      ]
-    }, getHasher())
+      ],
+      getHasher: getHasher()
+    })
   })
 
   it('gets a block from the blockstore', async () => {

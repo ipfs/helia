@@ -39,8 +39,9 @@ describe('block-broker', () => {
       blockBrokers: [
         bitswapBlockBroker,
         gatewayBlockBroker
-      ]
-    }, getHasher())
+      ],
+      getHasher: getHasher()
+    })
   })
 
   afterEach(async () => {
@@ -126,8 +127,9 @@ describe('block-broker', () => {
       logger: defaultLogger(),
       blockBrokers: [
         gatewayBlockBroker
-      ]
-    }, getHasher())
+      ],
+      getHasher: getHasher()
+    })
 
     gatewayBlockBroker.retrieve.withArgs(cid, Sinon.match.any).resolves(block)
 
