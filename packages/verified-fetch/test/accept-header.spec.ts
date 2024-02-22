@@ -140,7 +140,7 @@ describe('accept header', () => {
     expect(output).to.deep.equal(obj)
   })
 
-  it('should return 406 Not Acceptable if the accept header cannot be honoured', async () => {
+  it('should return 406 Not Acceptable if the accept header cannot be adhered to', async () => {
     const obj = {
       hello: 'world'
     }
