@@ -5,10 +5,10 @@ import { DoesNotExistError, InvalidParametersError } from '../../errors.js'
 import { addLink } from './add-link.js'
 import { cidToDirectory } from './cid-to-directory.js'
 import { cidToPBLink } from './cid-to-pblink.js'
+import type { PBNode } from '@ipld/dag-pb/interface'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
-import type { PBNode } from '@ipld/dag-pb/dist/src/interface.js'
 
 const log = logger('helia:unixfs:components:utils:resolve')
 
