@@ -2,6 +2,7 @@
 import { createVerifiedFetch } from '@helia/verified-fetch'
 import { expect } from 'aegir/chai'
 import { filetypemime } from 'magic-bytes.js'
+import sinon from 'sinon'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import { loadFixtureDataCar } from './fixtures/load-fixture-data.js'
 import type { VerifiedFetch } from '@helia/verified-fetch'
@@ -76,16 +77,22 @@ describe('@helia/verified-fetch - unixfs directory', () => {
   })
 
   // TODO: find a smaller car file so the test doesn't timeout locally or flake on CI
-  describe.skip('HAMT-sharded directory', () => {
+  describe('HAMT-sharded directory', () => {
     before(async () => {
       // from https://github.com/ipfs/gateway-conformance/blob/193833b91f2e9b17daf45c84afaeeae61d9d7c7e/fixtures/trustless_gateway_car/single-layer-hamt-with-multi-block-files.car
       await loadFixtureDataCar(controller, 'bafybeidbclfqleg2uojchspzd4bob56dqetqjsj27gy2cq3klkkgxtpn4i-single-layer-hamt-with-multi-block-files.car')
     })
 
     it('loads path /ipfs/bafybeidbclfqleg2uojchspzd4bob56dqetqjsj27gy2cq3klkkgxtpn4i/685.txt', async () => {
-      const resp = await verifiedFetch('ipfs://bafybeidbclfqleg2uojchspzd4bob56dqetqjsj27gy2cq3klkkgxtpn4i/685.txt')
+      const onProgress = sinon.stub()
+      const resp = await verifiedFetch('ipfs://bafybeidbclfqleg2uojchspzd4bob56dqetqjsj27gy2cq3klkkgxtpn4i/685.txt', { onProgress })
       expect(resp).to.be.ok()
       const text = await resp.text()
+      const onProgressEvents = onProgress.getCalls().map(call => call.args[0])
+      const walkEvents = onProgressEvents.filter((e) => e.type.includes('unixfs:exporter:walk'))
+      const blockGetEvents = onProgressEvents.filter((e) => e.type === 'blocks:get:providers:get')
+      expect(blockGetEvents).to.have.length(7)
+      expect(walkEvents).to.have.length.lessThanOrEqual(8)
       // npx kubo@0.25.0 cat '/ipfs/bafybeidbclfqleg2uojchspzd4bob56dqetqjsj27gy2cq3klkkgxtpn4i/685.txt'
       expect(text).to.equal(`Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc non imperdiet nunc. Proin ac quam ut nibh eleifend aliquet. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Sed ligula dolor, imperdiet sagittis arcu et, semper tincidunt urna. Donec et tempor augue, quis sollicitudin metus. Curabitur semper ullamcorper aliquet. Mauris hendrerit sodales lectus eget fermentum. Proin sollicitudin vestibulum commodo. Vivamus nec lectus eu augue aliquet dignissim nec condimentum justo. In hac habitasse platea dictumst. Mauris vel sem neque.
 
