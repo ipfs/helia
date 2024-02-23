@@ -51,7 +51,7 @@ export class TrustlessGateway {
    */
   #successes = 0
 
-  constructor (url: URL | string, { subdomainResolution }: TrustlessGatewayOpts = { subdomainResolution: false } ) {
+  constructor (url: URL | string, { subdomainResolution }: TrustlessGatewayOpts = { subdomainResolution: false }) {
     this.url = url instanceof URL ? url : new URL(url)
     this.subdomainResolution = subdomainResolution
   }
