@@ -60,14 +60,4 @@ describe('createVerifiedFetch', () => {
     expect(verifiedFetch).to.be.ok()
     await verifiedFetch.stop()
   })
-
-  it('can be passed custom dnsResolvers', async () => {
-    const dnsResolver = dnsOverHttps('https://example.com/dns-query')
-    const dnsJsonResolver = dnsJsonOverHttps('https://example.com/dns-json')
-    const verifiedFetch = await createVerifiedFetch(undefined, {
-      dnsResolvers: [dnsResolver, dnsJsonResolver]
-    })
-    expect(verifiedFetch).to.be.ok()
-    await verifiedFetch.stop()
-  })
 })

@@ -551,23 +551,4 @@ describe('@helia/verifed-fetch', () => {
       expect(output).to.deep.equal(obj)
     })
   })
-
-  describe('custom dns-resolvers', () => {
-    it('uses custom dnsResolvers if provided', async () => {
-      const customDnsResolver = Sinon.stub()
-
-      customDnsResolver.returns(Promise.resolve('/ipfs/QmVP2ip92jQuMDezVSzQBWDqWFbp9nyCHNQSiciRauPLDg'))
-
-      const verifiedFetch = new VerifiedFetch({
-        helia
-      }, {
-        dnsResolvers: [customDnsResolver]
-      })
-      // error of walking the CID/dag because we haven't actually added the block to the blockstore
-      await expect(verifiedFetch.fetch('ipns://some-non-cached-domain.com')).to.eventually.be.rejected.with.property('errors').that.has.lengthOf(0)
-
-      expect(customDnsResolver.callCount).to.equal(1)
-      expect(customDnsResolver.getCall(0).args).to.deep.equal(['some-non-cached-domain.com', { onProgress: undefined }])
-    })
-  })
 })

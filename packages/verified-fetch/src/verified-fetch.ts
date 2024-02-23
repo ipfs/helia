@@ -1,5 +1,5 @@
 import { car } from '@helia/car'
-import { ipns as heliaIpns, type IPNS } from '@helia/ipns'
+import { ipns as heliaIpns, type DNSResolver, type IPNS } from '@helia/ipns'
 import { dnsJsonOverHttps } from '@helia/ipns/dns-resolvers'
 import { unixfs as heliaUnixFs, type UnixFS as HeliaUnixFs, type UnixFSStats } from '@helia/unixfs'
 import * as ipldDagCbor from '@ipld/dag-cbor'
