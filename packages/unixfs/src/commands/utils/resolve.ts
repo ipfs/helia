@@ -1,11 +1,9 @@
 import { logger } from '@libp2p/logger'
-import { exporter } from 'ipfs-unixfs-exporter'
-import findShardCid from 'ipfs-unixfs-exporter/dist/src/utils/find-cid-in-shard.js'
-import { DoesNotExistError, InvalidParametersError } from '../../errors.js'
+import { walkPath } from 'ipfs-unixfs-exporter'
+import { InvalidParametersError } from '../../errors.js'
 import { addLink } from './add-link.js'
 import { cidToDirectory } from './cid-to-directory.js'
 import { cidToPBLink } from './cid-to-pblink.js'
-import type { PBNode } from '@ipld/dag-pb/interface'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
@@ -34,12 +32,6 @@ export interface ResolveResult {
   segments?: Segment[]
 }
 
-const findLinkCid = (node: PBNode, name: string): CID | undefined => {
-  const link = node.Links.find(link => link.Name === name)
-
-  return link?.Hash
-}
-
 export async function resolve (cid: CID, path: string | undefined, blockstore: Blockstore, options: AbortOptions): Promise<ResolveResult> {
   if (path == null || path === '') {
     return { cid }
@@ -47,52 +39,47 @@ export async function resolve (cid: CID, path: string | undefined, blockstore: B
 
   log('resolve "%s" under %c', path, cid)
 
-  const parts = path.split('/').filter(Boolean)
   const segments: Segment[] = [{
     name: '',
     cid,
     size: 0n
   }]
 
-  for (let i = 0; i < parts.length; i++) {
-    const part = parts[i]
-    const result = await exporter(cid, blockstore, options)
+  const parts = path.split('/').filter(Boolean)
 
-    log('resolving "%s"', part, result)
+  const combinedPath = `/ipfs/${cid.toString()}/${path}`
 
-    if (result.type === 'file') {
+  const pathElems = walkPath(combinedPath, blockstore, options)
+  let i = 0
+  let lastCid = cid
+
+  // TODO: Do we need to catch errors during enumeration and wrap them?
+  // For example do we need a DoesNotExistError if the path doesn't exist?
+  // Should the other errors be handled along with any caught errors rather than separately?
+  for await (const e of pathElems) {
+    const name = parts[i]
+    i++
+    log('resolving "%s"', name, e)
+
+    if (e.type === 'file') {
       if (i < parts.length - 1) {
         throw new InvalidParametersError('Path was invalid')
       }
-
-      cid = result.cid
-    } else if (result.type === 'directory') {
-      let dirCid: CID | undefined
-
-      if (result.unixfs?.type === 'hamt-sharded-directory') {
-        // special case - unixfs v1 hamt shards
-        dirCid = await findShardCid(result.node, part, blockstore)
-      } else {
-        dirCid = findLinkCid(result.node, part)
-      }
-
-      if (dirCid == null) {
-        throw new DoesNotExistError('Could not find path in directory')
-      }
-
-      cid = dirCid
-
-      segments.push({
-        name: part,
-        cid,
-        size: result.size
-      })
-    } else {
-      throw new InvalidParametersError('Could not resolve path')
     }
+    lastCid = e.cid
+
+    segments.push({
+      name: name,
+      cid: e.cid,
+      size: e.size
+    })
   }
 
-  log('resolved %s to %c', path, cid)
+  if (i < parts.length - 1) {
+    throw new InvalidParametersError('Path was invalid')
+  }
+
+  log('resolved %s to %c', path, lastCid)
 
   return {
     cid,
