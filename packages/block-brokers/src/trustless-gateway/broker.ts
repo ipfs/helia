@@ -22,10 +22,10 @@ ProgressOptions<TrustlessGatewayGetBlockProgressEvents>
       .map((gw) => {
         if (typeof gw === 'string' || gw instanceof URL) {
           // backward compatibility defaults to path gateway
-          return new TrustlessGateway(gw, false)
+          return new TrustlessGateway(gw, { subdomainResolution: false })
         }
 
-        return new TrustlessGateway(gw.url, gw.supportsSubdomains)
+        return new TrustlessGateway(gw.url, { subdomainResolution: gw.subdomainResolution })
       })
   }
 

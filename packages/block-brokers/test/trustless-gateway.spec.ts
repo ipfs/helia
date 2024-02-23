@@ -37,7 +37,7 @@ describe('trustless-gateway-block-broker', () => {
 
     gateways = [
       stubConstructor(TrustlessGateway, 'http://localhost:8080'),
-      stubConstructor(TrustlessGateway, 'http://localhost:8081', true),
+      stubConstructor(TrustlessGateway, 'http://localhost:8081', { subdomainResolution: true }),
       stubConstructor(TrustlessGateway, 'http://localhost:8082'),
       stubConstructor(TrustlessGateway, 'http://localhost:8083')
     ]
@@ -153,7 +153,7 @@ describe('trustless-gateway-block-broker', () => {
 
   it('constructs the gateway url for the cid for both path and subdomain gateways', async () => {
     const pathGw = new TrustlessGateway('http://localhost:8080')
-    const subdomainGw = new TrustlessGateway('https://dweb.link', true)
+    const subdomainGw = new TrustlessGateway('https://dweb.link', { subdomainResolution: true })
 
     expect(pathGw.getGwUrl(blocks[0].cid).hostname).to.equal('localhost')
     expect(pathGw.getGwUrl(blocks[0].cid).toString()).to.equal('http://localhost:8080/ipfs/bafkreiefnkxuhnq3536qo2i2w3tazvifek4mbbzb6zlq3ouhprjce5c3aq')

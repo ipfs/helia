@@ -5,18 +5,18 @@ import type { ProgressEvent } from 'progress-events'
 
 export const DEFAULT_TRUSTLESS_GATEWAYS: TrustlessGatewayUrl[] = [
   // 2024-02-20: IPNS and Block/CAR support from https://ipfs.github.io/public-gateway-checker/
-  { url: 'https://trustless-gateway.link', supportsSubdomains: false },
+  { url: 'https://trustless-gateway.link', subdomainResolution: false },
 
   // 2024-02-20: IPNS and Block/CAR support from https://ipfs.github.io/public-gateway-checker/
-  { url: 'https://cloudflare-ipfs.com', supportsSubdomains: false },
+  { url: 'https://cloudflare-ipfs.com', subdomainResolution: false },
 
   // 2024-02-20: IPNS, Origin, and Block/CAR support from https://ipfs.github.io/public-gateway-checker/
-  { url: 'https://4everland.io', supportsSubdomains: true }
+  { url: 'https://4everland.io', subdomainResolution: true }
 ]
 
 interface TrustlessGatewayUrl {
   url: string | URL
-  supportsSubdomains: boolean
+  subdomainResolution: boolean
 }
 
 export type TrustlessGatewayGetBlockProgressEvents =

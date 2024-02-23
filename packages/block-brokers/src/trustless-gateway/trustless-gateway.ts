@@ -1,6 +1,14 @@
 import { base32 } from 'multiformats/bases/base32'
 import type { CID } from 'multiformats/cid'
 
+interface TrustlessGatewayOpts {
+
+  /**
+   * Determins whether the gateway supports subdomain resolution
+   */
+  subdomainResolution: boolean
+}
+
 /**
  * A `TrustlessGateway` keeps track of the number of attempts, errors, and
  * successes for a given gateway url so that we can prioritize gateways that
@@ -13,7 +21,7 @@ export class TrustlessGateway {
   /**
    * Whether this gateway is a subdomain resolution style gateway
    */
-  public supportsSubdomains: boolean
+  public subdomainResolution: boolean
 
   /**
    * The number of times this gateway has been attempted to be used to fetch a
@@ -43,9 +51,9 @@ export class TrustlessGateway {
    */
   #successes = 0
 
-  constructor (url: URL | string, supportsSubdomains: boolean = false) {
+  constructor (url: URL | string, { subdomainResolution }: TrustlessGatewayOpts = { subdomainResolution: false } ) {
     this.url = url instanceof URL ? url : new URL(url)
-    this.supportsSubdomains = supportsSubdomains
+    this.subdomainResolution = subdomainResolution
   }
 
   /**
@@ -97,7 +105,7 @@ export class TrustlessGateway {
   getGwUrl (cid: CID): URL {
     const gwUrl = new URL(this.url)
 
-    if (this.supportsSubdomains) {
+    if (this.subdomainResolution) {
       gwUrl.hostname = `${cid.toString(base32)}.ipfs.${gwUrl.hostname}`
     } else {
       gwUrl.pathname = `/ipfs/${cid.toString()}`
