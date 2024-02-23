@@ -82,7 +82,7 @@ export async function resolve (cid: CID, path: string | undefined, blockstore: B
   log('resolved %s to %c', path, lastCid)
 
   return {
-    cid,
+    cid:lastCid,
     path,
     segments
   }
