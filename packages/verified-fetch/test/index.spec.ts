@@ -1,4 +1,3 @@
-/* eslint-env mocha */
 import { createHeliaHTTP } from '@helia/http'
 import { dnsJsonOverHttps, dnsOverHttps } from '@helia/ipns/dns-resolvers'
 import { expect } from 'aegir/chai'

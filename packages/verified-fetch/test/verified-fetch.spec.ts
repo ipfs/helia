@@ -1,9 +1,7 @@
-/* eslint-env mocha */
 import { dagCbor } from '@helia/dag-cbor'
 import { dagJson } from '@helia/dag-json'
-import { type IPNS } from '@helia/ipns'
 import { json } from '@helia/json'
-import { unixfs, type UnixFS } from '@helia/unixfs'
+import { unixfs } from '@helia/unixfs'
 import * as ipldDagCbor from '@ipld/dag-cbor'
 import * as ipldDagJson from '@ipld/dag-json'
 import { stop } from '@libp2p/interface'
@@ -22,9 +20,6 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { VerifiedFetch } from '../src/verified-fetch.js'
 import { createHelia } from './fixtures/create-offline-helia.js'
 import type { Helia } from '@helia/interface'
-import type { Logger, ComponentLogger } from '@libp2p/interface'
-
-const testCID = CID.parse('QmQJ8fxavY54CUsxMSx9aE9Rdcmvhx8awJK2jzJp4iAqCr')
 
 describe('@helia/verifed-fetch', () => {
   let helia: Helia
@@ -55,61 +50,6 @@ describe('@helia/verifed-fetch', () => {
     await verifiedFetch.stop()
     expect(helia.stop.callCount).to.equal(1)
     expect(helia.start.callCount).to.equal(1)
-  })
-
-  describe('format not implemented', () => {
-    let verifiedFetch: VerifiedFetch
-
-    before(async () => {
-      verifiedFetch = new VerifiedFetch({
-        helia: stubInterface<Helia>({
-          logger: stubInterface<ComponentLogger>({
-            forComponent: () => stubInterface<Logger>()
-          })
-        }),
-        ipns: stubInterface<IPNS>({
-          resolveDns: async (dnsLink: string) => {
-            expect(dnsLink).to.equal('mydomain.com')
-            return {
-              cid: testCID,
-              path: ''
-            }
-          }
-        }),
-        unixfs: stubInterface<UnixFS>()
-      })
-    })
-
-    after(async () => {
-      await verifiedFetch.stop()
-    })
-
-    const formatsAndAcceptHeaders = [
-      ['raw', 'application/vnd.ipld.raw'],
-      ['car', 'application/vnd.ipld.car'],
-      ['tar', 'application/x-tar'],
-      ['dag-json', 'application/vnd.ipld.dag-json'],
-      ['dag-cbor', 'application/vnd.ipld.dag-cbor'],
-      ['json', 'application/json'],
-      ['cbor', 'application/cbor'],
-      ['ipns-record', 'application/vnd.ipfs.ipns-record']
-    ]
-
-    for (const [format, acceptHeader] of formatsAndAcceptHeaders) {
-      // eslint-disable-next-line no-loop-func
-      it(`returns 501 for ${acceptHeader}`, async () => {
-        const resp = await verifiedFetch.fetch(`ipns://mydomain.com?format=${format}`)
-        expect(resp).to.be.ok()
-        expect(resp.status).to.equal(501)
-        const resp2 = await verifiedFetch.fetch(testCID, {
-          headers: {
-            accept: acceptHeader
-          }
-        })
-        expect(resp2).to.be.ok()
-        expect(resp2.status).to.equal(501)
-      })
-    }
   })
 
   describe('implicit format', () => {
@@ -149,15 +89,18 @@ describe('@helia/verifed-fetch', () => {
         onProgress
       })
 
-      expect(onProgress.callCount).to.equal(3)
+      expect(onProgress.callCount).to.equal(4)
 
       const onProgressEvents = onProgress.getCalls().map(call => call.args[0])
-      expect(onProgressEvents[0]).to.include({ type: 'blocks:get:blockstore:get' }).and.to.have.property('detail').that.deep.equals(cid)
-      expect(onProgressEvents[1]).to.include({ type: 'verified-fetch:request:start' }).and.to.have.property('detail').that.deep.equals({
+      expect(onProgressEvents[0]).to.include({ type: 'verified-fetch:request:start' }).and.to.have.property('detail').that.deep.equals({
+        resource: `ipfs://${cid}`
+      })
+      expect(onProgressEvents[1]).to.include({ type: 'verified-fetch:request:resolve' }).and.to.have.property('detail').that.deep.equals({
         cid,
         path: ''
       })
-      expect(onProgressEvents[2]).to.include({ type: 'verified-fetch:request:end' }).and.to.have.property('detail').that.deep.equals({
+      expect(onProgressEvents[2]).to.include({ type: 'blocks:get:blockstore:get' }).and.to.have.property('detail').that.deep.equals(cid)
+      expect(onProgressEvents[3]).to.include({ type: 'verified-fetch:request:end' }).and.to.have.property('detail').that.deep.equals({
         cid,
         path: ''
       })
@@ -521,6 +464,91 @@ describe('@helia/verifed-fetch', () => {
       expect(resp.status).to.equal(200)
       expect(resp.statusText).to.equal('OK')
       await expect(resp.text()).to.eventually.equal('hello world')
+    })
+  })
+
+  describe('accept', () => {
+    let helia: Helia
+    let verifiedFetch: VerifiedFetch
+    let contentTypeParser: Sinon.SinonStub
+
+    beforeEach(async () => {
+      contentTypeParser = Sinon.stub()
+      helia = await createHelia()
+      verifiedFetch = new VerifiedFetch({
+        helia
+      }, {
+        contentTypeParser
+      })
+    })
+
+    afterEach(async () => {
+      await stop(helia, verifiedFetch)
+    })
+
+    it('should allow specifying an accept header', async () => {
+      const obj = {
+        hello: 'world'
+      }
+      const c = dagCbor(helia)
+      const cid = await c.add(obj)
+
+      const resp = await verifiedFetch.fetch(cid, {
+        headers: {
+          accept: 'application/octet-stream'
+        }
+      })
+      expect(resp.headers.get('content-type')).to.equal('application/octet-stream')
+      const output = ipldDagCbor.decode(new Uint8Array(await resp.arrayBuffer()))
+      expect(output).to.deep.equal(obj)
+    })
+
+    it('should return a 406 if the content cannot be represented by the mime type in the accept header', async () => {
+      const obj = {
+        hello: 'world',
+        // fails to parse as JSON
+        link: CID.parse('QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN')
+      }
+      const c = dagCbor(helia)
+      const cid = await c.add(obj)
+
+      const resp = await verifiedFetch.fetch(cid, {
+        headers: {
+          accept: 'application/json'
+        }
+      })
+      expect(resp.status).to.equal(406)
+    })
+
+    it('should return a 406 if the content type parser returns a different value to the accept header', async () => {
+      contentTypeParser.returns('text/plain')
+
+      const fs = unixfs(helia)
+      const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
+
+      const resp = await verifiedFetch.fetch(cid, {
+        headers: {
+          accept: 'image/jpeg'
+        }
+      })
+      expect(resp.status).to.equal(406)
+    })
+
+    it('should allow specifying an accept as raw', async () => {
+      const obj = {
+        hello: 'world'
+      }
+      const c = dagCbor(helia)
+      const cid = await c.add(obj)
+
+      const resp = await verifiedFetch.fetch(cid, {
+        headers: {
+          accept: 'application/vnd.ipld.raw'
+        }
+      })
+      expect(resp.headers.get('content-type')).to.equal('application/vnd.ipld.raw')
+      const output = ipldDagCbor.decode(new Uint8Array(await resp.arrayBuffer()))
+      expect(output).to.deep.equal(obj)
     })
   })
 
