@@ -1,5 +1,6 @@
 import { logger } from '@libp2p/logger'
 import { exporter } from 'ipfs-unixfs-exporter'
+import findShardCid from 'ipfs-unixfs-exporter/dist/src/utils/find-cid-in-shard.js'
 import { DoesNotExistError, InvalidParametersError } from '../../errors.js'
 import { addLink } from './add-link.js'
 import { cidToDirectory } from './cid-to-directory.js'
@@ -7,6 +8,7 @@ import { cidToPBLink } from './cid-to-pblink.js'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
+import type { PBNode } from '@ipld/dag-pb/dist/src/interface.js'
 
 const log = logger('helia:unixfs:components:utils:resolve')
 
@@ -30,6 +32,12 @@ export interface ResolveResult {
    * If not present, there was no path passed or the path was an empty string
    */
   segments?: Segment[]
+}
+
+const findLinkCid = (node: PBNode, name: string): CID | undefined => {
+  const link = node.Links.find(link => link.Name === name)
+
+  return link?.Hash
 }
 
 export async function resolve (cid: CID, path: string | undefined, blockstore: Blockstore, options: AbortOptions): Promise<ResolveResult> {
@@ -61,11 +69,11 @@ export async function resolve (cid: CID, path: string | undefined, blockstore: B
     } else if (result.type === 'directory') {
       let dirCid: CID | undefined
 
-      for await (const entry of result.content()) {
-        if (entry.name === part) {
-          dirCid = entry.cid
-          break
-        }
+      if (result.unixfs?.type === 'hamt-sharded-directory') {
+        // special case - unixfs v1 hamt shards
+        dirCid = await findShardCid(result.node, part, blockstore)
+      } else {
+        dirCid = findLinkCid(result.node, part)
       }
 
       if (dirCid == null) {
