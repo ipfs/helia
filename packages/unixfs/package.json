@@ -164,6 +164,7 @@
     "@libp2p/interface": "^1.1.2",
     "@libp2p/logger": "^4.0.5",
     "@multiformats/murmur3": "^2.1.8",
+    "err-code": "^3.0.1",
     "hamt-sharding": "^3.0.2",
     "interface-blockstore": "^5.2.9",
     "ipfs-unixfs": "^11.1.3",
