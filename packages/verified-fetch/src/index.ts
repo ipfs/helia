@@ -140,7 +140,7 @@
  *
  * ### Custom DNS resolvers
  *
- * If you don't want to leek DNS queries to the default resolvers, you can provide your own list of DNS resolvers to `createVerifiedFetch`.
+ * If you don't want to leak DNS queries to the default resolvers, you can provide your own list of DNS resolvers to `createVerifiedFetch`.
  *
  * Note that you do not need to provide both a DNS-over-HTTPS and a DNS-over-JSON resolver, and you should prefer `dnsJsonOverHttps` resolvers for usage in the browser for a smaller bundle size. See https://github.com/ipfs/helia/tree/main/packages/ipns#example---using-dns-json-over-https for more information.
  *
