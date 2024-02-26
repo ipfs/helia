@@ -22,11 +22,12 @@ describe('custom dns-resolvers', () => {
 
     customDnsResolver.returns(Promise.resolve('/ipfs/QmVP2ip92jQuMDezVSzQBWDqWFbp9nyCHNQSiciRauPLDg'))
 
-    const fetch = await createVerifiedFetch(helia, {
+    const fetch = await createVerifiedFetch({
+      gateways: ['http://127.0.0.1:8080'],
       dnsResolvers: [customDnsResolver]
     })
     // error of walking the CID/dag because we haven't actually added the block to the blockstore
-    await expect(fetch('ipns://some-non-cached-domain.com')).to.eventually.be.rejected.with.property('errors').that.has.lengthOf(0)
+    await expect(fetch('ipns://some-non-cached-domain.com')).to.eventually.be.rejected.with.property('errors')
 
     expect(customDnsResolver.callCount).to.equal(1)
     expect(customDnsResolver.getCall(0).args).to.deep.equal(['some-non-cached-domain.com', { onProgress: undefined }])

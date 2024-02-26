@@ -152,8 +152,7 @@
  *
  * const fetch = await createVerifiedFetch({
  *   gateways: ['https://trustless-gateway.link'],
- *   routers: ['http://delegated-ipfs.dev']
- * }, {
+ *   routers: ['http://delegated-ipfs.dev'],
  *   dnsResolvers: [
  *     dnsJsonOverHttps('https://my-dns-resolver.example.com/dns-json'),
  *     dnsOverHttps('https://my-dns-resolver.example.com/dns-query')
@@ -531,18 +530,6 @@ export interface VerifiedFetch {
 export interface CreateVerifiedFetchInit {
   gateways: string[]
   routers?: string[]
-}
-
-export interface CreateVerifiedFetchOptions {
-  /**
-   * A function to handle parsing content type from bytes. The function you
-   * provide will be passed the first set of bytes we receive from the network,
-   * and should return a string that will be used as the value for the
-   * `Content-Type` header in the response.
-   *
-   * @default undefined
-   */
-  contentTypeParser?: ContentTypeParser
 
   /**
    * In order to parse DNSLink records, we need to resolve DNS queries. You can
@@ -555,6 +542,18 @@ export interface CreateVerifiedFetchOptions {
    * @default [dnsJsonOverHttps('https://mozilla.cloudflare-dns.com/dns-query'),dnsJsonOverHttps('https://dns.google/resolve')]
    */
   dnsResolvers?: DNSResolver[]
+}
+
+export interface CreateVerifiedFetchOptions {
+  /**
+   * A function to handle parsing content type from bytes. The function you
+   * provide will be passed the first set of bytes we receive from the network,
+   * and should return a string that will be used as the value for the
+   * `Content-Type` header in the response.
+   *
+   * @default undefined
+   */
+  contentTypeParser?: ContentTypeParser
 }
 
 /**
@@ -598,7 +597,9 @@ export interface VerifiedFetchInit extends RequestInit, ProgressOptions<BubbledP
  * Create and return a Helia node
  */
 export async function createVerifiedFetch (init?: Helia | CreateVerifiedFetchInit, options?: CreateVerifiedFetchOptions): Promise<VerifiedFetch> {
+  let dnsResolvers: DNSResolver[] | undefined
   if (!isHelia(init)) {
+    dnsResolvers = init?.dnsResolvers
     init = await createHeliaHTTP({
       blockBrokers: [
         trustlessGateway({
@@ -609,7 +610,7 @@ export async function createVerifiedFetch (init?: Helia | CreateVerifiedFetchIni
     })
   }
 
-  const verifiedFetchInstance = new VerifiedFetchClass({ helia: init }, options)
+  const verifiedFetchInstance = new VerifiedFetchClass({ helia: init }, { dnsResolvers, ...options })
   async function verifiedFetch (resource: Resource, options?: VerifiedFetchInit): Promise<Response> {
     return verifiedFetchInstance.fetch(resource, options)
   }
