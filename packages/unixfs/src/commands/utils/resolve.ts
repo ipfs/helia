@@ -1,5 +1,6 @@
 import { logger } from '@libp2p/logger'
 import { walkPath } from 'ipfs-unixfs-exporter'
+import all from 'it-all'
 import { DoesNotExistError } from '../../errors.js'
 import { addLink } from './add-link.js'
 import { cidToDirectory } from './cid-to-directory.js'
@@ -38,26 +39,7 @@ export async function resolve (cid: CID, path: string | undefined, blockstore: B
   }
 
   const p = `/ipfs/${cid}${path == null ? '' : `/${path}`}`
-  const segments: Segment[] = []
-
-  try {
-    for await (const segment of walkPath(p, blockstore, options)) {
-      segments.push({
-        name: segment.name === segment.cid.toString() ? '' : segment.name,
-        cid: segment.cid,
-        size: segment.size
-      })
-    }
-  } catch (err: any) {
-    // TODO: remove this try/catch and error code mapping - just allow
-    // `walkPath` to fail, this will change the error code which is a breaking
-    // change
-    if (err.code === 'ERR_NOT_FOUND') {
-      throw new DoesNotExistError('Could not find path in directory')
-    }
-
-    throw err
-  }
+  const segments = await all(walkPath(p, blockstore, options))
 
   if (segments.length === 0) {
     throw new DoesNotExistError('Could not find path in directory')
