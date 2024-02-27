@@ -4,7 +4,9 @@ import { stop } from '@libp2p/interface'
 import { fileTypeFromBuffer } from '@sgtpooki/file-type'
 import { expect } from 'aegir/chai'
 import { filetypemime } from 'magic-bytes.js'
+import Sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { createVerifiedFetch } from '../src/index.js'
 import { VerifiedFetch } from '../src/verified-fetch.js'
 import type { Helia } from '@helia/interface'
 import type { CID } from 'multiformats/cid'
@@ -24,6 +26,17 @@ describe('content-type-parser', () => {
 
   afterEach(async () => {
     await stop(verifiedFetch)
+  })
+
+  it('is used when passed to createVerifiedFetch', async () => {
+    const contentTypeParser = Sinon.stub().resolves('text/plain')
+    const fetch = await createVerifiedFetch(helia, {
+      contentTypeParser
+    })
+    expect(fetch).to.be.ok()
+    const resp = await fetch(cid)
+    expect(resp.headers.get('content-type')).to.equal('text/plain')
+    await fetch.stop()
   })
 
   it('sets default content type if contentTypeParser is not passed', async () => {
