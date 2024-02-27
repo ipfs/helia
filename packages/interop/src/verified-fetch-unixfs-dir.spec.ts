@@ -75,8 +75,7 @@ describe('@helia/verified-fetch - unixfs directory', () => {
     })
   })
 
-  // TODO: find a smaller car file so the test doesn't timeout locally or flake on CI
-  describe.skip('HAMT-sharded directory', () => {
+  describe('HAMT-sharded directory', () => {
     before(async () => {
       // from https://github.com/ipfs/gateway-conformance/blob/193833b91f2e9b17daf45c84afaeeae61d9d7c7e/fixtures/trustless_gateway_car/single-layer-hamt-with-multi-block-files.car
       await loadFixtureDataCar(controller, 'bafybeidbclfqleg2uojchspzd4bob56dqetqjsj27gy2cq3klkkgxtpn4i-single-layer-hamt-with-multi-block-files.car')
