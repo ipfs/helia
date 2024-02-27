@@ -123,7 +123,8 @@ describe('cat', () => {
     ]))
 
     // should be able to cat the index file without loading the other files
-    // in the shard
+    // in the shard - the blockstore is offline so will throw if requested
+    // blocks are not present
     const bytes = await toBuffer(fs.cat(dir.cid, {
       path: 'index.html'
     }))
