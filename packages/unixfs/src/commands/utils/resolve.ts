@@ -49,12 +49,18 @@ export async function resolve (cid: CID, path: string | undefined, blockstore: B
       })
     }
   } catch (err: any) {
-    // TODO: just allow `walkPath` to fail, this will change the error code
+    // TODO: remove this try/catch and error code mapping - just allow
+    // `walkPath` to fail, this will change the error code which is a breaking
+    // change
     if (err.code === 'ERR_NOT_FOUND') {
       throw new DoesNotExistError('Could not find path in directory')
     }
 
     throw err
+  }
+
+  if (segments.length === 0) {
+    throw new DoesNotExistError('Could not find path in directory')
   }
 
   log('resolved %s to %c', path, cid)
