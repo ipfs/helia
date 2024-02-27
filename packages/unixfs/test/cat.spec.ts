@@ -9,6 +9,7 @@ import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 import { smallFile } from './fixtures/files.js'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
+import all from 'it-all'
 
 describe('cat', () => {
   let blockstore: Blockstore
@@ -91,5 +92,42 @@ describe('cat', () => {
     }))
 
     expect(bytes).to.deep.equal(smallFile)
+  })
+
+  it('should only load blocks necessary to traverse a HAMT', async () => {
+    const [, scriptFile, styleFile, imageFile, dir] = await all(fs.addAll([{
+      path: 'index.html',
+      content: Uint8Array.from([0, 1, 2])
+    }, {
+      path: 'script.js',
+      content: Uint8Array.from([3, 4, 5])
+    }, {
+      path: 'style.css',
+      content: Uint8Array.from([6, 7, 8])
+    }, {
+      path: 'image.png',
+      content: Uint8Array.from([9, 0, 1])
+    }], {
+      shardSplitThresholdBytes: 1,
+      wrapWithDirectory: true
+    }))
+
+    const dirStat = await fs.stat(dir.cid)
+    expect(dirStat.unixfs?.type).to.equal('hamt-sharded-directory')
+
+    // remove all blocks that aren't the index file
+    await drain(blockstore.deleteMany([
+      scriptFile.cid,
+      styleFile.cid,
+      imageFile.cid
+    ]))
+
+    // should be able to cat the index file without loading the other files
+    // in the shard
+    const bytes = await toBuffer(fs.cat(dir.cid, {
+      path: 'index.html'
+    }))
+
+    expect(bytes).to.equalBytes(Uint8Array.from([0, 1, 2]))
   })
 })
