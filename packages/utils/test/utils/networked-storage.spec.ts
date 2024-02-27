@@ -13,7 +13,7 @@ import Sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { defaultHashers } from '../../src/utils/default-hashers.js'
+import { getHasher } from '../../src/utils/get-hasher.js'
 import { NetworkedStorage } from '../../src/utils/networked-storage.js'
 import { createBlock } from '../fixtures/create-block.js'
 import type { BlockAnnouncer, BlockRetriever } from '@helia/interface/blocks'
@@ -39,9 +39,8 @@ describe('networked-storage', () => {
       logger: defaultLogger(),
       blockBrokers: [
         bitswap
-      ],
-      hashers: defaultHashers()
-    })
+      ]
+    }, getHasher())
   })
 
   it('gets a block from the blockstore', async () => {

@@ -1,4 +1,5 @@
 import { createBitswap } from 'ipfs-bitswap'
+import type { HasherLoader } from '@helia/interface'
 import type { BlockAnnouncer, BlockBroker, BlockRetrievalOptions, BlockRetriever } from '@helia/interface/blocks'
 import type { Libp2p, Startable } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
@@ -10,7 +11,7 @@ import type { ProgressOptions } from 'progress-events'
 interface BitswapComponents {
   libp2p: Libp2p
   blockstore: Blockstore
-  hashers: Record<string, MultihashHasher>
+  getHasher: HasherLoader
 }
 
 export interface BitswapInit extends BitswapOptions {
@@ -24,26 +25,12 @@ ProgressOptions<BitswapWantBlockProgressEvents>
   private started: boolean
 
   constructor (components: BitswapComponents, init: BitswapInit = {}) {
-    const { libp2p, blockstore, hashers } = components
+    const { libp2p, blockstore, getHasher } = components
 
     this.bitswap = createBitswap(libp2p, blockstore, {
       hashLoader: {
-        getHasher: async (codecOrName: string | number): Promise<MultihashHasher<number>> => {
-          let hasher: MultihashHasher | undefined
-
-          if (typeof codecOrName === 'string') {
-            hasher = Object.values(hashers).find(hasher => {
-              return hasher.name === codecOrName
-            })
-          } else {
-            hasher = hashers[codecOrName]
-          }
-
-          if (hasher != null) {
-            return hasher
-          }
-
-          throw new Error(`Could not load hasher for code/name "${codecOrName}"`)
+        getHasher: async (codecOrName: number): Promise<MultihashHasher<number>> => {
+          return getHasher(codecOrName)
         }
       },
       ...init
