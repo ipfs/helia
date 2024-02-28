@@ -50,6 +50,7 @@ jobs:
         with:
           flags: node
           files: .coverage/*,packages/*/.coverage/*
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   test-chrome:
     needs: build
@@ -65,6 +66,7 @@ jobs:
         with:
           flags: chrome
           files: .coverage/*,packages/*/.coverage/*
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   test-chrome-webworker:
     needs: build
@@ -80,6 +82,7 @@ jobs:
         with:
           flags: chrome-webworker
           files: .coverage/*,packages/*/.coverage/*
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   test-firefox:
     needs: build
@@ -95,6 +98,7 @@ jobs:
         with:
           flags: firefox
           files: .coverage/*,packages/*/.coverage/*
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   test-firefox-webworker:
     needs: build
@@ -110,6 +114,7 @@ jobs:
         with:
           flags: firefox-webworker
           files: .coverage/*,packages/*/.coverage/*
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   test-webkit:
     needs: build
@@ -125,6 +130,7 @@ jobs:
         with:
           flags: webkit
           files: .coverage/*,packages/*/.coverage/*
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   test-electron-main:
     needs: build
@@ -140,6 +146,7 @@ jobs:
         with:
           flags: electron-main
           files: .coverage/*,packages/*/.coverage/*
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   test-electron-renderer:
     needs: build
@@ -155,6 +162,7 @@ jobs:
         with:
           flags: electron-renderer
           files: .coverage/*,packages/*/.coverage/*
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   release:
     runs-on: ubuntu-latest
