@@ -15,7 +15,22 @@
 <blockquote>
 <p>A mutable filesystem powered by Helia</p>
 </blockquote>
-<a id="md:about" class="tsd-anchor"></a><h1><a href="#md:about">About</a></h1><p><code>@helia/mfs</code> is an implementation of a Mutable File System powered by Helia.</p>
+<a id="md:about" class="tsd-anchor"></a><h1><a href="#md:about">About</a></h1><!--
+
+!IMPORTANT!
+
+Everything in this README between "# About" and "# Install" is automatically
+generated and will be overwritten the next time the doc generator is run.
+
+To make changes to this section, please update the  section
+of src/index.js or src/index.ts
+
+To experiment with formatting, please run "npm run docs" from the root of this
+repo and examine the changes made.
+
+-->
+
+<p><code>@helia/mfs</code> is an implementation of a Mutable File System powered by Helia.</p>
 <p>See the <a href="https://ipfs.github.io/helia/modules/_helia_mfs.html">API docs</a> for all available operations.</p>
 <a id="md:example" class="tsd-anchor"></a><h2><a href="#md:example">Example</a></h2><pre><code class="language-typescript"><span class="hl-0">import</span><span class="hl-1"> { </span><span class="hl-2">createHelia</span><span class="hl-1"> } </span><span class="hl-0">from</span><span class="hl-1"> </span><span class="hl-3">&#39;helia&#39;</span><br/><span class="hl-0">import</span><span class="hl-1"> { </span><span class="hl-2">mfs</span><span class="hl-1"> } </span><span class="hl-0">from</span><span class="hl-1"> </span><span class="hl-3">&#39;@helia/mfs&#39;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">helia</span><span class="hl-1"> = </span><span class="hl-6">createHelia</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-7">// ... helia config</span><br/><span class="hl-1">})</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">fs</span><span class="hl-1"> = </span><span class="hl-6">mfs</span><span class="hl-1">(</span><span class="hl-2">helia</span><span class="hl-1">)</span><br/><br/><span class="hl-7">// create an empty directory</span><br/><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">fs</span><span class="hl-1">.</span><span class="hl-6">mkdir</span><span class="hl-1">(</span><span class="hl-3">&#39;/my-directory&#39;</span><span class="hl-1">)</span><br/><br/><span class="hl-7">// add a file to the directory</span><br/><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">fs</span><span class="hl-1">.</span><span class="hl-6">writeBytes</span><span class="hl-1">(</span><span class="hl-2">Uint8Array</span><span class="hl-1">.</span><span class="hl-6">from</span><span class="hl-1">([</span><span class="hl-14">0</span><span class="hl-1">, </span><span class="hl-14">1</span><span class="hl-1">, </span><span class="hl-14">2</span><span class="hl-1">, </span><span class="hl-14">3</span><span class="hl-1">]), </span><span class="hl-3">&#39;/my-directory/foo.txt&#39;</span><span class="hl-1">)</span><br/><br/><span class="hl-7">// read the file</span><br/><span class="hl-0">for</span><span class="hl-1"> </span><span class="hl-0">await</span><span class="hl-1"> (</span><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">buf</span><span class="hl-1"> </span><span class="hl-4">of</span><span class="hl-1"> </span><span class="hl-2">fs</span><span class="hl-1">.</span><span class="hl-6">cat</span><span class="hl-1">(</span><span class="hl-3">&#39;/my-directory/foo.txt&#39;</span><span class="hl-1">)) {</span><br/><span class="hl-1">  </span><span class="hl-2">console</span><span class="hl-1">.</span><span class="hl-6">info</span><span class="hl-1">(</span><span class="hl-2">buf</span><span class="hl-1">)</span><br/><span class="hl-1">}</span>
 </code><button>Copy</button></pre>

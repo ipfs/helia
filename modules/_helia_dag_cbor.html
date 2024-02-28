@@ -15,7 +15,22 @@
 <blockquote>
 <p>Add/get IPLD blocks containing dag-cbor with your Helia node</p>
 </blockquote>
-<a id="md:about" class="tsd-anchor"></a><h1><a href="#md:about">About</a></h1><p><code>@helia/dag-cbor</code> makes working with DAG-JSON Helia simple &amp; straightforward.</p>
+<a id="md:about" class="tsd-anchor"></a><h1><a href="#md:about">About</a></h1><!--
+
+!IMPORTANT!
+
+Everything in this README between "# About" and "# Install" is automatically
+generated and will be overwritten the next time the doc generator is run.
+
+To make changes to this section, please update the  section
+of src/index.js or src/index.ts
+
+To experiment with formatting, please run "npm run docs" from the root of this
+repo and examine the changes made.
+
+-->
+
+<p><code>@helia/dag-cbor</code> makes working with DAG-JSON Helia simple &amp; straightforward.</p>
 <p>See the DAGCBOR interface for all available operations.</p>
 <a id="md:example" class="tsd-anchor"></a><h2><a href="#md:example">Example</a></h2><pre><code class="language-typescript"><span class="hl-0">import</span><span class="hl-1"> { </span><span class="hl-2">createHelia</span><span class="hl-1"> } </span><span class="hl-0">from</span><span class="hl-1"> </span><span class="hl-3">&#39;helia&#39;</span><br/><span class="hl-0">import</span><span class="hl-1"> { </span><span class="hl-2">dagCbor</span><span class="hl-1"> } </span><span class="hl-0">from</span><span class="hl-1"> </span><span class="hl-3">&#39;@helia/dag-cbor&#39;</span><br/><span class="hl-0">import</span><span class="hl-1"> { </span><span class="hl-2">CID</span><span class="hl-1"> } </span><span class="hl-0">from</span><span class="hl-1"> </span><span class="hl-3">&#39;multiformats/cid&#39;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">d</span><span class="hl-1"> = </span><span class="hl-6">dagCbor</span><span class="hl-1">(</span><span class="hl-2">helia</span><span class="hl-1">)</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">cid</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">d</span><span class="hl-1">.</span><span class="hl-6">put</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-2">hello:</span><span class="hl-1"> </span><span class="hl-3">&#39;world&#39;</span><br/><span class="hl-1">})</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">obj</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">d</span><span class="hl-1">.</span><span class="hl-6">get</span><span class="hl-1">(</span><span class="hl-2">cid</span><span class="hl-1">)</span><br/><br/><span class="hl-2">console</span><span class="hl-1">.</span><span class="hl-6">info</span><span class="hl-1">(</span><span class="hl-2">obj</span><span class="hl-1">)</span><br/><span class="hl-7">// { hello: &#39;world&#39; }</span>
 </code><button>Copy</button></pre>

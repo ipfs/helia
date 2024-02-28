@@ -48,26 +48,28 @@ repo for how to do mostly anything with your Helia node.</p>
 </ul>
 <p>The API is implemented by:</p>
 <ul>
-<li><a href="./packages/helia"><code>/packages/helia</code></a> An implementation of the Helia API</li>
+<li><a href="./packages/helia"><code>/packages/helia</code></a> An peer to peer implementation that uses <a href="https://docs.ipfs.tech/concepts/bitswap/">bitswap</a>, <a href="https://www.npmjs.com/package/libp2p">libp2p</a> and <a href="https://docs.ipfs.tech/reference/http/gateway/">HTTP gateways</a> as fallback</li>
+<li><a href="./packages/http"><code>/packages/http</code></a> A lightweight implementation that uses <a href="https://docs.ipfs.tech/reference/http/gateway/">HTTP gateways</a> exclusively</li>
 </ul>
-<p>Helia also ships a number of supplemental libraries and tools.</p>
+<p>Helia also ships a number of supplemental libraries and tools that can be combined with Helia API implementations to accomplish tasks in distributed and trustless ways.</p>
 <p>These libraries are not intended to be the &quot;one true implementation&quot; of any given API, but are made available for users to include depending on the need of their particular application:</p>
 <ul>
-<li><a href="./packages/unixfs">./packages/unixfs</a> The <code>@helia/unixfs</code> module</li>
+<li><a href="./packages/car">./packages/car</a> The <code>@helia/car</code> module</li>
+<li><a href="./packages/dag-cbor">./packages/dag-cbor</a> The <code>@helia/dag-cbor</code> module</li>
+<li><a href="./packages/dag-json">./packages/dag-json</a> The <code>@helia/dag-json</code> module</li>
+<li><a href="./packages/ipns">./packages/ipns</a> The <code>@helia/ipns</code> module</li>
+<li><a href="./packages/json">./packages/json</a> The <code>@helia/json</code> module</li>
 <li><a href="./packages/mfs">./packages/mfs</a> The <code>@helia/mfs</code> module</li>
-<li><a href="./packages/ipns">./packages/ipns</a> <code>@helia/ipns</code></li>
-<li><a href="./packages/car">./packages/car</a> <code>@helia/car</code></li>
-<li><a href="./packages/strings">./packages/strings</a> <code>@helia/strings</code></li>
-<li><a href="./packages/json">./packages/json</a> <code>@helia/json</code></li>
-<li><a href="./packages/dag-json">./packages/dag-json</a> <code>@helia/dag-json</code></li>
-<li><a href="./packages/dag-cbor">./packages/dag-cbor</a> <code>@helia/dag-cbor</code></li>
+<li><a href="./packages/strings">./packages/strings</a> The <code>@helia/strings</code> module</li>
+<li><a href="./packages/unixfs">./packages/unixfs</a> The <code>@helia/unixfs</code> module</li>
 </ul>
-<p>An interface suite ensures everything is compatible:</p>
+<p>An interop suite ensures everything is compatible:</p>
 <ul>
 <li><a href="./packages/interop"><code>/packages/interop</code></a> Interop tests for Helia</li>
 </ul>
 <a id="md:other-modules" class="tsd-anchor"></a><h2><a href="#md:other-modules">Other modules</a></h2><p>There are several other modules available outside this repo:</p>
 <ul>
+<li><a href="https://github.com/ipfs/helia-verified-fetch"><code>@helia/verified-fetch</code></a> A <a href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API">fetch</a>-like API for retrieving trustless, verified content from the distributed web</li>
 <li><a href="https://github.com/ipfs/helia-delegated-routing-v1-http-api"><code>@helia/delegated-routing-v1-http-api</code></a> An implementation of the <a href="https://specs.ipfs.tech/routing/http-routing-v1/">Delegated Routing v1 HTTP API</a> including a server and a client</li>
 <li><a href="https://github.com/shovelers/helia-wnfs">Helia WNFS</a> a <a href="https://guide.fission.codes/developers/webnative/file-system-wnfs">WNFS</a> implementation built on top of Helia</li>
 <li><a href="https://github.com/ipfs/helia-remote-pinning"><code>@helia/remote-pinning</code></a> A Helia client for communicating with <a href="https://ipfs.github.io/pinning-services-api-spec/">IPFS Pinning Services</a></li>
