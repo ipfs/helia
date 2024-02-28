@@ -140,20 +140,20 @@
   },
   "dependencies": {
     "@helia/interface": "^4.0.0",
-    "@ipld/car": "^5.2.6",
+    "@ipld/car": "^5.3.0",
     "@libp2p/interfaces": "^3.3.2",
-    "interface-blockstore": "^5.2.9",
+    "interface-blockstore": "^5.2.10",
     "it-drain": "^3.0.5",
     "it-map": "^3.0.5",
-    "multiformats": "^13.0.1",
+    "multiformats": "^13.1.0",
     "p-defer": "^4.0.0",
     "p-queue": "^8.0.1",
     "progress-events": "^1.0.0"
   },
   "devDependencies": {
     "@helia/unixfs": "^3.0.0",
-    "@ipld/dag-pb": "^4.0.8",
-    "aegir": "^42.2.2",
+    "@ipld/dag-pb": "^4.1.0",
+    "aegir": "^42.2.5",
     "blockstore-core": "^4.4.0",
     "ipfs-unixfs-importer": "^15.2.4",
     "it-to-buffer": "^4.0.5"
