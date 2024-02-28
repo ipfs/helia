@@ -80,7 +80,7 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
 
       // first publish should fail because kubo isn't subscribed to key update channel
       await expect(name.publish(peerId, cid)).to.eventually.be.rejected()
-        .with.property('message', 'PublishError.InsufficientPeers')
+        .with.property('message', 'PublishError.NoPeersSubscribedToTopic')
 
       // should fail to resolve the first time as kubo was not subscribed to the pubsub channel
       // @ts-expect-error kubo deps are out of date
