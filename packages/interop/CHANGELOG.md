@@ -1,5 +1,42 @@
 # Changelog
 
+## [5.1.0](https://github.com/ipfs/helia/compare/interop-v5.0.0...interop-v5.1.0) (2024-02-28)
+
+
+### Features
+
+* create @helia/verified-fetch ([#392](https://github.com/ipfs/helia/issues/392)) ([f243de2](https://github.com/ipfs/helia/commit/f243de26eda64951c2909121730b6a1b8a689bf6))
+* require content-type parser to set content-type ([#423](https://github.com/ipfs/helia/issues/423)) ([f58d467](https://github.com/ipfs/helia/commit/f58d467108e0b99d1e15b18a899ef81082ad59a7))
+
+
+### Bug Fixes
+
+* allow contentTypeParser with Helia instance ([#427](https://github.com/ipfs/helia/issues/427)) ([3283a5c](https://github.com/ipfs/helia/commit/3283a5c91ce87894f2b9d7c93126fc74647ba17d))
+* update project deps and docs ([77e34fc](https://github.com/ipfs/helia/commit/77e34fc115cbfb82585fd954bcf389ecebf655bc))
+* use unixfs exporter to traverse DAGs ([#455](https://github.com/ipfs/helia/issues/455)) ([6f8c15b](https://github.com/ipfs/helia/commit/6f8c15b769c08bf73e7c62dab79909b5ecfc3c93))
+
+
+### Dependencies
+
+* bump @chainsafe/libp2p-gossipsub from 11.2.1 to 12.0.0 ([#430](https://github.com/ipfs/helia/issues/430)) ([9b1ddf8](https://github.com/ipfs/helia/commit/9b1ddf85e503ecf5c3ddaa04826bef2f75454b44))
+* bump @chainsafe/libp2p-gossipsub from 12.0.0 to 13.0.0 ([#457](https://github.com/ipfs/helia/issues/457)) ([cb35a1b](https://github.com/ipfs/helia/commit/cb35a1ba149628181b3bb48e14d927d2ebc9c23b))
+* update libp2p patch versions ([917a1bc](https://github.com/ipfs/helia/commit/917a1bceb9e9b56428a15dc3377a963f06affd12))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^2.0.1 to ^2.0.2
+    * @helia/car bumped from ^3.0.0 to ^3.1.0
+    * @helia/dag-cbor bumped from ^3.0.0 to ^3.0.1
+    * @helia/dag-json bumped from ^3.0.0 to ^3.0.1
+    * @helia/http bumped from ^1.0.1 to ^1.0.2
+    * @helia/interface bumped from ^4.0.0 to ^4.0.1
+    * @helia/ipns bumped from ^6.0.0 to ^6.0.1
+    * @helia/json bumped from ^3.0.0 to ^3.0.1
+    * @helia/mfs bumped from ^3.0.0 to ^3.0.1
+    * @helia/routers bumped from ^1.0.0 to ^1.0.1
+    * @helia/strings bumped from ^3.0.0 to ^3.0.1
+    * @helia/unixfs bumped from ^3.0.0 to ^3.0.1
+    * helia bumped from ^4.0.1 to ^4.0.2
+
 ## [5.0.0](https://github.com/ipfs/helia/compare/interop-v4.0.0...interop-v5.0.0) (2024-01-31)
 
 

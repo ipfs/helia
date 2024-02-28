@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.0.2](https://github.com/ipfs/helia/compare/block-brokers-v2.0.1...block-brokers-v2.0.2) (2024-02-28)
+
+
+### Bug Fixes
+
+* update project deps and docs ([77e34fc](https://github.com/ipfs/helia/commit/77e34fc115cbfb82585fd954bcf389ecebf655bc))
+
+
+### Dependencies
+
+* update libp2p patch versions ([917a1bc](https://github.com/ipfs/helia/commit/917a1bceb9e9b56428a15dc3377a963f06affd12))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^4.0.0 to ^4.0.1
+
 ## [2.0.1](https://github.com/ipfs/helia/compare/block-brokers-v2.0.0...block-brokers-v2.0.1) (2024-01-31)
 
 
