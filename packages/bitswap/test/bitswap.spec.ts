@@ -12,6 +12,7 @@ import { duplexPair } from 'it-pair/duplex'
 import { pbStream } from 'it-protobuf-stream'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
+import pWaitFor from 'p-wait-for'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { Bitswap } from '../src/bitswap.js'
@@ -162,7 +163,9 @@ describe('bitswap', () => {
       expect(providers[0].id.equals(components.libp2p.dialProtocol.getCall(1).args[0].toString())).to.be.true()
 
       // the query continues after the session is ready
-      await delay(100)
+      await pWaitFor(() => {
+        return session.peers.size === DEFAULT_SESSION_MAX_PROVIDERS
+      })
 
       // should have continued querying until we reach DEFAULT_SESSION_MAX_PROVIDERS
       expect(providers[1].id.equals(components.libp2p.dialProtocol.getCall(2).args[0].toString())).to.be.true()
