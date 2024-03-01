@@ -1,13 +1,17 @@
 /* eslint-env mocha */
 
 import { defaultLogger } from '@libp2p/logger'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { multiaddr } from '@multiformats/multiaddr'
+import { uriToMultiaddr } from '@multiformats/uri-to-multiaddr'
 import { expect } from 'aegir/chai'
 import * as raw from 'multiformats/codecs/raw'
 import Sinon from 'sinon'
-import { type StubbedInstance, stubConstructor } from 'sinon-ts'
+import { type StubbedInstance, stubConstructor, stubInterface } from 'sinon-ts'
 import { TrustlessGatewayBlockBroker } from '../src/trustless-gateway/broker.js'
 import { TrustlessGateway } from '../src/trustless-gateway/trustless-gateway.js'
 import { createBlock } from './fixtures/create-block.js'
+import type { Routing } from '@helia/interface'
 import type { BlockBroker } from '@helia/interface/blocks'
 import type { CID } from 'multiformats/cid'
 
@@ -15,6 +19,7 @@ describe('trustless-gateway-block-broker', () => {
   let blocks: Array<{ cid: CID, block: Uint8Array }>
   let gatewayBlockBroker: BlockBroker
   let gateways: Array<StubbedInstance<TrustlessGateway>>
+  let routing: StubbedInstance<Routing>
 
   // take a Record<gatewayIndex, (gateway: StubbedInstance<TrustlessGateway>) => void> and stub the gateways
   // Record.default is the default handler
@@ -29,6 +34,7 @@ describe('trustless-gateway-block-broker', () => {
   }
 
   beforeEach(async () => {
+    routing = stubInterface<Routing>()
     blocks = []
 
     for (let i = 0; i < 10; i++) {
@@ -36,12 +42,13 @@ describe('trustless-gateway-block-broker', () => {
     }
 
     gateways = [
-      stubConstructor(TrustlessGateway, 'http://localhost:8080'),
-      stubConstructor(TrustlessGateway, 'http://localhost:8081'),
-      stubConstructor(TrustlessGateway, 'http://localhost:8082'),
-      stubConstructor(TrustlessGateway, 'http://localhost:8083')
+      stubConstructor(TrustlessGateway, 'http://localhost:8080', defaultLogger()),
+      stubConstructor(TrustlessGateway, 'http://localhost:8081', defaultLogger()),
+      stubConstructor(TrustlessGateway, 'http://localhost:8082', defaultLogger()),
+      stubConstructor(TrustlessGateway, 'http://localhost:8083', defaultLogger())
     ]
     gatewayBlockBroker = new TrustlessGatewayBlockBroker({
+      routing,
       logger: defaultLogger()
     })
     // must copy the array because the broker calls .sort which mutates in-place
@@ -149,5 +156,44 @@ describe('trustless-gateway-block-broker', () => {
     expect(gateways[0].getRawBlock.calledWith(cid1, Sinon.match.any)).to.be.false()
     expect(gateways[1].getRawBlock.calledWith(cid1, Sinon.match.any)).to.be.false()
     expect(gateways[2].getRawBlock.calledWith(cid1, Sinon.match.any)).to.be.false()
+  })
+
+  it('creates a session', async () => {
+    routing.findProviders.returns(async function * () {
+      // non-http provider
+      yield {
+        id: await createEd25519PeerId(),
+        multiaddrs: [
+          multiaddr('/ip4/132.32.25.6/tcp/1234')
+        ],
+        protocols: [
+          'transport-bitswap'
+        ]
+      }
+      // expired peer info
+      yield {
+        id: await createEd25519PeerId(),
+        multiaddrs: []
+      }
+      // http gateway
+      yield {
+        id: await createEd25519PeerId(),
+        multiaddrs: [
+          uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
+        ],
+        protocols: [
+          'transport-ipfs-gateway-http'
+        ]
+      }
+    }())
+
+    const sessionBlockstore = await gatewayBlockBroker.createSession?.(blocks[0].cid, {
+      minProviders: 1,
+      providerQueryConcurrency: 1
+    })
+
+    expect(sessionBlockstore).to.be.ok()
+
+    await expect(sessionBlockstore?.retrieve?.(blocks[0].cid)).to.eventually.deep.equal(blocks[0].block)
   })
 })
