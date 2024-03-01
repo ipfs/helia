@@ -188,6 +188,7 @@
     "it-protobuf-stream": "^1.1.2",
     "p-event": "^6.0.0",
     "p-retry": "^6.2.0",
+    "p-wait-for": "^5.0.2",
     "protons": "^7.0.2",
     "sinon": "^17.0.1",
     "sinon-ts": "^2.0.0"
