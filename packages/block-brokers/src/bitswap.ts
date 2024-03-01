@@ -1,8 +1,8 @@
-import { createBitswap } from 'ipfs-bitswap'
-import type { BlockAnnounceOptions, BlockBroker, BlockRetrievalOptions } from '@helia/interface/blocks'
-import type { Libp2p, Startable } from '@libp2p/interface'
+import { createBitswap } from '@helia/bitswap'
+import type { BitswapOptions, Bitswap, BitswapWantBlockProgressEvents, BitswapNotifyProgressEvents } from '@helia/bitswap'
+import type { BlockAnnounceOptions, BlockBroker, BlockRetrievalOptions, CreateSessionOptions, Routing } from '@helia/interface'
+import type { Libp2p, Startable, ComponentLogger } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
-import type { Bitswap, BitswapNotifyProgressEvents, BitswapOptions, BitswapWantBlockProgressEvents } from 'ipfs-bitswap'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 
@@ -10,6 +10,8 @@ interface BitswapComponents {
   libp2p: Libp2p
   blockstore: Blockstore
   hashers: Record<string, MultihashHasher>
+  routing: Routing
+  logger: ComponentLogger
 }
 
 export interface BitswapInit extends BitswapOptions {
@@ -21,9 +23,9 @@ class BitswapBlockBroker implements BlockBroker<BitswapWantBlockProgressEvents, 
   private started: boolean
 
   constructor (components: BitswapComponents, init: BitswapInit = {}) {
-    const { libp2p, blockstore, hashers } = components
+    const { hashers } = components
 
-    this.bitswap = createBitswap(libp2p, blockstore, {
+    this.bitswap = createBitswap(components, {
       hashLoader: {
         getHasher: async (codecOrName: string | number): Promise<MultihashHasher<number>> => {
           let hasher: MultihashHasher | undefined
@@ -63,11 +65,25 @@ class BitswapBlockBroker implements BlockBroker<BitswapWantBlockProgressEvents, 
   }
 
   async announce (cid: CID, block: Uint8Array, options?: BlockAnnounceOptions<BitswapNotifyProgressEvents>): Promise<void> {
-    this.bitswap.notify(cid, block, options)
+    await this.bitswap.notify(cid, block, options)
   }
 
   async retrieve (cid: CID, options: BlockRetrievalOptions<BitswapWantBlockProgressEvents> = {}): Promise<Uint8Array> {
     return this.bitswap.want(cid, options)
+  }
+
+  async createSession (root: CID, options?: CreateSessionOptions<BitswapWantBlockProgressEvents>): Promise<BlockBroker<BitswapWantBlockProgressEvents, BitswapNotifyProgressEvents>> {
+    const session = await this.bitswap.createSession(root, options)
+
+    return {
+      announce: async (cid, block, options) => {
+        await this.bitswap.notify(cid, block, options)
+      },
+
+      retrieve: async (cid, options) => {
+        return session.want(cid, options)
+      }
+    }
   }
 }
 

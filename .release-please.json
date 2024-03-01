@@ -10,6 +10,7 @@
   ],
   "packages": {
     "packages/block-brokers": {},
+    "packages/bitswap": {},
     "packages/car": {},
     "packages/dag-cbor": {},
     "packages/dag-json": {},
