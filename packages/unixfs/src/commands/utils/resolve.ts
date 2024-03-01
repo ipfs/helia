@@ -1,6 +1,7 @@
 import { logger } from '@libp2p/logger'
-import { exporter } from 'ipfs-unixfs-exporter'
-import { DoesNotExistError, InvalidParametersError } from '../../errors.js'
+import { walkPath } from 'ipfs-unixfs-exporter'
+import all from 'it-all'
+import { DoesNotExistError } from '../../errors.js'
 import { addLink } from './add-link.js'
 import { cidToDirectory } from './cid-to-directory.js'
 import { cidToPBLink } from './cid-to-pblink.js'
@@ -37,57 +38,17 @@ export async function resolve (cid: CID, path: string | undefined, blockstore: B
     return { cid }
   }
 
-  log('resolve "%s" under %c', path, cid)
+  const p = `/ipfs/${cid}${path == null ? '' : `/${path}`}`
+  const segments = await all(walkPath(p, blockstore, options))
 
-  const parts = path.split('/').filter(Boolean)
-  const segments: Segment[] = [{
-    name: '',
-    cid,
-    size: 0n
-  }]
-
-  for (let i = 0; i < parts.length; i++) {
-    const part = parts[i]
-    const result = await exporter(cid, blockstore, options)
-
-    log('resolving "%s"', part, result)
-
-    if (result.type === 'file') {
-      if (i < parts.length - 1) {
-        throw new InvalidParametersError('Path was invalid')
-      }
-
-      cid = result.cid
-    } else if (result.type === 'directory') {
-      let dirCid: CID | undefined
-
-      for await (const entry of result.content()) {
-        if (entry.name === part) {
-          dirCid = entry.cid
-          break
-        }
-      }
-
-      if (dirCid == null) {
-        throw new DoesNotExistError('Could not find path in directory')
-      }
-
-      cid = dirCid
-
-      segments.push({
-        name: part,
-        cid,
-        size: result.size
-      })
-    } else {
-      throw new InvalidParametersError('Could not resolve path')
-    }
+  if (segments.length === 0) {
+    throw new DoesNotExistError('Could not find path in directory')
   }
 
   log('resolved %s to %c', path, cid)
 
   return {
-    cid,
+    cid: segments[segments.length - 1].cid,
     path,
     segments
   }

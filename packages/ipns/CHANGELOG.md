@@ -14,6 +14,22 @@
 
 * make @libp2p/interface a dependency ([#159](https://github.com/ipfs/helia-ipns/issues/159)) ([546ecf0](https://github.com/ipfs/helia-ipns/commit/546ecf023bd619d32e187fa6a55d39fcf12e4bbe)), closes [#158](https://github.com/ipfs/helia-ipns/issues/158)
 
+## [6.0.1](https://github.com/ipfs/helia/compare/ipns-v6.0.0...ipns-v6.0.1) (2024-02-28)
+
+
+### Bug Fixes
+
+* remove is-ipfs from @helia/ipns dependencies ([#421](https://github.com/ipfs/helia/issues/421)) ([3851fe2](https://github.com/ipfs/helia/commit/3851fe2df6af337b7e2cabe694bd3dba17748fce))
+* update project deps and docs ([77e34fc](https://github.com/ipfs/helia/commit/77e34fc115cbfb82585fd954bcf389ecebf655bc))
+
+
+### Dependencies
+
+* update libp2p patch versions ([917a1bc](https://github.com/ipfs/helia/commit/917a1bceb9e9b56428a15dc3377a963f06affd12))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^4.0.0 to ^4.0.1
+
 ## [6.0.0](https://github.com/ipfs/helia/compare/ipns-v5.0.0...ipns-v6.0.0) (2024-01-31)
 
 

@@ -17,6 +17,29 @@
   * devDependencies
     * @helia/unixfs bumped from ^2.0.0 to ^2.0.1
 
+## [3.1.0](https://github.com/ipfs/helia/compare/car-v3.0.0...car-v3.1.0) (2024-02-28)
+
+
+### Features
+
+* stream car file bytes from @helia/car ([#444](https://github.com/ipfs/helia/issues/444)) ([7c07e11](https://github.com/ipfs/helia/commit/7c07e113d644a1efc32b7fd0c268f5f892256ce9))
+
+
+### Bug Fixes
+
+* support reading identity cids ([#429](https://github.com/ipfs/helia/issues/429)) ([98308f7](https://github.com/ipfs/helia/commit/98308f77488b8196b2d18f78f05ecd2d37456834))
+* update project deps and docs ([77e34fc](https://github.com/ipfs/helia/commit/77e34fc115cbfb82585fd954bcf389ecebf655bc))
+* use blockstore interface where possible ([#417](https://github.com/ipfs/helia/issues/417)) ([30c8981](https://github.com/ipfs/helia/commit/30c8981934ffba72d572a7b8b2712ec93b7f4d31))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^4.0.0 to ^4.0.1
+  * devDependencies
+    * @helia/unixfs bumped from ^3.0.0 to ^3.0.1
+
 ## [3.0.0](https://github.com/ipfs/helia/compare/car-v2.0.1...car-v3.0.0) (2024-01-24)
 
 
