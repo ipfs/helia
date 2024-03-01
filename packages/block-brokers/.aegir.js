@@ -28,7 +28,7 @@ const options = {
       }
     },
     async after (options, before) {
-      await before.server.stop()
+      await before.server.server.close()
     }
   }
 }
