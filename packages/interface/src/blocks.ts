@@ -64,8 +64,6 @@ ProgressOptions<DeleteBlockProgressEvents>, ProgressOptions<DeleteManyBlocksProg
    * Any blocks written to the blockstore as part of the session will propagate
    * to the blockstore the session was created from.
    *
-   * This method is optional to maintain compatibility with existing
-   * blockstores that do not support sessions.
    */
   createSession(root: CID, options?: CreateSessionOptions<GetBlockProgressEvents>): Promise<Blockstore>
 }
@@ -110,7 +108,7 @@ export interface CreateSessionOptions <ProgressEvents extends ProgressEvent<any,
    *
    * @default 5
    */
-  queryConcurrency?: number
+  providerQueryConcurrency?: number
 
   /**
    * How long each queried provider has to respond either that they have the
@@ -140,5 +138,5 @@ export interface BlockBroker<RetrieveProgressEvents extends ProgressEvent<any, a
 
 export const DEFAULT_SESSION_MIN_PROVIDERS = 1
 export const DEFAULT_SESSION_MAX_PROVIDERS = 5
-export const DEFAULT_SESSION_QUERY_CONCURRENCY = 5
+export const DEFAULT_SESSION_PROVIDER_QUERY_CONCURRENCY = 5
 export const DEFAULT_SESSION_PROVIDER_QUERY_TIMEOUT = 5000

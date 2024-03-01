@@ -4,7 +4,7 @@
   </a>
 </p>
 
-# @helia/ipns <!-- omit in toc -->
+# @helia/ipns
 
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
@@ -14,6 +14,21 @@
 > An implementation of IPNS for Helia
 
 # About
+
+<!--
+
+!IMPORTANT!
+
+Everything in this README between "# About" and "# Install" is automatically
+generated and will be overwritten the next time the doc generator is run.
+
+To make changes to this section, please update the @packageDocumentation section
+of src/index.js or src/index.ts
+
+To experiment with formatting, please run "npm run docs" from the root of this
+repo and examine the changes made.
+
+-->
 
 IPNS operations using a Helia node
 

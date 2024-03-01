@@ -46,9 +46,6 @@
     },
     {
       "path": "../unixfs"
-    },
-    {
-      "path": "../verified-fetch"
     }
   ]
 }

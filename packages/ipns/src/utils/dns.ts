@@ -1,5 +1,5 @@
 import { CodeError } from '@libp2p/interface'
-import * as isIPFS from 'is-ipfs'
+import { CID } from 'multiformats/cid'
 import type { DNSResolver, ResolveDnsLinkOptions } from '../index.js'
 
 export interface Question {
@@ -91,14 +91,15 @@ export const recursiveResolveDnslink = async (domain: string, depth: number, res
   const result = dnslinkRecord.replace('dnslink=', '')
   // result is now a `/ipfs/<cid>` or `/ipns/<cid>` string
   const domainOrCID = result.split('/')[2] // e.g. ["", "ipfs", "<cid>"]
-  const isIPFSCID = isIPFS.cid(domainOrCID)
 
-  // if the result is a CID, or depth is 1, we've reached the end of the recursion
-  // if depth is 1, another recursive call will be made, but it would throw.
-  // we could return if depth is 1 and allow users to handle, but that may be a breaking change
-  if (isIPFSCID) {
+  try {
+    CID.parse(domainOrCID)
+
+    // if the result is a CID, or depth is 1, we've reached the end of the recursion
+    // if depth is 1, another recursive call will be made, but it would throw.
+    // we could return if depth is 1 and allow users to handle, but that may be a breaking change
     return result
-  }
+  } catch {}
 
   return recursiveResolveDnslink(domainOrCID, depth - 1, resolve, options)
 }

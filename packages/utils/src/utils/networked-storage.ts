@@ -1,5 +1,7 @@
 import { CodeError, start, stop } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
+import { IdentityBlockstore } from 'blockstore-core/identity'
+import { TieredBlockstore } from 'blockstore-core/tiered'
 import filter from 'it-filter'
 import forEach from 'it-foreach'
 import { CustomProgressEvent, type ProgressOptions } from 'progress-events'
@@ -44,8 +46,11 @@ export class NetworkedStorage implements Blocks, Startable {
   constructor (components: NetworkedStorageComponents, init: NetworkedStorageInit = {}) {
     this.log = components.logger.forComponent(`helia:networked-storage${init.root == null ? '' : `:${init.root}`}`)
     this.logger = components.logger
-    this.child = components.blockstore
     this.components = components
+    this.child = new TieredBlockstore([
+      new IdentityBlockstore(),
+      components.blockstore
+    ])
     this.hashers = components.hashers ?? {}
     this.started = false
   }
@@ -217,6 +222,9 @@ export class NetworkedStorage implements Blocks, Startable {
   }
 }
 
+function isRetrievingBlockBroker (broker: BlockBroker): broker is Required<Pick<BlockBroker, 'retrieve'>> {
+  return typeof broker.retrieve === 'function'
+}
 export const getCidBlockVerifierFunction = (cid: CID, hasher: MultihashHasher): Required<BlockRetrievalOptions>['validateFn'] => {
   if (hasher == null) {
     throw new CodeError(`No hasher configured for multihash code 0x${cid.multihash.code.toString(16)}, please configure one. You can look up which hash this is at https://github.com/multiformats/multicodec/blob/master/table.csv`, 'ERR_UNKNOWN_HASH_ALG')
@@ -246,9 +254,7 @@ async function raceBlockRetrievers (cid: CID, blockBrokers: BlockBroker[], hashe
   const retrievers: Array<Required<Pick<BlockBroker, 'retrieve'>>> = []
 
   for (const broker of blockBrokers) {
-    if (broker.retrieve != null) {
-      // @ts-expect-error retrieve may be undefined even though we've just
-      // checked that it isn't
+    if (isRetrievingBlockBroker(broker)) {
       retrievers.push(broker)
     }
   }
