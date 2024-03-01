@@ -1,5 +1,5 @@
 /* eslint-disable no-loop-func */
-import { DEFAULT_SESSION_MAX_PROVIDERS, DEFAULT_SESSION_MIN_PROVIDERS, DEFAULT_SESSION_QUERY_CONCURRENCY } from '@helia/interface'
+import { DEFAULT_SESSION_MAX_PROVIDERS, DEFAULT_SESSION_MIN_PROVIDERS, DEFAULT_SESSION_PROVIDER_QUERY_CONCURRENCY } from '@helia/interface'
 import { setMaxListeners } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
 import { Network } from './network.js'
@@ -85,7 +85,7 @@ export class Bitswap implements BitswapInterface {
       logger: this.logger
     }, {
       root,
-      queryConcurrency: options?.queryConcurrency ?? DEFAULT_SESSION_QUERY_CONCURRENCY,
+      queryConcurrency: options?.providerQueryConcurrency ?? DEFAULT_SESSION_PROVIDER_QUERY_CONCURRENCY,
       minProviders,
       maxProviders,
       connectedPeers: options?.queryConnectedPeers !== false ? [...this.wantList.peers.keys()] : [],
