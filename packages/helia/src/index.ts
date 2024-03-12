@@ -86,8 +86,8 @@ export interface HeliaLibp2p<T extends Libp2p = Libp2p<DefaultLibp2pServices>> e
 /**
  * Create and return a Helia node
  */
-export async function createHelia <T extends Libp2p> (init: HeliaInit<T>): Promise<HeliaLibp2p<T>>
-export async function createHelia (init?: HeliaInit<Libp2p<DefaultLibp2pServices>>): Promise<HeliaLibp2p<Libp2p<DefaultLibp2pServices>>>
+export async function createHelia <T extends Libp2p> (init: Partial<HeliaInit<T>>): Promise<HeliaLibp2p<T>>
+export async function createHelia (init?: Partial<HeliaInit<Libp2p<DefaultLibp2pServices>>>): Promise<HeliaLibp2p<Libp2p<DefaultLibp2pServices>>>
 export async function createHelia (init: Partial<HeliaInit> = {}): Promise<HeliaLibp2p> {
   const datastore = init.datastore ?? new MemoryDatastore()
   const blockstore = init.blockstore ?? new MemoryBlockstore()
