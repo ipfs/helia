@@ -107,7 +107,7 @@ export interface HeliaInit {
   components?: Record<string, any>
 
   /**
-   * An optional DNS implementation used the perform queries.
+   * An optional DNS implementation used to perform queries for DNS records.
    */
   dns?: DNS
 }
