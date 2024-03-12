@@ -83,7 +83,7 @@
     "interface-blockstore": "^5.2.10",
     "interface-datastore": "^8.2.11",
     "ipns": "^9.0.0",
-    "libp2p": "^1.2.4",
+    "libp2p": "^1.3.0",
     "multiformats": "^13.1.0"
   },
   "devDependencies": {
