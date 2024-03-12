@@ -16,13 +16,13 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { defaultHashers } from '../../src/utils/default-hashers.js'
 import { NetworkedStorage } from '../../src/utils/networked-storage.js'
 import { createBlock } from '../fixtures/create-block.js'
-import type { BlockAnnouncer, BlockRetriever } from '@helia/interface/blocks'
+import type { BlockBroker } from '@helia/interface/blocks'
 import type { Blockstore } from 'interface-blockstore'
 
 describe('networked-storage', () => {
   let storage: NetworkedStorage
   let blockstore: Blockstore
-  let bitswap: StubbedInstance<Required<BlockRetriever & BlockAnnouncer>>
+  let bitswap: StubbedInstance<Required<BlockBroker>>
   let blocks: Array<{ cid: CID, block: Uint8Array }>
 
   beforeEach(async () => {

@@ -6,30 +6,26 @@ import filter from 'it-filter'
 import forEach from 'it-foreach'
 import { CustomProgressEvent, type ProgressOptions } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import type { BlockBroker, Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions, BlockRetriever, BlockAnnouncer, BlockRetrievalOptions } from '@helia/interface/blocks'
+import type { BlockBroker, Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions, BlockRetrievalOptions } from '@helia/interface/blocks'
 import type { AbortOptions, ComponentLogger, Logger, LoggerOptions, Startable } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { AwaitIterable } from 'interface-store'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 
+export interface NetworkedStorageInit {
+  root?: CID
+}
+
 export interface GetOptions extends AbortOptions {
   progress?(evt: Event): void
-}
-
-function isBlockRetriever (b: any): b is BlockRetriever {
-  return typeof b.retrieve === 'function'
-}
-
-function isBlockAnnouncer (b: any): b is BlockAnnouncer {
-  return typeof b.announce === 'function'
 }
 
 export interface NetworkedStorageComponents {
   blockstore: Blockstore
   logger: ComponentLogger
-  blockBrokers?: BlockBroker[]
-  hashers?: Record<number, MultihashHasher>
+  blockBrokers: BlockBroker[]
+  hashers: Record<number, MultihashHasher>
 }
 
 /**
@@ -38,23 +34,23 @@ export interface NetworkedStorageComponents {
  */
 export class NetworkedStorage implements Blocks, Startable {
   private readonly child: Blockstore
-  private readonly blockRetrievers: BlockRetriever[]
-  private readonly blockAnnouncers: BlockAnnouncer[]
   private readonly hashers: Record<number, MultihashHasher>
   private started: boolean
   private readonly log: Logger
+  private readonly logger: ComponentLogger
+  private readonly components: NetworkedStorageComponents
 
   /**
    * Create a new BlockStorage
    */
-  constructor (components: NetworkedStorageComponents) {
-    this.log = components.logger.forComponent('helia:networked-storage')
+  constructor (components: NetworkedStorageComponents, init: NetworkedStorageInit = {}) {
+    this.log = components.logger.forComponent(`helia:networked-storage${init.root == null ? '' : `:${init.root}`}`)
+    this.logger = components.logger
+    this.components = components
     this.child = new TieredBlockstore([
       new IdentityBlockstore(),
       components.blockstore
     ])
-    this.blockRetrievers = (components.blockBrokers ?? []).filter(isBlockRetriever)
-    this.blockAnnouncers = (components.blockBrokers ?? []).filter(isBlockAnnouncer)
     this.hashers = components.hashers ?? {}
     this.started = false
   }
@@ -64,12 +60,12 @@ export class NetworkedStorage implements Blocks, Startable {
   }
 
   async start (): Promise<void> {
-    await start(this.child, ...new Set([...this.blockRetrievers, ...this.blockAnnouncers]))
+    await start(this.child, ...this.components.blockBrokers)
     this.started = true
   }
 
   async stop (): Promise<void> {
-    await stop(this.child, ...new Set([...this.blockRetrievers, ...this.blockAnnouncers]))
+    await stop(this.child, ...this.components.blockBrokers)
     this.started = false
   }
 
@@ -88,9 +84,9 @@ export class NetworkedStorage implements Blocks, Startable {
 
     options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:providers:notify', cid))
 
-    this.blockAnnouncers.forEach(provider => {
-      provider.announce(cid, block, options)
-    })
+    await Promise.all(
+      this.components.blockBrokers.map(async broker => broker.announce?.(cid, block, options))
+    )
 
     options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:blockstore:put', cid))
 
@@ -111,11 +107,11 @@ export class NetworkedStorage implements Blocks, Startable {
       return !has
     })
 
-    const notifyEach = forEach(missingBlocks, ({ cid, block }): void => {
+    const notifyEach = forEach(missingBlocks, async ({ cid, block }): Promise<void> => {
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:put-many:providers:notify', cid))
-      this.blockAnnouncers.forEach(provider => {
-        provider.announce(cid, block, options)
-      })
+      await Promise.all(
+        this.components.blockBrokers.map(async broker => broker.announce?.(cid, block, options))
+      )
     })
 
     options.onProgress?.(new CustomProgressEvent('blocks:put-many:blockstore:put-many'))
@@ -129,7 +125,7 @@ export class NetworkedStorage implements Blocks, Startable {
     if (options.offline !== true && !(await this.child.has(cid))) {
       // we do not have the block locally, get it from a block provider
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:providers:get', cid))
-      const block = await raceBlockRetrievers(cid, this.blockRetrievers, this.hashers[cid.multihash.code], {
+      const block = await raceBlockRetrievers(cid, this.components.blockBrokers, this.hashers[cid.multihash.code], {
         ...options,
         log: this.log
       })
@@ -138,9 +134,9 @@ export class NetworkedStorage implements Blocks, Startable {
 
       // notify other block providers of the new block
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:providers:notify', cid))
-      this.blockAnnouncers.forEach(provider => {
-        provider.announce(cid, block, options)
-      })
+      await Promise.all(
+        this.components.blockBrokers.map(async broker => broker.announce?.(cid, block, options))
+      )
 
       return block
     }
@@ -160,7 +156,7 @@ export class NetworkedStorage implements Blocks, Startable {
       if (options.offline !== true && !(await this.child.has(cid))) {
         // we do not have the block locally, get it from a block provider
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:providers:get', cid))
-        const block = await raceBlockRetrievers(cid, this.blockRetrievers, this.hashers[cid.multihash.code], {
+        const block = await raceBlockRetrievers(cid, this.components.blockBrokers, this.hashers[cid.multihash.code], {
           ...options,
           log: this.log
         })
@@ -169,9 +165,9 @@ export class NetworkedStorage implements Blocks, Startable {
 
         // notify other block providers of the new block
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:providers:notify', cid))
-        this.blockAnnouncers.forEach(provider => {
-          provider.announce(cid, block, options)
-        })
+        await Promise.all(
+          this.components.blockBrokers.map(async broker => broker.announce?.(cid, block, options))
+        )
       }
     }))
   }
@@ -205,8 +201,30 @@ export class NetworkedStorage implements Blocks, Startable {
     options.onProgress?.(new CustomProgressEvent('blocks:get-all:blockstore:get-many'))
     yield * this.child.getAll(options)
   }
+
+  async createSession (root: CID, options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): Promise<Blocks> {
+    const blockBrokers = await Promise.all(this.components.blockBrokers.map(async broker => {
+      if (broker.createSession == null) {
+        return broker
+      }
+
+      return broker.createSession(root, options)
+    }))
+
+    return new NetworkedStorage({
+      blockstore: this.child,
+      blockBrokers,
+      hashers: this.hashers,
+      logger: this.logger
+    }, {
+      root
+    })
+  }
 }
 
+function isRetrievingBlockBroker (broker: BlockBroker): broker is Required<Pick<BlockBroker, 'retrieve'>> {
+  return typeof broker.retrieve === 'function'
+}
 export const getCidBlockVerifierFunction = (cid: CID, hasher: MultihashHasher): Required<BlockRetrievalOptions>['validateFn'] => {
   if (hasher == null) {
     throw new CodeError(`No hasher configured for multihash code 0x${cid.multihash.code.toString(16)}, please configure one. You can look up which hash this is at https://github.com/multiformats/multicodec/blob/master/table.csv`, 'ERR_UNKNOWN_HASH_ALG')
@@ -227,38 +245,47 @@ export const getCidBlockVerifierFunction = (cid: CID, hasher: MultihashHasher): 
  * Race block providers cancelling any pending requests once the block has been
  * found.
  */
-async function raceBlockRetrievers (cid: CID, providers: BlockRetriever[], hasher: MultihashHasher, options: AbortOptions & LoggerOptions): Promise<Uint8Array> {
+async function raceBlockRetrievers (cid: CID, blockBrokers: BlockBroker[], hasher: MultihashHasher, options: AbortOptions & LoggerOptions): Promise<Uint8Array> {
   const validateFn = getCidBlockVerifierFunction(cid, hasher)
 
   const controller = new AbortController()
   const signal = anySignal([controller.signal, options.signal])
 
+  const retrievers: Array<Required<Pick<BlockBroker, 'retrieve'>>> = []
+
+  for (const broker of blockBrokers) {
+    if (isRetrievingBlockBroker(broker)) {
+      retrievers.push(broker)
+    }
+  }
+
   try {
     return await Promise.any(
-      providers.map(async provider => {
-        try {
-          let blocksWereValidated = false
-          const block = await provider.retrieve(cid, {
-            ...options,
-            signal,
-            validateFn: async (block: Uint8Array): Promise<void> => {
+      retrievers
+        .map(async retriever => {
+          try {
+            let blocksWereValidated = false
+            const block = await retriever.retrieve(cid, {
+              ...options,
+              signal,
+              validateFn: async (block: Uint8Array): Promise<void> => {
+                await validateFn(block)
+                blocksWereValidated = true
+              }
+            })
+
+            if (!blocksWereValidated) {
+              // the blockBroker either did not throw an error when attempting to validate the block
+              // or did not call the validateFn at all. We should validate the block ourselves
               await validateFn(block)
-              blocksWereValidated = true
             }
-          })
 
-          if (!blocksWereValidated) {
-            // the blockBroker either did not throw an error when attempting to validate the block
-            // or did not call the validateFn at all. We should validate the block ourselves
-            await validateFn(block)
+            return block
+          } catch (err) {
+            options.log.error('could not retrieve verified block for %c', cid, err)
+            throw err
           }
-
-          return block
-        } catch (err) {
-          options.log.error('could not retrieve verified block for %c', cid, err)
-          throw err
-        }
-      })
+        })
     )
   } finally {
     signal.clear()

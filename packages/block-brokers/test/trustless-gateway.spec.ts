@@ -8,12 +8,12 @@ import { type StubbedInstance, stubConstructor } from 'sinon-ts'
 import { TrustlessGatewayBlockBroker } from '../src/trustless-gateway/broker.js'
 import { TrustlessGateway } from '../src/trustless-gateway/trustless-gateway.js'
 import { createBlock } from './fixtures/create-block.js'
-import type { BlockRetriever } from '@helia/interface/blocks'
+import type { BlockBroker } from '@helia/interface/blocks'
 import type { CID } from 'multiformats/cid'
 
 describe('trustless-gateway-block-broker', () => {
   let blocks: Array<{ cid: CID, block: Uint8Array }>
-  let gatewayBlockBroker: BlockRetriever
+  let gatewayBlockBroker: BlockBroker
   let gateways: Array<StubbedInstance<TrustlessGateway>>
 
   // take a Record<gatewayIndex, (gateway: StubbedInstance<TrustlessGateway>) => void> and stub the gateways
@@ -54,7 +54,7 @@ describe('trustless-gateway-block-broker', () => {
       gateway.getRawBlock.rejects(new Error('failed'))
     }
 
-    await expect(gatewayBlockBroker.retrieve(blocks[0].cid))
+    await expect(gatewayBlockBroker.retrieve?.(blocks[0].cid))
       .to.eventually.be.rejected()
       .with.property('errors')
       .with.lengthOf(gateways.length)
@@ -78,7 +78,7 @@ describe('trustless-gateway-block-broker', () => {
       }
     })
 
-    await expect(gatewayBlockBroker.retrieve(blocks[1].cid)).to.eventually.be.rejected()
+    await expect(gatewayBlockBroker.retrieve?.(blocks[1].cid)).to.eventually.be.rejected()
 
     // all gateways were called
     expect(gateways[0].getRawBlock.calledWith(blocks[1].cid)).to.be.true()
@@ -105,7 +105,7 @@ describe('trustless-gateway-block-broker', () => {
       }
     })
 
-    const block = await gatewayBlockBroker.retrieve(cid1, {
+    const block = await gatewayBlockBroker.retrieve?.(cid1, {
       validateFn: async (block) => {
         if (block !== block1) {
           throw new Error('invalid block')
@@ -136,7 +136,7 @@ describe('trustless-gateway-block-broker', () => {
         gateway.reliability.returns(0) // make sure other gateways are called last
       }
     })
-    const block = await gatewayBlockBroker.retrieve(cid1, {
+    const block = await gatewayBlockBroker.retrieve?.(cid1, {
       validateFn: async (block) => {
         if (block !== block1) {
           throw new Error('invalid block')
