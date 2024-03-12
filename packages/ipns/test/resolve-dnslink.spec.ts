@@ -26,7 +26,7 @@ function dnsResponse (ansers: Answer[]): DNSResponse {
   }
 }
 
-describe('resolveDns', () => {
+describe('resolveDNSLink', () => {
   let datastore: Datastore
   let heliaRouting: StubbedInstance<Routing>
   let dns: StubbedInstance<DNS>
@@ -46,8 +46,8 @@ describe('resolveDns', () => {
   })
 
   it('should resolve a domain', async () => {
-    dns.query.withArgs('foobar.baz').resolves(dnsResponse([{
-      name: 'foobar.baz',
+    dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
+      name: '_dnslink.foobar.baz',
       TTL: 60,
       type: RecordType.TXT,
       data: 'dnslink=/ipfs/QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'
@@ -57,9 +57,9 @@ describe('resolveDns', () => {
     expect(result.cid.toString()).to.equal('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
   })
 
-  it('should retry and add `_dnslink.` to a domain', async () => {
-    dns.query.withArgs('foobar.baz').rejects(new CodeError('Not found', 'ENOTFOUND'))
-    dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
+  it('should retry without `_dnslink.` on a domain', async () => {
+    dns.query.withArgs('_dnslink.foobar.baz').rejects(new CodeError('Not found', 'ENOTFOUND'))
+    dns.query.withArgs('foobar.baz').resolves(dnsResponse([{
       name: 'foobar.baz',
       TTL: 60,
       type: RecordType.TXT,
@@ -71,7 +71,7 @@ describe('resolveDns', () => {
   })
 
   it('should handle bad records', async () => {
-    dns.query.withArgs('foobar.baz').resolves(dnsResponse([{
+    dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
       name: 'foobar.baz',
       TTL: 60,
       type: RecordType.TXT,
@@ -103,7 +103,7 @@ describe('resolveDns', () => {
   })
 
   it('should handle records wrapped in quotation marks', async () => {
-    dns.query.withArgs('foobar.baz').resolves(dnsResponse([{
+    dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
       name: 'foobar.baz',
       TTL: 60,
       type: RecordType.TXT,
@@ -116,7 +116,7 @@ describe('resolveDns', () => {
 
   it('should support trailing slash in returned dnslink value', async () => {
     // see https://github.com/ipfs/helia/issues/402
-    dns.query.withArgs('foobar.baz').resolves(dnsResponse([{
+    dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
       name: 'foobar.baz',
       TTL: 60,
       type: RecordType.TXT,
@@ -129,7 +129,7 @@ describe('resolveDns', () => {
 
   it('should support paths in returned dnslink value', async () => {
     // see https://github.com/ipfs/helia/issues/402
-    dns.query.withArgs('foobar.baz').resolves(dnsResponse([{
+    dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
       name: 'foobar.baz',
       TTL: 60,
       type: RecordType.TXT,
@@ -144,7 +144,7 @@ describe('resolveDns', () => {
   it('should resolve recursive dnslink -> <peerId>/<path>', async () => {
     const cid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
     const key = await createEd25519PeerId()
-    dns.query.withArgs('foobar.baz').resolves(dnsResponse([{
+    dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
       name: 'foobar.baz',
       TTL: 60,
       type: RecordType.TXT,
