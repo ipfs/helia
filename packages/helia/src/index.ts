@@ -100,6 +100,7 @@ export async function createHelia (init: Partial<HeliaInit> = {}): Promise<Helia
     libp2p = await createLibp2p<DefaultLibp2pServices>({
       ...init,
       libp2p: {
+        dns: init.dns,
         ...init.libp2p,
 
         // ignore the libp2p start parameter as it should be on the main init
