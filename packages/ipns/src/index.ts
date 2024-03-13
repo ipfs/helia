@@ -241,7 +241,7 @@ import { localStore, type LocalStore } from './routing/local-store.js'
 import type { IPNSRouting, IPNSRoutingEvents } from './routing/index.js'
 import type { Routing } from '@helia/interface'
 import type { AbortOptions, ComponentLogger, Logger, PeerId } from '@libp2p/interface'
-import type { DNS, ResolveDnsProgressEvents, DNSResponse } from '@multiformats/dns'
+import type { DNS, ResolveDnsProgressEvents } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
 import type { IPNSRecord } from 'ipns'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
@@ -269,10 +269,10 @@ export type RepublishProgressEvents =
   ProgressEvent<'ipns:republish:success', IPNSRecord> |
   ProgressEvent<'ipns:republish:error', { record: IPNSRecord, err: Error }>
 
-export type ResolveDnsLinkProgressEvents =
-  ProgressEvent<'dnslink:cache', string> |
-  ProgressEvent<'dnslink:query', string> |
-  ProgressEvent<'dnslink:answer', DNSResponse>
+export type ResolveDNSLinkProgressEvents =
+  ResolveProgressEvents |
+  IPNSRoutingEvents |
+  ResolveDnsProgressEvents
 
 export interface PublishOptions extends AbortOptions, ProgressOptions<PublishProgressEvents | IPNSRoutingEvents> {
   /**
@@ -299,7 +299,7 @@ export interface ResolveOptions extends AbortOptions, ProgressOptions<ResolvePro
   offline?: boolean
 }
 
-export interface ResolveDNSOptions extends AbortOptions, ProgressOptions<ResolveProgressEvents | IPNSRoutingEvents | ResolveDnsProgressEvents> {
+export interface ResolveDNSLinkOptions extends AbortOptions, ProgressOptions<ResolveDNSLinkProgressEvents> {
   /**
    * Do not query the network for the IPNS record
    *
@@ -352,7 +352,7 @@ export interface IPNS {
   /**
    * Resolve a CID from a dns-link style IPNS record
    */
-  resolveDNSLink(domain: string, options?: ResolveDNSOptions): Promise<ResolveResult>
+  resolveDNSLink(domain: string, options?: ResolveDNSLinkOptions): Promise<ResolveResult>
 
   /**
    * Periodically republish all IPNS records found in the datastore
@@ -423,7 +423,7 @@ class DefaultIPNS implements IPNS {
     return this.#resolve(record.value, options)
   }
 
-  async resolveDNSLink (domain: string, options: ResolveDNSOptions = {}): Promise<ResolveResult> {
+  async resolveDNSLink (domain: string, options: ResolveDNSLinkOptions = {}): Promise<ResolveResult> {
     const dnslink = await resolveDNSLink(domain, this.dns, this.log, options)
 
     return this.#resolve(dnslink, options)
