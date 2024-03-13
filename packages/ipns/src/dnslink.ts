@@ -12,15 +12,21 @@ async function recursiveResolveDnslink (domain: string, depth: number, dns: DNS,
     throw new Error('recursion limit exceeded')
   }
 
-  const response = await dns.query(domain, {
+  log('query %s for TXT and CNAME records', domain)
+  const txtRecordsResponse = await dns.query(domain, {
     ...options,
     types: [
       RecordType.TXT
     ]
   })
 
-  // TODO: support multiple dnslink records
-  for (const answer of response.Answer) {
+  // sort the TXT records to ensure deterministic processing
+  const txtRecords = txtRecordsResponse.Answer
+    .sort((a, b) => a.data.localeCompare(b.data))
+
+  log('found %d TXT records for %s', txtRecords.length, domain)
+
+  for (const answer of txtRecords) {
     try {
       let result = answer.data
 
@@ -34,7 +40,10 @@ async function recursiveResolveDnslink (domain: string, depth: number, dns: DNS,
         continue
       }
 
+      log('%s TXT %s', answer.name, result)
+
       result = result.replace('dnslink=', '')
+
       // result is now a `/ipfs/<cid>` or `/ipns/<cid>` string
       const [, protocol, domainOrCID, ...rest] = result.split('/') // e.g. ["", "ipfs", "<cid>"]
 
@@ -64,12 +73,43 @@ async function recursiveResolveDnslink (domain: string, depth: number, dns: DNS,
     }
   }
 
+  // no dnslink records found, try CNAMEs
+  log('no DNSLink records found for %s, falling back to CNAME', domain)
+
+  const cnameRecordsResponse = await dns.query(domain, {
+    ...options,
+    types: [
+      RecordType.CNAME
+    ]
+  })
+
+  // sort the CNAME records to ensure deterministic processing
+  const cnameRecords = cnameRecordsResponse.Answer
+    .sort((a, b) => a.data.localeCompare(b.data))
+
+  log('found %d CNAME records for %s', cnameRecords.length, domain)
+
+  for (const cname of cnameRecords) {
+    try {
+      return await recursiveResolveDomain(cname.data, depth - 1, dns, log, options)
+    } catch (err: any) {
+      log.error('domain %s cname %s had no DNSLink records', domain, cname.data, err)
+    }
+  }
+
   throw new CodeError(`No DNSLink records found for domain: ${domain}`, 'ERR_DNSLINK_NOT_FOUND')
 }
 
 async function recursiveResolveDomain (domain: string, depth: number, dns: DNS, log: Logger, options: ResolveDNSOptions = {}): Promise<string> {
   if (depth === 0) {
     throw new Error('recursion limit exceeded')
+  }
+
+  // the DNSLink spec says records MUST be stored on the `_dnslink.` subdomain
+  // so start looking for records there, we will fall back to the bare domain
+  // if none are found
+  if (!domain.startsWith('_dnslink.')) {
+    domain = `_dnslink.${domain}`
   }
 
   try {
@@ -95,12 +135,5 @@ async function recursiveResolveDomain (domain: string, depth: number, dns: DNS, 
 }
 
 export async function resolveDNSLink (domain: string, dns: DNS, log: Logger, options: ResolveDNSOptions = {}): Promise<string> {
-  // the DNSLink spec says records MUST be stored on the `_dnslink.` subdomain
-  // so start looking for records there, we will fall back to the bare domain
-  // if none are found
-  if (!domain.startsWith('_dnslink.')) {
-    domain = `_dnslink.${domain}`
-  }
-
   return recursiveResolveDomain(domain, options.maxRecursiveDepth ?? MAX_RECURSIVE_DEPTH, dns, log, options)
 }

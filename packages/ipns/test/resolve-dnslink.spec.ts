@@ -47,7 +47,7 @@ describe('resolveDNSLink', () => {
 
   it('should resolve a domain', async () => {
     dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
-      name: '_dnslink.foobar.baz',
+      name: '_dnslink.foobar.baz.',
       TTL: 60,
       type: RecordType.TXT,
       data: 'dnslink=/ipfs/QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'
@@ -60,7 +60,7 @@ describe('resolveDNSLink', () => {
   it('should retry without `_dnslink.` on a domain', async () => {
     dns.query.withArgs('_dnslink.foobar.baz').rejects(new CodeError('Not found', 'ENOTFOUND'))
     dns.query.withArgs('foobar.baz').resolves(dnsResponse([{
-      name: 'foobar.baz',
+      name: 'foobar.baz.',
       TTL: 60,
       type: RecordType.TXT,
       data: 'dnslink=/ipfs/QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'
@@ -72,27 +72,32 @@ describe('resolveDNSLink', () => {
 
   it('should handle bad records', async () => {
     dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
-      name: 'foobar.baz',
+      name: 'foobar.baz.',
       TTL: 60,
       type: RecordType.TXT,
       data: 'dnslink'
     }, {
-      name: 'foobar.baz',
+      name: 'foobar.baz.',
       TTL: 60,
       type: RecordType.TXT,
       data: 'dnslink=invalid'
     }, {
-      name: 'foobar.baz',
+      name: 'foobar.baz.',
       TTL: 60,
       type: RecordType.TXT,
       data: 'bad text record'
     }, {
-      name: 'foobar.baz',
+      name: 'foobar.baz.',
+      TTL: 60,
+      type: RecordType.TXT,
+      data: 'dnslink=/hyper/link-for-other-namespace'
+    }, {
+      name: 'foobar.baz.',
       TTL: 60,
       type: RecordType.TXT,
       data: 'dnslink=/ipfs/invalid cid'
     }, {
-      name: 'foobar.baz',
+      name: 'foobar.baz.',
       TTL: 60,
       type: RecordType.TXT,
       data: 'dnslink=/ipfs/QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'
@@ -104,7 +109,7 @@ describe('resolveDNSLink', () => {
 
   it('should handle records wrapped in quotation marks', async () => {
     dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
-      name: 'foobar.baz',
+      name: 'foobar.baz.',
       TTL: 60,
       type: RecordType.TXT,
       data: '"dnslink=/ipfs/QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn"'
@@ -117,7 +122,7 @@ describe('resolveDNSLink', () => {
   it('should support trailing slash in returned dnslink value', async () => {
     // see https://github.com/ipfs/helia/issues/402
     dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
-      name: 'foobar.baz',
+      name: 'foobar.baz.',
       TTL: 60,
       type: RecordType.TXT,
       data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe/'
@@ -130,7 +135,7 @@ describe('resolveDNSLink', () => {
   it('should support paths in returned dnslink value', async () => {
     // see https://github.com/ipfs/helia/issues/402
     dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
-      name: 'foobar.baz',
+      name: 'foobar.baz.',
       TTL: 60,
       type: RecordType.TXT,
       data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe/foobar/path/123'
@@ -145,7 +150,7 @@ describe('resolveDNSLink', () => {
     const cid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
     const key = await createEd25519PeerId()
     dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
-      name: 'foobar.baz',
+      name: 'foobar.baz.',
       TTL: 60,
       type: RecordType.TXT,
       data: `dnslink=/ipns/${key}/foobar/path/123`
@@ -161,5 +166,32 @@ describe('resolveDNSLink', () => {
 
     expect(result.cid.toString()).to.equal(cid.toV1().toString())
     expect(result.path).to.equal('foobar/path/123')
+  })
+
+  it('should follow CNAMES to delegated DNSLink domains', async () => {
+    const cid = CID.parse('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe')
+    const key = await createEd25519PeerId()
+    dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
+      name: '_dnslink.foobar.baz.',
+      TTL: 60,
+      type: RecordType.CNAME,
+      data: '_dnslink.delegated.foobar.baz'
+    }]))
+    dns.query.withArgs('_dnslink.delegated.foobar.baz').resolves(dnsResponse([{
+      name: '_dnslink.delegated.foobar.baz.',
+      TTL: 60,
+      type: RecordType.TXT,
+      data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'
+    }]))
+
+    await name.publish(key, cid)
+
+    const result = await name.resolveDNSLink('foobar.baz', { nocache: true })
+
+    if (result == null) {
+      throw new Error('Did not resolve entry')
+    }
+
+    expect(result.cid.toString()).to.equal(cid.toV1().toString())
   })
 })
