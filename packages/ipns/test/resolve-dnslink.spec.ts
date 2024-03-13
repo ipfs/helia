@@ -194,4 +194,31 @@ describe('resolveDNSLink', () => {
 
     expect(result.cid.toString()).to.equal(cid.toV1().toString())
   })
+
+  it('should resolve dnslink namespace', async () => {
+    const cid = CID.parse('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe')
+    const key = await createEd25519PeerId()
+    dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
+      name: '_dnslink.foobar.baz.',
+      TTL: 60,
+      type: RecordType.TXT,
+      data: 'dnslink=/dnslink/delegated.foobar.baz'
+    }]))
+    dns.query.withArgs('_dnslink.delegated.foobar.baz').resolves(dnsResponse([{
+      name: '_dnslink.delegated.foobar.baz.',
+      TTL: 60,
+      type: RecordType.TXT,
+      data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'
+    }]))
+
+    await name.publish(key, cid)
+
+    const result = await name.resolveDNSLink('foobar.baz', { nocache: true })
+
+    if (result == null) {
+      throw new Error('Did not resolve entry')
+    }
+
+    expect(result.cid.toString()).to.equal(cid.toV1().toString())
+  })
 })

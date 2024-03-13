@@ -64,6 +64,9 @@ async function recursiveResolveDnslink (domain: string, depth: number, dns: DNS,
 
         // if the result was another IPNS domain, try to follow it
         return await recursiveResolveDomain(domainOrCID, depth - 1, dns, log, options)
+      } else if (protocol === 'dnslink') {
+        // if the result was another DNSLink domain, try to follow it
+        return await recursiveResolveDomain(domainOrCID, depth - 1, dns, log, options)
       } else {
         log('unknown protocol "%s" in DNSLink record for domain: %s', protocol, domain)
         continue
