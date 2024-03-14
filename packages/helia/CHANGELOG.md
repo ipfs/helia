@@ -12,6 +12,28 @@
   * dependencies
     * @helia/block-brokers bumped from ^2.0.0 to ^2.0.1
 
+## [4.1.0](https://github.com/ipfs/helia/compare/helia-v4.0.2...helia-v4.1.0) (2024-03-14)
+
+
+### Features
+
+* expose .dns property on @helia/interface ([#465](https://github.com/ipfs/helia/issues/465)) ([8c9bb7d](https://github.com/ipfs/helia/commit/8c9bb7d224a1b786cba1fba18bffe07001a3b95d))
+
+
+### Bug Fixes
+
+* helia init should extend base helia init ([#464](https://github.com/ipfs/helia/issues/464)) ([a64e5de](https://github.com/ipfs/helia/commit/a64e5de937fbbade035657a18e07bcad4de0a53f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^2.0.2 to ^2.0.3
+    * @helia/interface bumped from ^4.0.1 to ^4.1.0
+    * @helia/routers bumped from ^1.0.1 to ^1.0.2
+    * @helia/utils bumped from ^0.0.2 to ^0.1.0
+
 ## [4.0.2](https://github.com/ipfs/helia/compare/helia-v4.0.1...helia-v4.0.2) (2024-02-28)
 
 

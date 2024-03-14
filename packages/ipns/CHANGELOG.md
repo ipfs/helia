@@ -14,6 +14,24 @@
 
 * make @libp2p/interface a dependency ([#159](https://github.com/ipfs/helia-ipns/issues/159)) ([546ecf0](https://github.com/ipfs/helia-ipns/commit/546ecf023bd619d32e187fa6a55d39fcf12e4bbe)), closes [#158](https://github.com/ipfs/helia-ipns/issues/158)
 
+## [7.0.0](https://github.com/ipfs/helia/compare/ipns-v6.0.1...ipns-v7.0.0) (2024-03-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* requires @helia/interface@4.1.x or later, `resolveDns` has been renamed `resolveDNSLink`
+
+### Features
+
+* use custom DNS resolver in @helia/ipns for DNSLink ([#466](https://github.com/ipfs/helia/issues/466)) ([2c71b6e](https://github.com/ipfs/helia/commit/2c71b6ec8d34dcc722a3914702f67603492c335f)), closes [#369](https://github.com/ipfs/helia/issues/369)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^4.0.1 to ^4.1.0
+
 ## [6.0.1](https://github.com/ipfs/helia/compare/ipns-v6.0.0...ipns-v6.0.1) (2024-02-28)
 
 
