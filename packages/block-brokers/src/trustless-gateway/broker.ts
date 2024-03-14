@@ -1,5 +1,7 @@
 import { DEFAULT_SESSION_MIN_PROVIDERS, DEFAULT_SESSION_MAX_PROVIDERS, DEFAULT_SESSION_PROVIDER_QUERY_CONCURRENCY, DEFAULT_SESSION_PROVIDER_QUERY_TIMEOUT } from '@helia/interface'
 import { PeerQueue } from '@libp2p/utils/peer-queue'
+import { isPrivateIp } from '@libp2p/utils/private-ip'
+import { DNS, HTTP, HTTPS } from '@multiformats/multiaddr-matcher'
 import { multiaddrToUri } from '@multiformats/multiaddr-to-uri'
 import pDefer from 'p-defer'
 import { TrustlessGateway } from './trustless-gateway.js'
@@ -17,6 +19,22 @@ export interface CreateTrustlessGatewaySessionOptions extends CreateSessionOptio
    * @default only-if-cached
    */
   cacheControl?: string
+
+  /**
+   * By default we will only connect to peers with HTTPS addresses, pass true
+   * to also connect to HTTP addresses.
+   *
+   * @default false
+   */
+  allowInsecure?: boolean
+
+  /**
+   * By default we will only connect to peers with public or DNS addresses, pass
+   * true to also connect to private addresses.
+   *
+   * @default false
+   */
+  allowLocal?: boolean
 }
 
 /**
@@ -103,14 +121,30 @@ export class TrustlessGatewayBlockBroker implements BlockBroker<TrustlessGateway
 
     Promise.resolve().then(async () => {
       for await (const provider of this.routing.findProviders(root, options)) {
-        if (provider.protocols == null || !provider.protocols.includes('transport-ipfs-gateway-http')) {
+        const httpAddresses = provider.multiaddrs.filter(ma => {
+          if (HTTPS.matches(ma) || (options.allowInsecure === true && HTTP.matches(ma))) {
+            if (options.allowLocal === true) {
+              return true
+            }
+
+            if (DNS.matches(ma)) {
+              return true
+            }
+
+            return isPrivateIp(ma.toOptions().host) === false
+          }
+
+          return false
+        })
+
+        if (httpAddresses.length === 0) {
           continue
         }
 
         this.log('found transport-ipfs-gateway-http provider %p for cid %c', provider.id, root)
 
         void queue.add(async () => {
-          for (const ma of provider.multiaddrs) {
+          for (const ma of httpAddresses) {
             let uri: string | undefined
 
             try {
@@ -125,6 +159,11 @@ export class TrustlessGatewayBlockBroker implements BlockBroker<TrustlessGateway
               // be very widely implemented so as long as the remote responds
               // we are happy they are valid
               // https://specs.ipfs.tech/http-gateways/trustless-gateway/#head-ipfs-cid-path-params
+
+              // in the future we should be able to request `${uri}/.well-known/libp2p-http
+              // and discover an IPFS gateway from $.protocols['/ipfs/gateway'].path
+              // in the response
+              // https://github.com/libp2p/specs/pull/508/files
               const response = await fetch(resource, {
                 method: 'HEAD',
                 headers: {

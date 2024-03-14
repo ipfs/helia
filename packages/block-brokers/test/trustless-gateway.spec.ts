@@ -12,12 +12,11 @@ import { TrustlessGatewayBlockBroker } from '../src/trustless-gateway/broker.js'
 import { TrustlessGateway } from '../src/trustless-gateway/trustless-gateway.js'
 import { createBlock } from './fixtures/create-block.js'
 import type { Routing } from '@helia/interface'
-import type { BlockBroker } from '@helia/interface/blocks'
 import type { CID } from 'multiformats/cid'
 
 describe('trustless-gateway-block-broker', () => {
   let blocks: Array<{ cid: CID, block: Uint8Array }>
-  let gatewayBlockBroker: BlockBroker
+  let gatewayBlockBroker: TrustlessGatewayBlockBroker
   let gateways: Array<StubbedInstance<TrustlessGateway>>
   let routing: StubbedInstance<Routing>
 
@@ -165,9 +164,6 @@ describe('trustless-gateway-block-broker', () => {
         id: await createEd25519PeerId(),
         multiaddrs: [
           multiaddr('/ip4/132.32.25.6/tcp/1234')
-        ],
-        protocols: [
-          'transport-bitswap'
         ]
       }
       // expired peer info
@@ -180,16 +176,15 @@ describe('trustless-gateway-block-broker', () => {
         id: await createEd25519PeerId(),
         multiaddrs: [
           uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
-        ],
-        protocols: [
-          'transport-ipfs-gateway-http'
         ]
       }
     }())
 
     const sessionBlockstore = await gatewayBlockBroker.createSession?.(blocks[0].cid, {
       minProviders: 1,
-      providerQueryConcurrency: 1
+      providerQueryConcurrency: 1,
+      allowInsecure: true,
+      allowLocal: true
     })
 
     expect(sessionBlockstore).to.be.ok()
