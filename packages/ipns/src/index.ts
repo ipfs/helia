@@ -253,6 +253,7 @@ const HOUR = 60 * MINUTE
 
 const DEFAULT_LIFETIME_MS = 24 * HOUR
 const DEFAULT_REPUBLISH_INTERVAL_MS = 23 * HOUR
+const DEFAULT_DNSLINK_RETRIES = 3
 
 export type PublishProgressEvents =
   ProgressEvent<'ipns:publish:start'> |
@@ -321,6 +322,13 @@ export interface ResolveDNSLinkOptions extends AbortOptions, ProgressOptions<Res
    * @default 32
    */
   maxRecursiveDepth?: number
+
+  /**
+   * Retry in case of transport error
+   *
+   * @default 3
+   */
+  retries?: number
 }
 
 export interface RepublishOptions extends AbortOptions, ProgressOptions<RepublishProgressEvents | IPNSRoutingEvents> {
@@ -424,7 +432,21 @@ class DefaultIPNS implements IPNS {
   }
 
   async resolveDNSLink (domain: string, options: ResolveDNSLinkOptions = {}): Promise<ResolveResult> {
-    const dnslink = await resolveDNSLink(domain, this.dns, this.log, options)
+    let dnslink = ''
+    const retries = options.retries ?? DEFAULT_DNSLINK_RETRIES
+
+    for (let i = 0; i < retries; i++) {
+      try {
+        dnslink = await resolveDNSLink(domain, this.dns, this.log, options)
+        break
+      } catch (err) {
+        if (i === (retries - 1)) {
+          throw err
+        }
+
+        log.error('error resolving %s attempt %d of %d', domain, i + 1, retries, err)
+      }
+    }
 
     return this.#resolve(dnslink, options)
   }
