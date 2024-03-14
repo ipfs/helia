@@ -221,4 +221,26 @@ describe('resolveDNSLink', () => {
 
     expect(result.cid.toString()).to.equal(cid.toV1().toString())
   })
+
+  it('should include DNS Answer in result', async () => {
+    const cid = CID.parse('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe')
+    const key = await createEd25519PeerId()
+    const answer = {
+      name: '_dnslink.foobar.baz.',
+      TTL: 60,
+      type: RecordType.TXT,
+      data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'
+    }
+    dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([answer]))
+
+    await name.publish(key, cid)
+
+    const result = await name.resolveDNSLink('foobar.baz', { nocache: true })
+
+    if (result == null) {
+      throw new Error('Did not resolve entry')
+    }
+
+    expect(result).to.have.deep.property('answer', answer)
+  })
 })

@@ -241,7 +241,7 @@ import { localStore, type LocalStore } from './routing/local-store.js'
 import type { IPNSRouting, IPNSRoutingEvents } from './routing/index.js'
 import type { Routing } from '@helia/interface'
 import type { AbortOptions, ComponentLogger, Logger, PeerId } from '@libp2p/interface'
-import type { DNS, ResolveDnsProgressEvents } from '@multiformats/dns'
+import type { Answer, DNS, ResolveDnsProgressEvents } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
 import type { IPNSRecord } from 'ipns'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
@@ -331,8 +331,31 @@ export interface RepublishOptions extends AbortOptions, ProgressOptions<Republis
 }
 
 export interface ResolveResult {
+  /**
+   * The CID that was resolved
+   */
   cid: CID
+
+  /**
+   * Any path component that was part of the resolved record
+   *
+   * @default ""
+   */
   path: string
+}
+
+export interface IPNSResolveResult extends ResolveResult {
+  /**
+   * The resolved record
+   */
+  record: IPNSRecord
+}
+
+export interface DNSLinkResolveResult extends ResolveResult {
+  /**
+   * The resolved record
+   */
+  answer: Answer
 }
 
 export interface IPNS {
@@ -347,12 +370,12 @@ export interface IPNS {
    * Accepts a public key formatted as a libp2p PeerID and resolves the IPNS record
    * corresponding to that public key until a value is found
    */
-  resolve(key: PeerId, options?: ResolveOptions): Promise<ResolveResult>
+  resolve(key: PeerId, options?: ResolveOptions): Promise<IPNSResolveResult>
 
   /**
    * Resolve a CID from a dns-link style IPNS record
    */
-  resolveDNSLink(domain: string, options?: ResolveDNSLinkOptions): Promise<ResolveResult>
+  resolveDNSLink(domain: string, options?: ResolveDNSLinkOptions): Promise<DNSLinkResolveResult>
 
   /**
    * Periodically republish all IPNS records found in the datastore
@@ -416,17 +439,23 @@ class DefaultIPNS implements IPNS {
     }
   }
 
-  async resolve (key: PeerId, options: ResolveOptions = {}): Promise<ResolveResult> {
+  async resolve (key: PeerId, options: ResolveOptions = {}): Promise<IPNSResolveResult> {
     const routingKey = peerIdToRoutingKey(key)
     const record = await this.#findIpnsRecord(routingKey, options)
 
-    return this.#resolve(record.value, options)
+    return {
+      ...(await this.#resolve(record.value, options)),
+      record
+    }
   }
 
-  async resolveDNSLink (domain: string, options: ResolveDNSLinkOptions = {}): Promise<ResolveResult> {
+  async resolveDNSLink (domain: string, options: ResolveDNSLinkOptions = {}): Promise<DNSLinkResolveResult> {
     const dnslink = await resolveDNSLink(domain, this.dns, this.log, options)
 
-    return this.#resolve(dnslink, options)
+    return {
+      ...(await this.#resolve(dnslink.value, options)),
+      answer: dnslink.answer
+    }
   }
 
   republish (options: RepublishOptions = {}): void {
@@ -465,7 +494,7 @@ class DefaultIPNS implements IPNS {
     }, options.interval ?? DEFAULT_REPUBLISH_INTERVAL_MS)
   }
 
-  async #resolve (ipfsPath: string, options: ResolveOptions = {}): Promise<ResolveResult> {
+  async #resolve (ipfsPath: string, options: ResolveOptions = {}): Promise<{ cid: CID, path: string }> {
     const parts = ipfsPath.split('/')
     try {
       const scheme = parts[1]

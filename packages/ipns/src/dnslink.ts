@@ -3,11 +3,16 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import { RecordType } from '@multiformats/dns'
 import { CID } from 'multiformats/cid'
 import type { ResolveDNSLinkOptions } from './index.js'
-import type { DNS } from '@multiformats/dns'
+import type { Answer, DNS } from '@multiformats/dns'
 
 const MAX_RECURSIVE_DEPTH = 32
 
-async function recursiveResolveDnslink (domain: string, depth: number, dns: DNS, log: Logger, options: ResolveDNSLinkOptions = {}): Promise<string> {
+export interface DNSLinkResult {
+  answer: Answer
+  value: string
+}
+
+async function recursiveResolveDnslink (domain: string, depth: number, dns: DNS, log: Logger, options: ResolveDNSLinkOptions = {}): Promise<DNSLinkResult> {
   if (depth === 0) {
     throw new Error('recursion limit exceeded')
   }
@@ -52,14 +57,20 @@ async function recursiveResolveDnslink (domain: string, depth: number, dns: DNS,
           const cid = CID.parse(domainOrCID)
 
           // if the result is a CID, we've reached the end of the recursion
-          return `/ipfs/${cid}${rest.length > 0 ? `/${rest.join('/')}` : ''}`
+          return {
+            value: `/ipfs/${cid}${rest.length > 0 ? `/${rest.join('/')}` : ''}`,
+            answer
+          }
         } catch {}
       } else if (protocol === 'ipns') {
         try {
           const peerId = peerIdFromString(domainOrCID)
 
           // if the result is a PeerId, we've reached the end of the recursion
-          return `/ipns/${peerId}${rest.length > 0 ? `/${rest.join('/')}` : ''}`
+          return {
+            value: `/ipns/${peerId}${rest.length > 0 ? `/${rest.join('/')}` : ''}`,
+            answer
+          }
         } catch {}
 
         // if the result was another IPNS domain, try to follow it
@@ -103,7 +114,7 @@ async function recursiveResolveDnslink (domain: string, depth: number, dns: DNS,
   throw new CodeError(`No DNSLink records found for domain: ${domain}`, 'ERR_DNSLINK_NOT_FOUND')
 }
 
-async function recursiveResolveDomain (domain: string, depth: number, dns: DNS, log: Logger, options: ResolveDNSLinkOptions = {}): Promise<string> {
+async function recursiveResolveDomain (domain: string, depth: number, dns: DNS, log: Logger, options: ResolveDNSLinkOptions = {}): Promise<DNSLinkResult> {
   if (depth === 0) {
     throw new Error('recursion limit exceeded')
   }
@@ -137,6 +148,6 @@ async function recursiveResolveDomain (domain: string, depth: number, dns: DNS, 
   }
 }
 
-export async function resolveDNSLink (domain: string, dns: DNS, log: Logger, options: ResolveDNSLinkOptions = {}): Promise<string> {
+export async function resolveDNSLink (domain: string, dns: DNS, log: Logger, options: ResolveDNSLinkOptions = {}): Promise<DNSLinkResult> {
   return recursiveResolveDomain(domain, options.maxRecursiveDepth ?? MAX_RECURSIVE_DEPTH, dns, log, options)
 }
