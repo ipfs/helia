@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import { Record } from '@libp2p/kad-dht'
+import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
@@ -13,6 +14,7 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { ipns } from '../src/index.js'
 import type { IPNS, IPNSRouting } from '../src/index.js'
 import type { Routing } from '@helia/interface'
+import type { DNS } from '@multiformats/dns'
 
 const cid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
 
@@ -21,14 +23,25 @@ describe('resolve', () => {
   let customRouting: StubbedInstance<IPNSRouting>
   let datastore: Datastore
   let heliaRouting: StubbedInstance<Routing>
+  let dns: StubbedInstance<DNS>
 
   beforeEach(async () => {
     datastore = new MemoryDatastore()
     customRouting = stubInterface<IPNSRouting>()
     customRouting.get.throws(new Error('Not found'))
     heliaRouting = stubInterface<Routing>()
+    dns = stubInterface<DNS>()
 
-    name = ipns({ datastore, routing: heliaRouting }, { routers: [customRouting] })
+    name = ipns({
+      datastore,
+      routing: heliaRouting,
+      dns,
+      logger: defaultLogger()
+    }, {
+      routers: [
+        customRouting
+      ]
+    })
   })
 
   it('should resolve a record', async () => {

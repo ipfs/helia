@@ -235,13 +235,13 @@ import { ipnsSelector } from 'ipns/selector'
 import { ipnsValidator } from 'ipns/validator'
 import { CID } from 'multiformats/cid'
 import { CustomProgressEvent } from 'progress-events'
-import { defaultResolver } from './dns-resolvers/default.js'
+import { resolveDNSLink } from './dnslink.js'
 import { helia } from './routing/helia.js'
 import { localStore, type LocalStore } from './routing/local-store.js'
 import type { IPNSRouting, IPNSRoutingEvents } from './routing/index.js'
-import type { DNSResponse } from './utils/dns.js'
 import type { Routing } from '@helia/interface'
-import type { AbortOptions, PeerId } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, Logger, PeerId } from '@libp2p/interface'
+import type { DNS, ResolveDnsProgressEvents } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
 import type { IPNSRecord } from 'ipns'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
@@ -269,10 +269,10 @@ export type RepublishProgressEvents =
   ProgressEvent<'ipns:republish:success', IPNSRecord> |
   ProgressEvent<'ipns:republish:error', { record: IPNSRecord, err: Error }>
 
-export type ResolveDnsLinkProgressEvents =
-  ProgressEvent<'dnslink:cache', string> |
-  ProgressEvent<'dnslink:query', string> |
-  ProgressEvent<'dnslink:answer', DNSResponse>
+export type ResolveDNSLinkProgressEvents =
+  ResolveProgressEvents |
+  IPNSRoutingEvents |
+  ResolveDnsProgressEvents
 
 export interface PublishOptions extends AbortOptions, ProgressOptions<PublishProgressEvents | IPNSRoutingEvents> {
   /**
@@ -299,35 +299,28 @@ export interface ResolveOptions extends AbortOptions, ProgressOptions<ResolvePro
   offline?: boolean
 }
 
-export interface ResolveDnsLinkOptions extends AbortOptions, ProgressOptions<ResolveDnsLinkProgressEvents> {
+export interface ResolveDNSLinkOptions extends AbortOptions, ProgressOptions<ResolveDNSLinkProgressEvents> {
   /**
-   * Do not use cached DNS entries (default: false)
-   */
-  nocache?: boolean
-}
-
-export interface DNSResolver {
-  (domain: string, options?: ResolveDnsLinkOptions): Promise<string>
-}
-
-export interface ResolveDNSOptions extends AbortOptions, ProgressOptions<ResolveProgressEvents | IPNSRoutingEvents | ResolveDnsLinkProgressEvents> {
-  /**
-   * Do not query the network for the IPNS record (default: false)
+   * Do not query the network for the IPNS record
+   *
+   * @default false
    */
   offline?: boolean
 
   /**
-   * Do not use cached DNS entries (default: false)
+   * Do not use cached DNS entries
+   *
+   * @default false
    */
   nocache?: boolean
 
   /**
-   * These resolvers will be used to resolve the dnslink entries, if unspecified node will
-   * fall back to the `dns` module and browsers fall back to querying google/cloudflare DoH
+   * When resolving DNSLink records that resolve to other DNSLink records, limit
+   * how many times we will recursively resolve them.
    *
-   * @see https://github.com/ipfs/helia-ipns/pull/55#discussion_r1270096881
+   * @default 32
    */
-  resolvers?: DNSResolver[]
+  maxRecursiveDepth?: number
 }
 
 export interface RepublishOptions extends AbortOptions, ProgressOptions<RepublishProgressEvents | IPNSRoutingEvents> {
@@ -359,7 +352,7 @@ export interface IPNS {
   /**
    * Resolve a CID from a dns-link style IPNS record
    */
-  resolveDns(domain: string, options?: ResolveDNSOptions): Promise<ResolveResult>
+  resolveDNSLink(domain: string, options?: ResolveDNSLinkOptions): Promise<ResolveResult>
 
   /**
    * Periodically republish all IPNS records found in the datastore
@@ -372,21 +365,25 @@ export type { IPNSRouting } from './routing/index.js'
 export interface IPNSComponents {
   datastore: Datastore
   routing: Routing
+  dns: DNS
+  logger: ComponentLogger
 }
 
 class DefaultIPNS implements IPNS {
   private readonly routers: IPNSRouting[]
   private readonly localStore: LocalStore
   private timeout?: ReturnType<typeof setTimeout>
-  private readonly defaultResolvers: DNSResolver[]
+  private readonly dns: DNS
+  private readonly log: Logger
 
-  constructor (components: IPNSComponents, routers: IPNSRouting[] = [], resolvers: DNSResolver[] = []) {
+  constructor (components: IPNSComponents, routers: IPNSRouting[] = []) {
     this.routers = [
       helia(components.routing),
       ...routers
     ]
     this.localStore = localStore(components.datastore)
-    this.defaultResolvers = resolvers.length > 0 ? resolvers : [defaultResolver()]
+    this.dns = components.dns
+    this.log = components.logger.forComponent('helia:ipns')
   }
 
   async publish (key: PeerId, value: CID | PeerId | string, options: PublishOptions = {}): Promise<IPNSRecord> {
@@ -426,12 +423,8 @@ class DefaultIPNS implements IPNS {
     return this.#resolve(record.value, options)
   }
 
-  async resolveDns (domain: string, options: ResolveDNSOptions = {}): Promise<ResolveResult> {
-    const resolvers = options.resolvers ?? this.defaultResolvers
-
-    const dnslink = await Promise.any(
-      resolvers.map(async resolver => resolver(domain, options))
-    )
+  async resolveDNSLink (domain: string, options: ResolveDNSLinkOptions = {}): Promise<ResolveResult> {
+    const dnslink = await resolveDNSLink(domain, this.dns, this.log, options)
 
     return this.#resolve(dnslink, options)
   }
@@ -564,11 +557,10 @@ class DefaultIPNS implements IPNS {
 
 export interface IPNSOptions {
   routers?: IPNSRouting[]
-  resolvers?: DNSResolver[]
 }
 
-export function ipns (components: IPNSComponents, { routers = [], resolvers = [] }: IPNSOptions = {}): IPNS {
-  return new DefaultIPNS(components, routers, resolvers)
+export function ipns (components: IPNSComponents, { routers = [] }: IPNSOptions = {}): IPNS {
+  return new DefaultIPNS(components, routers)
 }
 
 export { ipnsValidator, type IPNSRoutingEvents }
