@@ -1,3 +1,4 @@
+import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 
 /**
@@ -36,8 +37,11 @@ export class TrustlessGateway {
    */
   #successes = 0
 
-  constructor (url: URL | string) {
+  private readonly log: Logger
+
+  constructor (url: URL | string, logger: ComponentLogger) {
     this.url = url instanceof URL ? url : new URL(url)
+    this.log = logger.forComponent(`helia:trustless-gateway-block-broker:${this.url.hostname}`)
   }
 
   /**
@@ -67,6 +71,9 @@ export class TrustlessGateway {
         },
         cache: 'force-cache'
       })
+
+      this.log('GET %s %d', gwUrl, res.status)
+
       if (!res.ok) {
         this.#errors++
         throw new Error(`unable to fetch raw block for CID ${cid} from gateway ${this.url}`)
