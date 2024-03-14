@@ -10,6 +10,13 @@
 
 * **dev:** bump aegir from 39.0.13 to 40.0.8 ([#198](https://github.com/ipfs/helia/issues/198)) ([4d75ecf](https://github.com/ipfs/helia/commit/4d75ecffb79e5177da35d3106e42dac7bc63153a))
 
+## [4.1.0](https://github.com/ipfs/helia/compare/interface-v4.0.1...interface-v4.1.0) (2024-03-14)
+
+
+### Features
+
+* expose .dns property on @helia/interface ([#465](https://github.com/ipfs/helia/issues/465)) ([8c9bb7d](https://github.com/ipfs/helia/commit/8c9bb7d224a1b786cba1fba18bffe07001a3b95d))
+
 ## [4.0.1](https://github.com/ipfs/helia/compare/interface-v4.0.0...interface-v4.0.1) (2024-02-28)
 
 

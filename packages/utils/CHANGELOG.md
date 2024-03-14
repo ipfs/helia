@@ -12,6 +12,20 @@
   * dependencies
     * @helia/interface bumped from ^3.0.1 to ^4.0.0
 
+## [0.1.0](https://github.com/ipfs/helia/compare/utils-v0.0.2...utils-v0.1.0) (2024-03-14)
+
+
+### Features
+
+* expose .dns property on @helia/interface ([#465](https://github.com/ipfs/helia/issues/465)) ([8c9bb7d](https://github.com/ipfs/helia/commit/8c9bb7d224a1b786cba1fba18bffe07001a3b95d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^4.0.1 to ^4.1.0
+
 ## [0.0.2](https://github.com/ipfs/helia/compare/utils-v0.0.1...utils-v0.0.2) (2024-02-28)
 
 
