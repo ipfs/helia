@@ -12,7 +12,7 @@ async function recursiveResolveDnslink (domain: string, depth: number, dns: DNS,
     throw new Error('recursion limit exceeded')
   }
 
-  log('query %s for TXT and CNAME records', domain)
+  log('query %s for TXT records', domain)
   const txtRecordsResponse = await dns.query(domain, {
     ...options,
     types: [
@@ -76,9 +76,8 @@ async function recursiveResolveDnslink (domain: string, depth: number, dns: DNS,
     }
   }
 
-  // no dnslink records found, try CNAMEs
+  // see if there is a CNAME delegation
   log('no DNSLink records found for %s, falling back to CNAME', domain)
-
   const cnameRecordsResponse = await dns.query(domain, {
     ...options,
     types: [
