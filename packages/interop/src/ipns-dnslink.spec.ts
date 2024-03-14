@@ -40,6 +40,6 @@ describe('@helia/ipns - dnslink', () => {
       const result = await name.resolveDNSLink(domain)
 
       expect(result).to.have.property('cid')
-    })
+    }).retries(5)
   })
 })
