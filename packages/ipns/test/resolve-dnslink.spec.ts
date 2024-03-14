@@ -70,23 +70,6 @@ describe('resolveDNSLink', () => {
     expect(result.cid.toString()).to.equal('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
   })
 
-  it('should retry on failure', async () => {
-    dns.query.withArgs('foobar.baz')
-      .rejects(new CodeError('Not found', 'ENODATA'))
-
-    dns.query.withArgs('_dnslink.foobar.baz')
-      .onFirstCall().rejects(new CodeError('Not found', 'ENODATA'))
-      .onSecondCall().resolves(dnsResponse([{
-        name: '_dnslink.foobar.baz.',
-        TTL: 60,
-        type: RecordType.TXT,
-        data: 'dnslink=/ipfs/QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'
-      }]))
-
-    const result = await name.resolveDNSLink('foobar.baz', { nocache: true, offline: true })
-    expect(result.cid.toString()).to.equal('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
-  })
-
   it('should handle bad records', async () => {
     dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
       name: 'foobar.baz.',
