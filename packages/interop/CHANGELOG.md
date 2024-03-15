@@ -1,5 +1,14 @@
 # Changelog
 
+## [6.0.1](https://github.com/ipfs/helia/compare/interop-v6.0.0...interop-v6.0.1) (2024-03-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/ipns bumped from ^7.0.0 to ^7.1.0
+
 ## [6.0.0](https://github.com/ipfs/helia/compare/interop-v5.1.0...interop-v6.0.0) (2024-03-14)
 
 

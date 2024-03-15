@@ -1,6 +1,6 @@
 {
   "name": "@helia/interop",
-  "version": "6.0.0",
+  "version": "6.0.1",
   "description": "Interop tests for Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/interop#readme",
@@ -64,7 +64,7 @@
     "@helia/dag-json": "^3.0.2",
     "@helia/http": "^1.0.3",
     "@helia/interface": "^4.1.0",
-    "@helia/ipns": "^7.0.0",
+    "@helia/ipns": "^7.1.0",
     "@helia/json": "^3.0.2",
     "@helia/mfs": "^3.0.2",
     "@helia/routers": "^1.0.2",
