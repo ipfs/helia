@@ -16,6 +16,13 @@
   * dependencies
     * @helia/interface bumped from ^4.0.1 to ^4.1.0
 
+## [7.1.0](https://github.com/ipfs/helia/compare/ipns-v7.0.0...ipns-v7.1.0) (2024-03-15)
+
+
+### Features
+
+* add `record`/`answer` fields to IPNS results ([#471](https://github.com/ipfs/helia/issues/471)) ([b6765fe](https://github.com/ipfs/helia/commit/b6765fe7632231407c4a8506015ac07e30152190))
+
 ## [6.0.1](https://github.com/ipfs/helia/compare/ipns-v6.0.0...ipns-v6.0.1) (2024-02-28)
 
 
