@@ -6,7 +6,7 @@ import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import { type Datastore, Key } from 'interface-datastore'
-import { create, marshal, peerIdToRoutingKey } from 'ipns'
+import { create, marshal, peerIdToRoutingKey, unmarshal } from 'ipns'
 import { CID } from 'multiformats/cid'
 import Sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
@@ -164,5 +164,20 @@ describe('resolve', () => {
 
     // should have cached the updated record
     expect(record.value).to.equalBytes(marshalledRecordB)
+  })
+
+  it('should include IPNS record in result', async () => {
+    const key = await createEd25519PeerId()
+    await name.publish(key, cid)
+
+    const customRoutingKey = peerIdToRoutingKey(key)
+    const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
+    const buf = await datastore.get(dhtKey)
+    const dhtRecord = Record.deserialize(buf)
+    const record = unmarshal(dhtRecord.value)
+
+    const result = await name.resolve(key)
+
+    expect(result).to.have.deep.property('record', record)
   })
 })
