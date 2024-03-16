@@ -294,9 +294,18 @@ export interface PublishOptions extends AbortOptions, ProgressOptions<PublishPro
 
 export interface ResolveOptions extends AbortOptions, ProgressOptions<ResolveProgressEvents | IPNSRoutingEvents> {
   /**
-   * Do not query the network for the IPNS record (default: false)
+   * Do not query the network for the IPNS record
+   *
+   * @default false
    */
   offline?: boolean
+
+  /**
+   * Do not use cached DNS entries
+   *
+   * @default false
+   */
+  nocache?: boolean
 }
 
 export interface ResolveDNSLinkOptions extends AbortOptions, ProgressOptions<ResolveDNSLinkProgressEvents> {
@@ -523,22 +532,40 @@ class DefaultIPNS implements IPNS {
   }
 
   async #findIpnsRecord (routingKey: Uint8Array, options: ResolveOptions = {}): Promise<IPNSRecord> {
-    let routers = [
-      this.localStore,
-      ...this.routers
-    ]
+    const records: Uint8Array[] = []
+    const cached = await this.localStore.has(routingKey, options)
 
-    if (options.offline === true) {
-      routers = [
-        this.localStore
-      ]
+    if (cached) {
+      log('record is present in the cache')
+
+      if (options.nocache !== true) {
+        // check the local cache first
+        const record = await this.localStore.get(routingKey, options)
+
+        try {
+          await ipnsValidator(routingKey, record)
+
+          this.log('record successfully retrieved from cache')
+
+          return unmarshal(record)
+        } catch (err) {
+          this.log('cached record was invalid', err)
+        }
+      } else {
+        log('ignoring local cache due to nocache=true option')
+      }
     }
 
-    const records: Uint8Array[] = []
+    if (options.offline === true) {
+      throw new CodeError('Record was not present in the cache or has expired', 'ERR_NOT_FOUND')
+    }
+
+    log('did not have record locally')
+
     let foundInvalid = 0
 
     await Promise.all(
-      routers.map(async (router) => {
+      this.routers.map(async (router) => {
         let record: Uint8Array
 
         try {
@@ -547,11 +574,7 @@ class DefaultIPNS implements IPNS {
             validate: false
           })
         } catch (err: any) {
-          if (router === this.localStore && err.code === 'ERR_NOT_FOUND') {
-            log('did not have record locally')
-          } else {
-            log.error('error finding IPNS record', err)
-          }
+          log.error('error finding IPNS record', err)
 
           return
         }
