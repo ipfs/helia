@@ -5,7 +5,7 @@ import glob from 'it-glob'
 import { InvalidParametersError } from '../errors.js'
 import { toMtime } from './to-mtime.js'
 import type { MtimeLike } from 'ipfs-unixfs'
-import type { ImportCandidateStream } from 'ipfs-unixfs-importer'
+import type { ImportCandidate } from 'ipfs-unixfs-importer'
 
 export interface GlobSourceOptions {
   /**
@@ -49,7 +49,7 @@ export interface GlobSourceResult {
 /**
  * Create an async iterator that yields paths that match requested glob pattern
  */
-export async function * globSource (cwd: string, pattern: string, options: GlobSourceOptions = {}): ImportCandidateStream {
+export async function * globSource (cwd: string, pattern: string, options: GlobSourceOptions = {}): AsyncGenerator<ImportCandidate & GlobSourceResult> {
   if (typeof pattern !== 'string') {
     throw new InvalidParametersError('Pattern must be a string')
   }
