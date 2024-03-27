@@ -7,6 +7,7 @@ import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import { type Datastore, Key } from 'interface-datastore'
 import { create, marshal, peerIdToRoutingKey, unmarshal } from 'ipns'
+import drain from 'it-drain'
 import { CID } from 'multiformats/cid'
 import Sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
@@ -46,14 +47,14 @@ describe('resolve', () => {
 
   it('should resolve a record', async () => {
     const key = await createEd25519PeerId()
-    await name.publish(key, cid)
+    const record = await name.publish(key, cid)
+
+    // empty the datastore to ensure we resolve using the routing
+    await drain(datastore.deleteMany(datastore.queryKeys({})))
+
+    heliaRouting.get.resolves(marshal(record))
 
     const resolvedValue = await name.resolve(key)
-
-    if (resolvedValue == null) {
-      throw new Error('Did not resolve entry')
-    }
-
     expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
 
     expect(heliaRouting.get.called).to.be.true()
@@ -70,15 +71,42 @@ describe('resolve', () => {
     const resolvedValue = await name.resolve(key, {
       offline: true
     })
+    expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
 
     expect(heliaRouting.get.called).to.be.false()
     expect(customRouting.get.called).to.be.false()
+  })
 
-    if (resolvedValue == null) {
-      throw new Error('Did not resolve entry')
-    }
+  it('should skip the local cache when resolving a record', async () => {
+    const cacheGetSpy = Sinon.spy(datastore, 'get')
 
+    const key = await createEd25519PeerId()
+    const record = await name.publish(key, cid)
+
+    heliaRouting.get.resolves(marshal(record))
+
+    const resolvedValue = await name.resolve(key, {
+      nocache: true
+    })
     expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
+
+    expect(heliaRouting.get.called).to.be.true()
+    expect(customRouting.get.called).to.be.true()
+    expect(cacheGetSpy.called).to.be.false()
+  })
+
+  it('should retrieve from local cache when resolving a record', async () => {
+    const cacheGetSpy = Sinon.spy(datastore, 'get')
+
+    const key = await createEd25519PeerId()
+    await name.publish(key, cid)
+
+    const resolvedValue = await name.resolve(key)
+    expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
+
+    expect(heliaRouting.get.called).to.be.false()
+    expect(customRouting.get.called).to.be.false()
+    expect(cacheGetSpy.called).to.be.true()
   })
 
   it('should resolve a recursive record', async () => {
@@ -88,11 +116,6 @@ describe('resolve', () => {
     await name.publish(key1, key2)
 
     const resolvedValue = await name.resolve(key1)
-
-    if (resolvedValue == null) {
-      throw new Error('Did not resolve entry')
-    }
-
     expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
   })
 
@@ -103,11 +126,6 @@ describe('resolve', () => {
     await name.publish(key1, key2)
 
     const resolvedValue = await name.resolve(key1)
-
-    if (resolvedValue == null) {
-      throw new Error('Did not resolve entry')
-    }
-
     expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
   })
 
