@@ -301,7 +301,7 @@ export interface ResolveOptions extends AbortOptions, ProgressOptions<ResolvePro
   offline?: boolean
 
   /**
-   * Do not use cached DNS entries
+   * Do not use cached IPNS Record entries
    *
    * @default false
    */
