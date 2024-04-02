@@ -158,7 +158,7 @@ describe('resolveDNSLink', () => {
 
     await name.publish(key, cid)
 
-    const result = await name.resolveDNSLink('foobar.baz', { nocache: true })
+    const result = await name.resolveDNSLink('foobar.baz')
 
     if (result == null) {
       throw new Error('Did not resolve entry')
@@ -186,7 +186,7 @@ describe('resolveDNSLink', () => {
 
     await name.publish(key, cid)
 
-    const result = await name.resolveDNSLink('foobar.baz', { nocache: true })
+    const result = await name.resolveDNSLink('foobar.baz')
 
     if (result == null) {
       throw new Error('Did not resolve entry')
@@ -213,7 +213,7 @@ describe('resolveDNSLink', () => {
 
     await name.publish(key, cid)
 
-    const result = await name.resolveDNSLink('foobar.baz', { nocache: true })
+    const result = await name.resolveDNSLink('foobar.baz')
 
     if (result == null) {
       throw new Error('Did not resolve entry')
@@ -235,7 +235,7 @@ describe('resolveDNSLink', () => {
 
     await name.publish(key, cid)
 
-    const result = await name.resolveDNSLink('foobar.baz', { nocache: true })
+    const result = await name.resolveDNSLink('foobar.baz')
 
     if (result == null) {
       throw new Error('Did not resolve entry')
