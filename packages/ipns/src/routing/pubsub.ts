@@ -72,7 +72,7 @@ class PubSubRouting implements IPNSRouting {
     await ipnsValidator(routingKey, message.data)
 
     if (await this.localStore.has(routingKey)) {
-      const currentRecord = await this.localStore.get(routingKey)
+      const { record: currentRecord } = await this.localStore.get(routingKey)
 
       if (uint8ArrayEquals(currentRecord, message.data)) {
         log('not storing record as we already have it')
@@ -128,7 +128,9 @@ class PubSubRouting implements IPNSRouting {
       }
 
       // chain through to local store
-      return await this.localStore.get(routingKey, options)
+      const { record } = await this.localStore.get(routingKey, options)
+
+      return record
     } catch (err: any) {
       options.onProgress?.(new CustomProgressEvent<Error>('ipns:pubsub:error', err))
       throw err

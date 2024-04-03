@@ -171,7 +171,7 @@
     "@libp2p/peer-id": "^4.0.7",
     "@multiformats/dns": "^1.0.1",
     "interface-datastore": "^8.2.11",
-    "ipns": "^9.0.0",
+    "ipns": "^9.1.0",
     "multiformats": "^13.1.0",
     "progress-events": "^1.0.0",
     "uint8arrays": "^5.0.2"

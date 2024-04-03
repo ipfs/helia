@@ -254,6 +254,8 @@ const HOUR = 60 * MINUTE
 const DEFAULT_LIFETIME_MS = 24 * HOUR
 const DEFAULT_REPUBLISH_INTERVAL_MS = 23 * HOUR
 
+const DEFAULT_TTL_NS = BigInt(HOUR) * 1_000_000n
+
 export type PublishProgressEvents =
   ProgressEvent<'ipns:publish:start'> |
   ProgressEvent<'ipns:publish:success', IPNSRecord> |
@@ -425,8 +427,8 @@ class DefaultIPNS implements IPNS {
 
       if (await this.localStore.has(routingKey, options)) {
         // if we have published under this key before, increment the sequence number
-        const buf = await this.localStore.get(routingKey, options)
-        const existingRecord = unmarshal(buf)
+        const { record } = await this.localStore.get(routingKey, options)
+        const existingRecord = unmarshal(record)
         sequenceNumber = existingRecord.sequence + 1n
       }
 
@@ -539,17 +541,46 @@ class DefaultIPNS implements IPNS {
       log('record is present in the cache')
 
       if (options.nocache !== true) {
-        // check the local cache first
-        const record = await this.localStore.get(routingKey, options)
-
         try {
+          // check the local cache first
+          const { record, created } = await this.localStore.get(routingKey, options)
+
+          this.log('record retrieved from cache')
+
+          // validate the record
           await ipnsValidator(routingKey, record)
 
-          this.log('record successfully retrieved from cache')
+          this.log('record was valid')
 
-          return unmarshal(record)
+          // check the TTL
+          const ipnsRecord = unmarshal(record)
+
+          // IPNS TTL is in nanoseconds, convert to milliseconds, default to one
+          // hour
+          const ttlMs = Number((ipnsRecord.ttl ?? DEFAULT_TTL_NS) / 1_000_000n)
+          const ttlExpires = created.getTime() + ttlMs
+
+          if (ttlExpires > Date.now()) {
+            // the TTL has not yet expired, return the cached record
+            this.log('record TTL was valid')
+            return ipnsRecord
+          }
+
+          if (options.offline === true) {
+            // the TTL has expired but we are skipping the routing search
+            this.log('record TTL has been reached but we are resolving offline-only, returning record')
+            return ipnsRecord
+          }
+
+          this.log('record TTL has been reached, searching routing for updates')
+
+          // add the local record to our list of resolved record, and also
+          // search the routing for updates - the most up to date record will be
+          // returned
+          records.push(record)
         } catch (err) {
           this.log('cached record was invalid', err)
+          await this.localStore.delete(routingKey, options)
         }
       } else {
         log('ignoring local cache due to nocache=true option')

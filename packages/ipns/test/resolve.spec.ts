@@ -6,7 +6,7 @@ import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import { type Datastore, Key } from 'interface-datastore'
-import { create, marshal, peerIdToRoutingKey, unmarshal } from 'ipns'
+import { create, createWithExpiration, marshal, peerIdToRoutingKey, unmarshal } from 'ipns'
 import drain from 'it-drain'
 import { CID } from 'multiformats/cid'
 import Sinon from 'sinon'
@@ -78,6 +78,7 @@ describe('resolve', () => {
   })
 
   it('should skip the local cache when resolving a record', async () => {
+    const cachePutSpy = Sinon.spy(datastore, 'put')
     const cacheGetSpy = Sinon.spy(datastore, 'get')
 
     const key = await createEd25519PeerId()
@@ -92,7 +93,9 @@ describe('resolve', () => {
 
     expect(heliaRouting.get.called).to.be.true()
     expect(customRouting.get.called).to.be.true()
-    expect(cacheGetSpy.called).to.be.false()
+
+    // we call `.get` during `.put`
+    cachePutSpy.calledBefore(cacheGetSpy)
   })
 
   it('should retrieve from local cache when resolving a record', async () => {
@@ -197,5 +200,100 @@ describe('resolve', () => {
     const result = await name.resolve(key)
 
     expect(result).to.have.deep.property('record', record)
+  })
+
+  it('should not search the routing for updated IPNS records when a locally cached copy is within the TTL', async () => {
+    const key = await createEd25519PeerId()
+    const customRoutingKey = peerIdToRoutingKey(key)
+    const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
+
+    // create a record with a valid lifetime and a non-expired TTL
+    const ipnsRecord = await create(key, cid, 1, Math.pow(2, 10), {
+      ttlNs: 10_000_000
+    })
+    const dhtRecord = new Record(customRoutingKey, marshal(ipnsRecord), new Date(Date.now()))
+
+    await datastore.put(dhtKey, dhtRecord.serialize())
+
+    const result = await name.resolve(key)
+    expect(result).to.have.deep.property('record', unmarshal(marshal(ipnsRecord)))
+
+    // should not have searched the routing
+    expect(customRouting.get.called).to.be.false()
+  })
+
+  it('should search the routing for updated IPNS records when a locally cached copy has passed the TTL', async () => {
+    const key = await createEd25519PeerId()
+
+    const customRoutingKey = peerIdToRoutingKey(key)
+    const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
+
+    // create a record with a valid lifetime but an expired ttl
+    const ipnsRecord = await create(key, cid, 1, Math.pow(2, 10), {
+      ttlNs: 10
+    })
+    const dhtRecord = new Record(customRoutingKey, marshal(ipnsRecord), new Date(Date.now() - 1000))
+
+    await datastore.put(dhtKey, dhtRecord.serialize())
+
+    const result = await name.resolve(key)
+    expect(result).to.have.deep.property('record', unmarshal(marshal(ipnsRecord)))
+
+    // should have searched the routing
+    expect(customRouting.get.called).to.be.true()
+  })
+
+  it('should search the routing for updated IPNS records when a locally cached copy has passed the TTL and choose the record with a higher sequence number', async () => {
+    const key = await createEd25519PeerId()
+
+    const customRoutingKey = peerIdToRoutingKey(key)
+    const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
+
+    // create a record with a valid lifetime but an expired ttl
+    const ipnsRecord = await create(key, cid, 10, Math.pow(2, 10), {
+      ttlNs: 10
+    })
+    const dhtRecord = new Record(customRoutingKey, marshal(ipnsRecord), new Date(Date.now() - 1000))
+
+    await datastore.put(dhtKey, dhtRecord.serialize())
+
+    // the routing returns a valid record with an higher sequence number
+    const ipnsRecordFromRouting = await create(key, cid, 11, Math.pow(2, 10), {
+      ttlNs: 10_000_000
+    })
+    customRouting.get.withArgs(customRoutingKey).resolves(marshal(ipnsRecordFromRouting))
+
+    const result = await name.resolve(key)
+    expect(result).to.have.deep.property('record', unmarshal(marshal(ipnsRecordFromRouting)))
+
+    // should have searched the routing
+    expect(customRouting.get.called).to.be.true()
+  })
+
+  it('should search the routing when a locally cached copy has an expired lifetime', async () => {
+    const key = await createEd25519PeerId()
+
+    const customRoutingKey = peerIdToRoutingKey(key)
+    const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
+
+    // create a record with an expired lifetime but valid TTL
+    const ipnsRecord = await createWithExpiration(key, cid, 10, new Date(Date.now() - Math.pow(2, 10)).toString(), {
+      ttlNs: 10_000_000
+    })
+    const dhtRecord = new Record(customRoutingKey, marshal(ipnsRecord), new Date(Date.now()))
+
+    await datastore.put(dhtKey, dhtRecord.serialize())
+
+    // the routing returns a valid record with an higher sequence number
+    const ipnsRecordFromRouting = await create(key, cid, 11, Math.pow(2, 10), {
+      ttlNs: 10_000_000
+    })
+    customRouting.get.withArgs(customRoutingKey).resolves(marshal(ipnsRecordFromRouting))
+
+    const result = await name.resolve(key)
+    expect(result).to.have.deep.property('record', unmarshal(marshal(ipnsRecordFromRouting)))
+
+    // should have searched the routing
+    expect(customRouting.get.called).to.be.true()
   })
 })
