@@ -19,6 +19,7 @@
 
 import { contentRoutingSymbol, peerRoutingSymbol, start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
+import { dns } from '@multiformats/dns'
 import drain from 'it-drain'
 import { CustomProgressEvent } from 'progress-events'
 import { PinsImpl } from './pins.js'
@@ -32,6 +33,7 @@ import type { Await, CodecLoader, GCOptions, HasherLoader, Helia as HeliaInterfa
 import type { BlockBroker } from '@helia/interface/blocks'
 import type { Pins } from '@helia/interface/pins'
 import type { ComponentLogger, Logger } from '@libp2p/interface'
+import type { DNS } from '@multiformats/dns'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { BlockCodec } from 'multiformats'
@@ -116,6 +118,11 @@ export interface HeliaInit {
    * Components used by subclasses
    */
   components?: Record<string, any>
+
+  /**
+   * An optional DNS implementation used to perform queries for DNS records.
+   */
+  dns?: DNS
 }
 
 interface Components {
@@ -123,6 +130,7 @@ interface Components {
   datastore: Datastore
   logger: ComponentLogger
   blockBrokers: BlockBroker[]
+  dns: DNS
   getCodec: CodecLoader
   getHasher: HasherLoader
 }
@@ -135,6 +143,7 @@ export class Helia implements HeliaInterface {
   public routing: Routing
   public getCodec: CodecLoader
   public getHasher: HasherLoader
+  public dns: DNS
   private readonly log: Logger
 
   constructor (init: HeliaInit) {
@@ -142,6 +151,7 @@ export class Helia implements HeliaInterface {
     this.log = this.logger.forComponent('helia')
     this.getHasher = getHasher(init.hashers, init.loadHasher)
     this.getCodec = getCodec(init.codecs, init.loadCodec)
+    this.dns = init.dns ?? dns()
 
     const components: Components = {
       blockstore: init.blockstore,
@@ -150,6 +160,7 @@ export class Helia implements HeliaInterface {
       blockBrokers: [],
       getHasher: this.getHasher,
       getCodec: this.getCodec,
+      dns: this.dns,
       ...(init.components ?? {})
     }
 

@@ -18,6 +18,7 @@ import type { Blocks } from './blocks.js'
 import type { Pins } from './pins.js'
 import type { Routing } from './routing.js'
 import type { AbortOptions, ComponentLogger } from '@libp2p/interface'
+import type { DNS } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
 import type { Await } from 'interface-store'
 import type { BlockCodec, MultihashHasher } from 'multiformats'
@@ -63,6 +64,12 @@ export interface Helia {
    * content providers, information about peers, etc.
    */
   routing: Routing
+
+  /**
+   * The DNS property can be used to perform lookups of various record types and
+   * will use a resolver appropriate to the current platform.
+   */
+  dns: DNS
 
   /**
    * Starts the Helia node

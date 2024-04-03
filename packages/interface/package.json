@@ -1,6 +1,6 @@
 {
   "name": "@helia/interface",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "The Helia API",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/interface#readme",
@@ -70,14 +70,15 @@
     "build": "aegir build"
   },
   "dependencies": {
-    "@libp2p/interface": "^1.1.2",
-    "interface-blockstore": "^5.2.9",
-    "interface-datastore": "^8.2.10",
-    "interface-store": "^5.1.7",
-    "multiformats": "^13.0.1",
+    "@libp2p/interface": "^1.1.4",
+    "@multiformats/dns": "^1.0.1",
+    "interface-blockstore": "^5.2.10",
+    "interface-datastore": "^8.2.11",
+    "interface-store": "^5.1.8",
+    "multiformats": "^13.1.0",
     "progress-events": "^1.0.0"
   },
   "devDependencies": {
-    "aegir": "^42.2.2"
+    "aegir": "^42.2.5"
   }
 }

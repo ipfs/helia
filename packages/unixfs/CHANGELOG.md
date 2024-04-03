@@ -20,6 +20,33 @@
   * dependencies
     * @helia/interface bumped from ^3.0.0 to ^3.0.1
 
+## [3.0.2](https://github.com/ipfs/helia/compare/unixfs-v3.0.1...unixfs-v3.0.2) (2024-03-14)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^4.0.1 to ^4.1.0
+
+## [3.0.1](https://github.com/ipfs/helia/compare/unixfs-v3.0.0...unixfs-v3.0.1) (2024-02-28)
+
+
+### Bug Fixes
+
+* support reading identity cids ([#429](https://github.com/ipfs/helia/issues/429)) ([98308f7](https://github.com/ipfs/helia/commit/98308f77488b8196b2d18f78f05ecd2d37456834))
+* update project deps and docs ([77e34fc](https://github.com/ipfs/helia/commit/77e34fc115cbfb82585fd954bcf389ecebf655bc))
+* use blockstore interface where possible ([#417](https://github.com/ipfs/helia/issues/417)) ([30c8981](https://github.com/ipfs/helia/commit/30c8981934ffba72d572a7b8b2712ec93b7f4d31))
+* use unixfs exporter to traverse DAGs ([#455](https://github.com/ipfs/helia/issues/455)) ([6f8c15b](https://github.com/ipfs/helia/commit/6f8c15b769c08bf73e7c62dab79909b5ecfc3c93))
+
+
+### Dependencies
+
+* update libp2p patch versions ([917a1bc](https://github.com/ipfs/helia/commit/917a1bceb9e9b56428a15dc3377a963f06affd12))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^4.0.0 to ^4.0.1
+
 ## [3.0.0](https://github.com/ipfs/helia/compare/unixfs-v2.0.1...unixfs-v3.0.0) (2024-01-24)
 
 

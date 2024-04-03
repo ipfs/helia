@@ -1,11 +1,13 @@
 /* eslint-env mocha */
 
 import { Record } from '@libp2p/kad-dht'
+import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import { type Datastore, Key } from 'interface-datastore'
-import { create, marshal, peerIdToRoutingKey } from 'ipns'
+import { create, marshal, peerIdToRoutingKey, unmarshal } from 'ipns'
+import drain from 'it-drain'
 import { CID } from 'multiformats/cid'
 import Sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
@@ -13,6 +15,7 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { ipns } from '../src/index.js'
 import type { IPNS, IPNSRouting } from '../src/index.js'
 import type { Routing } from '@helia/interface'
+import type { DNS } from '@multiformats/dns'
 
 const cid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
 
@@ -21,26 +24,37 @@ describe('resolve', () => {
   let customRouting: StubbedInstance<IPNSRouting>
   let datastore: Datastore
   let heliaRouting: StubbedInstance<Routing>
+  let dns: StubbedInstance<DNS>
 
   beforeEach(async () => {
     datastore = new MemoryDatastore()
     customRouting = stubInterface<IPNSRouting>()
     customRouting.get.throws(new Error('Not found'))
     heliaRouting = stubInterface<Routing>()
+    dns = stubInterface<DNS>()
 
-    name = ipns({ datastore, routing: heliaRouting }, { routers: [customRouting] })
+    name = ipns({
+      datastore,
+      routing: heliaRouting,
+      dns,
+      logger: defaultLogger()
+    }, {
+      routers: [
+        customRouting
+      ]
+    })
   })
 
   it('should resolve a record', async () => {
     const key = await createEd25519PeerId()
-    await name.publish(key, cid)
+    const record = await name.publish(key, cid)
+
+    // empty the datastore to ensure we resolve using the routing
+    await drain(datastore.deleteMany(datastore.queryKeys({})))
+
+    heliaRouting.get.resolves(marshal(record))
 
     const resolvedValue = await name.resolve(key)
-
-    if (resolvedValue == null) {
-      throw new Error('Did not resolve entry')
-    }
-
     expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
 
     expect(heliaRouting.get.called).to.be.true()
@@ -57,15 +71,42 @@ describe('resolve', () => {
     const resolvedValue = await name.resolve(key, {
       offline: true
     })
+    expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
 
     expect(heliaRouting.get.called).to.be.false()
     expect(customRouting.get.called).to.be.false()
+  })
 
-    if (resolvedValue == null) {
-      throw new Error('Did not resolve entry')
-    }
+  it('should skip the local cache when resolving a record', async () => {
+    const cacheGetSpy = Sinon.spy(datastore, 'get')
 
+    const key = await createEd25519PeerId()
+    const record = await name.publish(key, cid)
+
+    heliaRouting.get.resolves(marshal(record))
+
+    const resolvedValue = await name.resolve(key, {
+      nocache: true
+    })
     expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
+
+    expect(heliaRouting.get.called).to.be.true()
+    expect(customRouting.get.called).to.be.true()
+    expect(cacheGetSpy.called).to.be.false()
+  })
+
+  it('should retrieve from local cache when resolving a record', async () => {
+    const cacheGetSpy = Sinon.spy(datastore, 'get')
+
+    const key = await createEd25519PeerId()
+    await name.publish(key, cid)
+
+    const resolvedValue = await name.resolve(key)
+    expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
+
+    expect(heliaRouting.get.called).to.be.false()
+    expect(customRouting.get.called).to.be.false()
+    expect(cacheGetSpy.called).to.be.true()
   })
 
   it('should resolve a recursive record', async () => {
@@ -75,11 +116,6 @@ describe('resolve', () => {
     await name.publish(key1, key2)
 
     const resolvedValue = await name.resolve(key1)
-
-    if (resolvedValue == null) {
-      throw new Error('Did not resolve entry')
-    }
-
     expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
   })
 
@@ -90,11 +126,6 @@ describe('resolve', () => {
     await name.publish(key1, key2)
 
     const resolvedValue = await name.resolve(key1)
-
-    if (resolvedValue == null) {
-      throw new Error('Did not resolve entry')
-    }
-
     expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
   })
 
@@ -151,5 +182,20 @@ describe('resolve', () => {
 
     // should have cached the updated record
     expect(record.value).to.equalBytes(marshalledRecordB)
+  })
+
+  it('should include IPNS record in result', async () => {
+    const key = await createEd25519PeerId()
+    await name.publish(key, cid)
+
+    const customRoutingKey = peerIdToRoutingKey(key)
+    const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
+    const buf = await datastore.get(dhtKey)
+    const dhtRecord = Record.deserialize(buf)
+    const record = unmarshal(dhtRecord.value)
+
+    const result = await name.resolve(key)
+
+    expect(result).to.have.deep.property('record', record)
   })
 })

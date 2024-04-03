@@ -167,22 +167,23 @@ The basic Helia API is defined in:
 
 The API is implemented by:
 
-- [`/packages/helia`](./packages/helia) An implementation of the Helia API
+- [`/packages/helia`](./packages/helia) An peer to peer implementation that uses [bitswap](https://docs.ipfs.tech/concepts/bitswap/), [libp2p](https://www.npmjs.com/package/libp2p) and [HTTP gateways](https://docs.ipfs.tech/reference/http/gateway/) as fallback
+- [`/packages/http`](./packages/http) A lightweight implementation that uses [HTTP gateways](https://docs.ipfs.tech/reference/http/gateway/) exclusively
 
-Helia also ships a number of supplemental libraries and tools.
+Helia also ships a number of supplemental libraries and tools that can be combined with Helia API implementations to accomplish tasks in distributed and trustless ways.
 
 These libraries are not intended to be the "one true implementation" of any given API, but are made available for users to include depending on the need of their particular application:
 
-- [./packages/unixfs](./packages/unixfs) The `@helia/unixfs` module
+- [./packages/car](./packages/car) The `@helia/car` module
+- [./packages/dag-cbor](./packages/dag-cbor) The `@helia/dag-cbor` module
+- [./packages/dag-json](./packages/dag-json) The `@helia/dag-json` module
+- [./packages/ipns](./packages/ipns) The `@helia/ipns` module
+- [./packages/json](./packages/json) The `@helia/json` module
 - [./packages/mfs](./packages/mfs) The `@helia/mfs` module
-- [./packages/ipns](./packages/ipns) `@helia/ipns`
-- [./packages/car](./packages/car) `@helia/car`
-- [./packages/strings](./packages/strings) `@helia/strings`
-- [./packages/json](./packages/json) `@helia/json`
-- [./packages/dag-json](./packages/dag-json) `@helia/dag-json`
-- [./packages/dag-cbor](./packages/dag-cbor) `@helia/dag-cbor`
+- [./packages/strings](./packages/strings) The `@helia/strings` module
+- [./packages/unixfs](./packages/unixfs) The `@helia/unixfs` module
 
-An interface suite ensures everything is compatible:
+An interop suite ensures everything is compatible:
 
 - [`/packages/interop`](./packages/interop) Interop tests for Helia
 
@@ -190,6 +191,7 @@ An interface suite ensures everything is compatible:
 
 There are several other modules available outside this repo:
 
+- [`@helia/verified-fetch`](https://github.com/ipfs/helia-verified-fetch) A [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)-like API for retrieving trustless, verified content from the distributed web
 - [`@helia/delegated-routing-v1-http-api`](https://github.com/ipfs/helia-delegated-routing-v1-http-api) An implementation of the [Delegated Routing v1 HTTP API](https://specs.ipfs.tech/routing/http-routing-v1/) including a server and a client
 - [Helia WNFS](https://github.com/shovelers/helia-wnfs) a [WNFS](https://guide.fission.codes/developers/webnative/file-system-wnfs) implementation built on top of Helia
 - [`@helia/remote-pinning`](https://github.com/ipfs/helia-remote-pinning) A Helia client for communicating with [IPFS Pinning Services](https://ipfs.github.io/pinning-services-api-spec/)
