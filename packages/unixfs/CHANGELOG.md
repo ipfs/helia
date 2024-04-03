@@ -20,6 +20,13 @@
   * dependencies
     * @helia/interface bumped from ^3.0.0 to ^3.0.1
 
+## [3.0.3](https://github.com/ipfs/helia/compare/unixfs-v3.0.2...unixfs-v3.0.3) (2024-04-03)
+
+
+### Bug Fixes
+
+* Add GlobSourceResult to globSource return type in unixfs. ([#475](https://github.com/ipfs/helia/issues/475)) ([9ac5909](https://github.com/ipfs/helia/commit/9ac59098d3e4c8644756a83b185308d7d91626c1))
+
 ## [3.0.2](https://github.com/ipfs/helia/compare/unixfs-v3.0.1...unixfs-v3.0.2) (2024-03-14)
 
 
