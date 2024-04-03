@@ -44,7 +44,7 @@ describe('publish', () => {
     const ipnsEntry = await name.publish(key, cid)
 
     expect(ipnsEntry).to.have.property('sequence', 1n)
-    expect(ipnsEntry).to.have.property('ttl', 8640000000000n) // 24 hours
+    expect(ipnsEntry).to.have.property('ttl', 3_600_000_000_000n) // 1 hour
   })
 
   it('should publish an IPNS record with a custom ttl params', async function () {
@@ -55,7 +55,7 @@ describe('publish', () => {
     })
 
     expect(ipnsEntry).to.have.property('sequence', 1n)
-    expect(ipnsEntry).to.have.property('ttl', BigInt(lifetime) * 100000n)
+    expect(ipnsEntry).to.have.property('ttl', 3_600_000_000_000n)
 
     expect(heliaRouting.put.called).to.be.true()
     expect(customRouting.put.called).to.be.true()
