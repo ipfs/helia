@@ -1,6 +1,6 @@
 {
   "name": "@helia/interface",
-  "version": "4.0.1",
+  "version": "4.1.0",
   "description": "The Helia API",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/interface#readme",
@@ -71,6 +71,7 @@
   },
   "dependencies": {
     "@libp2p/interface": "^1.1.4",
+    "@multiformats/dns": "^1.0.1",
     "interface-blockstore": "^5.2.10",
     "interface-datastore": "^8.2.11",
     "interface-store": "^5.1.8",
