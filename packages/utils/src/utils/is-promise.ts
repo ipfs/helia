@@ -1,3 +1,3 @@
 export function isPromise <T> (p?: any): p is Promise<T> {
-  return p?.then != null
+  return p?.then != null && p?.catch != null
 }

@@ -7,10 +7,10 @@ import { CodeError } from '@libp2p/interface'
 import * as json from 'multiformats/codecs/json'
 import * as raw from 'multiformats/codecs/raw'
 import { isPromise } from './is-promise.js'
-import type { Await } from '@helia/interface'
+import type { Await, CodecLoader } from '@helia/interface'
 import type { BlockCodec } from 'multiformats/codecs/interface'
 
-export function getCodec <T = any, Code extends number = any> (initialCodecs: Array<BlockCodec<any, any>> = [], loadCodec?: (code: number) => Await<BlockCodec<any, any>>): (code: Code) => Await<BlockCodec<Code, T>> {
+export function getCodec <T = any, Code extends number = any> (initialCodecs: Array<BlockCodec<any, any>> = [], loadCodec?: CodecLoader): (code: Code) => Await<BlockCodec<Code, T>> {
   const codecs: Record<number, BlockCodec<any, any>> = {
     [dagPb.code]: dagPb,
     [raw.code]: raw,
