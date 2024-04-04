@@ -2,6 +2,8 @@
  * @packageDocumentation
  *
  * This module implements the [Bitswap protocol](https://docs.ipfs.tech/concepts/bitswap/) in TypeScript.
+ *
+ * It supersedes the older [ipfs-bitswap](https://www.npmjs.com/package/ipfs-bitswap) module with the aim of being smaller, faster, better integrated with libp2p/helia, having fewer dependencies and using standard JavaScript instead of Node.js APIs.
  */
 
 import { Bitswap as BitswapClass } from './bitswap.js'
@@ -188,8 +190,8 @@ export interface BitswapOptions {
   sendBlocksTimeout?: number
 
   /**
-   * When a block is added to the blockstore and we are about to send that
-   * block to peers who have it in their wantlist, wait this many milliseconds before
+   * When a block is added to the blockstore and we are about to send that block
+   * to peers who have it in their wantlist, wait this many milliseconds before
    * queueing the send job in case more blocks are added that they want
    *
    * @default 10
@@ -197,9 +199,9 @@ export interface BitswapOptions {
   sendBlocksDebounce?: number
 
   /**
-   * If the client sends a want-have, and the engine has the corresponding
-   * block, we check the size of the block and if it's small enough we send the
-   * block itself, rather than sending a HAVE.
+   * If the client sends a want-have, and we have the corresponding block, we
+   * check the size of the block and if it's small enough we send the block
+   * itself, rather than sending a HAVE.
    *
    * This defines the maximum size up to which we replace a HAVE with a block.
    *
