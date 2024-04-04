@@ -37,12 +37,10 @@ export class Bitswap implements BitswapInterface {
   public blockstore: Blockstore
   public peerWantLists: PeerWantLists
   public wantList: WantList
-  public status: 'starting' | 'started' | 'stopping' | 'stopped'
 
   constructor (components: BitswapComponents, init: BitswapOptions = {}) {
     this.logger = components.logger
     this.log = components.logger.forComponent('helia:bitswap')
-    this.status = 'stopped'
     this.blockstore = components.blockstore
 
     // report stats to libp2p metrics
@@ -140,21 +138,15 @@ export class Bitswap implements BitswapInterface {
    * Start the bitswap node
    */
   async start (): Promise<void> {
-    this.status = 'starting'
-
     this.wantList.start()
     await this.network.start()
-    this.status = 'started'
   }
 
   /**
    * Stop the bitswap node
    */
   async stop (): Promise<void> {
-    this.status = 'stopping'
-
     this.wantList.stop()
     await this.network.stop()
-    this.status = 'stopped'
   }
 }
