@@ -1,18 +1,15 @@
 import { TrustlessGateway } from './trustless-gateway.js'
 import { DEFAULT_TRUSTLESS_GATEWAYS } from './index.js'
 import type { TrustlessGatewayBlockBrokerInit, TrustlessGatewayComponents, TrustlessGatewayGetBlockProgressEvents } from './index.js'
-import type { BlockRetrievalOptions, BlockRetriever } from '@helia/interface/blocks'
+import type { BlockRetrievalOptions, BlockBroker } from '@helia/interface/blocks'
 import type { Logger } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
-import type { ProgressOptions } from 'progress-events'
 
 /**
  * A class that accepts a list of trustless gateways that are queried
  * for blocks.
  */
-export class TrustlessGatewayBlockBroker implements BlockRetriever<
-ProgressOptions<TrustlessGatewayGetBlockProgressEvents>
-> {
+export class TrustlessGatewayBlockBroker implements BlockBroker<TrustlessGatewayGetBlockProgressEvents> {
   private readonly gateways: TrustlessGateway[]
   private readonly log: Logger
 
@@ -24,7 +21,7 @@ ProgressOptions<TrustlessGatewayGetBlockProgressEvents>
       })
   }
 
-  async retrieve (cid: CID, options: BlockRetrievalOptions<ProgressOptions<TrustlessGatewayGetBlockProgressEvents>> = {}): Promise<Uint8Array> {
+  async retrieve (cid: CID, options: BlockRetrievalOptions<TrustlessGatewayGetBlockProgressEvents> = {}): Promise<Uint8Array> {
     // Loop through the gateways until we get a block or run out of gateways
     // TODO: switch to toSorted when support is better
     const sortedGateways = this.gateways.sort((a, b) => b.reliability() - a.reliability())

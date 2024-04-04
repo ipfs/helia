@@ -44,7 +44,9 @@ export type DeleteManyBlocksProgressEvents =
 
 export interface GetOfflineOptions {
   /**
-   * If true, do not attempt to fetch any missing blocks from the network (default: false)
+   * If true, do not attempt to fetch any missing blocks from the network
+   *
+   * @default false
    */
   offline?: boolean
 }
@@ -54,10 +56,19 @@ ProgressOptions<PutBlockProgressEvents>, ProgressOptions<PutManyBlocksProgressEv
 GetOfflineOptions & ProgressOptions<GetBlockProgressEvents>, GetOfflineOptions & ProgressOptions<GetManyBlocksProgressEvents>, ProgressOptions<GetAllBlocksProgressEvents>,
 ProgressOptions<DeleteBlockProgressEvents>, ProgressOptions<DeleteManyBlocksProgressEvents>
 > {
-
+  /**
+   * A session blockstore is a special blockstore that only pulls content from a
+   * subset of network peers which respond as having the block for the initial
+   * root CID.
+   *
+   * Any blocks written to the blockstore as part of the session will propagate
+   * to the blockstore the session was created from.
+   *
+   */
+  createSession(root: CID, options?: CreateSessionOptions<GetBlockProgressEvents>): Promise<Blockstore>
 }
 
-export type BlockRetrievalOptions<GetProgressOptions extends ProgressOptions = ProgressOptions> = AbortOptions & GetProgressOptions & {
+export interface BlockRetrievalOptions <ProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> extends AbortOptions, ProgressOptions<ProgressEvents> {
   /**
    * A function that blockBrokers should call prior to returning a block to ensure it can maintain control
    * of the block request flow. e.g. TrustedGatewayBlockBroker will use this to ensure that the block
@@ -67,18 +78,65 @@ export type BlockRetrievalOptions<GetProgressOptions extends ProgressOptions = P
   validateFn?(block: Uint8Array): Promise<void>
 }
 
-export interface BlockRetriever<GetProgressOptions extends ProgressOptions = ProgressOptions> {
+export interface BlockAnnounceOptions <ProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> extends AbortOptions, ProgressOptions<ProgressEvents> {
+
+}
+
+export interface CreateSessionOptions <ProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> extends AbortOptions, ProgressOptions<ProgressEvents> {
+  /**
+   * The minimum number of providers for the root CID that are required for
+   * successful session creation.
+   *
+   * The session will become usable once this many providers have been
+   * discovered, up to `maxProviders` providers will continue to be added.
+   *
+   * @default 1
+   */
+  minProviders?: number
+
+  /**
+   * The maximum number of providers for the root CID to be added to a session.
+   *
+   * @default 5
+   */
+  maxProviders?: number
+
+  /**
+   * When searching for providers of the root CID, implementations can check
+   * that providers are still online and have the requested block. This setting
+   * controls how many peers to query at the same time.
+   *
+   * @default 5
+   */
+  providerQueryConcurrency?: number
+
+  /**
+   * How long each queried provider has to respond either that they have the
+   * root block or to send it to us.
+   *
+   * @default 5000
+   */
+  providerQueryTimeout?: number
+}
+
+export interface BlockBroker<RetrieveProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>, AnnounceProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> {
   /**
    * Retrieve a block from a source
    */
-  retrieve(cid: CID, options?: BlockRetrievalOptions<GetProgressOptions>): Promise<Uint8Array>
-}
+  retrieve?(cid: CID, options?: BlockRetrievalOptions<RetrieveProgressEvents>): Promise<Uint8Array>
 
-export interface BlockAnnouncer<NotifyProgressOptions extends ProgressOptions = ProgressOptions> {
   /**
    * Make a new block available to peers
    */
-  announce(cid: CID, block: Uint8Array, options?: NotifyProgressOptions): void
+  announce?(cid: CID, block: Uint8Array, options?: BlockAnnounceOptions<AnnounceProgressEvents>): Promise<void>
+
+  /**
+   * Create a new session
+   */
+  createSession?(root: CID, options?: CreateSessionOptions<RetrieveProgressEvents>): Promise<BlockBroker<RetrieveProgressEvents, AnnounceProgressEvents>>
 }
 
-export type BlockBroker = BlockRetriever | BlockAnnouncer
+export const DEFAULT_SESSION_MIN_PROVIDERS = 1
+export const DEFAULT_SESSION_MAX_PROVIDERS = 5
+export const DEFAULT_SESSION_PROVIDER_QUERY_CONCURRENCY = 5
+export const DEFAULT_SESSION_PROVIDER_QUERY_TIMEOUT = 5000

@@ -1,5 +1,5 @@
 import { TrustlessGatewayBlockBroker } from './broker.js'
-import type { BlockRetriever } from '@helia/interface/src/blocks.js'
+import type { BlockBroker } from '@helia/interface/src/blocks.js'
 import type { ComponentLogger } from '@libp2p/interface'
 import type { ProgressEvent } from 'progress-events'
 
@@ -25,6 +25,6 @@ export interface TrustlessGatewayComponents {
   logger: ComponentLogger
 }
 
-export function trustlessGateway (init: TrustlessGatewayBlockBrokerInit = {}): (components: TrustlessGatewayComponents) => BlockRetriever {
+export function trustlessGateway (init: TrustlessGatewayBlockBrokerInit = {}): (components: TrustlessGatewayComponents) => BlockBroker<TrustlessGatewayGetBlockProgressEvents> {
   return (components) => new TrustlessGatewayBlockBroker(components, init)
 }
