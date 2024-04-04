@@ -155,6 +155,7 @@
     "@ipld/dag-pb": "^4.1.0",
     "aegir": "^42.2.5",
     "blockstore-core": "^4.4.0",
+    "interface-blockstore": "^5.2.9",
     "ipfs-unixfs-importer": "^15.2.4",
     "it-to-buffer": "^4.0.5"
   }

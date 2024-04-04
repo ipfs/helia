@@ -61,20 +61,17 @@
 import { CarWriter } from '@ipld/car'
 import drain from 'it-drain'
 import map from 'it-map'
+import { createUnsafe } from 'multiformats/block'
 import defer from 'p-defer'
 import PQueue from 'p-queue'
-import type { DAGWalker } from '@helia/interface'
+import type { Helia } from '@helia/interface'
 import type { GetBlockProgressEvents, PutManyBlocksProgressEvents } from '@helia/interface/blocks'
 import type { CarReader } from '@ipld/car'
 import type { AbortOptions } from '@libp2p/interfaces'
-import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 import type { ProgressOptions } from 'progress-events'
 
-export interface CarComponents {
-  blockstore: Blockstore
-  dagWalkers: Record<number, DAGWalker>
-}
+export type CarComponents = Pick<Helia, 'blockstore' | 'getCodec'>
 
 /**
  * The Car interface provides operations for importing and exporting Car files
@@ -221,18 +218,15 @@ class DefaultCar implements Car {
    * and update the pin count for them
    */
   async #walkDag (cid: CID, queue: PQueue, withBlock: (cid: CID, block: Uint8Array) => Promise<void>, options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): Promise<void> {
-    const dagWalker = this.components.dagWalkers[cid.code]
+    const codec = await this.components.getCodec(cid.code)
+    const bytes = await this.components.blockstore.get(cid, options)
 
-    if (dagWalker == null) {
-      throw new Error(`No dag walker found for cid codec ${cid.code}`)
-    }
+    await withBlock(cid, bytes)
 
-    const block = await this.components.blockstore.get(cid, options)
-
-    await withBlock(cid, block)
+    const block = createUnsafe({ bytes, cid, codec })
 
     // walk dag, ensure all blocks are present
-    for await (const cid of dagWalker.walk(block)) {
+    for await (const [,cid] of block.links()) {
       void queue.add(async () => {
         await this.#walkDag(cid, queue, withBlock, options)
       })
@@ -243,6 +237,6 @@ class DefaultCar implements Car {
 /**
  * Create a {@link Car} instance for use with {@link https://github.com/ipfs/helia Helia}
  */
-export function car (helia: { blockstore: Blockstore, dagWalkers: Record<number, DAGWalker> }, init: any = {}): Car {
+export function car (helia: CarComponents, init: any = {}): Car {
   return new DefaultCar(helia, init)
 }

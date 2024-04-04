@@ -25,17 +25,18 @@ import { CustomProgressEvent } from 'progress-events'
 import { PinsImpl } from './pins.js'
 import { Routing as RoutingClass } from './routing.js'
 import { BlockStorage } from './storage.js'
-import { defaultDagWalkers } from './utils/dag-walkers.js'
 import { assertDatastoreVersionIsCurrent } from './utils/datastore-version.js'
-import { defaultHashers } from './utils/default-hashers.js'
+import { getCodec } from './utils/get-codec.js'
+import { getHasher } from './utils/get-hasher.js'
 import { NetworkedStorage } from './utils/networked-storage.js'
-import type { DAGWalker, GCOptions, Helia as HeliaInterface, Routing } from '@helia/interface'
+import type { Await, CodecLoader, GCOptions, HasherLoader, Helia as HeliaInterface, Routing } from '@helia/interface'
 import type { BlockBroker } from '@helia/interface/blocks'
 import type { Pins } from '@helia/interface/pins'
 import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { DNS } from '@multiformats/dns'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
+import type { BlockCodec } from 'multiformats'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 
@@ -61,11 +62,23 @@ export interface HeliaInit {
   hashers?: MultihashHasher[]
 
   /**
+   * An optional function that can load a MultihashHasher on demand. May return
+   * a promise.
+   */
+  loadHasher?(code: number): Await<MultihashHasher>
+
+  /**
    * In order to pin CIDs that correspond to a DAG, it's necessary to know
    * how to traverse that DAG.  DAGWalkers take a block and yield any CIDs
    * encoded within that block.
    */
-  dagWalkers?: DAGWalker[]
+  codecs?: Array<BlockCodec<any, any>>
+
+  /**
+   * An optional function that can load a BlockCodec on demand. May return a
+   * promise.
+   */
+  loadCodec?(code: number): Await<BlockCodec<any, any>>
 
   /**
    * A list of strategies used to fetch blocks when they are not present in
@@ -115,11 +128,11 @@ export interface HeliaInit {
 interface Components {
   blockstore: Blockstore
   datastore: Datastore
-  hashers: Record<number, MultihashHasher>
-  dagWalkers: Record<number, DAGWalker>
   logger: ComponentLogger
   blockBrokers: BlockBroker[]
   dns: DNS
+  getCodec: CodecLoader
+  getHasher: HasherLoader
 }
 
 export class Helia implements HeliaInterface {
@@ -128,25 +141,25 @@ export class Helia implements HeliaInterface {
   public pins: Pins
   public logger: ComponentLogger
   public routing: Routing
-  public dagWalkers: Record<number, DAGWalker>
-  public hashers: Record<number, MultihashHasher>
+  public getCodec: CodecLoader
+  public getHasher: HasherLoader
   public dns: DNS
   private readonly log: Logger
 
   constructor (init: HeliaInit) {
     this.logger = init.logger ?? defaultLogger()
     this.log = this.logger.forComponent('helia')
-    this.hashers = defaultHashers(init.hashers)
-    this.dagWalkers = defaultDagWalkers(init.dagWalkers)
+    this.getHasher = getHasher(init.hashers, init.loadHasher)
+    this.getCodec = getCodec(init.codecs, init.loadCodec)
     this.dns = init.dns ?? dns()
 
     const components: Components = {
       blockstore: init.blockstore,
       datastore: init.datastore,
-      hashers: this.hashers,
-      dagWalkers: this.dagWalkers,
       logger: this.logger,
       blockBrokers: [],
+      getHasher: this.getHasher,
+      getCodec: this.getCodec,
       dns: this.dns,
       ...(init.components ?? {})
     }
@@ -157,7 +170,7 @@ export class Helia implements HeliaInterface {
 
     const networkedStorage = new NetworkedStorage(components)
 
-    this.pins = new PinsImpl(init.datastore, networkedStorage, this.dagWalkers)
+    this.pins = new PinsImpl(init.datastore, networkedStorage, this.getCodec)
 
     this.blockstore = new BlockStorage(networkedStorage, this.pins, {
       holdGcLock: init.holdGcLock ?? true
