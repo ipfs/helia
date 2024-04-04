@@ -16,6 +16,18 @@
   * dependencies
     * @helia/interface bumped from ^4.0.1 to ^4.1.0
 
+## [7.2.0](https://github.com/ipfs/helia/compare/ipns-v7.1.0...ipns-v7.2.0) (2024-04-03)
+
+
+### Features
+
+* add cache control to IPNS ([#473](https://github.com/ipfs/helia/issues/473)) ([b00f682](https://github.com/ipfs/helia/commit/b00f682647d3687e54bd48f8f68ab79d1e4e96cc))
+
+
+### Bug Fixes
+
+* respect the IPNS TTL field ([#482](https://github.com/ipfs/helia/issues/482)) ([1561e4a](https://github.com/ipfs/helia/commit/1561e4a106074b94e421a77b0b8776b065e48bc5))
+
 ## [7.1.0](https://github.com/ipfs/helia/compare/ipns-v7.0.0...ipns-v7.1.0) (2024-03-15)
 
 

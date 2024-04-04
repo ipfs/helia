@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.0.2](https://github.com/ipfs/helia/compare/interop-v6.0.1...interop-v6.0.2) (2024-04-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/car bumped from ^3.1.1 to ^3.1.2
+    * @helia/ipns bumped from ^7.1.0 to ^7.2.0
+    * @helia/mfs bumped from ^3.0.2 to ^3.0.3
+    * @helia/unixfs bumped from ^3.0.2 to ^3.0.3
+
 ## [6.0.1](https://github.com/ipfs/helia/compare/interop-v6.0.0...interop-v6.0.1) (2024-03-15)
 
 
