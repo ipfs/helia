@@ -64,17 +64,6 @@ export class Bitswap implements BitswapInterface {
     }, init)
   }
 
-  // TODO: remove me
-  _updateReceiveCounters (peerId: PeerId, data: Uint8Array, exists: boolean): void {
-    this.stats.updateBlocksReceived(1, peerId)
-    this.stats.updateDataReceived(data.byteLength, peerId)
-
-    if (exists) {
-      this.stats.updateDuplicateBlocksReceived(1, peerId)
-      this.stats.updateDuplicateDataReceived(data.byteLength, peerId)
-    }
-  }
-
   async createSession (root: CID, options?: CreateBitswapSessionOptions): Promise<BitswapSession> {
     const minProviders = options?.minProviders ?? DEFAULT_SESSION_MIN_PROVIDERS
     const maxProviders = options?.maxProviders ?? DEFAULT_SESSION_MAX_PROVIDERS
