@@ -6,6 +6,7 @@ import { libp2pDefaults } from './libp2p-defaults.js'
 import type { DefaultLibp2pServices } from './libp2p-defaults.js'
 import type { ComponentLogger, Libp2p, PeerId } from '@libp2p/interface'
 import type { Keychain, KeychainInit } from '@libp2p/keychain'
+import type { DNS } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
 import type { Libp2pOptions } from 'libp2p'
 
@@ -20,6 +21,7 @@ export interface CreateLibp2pOptions<T extends Record<string, unknown>> {
 export interface Libp2pDefaultsOptions {
   peerId?: PeerId
   keychain?: KeychainInit
+  dns?: DNS
 }
 
 export async function createLibp2p <T extends Record<string, unknown> = DefaultLibp2pServices> (options: CreateLibp2pOptions<T>): Promise<Libp2p<T>> {

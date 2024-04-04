@@ -172,12 +172,16 @@ keyTypes.forEach(type => {
 
       expect(response).to.have.property('status', 200)
 
+      const oneHourNS = BigInt(60 * 60 * 1e+9)
+
       await kubo.api.name.publish(cid, {
-        key: keyName
+        key: keyName,
+        ttl: '1h'
       })
 
-      const { cid: resolvedCid } = await name.resolve(key)
+      const { cid: resolvedCid, record } = await name.resolve(key)
       expect(resolvedCid.toString()).to.equal(cid.toString())
+      expect(record.ttl).to.equal(oneHourNS)
     })
   })
 })

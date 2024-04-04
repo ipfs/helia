@@ -19,6 +19,7 @@
 
 import { contentRoutingSymbol, peerRoutingSymbol, start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
+import { dns } from '@multiformats/dns'
 import drain from 'it-drain'
 import { CustomProgressEvent } from 'progress-events'
 import { PinsImpl } from './pins.js'
@@ -32,6 +33,7 @@ import type { DAGWalker, GCOptions, Helia as HeliaInterface, Routing } from '@he
 import type { BlockBroker } from '@helia/interface/blocks'
 import type { Pins } from '@helia/interface/pins'
 import type { ComponentLogger, Logger } from '@libp2p/interface'
+import type { DNS } from '@multiformats/dns'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
@@ -103,6 +105,11 @@ export interface HeliaInit {
    * Components used by subclasses
    */
   components?: Record<string, any>
+
+  /**
+   * An optional DNS implementation used to perform queries for DNS records.
+   */
+  dns?: DNS
 }
 
 interface Components {
@@ -113,6 +120,7 @@ interface Components {
   logger: ComponentLogger
   blockBrokers: BlockBroker[]
   routing: Routing
+  dns: DNS
 }
 
 export class Helia implements HeliaInterface {
@@ -123,6 +131,7 @@ export class Helia implements HeliaInterface {
   public routing: Routing
   public dagWalkers: Record<number, DAGWalker>
   public hashers: Record<number, MultihashHasher>
+  public dns: DNS
   private readonly log: Logger
 
   constructor (init: HeliaInit) {
@@ -130,6 +139,7 @@ export class Helia implements HeliaInterface {
     this.log = this.logger.forComponent('helia')
     this.hashers = defaultHashers(init.hashers)
     this.dagWalkers = defaultDagWalkers(init.dagWalkers)
+    this.dns = init.dns ?? dns()
 
     // @ts-expect-error routing is not set
     const components: Components = {
@@ -139,6 +149,7 @@ export class Helia implements HeliaInterface {
       dagWalkers: this.dagWalkers,
       logger: this.logger,
       blockBrokers: [],
+      dns: this.dns,
       ...(init.components ?? {})
     }
 

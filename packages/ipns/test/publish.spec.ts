@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
@@ -10,6 +11,7 @@ import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { ipns } from '../src/index.js'
 import type { IPNS, IPNSRouting } from '../src/index.js'
 import type { Routing } from '@helia/interface'
+import type { DNS } from '@multiformats/dns'
 
 const cid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
 
@@ -17,6 +19,7 @@ describe('publish', () => {
   let name: IPNS
   let customRouting: StubbedInstance<IPNSRouting>
   let heliaRouting: StubbedInstance<Routing>
+  let dns: StubbedInstance<DNS>
 
   beforeEach(async () => {
     const datastore = new MemoryDatastore()
@@ -24,7 +27,16 @@ describe('publish', () => {
     customRouting.get.throws(new Error('Not found'))
     heliaRouting = stubInterface<Routing>()
 
-    name = ipns({ datastore, routing: heliaRouting }, { routers: [customRouting] })
+    name = ipns({
+      datastore,
+      routing: heliaRouting,
+      dns,
+      logger: defaultLogger()
+    }, {
+      routers: [
+        customRouting
+      ]
+    })
   })
 
   it('should publish an IPNS record with the default params', async function () {
@@ -32,7 +44,7 @@ describe('publish', () => {
     const ipnsEntry = await name.publish(key, cid)
 
     expect(ipnsEntry).to.have.property('sequence', 1n)
-    expect(ipnsEntry).to.have.property('ttl', 8640000000000n) // 24 hours
+    expect(ipnsEntry).to.have.property('ttl', 3_600_000_000_000n) // 1 hour
   })
 
   it('should publish an IPNS record with a custom ttl params', async function () {
@@ -43,7 +55,7 @@ describe('publish', () => {
     })
 
     expect(ipnsEntry).to.have.property('sequence', 1n)
-    expect(ipnsEntry).to.have.property('ttl', BigInt(lifetime) * 100000n)
+    expect(ipnsEntry).to.have.property('ttl', 3_600_000_000_000n)
 
     expect(heliaRouting.put.called).to.be.true()
     expect(customRouting.put.called).to.be.true()
