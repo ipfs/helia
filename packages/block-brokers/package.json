@@ -56,14 +56,23 @@
     "@helia/bitswap": "^0.0.0",
     "@helia/interface": "^4.1.0",
     "@libp2p/interface": "^1.1.4",
+    "@libp2p/utils": "^5.2.6",
+    "@multiformats/multiaddr-matcher": "^1.2.0",
+    "@multiformats/multiaddr-to-uri": "^10.0.1",
     "interface-blockstore": "^5.2.10",
     "multiformats": "^13.1.0",
+    "p-defer": "^4.0.0",
     "progress-events": "^1.0.0"
   },
   "devDependencies": {
     "@libp2p/logger": "^4.0.7",
+    "@libp2p/peer-id-factory": "^4.0.7",
+    "@multiformats/multiaddr": "^12.1.14",
+    "@multiformats/uri-to-multiaddr": "^8.0.0",
     "@types/sinon": "^17.0.3",
     "aegir": "^42.2.5",
+    "cors": "^2.8.5",
+    "polka": "^0.5.2",
     "sinon": "^17.0.1",
     "sinon-ts": "^2.0.0"
   }
