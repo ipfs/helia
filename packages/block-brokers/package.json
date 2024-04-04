@@ -1,6 +1,6 @@
 {
   "name": "@helia/block-brokers",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Block brokers for Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/block-brokers#readme",
@@ -54,7 +54,7 @@
   },
   "dependencies": {
     "@helia/bitswap": "^0.0.0",
-    "@helia/interface": "^4.0.1",
+    "@helia/interface": "^4.1.0",
     "@libp2p/interface": "^1.1.4",
     "interface-blockstore": "^5.2.10",
     "multiformats": "^13.1.0",

@@ -1,5 +1,57 @@
 # Changelog
 
+## [6.0.2](https://github.com/ipfs/helia/compare/interop-v6.0.1...interop-v6.0.2) (2024-04-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/car bumped from ^3.1.1 to ^3.1.2
+    * @helia/ipns bumped from ^7.1.0 to ^7.2.0
+    * @helia/mfs bumped from ^3.0.2 to ^3.0.3
+    * @helia/unixfs bumped from ^3.0.2 to ^3.0.3
+
+## [6.0.1](https://github.com/ipfs/helia/compare/interop-v6.0.0...interop-v6.0.1) (2024-03-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/ipns bumped from ^7.0.0 to ^7.1.0
+
+## [6.0.0](https://github.com/ipfs/helia/compare/interop-v5.1.0...interop-v6.0.0) (2024-03-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* requires @helia/interface@4.1.x or later, `resolveDns` has been renamed `resolveDNSLink`
+
+### Features
+
+* use custom DNS resolver in @helia/ipns for DNSLink ([#466](https://github.com/ipfs/helia/issues/466)) ([2c71b6e](https://github.com/ipfs/helia/commit/2c71b6ec8d34dcc722a3914702f67603492c335f)), closes [#369](https://github.com/ipfs/helia/issues/369)
+
+
+### Dependencies
+
+* bump kubo from 0.26.0 to 0.27.0 ([#461](https://github.com/ipfs/helia/issues/461)) ([c69913c](https://github.com/ipfs/helia/commit/c69913c546f2bb74344f804f25a93f23adeb9b49))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^2.0.2 to ^2.0.3
+    * @helia/car bumped from ^3.1.0 to ^3.1.1
+    * @helia/dag-cbor bumped from ^3.0.1 to ^3.0.2
+    * @helia/dag-json bumped from ^3.0.1 to ^3.0.2
+    * @helia/http bumped from ^1.0.2 to ^1.0.3
+    * @helia/interface bumped from ^4.0.1 to ^4.1.0
+    * @helia/ipns bumped from ^6.0.1 to ^7.0.0
+    * @helia/json bumped from ^3.0.1 to ^3.0.2
+    * @helia/mfs bumped from ^3.0.1 to ^3.0.2
+    * @helia/routers bumped from ^1.0.1 to ^1.0.2
+    * @helia/strings bumped from ^3.0.1 to ^3.0.2
+    * @helia/unixfs bumped from ^3.0.1 to ^3.0.2
+    * helia bumped from ^4.0.2 to ^4.1.0
+
 ## [5.1.0](https://github.com/ipfs/helia/compare/interop-v5.0.0...interop-v5.1.0) (2024-02-28)
 
 

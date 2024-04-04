@@ -17,6 +17,26 @@
   * devDependencies
     * @helia/unixfs bumped from ^2.0.0 to ^2.0.1
 
+## [3.1.2](https://github.com/ipfs/helia/compare/car-v3.1.1...car-v3.1.2) (2024-04-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @helia/unixfs bumped from ^3.0.2 to ^3.0.3
+
+## [3.1.1](https://github.com/ipfs/helia/compare/car-v3.1.0...car-v3.1.1) (2024-03-14)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^4.0.1 to ^4.1.0
+  * devDependencies
+    * @helia/unixfs bumped from ^3.0.1 to ^3.0.2
+
 ## [3.1.0](https://github.com/ipfs/helia/compare/car-v3.0.0...car-v3.1.0) (2024-02-28)
 
 

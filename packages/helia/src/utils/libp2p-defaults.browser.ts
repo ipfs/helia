@@ -34,6 +34,7 @@ export interface DefaultLibp2pServices extends Record<string, unknown> {
 export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOptions<DefaultLibp2pServices> {
   return {
     peerId: options.peerId,
+    dns: options.dns,
     addresses: {
       listen: [
         '/webrtc'
