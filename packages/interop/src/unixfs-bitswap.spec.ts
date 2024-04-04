@@ -52,13 +52,9 @@ describe('@helia/unixfs - bitswap', () => {
 
     const cid = await unixFs.addFile(candidate)
 
-    const output: Uint8Array[] = []
+    const bytes = await toBuffer(kubo.api.cat(CID.parse(cid.toString())))
 
-    for await (const b of kubo.api.cat(cid)) {
-      output.push(b)
-    }
-
-    expect(toBuffer(output)).to.equalBytes(toBuffer(input))
+    expect(bytes).to.equalBytes(toBuffer(input))
   })
 
   it('should add a large file to kubo and fetch it from helia', async () => {

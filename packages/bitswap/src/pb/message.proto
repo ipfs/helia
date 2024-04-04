@@ -1,0 +1,42 @@
+// adapted from https://github.com/ipfs/boxo/blob/main/bitswap/message/pb/message.proto
+syntax = "proto3";
+
+enum WantType {
+  WantBlock = 0;                        // send me the block for the CID
+  WantHave = 1;                         // just tell me if you have the block for the CID or send it if it's really small
+}
+
+message WantlistEntry {
+  bytes cid = 1;                        // the block cid (cidV0 in bitswap 1.0.0, cidV1 in bitswap 1.1.0)
+  int32 priority = 2;                   // the priority (normalized). default to 1
+  optional bool cancel = 3;             // whether this revokes an entry
+  optional WantType wantType = 4;       // Note: defaults to enum 0, ie Block
+  optional bool sendDontHave = 5;       // Note: defaults to false
+}
+
+message Wantlist {
+  repeated WantlistEntry entries = 1;  // a list of wantlist entries
+  optional bool full = 2;              // whether this is the full wantlist. default to false
+}
+
+message Block {
+  bytes prefix = 1;                    // CID prefix (cid version, multicodec and multihash prefix (type + length)
+  bytes data = 2;
+}
+
+enum BlockPresenceType {
+  HaveBlock = 0;
+  DontHaveBlock = 1;
+}
+
+message BlockPresence {
+  bytes cid = 1;
+  BlockPresenceType type = 2;
+}
+
+message BitswapMessage {
+  Wantlist wantlist = 1;
+  repeated Block blocks = 3;            // used to send Blocks in bitswap 1.1.0
+  repeated BlockPresence blockPresences = 4;
+  int32 pendingBytes = 5;
+}

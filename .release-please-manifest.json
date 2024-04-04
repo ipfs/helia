@@ -1,5 +1,6 @@
 {
   "packages/block-brokers": "2.0.3",
+  "packages/bitswap": "0.0.0",
   "packages/car": "3.1.2",
   "packages/dag-cbor": "3.0.2",
   "packages/dag-json": "3.0.2",
