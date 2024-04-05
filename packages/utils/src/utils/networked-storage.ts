@@ -1,4 +1,4 @@
-import { CodeError, start, stop } from '@libp2p/interface'
+import { CodeError, setMaxListeners, start, stop } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
 import { IdentityBlockstore } from 'blockstore-core/identity'
 import { TieredBlockstore } from 'blockstore-core/tiered'
@@ -250,6 +250,7 @@ async function raceBlockRetrievers (cid: CID, blockBrokers: BlockBroker[], hashe
 
   const controller = new AbortController()
   const signal = anySignal([controller.signal, options.signal])
+  setMaxListeners(Infinity, controller.signal, signal)
 
   const retrievers: Array<Required<Pick<BlockBroker, 'retrieve'>>> = []
 

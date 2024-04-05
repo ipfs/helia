@@ -82,8 +82,8 @@ export class Bitswap implements BitswapInterface {
 
   async want (cid: CID, options: WantOptions = {}): Promise<Uint8Array> {
     const controller = new AbortController()
-    setMaxListeners(Infinity, controller.signal)
     const signal = anySignal([controller.signal, options.signal])
+    setMaxListeners(Infinity, controller.signal, signal)
 
     // find providers and connect to them
     this.network.findAndConnect(cid, {
