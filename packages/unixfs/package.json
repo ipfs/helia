@@ -194,5 +194,6 @@
     "fs": false,
     "path": false,
     "url": false
-  }
+  },
+  "sideEffects": false
 }

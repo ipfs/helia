@@ -80,5 +80,6 @@
   },
   "devDependencies": {
     "aegir": "^42.2.5"
-  }
+  },
+  "sideEffects": false
 }

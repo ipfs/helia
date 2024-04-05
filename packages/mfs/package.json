@@ -161,5 +161,6 @@
     "it-last": "^3.0.4",
     "it-to-buffer": "^4.0.5",
     "uint8arrays": "^5.0.2"
-  }
+  },
+  "sideEffects": false
 }

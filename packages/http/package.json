@@ -67,5 +67,6 @@
     "multiformats": "^13.1.0",
     "sinon": "^17.0.1",
     "sinon-ts": "^2.0.0"
-  }
+  },
+  "sideEffects": false
 }
