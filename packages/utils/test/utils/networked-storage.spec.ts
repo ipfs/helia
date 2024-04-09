@@ -16,6 +16,7 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { defaultHashers } from '../../src/utils/default-hashers.js'
 import { NetworkedStorage } from '../../src/utils/networked-storage.js'
 import { createBlock } from '../fixtures/create-block.js'
+import type { NetworkedStorageComponents } from '../../src/utils/networked-storage.js'
 import type { BlockBroker } from '@helia/interface/blocks'
 import type { Blockstore } from 'interface-blockstore'
 
@@ -24,6 +25,7 @@ describe('networked-storage', () => {
   let blockstore: Blockstore
   let bitswap: StubbedInstance<Required<BlockBroker>>
   let blocks: Array<{ cid: CID, block: Uint8Array }>
+  let components: NetworkedStorageComponents
 
   beforeEach(async () => {
     blocks = []
@@ -34,14 +36,15 @@ describe('networked-storage', () => {
 
     blockstore = new MemoryBlockstore()
     bitswap = stubInterface()
-    storage = new NetworkedStorage({
+    components = {
       blockstore,
       logger: defaultLogger(),
       blockBrokers: [
         bitswap
       ],
       hashers: defaultHashers()
-    })
+    }
+    storage = new NetworkedStorage(components)
   })
 
   it('gets a block from the blockstore', async () => {
@@ -195,5 +198,17 @@ describe('networked-storage', () => {
 
     const block = await storage.get(cid)
     expect(uint8ArrayToString(block)).to.equal('hello world')
+  })
+
+  it('cancels in-flight block requests when one resolves', async () => {
+    const slowBroker = stubInterface<Required<BlockBroker>>()
+    components.blockBrokers.push(slowBroker)
+
+    bitswap.retrieve.withArgs(blocks[0].cid).resolves(blocks[0].block)
+
+    const block = await storage.get(blocks[0].cid)
+
+    expect(block).to.equalBytes(blocks[0].block)
+    expect(slowBroker.retrieve.getCall(0)).to.have.nested.property('args[1].signal.aborted', true)
   })
 })

@@ -289,6 +289,9 @@ async function raceBlockRetrievers (cid: CID, blockBrokers: BlockBroker[], hashe
         })
     )
   } finally {
+    // we have the block from the fastest block retriever, abort any still
+    // in-flight retrieve attempts
+    controller.abort()
     signal.clear()
   }
 }
