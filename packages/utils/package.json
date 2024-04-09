@@ -87,5 +87,6 @@
   },
   "browser": {
     "./dist/src/utils/libp2p-defaults.js": "./dist/src/utils/libp2p-defaults.browser.js"
-  }
+  },
+  "sideEffects": false
 }

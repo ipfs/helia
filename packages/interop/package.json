@@ -102,5 +102,6 @@
     "./dist/src/fixtures/create-kubo.js": "./dist/src/fixtures/create-kubo.browser.js",
     "./dist/src/bin.js": "./dist/src/index.js",
     "kubo": false
-  }
+  },
+  "sideEffects": false
 }

@@ -187,5 +187,6 @@
   },
   "browser": {
     "./dist/src/dns-resolvers/resolver.js": "./dist/src/dns-resolvers/resolver.browser.js"
-  }
+  },
+  "sideEffects": false
 }

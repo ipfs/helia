@@ -157,5 +157,6 @@
     "blockstore-core": "^4.4.0",
     "ipfs-unixfs-importer": "^15.2.4",
     "it-to-buffer": "^4.0.5"
-  }
+  },
+  "sideEffects": false
 }
