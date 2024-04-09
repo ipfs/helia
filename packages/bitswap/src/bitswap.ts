@@ -117,7 +117,10 @@ export class Bitswap implements BitswapInterface {
    * Sends notifications about the arrival of a block
    */
   async notify (cid: CID, block: Uint8Array, options: ProgressOptions<BitswapNotifyProgressEvents> & AbortOptions = {}): Promise<void> {
-    await this.peerWantLists.receivedBlock(cid, options)
+    await Promise.all([
+      this.peerWantLists.receivedBlock(cid, options),
+      this.wantList.receivedBlock(cid, options)
+    ])
   }
 
   getWantlist (): WantListEntry[] {

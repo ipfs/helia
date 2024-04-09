@@ -1,4 +1,4 @@
-import { AbortError } from '@libp2p/interface'
+import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { trackedPeerMap, PeerSet } from '@libp2p/peer-collections'
 import { trackedMap } from '@libp2p/utils/tracked-map'
 import all from 'it-all'
@@ -8,14 +8,16 @@ import { pipe } from 'it-pipe'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import pDefer from 'p-defer'
+import { raceEvent } from 'race-event'
+import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { DEFAULT_MESSAGE_SEND_DELAY } from './constants.js'
 import { BlockPresenceType, WantType } from './pb/message.js'
 import vd from './utils/varint-decoder.js'
-import type { MultihashHasherLoader } from './index.js'
+import type { BitswapNotifyProgressEvents, MultihashHasherLoader } from './index.js'
 import type { BitswapNetworkWantProgressEvents, Network } from './network.js'
 import type { BitswapMessage } from './pb/message.js'
-import type { ComponentLogger, Metrics, PeerId, Startable, AbortOptions } from '@libp2p/interface'
+import type { ComponentLogger, PeerId, Startable, AbortOptions, Libp2p, TypedEventTarget } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { DeferredPromise } from 'p-defer'
@@ -24,7 +26,7 @@ import type { ProgressOptions } from 'progress-events'
 export interface WantListComponents {
   network: Network
   logger: ComponentLogger
-  metrics?: Metrics
+  libp2p: Libp2p
 }
 
 export interface WantListInit {
@@ -63,16 +65,6 @@ export interface WantListEntry {
    * If this set has members, the want will only be sent to these peers
    */
   session: PeerSet
-
-  /**
-   * Promises returned from `.wantBlock` for this block
-   */
-  blockWantListeners: Array<DeferredPromise<WantBlockResult>>
-
-  /**
-   * Promises returned from `.wantPresence` for this block
-   */
-  blockPresenceListeners: Array<DeferredPromise<WantPresenceResult>>
 }
 
 export interface WantOptions extends AbortOptions, ProgressOptions<BitswapNetworkWantProgressEvents> {
@@ -108,7 +100,12 @@ export interface WantHaveResult {
 
 export type WantPresenceResult = WantDontHaveResult | WantHaveResult
 
-export class WantList implements Startable {
+export interface WantListEvents {
+  block: CustomEvent<WantBlockResult>
+  presence: CustomEvent<WantPresenceResult>
+}
+
+export class WantList extends TypedEventEmitter<WantListEvents> implements Startable, TypedEventTarget<WantListEvents> {
   /**
    * Tracks what CIDs we've previously sent to which peers
    */
@@ -119,15 +116,19 @@ export class WantList implements Startable {
   private readonly sendMessagesDelay: number
   private sendMessagesTimeout?: ReturnType<typeof setTimeout>
   private readonly hashLoader?: MultihashHasherLoader
+  private sendingMessages?: DeferredPromise<void>
 
   constructor (components: WantListComponents, init: WantListInit = {}) {
+    super()
+
+    setMaxListeners(Infinity, this)
     this.peers = trackedPeerMap({
       name: 'ipfs_bitswap_peers',
-      metrics: components.metrics
+      metrics: components.libp2p.metrics
     })
     this.wants = trackedMap({
       name: 'ipfs_bitswap_wantlist',
-      metrics: components.metrics
+      metrics: components.libp2p.metrics
     })
     this.network = components.network
     this.sendMessagesDelay = init.sendMessagesDelay ?? DEFAULT_MESSAGE_SEND_DELAY
@@ -164,9 +165,7 @@ export class WantList implements Startable {
         priority: options.priority ?? 1,
         wantType: options.wantType ?? WantType.WantBlock,
         cancel: false,
-        sendDontHave: true,
-        blockWantListeners: [],
-        blockPresenceListeners: []
+        sendDontHave: true
       }
 
       if (options.peerId != null) {
@@ -198,30 +197,41 @@ export class WantList implements Startable {
       }
     }
 
-    // add a promise that will be resolved or rejected when the response arrives
-    let deferred: DeferredPromise<WantBlockResult | WantPresenceResult>
+    // broadcast changes
+    await this.sendMessagesDebounced()
 
-    if (options.wantType === WantType.WantBlock) {
-      const p = deferred = pDefer<WantBlockResult>()
+    try {
+      if (options.wantType === WantType.WantBlock) {
+        const event = await raceEvent<CustomEvent<WantBlockResult>>(this, 'block', options?.signal, {
+          filter: (event) => {
+            return uint8ArrayEquals(cid.multihash.digest, event.detail.cid.multihash.digest)
+          },
+          errorMessage: 'Want was aborted'
+        })
 
-      entry.blockWantListeners.push(p)
-    } else {
-      const p = deferred = pDefer<WantPresenceResult>()
-
-      entry.blockPresenceListeners.push(p)
-    }
-
-    // reject the promise if the want is rejected
-    const abortListener = (): void => {
-      this.log('want for %c was aborted, cancelling want', cid)
-
-      if (entry != null) {
-        entry.cancel = true
+        return event.detail
       }
 
-      deferred.reject(new AbortError('Want was aborted'))
+      const event = await raceEvent<CustomEvent<WantPresenceResult>>(this, 'presence', options?.signal, {
+        filter: (event) => {
+          return uint8ArrayEquals(cid.multihash.digest, event.detail.cid.multihash.digest)
+        },
+        errorMessage: 'Want was aborted'
+      })
+
+      return event.detail
+    } finally {
+      if (options.signal?.aborted === true) {
+        this.log('want for %c was aborted, cancelling want', cid)
+        entry.cancel = true
+        // broadcast changes
+        await this.sendMessagesDebounced()
+      }
     }
-    options.signal?.addEventListener('abort', abortListener)
+  }
+
+  private async sendMessagesDebounced (): Promise<void> {
+    await this.sendingMessages?.promise
 
     // broadcast changes
     clearTimeout(this.sendMessagesTimeout)
@@ -231,77 +241,70 @@ export class WantList implements Startable {
           this.log('error sending messages to peers', err)
         })
     }, this.sendMessagesDelay)
-
-    try {
-      return await deferred.promise
-    } finally {
-      // remove listener
-      options.signal?.removeEventListener('abort', abortListener)
-      // remove deferred promise
-      if (options.wantType === WantType.WantBlock) {
-        entry.blockWantListeners = entry.blockWantListeners.filter(recipient => recipient !== deferred)
-      } else {
-        entry.blockPresenceListeners = entry.blockPresenceListeners.filter(recipient => recipient !== deferred)
-      }
-    }
   }
 
   private async sendMessages (): Promise<void> {
-    for (const [peerId, sentWants] of this.peers) {
-      const sent = new Set<string>()
-      const message: Partial<BitswapMessage> = {
-        wantlist: {
-          full: false,
-          entries: pipe(
-            this.wants.entries(),
-            (source) => filter(source, ([key, entry]) => {
-              // skip session-only wants
-              if (entry.session.size > 0 && !entry.session.has(peerId)) {
-                return false
-              }
+    this.sendingMessages = pDefer()
 
-              const sentPreviously = sentWants.has(key)
+    await Promise.all(
+      [...this.peers.entries()].map(async ([peerId, sentWants]) => {
+        const sent = new Set<string>()
+        const message: Partial<BitswapMessage> = {
+          wantlist: {
+            full: false,
+            entries: pipe(
+              this.wants.entries(),
+              (source) => filter(source, ([key, entry]) => {
+                // skip session-only wants
+                if (entry.session.size > 0 && !entry.session.has(peerId)) {
+                  return false
+                }
 
-              // don't cancel if we've not sent it to them before
-              if (entry.cancel) {
-                return sentPreviously
-              }
+                const sentPreviously = sentWants.has(key)
 
-              // only send if we've not sent it to them before
-              return !sentPreviously
-            }),
-            (source) => map(source, ([key, entry]) => {
-              sent.add(key)
+                // don't cancel if we've not sent it to them before
+                if (entry.cancel) {
+                  return sentPreviously
+                }
 
-              return {
-                cid: entry.cid.bytes,
-                priority: entry.priority,
-                wantType: entry.wantType,
-                cancel: entry.cancel,
-                sendDontHave: entry.sendDontHave
-              }
-            }),
-            (source) => all(source)
-          )
+                // only send if we've not sent it to them before
+                return !sentPreviously
+              }),
+              (source) => map(source, ([key, entry]) => {
+                sent.add(key)
+
+                return {
+                  cid: entry.cid.bytes,
+                  priority: entry.priority,
+                  wantType: entry.wantType,
+                  cancel: entry.cancel,
+                  sendDontHave: entry.sendDontHave
+                }
+              }),
+              (source) => all(source)
+            )
+          }
         }
-      }
 
-      if (message.wantlist?.entries.length === 0) {
-        return
-      }
-
-      // add message to send queue
-      try {
-        await this.network.sendMessage(peerId, message)
-
-        // update list of messages sent to remote
-        for (const key of sent) {
-          sentWants.add(key)
+        if (message.wantlist?.entries.length === 0) {
+          return
         }
-      } catch (err: any) {
-        this.log.error('error sending full wantlist to new peer', err)
-      }
-    }
+
+        // add message to send queue
+        try {
+          await this.network.sendMessage(peerId, message)
+
+          // update list of messages sent to remote
+          for (const key of sent) {
+            sentWants.add(key)
+          }
+        } catch (err: any) {
+          this.log.error('error sending full wantlist to new peer', err)
+        }
+      })
+    ).catch(err => {
+      this.log.error('error sending messages', err)
+    })
 
     // queued all message sends, remove cancelled wants from wantlist and sent
     // wants
@@ -314,6 +317,8 @@ export class WantList implements Startable {
         }
       }
     }
+
+    this.sendingMessages.resolve()
   }
 
   has (cid: CID): boolean {
@@ -325,31 +330,30 @@ export class WantList implements Startable {
    * Add a CID to the wantlist
    */
   async wantPresence (cid: CID, options: WantOptions = {}): Promise<WantPresenceResult> {
-    if (options.peerId != null && this.peers.get(options.peerId) == null) {
-      const cidStr = uint8ArrayToString(cid.multihash.bytes, 'base64')
+    if (options.peerId != null) {
+      const peer = options.peerId
 
-      try {
-        // if we don't have them as a peer, add them
-        this.peers.set(options.peerId, new Set([cidStr]))
+      // sending WantHave directly to peer
+      await this.network.sendMessage(options.peerId, {
+        wantlist: {
+          full: false,
+          entries: [{
+            cid: cid.bytes,
+            sendDontHave: true,
+            wantType: WantType.WantHave,
+            priority: 1
+          }]
+        }
+      })
 
-        // sending WantHave directly to peer
-        await this.network.sendMessage(options.peerId, {
-          wantlist: {
-            full: false,
-            entries: [{
-              cid: cid.bytes,
-              sendDontHave: true,
-              wantType: WantType.WantHave,
-              priority: 1
-            }]
-          }
-        })
-      } catch (err) {
-        // sending failed, remove them as a peer
-        this.peers.delete(options.peerId)
+      // wait for peer response
+      const event = await raceEvent<CustomEvent<WantHaveResult | WantDontHaveResult>>(this, 'presence', options.signal, {
+        filter: (event) => {
+          return peer.equals(event.detail.sender) && uint8ArrayEquals(cid.multihash.digest, event.detail.cid.multihash.digest)
+        }
+      })
 
-        throw err
-      }
+      return event.detail
     }
 
     return this.addEntry(cid, {
@@ -369,14 +373,28 @@ export class WantList implements Startable {
   }
 
   /**
+   * Invoked when a block has been received from an external source
+   */
+  async receivedBlock (cid: CID, options: ProgressOptions<BitswapNotifyProgressEvents> & AbortOptions): Promise<void> {
+    const cidStr = uint8ArrayToString(cid.multihash.bytes, 'base64')
+
+    const entry = this.wants.get(cidStr)
+
+    if (entry == null) {
+      return
+    }
+
+    entry.cancel = true
+
+    await this.sendMessagesDebounced()
+  }
+
+  /**
    * Invoked when a message is received from a bitswap peer
    */
   private async receiveMessage (sender: PeerId, message: BitswapMessage): Promise<void> {
     this.log('received message from %p', sender)
-
-    // blocks received
-    const blockResults: WantBlockResult[] = []
-    const presenceResults: WantPresenceResult[] = []
+    let blocksCancelled = false
 
     // process blocks
     for (const block of message.blocks) {
@@ -384,7 +402,6 @@ export class WantList implements Startable {
         continue
       }
 
-      this.log('received block')
       const values = vd(block.prefix)
       const cidVersion = values[0]
       const multicodec = values[1]
@@ -403,17 +420,35 @@ export class WantList implements Startable {
 
       this.log('received block from %p for %c', sender, cid)
 
-      blockResults.push({
-        sender,
-        cid,
-        block: block.data
+      this.safeDispatchEvent<WantBlockResult>('block', {
+        detail: {
+          sender,
+          cid,
+          block: block.data
+        }
       })
 
-      presenceResults.push({
-        sender,
-        cid,
-        has: true
+      this.safeDispatchEvent<WantHaveResult | WantDontHaveResult>('presence', {
+        detail: {
+          sender,
+          cid,
+          has: true,
+          block: block.data
+        }
       })
+
+      const cidStr = uint8ArrayToString(cid.multihash.bytes, 'base64')
+      const entry = this.wants.get(cidStr)
+
+      if (entry == null) {
+        return
+      }
+
+      // since we received the block, flip the cancel flag to send cancels to
+      // any peers on the next message sending iteration, this will remove it
+      // from the internal want list
+      entry.cancel = true
+      blocksCancelled = true
     }
 
     // process block presences
@@ -422,46 +457,17 @@ export class WantList implements Startable {
 
       this.log('received %s from %p for %c', type, sender, cid)
 
-      presenceResults.push({
-        sender,
-        cid,
-        has: type === BlockPresenceType.HaveBlock
+      this.safeDispatchEvent<WantHaveResult | WantDontHaveResult>('presence', {
+        detail: {
+          sender,
+          cid,
+          has: type === BlockPresenceType.HaveBlock
+        }
       })
     }
 
-    for (const result of blockResults) {
-      const cidStr = uint8ArrayToString(result.cid.multihash.bytes, 'base64')
-      const entry = this.wants.get(cidStr)
-
-      if (entry == null) {
-        return
-      }
-
-      const recipients = entry.blockWantListeners
-      entry.blockWantListeners = []
-      recipients.forEach((p) => {
-        p.resolve(result)
-      })
-
-      // since we received the block, flip the cancel flag to send cancels to
-      // any peers on the next message sending iteration, this will remove it
-      // from the internal want list
-      entry.cancel = true
-    }
-
-    for (const result of presenceResults) {
-      const cidStr = uint8ArrayToString(result.cid.multihash.bytes, 'base64')
-      const entry = this.wants.get(cidStr)
-
-      if (entry == null) {
-        return
-      }
-
-      const recipients = entry.blockPresenceListeners
-      entry.blockPresenceListeners = []
-      recipients.forEach((p) => {
-        p.resolve(result)
-      })
+    if (blocksCancelled) {
+      await this.sendMessagesDebounced()
     }
   }
 

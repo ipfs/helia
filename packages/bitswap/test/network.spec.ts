@@ -34,7 +34,8 @@ describe('network', () => {
     components = {
       routing: stubInterface<Routing>(),
       libp2p: stubInterface<Libp2p>({
-        getConnections: () => []
+        getConnections: () => [],
+        metrics: undefined
       })
     }
 

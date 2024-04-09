@@ -6,7 +6,7 @@ import { Ledger } from './ledger.js'
 import type { BitswapNotifyProgressEvents, WantListEntry } from '../index.js'
 import type { Network } from '../network.js'
 import type { BitswapMessage } from '../pb/message.js'
-import type { ComponentLogger, Logger, Metrics, PeerId } from '@libp2p/interface'
+import type { ComponentLogger, Libp2p, Logger, PeerId } from '@libp2p/interface'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { Blockstore } from 'interface-blockstore'
 import type { AbortOptions } from 'it-length-prefixed-stream'
@@ -19,7 +19,7 @@ export interface PeerWantListsInit {
 export interface PeerWantListsComponents {
   blockstore: Blockstore
   network: Network
-  metrics?: Metrics
+  libp2p: Libp2p
   logger: ComponentLogger
 }
 
@@ -46,7 +46,7 @@ export class PeerWantLists {
 
     this.ledgerMap = trackedPeerMap({
       name: 'ipfs_bitswap_ledger_map',
-      metrics: components.metrics
+      metrics: components.libp2p.metrics
     })
 
     this.network.addEventListener('bitswap:message', (evt) => {

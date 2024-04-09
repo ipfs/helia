@@ -20,6 +20,7 @@ interface PeerWantListsComponentStubs {
   peerId: PeerId
   blockstore: Blockstore
   network: Network
+  libp2p: Libp2p
   logger: ComponentLogger
 }
 
@@ -30,18 +31,21 @@ describe('peer-want-lists', () => {
 
   beforeEach(async () => {
     const logger = defaultLogger()
+    const libp2p = stubInterface<Libp2p>({
+      getConnections: () => [],
+      metrics: undefined
+    })
     network = new Network({
       routing: stubInterface<Routing>(),
       logger,
-      libp2p: stubInterface<Libp2p>({
-        getConnections: () => []
-      })
+      libp2p
     })
 
     components = {
       peerId: await createEd25519PeerId(),
       blockstore: new MemoryBlockstore(),
       network,
+      libp2p,
       logger: defaultLogger()
     }
 

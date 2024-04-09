@@ -14,13 +14,13 @@ import { CID } from 'multiformats/cid'
 import { CustomProgressEvent } from 'progress-events'
 import { raceEvent } from 'race-event'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { BITSWAP_120, DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS, DEFAULT_MAX_PROVIDERS_PER_REQUEST, DEFAULT_MESSAGE_RECEIVE_TIMEOUT, DEFAULT_MESSAGE_SEND_TIMEOUT, DEFAULT_RUN_ON_TRANSIENT_CONNECTIONS } from './constants.js'
+import { BITSWAP_120, DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS, DEFAULT_MAX_PROVIDERS_PER_REQUEST, DEFAULT_MESSAGE_RECEIVE_TIMEOUT, DEFAULT_MESSAGE_SEND_CONCURRENCY, DEFAULT_MESSAGE_SEND_TIMEOUT, DEFAULT_RUN_ON_TRANSIENT_CONNECTIONS } from './constants.js'
 import { BitswapMessage } from './pb/message.js'
 import type { WantOptions } from './bitswap.js'
 import type { MultihashHasherLoader } from './index.js'
 import type { Block, BlockPresence, WantlistEntry } from './pb/message.js'
 import type { Provider, Routing } from '@helia/interface/routing'
-import type { Libp2p, AbortOptions, Connection, PeerId, IncomingStreamData, Topology, MetricGroup, ComponentLogger, Metrics, IdentifyResult } from '@libp2p/interface'
+import type { Libp2p, AbortOptions, Connection, PeerId, IncomingStreamData, Topology, ComponentLogger, IdentifyResult, Counter } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
@@ -79,7 +79,6 @@ export interface NetworkComponents {
   routing: Routing
   logger: ComponentLogger
   libp2p: Libp2p
-  metrics?: Metrics
 }
 
 export interface BitswapMessageEventDetail {
@@ -107,7 +106,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
   private readonly maxOutboundStreams: number
   private readonly messageReceiveTimeout: number
   private registrarIds: string[]
-  private readonly metrics?: { blocksSent: MetricGroup, dataSent: MetricGroup }
+  private readonly metrics: { blocksSent?: Counter, dataSent?: Counter }
   private readonly sendQueue: PeerQueue<void, SendMessageJobOptions>
   private readonly messageSendTimeout: number
   private readonly runOnTransientConnections: boolean
@@ -129,17 +128,14 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
     this.messageReceiveTimeout = init.messageReceiveTimeout ?? DEFAULT_MESSAGE_RECEIVE_TIMEOUT
     this.messageSendTimeout = init.messageSendTimeout ?? DEFAULT_MESSAGE_SEND_TIMEOUT
     this.runOnTransientConnections = init.runOnTransientConnections ?? DEFAULT_RUN_ON_TRANSIENT_CONNECTIONS
-
-    if (components.metrics != null) {
-      this.metrics = {
-        blocksSent: components.metrics?.registerMetricGroup('ipfs_bitswap_sent_blocks'),
-        dataSent: components.metrics?.registerMetricGroup('ipfs_bitswap_sent_data_bytes')
-      }
+    this.metrics = {
+      blocksSent: components.libp2p.metrics?.registerCounter('ipfs_bitswap_sent_blocks_total'),
+      dataSent: components.libp2p.metrics?.registerCounter('ipfs_bitswap_sent_data_bytes_total')
     }
 
     this.sendQueue = new PeerQueue({
-      concurrency: init.messageSendConcurrency,
-      metrics: components.metrics,
+      concurrency: init.messageSendConcurrency ?? DEFAULT_MESSAGE_SEND_CONCURRENCY,
+      metrics: components.libp2p.metrics,
       metricName: 'ipfs_bitswap_message_send_queue'
     })
     this.sendQueue.addEventListener('error', (evt) => {
@@ -302,9 +298,9 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
    */
   async findAndConnect (cid: CID, options?: WantOptions): Promise<void> {
     await drain(
-      take(
-        map(this.findProviders(cid, options), async provider => this.connectTo(provider.id, options)),
-        options?.maxProviders ?? DEFAULT_MAX_PROVIDERS_PER_REQUEST
+      map(
+        take(this.findProviders(cid, options), options?.maxProviders ?? DEFAULT_MAX_PROVIDERS_PER_REQUEST),
+        async provider => this.connectTo(provider.id, options)
       )
     )
       .catch(err => {
@@ -335,9 +331,11 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
     setMaxListeners(Infinity, signal)
 
     try {
-      const existingJob = this.sendQueue.find(peerId)
+      const existingJob = this.sendQueue.queue.find(job => {
+        return peerId.equals(job.options.peerId) && job.status === 'queued'
+      })
 
-      if (existingJob?.status === 'queued') {
+      if (existingJob != null) {
         // merge messages instead of adding new job
         existingJob.options.message = mergeMessages(existingJob.options.message, message)
 
@@ -371,7 +369,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
           stream.abort(err)
         }
 
-        this._updateSentStats(peerId, message.blocks)
+        this._updateSentStats(message.blocks)
       }, {
         peerId,
         signal,
@@ -417,23 +415,15 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
     return connection
   }
 
-  _updateSentStats (peerId: PeerId, blocks: Block[] = []): void {
-    if (this.metrics != null) {
-      let bytes = 0
+  _updateSentStats (blocks: Block[] = []): void {
+    let bytes = 0
 
-      for (const block of blocks.values()) {
-        bytes += block.data.byteLength
-      }
-
-      this.metrics.dataSent.increment({
-        global: bytes,
-        [peerId.toString()]: bytes
-      })
-      this.metrics.blocksSent.increment({
-        global: blocks.length,
-        [peerId.toString()]: blocks.length
-      })
+    for (const block of blocks.values()) {
+      bytes += block.data.byteLength
     }
+
+    this.metrics.dataSent?.increment(bytes)
+    this.metrics.blocksSent?.increment(blocks.length)
   }
 }
 
