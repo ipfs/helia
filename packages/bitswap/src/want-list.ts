@@ -1,4 +1,4 @@
-import { TypedEventEmitter } from '@libp2p/interface'
+import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { trackedPeerMap, PeerSet } from '@libp2p/peer-collections'
 import { trackedMap } from '@libp2p/utils/tracked-map'
 import all from 'it-all'
@@ -121,6 +121,7 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
   constructor (components: WantListComponents, init: WantListInit = {}) {
     super()
 
+    setMaxListeners(Infinity, this)
     this.peers = trackedPeerMap({
       name: 'ipfs_bitswap_peers',
       metrics: components.libp2p.metrics
