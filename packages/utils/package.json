@@ -62,7 +62,7 @@
     "@libp2p/utils": "^5.2.6",
     "@multiformats/dns": "^1.0.1",
     "any-signal": "^4.1.1",
-    "blockstore-core": "^4.4.0",
+    "blockstore-core": "^4.4.1",
     "cborg": "^4.0.9",
     "interface-blockstore": "^5.2.10",
     "interface-datastore": "^8.2.11",
