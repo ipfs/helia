@@ -12,6 +12,7 @@ import { duplexPair } from 'it-pair/duplex'
 import { pbStream } from 'it-protobuf-stream'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
+import pDefer from 'p-defer'
 import pWaitFor from 'p-wait-for'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
@@ -46,7 +47,9 @@ describe('bitswap', () => {
       peerId: await createEd25519PeerId(),
       routing: stubInterface<Routing>(),
       blockstore: new MemoryBlockstore(),
-      libp2p: stubInterface<Libp2p>()
+      libp2p: stubInterface<Libp2p>({
+        metrics: undefined
+      })
     }
 
     bitswap = new Bitswap({
@@ -91,8 +94,7 @@ describe('bitswap', () => {
             id: await createEd25519PeerId(),
             multiaddrs: [
               multiaddr(`/ip4/4${i}.4${i}.4${i}.4${i}/tcp/${1234 + i}`)
-            ],
-            protocols: ['transport-bitswap']
+            ]
           }
         })
       )
@@ -198,8 +200,7 @@ describe('bitswap', () => {
         id: await createEd25519PeerId(),
         multiaddrs: [
           multiaddr('/ip4/41.41.41.41/tcp/1234')
-        ],
-        protocols: ['transport-bitswap']
+        ]
       }]
 
       components.routing.findProviders.withArgs(cid).returns((async function * () {
@@ -226,8 +227,7 @@ describe('bitswap', () => {
         id: await createEd25519PeerId(),
         multiaddrs: [
           multiaddr('/ip4/41.41.41.41/tcp/1234')
-        ],
-        protocols: ['transport-bitswap']
+        ]
       }]
 
       components.routing.findProviders.withArgs(cid).returns((async function * () {
@@ -283,9 +283,25 @@ describe('bitswap', () => {
   describe('want', () => {
     it('should want a block that is available on the network', async () => {
       const remotePeer = await createEd25519PeerId()
-      const findProvsSpy = Sinon.spy(bitswap.network, 'findAndConnect')
+      const findProvsSpy = bitswap.network.findAndConnect = Sinon.stub()
+      findProvsSpy.resolves()
+
+      // add peer
+      bitswap.wantList.peers.set(remotePeer, new Set())
+
+      // wait for message send to peer
+      const sentMessages = pDefer()
+
+      bitswap.network.sendMessage = async (peerId) => {
+        if (remotePeer.equals(peerId)) {
+          sentMessages.resolve()
+        }
+      }
 
       const p = bitswap.want(cid)
+
+      // wait for message send to peer
+      await sentMessages.promise
 
       // provider sends message
       bitswap.network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
@@ -334,7 +350,25 @@ describe('bitswap', () => {
       const remotePeer = await createEd25519PeerId()
       expect(bitswap.getWantlist()).to.be.empty()
 
+      const findProvsSpy = bitswap.network.findAndConnect = Sinon.stub()
+      findProvsSpy.resolves()
+
+      // add peer
+      bitswap.wantList.peers.set(remotePeer, new Set())
+
+      // wait for message send to peer
+      const sentMessages = pDefer()
+
+      bitswap.network.sendMessage = async (peerId) => {
+        if (remotePeer.equals(peerId)) {
+          sentMessages.resolve()
+        }
+      }
+
       const p = bitswap.want(cid)
+
+      // wait for message send to peer
+      await sentMessages.promise
 
       expect(bitswap.getWantlist().map(w => w.cid)).to.include(cid)
 

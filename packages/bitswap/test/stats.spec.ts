@@ -2,10 +2,10 @@ import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import { stubInterface, type StubbedInstance } from 'sinon-ts'
 import { Stats } from '../src/stats.js'
-import type { MetricGroup, Metrics } from '@libp2p/interface'
+import type { Libp2p, MetricGroup, Metrics } from '@libp2p/interface'
 
 interface StubbedStatsComponents {
-  metrics: StubbedInstance<Metrics>
+  libp2p: StubbedInstance<Libp2p>
 }
 
 describe('stats', () => {
@@ -15,13 +15,15 @@ describe('stats', () => {
 
   beforeEach(() => {
     components = {
-      metrics: stubInterface<Metrics>()
+      libp2p: stubInterface<Libp2p>({
+        metrics: stubInterface<Metrics>()
+      })
     }
 
     metricGroup = stubInterface<MetricGroup>()
 
     // @ts-expect-error tsc does not select correct method overload sig
-    components.metrics.registerMetricGroup.returns(metricGroup)
+    components.libp2p.metrics?.registerMetricGroup.returns(metricGroup)
 
     stats = new Stats(components)
   })

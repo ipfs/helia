@@ -1,7 +1,7 @@
-import type { MetricGroup, Metrics, PeerId } from '@libp2p/interface'
+import type { Libp2p, MetricGroup, PeerId } from '@libp2p/interface'
 
 export interface StatsComponents {
-  metrics?: Metrics
+  libp2p: Libp2p
 }
 
 export class Stats {
@@ -11,10 +11,10 @@ export class Stats {
   private readonly duplicateDataReceived?: MetricGroup
 
   constructor (components: StatsComponents) {
-    this.blocksReceived = components.metrics?.registerMetricGroup('ipfs_bitswap_received_blocks')
-    this.duplicateBlocksReceived = components.metrics?.registerMetricGroup('ipfs_bitswap_duplicate_received_blocks')
-    this.dataReceived = components.metrics?.registerMetricGroup('ipfs_bitswap_data_received_bytes')
-    this.duplicateDataReceived = components.metrics?.registerMetricGroup('ipfs_bitswap_duplicate_data_received_bytes')
+    this.blocksReceived = components.libp2p.metrics?.registerMetricGroup('ipfs_bitswap_received_blocks')
+    this.duplicateBlocksReceived = components.libp2p.metrics?.registerMetricGroup('ipfs_bitswap_duplicate_received_blocks')
+    this.dataReceived = components.libp2p.metrics?.registerMetricGroup('ipfs_bitswap_data_received_bytes')
+    this.duplicateDataReceived = components.libp2p.metrics?.registerMetricGroup('ipfs_bitswap_duplicate_data_received_bytes')
   }
 
   updateBlocksReceived (count: number = 1, peerId?: PeerId): void {

@@ -89,6 +89,11 @@ class BitswapSession implements BitswapSessionInterface {
     void Promise.resolve()
       .then(async () => {
         for await (const peerId of source) {
+          if (found === this.maxProviders) {
+            this.queue.clear()
+            break
+          }
+
           // eslint-disable-next-line no-loop-func
           await this.queue.add(async () => {
             try {

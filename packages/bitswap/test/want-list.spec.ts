@@ -7,9 +7,11 @@ import { stubInterface, type StubbedInstance } from 'sinon-ts'
 import { type Network } from '../src/network.js'
 import { WantType } from '../src/pb/message.js'
 import { WantList } from '../src/want-list.js'
+import type { Libp2p } from '@libp2p/interface'
 
 interface StubbedWantListComponents {
   network: StubbedInstance<Network>
+  libp2p: StubbedInstance<Libp2p>
 }
 
 describe('wantlist', () => {
@@ -18,7 +20,10 @@ describe('wantlist', () => {
 
   beforeEach(() => {
     components = {
-      network: stubInterface<Network>()
+      network: stubInterface<Network>(),
+      libp2p: stubInterface<Libp2p>({
+        metrics: undefined
+      })
     }
 
     wantList = new WantList({
