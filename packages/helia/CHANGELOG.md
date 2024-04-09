@@ -1,17 +1,3 @@
-## [helia-v1.3.12](https://github.com/ipfs/helia/compare/helia-v1.3.11...helia-v1.3.12) (2023-08-05)
-
-
-### Dependencies
-
-* **dev:** bump aegir from 39.0.13 to 40.0.8 ([#198](https://github.com/ipfs/helia/issues/198)) ([4d75ecf](https://github.com/ipfs/helia/commit/4d75ecffb79e5177da35d3106e42dac7bc63153a))
-* update sibling dependencies ([beb10b5](https://github.com/ipfs/helia/commit/beb10b5590d66d1d5bef9b5e890b888263df2c92))
-
-### Dependencies
-
-* The following workspace dependencies were updated
-  * dependencies
-    * @helia/block-brokers bumped from ^2.0.0 to ^2.0.1
-
 ## [4.1.0](https://github.com/ipfs/helia/compare/helia-v4.0.2...helia-v4.1.0) (2024-03-14)
 
 
@@ -187,6 +173,19 @@
 * update libp2p to 0.46.x ([#215](https://www.github.com/ipfs/helia/issues/215)) ([65b68f0](https://www.github.com/ipfs/helia/commit/65b68f071d04d2f6f0fcf35938b146706b1a3cd0))
 * update sibling dependencies ([07847bb](https://www.github.com/ipfs/helia/commit/07847bb60b9ebd26497080373e45871abb4b82dd))
 
+## [helia-v1.3.12](https://github.com/ipfs/helia/compare/helia-v1.3.11...helia-v1.3.12) (2023-08-05)
+
+
+### Dependencies
+
+* **dev:** bump aegir from 39.0.13 to 40.0.8 ([#198](https://github.com/ipfs/helia/issues/198)) ([4d75ecf](https://github.com/ipfs/helia/commit/4d75ecffb79e5177da35d3106e42dac7bc63153a))
+* update sibling dependencies ([beb10b5](https://github.com/ipfs/helia/commit/beb10b5590d66d1d5bef9b5e890b888263df2c92))
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^2.0.0 to ^2.0.1
 
 ### Dependencies
 
