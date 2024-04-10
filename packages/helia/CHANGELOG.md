@@ -166,12 +166,17 @@
 
 * re-export types from @helia/interface ([#232](https://www.github.com/ipfs/helia/issues/232)) ([09c1e47](https://www.github.com/ipfs/helia/commit/09c1e4787a506d34a00d9ce7852d73471d47db1b))
 
-
 ### Dependencies
 
 * bump @libp2p/ipni-content-routing from 1.0.2 to 2.0.0 ([#227](https://www.github.com/ipfs/helia/issues/227)) ([a33cb3e](https://www.github.com/ipfs/helia/commit/a33cb3ef2dd21a55b598f206e8d4295935ea2bcc))
 * update libp2p to 0.46.x ([#215](https://www.github.com/ipfs/helia/issues/215)) ([65b68f0](https://www.github.com/ipfs/helia/commit/65b68f071d04d2f6f0fcf35938b146706b1a3cd0))
 * update sibling dependencies ([07847bb](https://www.github.com/ipfs/helia/commit/07847bb60b9ebd26497080373e45871abb4b82dd))
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^1.0.0 to ^2.0.0
 
 ## [helia-v1.3.12](https://github.com/ipfs/helia/compare/helia-v1.3.11...helia-v1.3.12) (2023-08-05)
 
@@ -186,12 +191,6 @@
 * The following workspace dependencies were updated
   * dependencies
     * @helia/block-brokers bumped from ^2.0.0 to ^2.0.1
-
-### Dependencies
-
-* The following workspace dependencies were updated
-  * dependencies
-    * @helia/interface bumped from ^1.0.0 to ^2.0.0
 
 ## [helia-v1.3.11](https://github.com/ipfs/helia/compare/helia-v1.3.10...helia-v1.3.11) (2023-08-04)
 
