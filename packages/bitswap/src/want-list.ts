@@ -1,5 +1,5 @@
 import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
-import { trackedPeerMap, PeerSet } from '@libp2p/peer-collections'
+import { trackedPeerMap } from '@libp2p/peer-collections'
 import { trackedMap } from '@libp2p/utils/tracked-map'
 import all from 'it-all'
 import filter from 'it-filter'
@@ -60,19 +60,9 @@ export interface WantListEntry {
    * Whether the remote should tell us if they have the block or not
    */
   sendDontHave: boolean
-
-  /**
-   * If this set has members, the want will only be sent to these peers
-   */
-  session: PeerSet
 }
 
 export interface WantOptions extends AbortOptions, ProgressOptions<BitswapNetworkWantProgressEvents> {
-  /**
-   * If set, this WantList entry will only be sent to this peer
-   */
-  peerId?: PeerId
-
   /**
    * Allow prioritising blocks
    */
@@ -161,15 +151,10 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
     if (entry == null) {
       entry = {
         cid,
-        session: new PeerSet(),
         priority: options.priority ?? 1,
         wantType: options.wantType ?? WantType.WantBlock,
         cancel: false,
         sendDontHave: true
-      }
-
-      if (options.peerId != null) {
-        entry.session.add(options.peerId)
       }
 
       this.wants.set(cidStr, entry)
@@ -179,22 +164,6 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
     // previous want was a WantHave
     if (entry.wantType === WantType.WantHave && options.wantType === WantType.WantBlock) {
       entry.wantType = WantType.WantBlock
-    }
-
-    // if this want was part of a session..
-    if (entry.session.size > 0) {
-      // if the new want is also part of a session, expand the want session to
-      // include both sets of peers
-      if (options.peerId != null) {
-        entry.session.add(options.peerId)
-      }
-
-      // if the new want is not part of a session, make this want a non-session
-      // want - nb. this will cause this WantList entry to be sent to every peer
-      // instead of just the ones in the session
-      if (options.peerId == null) {
-        entry.session.clear()
-      }
     }
 
     // broadcast changes
@@ -255,11 +224,6 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
             entries: pipe(
               this.wants.entries(),
               (source) => filter(source, ([key, entry]) => {
-                // skip session-only wants
-                if (entry.session.size > 0 && !entry.session.has(peerId)) {
-                  return false
-                }
-
                 const sentPreviously = sentWants.has(key)
 
                 // don't cancel if we've not sent it to them before
@@ -329,37 +293,28 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
   /**
    * Add a CID to the wantlist
    */
-  async wantPresence (cid: CID, options: WantOptions = {}): Promise<WantPresenceResult> {
-    if (options.peerId != null) {
-      const peer = options.peerId
-
-      // sending WantHave directly to peer
-      await this.network.sendMessage(options.peerId, {
-        wantlist: {
-          full: false,
-          entries: [{
-            cid: cid.bytes,
-            sendDontHave: true,
-            wantType: WantType.WantHave,
-            priority: 1
-          }]
-        }
-      })
-
-      // wait for peer response
-      const event = await raceEvent<CustomEvent<WantHaveResult | WantDontHaveResult>>(this, 'presence', options.signal, {
-        filter: (event) => {
-          return peer.equals(event.detail.sender) && uint8ArrayEquals(cid.multihash.digest, event.detail.cid.multihash.digest)
-        }
-      })
-
-      return event.detail
-    }
-
-    return this.addEntry(cid, {
-      ...options,
-      wantType: WantType.WantHave
+  async wantSessionPresence (cid: CID, peerId: PeerId, options: WantOptions = {}): Promise<WantPresenceResult> {
+    // sending WantHave directly to peer
+    await this.network.sendMessage(peerId, {
+      wantlist: {
+        full: false,
+        entries: [{
+          cid: cid.bytes,
+          sendDontHave: true,
+          wantType: WantType.WantHave,
+          priority: 1
+        }]
+      }
     })
+
+    // wait for peer response
+    const event = await raceEvent<CustomEvent<WantHaveResult | WantDontHaveResult>>(this, 'presence', options.signal, {
+      filter: (event) => {
+        return peerId.equals(event.detail.sender) && uint8ArrayEquals(cid.multihash.digest, event.detail.cid.multihash.digest)
+      }
+    })
+
+    return event.detail
   }
 
   /**
@@ -370,6 +325,33 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
       ...options,
       wantType: WantType.WantBlock
     })
+  }
+
+  /**
+   * Add a CID to the wantlist
+   */
+  async wantSessionBlock (cid: CID, peerId: PeerId, options: WantOptions = {}): Promise<WantPresenceResult> {
+    // sending WantBlockResult directly to peer
+    await this.network.sendMessage(peerId, {
+      wantlist: {
+        full: false,
+        entries: [{
+          cid: cid.bytes,
+          sendDontHave: true,
+          wantType: WantType.WantBlock,
+          priority: 1
+        }]
+      }
+    })
+
+    // wait for peer response
+    const event = await raceEvent<CustomEvent<WantPresenceResult>>(this, 'presence', options.signal, {
+      filter: (event) => {
+        return peerId.equals(event.detail.sender) && uint8ArrayEquals(cid.multihash.digest, event.detail.cid.multihash.digest)
+      }
+    })
+
+    return event.detail
   }
 
   /**
@@ -483,7 +465,7 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
         full: true,
         entries: pipe(
           this.wants.entries(),
-          (source) => filter(source, ([key, entry]) => !entry.cancel && (entry.session.size > 0 && !entry.session.has(peerId))),
+          (source) => filter(source, ([key, entry]) => !entry.cancel),
           (source) => filter(source, ([key, entry]) => !entry.cancel),
           (source) => map(source, ([key, entry]) => {
             sentWants.add(key)
@@ -531,5 +513,6 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
 
   stop (): void {
     this.peers.clear()
+    clearTimeout(this.sendMessagesTimeout)
   }
 }

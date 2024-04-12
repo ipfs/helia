@@ -73,10 +73,12 @@
     "it-merge": "^3.0.3",
     "mortice": "^3.0.4",
     "multiformats": "^13.1.0",
+    "p-defer": "^4.0.1",
     "progress-events": "^1.0.0",
     "uint8arrays": "^5.0.2"
   },
   "devDependencies": {
+    "@libp2p/peer-id-factory": "^4.0.9",
     "@types/sinon": "^17.0.3",
     "aegir": "^42.2.5",
     "datastore-core": "^9.2.9",

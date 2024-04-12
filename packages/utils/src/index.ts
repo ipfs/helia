@@ -39,6 +39,8 @@ import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 
+export { AbstractSession, type AbstractCreateSessionOptions } from './abstract-session.js'
+
 /**
  * Options used to create a Helia node.
  */
@@ -100,6 +102,24 @@ export interface HeliaInit {
    * information about network peers or getting/putting records.
    */
   routers?: Array<Partial<Routing>>
+
+  /**
+   * During provider lookups, peers can be returned from routing implementations
+   * with no multiaddrs.
+   *
+   * This can happen when they've been retrieved from network peers that only
+   * store multiaddrs for a limited amount of time.
+   *
+   * When this happens the peer's info has to be looked up with a further query.
+   *
+   * To not have this query block the yielding of other providers returned with
+   * multiaddrs, a separate queue is used to perform this lookup.
+   *
+   * This config value controls the concurrency of that queue.
+   *
+   * @default 5
+   */
+  providerLookupConcurrency?: number
 
   /**
    * Components used by subclasses
@@ -171,7 +191,8 @@ export class Helia implements HeliaInterface {
         }
 
         return routers
-      })
+      }),
+      providerLookupConcurrency: init.providerLookupConcurrency
     })
 
     const networkedStorage = new NetworkedStorage(components)

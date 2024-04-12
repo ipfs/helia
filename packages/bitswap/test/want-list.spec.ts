@@ -91,8 +91,7 @@ describe('wantlist', () => {
     await wantList.peerConnected(sessionPeer)
     await wantList.peerConnected(nonSessionPeer)
 
-    await expect(wantList.wantBlock(cid, {
-      peerId: sessionPeer,
+    await expect(wantList.wantSessionBlock(cid, sessionPeer, {
       signal: AbortSignal.timeout(500)
     })).to.eventually.be.rejected
       .with.property('code', 'ABORT_ERR')
@@ -106,6 +105,5 @@ describe('wantlist', () => {
     expect(sentMessage).to.have.nested.property('wantlist.full', false)
     expect(sentMessage).to.have.deep.nested.property('wantlist.entries[0].cid', cid.bytes)
     expect(sentMessage).to.have.nested.property('wantlist.entries[0].wantType', WantType.WantBlock)
-    expect(sentMessage).to.have.nested.property('wantlist.entries[0].cancel', false)
   })
 })

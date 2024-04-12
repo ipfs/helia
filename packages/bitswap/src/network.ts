@@ -1,6 +1,5 @@
 import { CodeError, TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { PeerQueue, type PeerQueueJobOptions } from '@libp2p/utils/peer-queue'
-import { Circuit } from '@multiformats/multiaddr-matcher'
 import { anySignal } from 'any-signal'
 import debug from 'debug'
 import drain from 'it-drain'
@@ -263,29 +262,12 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
     options?.onProgress?.(new CustomProgressEvent<PeerId>('bitswap:network:find-providers', cid))
 
     for await (const provider of this.routing.findProviders(cid, options)) {
-      // unless we explicitly run on transient connections, skip peers that only
-      // have circuit relay addresses as bitswap won't run over them
-      if (!this.runOnTransientConnections) {
-        let hasDirectAddress = false
+      // make sure we can dial the provider
+      const dialable = await this.libp2p.isDialable(provider.multiaddrs, {
+        runOnTransientConnection: this.runOnTransientConnections
+      })
 
-        for (let ma of provider.multiaddrs) {
-          if (ma.getPeerId() == null) {
-            ma = ma.encapsulate(`/p2p/${provider.id}`)
-          }
-
-          if (!Circuit.exactMatch(ma)) {
-            hasDirectAddress = true
-            break
-          }
-        }
-
-        if (!hasDirectAddress) {
-          continue
-        }
-      }
-
-      // ignore non-bitswap providers
-      if (provider.protocols?.includes('transport-bitswap') === false) {
+      if (!dialable) {
         continue
       }
 

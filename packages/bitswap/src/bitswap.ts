@@ -1,5 +1,4 @@
 /* eslint-disable no-loop-func */
-import { DEFAULT_SESSION_MAX_PROVIDERS, DEFAULT_SESSION_MIN_PROVIDERS, DEFAULT_SESSION_PROVIDER_QUERY_CONCURRENCY } from '@helia/interface'
 import { setMaxListeners } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
 import { Network } from './network.js'
@@ -7,7 +6,8 @@ import { PeerWantLists } from './peer-want-lists/index.js'
 import { createBitswapSession } from './session.js'
 import { Stats } from './stats.js'
 import { WantList } from './want-list.js'
-import type { BitswapOptions, Bitswap as BitswapInterface, BitswapWantProgressEvents, BitswapNotifyProgressEvents, BitswapSession, WantListEntry, BitswapComponents, CreateBitswapSessionOptions } from './index.js'
+import type { BitswapOptions, Bitswap as BitswapInterface, BitswapWantProgressEvents, BitswapNotifyProgressEvents, WantListEntry, BitswapComponents } from './index.js'
+import type { BlockBroker, CreateSessionOptions } from '@helia/interface'
 import type { ComponentLogger, PeerId } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
 import type { AbortOptions } from '@multiformats/multiaddr'
@@ -62,22 +62,12 @@ export class Bitswap implements BitswapInterface {
     }, init)
   }
 
-  async createSession (root: CID, options?: CreateBitswapSessionOptions): Promise<BitswapSession> {
-    const minProviders = options?.minProviders ?? DEFAULT_SESSION_MIN_PROVIDERS
-    const maxProviders = options?.maxProviders ?? DEFAULT_SESSION_MAX_PROVIDERS
-
+  createSession (options: CreateSessionOptions = {}): Required<Pick<BlockBroker<BitswapWantProgressEvents>, 'retrieve'>> {
     return createBitswapSession({
       wantList: this.wantList,
       network: this.network,
       logger: this.logger
-    }, {
-      root,
-      queryConcurrency: options?.providerQueryConcurrency ?? DEFAULT_SESSION_PROVIDER_QUERY_CONCURRENCY,
-      minProviders,
-      maxProviders,
-      connectedPeers: options?.queryConnectedPeers !== false ? [...this.wantList.peers.keys()] : [],
-      signal: options?.signal
-    })
+    }, options)
   }
 
   async want (cid: CID, options: WantOptions = {}): Promise<Uint8Array> {

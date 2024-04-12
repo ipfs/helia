@@ -10,13 +10,12 @@ import * as raw from 'multiformats/codecs/raw'
 import { PinsImpl } from '../src/pins.js'
 import { BlockStorage } from '../src/storage.js'
 import { createBlock } from './fixtures/create-block.js'
-import type { Blocks } from '@helia/interface'
+import type { Blocks, SessionBlockstore } from '@helia/interface'
 import type { Pins } from '@helia/interface/pins'
-import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 
 class MemoryBlocks extends MemoryBlockstore implements Blocks {
-  async createSession (): Promise<Blockstore> {
+  createSession (): SessionBlockstore {
     throw new Error('Not implemented')
   }
 }

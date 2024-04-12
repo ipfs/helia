@@ -1,16 +1,13 @@
+import { AbstractSession } from '@helia/utils'
 import { CodeError } from '@libp2p/interface'
-import { PeerSet } from '@libp2p/peer-collections'
-import { PeerQueue } from '@libp2p/utils/peer-queue'
-import map from 'it-map'
-import merge from 'it-merge'
 import pDefer, { type DeferredPromise } from 'p-defer'
-import type { BitswapWantProgressEvents, BitswapSession as BitswapSessionInterface } from './index.js'
+import type { BitswapWantProgressEvents } from './index.js'
 import type { Network } from './network.js'
-import type { WantList } from './want-list.js'
-import type { ComponentLogger, Logger, PeerId } from '@libp2p/interface'
+import type { WantList, WantPresenceResult } from './want-list.js'
+import type { CreateSessionOptions } from '@helia/interface'
+import type { ComponentLogger, PeerId } from '@libp2p/interface'
 import type { AbortOptions } from 'interface-store'
 import type { CID } from 'multiformats/cid'
-import type { ProgressOptions } from 'progress-events'
 
 export interface BitswapSessionComponents {
   network: Network
@@ -18,138 +15,127 @@ export interface BitswapSessionComponents {
   logger: ComponentLogger
 }
 
-export interface BitswapSessionInit extends AbortOptions {
-  root: CID
-  queryConcurrency: number
-  minProviders: number
-  maxProviders: number
-  connectedPeers: PeerId[]
+interface BitswapPeer {
+  peerId: PeerId
+
+  /**
+   * We've failed to retrieve a block from this peer. This can happen when
+   * protocol selection fails (e.g. they don't speak bitswap) - they should be
+   * excluded from the session from now on.
+   */
+  failed: boolean
 }
 
-class BitswapSession implements BitswapSessionInterface {
-  public readonly root: CID
-  public readonly peers: PeerSet
-  private readonly log: Logger
+class BitswapSession extends AbstractSession<BitswapPeer, BitswapWantProgressEvents> {
   private readonly wantList: WantList
   private readonly network: Network
-  private readonly queue: PeerQueue
-  private readonly maxProviders: number
 
-  constructor (components: BitswapSessionComponents, init: BitswapSessionInit) {
-    this.peers = new PeerSet()
-    this.root = init.root
-    this.maxProviders = init.maxProviders
-    this.log = components.logger.forComponent(`helia:bitswap:session:${init.root}`)
+  constructor (components: BitswapSessionComponents, init: CreateSessionOptions) {
+    super(components, {
+      ...init,
+      name: 'helia:bitswap:session'
+    })
+
     this.wantList = components.wantList
     this.network = components.network
-
-    this.queue = new PeerQueue({
-      concurrency: init.queryConcurrency
-    })
-    this.queue.addEventListener('error', (evt) => {
-      this.log.error('error querying peer for %c', this.root, evt.detail)
-    })
   }
 
-  async want (cid: CID, options: AbortOptions & ProgressOptions<BitswapWantProgressEvents> = {}): Promise<Uint8Array> {
-    if (this.peers.size === 0) {
-      throw new CodeError('Bitswap session had no peers', 'ERR_NO_SESSION_PEERS')
+  async queryProvider (cid: CID, provider: BitswapPeer, options: AbortOptions): Promise<Uint8Array> {
+    if (provider.failed) {
+      throw new Error('Provider failed previously')
     }
 
-    this.log('sending WANT-BLOCK for %c to', cid, this.peers)
+    this.log('sending WANT-BLOCK for %c to %p', cid, provider.peerId)
 
-    const result = await Promise.any(
-      [...this.peers].map(async peerId => {
-        return this.wantList.wantBlock(cid, {
-          peerId,
-          ...options
-        })
-      })
-    )
+    let result: WantPresenceResult
 
-    this.log('received block for %c from %p', cid, result.sender)
+    try {
+      result = await this.wantList.wantSessionBlock(cid, provider.peerId, options)
+    } catch (err: any) {
+      if (err.code === 'ERR_UNSUPPORTED_PROTOCOL') {
+        this.log('%p does not speak bitswap, excluding from session queries', provider.peerId)
+        provider.failed = true
 
-    // TODO findNewProviders when promise.any throws aggregate error and signal
-    // is not aborted
+        // increase max providers so we can find another more suitable peer
+        this.maxProviders++
+      }
 
-    return result.block
+      throw err
+    }
+
+    this.log('%p %s %c', provider.peerId, result.has ? 'has' : 'does not have', cid)
+
+    if (result.has && result.block != null) {
+      return result.block
+    }
+
+    throw new Error('Provider did not have block')
   }
 
   async findNewProviders (cid: CID, count: number, options: AbortOptions = {}): Promise<void> {
     const deferred: DeferredPromise<void> = pDefer()
     let found = 0
 
-    this.log('find %d-%d new provider(s) for %c', count, this.maxProviders, cid)
-
-    const source = merge(
-      [...this.wantList.peers.keys()],
-      map(this.network.findProviders(cid, options), prov => prov.id)
-    )
-
     void Promise.resolve()
       .then(async () => {
-        for await (const peerId of source) {
-          if (found === this.maxProviders) {
-            this.queue.clear()
+        this.log('finding %d-%d new provider(s) for %c', count, this.maxProviders, cid)
+
+        for await (const provider of this.network.findProviders(cid, options)) {
+          if (found === this.maxProviders || options.signal?.aborted === true) {
             break
           }
 
-          // eslint-disable-next-line no-loop-func
-          await this.queue.add(async () => {
-            try {
-              this.log('asking potential session peer %p if they have %c', peerId, cid)
-              const result = await this.wantList.wantPresence(cid, {
-                peerId,
-                ...options
-              })
+          // dedupe existing session peers
+          if (this.providers.find(prov => prov.peerId.equals(provider.id)) != null) {
+            continue
+          }
 
-              if (!result.has) {
-                this.log('potential session peer %p did not have %c', peerId, cid)
-                return
-              }
+          const prov = {
+            peerId: provider.id,
+            failed: false
+          }
 
-              this.log('potential session peer %p had %c', peerId, cid)
-              found++
+          this.log('found %d/%d new providers', found, this.maxProviders)
+          this.providers.push(prov)
 
-              // add to list
-              this.peers.add(peerId)
-
-              if (found === count) {
-                this.log('found %d session peers', found)
-
-                deferred.resolve()
-              }
-
-              if (found === this.maxProviders) {
-                this.log('found max provider session peers', found)
-
-                this.queue.clear()
-              }
-            } catch (err: any) {
-              this.log.error('error querying potential session peer %p for %c', peerId, cid, err.errors ?? err)
-            }
-          }, {
-            peerId
+          // let the new peer join current queries
+          this.safeDispatchEvent('provider', {
+            detail: prov
           })
+
+          found++
+
+          if (found === count) {
+            this.log('session is ready')
+            deferred.resolve()
+            // continue finding peers until we reach this.maxProviders
+          }
+
+          if (this.providers.length === this.maxProviders) {
+            this.log('found max session peers', found)
+            break
+          }
         }
 
-        this.log('found %d session peers total', found)
+        this.log('found %d/%d new session peers', found, this.maxProviders)
 
-        if (count > 0) {
-          deferred.reject(new CodeError(`Found ${found} of ${count} providers`, 'ERR_NO_PROVIDERS_FOUND'))
+        if (found < count) {
+          throw new CodeError(`Found ${found} of ${count} bitswap providers for ${cid}`, 'ERR_INSUFFICIENT_PROVIDERS_FOUND')
         }
+      })
+      .catch(err => {
+        this.log.error('error searching routing for potential session peers for %c', cid, err.errors ?? err)
+        deferred.reject(err)
       })
 
     return deferred.promise
   }
+
+  includeProvider (provider: BitswapPeer): boolean {
+    return !provider.failed
+  }
 }
 
-export async function createBitswapSession (components: BitswapSessionComponents, init: BitswapSessionInit): Promise<BitswapSessionInterface> {
-  const session = new BitswapSession(components, init)
-
-  await session.findNewProviders(init.root, init.minProviders, {
-    signal: init.signal
-  })
-
-  return session
+export function createBitswapSession (components: BitswapSessionComponents, init: CreateSessionOptions): BitswapSession {
+  return new BitswapSession(components, init)
 }

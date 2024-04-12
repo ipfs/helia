@@ -9,10 +9,9 @@
 import { Bitswap as BitswapClass } from './bitswap.js'
 import type { BitswapNetworkNotifyProgressEvents, BitswapNetworkWantProgressEvents } from './network.js'
 import type { WantType } from './pb/message.js'
-import type { CreateSessionOptions } from '@helia/interface'
+import type { BlockBroker, CreateSessionOptions } from '@helia/interface'
 import type { Routing } from '@helia/interface/routing'
 import type { Libp2p, AbortOptions, Startable, ComponentLogger, Metrics, PeerId } from '@libp2p/interface'
-import type { PeerSet } from '@libp2p/peer-collections'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
@@ -29,50 +28,10 @@ export type BitswapWantBlockProgressEvents =
   ProgressEvent<'bitswap:want-block:block', CID> |
   BitswapNetworkWantProgressEvents
 
-/**
- * A bitswap session is a network overlay consisting of peers that all have the
- * first block in a file. Subsequent requests will only go to these peers.
- */
-export interface BitswapSession {
-  /**
-   * The peers in this session
-   */
-  peers: PeerSet
-
-  /**
-   * Fetch an additional CID from this DAG
-   */
-  want(cid: CID, options?: AbortOptions & ProgressOptions<BitswapWantProgressEvents>): Promise<Uint8Array>
-}
-
 export interface WantListEntry {
   cid: CID
   priority: number
   wantType: WantType
-}
-
-export interface CreateBitswapSessionOptions extends CreateSessionOptions<BitswapWantProgressEvents> {
-  /**
-   * If true, query connected peers before searching for providers via
-   * Helia routers
-   *
-   * @default true
-   */
-  queryConnectedPeers?: boolean
-
-  /**
-   * If true, search for providers via Helia routers to query for the root CID
-   *
-   * @default true
-   */
-  queryRoutingPeers?: boolean
-
-  /**
-   * The priority to use when querying availability of the root CID
-   *
-   * @default 1
-   */
-  priority?: number
 }
 
 export interface Bitswap extends Startable {
@@ -100,7 +59,7 @@ export interface Bitswap extends Startable {
   /**
    * Start a session to retrieve a file from the network
    */
-  createSession(root: CID, options?: AbortOptions & ProgressOptions<BitswapWantProgressEvents>): Promise<BitswapSession>
+  createSession(options?: CreateSessionOptions<BitswapWantProgressEvents>): Required<Pick<BlockBroker<BitswapWantProgressEvents>, 'retrieve'>>
 }
 
 export interface MultihashHasherLoader {

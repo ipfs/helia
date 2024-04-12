@@ -5,75 +5,47 @@ import filter from 'it-filter'
 import forEach from 'it-foreach'
 import { CustomProgressEvent, type ProgressOptions } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import type { BlockBroker, Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions, BlockRetrievalOptions } from '@helia/interface/blocks'
+import type { BlockBroker, Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions, BlockRetrievalOptions, CreateSessionOptions, SessionBlockstore } from '@helia/interface/blocks'
 import type { AbortOptions, ComponentLogger, Logger, LoggerOptions, Startable } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { AwaitIterable } from 'interface-store'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 
-export interface NetworkedStorageInit {
-  root?: CID
-}
-
 export interface GetOptions extends AbortOptions {
   progress?(evt: Event): void
 }
 
-export interface NetworkedStorageComponents {
+export interface StorageComponents {
   blockstore: Blockstore
   logger: ComponentLogger
   blockBrokers: BlockBroker[]
   hashers: Record<number, MultihashHasher>
 }
 
-/**
- * Networked storage wraps a regular blockstore - when getting blocks if the
- * blocks are not present Bitswap will be used to fetch them from network peers.
- */
-export class NetworkedStorage implements Blocks, Startable {
-  private readonly child: Blockstore
-  private readonly hashers: Record<number, MultihashHasher>
-  private started: boolean
-  private readonly log: Logger
-  private readonly logger: ComponentLogger
-  private readonly components: NetworkedStorageComponents
+class Storage implements Blockstore {
+  protected readonly child: Blockstore
+  protected readonly hashers: Record<number, MultihashHasher>
+  protected log: Logger
+  protected readonly logger: ComponentLogger
+  protected readonly components: StorageComponents
 
   /**
    * Create a new BlockStorage
    */
-  constructor (components: NetworkedStorageComponents, init: NetworkedStorageInit = {}) {
-    this.log = components.logger.forComponent(`helia:networked-storage${init.root == null ? '' : `:${init.root}`}`)
+  constructor (components: StorageComponents) {
+    this.log = components.logger.forComponent('helia:networked-storage')
     this.logger = components.logger
     this.components = components
     this.child = new IdentityBlockstore(components.blockstore)
     this.hashers = components.hashers ?? {}
-    this.started = false
-  }
-
-  isStarted (): boolean {
-    return this.started
-  }
-
-  async start (): Promise<void> {
-    await start(this.child, ...this.components.blockBrokers)
-    this.started = true
-  }
-
-  async stop (): Promise<void> {
-    await stop(this.child, ...this.components.blockBrokers)
-    this.started = false
-  }
-
-  unwrap (): Blockstore {
-    return this.child
   }
 
   /**
    * Put a block to the underlying datastore
    */
   async put (cid: CID, block: Uint8Array, options: AbortOptions & ProgressOptions<PutBlockProgressEvents> = {}): Promise<CID> {
-    if (await this.child.has(cid)) {
+    if (await this.child.has(cid, options)) {
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:duplicate', cid))
       return cid
     }
@@ -94,7 +66,7 @@ export class NetworkedStorage implements Blocks, Startable {
    */
   async * putMany (blocks: AwaitIterable<{ cid: CID, block: Uint8Array }>, options: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents> = {}): AsyncIterable<CID> {
     const missingBlocks = filter(blocks, async ({ cid }): Promise<boolean> => {
-      const has = await this.child.has(cid)
+      const has = await this.child.has(cid, options)
 
       if (has) {
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:put-many:duplicate', cid))
@@ -118,7 +90,7 @@ export class NetworkedStorage implements Blocks, Startable {
    * Get a block by cid
    */
   async get (cid: CID, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetBlockProgressEvents> = {}): Promise<Uint8Array> {
-    if (options.offline !== true && !(await this.child.has(cid))) {
+    if (options.offline !== true && !(await this.child.has(cid, options))) {
       // we do not have the block locally, get it from a block provider
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:providers:get', cid))
       const block = await raceBlockRetrievers(cid, this.components.blockBrokers, this.hashers[cid.multihash.code], {
@@ -149,7 +121,7 @@ export class NetworkedStorage implements Blocks, Startable {
     options.onProgress?.(new CustomProgressEvent('blocks:get-many:blockstore:get-many'))
 
     yield * this.child.getMany(forEach(cids, async (cid): Promise<void> => {
-      if (options.offline !== true && !(await this.child.has(cid))) {
+      if (options.offline !== true && !(await this.child.has(cid, options))) {
         // we do not have the block locally, get it from a block provider
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:providers:get', cid))
         const block = await raceBlockRetrievers(cid, this.components.blockBrokers, this.hashers[cid.multihash.code], {
@@ -197,17 +169,54 @@ export class NetworkedStorage implements Blocks, Startable {
     options.onProgress?.(new CustomProgressEvent('blocks:get-all:blockstore:get-many'))
     yield * this.child.getAll(options)
   }
+}
 
-  async createSession (root: CID, options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): Promise<Blocks> {
-    const blockBrokers = await Promise.all(this.components.blockBrokers.map(async broker => {
+export type NetworkedStorageComponents = StorageComponents
+
+/**
+ * Networked storage wraps a regular blockstore - when getting blocks if the
+ * blocks are not present Bitswap will be used to fetch them from network peers.
+ */
+export class NetworkedStorage extends Storage implements Blocks, Startable {
+  private started: boolean
+
+  /**
+   * Create a new BlockStorage
+   */
+  constructor (components: NetworkedStorageComponents) {
+    super(components)
+
+    this.started = false
+  }
+
+  isStarted (): boolean {
+    return this.started
+  }
+
+  async start (): Promise<void> {
+    await start(this.child, ...this.components.blockBrokers)
+    this.started = true
+  }
+
+  async stop (): Promise<void> {
+    await stop(this.child, ...this.components.blockBrokers)
+    this.started = false
+  }
+
+  unwrap (): Blockstore {
+    return this.child
+  }
+
+  createSession (root: CID, options?: CreateSessionOptions): SessionBlockstore {
+    const blockBrokers = this.components.blockBrokers.map(broker => {
       if (broker.createSession == null) {
         return broker
       }
 
-      return broker.createSession(root, options)
-    }))
+      return broker.createSession(options)
+    })
 
-    return new NetworkedStorage({
+    return new SessionStorage({
       blockstore: this.child,
       blockBrokers,
       hashers: this.hashers,
@@ -218,9 +227,167 @@ export class NetworkedStorage implements Blocks, Startable {
   }
 }
 
+interface SessionStorageInit {
+  root: CID
+}
+
+/**
+ * Storage subclass that can cancel any ongoing operation at any point.
+ */
+class SessionStorage extends Storage implements SessionBlockstore {
+  private readonly closeController: AbortController
+
+  constructor (components: StorageComponents, init: SessionStorageInit) {
+    super(components)
+
+    // because brokers are allowed to continue searching for providers after the
+    // session has been created, we need a way to tell them that the user has
+    // finished using the session any in-flight requests should be cancelled
+    this.closeController = new AbortController()
+    setMaxListeners(Infinity, this.closeController.signal)
+
+    this.log = components.logger.forComponent(`helia:session-storage${init.root}`)
+  }
+
+  close (): void {
+    this.closeController.abort()
+  }
+
+  /**
+   * Put a block to the underlying datastore
+   */
+  async put (cid: CID, block: Uint8Array, options: AbortOptions & ProgressOptions<PutBlockProgressEvents> = {}): Promise<CID> {
+    const signal = anySignal([this.closeController.signal, options.signal])
+    setMaxListeners(Infinity, signal)
+
+    try {
+      return await super.put(cid, block, {
+        ...options,
+        signal
+      })
+    } finally {
+      signal.clear()
+    }
+  }
+
+  /**
+   * Put a multiple blocks to the underlying datastore
+   */
+  async * putMany (blocks: AwaitIterable<{ cid: CID, block: Uint8Array }>, options: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents> = {}): AsyncIterable<CID> {
+    const signal = anySignal([this.closeController.signal, options.signal])
+    setMaxListeners(Infinity, signal)
+
+    try {
+      yield * super.putMany(blocks, {
+        ...options,
+        signal
+      })
+    } finally {
+      signal.clear()
+    }
+  }
+
+  /**
+   * Get a block by cid
+   */
+  async get (cid: CID, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetBlockProgressEvents> = {}): Promise<Uint8Array> {
+    const signal = anySignal([this.closeController.signal, options.signal])
+    setMaxListeners(Infinity, signal)
+
+    try {
+      return await super.get(cid, {
+        ...options,
+        signal
+      })
+    } finally {
+      signal.clear()
+    }
+  }
+
+  /**
+   * Get multiple blocks back from an (async) iterable of cids
+   */
+  async * getMany (cids: AwaitIterable<CID>, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetManyBlocksProgressEvents> = {}): AsyncIterable<Pair> {
+    const signal = anySignal([this.closeController.signal, options.signal])
+    setMaxListeners(Infinity, signal)
+
+    try {
+      yield * super.getMany(cids, {
+        ...options,
+        signal
+      })
+    } finally {
+      signal.clear()
+    }
+  }
+
+  /**
+   * Delete a block from the blockstore
+   */
+  async delete (cid: CID, options: AbortOptions & ProgressOptions<DeleteBlockProgressEvents> = {}): Promise<void> {
+    const signal = anySignal([this.closeController.signal, options.signal])
+    setMaxListeners(Infinity, signal)
+
+    try {
+      await super.delete(cid, {
+        ...options,
+        signal
+      })
+    } finally {
+      signal.clear()
+    }
+  }
+
+  /**
+   * Delete multiple blocks from the blockstore
+   */
+  async * deleteMany (cids: AwaitIterable<CID>, options: AbortOptions & ProgressOptions<DeleteManyBlocksProgressEvents> = {}): AsyncIterable<CID> {
+    const signal = anySignal([this.closeController.signal, options.signal])
+    setMaxListeners(Infinity, signal)
+
+    try {
+      yield * super.deleteMany(cids, {
+        ...options,
+        signal
+      })
+    } finally {
+      signal.clear()
+    }
+  }
+
+  async has (cid: CID, options: AbortOptions = {}): Promise<boolean> {
+    const signal = anySignal([this.closeController.signal, options.signal])
+    setMaxListeners(Infinity, signal)
+
+    try {
+      return await super.has(cid, {
+        ...options,
+        signal
+      })
+    } finally {
+      signal.clear()
+    }
+  }
+
+  async * getAll (options: AbortOptions & ProgressOptions<GetAllBlocksProgressEvents> = {}): AwaitIterable<Pair> {
+    const signal = anySignal([this.closeController.signal, options.signal])
+    setMaxListeners(Infinity, signal)
+
+    try {
+      yield * super.getAll({
+        ...options,
+        signal
+      })
+    } finally {
+      signal.clear()
+    }
+  }
+}
+
 function isRetrievingBlockBroker (broker: BlockBroker): broker is Required<Pick<BlockBroker, 'retrieve'>> {
   return typeof broker.retrieve === 'function'
 }
+
 export const getCidBlockVerifierFunction = (cid: CID, hasher: MultihashHasher): Required<BlockRetrievalOptions>['validateFn'] => {
   if (hasher == null) {
     throw new CodeError(`No hasher configured for multihash code 0x${cid.multihash.code.toString(16)}, please configure one. You can look up which hash this is at https://github.com/multiformats/multicodec/blob/master/table.csv`, 'ERR_UNKNOWN_HASH_ALG')

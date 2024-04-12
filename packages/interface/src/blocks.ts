@@ -56,16 +56,28 @@ ProgressOptions<PutBlockProgressEvents>, ProgressOptions<PutManyBlocksProgressEv
 GetOfflineOptions & ProgressOptions<GetBlockProgressEvents>, GetOfflineOptions & ProgressOptions<GetManyBlocksProgressEvents>, ProgressOptions<GetAllBlocksProgressEvents>,
 ProgressOptions<DeleteBlockProgressEvents>, ProgressOptions<DeleteManyBlocksProgressEvents>
 > {
+
+  createSession(root: CID, options?: CreateSessionOptions<GetBlockProgressEvents>): SessionBlockstore
+}
+
+/**
+ * A session blockstore is a special blockstore that only pulls content from a
+ * subset of network peers which respond as having the block for the initial
+ * root CID.
+ *
+ * Any blocks written to the blockstore as part of the session will propagate
+ * to the blockstore the session was created from.
+ *
+ */
+export interface SessionBlockstore extends Blockstore<ProgressOptions<HasBlockProgressEvents>,
+ProgressOptions<PutBlockProgressEvents>, ProgressOptions<PutManyBlocksProgressEvents>,
+GetOfflineOptions & ProgressOptions<GetBlockProgressEvents>, GetOfflineOptions & ProgressOptions<GetManyBlocksProgressEvents>, ProgressOptions<GetAllBlocksProgressEvents>,
+ProgressOptions<DeleteBlockProgressEvents>, ProgressOptions<DeleteManyBlocksProgressEvents>
+> {
   /**
-   * A session blockstore is a special blockstore that only pulls content from a
-   * subset of network peers which respond as having the block for the initial
-   * root CID.
-   *
-   * Any blocks written to the blockstore as part of the session will propagate
-   * to the blockstore the session was created from.
-   *
+   * Any in-progress operations will be aborted.
    */
-  createSession(root: CID, options?: CreateSessionOptions<GetBlockProgressEvents>): Promise<Blockstore>
+  close(): void
 }
 
 export interface BlockRetrievalOptions <ProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> extends AbortOptions, ProgressOptions<ProgressEvents> {
@@ -100,23 +112,6 @@ export interface CreateSessionOptions <ProgressEvents extends ProgressEvent<any,
    * @default 5
    */
   maxProviders?: number
-
-  /**
-   * When searching for providers of the root CID, implementations can check
-   * that providers are still online and have the requested block. This setting
-   * controls how many peers to query at the same time.
-   *
-   * @default 5
-   */
-  providerQueryConcurrency?: number
-
-  /**
-   * How long each queried provider has to respond either that they have the
-   * root block or to send it to us.
-   *
-   * @default 5000
-   */
-  providerQueryTimeout?: number
 }
 
 export interface BlockBroker<RetrieveProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>, AnnounceProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> {
@@ -133,10 +128,8 @@ export interface BlockBroker<RetrieveProgressEvents extends ProgressEvent<any, a
   /**
    * Create a new session
    */
-  createSession?(root: CID, options?: CreateSessionOptions<RetrieveProgressEvents>): Promise<BlockBroker<RetrieveProgressEvents, AnnounceProgressEvents>>
+  createSession?(options?: CreateSessionOptions<RetrieveProgressEvents>): BlockBroker<RetrieveProgressEvents, AnnounceProgressEvents>
 }
 
 export const DEFAULT_SESSION_MIN_PROVIDERS = 1
 export const DEFAULT_SESSION_MAX_PROVIDERS = 5
-export const DEFAULT_SESSION_PROVIDER_QUERY_CONCURRENCY = 5
-export const DEFAULT_SESSION_PROVIDER_QUERY_TIMEOUT = 5000

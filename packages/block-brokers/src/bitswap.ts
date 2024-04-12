@@ -72,8 +72,8 @@ class BitswapBlockBroker implements BlockBroker<BitswapWantBlockProgressEvents, 
     return this.bitswap.want(cid, options)
   }
 
-  async createSession (root: CID, options?: CreateSessionOptions<BitswapWantBlockProgressEvents>): Promise<BlockBroker<BitswapWantBlockProgressEvents, BitswapNotifyProgressEvents>> {
-    const session = await this.bitswap.createSession(root, options)
+  createSession (options?: CreateSessionOptions<BitswapWantBlockProgressEvents>): BlockBroker<BitswapWantBlockProgressEvents, BitswapNotifyProgressEvents> {
+    const session = this.bitswap.createSession(options)
 
     return {
       announce: async (cid, block, options) => {
@@ -81,7 +81,7 @@ class BitswapBlockBroker implements BlockBroker<BitswapWantBlockProgressEvents, 
       },
 
       retrieve: async (cid, options) => {
-        return session.want(cid, options)
+        return session.retrieve(cid, options)
       }
     }
   }
