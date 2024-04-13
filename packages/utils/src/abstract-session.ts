@@ -3,6 +3,7 @@ import { AbortError, TypedEventEmitter, setMaxListeners } from '@libp2p/interfac
 import { Queue } from '@libp2p/utils/queue'
 import { base64 } from 'multiformats/bases/base64'
 import pDefer from 'p-defer'
+import { BloomFilter } from './bloom-filter.js'
 import type { BlockBroker, BlockRetrievalOptions, CreateSessionOptions } from '@helia/interface'
 import type { AbortOptions, ComponentLogger, Logger } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
@@ -30,6 +31,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
   protected readonly minProviders: number
   protected maxProviders: number
   public readonly providers: Provider[]
+  private readonly evictionFilter: BloomFilter
 
   constructor (components: AbstractSessionComponents, init: AbstractCreateSessionOptions) {
     super()
@@ -42,6 +44,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     this.minProviders = init.minProviders ?? DEFAULT_SESSION_MIN_PROVIDERS
     this.maxProviders = init.maxProviders ?? DEFAULT_SESSION_MAX_PROVIDERS
     this.providers = []
+    this.evictionFilter = BloomFilter.create(this.maxProviders)
   }
 
   async retrieve (cid: CID, options: BlockRetrievalOptions<RetrieveBlockProgressEvents> = {}): Promise<Uint8Array> {
@@ -92,7 +95,8 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
         return
       }
 
-      this.log.error('error querying provider %o', evt.detail.job.options.provider, evt.detail.error)
+      this.log.error('error querying provider %o, evicting from session', evt.detail.job.options.provider, evt.detail.error)
+      this.evict(evt.detail.job.options.provider)
     })
     queue.addEventListener('success', (evt) => {
       if (options.signal?.aborted === true) {
@@ -120,6 +124,18 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
         .then(async () => {
           try {
             this.log('no session peers had block for for %c, finding new providers', cid)
+
+            // evict this.minProviders random providers to make room for more
+            for (let i = 0; i < this.minProviders; i++) {
+              if (this.providers.length === 0) {
+                break
+              }
+
+              const provider = this.providers[Math.floor(Math.random() * this.providers.length)]
+              this.evict(provider)
+            }
+
+            // find new providers for the CID
             await this.findNewProviders(cid, this.minProviders, options)
 
             // keep trying until the abort signal fires
@@ -142,10 +158,6 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     })
 
     const peerAddedToSessionListener = (event: CustomEvent<Provider>): void => {
-      if (!this.includeProvider(event.detail)) {
-        return
-      }
-
       queue.add(async () => {
         return this.queryProvider(cid, event.detail, options)
       }, {
@@ -164,11 +176,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     this.addEventListener('provider', peerAddedToSessionListener)
 
     // query each session peer directly
-    Promise.all([...this.sortProviders(this.providers)].map(async (provider) => {
-      if (!this.includeProvider(provider)) {
-        return
-      }
-
+    Promise.all([...this.providers].map(async (provider) => {
       return queue.add(async () => {
         return this.queryProvider(cid, provider, options)
       }, {
@@ -192,6 +200,35 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     }
   }
 
+  evict (provider: Provider): void {
+    this.evictionFilter.add(this.toEvictionKey(provider))
+    const index = this.providers.findIndex(prov => this.equals(prov, provider))
+
+    if (index === -1) {
+      return
+    }
+
+    this.providers.splice(index, 1)
+  }
+
+  isEvicted (provider: Provider): boolean {
+    return this.providers.some(prov => this.equals(prov, provider))
+  }
+
+  hasProvider (provider: Provider): boolean {
+    // dedupe existing gateways
+    if (this.providers.find(prov => this.equals(prov, provider)) != null) {
+      return true
+    }
+
+    // dedupe failed session peers
+    if (this.isEvicted(provider)) {
+      return true
+    }
+
+    return false
+  }
+
   /**
    * This method should search for providers and emit a `"provider"` event when
    * they are found.
@@ -207,15 +244,19 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
    * The subclass should contact the provider and request the block from it.
    *
    * If the provider cannot provide the block an error should be thrown.
+   *
+   * The provider will then be excluded from ongoing queries.
    */
   abstract queryProvider (cid: CID, provider: Provider, options: AbortOptions): Promise<Uint8Array>
 
   /**
-   * Used to filter providers from ongoing queries
+   * Turn a provider into a concise Uint8Array representation for use in a Bloom
+   * filter
    */
-  abstract includeProvider (provider: Provider): boolean
+  abstract toEvictionKey (provider: Provider): Uint8Array | string
 
-  sortProviders (providers: Provider[]): Provider[] {
-    return providers
-  }
+  /**
+   * Return `true` if we consider one provider to be the same as another
+   */
+  abstract equals (providerA: Provider, providerB: Provider): boolean
 }

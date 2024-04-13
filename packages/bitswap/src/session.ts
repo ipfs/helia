@@ -1,9 +1,9 @@
-import { AbstractSession, BloomFilter } from '@helia/utils'
+import { AbstractSession } from '@helia/utils'
 import { CodeError } from '@libp2p/interface'
 import pDefer, { type DeferredPromise } from 'p-defer'
 import type { BitswapWantProgressEvents } from './index.js'
 import type { Network } from './network.js'
-import type { WantList, WantPresenceResult } from './want-list.js'
+import type { WantList } from './want-list.js'
 import type { CreateSessionOptions } from '@helia/interface'
 import type { ComponentLogger, PeerId } from '@libp2p/interface'
 import type { AbortOptions } from 'interface-store'
@@ -15,21 +15,9 @@ export interface BitswapSessionComponents {
   logger: ComponentLogger
 }
 
-interface BitswapPeer {
-  peerId: PeerId
-
-  /**
-   * We've failed to retrieve a block from this peer. This can happen when
-   * protocol selection fails (e.g. they don't speak bitswap) - they should be
-   * excluded from the session from now on.
-   */
-  failed: boolean
-}
-
-class BitswapSession extends AbstractSession<BitswapPeer, BitswapWantProgressEvents> {
+class BitswapSession extends AbstractSession<PeerId, BitswapWantProgressEvents> {
   private readonly wantList: WantList
   private readonly network: Network
-  private readonly filter: BloomFilter
 
   constructor (components: BitswapSessionComponents, init: CreateSessionOptions) {
     super(components, {
@@ -39,31 +27,14 @@ class BitswapSession extends AbstractSession<BitswapPeer, BitswapWantProgressEve
 
     this.wantList = components.wantList
     this.network = components.network
-    this.filter = BloomFilter.create(this.maxProviders)
   }
 
-  async queryProvider (cid: CID, provider: BitswapPeer, options: AbortOptions): Promise<Uint8Array> {
-    if (provider.failed) {
-      throw new Error('Provider failed previously')
-    }
+  async queryProvider (cid: CID, provider: PeerId, options: AbortOptions): Promise<Uint8Array> {
+    this.log('sending WANT-BLOCK for %c to %p', cid, provider)
 
-    this.log('sending WANT-BLOCK for %c to %p', cid, provider.peerId)
+    const result = await this.wantList.wantSessionBlock(cid, provider, options)
 
-    let result: WantPresenceResult
-
-    try {
-      result = await this.wantList.wantSessionBlock(cid, provider.peerId, options)
-    } catch (err: any) {
-      this.log('fetching %c from %p failed, excluding from session', cid, provider.peerId, err)
-      provider.failed = true
-
-      this.filter.add(provider.peerId.toBytes())
-      this.providers.splice(this.providers.findIndex(prov => prov.peerId.equals(provider.peerId)), 1)
-
-      throw err
-    }
-
-    this.log('%p %s %c', provider.peerId, result.has ? 'has' : 'does not have', cid)
+    this.log('%p %s %c', provider, result.has ? 'has' : 'does not have', cid)
 
     if (result.has && result.block != null) {
       return result.block
@@ -87,27 +58,16 @@ class BitswapSession extends AbstractSession<BitswapPeer, BitswapWantProgressEve
             break
           }
 
-          // dedupe existing session peers
-          if (this.providers.find(prov => prov.peerId.equals(provider.id)) != null) {
+          if (this.hasProvider(provider.id)) {
             continue
-          }
-
-          // dedupe failed session peers
-          if (this.filter.has(provider.id.toBytes())) {
-            continue
-          }
-
-          const prov = {
-            peerId: provider.id,
-            failed: false
           }
 
           this.log('found %d/%d new providers', found, this.maxProviders)
-          this.providers.push(prov)
+          this.providers.push(provider.id)
 
           // let the new peer join current queries
           this.safeDispatchEvent('provider', {
-            detail: prov
+            detail: provider.id
           })
 
           found++
@@ -138,8 +98,12 @@ class BitswapSession extends AbstractSession<BitswapPeer, BitswapWantProgressEve
     return deferred.promise
   }
 
-  includeProvider (provider: BitswapPeer): boolean {
-    return !provider.failed
+  toEvictionKey (provider: PeerId): Uint8Array | string {
+    return provider.toBytes()
+  }
+
+  equals (providerA: PeerId, providerB: PeerId): boolean {
+    return providerA.equals(providerB)
   }
 }
 

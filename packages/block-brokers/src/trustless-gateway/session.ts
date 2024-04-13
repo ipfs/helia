@@ -42,14 +42,7 @@ class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, Trustles
     const block = await provider.getRawBlock(cid, options.signal)
     this.log.trace('got block for %c from %s', cid, provider.url)
 
-    try {
-      await options.validateFn?.(block)
-    } catch (err) {
-      this.log.error('failed to validate block for %c from %s', cid, provider.url, err)
-      provider.incrementInvalidBlocks()
-
-      throw new Error(`Block for CID ${cid} from gateway ${provider.url} failed validation`)
-    }
+    await options.validateFn?.(block)
 
     return block
   }
@@ -68,11 +61,6 @@ class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, Trustles
           continue
         }
 
-        // dedupe existing gateways
-        if (alreadyHaveGateway(httpAddresses, this.providers)) {
-          continue
-        }
-
         // take first address?
         // /ip4/x.x.x.x/tcp/31337/http
         // /ip4/x.x.x.x/tcp/31337/https
@@ -80,7 +68,13 @@ class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, Trustles
         const uri = multiaddrToUri(httpAddresses[0])
 
         this.log('found http-gateway provider %p %s for cid %c', provider.id, uri, cid)
-        this.providers.push(new TrustlessGateway(uri, this.logger))
+        const gateway = new TrustlessGateway(uri, this.logger)
+
+        if (this.hasProvider(gateway)) {
+          continue
+        }
+
+        this.providers.push(gateway)
 
         // let the new peer join current queries
         this.safeDispatchEvent('provider', {
@@ -110,12 +104,12 @@ class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, Trustles
     }
   }
 
-  includeProvider (provider: TrustlessGateway): boolean {
-    return true
+  toEvictionKey (provider: TrustlessGateway): Uint8Array | string {
+    return provider.url.toString()
   }
 
-  sortProviders (providers: TrustlessGateway[]): TrustlessGateway[] {
-    return providers.sort((a, b) => b.reliability() - a.reliability())
+  equals (providerA: TrustlessGateway, providerB: TrustlessGateway): boolean {
+    return providerA.url.toString() === providerB.url.toString()
   }
 }
 
@@ -135,21 +129,6 @@ function filterMultiaddrs (multiaddrs: Multiaddr[], allowInsecure: boolean, allo
 
     return false
   })
-}
-
-function alreadyHaveGateway (multiaddrs: Multiaddr[], gateways: TrustlessGateway[]): boolean {
-  for (const ma of multiaddrs) {
-    const uri = multiaddrToUri(ma)
-
-    for (const gateway of gateways) {
-      // eslint-disable-next-line max-depth
-      if (gateway.url.toString() === uri) {
-        return true
-      }
-    }
-  }
-
-  return false
 }
 
 export function createTrustlessGatewaySession (components: TrustlessGatewaySessionComponents, init: CreateTrustlessGatewaySessionOptions): TrustlessGatewaySession {

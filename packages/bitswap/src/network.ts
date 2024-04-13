@@ -128,14 +128,14 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
     this.messageSendTimeout = init.messageSendTimeout ?? DEFAULT_MESSAGE_SEND_TIMEOUT
     this.runOnTransientConnections = init.runOnTransientConnections ?? DEFAULT_RUN_ON_TRANSIENT_CONNECTIONS
     this.metrics = {
-      blocksSent: components.libp2p.metrics?.registerCounter('ipfs_bitswap_sent_blocks_total'),
-      dataSent: components.libp2p.metrics?.registerCounter('ipfs_bitswap_sent_data_bytes_total')
+      blocksSent: components.libp2p.metrics?.registerCounter('helia_bitswap_sent_blocks_total'),
+      dataSent: components.libp2p.metrics?.registerCounter('helia_bitswap_sent_data_bytes_total')
     }
 
     this.sendQueue = new PeerQueue({
       concurrency: init.messageSendConcurrency ?? DEFAULT_MESSAGE_SEND_CONCURRENCY,
       metrics: components.libp2p.metrics,
-      metricName: 'ipfs_bitswap_message_send_queue'
+      metricName: 'helia_bitswap_message_send_queue'
     })
     this.sendQueue.addEventListener('error', (evt) => {
       this.log.error('error sending wantlist to peer', evt.detail)
@@ -309,8 +309,9 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
       pendingBytes: msg.pendingBytes ?? 0
     }
 
-    const signal = anySignal([AbortSignal.timeout(this.messageSendTimeout), options?.signal])
-    setMaxListeners(Infinity, signal)
+    const timeoutSignal = AbortSignal.timeout(this.messageSendTimeout)
+    const signal = anySignal([timeoutSignal, options?.signal])
+    setMaxListeners(Infinity, timeoutSignal, signal)
 
     try {
       const existingJob = this.sendQueue.queue.find(job => {

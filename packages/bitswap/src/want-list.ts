@@ -113,11 +113,11 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
 
     setMaxListeners(Infinity, this)
     this.peers = trackedPeerMap({
-      name: 'ipfs_bitswap_peers',
+      name: 'helia_bitswap_peers',
       metrics: components.libp2p.metrics
     })
     this.wants = trackedMap({
-      name: 'ipfs_bitswap_wantlist',
+      name: 'helia_bitswap_wantlist',
       metrics: components.libp2p.metrics
     })
     this.network = components.network

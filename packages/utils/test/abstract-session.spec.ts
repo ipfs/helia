@@ -23,7 +23,14 @@ class Session extends AbstractSession<SessionPeer, ProgressEvent> {
 
   findNewProviders = Sinon.stub()
   queryProvider = Sinon.stub()
-  includeProvider = Sinon.stub()
+
+  toEvictionKey (prov: SessionPeer): string {
+    return prov.id.toString()
+  }
+
+  equals (a: SessionPeer, b: SessionPeer): boolean {
+    return a.id.equals(b.id)
+  }
 }
 
 describe('abstract-session', () => {
@@ -33,7 +40,6 @@ describe('abstract-session', () => {
     const cid = CID.parse('bafybeifaymukvfkyw6xgh4th7tsctiifr4ea2btoznf46y6b2fnvikdczi')
     const block = Uint8Array.from([0, 1, 2, 3])
 
-    session.includeProvider.returns(true)
     session.findNewProviders.callsFake(async () => {
       session.providers.push({
         id: await createEd25519PeerId()
@@ -56,7 +62,6 @@ describe('abstract-session', () => {
       id: await createEd25519PeerId()
     }]
 
-    session.includeProvider.returns(true)
     session.findNewProviders.callsFake(async () => {
       session.providers.push(providers[0])
 
@@ -84,7 +89,7 @@ describe('abstract-session', () => {
     expect(session.queryProvider.getCall(1).args[1]).to.equal(providers[1])
   })
 
-  it('should filter session providers', async () => {
+  it('should evict session providers', async () => {
     const session = new Session()
 
     const cid = CID.parse('bafybeifaymukvfkyw6xgh4th7tsctiifr4ea2btoznf46y6b2fnvikdczi')
@@ -96,21 +101,18 @@ describe('abstract-session', () => {
       id: await createEd25519PeerId()
     }]
 
-    session.includeProvider.withArgs(providers[0]).returns(false)
-    session.includeProvider.withArgs(providers[1]).returns(true)
     session.findNewProviders.callsFake(async () => {
       session.providers.push(...providers)
     })
     session.queryProvider.withArgs(cid, providers[0]).callsFake(async () => {
-      return block
+      throw new Error('Urk!')
     })
     session.queryProvider.withArgs(cid, providers[1]).callsFake(async () => {
       return block
     })
 
     await expect(session.retrieve(cid)).to.eventually.deep.equal(block)
-    expect(session.queryProvider.callCount).to.equal(1)
-    expect(session.queryProvider.getCall(0).args[1]).to.equal(providers[1])
+    expect(session.providers.includes(providers[0])).to.be.false()
   })
 
   it('should join existing CID request', async () => {
@@ -119,7 +121,6 @@ describe('abstract-session', () => {
     const cid = CID.parse('bafybeifaymukvfkyw6xgh4th7tsctiifr4ea2btoznf46y6b2fnvikdczi')
     const block = Uint8Array.from([0, 1, 2, 3])
 
-    session.includeProvider.returns(true)
     session.findNewProviders.callsFake(async () => {
       session.providers.push({
         id: await createEd25519PeerId()
