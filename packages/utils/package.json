@@ -88,6 +88,7 @@
     "datastore-core": "^9.2.9",
     "delay": "^6.0.0",
     "it-all": "^3.0.4",
+    "race-signal": "^1.0.2",
     "sinon": "^17.0.1",
     "sinon-ts": "^2.0.0"
   },

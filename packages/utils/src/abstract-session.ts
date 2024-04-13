@@ -3,7 +3,6 @@ import { CodeError, TypedEventEmitter, setMaxListeners } from '@libp2p/interface
 import { Queue } from '@libp2p/utils/queue'
 import { base64 } from 'multiformats/bases/base64'
 import pDefer from 'p-defer'
-import { raceSignal } from 'race-signal'
 import { BloomFilter } from './bloom-filter.js'
 import type { BlockBroker, BlockRetrievalOptions, CreateSessionOptions } from '@helia/interface'
 import type { AbortOptions, ComponentLogger, Logger } from '@libp2p/interface'
@@ -85,9 +84,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     const queue = new Queue<Uint8Array, { provider: Provider, priority?: number }>({
       concurrency: this.maxProviders
     })
-    queue.addEventListener('error', () => {
-      // don't crash - error events are handled in `failure` event listener
-    })
+    queue.addEventListener('error', () => {})
     queue.addEventListener('failure', (evt) => {
       this.log.error('error querying provider %o, evicting from session', evt.detail.job.options.provider, evt.detail.error)
       this.evict(evt.detail.job.options.provider)
@@ -119,7 +116,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
           }
 
           // find new providers for the CID
-          await raceSignal(this.findProviders(cid, this.minProviders, options), options.signal)
+          await this.findProviders(cid, this.minProviders, options)
 
           // keep trying until the abort signal fires
           this.log('found new providers re-retrieving %c', cid)
@@ -171,7 +168,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
       })
 
     try {
-      return await raceSignal(deferred.promise, options.signal)
+      return await deferred.promise
     } finally {
       this.removeEventListener('provider', peerAddedToSessionListener)
       queue.clear()
