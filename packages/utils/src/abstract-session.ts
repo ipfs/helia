@@ -1,8 +1,9 @@
 import { DEFAULT_SESSION_MIN_PROVIDERS, DEFAULT_SESSION_MAX_PROVIDERS } from '@helia/interface'
-import { AbortError, CodeError, TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
+import { CodeError, TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { Queue } from '@libp2p/utils/queue'
 import { base64 } from 'multiformats/bases/base64'
 import pDefer from 'p-defer'
+import { raceSignal } from 'race-signal'
 import { BloomFilter } from './bloom-filter.js'
 import type { BlockBroker, BlockRetrievalOptions, CreateSessionOptions } from '@helia/interface'
 import type { AbortOptions, ComponentLogger, Logger } from '@libp2p/interface'
@@ -84,38 +85,21 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     const queue = new Queue<Uint8Array, { provider: Provider, priority?: number }>({
       concurrency: this.maxProviders
     })
-    queue.addEventListener('error', (evt) => {
-      if (options.signal?.aborted === true) {
-        deferred.reject(new AbortError('Block retrieval was aborted'))
-      }
+    queue.addEventListener('error', () => {
+      // don't crash - error events are handled in `failure` event listener
     })
     queue.addEventListener('failure', (evt) => {
-      if (options.signal?.aborted === true) {
-        deferred.reject(new AbortError('Block retrieval was aborted'))
-        return
-      }
-
       this.log.error('error querying provider %o, evicting from session', evt.detail.job.options.provider, evt.detail.error)
       this.evict(evt.detail.job.options.provider)
     })
     queue.addEventListener('success', (evt) => {
-      if (options.signal?.aborted === true) {
-        deferred.reject(new AbortError('Block retrieval was aborted'))
-        return
-      }
-
       // peer has sent block, return it to the caller
       foundBlock = true
       deferred.resolve(evt.detail.result)
     })
     queue.addEventListener('idle', () => {
-      if (options.signal?.aborted === true) {
-        deferred.reject(new AbortError('Block retrieval was aborted'))
-        return
-      }
-
-      // we found it, all good
-      if (foundBlock) {
+      if (foundBlock || options.signal?.aborted === true) {
+        // we either found the block or the user gave up
         return
       }
 
@@ -135,19 +119,14 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
           }
 
           // find new providers for the CID
-          await this.findProviders(cid, this.minProviders, options)
+          await raceSignal(this.findProviders(cid, this.minProviders, options), options.signal)
 
           // keep trying until the abort signal fires
           this.log('found new providers re-retrieving %c', cid)
           this.requests.delete(cidStr)
-          const block = await this.retrieve(cid, options)
-          deferred.resolve(block)
+          deferred.resolve(await this.retrieve(cid, options))
         })
         .catch(err => {
-          if (options.signal?.aborted === true) {
-            return
-          }
-
           this.log.error('could not find new providers for %c', cid, err)
           deferred.reject(err)
         })
@@ -161,6 +140,8 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
       })
         .catch(err => {
           if (options.signal?.aborted === true) {
+            // skip logging error if signal was aborted because abort can happen
+            // on success (e.g. another session found the block)
             return
           }
 
@@ -181,6 +162,8 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     }))
       .catch(err => {
         if (options.signal?.aborted === true) {
+          // skip logging error if signal was aborted because abort can happen
+          // on success (e.g. another session found the block)
           return
         }
 
@@ -188,7 +171,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
       })
 
     try {
-      return await deferred.promise
+      return await raceSignal(deferred.promise, options.signal)
     } finally {
       this.removeEventListener('provider', peerAddedToSessionListener)
       queue.clear()
