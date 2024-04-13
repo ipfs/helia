@@ -1,5 +1,4 @@
 import { AbstractSession } from '@helia/utils'
-import { CodeError } from '@libp2p/interface'
 import { isPrivateIp } from '@libp2p/utils/private-ip'
 import { DNS, HTTP, HTTPS } from '@multiformats/multiaddr-matcher'
 import { multiaddrToUri } from '@multiformats/multiaddr-to-uri'
@@ -47,60 +46,23 @@ class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, Trustles
     return block
   }
 
-  async findNewProviders (cid: CID, count: number, options: AbortOptions = {}): Promise<void> {
-    let found = 0
+  async * findNewProviders (cid: CID, options: AbortOptions = {}): AsyncGenerator<TrustlessGateway> {
+    for await (const provider of this.routing.findProviders(cid, options)) {
+      // require http(s) addresses
+      const httpAddresses = filterMultiaddrs(provider.multiaddrs, this.allowInsecure, this.allowLocal)
 
-    this.log('find %d-%d new provider(s) for %c', count, this.maxProviders, cid)
-
-    try {
-      for await (const provider of this.routing.findProviders(cid, options)) {
-        // require http(s) addresses
-        const httpAddresses = filterMultiaddrs(provider.multiaddrs, this.allowInsecure, this.allowLocal)
-
-        if (httpAddresses.length === 0) {
-          continue
-        }
-
-        // take first address?
-        // /ip4/x.x.x.x/tcp/31337/http
-        // /ip4/x.x.x.x/tcp/31337/https
-        // etc
-        const uri = multiaddrToUri(httpAddresses[0])
-
-        this.log('found http-gateway provider %p %s for cid %c', provider.id, uri, cid)
-        const gateway = new TrustlessGateway(uri, this.logger)
-
-        if (this.hasProvider(gateway)) {
-          continue
-        }
-
-        this.providers.push(gateway)
-
-        // let the new peer join current queries
-        this.safeDispatchEvent('provider', {
-          detail: provider.id
-        })
-
-        found++
-
-        if (found === count) {
-          this.log('session is ready')
-          break
-        }
-
-        if (this.providers.length === this.maxProviders) {
-          this.log('found max session peers', found)
-          return
-        }
+      if (httpAddresses.length === 0) {
+        continue
       }
-    } catch (err: any) {
-      this.log.error('error searching routing for potential session peers for %c', cid, err.errors ?? err)
-    }
 
-    this.log('found %d/%d new session peers', found, count)
+      // take first address?
+      // /ip4/x.x.x.x/tcp/31337/http
+      // /ip4/x.x.x.x/tcp/31337/https
+      // etc
+      const uri = multiaddrToUri(httpAddresses[0])
 
-    if (found < count) {
-      throw new CodeError(`Found ${found} of ${count} http-gateway providers for ${cid}`, 'ERR_INSUFFICIENT_PROVIDERS_FOUND')
+      this.log('found http-gateway provider %p %s for cid %c', provider.id, uri, cid)
+      yield new TrustlessGateway(uri, this.logger)
     }
   }
 

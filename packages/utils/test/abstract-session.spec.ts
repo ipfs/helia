@@ -40,10 +40,10 @@ describe('abstract-session', () => {
     const cid = CID.parse('bafybeifaymukvfkyw6xgh4th7tsctiifr4ea2btoznf46y6b2fnvikdczi')
     const block = Uint8Array.from([0, 1, 2, 3])
 
-    session.findNewProviders.callsFake(async () => {
-      session.providers.push({
+    session.findNewProviders.callsFake(async function * () {
+      yield {
         id: await createEd25519PeerId()
-      })
+      }
     })
     session.queryProvider.withArgs(cid).resolves(block)
 
@@ -62,17 +62,12 @@ describe('abstract-session', () => {
       id: await createEd25519PeerId()
     }]
 
-    session.findNewProviders.callsFake(async () => {
-      session.providers.push(providers[0])
+    session.findNewProviders.callsFake(async function * () {
+      yield providers[0]
 
       // we discover a second provider later on
-      setTimeout(() => {
-        session.providers.push(providers[1])
-
-        session.safeDispatchEvent('provider', {
-          detail: providers[1]
-        })
-      }, 100)
+      await delay(100)
+      yield providers[1]
     })
     session.queryProvider.withArgs(cid, providers[0]).callsFake(async () => {
       await delay(500)
@@ -101,8 +96,8 @@ describe('abstract-session', () => {
       id: await createEd25519PeerId()
     }]
 
-    session.findNewProviders.callsFake(async () => {
-      session.providers.push(...providers)
+    session.findNewProviders.callsFake(async function * () {
+      yield * providers
     })
     session.queryProvider.withArgs(cid, providers[0]).callsFake(async () => {
       throw new Error('Urk!')
@@ -121,10 +116,10 @@ describe('abstract-session', () => {
     const cid = CID.parse('bafybeifaymukvfkyw6xgh4th7tsctiifr4ea2btoznf46y6b2fnvikdczi')
     const block = Uint8Array.from([0, 1, 2, 3])
 
-    session.findNewProviders.callsFake(async () => {
-      session.providers.push({
+    session.findNewProviders.callsFake(async function * () {
+      yield {
         id: await createEd25519PeerId()
-      })
+      }
     })
     session.queryProvider.callsFake(async () => {
       await delay(100)

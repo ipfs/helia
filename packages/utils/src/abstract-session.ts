@@ -1,5 +1,5 @@
 import { DEFAULT_SESSION_MIN_PROVIDERS, DEFAULT_SESSION_MAX_PROVIDERS } from '@helia/interface'
-import { AbortError, TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
+import { AbortError, CodeError, TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { Queue } from '@libp2p/utils/queue'
 import { base64 } from 'multiformats/bases/base64'
 import pDefer from 'p-defer'
@@ -28,8 +28,8 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
   private readonly name: string
   protected log: Logger
   protected logger: ComponentLogger
-  protected readonly minProviders: number
-  protected maxProviders: number
+  private readonly minProviders: number
+  private readonly maxProviders: number
   public readonly providers: Provider[]
   private readonly evictionFilter: BloomFilter
 
@@ -66,7 +66,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
       if (this.intialPeerSearchComplete == null) {
         first = true
         this.log = this.logger.forComponent(`${this.name}:${cid}`)
-        this.intialPeerSearchComplete = this.findNewProviders(cid, this.minProviders, options)
+        this.intialPeerSearchComplete = this.findProviders(cid, this.minProviders, options)
       }
 
       await this.intialPeerSearchComplete
@@ -122,38 +122,34 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
       // find more session peers and retry
       Promise.resolve()
         .then(async () => {
-          try {
-            this.log('no session peers had block for for %c, finding new providers', cid)
+          this.log('no session peers had block for for %c, finding new providers', cid)
 
-            // evict this.minProviders random providers to make room for more
-            for (let i = 0; i < this.minProviders; i++) {
-              if (this.providers.length === 0) {
-                break
-              }
-
-              const provider = this.providers[Math.floor(Math.random() * this.providers.length)]
-              this.evict(provider)
+          // evict this.minProviders random providers to make room for more
+          for (let i = 0; i < this.minProviders; i++) {
+            if (this.providers.length === 0) {
+              break
             }
 
-            // find new providers for the CID
-            await this.findNewProviders(cid, this.minProviders, options)
-
-            // keep trying until the abort signal fires
-            this.log('found new providers re-retrieving %c', cid)
-            this.requests.delete(cidStr)
-            const block = await this.retrieve(cid, options)
-            deferred.resolve(block)
-          } catch (err: any) {
-            this.log.error('could not find new providers for %c', cid, err)
-            deferred.reject(err)
+            const provider = this.providers[Math.floor(Math.random() * this.providers.length)]
+            this.evict(provider)
           }
+
+          // find new providers for the CID
+          await this.findProviders(cid, this.minProviders, options)
+
+          // keep trying until the abort signal fires
+          this.log('found new providers re-retrieving %c', cid)
+          this.requests.delete(cidStr)
+          const block = await this.retrieve(cid, options)
+          deferred.resolve(block)
         })
         .catch(err => {
           if (options.signal?.aborted === true) {
             return
           }
 
-          this.log.error('error retrieving session block for %c', cid, err)
+          this.log.error('could not find new providers for %c', cid, err)
+          deferred.reject(err)
         })
     })
 
@@ -229,16 +225,65 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     return false
   }
 
+  private async findProviders (cid: CID, count: number, options: AbortOptions): Promise<void> {
+    const deferred: DeferredPromise<void> = pDefer()
+    let found = 0
+
+    // run async to resolve the deferred promise when `count` providers are
+    // found but continue util this.providers reaches this.maxProviders
+    void Promise.resolve()
+      .then(async () => {
+        this.log('finding %d-%d new provider(s) for %c', count, this.maxProviders, cid)
+
+        for await (const provider of this.findNewProviders(cid, options)) {
+          if (found === this.maxProviders || options.signal?.aborted === true) {
+            break
+          }
+
+          if (this.hasProvider(provider)) {
+            continue
+          }
+
+          this.log('found %d/%d new providers', found, this.maxProviders)
+          this.providers.push(provider)
+
+          // let the new peer join current queries
+          this.safeDispatchEvent('provider', {
+            detail: provider
+          })
+
+          found++
+
+          if (found === count) {
+            this.log('session is ready')
+            deferred.resolve()
+            // continue finding peers until we reach this.maxProviders
+          }
+
+          if (this.providers.length === this.maxProviders) {
+            this.log('found max session peers', found)
+            break
+          }
+        }
+
+        this.log('found %d/%d new session peers', found, this.maxProviders)
+
+        if (found < count) {
+          throw new CodeError(`Found ${found} of ${count} ${this.name} providers for ${cid}`, 'ERR_INSUFFICIENT_PROVIDERS_FOUND')
+        }
+      })
+      .catch(err => {
+        this.log.error('error searching routing for potential session peers for %c', cid, err.errors ?? err)
+        deferred.reject(err)
+      })
+
+    return deferred.promise
+  }
+
   /**
-   * This method should search for providers and emit a `"provider"` event when
-   * they are found.
-   *
-   * The returned promise should resolve when `count` providers have been found
-   * but it should continue to search for providers until the session either has
-   * `this.maxProviders` providers, or the passed abort signal fires an
-   * `"abort"` event.
+   * This method should search for new providers and yield them.
    */
-  abstract findNewProviders (cid: CID, count: number, options: AbortOptions): Promise<void>
+  abstract findNewProviders (cid: CID, options: AbortOptions): AsyncGenerator<Provider>
 
   /**
    * The subclass should contact the provider and request the block from it.

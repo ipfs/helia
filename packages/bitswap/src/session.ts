@@ -1,6 +1,4 @@
 import { AbstractSession } from '@helia/utils'
-import { CodeError } from '@libp2p/interface'
-import pDefer, { type DeferredPromise } from 'p-defer'
 import type { BitswapWantProgressEvents } from './index.js'
 import type { Network } from './network.js'
 import type { WantList } from './want-list.js'
@@ -43,59 +41,10 @@ class BitswapSession extends AbstractSession<PeerId, BitswapWantProgressEvents> 
     throw new Error('Provider did not have block')
   }
 
-  async findNewProviders (cid: CID, count: number, options: AbortOptions = {}): Promise<void> {
-    const deferred: DeferredPromise<void> = pDefer()
-    let found = 0
-
-    // run async to resolve the deferred promise when `count` providers are
-    // found but continue util this.providers reaches this.maxProviders
-    void Promise.resolve()
-      .then(async () => {
-        this.log('finding %d-%d new provider(s) for %c', count, this.maxProviders, cid)
-
-        for await (const provider of this.network.findProviders(cid, options)) {
-          if (found === this.maxProviders || options.signal?.aborted === true) {
-            break
-          }
-
-          if (this.hasProvider(provider.id)) {
-            continue
-          }
-
-          this.log('found %d/%d new providers', found, this.maxProviders)
-          this.providers.push(provider.id)
-
-          // let the new peer join current queries
-          this.safeDispatchEvent('provider', {
-            detail: provider.id
-          })
-
-          found++
-
-          if (found === count) {
-            this.log('session is ready')
-            deferred.resolve()
-            // continue finding peers until we reach this.maxProviders
-          }
-
-          if (this.providers.length === this.maxProviders) {
-            this.log('found max session peers', found)
-            break
-          }
-        }
-
-        this.log('found %d/%d new session peers', found, this.maxProviders)
-
-        if (found < count) {
-          throw new CodeError(`Found ${found} of ${count} bitswap providers for ${cid}`, 'ERR_INSUFFICIENT_PROVIDERS_FOUND')
-        }
-      })
-      .catch(err => {
-        this.log.error('error searching routing for potential session peers for %c', cid, err.errors ?? err)
-        deferred.reject(err)
-      })
-
-    return deferred.promise
+  async * findNewProviders (cid: CID, options: AbortOptions = {}): AsyncGenerator<PeerId> {
+    for await (const provider of this.network.findProviders(cid, options)) {
+      yield provider.id
+    }
   }
 
   toEvictionKey (provider: PeerId): Uint8Array | string {
