@@ -1,4 +1,4 @@
-import { AbstractSession } from '@helia/utils'
+import { AbstractSession, BloomFilter } from '@helia/utils'
 import { CodeError } from '@libp2p/interface'
 import pDefer, { type DeferredPromise } from 'p-defer'
 import type { BitswapWantProgressEvents } from './index.js'
@@ -29,6 +29,7 @@ interface BitswapPeer {
 class BitswapSession extends AbstractSession<BitswapPeer, BitswapWantProgressEvents> {
   private readonly wantList: WantList
   private readonly network: Network
+  private readonly filter: BloomFilter
 
   constructor (components: BitswapSessionComponents, init: CreateSessionOptions) {
     super(components, {
@@ -38,6 +39,7 @@ class BitswapSession extends AbstractSession<BitswapPeer, BitswapWantProgressEve
 
     this.wantList = components.wantList
     this.network = components.network
+    this.filter = BloomFilter.create(this.maxProviders)
   }
 
   async queryProvider (cid: CID, provider: BitswapPeer, options: AbortOptions): Promise<Uint8Array> {
@@ -52,13 +54,11 @@ class BitswapSession extends AbstractSession<BitswapPeer, BitswapWantProgressEve
     try {
       result = await this.wantList.wantSessionBlock(cid, provider.peerId, options)
     } catch (err: any) {
-      if (err.code === 'ERR_UNSUPPORTED_PROTOCOL') {
-        this.log('%p does not speak bitswap, excluding from session queries', provider.peerId)
-        provider.failed = true
+      this.log('fetching %c from %p failed, excluding from session', cid, provider.peerId, err)
+      provider.failed = true
 
-        // increase max providers so we can find another more suitable peer
-        this.maxProviders++
-      }
+      this.filter.add(provider.peerId.toBytes())
+      this.providers.splice(this.providers.findIndex(prov => prov.peerId.equals(provider.peerId)), 1)
 
       throw err
     }
@@ -76,6 +76,8 @@ class BitswapSession extends AbstractSession<BitswapPeer, BitswapWantProgressEve
     const deferred: DeferredPromise<void> = pDefer()
     let found = 0
 
+    // run async to resolve the deferred promise when `count` providers are
+    // found but continue util this.providers reaches this.maxProviders
     void Promise.resolve()
       .then(async () => {
         this.log('finding %d-%d new provider(s) for %c', count, this.maxProviders, cid)
@@ -87,6 +89,11 @@ class BitswapSession extends AbstractSession<BitswapPeer, BitswapWantProgressEve
 
           // dedupe existing session peers
           if (this.providers.find(prov => prov.peerId.equals(provider.id)) != null) {
+            continue
+          }
+
+          // dedupe failed session peers
+          if (this.filter.has(provider.id.toBytes())) {
             continue
           }
 

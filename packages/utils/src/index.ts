@@ -40,6 +40,7 @@ import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 
 export { AbstractSession, type AbstractCreateSessionOptions } from './abstract-session.js'
+export { BloomFilter } from './bloom-filter.js'
 
 /**
  * Options used to create a Helia node.
