@@ -175,7 +175,7 @@ export type NetworkedStorageComponents = StorageComponents
 
 /**
  * Networked storage wraps a regular blockstore - when getting blocks if the
- * blocks are not present Bitswap will be used to fetch them from network peers.
+ * blocks are not present, the configured BlockBrokers will be used to fetch them.
  */
 export class NetworkedStorage extends Storage implements Blocks, Startable {
   private started: boolean
