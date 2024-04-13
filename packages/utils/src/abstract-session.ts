@@ -86,12 +86,12 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     })
     queue.addEventListener('error', (evt) => {
       if (options.signal?.aborted === true) {
-        deferred.reject(new AbortError('Block want was aborted'))
+        deferred.reject(new AbortError('Block retrieval was aborted'))
       }
     })
     queue.addEventListener('failure', (evt) => {
       if (options.signal?.aborted === true) {
-        deferred.reject(new AbortError('Block want was aborted'))
+        deferred.reject(new AbortError('Block retrieval was aborted'))
         return
       }
 
@@ -100,7 +100,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     })
     queue.addEventListener('success', (evt) => {
       if (options.signal?.aborted === true) {
-        deferred.reject(new AbortError('Block want was aborted'))
+        deferred.reject(new AbortError('Block retrieval was aborted'))
         return
       }
 
@@ -110,7 +110,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     })
     queue.addEventListener('idle', () => {
       if (options.signal?.aborted === true) {
-        deferred.reject(new AbortError('Block want was aborted'))
+        deferred.reject(new AbortError('Block retrieval was aborted'))
         return
       }
 
@@ -139,7 +139,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
             await this.findNewProviders(cid, this.minProviders, options)
 
             // keep trying until the abort signal fires
-            this.log('found new providers re-wanting %c', cid)
+            this.log('found new providers re-retrieving %c', cid)
             this.requests.delete(cidStr)
             const block = await this.retrieve(cid, options)
             deferred.resolve(block)
@@ -153,7 +153,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
             return
           }
 
-          this.log.error('error wanting session block for %c', cid, err)
+          this.log.error('error retrieving session block for %c', cid, err)
         })
     })
 
@@ -168,7 +168,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
             return
           }
 
-          this.log.error('error wanting session block for %c', cid, err)
+          this.log.error('error retrieving session block for %c', cid, err)
         })
     }
 
@@ -188,7 +188,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
           return
         }
 
-        this.log.error('error wanting session block for %c', cid, err)
+        this.log.error('error retrieving session block for %c', cid, err)
       })
 
     try {

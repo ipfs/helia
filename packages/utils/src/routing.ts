@@ -36,7 +36,8 @@ export class Routing implements RoutingInterface, Startable {
   }
 
   /**
-   * Iterates over all content routers in parallel to find providers of the given key
+   * Iterates over all content routers in parallel to find providers of the
+   * given key
    */
   async * findProviders (key: CID, options: RoutingOptions = {}): AsyncIterable<Provider> {
     if (this.routers.length === 0) {

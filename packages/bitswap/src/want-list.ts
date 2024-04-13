@@ -466,7 +466,6 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
         entries: pipe(
           this.wants.entries(),
           (source) => filter(source, ([key, entry]) => !entry.cancel),
-          (source) => filter(source, ([key, entry]) => !entry.cancel),
           (source) => map(source, ([key, entry]) => {
             sentWants.add(key)
 
