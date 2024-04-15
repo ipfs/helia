@@ -180,9 +180,8 @@ describe('trustless-gateway-block-broker', () => {
       }
     }())
 
-    const sessionBlockstore = await gatewayBlockBroker.createSession?.(blocks[0].cid, {
+    const sessionBlockstore = gatewayBlockBroker.createSession?.({
       minProviders: 1,
-      providerQueryConcurrency: 1,
       allowInsecure: true,
       allowLocal: true
     })

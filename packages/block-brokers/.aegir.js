@@ -12,7 +12,8 @@ const options = {
       server.use(cors())
       server.all('/ipfs/bafkreiefnkxuhnq3536qo2i2w3tazvifek4mbbzb6zlq3ouhprjce5c3aq', (req, res) => {
         res.writeHead(200, {
-          'content-type': 'application/octet-stream'
+          'content-type': 'application/octet-stream',
+          'content-length': 4
         })
         res.end(Uint8Array.from([0, 1, 2, 0]))
       })

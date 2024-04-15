@@ -1,6 +1,6 @@
-import { CodeError, start, stop } from '@libp2p/interface'
+import { start, stop } from '@libp2p/interface'
 import createMortice from 'mortice'
-import type { Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions } from '@helia/interface/blocks'
+import type { Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions, SessionBlockstore } from '@helia/interface/blocks'
 import type { Pins } from '@helia/interface/pins'
 import type { AbortOptions, Startable } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
@@ -178,20 +178,8 @@ export class BlockStorage implements Blocks, Startable {
     }
   }
 
-  async createSession (root: CID, options?: AbortOptions): Promise<Blockstore> {
+  createSession (root: CID, options?: AbortOptions): SessionBlockstore {
     options?.signal?.throwIfAborted()
-    const releaseLock = await this.lock.readLock()
-
-    try {
-      const blocks = await this.child.createSession(root, options)
-
-      if (blocks == null) {
-        throw new CodeError('Sessions not supported', 'ERR_UNSUPPORTED')
-      }
-
-      return blocks
-    } finally {
-      releaseLock()
-    }
+    return this.child.createSession(root, options)
   }
 }

@@ -1,11 +1,15 @@
 import { CodeError, start, stop } from '@libp2p/interface'
+import { PeerQueue } from '@libp2p/utils/peer-queue'
 import merge from 'it-merge'
 import type { Routing as RoutingInterface, Provider, RoutingOptions } from '@helia/interface'
 import type { AbortOptions, ComponentLogger, Logger, PeerId, PeerInfo, Startable } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 
+const DEFAULT_PROVIDER_LOOKUP_CONCURRENCY = 5
+
 export interface RoutingInit {
   routers: Array<Partial<RoutingInterface>>
+  providerLookupConcurrency?: number
 }
 
 export interface RoutingComponents {
@@ -15,10 +19,12 @@ export interface RoutingComponents {
 export class Routing implements RoutingInterface, Startable {
   private readonly log: Logger
   private readonly routers: Array<Partial<RoutingInterface>>
+  private readonly providerLookupConcurrency: number
 
   constructor (components: RoutingComponents, init: RoutingInit) {
     this.log = components.logger.forComponent('helia:routing')
     this.routers = init.routers ?? []
+    this.providerLookupConcurrency = init.providerLookupConcurrency ?? DEFAULT_PROVIDER_LOOKUP_CONCURRENCY
   }
 
   async start (): Promise<void> {
@@ -30,14 +36,25 @@ export class Routing implements RoutingInterface, Startable {
   }
 
   /**
-   * Iterates over all content routers in parallel to find providers of the given key
+   * Iterates over all content routers in parallel to find providers of the
+   * given key
    */
   async * findProviders (key: CID, options: RoutingOptions = {}): AsyncIterable<Provider> {
     if (this.routers.length === 0) {
       throw new CodeError('No content routers available', 'ERR_NO_ROUTERS_AVAILABLE')
     }
 
+    // provider multiaddrs are only cached for a limited time, so they can come
+    // back as an empty array - when this happens we have to do a FIND_PEER
+    // query to get updated addresses, but we shouldn't block on this so use a
+    // separate bounded queue to perform this lookup
+    const queue = new PeerQueue<Provider | null>({
+      concurrency: this.providerLookupConcurrency
+    })
+    queue.addEventListener('error', () => {})
+
     for await (const peer of merge(
+      queue.toGenerator(),
       ...supports(this.routers, 'findProviders')
         .map(router => router.findProviders(key, options))
     )) {
@@ -45,6 +62,43 @@ export class Routing implements RoutingInterface, Startable {
       // failed to load them
       if (peer == null) {
         continue
+      }
+
+      peer.multiaddrs = peer.multiaddrs.map(ma => {
+        if (ma.getPeerId() != null) {
+          return ma
+        }
+
+        return ma.encapsulate(`/p2p/${peer.id}`)
+      })
+
+      // have to refresh peer info for this peer to get updated multiaddrs
+      if (peer.multiaddrs.length === 0) {
+        // already looking this peer up
+        if (queue.find(peer.id) != null) {
+          continue
+        }
+
+        queue.add(async () => {
+          try {
+            const provider = await this.findPeer(peer.id, options)
+
+            if (provider.multiaddrs.length === 0) {
+              return null
+            }
+
+            return provider
+          } catch (err) {
+            this.log.error('could not load multiaddrs for peer', peer.id, err)
+            return null
+          }
+        }, {
+          peerId: peer.id,
+          signal: options.signal
+        })
+          .catch(err => {
+            this.log.error('could not load multiaddrs for peer', peer.id, err)
+          })
       }
 
       yield peer

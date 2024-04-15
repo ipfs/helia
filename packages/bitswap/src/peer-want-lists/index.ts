@@ -45,7 +45,7 @@ export class PeerWantLists {
     this.log = components.logger.forComponent('helia:bitswap:peer-want-lists')
 
     this.ledgerMap = trackedPeerMap({
-      name: 'ipfs_bitswap_ledger_map',
+      name: 'helia_bitswap_ledger_map',
       metrics: components.libp2p.metrics
     })
 

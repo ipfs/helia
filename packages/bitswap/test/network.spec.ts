@@ -1,4 +1,5 @@
 import { CustomEvent, isPeerId } from '@libp2p/interface'
+import { matchMultiaddr } from '@libp2p/interface-compliance-tests/matchers'
 import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -35,7 +36,8 @@ describe('network', () => {
       routing: stubInterface<Routing>(),
       libp2p: stubInterface<Libp2p>({
         getConnections: () => [],
-        metrics: undefined
+        metrics: undefined,
+        isDialable: async () => true
       })
     }
 
@@ -202,6 +204,11 @@ describe('network', () => {
     components.routing.findProviders.withArgs(cid).returns((async function * () {
       yield * providers
     })())
+
+    components.libp2p.isDialable = Sinon.stub()
+    components.libp2p.isDialable.withArgs(matchMultiaddr(providers[0].multiaddrs[0]), {
+      runOnTransientConnection: false
+    })
 
     const output = await all(network.findProviders(cid))
 

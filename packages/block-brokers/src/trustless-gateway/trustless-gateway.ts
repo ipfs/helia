@@ -49,7 +49,7 @@ export class TrustlessGateway {
    * https://specs.ipfs.tech/http-gateways/trustless-gateway/
    */
   async getRawBlock (cid: CID, signal?: AbortSignal): Promise<Uint8Array> {
-    const gwUrl = this.url
+    const gwUrl = new URL(this.url.toString())
     gwUrl.pathname = `/ipfs/${cid.toString()}`
 
     // necessary as not every gateway supports dag-cbor, but every should support
