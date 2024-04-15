@@ -1,5 +1,36 @@
 # Changelog
 
+## [6.1.0](https://github.com/ipfs/helia/compare/interop-v6.0.2...interop-v6.1.0) (2024-04-15)
+
+
+### Features
+
+* add @helia/bitswap with sessions ([#409](https://github.com/ipfs/helia/issues/409)) ([e582c63](https://github.com/ipfs/helia/commit/e582c63ca296c789312f5fcf5e3e18f267f74c03))
+
+
+### Bug Fixes
+
+* add sideEffects: false to package.json ([#485](https://github.com/ipfs/helia/issues/485)) ([8c45267](https://github.com/ipfs/helia/commit/8c45267a474ab10b2faadfebdab33cfe446e8c03))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^2.0.3 to ^2.1.0
+    * @helia/car bumped from ^3.1.2 to ^3.1.3
+    * @helia/dag-cbor bumped from ^3.0.2 to ^3.0.3
+    * @helia/dag-json bumped from ^3.0.2 to ^3.0.3
+    * @helia/http bumped from ^1.0.3 to ^1.0.4
+    * @helia/interface bumped from ^4.1.0 to ^4.2.0
+    * @helia/ipns bumped from ^7.2.0 to ^7.2.1
+    * @helia/json bumped from ^3.0.2 to ^3.0.3
+    * @helia/mfs bumped from ^3.0.3 to ^3.0.4
+    * @helia/routers bumped from ^1.0.2 to ^1.0.3
+    * @helia/strings bumped from ^3.0.2 to ^3.0.3
+    * @helia/unixfs bumped from ^3.0.3 to ^3.0.4
+    * helia bumped from ^4.1.0 to ^4.1.1
+
 ## [6.0.2](https://github.com/ipfs/helia/compare/interop-v6.0.1...interop-v6.0.2) (2024-04-03)
 
 

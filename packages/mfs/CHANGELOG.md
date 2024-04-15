@@ -1,5 +1,19 @@
 # Changelog
 
+## [3.0.4](https://github.com/ipfs/helia/compare/mfs-v3.0.3...mfs-v3.0.4) (2024-04-15)
+
+
+### Bug Fixes
+
+* add sideEffects: false to package.json ([#485](https://github.com/ipfs/helia/issues/485)) ([8c45267](https://github.com/ipfs/helia/commit/8c45267a474ab10b2faadfebdab33cfe446e8c03))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/unixfs bumped from ^3.0.3 to ^3.0.4
+
 ## [3.0.3](https://github.com/ipfs/helia/compare/mfs-v3.0.2...mfs-v3.0.3) (2024-04-03)
 
 ### Dependencies
