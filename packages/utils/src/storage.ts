@@ -62,6 +62,7 @@ export class BlockStorage implements Blocks, Startable {
    * Put a block to the underlying datastore
    */
   async put (cid: CID, block: Uint8Array, options: AbortOptions & ProgressOptions<PutBlockProgressEvents> = {}): Promise<CID> {
+    options?.signal?.throwIfAborted()
     const releaseLock = await this.lock.readLock()
 
     try {
@@ -75,6 +76,7 @@ export class BlockStorage implements Blocks, Startable {
    * Put a multiple blocks to the underlying datastore
    */
   async * putMany (blocks: AwaitIterable<{ cid: CID, block: Uint8Array }>, options: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents> = {}): AsyncIterable<CID> {
+    options?.signal?.throwIfAborted()
     const releaseLock = await this.lock.readLock()
 
     try {
@@ -88,6 +90,7 @@ export class BlockStorage implements Blocks, Startable {
    * Get a block by cid
    */
   async get (cid: CID, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetBlockProgressEvents> = {}): Promise<Uint8Array> {
+    options?.signal?.throwIfAborted()
     const releaseLock = await this.lock.readLock()
 
     try {
@@ -101,6 +104,7 @@ export class BlockStorage implements Blocks, Startable {
    * Get multiple blocks back from an (async) iterable of cids
    */
   async * getMany (cids: AwaitIterable<CID>, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetManyBlocksProgressEvents> = {}): AsyncIterable<Pair> {
+    options?.signal?.throwIfAborted()
     const releaseLock = await this.lock.readLock()
 
     try {
@@ -114,6 +118,7 @@ export class BlockStorage implements Blocks, Startable {
    * Delete a block from the blockstore
    */
   async delete (cid: CID, options: AbortOptions & ProgressOptions<DeleteBlockProgressEvents> = {}): Promise<void> {
+    options?.signal?.throwIfAborted()
     const releaseLock = await this.lock.writeLock()
 
     try {
@@ -131,6 +136,7 @@ export class BlockStorage implements Blocks, Startable {
    * Delete multiple blocks from the blockstore
    */
   async * deleteMany (cids: AwaitIterable<CID>, options: AbortOptions & ProgressOptions<DeleteManyBlocksProgressEvents> = {}): AsyncIterable<CID> {
+    options?.signal?.throwIfAborted()
     const releaseLock = await this.lock.writeLock()
 
     try {
@@ -151,6 +157,7 @@ export class BlockStorage implements Blocks, Startable {
   }
 
   async has (cid: CID, options: AbortOptions = {}): Promise<boolean> {
+    options?.signal?.throwIfAborted()
     const releaseLock = await this.lock.readLock()
 
     try {
@@ -161,6 +168,7 @@ export class BlockStorage implements Blocks, Startable {
   }
 
   async * getAll (options: AbortOptions & ProgressOptions<GetAllBlocksProgressEvents> = {}): AsyncIterable<Pair> {
+    options?.signal?.throwIfAborted()
     const releaseLock = await this.lock.readLock()
 
     try {
@@ -171,6 +179,7 @@ export class BlockStorage implements Blocks, Startable {
   }
 
   createSession (root: CID, options?: AbortOptions): SessionBlockstore {
+    options?.signal?.throwIfAborted()
     return this.child.createSession(root, options)
   }
 }

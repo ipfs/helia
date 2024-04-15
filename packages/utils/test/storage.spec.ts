@@ -50,6 +50,17 @@ describe('storage', () => {
     expect(retrieved).to.equalBytes(block)
   })
 
+  it('aborts getting a block from the blockstore when passed an aborted signal', async () => {
+    const { cid } = blocks[0]
+    const controller = new AbortController()
+    controller.abort()
+
+    await expect(storage.get(cid, {
+      signal: controller.signal
+    })).to.eventually.be.rejected
+      .with.property('name', 'AbortError')
+  })
+
   it('gets many blocks from the blockstore', async () => {
     const count = 5
 
@@ -68,12 +79,34 @@ describe('storage', () => {
     expect(retrieved).to.deep.equal(new Array(count).fill(0).map((_, i) => blocks[i]))
   })
 
+  it('aborts getting many blocks from the blockstore when passed an aborted signal', async () => {
+    const { cid } = blocks[0]
+    const controller = new AbortController()
+    controller.abort()
+
+    await expect(all(storage.getMany([cid], {
+      signal: controller.signal
+    }))).to.eventually.be.rejected
+      .with.property('name', 'AbortError')
+  })
+
   it('puts a block into the blockstore', async () => {
     const { cid, block } = blocks[0]
     await storage.put(cid, block)
 
     const retrieved = await blockstore.get(cid)
     expect(retrieved).to.equalBytes(block)
+  })
+
+  it('aborts putting a block into the blockstore when passed an aborted signal', async () => {
+    const { cid, block } = blocks[0]
+    const controller = new AbortController()
+    controller.abort()
+
+    await expect(storage.put(cid, block, {
+      signal: controller.signal
+    })).to.eventually.be.rejected
+      .with.property('name', 'AbortError')
   })
 
   it('puts many blocks into the blockstore', async () => {
@@ -88,5 +121,16 @@ describe('storage', () => {
 
     const retrieved = await all(blockstore.getMany(new Array(count).fill(0).map((_, i) => blocks[i].cid)))
     expect(retrieved).to.deep.equal(retrieved)
+  })
+
+  it('aborts putting many blocks into the blockstore when passed an aborted signal', async () => {
+    const { cid, block } = blocks[0]
+    const controller = new AbortController()
+    controller.abort()
+
+    await expect(all(storage.putMany([{ cid, block }], {
+      signal: controller.signal
+    }))).to.eventually.be.rejected
+      .with.property('name', 'AbortError')
   })
 })
