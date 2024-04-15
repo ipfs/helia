@@ -1,11 +1,5 @@
 # Changelog
 
-### Dependencies
-
-* The following workspace dependencies were updated
-  * dependencies
-    * @helia/block-brokers bumped from ^2.0.0 to ^2.0.1
-
 ## [1.0.3](https://github.com/ipfs/helia/compare/http-v1.0.2...http-v1.0.3) (2024-03-14)
 
 
@@ -36,6 +30,14 @@
     * @helia/interface bumped from ^4.0.0 to ^4.0.1
     * @helia/routers bumped from ^1.0.0 to ^1.0.1
     * @helia/utils bumped from ^0.0.1 to ^0.0.2
+
+## [1.0.1](https://github.com/ipfs/helia/compare/http-v1.0.0...http-v1.0.1) (2024-01-31)
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^2.0.0 to ^2.0.1
 
 ## 1.0.0 (2024-01-24)
 
