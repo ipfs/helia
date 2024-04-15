@@ -1,3 +1,5 @@
+# Changelog
+
 ## [4.1.0](https://github.com/ipfs/helia/compare/helia-v4.0.2...helia-v4.1.0) (2024-03-14)
 
 
@@ -178,7 +180,7 @@
   * dependencies
     * @helia/interface bumped from ^1.0.0 to ^2.0.0
 
-## [helia-v1.3.12](https://github.com/ipfs/helia/compare/helia-v1.3.11...helia-v1.3.12) (2023-08-05)
+## [1.3.12](https://github.com/ipfs/helia/compare/helia-v1.3.11...helia-v1.3.12) (2023-08-05)
 
 
 ### Dependencies
@@ -192,49 +194,49 @@
   * dependencies
     * @helia/block-brokers bumped from ^2.0.0 to ^2.0.1
 
-## [helia-v1.3.11](https://github.com/ipfs/helia/compare/helia-v1.3.10...helia-v1.3.11) (2023-08-04)
+## [1.3.11](https://github.com/ipfs/helia/compare/helia-v1.3.10...helia-v1.3.11) (2023-08-04)
 
 
 ### Dependencies
 
 * update sibling dependencies ([aa249bc](https://github.com/ipfs/helia/commit/aa249bca021ca513c7847331970219e4a36dee97))
 
-## [helia-v1.3.10](https://github.com/ipfs/helia/compare/helia-v1.3.9...helia-v1.3.10) (2023-08-04)
+## [1.3.10](https://github.com/ipfs/helia/compare/helia-v1.3.9...helia-v1.3.10) (2023-08-04)
 
 
 ### Dependencies
 
 * update sibling dependencies ([89df3fe](https://github.com/ipfs/helia/commit/89df3fe803daa3228290bef105ce5d0b769dc3a0))
 
-## [helia-v1.3.9](https://github.com/ipfs/helia/compare/helia-v1.3.8...helia-v1.3.9) (2023-08-01)
+## [1.3.9](https://github.com/ipfs/helia/compare/helia-v1.3.8...helia-v1.3.9) (2023-08-01)
 
 
 ### Dependencies
 
 * update sibling dependencies ([0970da7](https://github.com/ipfs/helia/commit/0970da79e974a4c172e8fdfb7c207d5ba8152a83))
 
-## [helia-v1.3.8](https://github.com/ipfs/helia/compare/helia-v1.3.7...helia-v1.3.8) (2023-07-14)
+## [1.3.8](https://github.com/ipfs/helia/compare/helia-v1.3.7...helia-v1.3.8) (2023-07-14)
 
 
 ### Dependencies
 
 * update sibling dependencies ([5850e51](https://github.com/ipfs/helia/commit/5850e513c486f6d20e23c04936bbf843653cb5e4))
 
-## [helia-v1.3.7](https://github.com/ipfs/helia/compare/helia-v1.3.6...helia-v1.3.7) (2023-07-11)
+## [1.3.7](https://github.com/ipfs/helia/compare/helia-v1.3.6...helia-v1.3.7) (2023-07-11)
 
 
 ### Dependencies
 
 * update sibling dependencies ([2c52da3](https://github.com/ipfs/helia/commit/2c52da3957d56fe4e3ff6f161f9bec814abd5d8c))
 
-## [helia-v1.3.6](https://github.com/ipfs/helia/compare/helia-v1.3.5...helia-v1.3.6) (2023-07-10)
+## [1.3.6](https://github.com/ipfs/helia/compare/helia-v1.3.5...helia-v1.3.6) (2023-07-10)
 
 
 ### Dependencies
 
 * update sibling dependencies ([9139f30](https://github.com/ipfs/helia/commit/9139f30e857f4e247202e0d113027190a04892ba))
 
-## [helia-v1.3.5](https://github.com/ipfs/helia/compare/helia-v1.3.4...helia-v1.3.5) (2023-07-04)
+## [1.3.5](https://github.com/ipfs/helia/compare/helia-v1.3.4...helia-v1.3.5) (2023-07-04)
 
 
 ### Dependencies
@@ -246,28 +248,28 @@
 
 * update project config ([#175](https://github.com/ipfs/helia/issues/175)) ([f185a72](https://github.com/ipfs/helia/commit/f185a7220a62f7fc0c025aa5c0be5a981c63cc48))
 
-## [helia-v1.3.4](https://github.com/ipfs/helia/compare/helia-v1.3.3...helia-v1.3.4) (2023-06-26)
+## [1.3.4](https://github.com/ipfs/helia/compare/helia-v1.3.3...helia-v1.3.4) (2023-06-26)
 
 
 ### Dependencies
 
 * update sibling dependencies ([64e300c](https://github.com/ipfs/helia/commit/64e300c289f4bfe4b72607d86ab9e83a1ac3c8d3))
 
-## [helia-v1.3.3](https://github.com/ipfs/helia/compare/helia-v1.3.2...helia-v1.3.3) (2023-06-21)
+## [1.3.3](https://github.com/ipfs/helia/compare/helia-v1.3.2...helia-v1.3.3) (2023-06-21)
 
 
 ### Dependencies
 
 * update sibling dependencies ([f7cb076](https://github.com/ipfs/helia/commit/f7cb076e9356535164812229eff22c5c0e052674))
 
-## [helia-v1.3.2](https://github.com/ipfs/helia/compare/helia-v1.3.1...helia-v1.3.2) (2023-06-10)
+## [1.3.2](https://github.com/ipfs/helia/compare/helia-v1.3.1...helia-v1.3.2) (2023-06-10)
 
 
 ### Dependencies
 
 * update sibling dependencies ([634ca4f](https://github.com/ipfs/helia/commit/634ca4faf5caf448bd068a78101ac0070145518e))
 
-## [helia-v1.3.1](https://github.com/ipfs/helia/compare/helia-v1.3.0...helia-v1.3.1) (2023-06-07)
+## [1.3.1](https://github.com/ipfs/helia/compare/helia-v1.3.0...helia-v1.3.1) (2023-06-07)
 
 
 ### Bug Fixes
@@ -280,7 +282,7 @@
 
 * update sibling dependencies ([3323a5c](https://github.com/ipfs/helia/commit/3323a5cd518c63cb67e8eaef0cb64c542982b603))
 
-## [helia-v1.3.0](https://github.com/ipfs/helia/compare/helia-v1.2.2...helia-v1.3.0) (2023-06-07)
+## [1.3.0](https://github.com/ipfs/helia/compare/helia-v1.2.2...helia-v1.3.0) (2023-06-07)
 
 
 ### Features
@@ -292,7 +294,7 @@
 
 * update sibling dependencies ([671ec87](https://github.com/ipfs/helia/commit/671ec874e90fbdcaf79d9d8253822fd85cee8bc5))
 
-## [helia-v1.2.2](https://github.com/ipfs/helia/compare/helia-v1.2.1...helia-v1.2.2) (2023-06-07)
+## [1.2.2](https://github.com/ipfs/helia/compare/helia-v1.2.1...helia-v1.2.2) (2023-06-07)
 
 
 ### Dependencies
@@ -304,7 +306,7 @@
 
 * update changelogs ([#142](https://github.com/ipfs/helia/issues/142)) ([fefd374](https://github.com/ipfs/helia/commit/fefd3744c0a6d8471de31762ece6ec59b65496c1))
 
-## [helia-v1.2.1](https://github.com/ipfs/helia/compare/helia-v1.2.0...helia-v1.2.1) (2023-06-01)
+## [1.2.1](https://github.com/ipfs/helia/compare/helia-v1.2.0...helia-v1.2.1) (2023-06-01)
 
 
 ### Bug Fixes
@@ -316,7 +318,7 @@
 
 * update sibling dependencies ([fcee11e](https://github.com/ipfs/helia/commit/fcee11eadb7edfa327e3f0bd586e20ea5dc06c8a))
 
-## [helia-v1.2.0](https://github.com/ipfs/helia/compare/helia-v1.1.5...helia-v1.2.0) (2023-06-01)
+## [1.2.0](https://github.com/ipfs/helia/compare/helia-v1.1.5...helia-v1.2.0) (2023-06-01)
 
 
 ### Features
@@ -328,7 +330,7 @@
 
 * update sibling dependencies ([c936ba6](https://github.com/ipfs/helia/commit/c936ba63a75276e206d804cf0ef35c3f9bf67f10))
 
-## [helia-v1.1.5](https://github.com/ipfs/helia/compare/helia-v1.1.4...helia-v1.1.5) (2023-05-25)
+## [1.1.5](https://github.com/ipfs/helia/compare/helia-v1.1.4...helia-v1.1.5) (2023-05-25)
 
 
 ### Bug Fixes
@@ -340,14 +342,14 @@
 
 * update sibling dependencies ([f565ffd](https://github.com/ipfs/helia/commit/f565ffdcf6923b78326ed4cb00be93083b45ccca))
 
-## [helia-v1.1.4](https://github.com/ipfs/helia/compare/helia-v1.1.3...helia-v1.1.4) (2023-05-24)
+## [1.1.4](https://github.com/ipfs/helia/compare/helia-v1.1.3...helia-v1.1.4) (2023-05-24)
 
 
 ### Dependencies
 
 * update sibling dependencies ([1ac389c](https://github.com/ipfs/helia/commit/1ac389c6fd8f276daf33c8a61849f3657cf88a10))
 
-## [helia-v1.1.3](https://github.com/ipfs/helia/compare/helia-v1.1.2...helia-v1.1.3) (2023-05-24)
+## [1.1.3](https://github.com/ipfs/helia/compare/helia-v1.1.2...helia-v1.1.3) (2023-05-24)
 
 
 ### Dependencies
@@ -355,7 +357,7 @@
 * **dev:** bump delay from 5.0.0 to 6.0.0 ([#130](https://github.com/ipfs/helia/issues/130)) ([d087ffc](https://github.com/ipfs/helia/commit/d087ffcb8074b41781346d09101b2b7bc64768d2))
 * update sibling dependencies ([ed49856](https://github.com/ipfs/helia/commit/ed4985677b62021f76541354ad06b70bd53e929a))
 
-## [helia-v1.1.2](https://github.com/ipfs/helia/compare/helia-v1.1.1...helia-v1.1.2) (2023-05-19)
+## [1.1.2](https://github.com/ipfs/helia/compare/helia-v1.1.1...helia-v1.1.2) (2023-05-19)
 
 
 ### Bug Fixes
@@ -367,21 +369,21 @@
 
 * update sibling dependencies ([d33c843](https://github.com/ipfs/helia/commit/d33c84378c02f34277178e6553090b92b0eabe0b))
 
-## [helia-v1.1.1](https://github.com/ipfs/helia/compare/helia-v1.1.0...helia-v1.1.1) (2023-05-19)
+## [1.1.1](https://github.com/ipfs/helia/compare/helia-v1.1.0...helia-v1.1.1) (2023-05-19)
 
 
 ### Bug Fixes
 
 * add helia version to agent version ([#128](https://github.com/ipfs/helia/issues/128)) ([48e19ec](https://github.com/ipfs/helia/commit/48e19ec545cc67157e14ae59054fa377a583cb01)), closes [#122](https://github.com/ipfs/helia/issues/122)
 
-## [helia-v1.1.0](https://github.com/ipfs/helia/compare/helia-v1.0.4...helia-v1.1.0) (2023-05-19)
+## [1.1.0](https://github.com/ipfs/helia/compare/helia-v1.0.4...helia-v1.1.0) (2023-05-19)
 
 
 ### Features
 
 * provide default libp2p instance ([#127](https://github.com/ipfs/helia/issues/127)) ([45c9d89](https://github.com/ipfs/helia/commit/45c9d896afa27f5ea043cc5f576d50fc4fa556e9)), closes [#121](https://github.com/ipfs/helia/issues/121)
 
-## [helia-v1.0.4](https://github.com/ipfs/helia/compare/helia-v1.0.3...helia-v1.0.4) (2023-05-04)
+## [1.0.4](https://github.com/ipfs/helia/compare/helia-v1.0.3...helia-v1.0.4) (2023-05-04)
 
 
 ### Bug Fixes
@@ -398,21 +400,21 @@
 
 * bump aegir from 38.1.8 to 39.0.4 ([#111](https://github.com/ipfs/helia/issues/111)) ([2156568](https://github.com/ipfs/helia/commit/215656870cb821dd6be2f8054dc39932ba25af14))
 
-## [helia-v1.0.3](https://github.com/ipfs/helia/compare/helia-v1.0.2...helia-v1.0.3) (2023-04-05)
+## [1.0.3](https://github.com/ipfs/helia/compare/helia-v1.0.2...helia-v1.0.3) (2023-04-05)
 
 
 ### Dependencies
 
 * bump it-filter from 2.0.2 to 3.0.1 ([#74](https://github.com/ipfs/helia/issues/74)) ([3402724](https://github.com/ipfs/helia/commit/340272484df47d2f70f870d375ebb4235fb165a0))
 
-## [helia-v1.0.2](https://github.com/ipfs/helia/compare/helia-v1.0.1...helia-v1.0.2) (2023-04-05)
+## [1.0.2](https://github.com/ipfs/helia/compare/helia-v1.0.1...helia-v1.0.2) (2023-04-05)
 
 
 ### Dependencies
 
 * bump it-drain from 2.0.1 to 3.0.1 ([#71](https://github.com/ipfs/helia/issues/71)) ([c6eaca1](https://github.com/ipfs/helia/commit/c6eaca1d21cf16527851fffc2411a8e3bd651f34))
 
-## [helia-v1.0.1](https://github.com/ipfs/helia/compare/helia-v1.0.0...helia-v1.0.1) (2023-04-05)
+## [1.0.1](https://github.com/ipfs/helia/compare/helia-v1.0.0...helia-v1.0.1) (2023-04-05)
 
 
 ### Dependencies
@@ -420,7 +422,7 @@
 * bump it-all from 2.0.1 to 3.0.1 ([#72](https://github.com/ipfs/helia/issues/72)) ([e7ce5bc](https://github.com/ipfs/helia/commit/e7ce5bc0e0db0a6b41920a3c36b95eeea1863183))
 * bump it-foreach from 1.0.1 to 2.0.2 ([#75](https://github.com/ipfs/helia/issues/75)) ([6f5f059](https://github.com/ipfs/helia/commit/6f5f0592edd44257092d0b70dd364096864495bf))
 
-## helia-v1.0.0 (2023-03-23)
+## 1.0.0 (2023-03-23)
 
 
 ### Features
