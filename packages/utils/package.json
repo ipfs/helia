@@ -1,6 +1,6 @@
 {
   "name": "@helia/utils",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Shared code that implements the Helia API",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/utils#readme",
@@ -53,7 +53,7 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@helia/interface": "^4.1.0",
+    "@helia/interface": "^4.2.0",
     "@ipld/dag-cbor": "^9.2.0",
     "@ipld/dag-json": "^10.2.0",
     "@ipld/dag-pb": "^4.1.0",

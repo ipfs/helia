@@ -1,5 +1,28 @@
 # Changelog
 
+## [2.1.0](https://github.com/ipfs/helia/compare/block-brokers-v2.0.3...block-brokers-v2.1.0) (2024-04-15)
+
+
+### Features
+
+* add @helia/bitswap with sessions ([#409](https://github.com/ipfs/helia/issues/409)) ([e582c63](https://github.com/ipfs/helia/commit/e582c63ca296c789312f5fcf5e3e18f267f74c03))
+* add block session support to @helia/interface ([#398](https://github.com/ipfs/helia/issues/398)) ([5cf216b](https://github.com/ipfs/helia/commit/5cf216baa6806cd82f8fcddd1f024ef6a506f667))
+* add sessions to trustless gateways ([#459](https://github.com/ipfs/helia/issues/459)) ([6ddefb0](https://github.com/ipfs/helia/commit/6ddefb01154b970f5ab7ec7cb7445d9eedbc5474))
+
+
+### Bug Fixes
+
+* improve sessions implementation ([#495](https://github.com/ipfs/helia/issues/495)) ([9ea934e](https://github.com/ipfs/helia/commit/9ea934ed7208e87c28bc65e9090bdedf66ceeffd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^0.0.0 to ^1.0.0
+    * @helia/interface bumped from ^4.1.0 to ^4.2.0
+    * @helia/utils bumped from ^0.1.0 to ^0.2.0
+
 ## [2.0.3](https://github.com/ipfs/helia/compare/block-brokers-v2.0.2...block-brokers-v2.0.3) (2024-03-14)
 
 

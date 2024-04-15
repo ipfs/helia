@@ -1,5 +1,22 @@
 # Changelog
 
+## [4.1.1](https://github.com/ipfs/helia/compare/helia-v4.1.0...helia-v4.1.1) (2024-04-15)
+
+
+### Bug Fixes
+
+* add sideEffects: false to package.json ([#485](https://github.com/ipfs/helia/issues/485)) ([8c45267](https://github.com/ipfs/helia/commit/8c45267a474ab10b2faadfebdab33cfe446e8c03))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^2.0.3 to ^2.1.0
+    * @helia/interface bumped from ^4.1.0 to ^4.2.0
+    * @helia/routers bumped from ^1.0.2 to ^1.0.3
+    * @helia/utils bumped from ^0.1.0 to ^0.2.0
+
 ## [4.1.0](https://github.com/ipfs/helia/compare/helia-v4.0.2...helia-v4.1.0) (2024-03-14)
 
 

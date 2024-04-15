@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.2.0](https://github.com/ipfs/helia/compare/utils-v0.1.0...utils-v0.2.0) (2024-04-15)
+
+
+### Features
+
+* add block session support to @helia/interface ([#398](https://github.com/ipfs/helia/issues/398)) ([5cf216b](https://github.com/ipfs/helia/commit/5cf216baa6806cd82f8fcddd1f024ef6a506f667))
+
+
+### Bug Fixes
+
+* add sideEffects: false to package.json ([#485](https://github.com/ipfs/helia/issues/485)) ([8c45267](https://github.com/ipfs/helia/commit/8c45267a474ab10b2faadfebdab33cfe446e8c03))
+* blockstore operations should throw when passed an aborted signal ([#497](https://github.com/ipfs/helia/issues/497)) ([9a10498](https://github.com/ipfs/helia/commit/9a10498e55b4380191135535f7f607082e9c00c6))
+* cancel in-flight block requests when racing brokers ([#490](https://github.com/ipfs/helia/issues/490)) ([395cd9e](https://github.com/ipfs/helia/commit/395cd9e6ac2f829ef47b503cc7a6c77922f484cf))
+* improve sessions implementation ([#495](https://github.com/ipfs/helia/issues/495)) ([9ea934e](https://github.com/ipfs/helia/commit/9ea934ed7208e87c28bc65e9090bdedf66ceeffd))
+* increase default listers on abort signals ([#484](https://github.com/ipfs/helia/issues/484)) ([7cd012a](https://github.com/ipfs/helia/commit/7cd012aa2ba568845d49d63a71806d20f6ac678f))
+* wrap blockstore in identity blockstore ([#493](https://github.com/ipfs/helia/issues/493)) ([b67ac5f](https://github.com/ipfs/helia/commit/b67ac5f16eca1df5534c985045250bdb334a85cf))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^4.1.0 to ^4.2.0
+
 ## [0.1.0](https://github.com/ipfs/helia/compare/utils-v0.0.2...utils-v0.1.0) (2024-03-14)
 
 

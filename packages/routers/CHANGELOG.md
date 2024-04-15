@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.3](https://github.com/ipfs/helia/compare/routers-v1.0.2...routers-v1.0.3) (2024-04-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^4.1.0 to ^4.2.0
+
 ## [1.0.2](https://github.com/ipfs/helia/compare/routers-v1.0.1...routers-v1.0.2) (2024-03-14)
 
 
