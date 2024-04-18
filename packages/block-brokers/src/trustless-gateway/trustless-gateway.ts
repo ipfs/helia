@@ -1,6 +1,13 @@
 import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 
+export interface TrustlessGatewayStats {
+  attempts: number
+  errors: number
+  invalidBlocks: number
+  successes: number
+}
+
 /**
  * A `TrustlessGateway` keeps track of the number of attempts, errors, and
  * successes for a given gateway url so that we can prioritize gateways that
@@ -129,5 +136,14 @@ export class TrustlessGateway {
    */
   incrementInvalidBlocks (): void {
     this.#invalidBlocks++
+  }
+
+  getStats (): TrustlessGatewayStats {
+    return {
+      attempts: this.#attempts,
+      errors: this.#errors,
+      invalidBlocks: this.#invalidBlocks,
+      successes: this.#successes
+    }
   }
 }
