@@ -44,6 +44,13 @@ export class TrustlessGateway {
    */
   #successes = 0
 
+  /**
+   * A map of pending responses for this gateway. This is used to ensure that
+   * only one request per CID is made to a given gateway at a time, and that we
+   * don't make multiple in-flight requests for the same CID to the same gateway.
+   */
+  #pendingResponses = new Map<string, Promise<Uint8Array>>()
+
   private readonly log: Logger
 
   constructor (url: URL | string, logger: ComponentLogger) {
@@ -68,31 +75,34 @@ export class TrustlessGateway {
     }
 
     try {
-      this.#attempts++
-      const res = await fetch(gwUrl.toString(), {
-        signal,
-        headers: {
-        // also set header, just in case ?format= is filtered out by some
-        // reverse proxy
-          Accept: 'application/vnd.ipld.raw'
-        },
-        cache: 'force-cache'
-      })
-
-      this.log('GET %s %d', gwUrl, res.status)
-
-      if (!res.ok) {
-        this.#errors++
-        throw new Error(`unable to fetch raw block for CID ${cid} from gateway ${this.url}`)
+      let pendingResponse: Promise<Uint8Array> | undefined = this.#pendingResponses.get(gwUrl.toString())
+      if (pendingResponse == null) {
+        this.#attempts++
+        pendingResponse = fetch(gwUrl.toString(), {
+          signal,
+          headers: {
+            Accept: 'application/vnd.ipld.raw'
+          },
+          cache: 'force-cache'
+        }).then(async (res) => {
+          this.log('GET %s %d', gwUrl, res.status)
+          if (!res.ok) {
+            this.#errors++
+            throw new Error(`unable to fetch raw block for CID ${cid} from gateway ${this.url}`)
+          }
+          this.#successes++
+          return new Uint8Array(await res.arrayBuffer())
+        })
+        this.#pendingResponses.set(gwUrl.toString(), pendingResponse)
       }
-      this.#successes++
-      return new Uint8Array(await res.arrayBuffer())
+      return await pendingResponse
     } catch (cause) {
       // @ts-expect-error - TS thinks signal?.aborted can only be false now
       // because it was checked for true above.
       if (signal?.aborted === true) {
         throw new Error(`fetching raw block for CID ${cid} from gateway ${this.url} was aborted`)
       }
+      this.log.error('failed to get block for %c from %s', cid, gwUrl, cause)
       this.#errors++
       throw new Error(`unable to fetch raw block for CID ${cid}`)
     }
