@@ -83,7 +83,7 @@
     "helia": "^4.1.1",
     "ipfs-core-types": "^0.14.1",
     "ipfs-unixfs-importer": "^15.2.4",
-    "ipfsd-ctl": "^13.0.0",
+    "ipfsd-ctl": "^14.0.0",
     "it-all": "^3.0.4",
     "it-drain": "^3.0.5",
     "it-last": "^3.0.4",
