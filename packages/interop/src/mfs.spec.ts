@@ -5,12 +5,12 @@ import { expect } from 'aegir/chai'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import type { HeliaLibp2p } from 'helia'
-import type { Controller } from 'ipfsd-ctl'
+import type { KuboNode } from 'ipfsd-ctl'
 
 describe('@helia/mfs', () => {
   let helia: HeliaLibp2p
   let fs: MFS
-  let kubo: Controller
+  let kubo: KuboNode
 
   beforeEach(async () => {
     helia = await createHeliaNode()

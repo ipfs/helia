@@ -1,6 +1,7 @@
 import getPort from 'aegir/get-port'
 import { createServer } from 'ipfsd-ctl'
-import * as kuboRpcClient from 'kubo-rpc-client'
+import { create } from 'kubo-rpc-client'
+import { path } from 'kubo'
 
 /** @type {import('aegir').PartialOptions} */
 export default {
@@ -13,9 +14,11 @@ export default {
           host: '127.0.0.1',
           port: ipfsdPort
         }, {
-          ipfsBin: (await import('kubo')).default.path(),
-          kuboRpcModule: kuboRpcClient,
-          ipfsOptions: {
+          type: 'kubo',
+          bin: path(),
+          rpc: create,
+          test: true,
+          init: {
             config: {
               Addresses: {
                 Swarm: [

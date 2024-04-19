@@ -7,13 +7,13 @@ import * as codec from 'multiformats/codecs/json'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import type { HeliaLibp2p } from 'helia'
-import type { PutOptions as KuboAddOptions } from 'ipfs-core-types/src/block/index.js'
-import type { Controller } from 'ipfsd-ctl'
+import type { KuboNode } from 'ipfsd-ctl'
+import type { BlockPutOptions as KuboAddOptions } from 'kubo-rpc-client'
 
 describe('@helia/dag-json', () => {
   let helia: HeliaLibp2p
   let d: DAGJSON
-  let kubo: Controller
+  let kubo: KuboNode
 
   async function expectSameCid (data: () => any, heliaOpts: Partial<AddOptions> = {}, kuboOpts: KuboAddOptions = { format: 'dag-json' }): Promise<void> {
     const heliaCid = await d.add(data(), heliaOpts)

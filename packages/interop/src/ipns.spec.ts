@@ -20,12 +20,12 @@ import { waitFor } from './fixtures/wait-for.js'
 import type { IPNS } from '@helia/ipns'
 import type { PeerId } from '@libp2p/interface'
 import type { HeliaLibp2p } from 'helia'
-import type { Controller } from 'ipfsd-ctl'
+import type { KuboNode } from 'ipfsd-ctl'
 
 keyTypes.forEach(type => {
   describe(`@helia/ipns - default routing with ${type} keys`, () => {
     let helia: HeliaLibp2p
-    let kubo: Controller
+    let kubo: KuboNode
     let name: IPNS
 
     // the CID we are going to publish
@@ -64,10 +64,10 @@ keyTypes.forEach(type => {
 
         const [closest] = await sortClosestPeers(routingKey, [
           helia.libp2p.peerId,
-          peerIdFromString(kubo.peer.id.toString())
+          peerIdFromString((await kubo.api.id()).id.toString())
         ])
 
-        if (resolver === 'kubo' && closest.equals(peerIdFromString(kubo.peer.id.toString()))) {
+        if (resolver === 'kubo' && closest.equals(peerIdFromString((await kubo.api.id()).id.toString()))) {
           break
         }
 
@@ -83,7 +83,7 @@ keyTypes.forEach(type => {
       await waitFor(async () => {
         let found = false
 
-        for await (const event of helia.libp2p.services.dht.findPeer(peerIdFromString(kubo.peer.id.toString()))) {
+        for await (const event of helia.libp2p.services.dht.findPeer(peerIdFromString((await kubo.api.id()).id.toString()))) {
           if (event.name === 'FINAL_PEER') {
             found = true
           }
@@ -99,8 +99,7 @@ keyTypes.forEach(type => {
       await waitFor(async () => {
         let found = false
 
-        // @ts-expect-error kubo deps are out of date
-        for await (const event of kubo.api.dht.findPeer(helia.libp2p.peerId)) {
+        for await (const event of kubo.api.routing.findPeer(helia.libp2p.peerId)) {
           if (event.name === 'FINAL_PEER') {
             found = true
           }
@@ -165,7 +164,8 @@ keyTypes.forEach(type => {
       body.append('key', new Blob([key.privateKey ?? new Uint8Array(0)]))
 
       // can't use the kubo-rpc-api for this call yet
-      const response = await fetch(`http://${kubo.api.apiHost}:${kubo.api.apiPort}/api/v0/key/import?arg=${keyName}`, {
+      const config = kubo.api.getEndpointConfig()
+      const response = await fetch(`http://${config.host}:${config.port}${config.pathname}/key/import?arg=${keyName}`, {
         method: 'POST',
         body
       })

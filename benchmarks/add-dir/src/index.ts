@@ -5,7 +5,6 @@ import debug from 'debug'
 import { CID } from 'multiformats/cid'
 import { Bench } from 'tinybench'
 import { createHeliaBenchmark } from './helia.js'
-import { createIpfsBenchmark } from './ipfs.js'
 import { createKuboDirectBenchmark } from './kubo-direct.js'
 import { createKuboBenchmark } from './kubo.js'
 
@@ -43,11 +42,6 @@ const impls: Array<{ name: string, create: () => Promise<AddDirBenchmark>, resul
   {
     name: 'helia-mem',
     create: async () => createHeliaBenchmark({ blockstoreType: 'mem', datastoreType: 'mem' }),
-    results: getDefaultResults()
-  },
-  {
-    name: 'ipfs',
-    create: async () => createIpfsBenchmark(),
     results: getDefaultResults()
   },
   {

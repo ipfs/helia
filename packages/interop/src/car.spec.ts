@@ -13,13 +13,13 @@ import { memoryCarWriter } from './fixtures/memory-car.js'
 import type { Car } from '@helia/car'
 import type { HeliaLibp2p } from 'helia'
 import type { FileCandidate } from 'ipfs-unixfs-importer'
-import type { Controller } from 'ipfsd-ctl'
+import type { KuboNode } from 'ipfsd-ctl'
 
 describe('@helia/car', () => {
   let helia: HeliaLibp2p
   let c: Car
   let u: UnixFS
-  let kubo: Controller
+  let kubo: KuboNode
 
   beforeEach(async () => {
     helia = await createHeliaNode()
@@ -28,7 +28,7 @@ describe('@helia/car', () => {
     kubo = await createKuboNode()
 
     // connect helia to kubo
-    await helia.libp2p.dial(kubo.peer.addresses)
+    await helia.libp2p.dial((await (kubo.api.id())).addresses)
   })
 
   afterEach(async () => {

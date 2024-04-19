@@ -24,7 +24,7 @@ import type { IPNS, ResolveResult } from '@helia/ipns'
 import type { Libp2p, PubSub } from '@libp2p/interface'
 import type { Keychain } from '@libp2p/keychain'
 import type { HeliaLibp2p } from 'helia'
-import type { Controller } from 'ipfsd-ctl'
+import type { KuboNode } from 'ipfsd-ctl'
 
 const LIBP2P_KEY_CODEC = 0x72
 
@@ -34,7 +34,7 @@ const LIBP2P_KEY_CODEC = 0x72
 keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
   describe(`@helia/ipns - pubsub routing with ${keyType} keys`, () => {
     let helia: HeliaLibp2p<Libp2p<{ pubsub: PubSub, keychain: Keychain }>>
-    let kubo: Controller
+    let kubo: KuboNode
     let name: IPNS
 
     beforeEach(async () => {
@@ -83,7 +83,6 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
         .with.property('message', 'PublishError.NoPeersSubscribedToTopic')
 
       // should fail to resolve the first time as kubo was not subscribed to the pubsub channel
-      // @ts-expect-error kubo deps are out of date
       await expect(last(kubo.api.name.resolve(peerId, {
         timeout: 100
       }))).to.eventually.be.undefined()
@@ -104,7 +103,6 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
       await name.publish(peerId, cid)
 
       // kubo should now be able to resolve IPNS name
-      // @ts-expect-error kubo deps are out of date
       const resolved = await last(kubo.api.name.resolve(peerId, {
         timeout: 100
       }))
