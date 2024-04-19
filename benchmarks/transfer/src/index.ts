@@ -2,7 +2,6 @@
 
 import type { CID } from 'multiformats/cid'
 import { createHeliaBenchmark } from './helia.js'
-import { createIpfsBenchmark } from './ipfs.js'
 import { createKuboBenchmark } from './kubo.js'
 import bufferStream from 'it-buffer-stream'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -75,9 +74,6 @@ for (const [name, options] of Object.entries(opts)) {
 const impls: Array<{ name: string, create: () => Promise<TransferBenchmark> }> = [{
   name: 'helia',
   create: async () => await createHeliaBenchmark()
-}, {
-  name: 'ipfs',
-  create: async () => await createIpfsBenchmark()
 }, {
   name: 'kubo',
   create: async () => await createKuboBenchmark()

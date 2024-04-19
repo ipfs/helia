@@ -2,8 +2,7 @@ import { createHelia } from 'helia'
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { noise } from '@chainsafe/libp2p-noise'
-// import { yamux } from '@chainsafe/libp2p-yamux'
-import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import type { TransferBenchmark } from './index.js'
 import os from 'node:os'
 import path from 'node:path'
@@ -33,8 +32,7 @@ export async function createHeliaBenchmark (): Promise<TransferBenchmark> {
         noise()
       ],
       streamMuxers: [
-        mplex()
-        // yamux()
+        yamux()
       ]
     })
   })

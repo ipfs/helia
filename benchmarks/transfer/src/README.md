@@ -1,6 +1,6 @@
 # Transfer Benchmark
 
-Benchmarks Helia transfer performance against js-ipfs and Kubo
+Benchmarks Helia transfer performance against Kubo
 
 To run:
 
