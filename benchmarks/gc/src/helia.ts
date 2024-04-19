@@ -30,7 +30,7 @@ export async function createHeliaBenchmark (): Promise<GcBenchmark> {
       await drain(helia.blockstore.putMany(map(blocks, ({ key, value }) => ({ cid: key, block: value }))))
     },
     async pin (cid) {
-      await helia.pins.add(cid)
+      await drain(helia.pins.add(cid))
     },
     async teardown () {
       await helia.stop()
@@ -39,7 +39,7 @@ export async function createHeliaBenchmark (): Promise<GcBenchmark> {
       const pins = await all(helia.pins.ls())
 
       for (const pin of pins) {
-        await helia.pins.rm(pin.cid)
+        await drain(helia.pins.rm(pin.cid))
       }
 
       return pins.length
