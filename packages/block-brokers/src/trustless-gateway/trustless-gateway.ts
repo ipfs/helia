@@ -105,6 +105,8 @@ export class TrustlessGateway {
       this.log.error('failed to get block for %c from %s', cid, gwUrl, cause)
       this.#errors++
       throw new Error(`unable to fetch raw block for CID ${cid}`)
+    } finally {
+      this.#pendingResponses.delete(gwUrl.toString())
     }
   }
 
