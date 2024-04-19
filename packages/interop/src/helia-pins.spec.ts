@@ -9,18 +9,18 @@ import { sha256 } from 'multiformats/hashes/sha2'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import type { HeliaLibp2p } from 'helia'
-import type { Controller } from 'ipfsd-ctl'
+import type { KuboNode } from 'ipfsd-ctl'
 
 describe('helia - pins', () => {
   let helia: HeliaLibp2p
-  let kubo: Controller
+  let kubo: KuboNode
 
   beforeEach(async () => {
     helia = await createHeliaNode()
     kubo = await createKuboNode()
 
     // connect the two nodes
-    await helia.libp2p.dial(kubo.peer.addresses)
+    await helia.libp2p.dial((await (kubo.api.id())).addresses)
   })
 
   afterEach(async () => {

@@ -9,11 +9,11 @@ import { createHeliaHTTP } from './fixtures/create-helia-http.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import type { Helia } from '@helia/interface'
 import type { IPNS } from '@helia/ipns'
-import type { Controller } from 'ipfsd-ctl'
+import type { KuboNode } from 'ipfsd-ctl'
 
 describe('@helia/ipns - http', () => {
   let helia: Helia
-  let kubo: Controller
+  let kubo: KuboNode
   let name: IPNS
 
   /**
@@ -51,8 +51,6 @@ describe('@helia/ipns - http', () => {
     const { cid } = await kubo.api.add(Uint8Array.from([0, 1, 2, 3, 4]))
 
     await kubo.api.key.gen(keyName, {
-      // @ts-expect-error the types say upper-case E, Kubo errors unless it's a
-      // lower case e
       type: 'ed25519'
     })
 

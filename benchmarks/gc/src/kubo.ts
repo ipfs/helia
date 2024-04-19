@@ -1,22 +1,20 @@
 /* eslint-disable no-console */
 
-import { createController } from 'ipfsd-ctl'
+import { createNode } from 'ipfsd-ctl'
 import all from 'it-all'
 import drain from 'it-drain'
 import { path as kuboPath } from 'kubo'
-import * as goRpcClient from 'kubo-rpc-client'
+import { create as kuboRpcClient } from 'kubo-rpc-client'
 import type { GcBenchmark } from './index.js'
 
 export async function createKuboBenchmark (): Promise<GcBenchmark> {
-  const controller = await createController({
-    type: 'go',
+  const controller = await createNode({
+    type: 'kubo',
     test: true,
-    ipfsBin: kuboPath(),
-    ipfsHttpModule: goRpcClient,
-    ipfsOptions: {
-      init: {
-        emptyRepo: true
-      }
+    bin: kuboPath(),
+    rpc: kuboRpcClient,
+    init: {
+      emptyRepo: true
     }
   })
 

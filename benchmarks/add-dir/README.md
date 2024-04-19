@@ -14,8 +14,6 @@ Warning! It can take a long time to run against folders with a very large number
 
 Example, running against `/node_modules` takes Helia 13 minutes for a single run.
 
-You can speed things up by removing js-ipfs from the `impls` array.
-
 To run:
 
 1. Add `benchmarks/*` to the `workspaces` entry in the root `package.json` of this repo

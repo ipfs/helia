@@ -8,12 +8,12 @@ import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import type { HeliaLibp2p } from 'helia'
 import type { FileCandidate } from 'ipfs-unixfs-importer'
-import type { Controller } from 'ipfsd-ctl'
+import type { KuboNode } from 'ipfsd-ctl'
 
 describe('@helia/unixfs - bitswap', () => {
   let helia: HeliaLibp2p
   let unixFs: UnixFS
-  let kubo: Controller
+  let kubo: KuboNode
 
   beforeEach(async () => {
     helia = await createHeliaNode()
@@ -21,7 +21,7 @@ describe('@helia/unixfs - bitswap', () => {
     kubo = await createKuboNode()
 
     // connect helia to kubo
-    await helia.libp2p.dial(kubo.peer.addresses)
+    await helia.libp2p.dial((await (kubo.api.id())).addresses)
   })
 
   afterEach(async () => {

@@ -6,7 +6,6 @@ import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { Bench } from 'tinybench'
 import { createHeliaBenchmark } from './helia.js'
-import { createIpfsBenchmark } from './ipfs.js'
 import { createKuboBenchmark } from './kubo.js'
 
 const PINNED_DAG_COUNT = parseInt(process.env.INCREMENT ?? '10000')
@@ -95,15 +94,6 @@ async function pinBlocks (benchmark: GcBenchmark): Promise<void> {
 const impls: Array<{ name: string, create: () => Promise<GcBenchmark>, results: { gc: number[], clearedPins: number[], addedBlocks: number[], pinnedBlocks: number[] } }> = [{
   name: 'helia',
   create: async () => createHeliaBenchmark(),
-  results: {
-    gc: [],
-    clearedPins: [],
-    addedBlocks: [],
-    pinnedBlocks: []
-  }
-}, {
-  name: 'ipfs',
-  create: async () => createIpfsBenchmark(),
   results: {
     gc: [],
     clearedPins: [],

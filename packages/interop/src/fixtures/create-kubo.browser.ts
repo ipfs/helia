@@ -1,12 +1,13 @@
-import { type Controller, createController } from 'ipfsd-ctl'
-import * as kuboRpcClient from 'kubo-rpc-client'
+import { type KuboNode, createNode } from 'ipfsd-ctl'
+import { create as kuboRpcClient } from 'kubo-rpc-client'
 
-export async function createKuboNode (): Promise<Controller> {
-  return createController({
-    kuboRpcModule: kuboRpcClient,
+export async function createKuboNode (): Promise<KuboNode> {
+  return createNode({
+    type: 'kubo',
+    rpc: kuboRpcClient,
     test: true,
     endpoint: process.env.IPFSD_SERVER,
-    ipfsOptions: {
+    init: {
       config: {
         Addresses: {
           Swarm: [
@@ -25,6 +26,8 @@ export async function createKuboNode (): Promise<Controller> {
         }
       }
     },
-    args: ['--enable-pubsub-experiment', '--enable-namesys-pubsub']
+    start: {
+      args: ['--enable-pubsub-experiment', '--enable-namesys-pubsub']
+    }
   })
 }
