@@ -28,7 +28,7 @@ export async function createKuboBenchmark (): Promise<TransferBenchmark> {
       await controller.api.swarm.connect(ma)
     },
     async add (content, options: any) {
-      const { cid } = await controller.api.add(content)
+      const { cid } = await controller.api.add(content, options)
 
       return cid
     },

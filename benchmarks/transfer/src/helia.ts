@@ -10,8 +10,9 @@ import { LevelDatastore } from 'datastore-level'
 import { FsBlockstore } from 'blockstore-fs'
 import drain from 'it-drain'
 import { unixfs } from '@helia/unixfs'
-// import { fixedSize } from 'ipfs-unixfs-importer/chunker'
-// import { balanced } from 'ipfs-unixfs-importer/layout'
+import { identify } from '@libp2p/identify'
+import { fixedSize } from 'ipfs-unixfs-importer/chunker'
+import { balanced } from 'ipfs-unixfs-importer/layout'
 
 export async function createHeliaBenchmark (): Promise<TransferBenchmark> {
   const repoPath = path.join(os.tmpdir(), `helia-${Math.random()}`)
@@ -33,7 +34,13 @@ export async function createHeliaBenchmark (): Promise<TransferBenchmark> {
       ],
       streamMuxers: [
         yamux()
-      ]
+      ],
+      services: {
+        identify: identify()
+      },
+      connectionManager: {
+        minConnections: 0
+      }
     })
   })
 
@@ -47,10 +54,14 @@ export async function createHeliaBenchmark (): Promise<TransferBenchmark> {
     async dial (ma) {
       await helia.libp2p.dial(ma)
     },
-    async add (content) {
+    async add (content, options) {
       const fs = unixfs(helia)
 
-      return await fs.addByteStream(content)
+      return await fs.addByteStream(content, {
+        ...options,
+        chunker: options.chunkSize != null ? fixedSize({ chunkSize: options.chunkSize }) : undefined,
+        layout: options.maxChildrenPerNode != null ? balanced({ maxChildrenPerNode: options.maxChildrenPerNode }) : undefined
+      })
     },
     async get (cid) {
       const fs = unixfs(helia)

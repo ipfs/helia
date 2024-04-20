@@ -44,15 +44,11 @@ const opts: Record<string, ImportOptions> = {
   '1MB block size': {
     chunkSize: 1024 * 1024
   },
-  '3MB block size': {
-    chunkSize: (1024 * 1024) * 10
-  },
-  '4MB block size': {
-    chunkSize: (1024 * 1024) * 10
-  },
-  '10MB block size': {
-    chunkSize: (1024 * 1024) * 10
+  '2MB block size': {
+    chunkSize: (1024 * 1024) * 2
   }
+  // there is no point going larger than 2MB as it is bigger than bitswap's
+  // maximum message size
 }
 
 const tests: Record<string, File[]> = {}
