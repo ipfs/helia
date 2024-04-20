@@ -191,7 +191,7 @@ describe('trustless-gateway-block-broker', () => {
     await expect(sessionBlockstore?.retrieve?.(blocks[0].cid)).to.eventually.deep.equal(blocks[0].block)
   })
 
-  it('does not trigger new network requests if the same block request is in-flight', async function () {
+  it('does not trigger new network requests if the same cid request is in-flight', async function () {
     // from .aegir.js polka server
     const cid = CID.parse('bafkqabtimvwgy3yk')
     if (process.env.TRUSTLESS_GATEWAY == null) {

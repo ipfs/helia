@@ -1,3 +1,4 @@
+import { base64 } from 'multiformats/bases/base64'
 import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 
@@ -59,6 +60,20 @@ export class TrustlessGateway {
   }
 
   /**
+   * This function returns a unique string for the multihash.bytes of the CID.
+   *
+   * Some useful resources for why this is needed can be found using the links below:
+   *
+   * - https://github.com/ipfs/helia/pull/503#discussion_r1572451331
+   * - https://github.com/ipfs/kubo/issues/6815
+   * - https://www.notion.so/pl-strflt/Handling-ambiguity-around-CIDs-9d5e14f6516f438980b01ef188efe15d#d9d45cd1ed8b4d349b96285de4aed5ab
+   */
+  #uniqueBlockId (cid: CID): string {
+    const multihashBytes = cid.multihash.bytes
+    return base64.encode(multihashBytes)
+  }
+
+  /**
    * Fetch a raw block from `this.url` following the specification defined at
    * https://specs.ipfs.tech/http-gateways/trustless-gateway/
    */
@@ -74,8 +89,9 @@ export class TrustlessGateway {
       throw new Error(`Signal to fetch raw block for CID ${cid} from gateway ${this.url} was aborted prior to fetch`)
     }
 
+    const blockId = this.#uniqueBlockId(cid)
     try {
-      let pendingResponse: Promise<Uint8Array> | undefined = this.#pendingResponses.get(gwUrl.toString())
+      let pendingResponse: Promise<Uint8Array> | undefined = this.#pendingResponses.get(blockId)
       if (pendingResponse == null) {
         this.#attempts++
         pendingResponse = fetch(gwUrl.toString(), {
@@ -93,7 +109,7 @@ export class TrustlessGateway {
           this.#successes++
           return new Uint8Array(await res.arrayBuffer())
         })
-        this.#pendingResponses.set(gwUrl.toString(), pendingResponse)
+        this.#pendingResponses.set(blockId, pendingResponse)
       }
       return await pendingResponse
     } catch (cause) {
@@ -102,11 +118,10 @@ export class TrustlessGateway {
       if (signal?.aborted === true) {
         throw new Error(`fetching raw block for CID ${cid} from gateway ${this.url} was aborted`)
       }
-      this.log.error('failed to get block for %c from %s', cid, gwUrl, cause)
       this.#errors++
       throw new Error(`unable to fetch raw block for CID ${cid}`)
     } finally {
-      this.#pendingResponses.delete(gwUrl.toString())
+      this.#pendingResponses.delete(blockId)
     }
   }
 
