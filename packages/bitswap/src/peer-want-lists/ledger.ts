@@ -3,7 +3,7 @@ import { DEFAULT_MAX_SIZE_REPLACE_HAS_WITH_BLOCK } from '../constants.js'
 import { BlockPresenceType, type BitswapMessage, WantType } from '../pb/message.js'
 import { cidToPrefix } from '../utils/cid-prefix.js'
 import type { Network } from '../network.js'
-import type { PeerId } from '@libp2p/interface'
+import type { ComponentLogger, Logger, PeerId } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { AbortOptions } from 'it-length-prefixed-stream'
 import type { CID } from 'multiformats/cid'
@@ -12,6 +12,7 @@ export interface LedgerComponents {
   peerId: PeerId
   blockstore: Blockstore
   network: Network
+  logger: ComponentLogger
 }
 
 export interface LedgerInit {
@@ -56,12 +57,14 @@ export class Ledger {
   public bytesReceived: number
   public lastExchange?: number
   private readonly maxSizeReplaceHasWithBlock: number
+  private readonly log: Logger
 
   constructor (components: LedgerComponents, init: LedgerInit) {
     this.peerId = components.peerId
     this.blockstore = components.blockstore
     this.network = components.network
     this.wants = new Map()
+    this.log = components.logger.forComponent(`helia:bitswap:ledger:${components.peerId}`)
 
     this.exchangeCount = 0
     this.bytesSent = 0
@@ -96,6 +99,8 @@ export class Ledger {
       const has = await this.blockstore.has(entry.cid, options)
 
       if (!has) {
+        this.log('do not have block for %c', entry.cid)
+
         // we don't have the requested block and the remote is not interested
         // in us telling them that
         if (!entry.sendDontHave) {
@@ -121,6 +126,7 @@ export class Ledger {
       // do they want the block or just us to tell them we have the block
       if (entry.wantType === WantType.WantHave) {
         if (block.byteLength < this.maxSizeReplaceHasWithBlock) {
+          this.log('sending have and block for %c', entry.cid)
           // if the block is small we just send it to them
           sentBlocks.add(key)
           message.blocks.push({
@@ -128,6 +134,7 @@ export class Ledger {
             prefix: cidToPrefix(entry.cid)
           })
         } else {
+          this.log('sending have for %c', entry.cid)
           // otherwise tell them we have the block
           message.blockPresences.push({
             cid: entry.cid.bytes,
@@ -135,6 +142,7 @@ export class Ledger {
           })
         }
       } else {
+        this.log('sending block for %c', entry.cid)
         // they want the block, send it to them
         sentBlocks.add(key)
         message.blocks.push({
@@ -146,7 +154,9 @@ export class Ledger {
 
     // only send the message if we actually have something to send
     if (message.blocks.length > 0 || message.blockPresences.length > 0) {
+      this.log('sending message')
       await this.network.sendMessage(this.peerId, message, options)
+      this.log('sent message')
 
       // update accounting
       this.sentBytes(message.blocks.reduce((acc, curr) => acc + curr.data.byteLength, 0))

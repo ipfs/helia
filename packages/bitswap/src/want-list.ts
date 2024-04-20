@@ -375,7 +375,7 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
    * Invoked when a message is received from a bitswap peer
    */
   private async receiveMessage (sender: PeerId, message: BitswapMessage): Promise<void> {
-    this.log('received message from %p', sender)
+    this.log('received message %d from %p with %d blocks', sender, message.blocks.length)
     let blocksCancelled = false
 
     // process blocks
@@ -397,7 +397,12 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
         continue
       }
 
-      const hash = await hasher.digest(block.data)
+      let hash: any = hasher.digest(block.data)
+
+      if (hash.then != null) {
+        hash = await hash
+      }
+
       const cid = CID.create(cidVersion === 0 ? 0 : 1, multicodec, hash)
 
       this.log('received block from %p for %c', sender, cid)
@@ -423,7 +428,7 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
       const entry = this.wants.get(cidStr)
 
       if (entry == null) {
-        return
+        continue
       }
 
       // since we received the block, flip the cancel flag to send cancels to

@@ -1,54 +1,24 @@
 import { CodeError, TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { PeerQueue, type PeerQueueJobOptions } from '@libp2p/utils/peer-queue'
-import { anySignal } from 'any-signal'
-import debug from 'debug'
 import drain from 'it-drain'
 import * as lp from 'it-length-prefixed'
-import { lpStream } from 'it-length-prefixed-stream'
 import map from 'it-map'
 import { pipe } from 'it-pipe'
 import take from 'it-take'
-import { base64 } from 'multiformats/bases/base64'
-import { CID } from 'multiformats/cid'
 import { CustomProgressEvent } from 'progress-events'
 import { raceEvent } from 'race-event'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { BITSWAP_120, DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS, DEFAULT_MAX_PROVIDERS_PER_REQUEST, DEFAULT_MESSAGE_RECEIVE_TIMEOUT, DEFAULT_MESSAGE_SEND_CONCURRENCY, DEFAULT_MESSAGE_SEND_TIMEOUT, DEFAULT_RUN_ON_TRANSIENT_CONNECTIONS } from './constants.js'
+import { BITSWAP_120, DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_INCOMING_MESSAGE_SIZE, DEFAULT_MAX_OUTBOUND_STREAMS, DEFAULT_MAX_OUTGOING_MESSAGE_SIZE, DEFAULT_MAX_PROVIDERS_PER_REQUEST, DEFAULT_MESSAGE_RECEIVE_TIMEOUT, DEFAULT_MESSAGE_SEND_CONCURRENCY, DEFAULT_RUN_ON_TRANSIENT_CONNECTIONS } from './constants.js'
 import { BitswapMessage } from './pb/message.js'
+import { mergeMessages } from './utils/merge-messages.js'
+import { splitMessage } from './utils/split-message.js'
 import type { WantOptions } from './bitswap.js'
 import type { MultihashHasherLoader } from './index.js'
-import type { Block, BlockPresence, WantlistEntry } from './pb/message.js'
+import type { Block } from './pb/message.js'
 import type { Provider, Routing } from '@helia/interface/routing'
 import type { Libp2p, AbortOptions, Connection, PeerId, IncomingStreamData, Topology, ComponentLogger, IdentifyResult, Counter } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
+import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
-
-// Add a formatter for a bitswap message
-debug.formatters.B = (b?: BitswapMessage): string => {
-  if (b == null) {
-    return 'undefined'
-  }
-
-  return JSON.stringify({
-    blocks: b.blocks?.map(b => ({
-      data: `${uint8ArrayToString(b.data, 'base64').substring(0, 10)}...`,
-      prefix: uint8ArrayToString(b.prefix, 'base64')
-    })),
-    blockPresences: b.blockPresences?.map(p => ({
-      ...p,
-      cid: CID.decode(p.cid).toString()
-    })),
-    wantlist: b.wantlist == null
-      ? undefined
-      : {
-          full: b.wantlist.full,
-          entries: b.wantlist.entries.map(e => ({
-            ...e,
-            cid: CID.decode(e.cid).toString()
-          }))
-        }
-  }, null, 2)
-}
 
 export type BitswapNetworkProgressEvents =
   ProgressEvent<'bitswap:network:dial', PeerId>
@@ -68,10 +38,11 @@ export interface NetworkInit {
   maxInboundStreams?: number
   maxOutboundStreams?: number
   messageReceiveTimeout?: number
-  messageSendTimeout?: number
   messageSendConcurrency?: number
   protocols?: string[]
   runOnTransientConnections?: boolean
+  maxOutgoingMessageSize?: number
+  maxIncomingMessageSize?: number
 }
 
 export interface NetworkComponents {
@@ -107,8 +78,9 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
   private registrarIds: string[]
   private readonly metrics: { blocksSent?: Counter, dataSent?: Counter }
   private readonly sendQueue: PeerQueue<void, SendMessageJobOptions>
-  private readonly messageSendTimeout: number
   private readonly runOnTransientConnections: boolean
+  private readonly maxOutgoingMessageSize: number
+  private readonly maxIncomingMessageSize: number
 
   constructor (components: NetworkComponents, init: NetworkInit = {}) {
     super()
@@ -125,8 +97,9 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
     this.maxInboundStreams = init.maxInboundStreams ?? DEFAULT_MAX_INBOUND_STREAMS
     this.maxOutboundStreams = init.maxOutboundStreams ?? DEFAULT_MAX_OUTBOUND_STREAMS
     this.messageReceiveTimeout = init.messageReceiveTimeout ?? DEFAULT_MESSAGE_RECEIVE_TIMEOUT
-    this.messageSendTimeout = init.messageSendTimeout ?? DEFAULT_MESSAGE_SEND_TIMEOUT
     this.runOnTransientConnections = init.runOnTransientConnections ?? DEFAULT_RUN_ON_TRANSIENT_CONNECTIONS
+    this.maxIncomingMessageSize = init.maxIncomingMessageSize ?? DEFAULT_MAX_OUTGOING_MESSAGE_SIZE
+    this.maxOutgoingMessageSize = init.maxOutgoingMessageSize ?? init.maxIncomingMessageSize ?? DEFAULT_MAX_INCOMING_MESSAGE_SIZE
     this.metrics = {
       blocksSent: components.libp2p.metrics?.registerCounter('helia_bitswap_sent_blocks_total'),
       dataSent: components.libp2p.metrics?.registerCounter('helia_bitswap_sent_data_bytes_total')
@@ -212,21 +185,29 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
     Promise.resolve().then(async () => {
       this.log('incoming new bitswap %s stream from %p', stream.protocol, connection.remotePeer)
       const abortListener = (): void => {
-        stream.abort(new CodeError('Incoming Bitswap stream timed out', 'ERR_TIMEOUT'))
+        if (stream.status === 'open') {
+          stream.abort(new CodeError('Incoming Bitswap stream timed out', 'ERR_TIMEOUT'))
+        } else {
+          this.log('stream aborted with status', stream.status)
+        }
       }
 
       let signal = AbortSignal.timeout(this.messageReceiveTimeout)
       setMaxListeners(Infinity, signal)
       signal.addEventListener('abort', abortListener)
 
+      await stream.closeWrite()
+
       await pipe(
         stream,
-        (source) => lp.decode(source),
+        (source) => lp.decode(source, {
+          maxDataLength: this.maxIncomingMessageSize
+        }),
         async (source) => {
           for await (const data of source) {
             try {
               const message = BitswapMessage.decode(data)
-              this.log('incoming new bitswap %s message from %p %B', stream.protocol, connection.remotePeer, message)
+              this.log('incoming new bitswap %s message from %p on stream', stream.protocol, connection.remotePeer, stream.id)
 
               this.safeDispatchEvent('bitswap:message', {
                 detail: {
@@ -241,7 +222,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
               setMaxListeners(Infinity, signal)
               signal.addEventListener('abort', abortListener)
             } catch (err: any) {
-              this.log.error('error reading incoming bitswap message from %p', connection.remotePeer, err)
+              this.log.error('error reading incoming bitswap message from %p on stream', connection.remotePeer, stream.id, err)
               stream.abort(err)
               break
             }
@@ -309,58 +290,55 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
       pendingBytes: msg.pendingBytes ?? 0
     }
 
-    const timeoutSignal = AbortSignal.timeout(this.messageSendTimeout)
-    const signal = anySignal([timeoutSignal, options?.signal])
-    setMaxListeners(Infinity, timeoutSignal, signal)
+    const existingJob = this.sendQueue.queue.find(job => {
+      return peerId.equals(job.options.peerId) && job.status === 'queued'
+    })
 
-    try {
-      const existingJob = this.sendQueue.queue.find(job => {
-        return peerId.equals(job.options.peerId) && job.status === 'queued'
+    if (existingJob != null) {
+      // merge messages instead of adding new job
+      existingJob.options.message = mergeMessages(existingJob.options.message, message)
+
+      await existingJob.join({
+        signal: options?.signal
       })
 
-      if (existingJob != null) {
-        // merge messages instead of adding new job
-        existingJob.options.message = mergeMessages(existingJob.options.message, message)
+      return
+    }
 
-        await existingJob.join({
-          signal
-        })
+    await this.sendQueue.add(async (options) => {
+      const message = options?.message
 
-        return
+      if (message == null) {
+        throw new CodeError('No message to send', 'ERR_NO_MESSAGE')
       }
 
-      await this.sendQueue.add(async (options) => {
-        const message = options?.message
+      this.log('sendMessage to %p', peerId)
 
-        if (message == null) {
-          throw new CodeError('No message to send', 'ERR_NO_MESSAGE')
-        }
+      options?.onProgress?.(new CustomProgressEvent<PeerId>('bitswap:network:send-wantlist', peerId))
 
-        this.log('sendMessage to %p %B', peerId, message)
+      const stream = await this.libp2p.dialProtocol(peerId, BITSWAP_120, options)
+      await stream.closeRead()
 
-        options?.onProgress?.(new CustomProgressEvent<PeerId>('bitswap:network:send-wantlist', peerId))
+      try {
+        await pipe(
+          splitMessage(message, this.maxOutgoingMessageSize),
+          (source) => lp.encode(source),
+          stream
+        )
 
-        const stream = await this.libp2p.dialProtocol(peerId, BITSWAP_120, options)
+        await stream.close(options)
+      } catch (err: any) {
+        options?.onProgress?.(new CustomProgressEvent<{ peer: PeerId, error: Error }>('bitswap:network:send-wantlist:error', { peer: peerId, error: err }))
+        this.log.error('error sending message to %p', peerId, err)
+        stream.abort(err)
+      }
 
-        try {
-          const lp = lpStream(stream)
-          await lp.write(BitswapMessage.encode(message), options)
-          await lp.unwrap().close(options)
-        } catch (err: any) {
-          options?.onProgress?.(new CustomProgressEvent<{ peer: PeerId, error: Error }>('bitswap:network:send-wantlist:error', { peer: peerId, error: err }))
-          this.log.error('error sending message to %p', peerId, err)
-          stream.abort(err)
-        }
-
-        this._updateSentStats(message.blocks)
-      }, {
-        peerId,
-        signal,
-        message
-      })
-    } finally {
-      signal.clear()
-    }
+      this._updateSentStats(message.blocks)
+    }, {
+      peerId,
+      signal: options?.signal,
+      message
+    })
   }
 
   /**
@@ -408,72 +386,4 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
     this.metrics.dataSent?.increment(bytes)
     this.metrics.blocksSent?.increment(blocks.length)
   }
-}
-
-function mergeMessages (messageA: BitswapMessage, messageB: BitswapMessage): BitswapMessage {
-  const wantListEntries = new Map<string, WantlistEntry>(
-    (messageA.wantlist?.entries ?? []).map(entry => ([
-      base64.encode(entry.cid),
-      entry
-    ]))
-  )
-
-  for (const entry of messageB.wantlist?.entries ?? []) {
-    const key = base64.encode(entry.cid)
-    const existingEntry = wantListEntries.get(key)
-
-    if (existingEntry != null) {
-      // take highest priority
-      if (existingEntry.priority > entry.priority) {
-        entry.priority = existingEntry.priority
-      }
-
-      // take later values if passed, otherwise use earlier ones
-      entry.cancel = entry.cancel ?? existingEntry.cancel
-      entry.wantType = entry.wantType ?? existingEntry.wantType
-      entry.sendDontHave = entry.sendDontHave ?? existingEntry.sendDontHave
-    }
-
-    wantListEntries.set(key, entry)
-  }
-
-  const blockPresences = new Map<string, BlockPresence>(
-    messageA.blockPresences.map(presence => ([
-      base64.encode(presence.cid),
-      presence
-    ]))
-  )
-
-  for (const blockPresence of messageB.blockPresences) {
-    const key = base64.encode(blockPresence.cid)
-
-    // override earlier block presence with later one as if duplicated it is
-    // likely to be more accurate since it is more recent
-    blockPresences.set(key, blockPresence)
-  }
-
-  const blocks = new Map<string, Block>(
-    messageA.blocks.map(block => ([
-      base64.encode(block.data),
-      block
-    ]))
-  )
-
-  for (const block of messageB.blocks) {
-    const key = base64.encode(block.data)
-
-    blocks.set(key, block)
-  }
-
-  const output: BitswapMessage = {
-    wantlist: {
-      full: messageA.wantlist?.full ?? messageB.wantlist?.full ?? false,
-      entries: [...wantListEntries.values()]
-    },
-    blockPresences: [...blockPresences.values()],
-    blocks: [...blocks.values()],
-    pendingBytes: messageA.pendingBytes + messageB.pendingBytes
-  }
-
-  return output
 }

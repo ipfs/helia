@@ -1,5 +1,14 @@
+import { base64 } from 'multiformats/bases/base64'
 import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
+
+export interface TrustlessGatewayStats {
+  attempts: number
+  errors: number
+  invalidBlocks: number
+  successes: number
+  pendingResponses?: number
+}
 
 /**
  * A `TrustlessGateway` keeps track of the number of attempts, errors, and
@@ -37,11 +46,32 @@ export class TrustlessGateway {
    */
   #successes = 0
 
+  /**
+   * A map of pending responses for this gateway. This is used to ensure that
+   * only one request per CID is made to a given gateway at a time, and that we
+   * don't make multiple in-flight requests for the same CID to the same gateway.
+   */
+  #pendingResponses = new Map<string, Promise<Uint8Array>>()
+
   private readonly log: Logger
 
   constructor (url: URL | string, logger: ComponentLogger) {
     this.url = url instanceof URL ? url : new URL(url)
     this.log = logger.forComponent(`helia:trustless-gateway-block-broker:${this.url.hostname}`)
+  }
+
+  /**
+   * This function returns a unique string for the multihash.bytes of the CID.
+   *
+   * Some useful resources for why this is needed can be found using the links below:
+   *
+   * - https://github.com/ipfs/helia/pull/503#discussion_r1572451331
+   * - https://github.com/ipfs/kubo/issues/6815
+   * - https://www.notion.so/pl-strflt/Handling-ambiguity-around-CIDs-9d5e14f6516f438980b01ef188efe15d#d9d45cd1ed8b4d349b96285de4aed5ab
+   */
+  #uniqueBlockId (cid: CID): string {
+    const multihashBytes = cid.multihash.bytes
+    return base64.encode(multihashBytes)
   }
 
   /**
@@ -60,26 +90,29 @@ export class TrustlessGateway {
       throw new Error(`Signal to fetch raw block for CID ${cid} from gateway ${this.url} was aborted prior to fetch`)
     }
 
+    const blockId = this.#uniqueBlockId(cid)
     try {
-      this.#attempts++
-      const res = await fetch(gwUrl.toString(), {
-        signal,
-        headers: {
-        // also set header, just in case ?format= is filtered out by some
-        // reverse proxy
-          Accept: 'application/vnd.ipld.raw'
-        },
-        cache: 'force-cache'
-      })
-
-      this.log('GET %s %d', gwUrl, res.status)
-
-      if (!res.ok) {
-        this.#errors++
-        throw new Error(`unable to fetch raw block for CID ${cid} from gateway ${this.url}`)
+      let pendingResponse: Promise<Uint8Array> | undefined = this.#pendingResponses.get(blockId)
+      if (pendingResponse == null) {
+        this.#attempts++
+        pendingResponse = fetch(gwUrl.toString(), {
+          signal,
+          headers: {
+            Accept: 'application/vnd.ipld.raw'
+          },
+          cache: 'force-cache'
+        }).then(async (res) => {
+          this.log('GET %s %d', gwUrl, res.status)
+          if (!res.ok) {
+            this.#errors++
+            throw new Error(`unable to fetch raw block for CID ${cid} from gateway ${this.url}`)
+          }
+          this.#successes++
+          return new Uint8Array(await res.arrayBuffer())
+        })
+        this.#pendingResponses.set(blockId, pendingResponse)
       }
-      this.#successes++
-      return new Uint8Array(await res.arrayBuffer())
+      return await pendingResponse
     } catch (cause) {
       // @ts-expect-error - TS thinks signal?.aborted can only be false now
       // because it was checked for true above.
@@ -88,6 +121,8 @@ export class TrustlessGateway {
       }
       this.#errors++
       throw new Error(`unable to fetch raw block for CID ${cid}`)
+    } finally {
+      this.#pendingResponses.delete(blockId)
     }
   }
 
@@ -129,5 +164,15 @@ export class TrustlessGateway {
    */
   incrementInvalidBlocks (): void {
     this.#invalidBlocks++
+  }
+
+  getStats (): TrustlessGatewayStats {
+    return {
+      attempts: this.#attempts,
+      errors: this.#errors,
+      invalidBlocks: this.#invalidBlocks,
+      successes: this.#successes,
+      pendingResponses: this.#pendingResponses.size
+    }
   }
 }

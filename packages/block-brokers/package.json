@@ -70,6 +70,7 @@
     "@libp2p/logger": "^4.0.7",
     "@libp2p/peer-id-factory": "^4.0.7",
     "@multiformats/uri-to-multiaddr": "^8.0.0",
+    "@types/polka": "^0.5.7",
     "@types/sinon": "^17.0.3",
     "aegir": "^42.2.5",
     "cors": "^2.8.5",
