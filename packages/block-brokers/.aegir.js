@@ -17,6 +17,17 @@ const options = {
         })
         res.end(Uint8Array.from([0, 1, 2, 0]))
       })
+      server.all('/ipfs/bafkqabtimvwgy3yk', async (req, res) => {
+        // delay the response
+        await new Promise((resolve) => setTimeout(resolve, 500))
+
+        res.writeHead(200, {
+          'content-type': 'application/octet-stream',
+          'content-length': 5
+        })
+        // "hello"
+        res.end(Uint8Array.from([104, 101, 108, 108, 111]))
+      })
 
       await server.listen()
       const { port } = server.server.address()

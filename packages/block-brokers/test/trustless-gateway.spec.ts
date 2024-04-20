@@ -5,6 +5,7 @@ import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { uriToMultiaddr } from '@multiformats/uri-to-multiaddr'
 import { expect } from 'aegir/chai'
+import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
 import Sinon from 'sinon'
 import { type StubbedInstance, stubConstructor, stubInterface } from 'sinon-ts'
@@ -12,7 +13,6 @@ import { TrustlessGatewayBlockBroker } from '../src/trustless-gateway/broker.js'
 import { TrustlessGateway } from '../src/trustless-gateway/trustless-gateway.js'
 import { createBlock } from './fixtures/create-block.js'
 import type { Routing } from '@helia/interface'
-import type { CID } from 'multiformats/cid'
 
 describe('trustless-gateway-block-broker', () => {
   let blocks: Array<{ cid: CID, block: Uint8Array }>
@@ -189,5 +189,34 @@ describe('trustless-gateway-block-broker', () => {
     expect(sessionBlockstore).to.be.ok()
 
     await expect(sessionBlockstore?.retrieve?.(blocks[0].cid)).to.eventually.deep.equal(blocks[0].block)
+  })
+
+  it('does not trigger new network requests if the same cid request is in-flight', async function () {
+    // from .aegir.js polka server
+    const cid = CID.parse('bafkqabtimvwgy3yk')
+    if (process.env.TRUSTLESS_GATEWAY == null) {
+      return this.skip()
+    }
+    const trustlessGateway = new TrustlessGateway(process.env.TRUSTLESS_GATEWAY, defaultLogger())
+
+    // Call getRawBlock multiple times with the same CID
+    const promises = Array.from({ length: 10 }, async () => trustlessGateway.getRawBlock(cid))
+
+    // Wait for both promises to resolve
+    const [block1, ...blocks] = await Promise.all(promises)
+
+    // Assert that all calls to getRawBlock returned the same block
+    for (const block of blocks) {
+      expect(block).to.deep.equal(block1)
+    }
+
+    expect(trustlessGateway.getStats()).to.deep.equal({
+      // attempt is only incremented when a new request is made
+      attempts: 1,
+      errors: 0,
+      invalidBlocks: 0,
+      successes: 1,
+      pendingResponses: 0 // the queue is empty
+    })
   })
 })
