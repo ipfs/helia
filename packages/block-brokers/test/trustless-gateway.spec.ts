@@ -215,7 +215,8 @@ describe('trustless-gateway-block-broker', () => {
       attempts: 1,
       errors: 0,
       invalidBlocks: 0,
-      successes: 1
+      successes: 1,
+      pendingResponses: 0 // the queue is empty
     })
   })
 })

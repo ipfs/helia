@@ -7,6 +7,7 @@ export interface TrustlessGatewayStats {
   errors: number
   invalidBlocks: number
   successes: number
+  pendingResponses?: number
 }
 
 /**
@@ -170,7 +171,8 @@ export class TrustlessGateway {
       attempts: this.#attempts,
       errors: this.#errors,
       invalidBlocks: this.#invalidBlocks,
-      successes: this.#successes
+      successes: this.#successes,
+      pendingResponses: this.#pendingResponses.size
     }
   }
 }
