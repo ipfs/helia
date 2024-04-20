@@ -1,5 +1,6 @@
 /* eslint-disable complexity */
 import { CodeError } from '@libp2p/interface'
+import { encodingLength } from 'uint8-varint'
 import { BitswapMessage, Block, BlockPresence, WantlistEntry } from '../pb/message.js'
 
 /**
@@ -108,13 +109,23 @@ function addToMessage <T> (input: T[], output: T[], start: number, maxSize: numb
 }
 
 function calculateEncodedBlockSize (block: Block): number {
-  return Block.encode(block).byteLength + 10
+  // 3 is the "blocks" field number in message.proto
+  return calculateLength(3, Block.encode(block))
 }
 
 function calculateEncodedBlockPresenceSize (blockPresence: BlockPresence): number {
-  return BlockPresence.encode(blockPresence).byteLength + 10
+  // 4 is the "blockPresences" field number in message.proto
+  return calculateLength(4, BlockPresence.encode(blockPresence))
 }
 
 function calculateEncodedWantlistEntrySize (entry: WantlistEntry): number {
-  return WantlistEntry.encode(entry).byteLength + 10
+  // 1 is the "entries" field number in message.proto
+  return calculateLength(1, WantlistEntry.encode(entry))
+}
+
+function calculateLength (fieldNumber: number, data: Uint8Array): number {
+  const fieldNumberLength = encodingLength(fieldNumber)
+  const dataLengthLength = encodingLength(data.byteLength)
+
+  return fieldNumberLength + dataLengthLength + data.byteLength
 }

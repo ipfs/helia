@@ -112,9 +112,9 @@ describe('split-message', () => {
   })
 
   it('should send presences before wants', async () => {
-    // a want is 38 bytes
-    const wants = Math.round(DEFAULT_MAX_OUTGOING_MESSAGE_SIZE / 38)
-    const presences = Math.round(DEFAULT_MAX_OUTGOING_MESSAGE_SIZE / 38)
+    // CID + integer is 40 bytes
+    const wants = Math.round(DEFAULT_MAX_OUTGOING_MESSAGE_SIZE / 40)
+    const presences = Math.round(DEFAULT_MAX_OUTGOING_MESSAGE_SIZE / 40)
     const input: BitswapMessage = {
       wantlist: {
         full: false,
@@ -152,16 +152,16 @@ describe('split-message', () => {
     const message3 = BitswapMessage.decode(output[2])
     expect(message3).to.have.property('blocks').with.lengthOf(0)
     expect(message3).to.have.nested.property('wantlist.entries').with.lengthOf(0)
-    expect(message3).to.have.nested.property('blockPresences').with.lengthOf(43690)
+    expect(message3).to.have.nested.property('blockPresences').with.lengthOf(52428)
 
     const message4 = BitswapMessage.decode(output[3])
     expect(message4).to.have.property('blocks').with.lengthOf(0)
-    expect(message4).to.have.nested.property('wantlist.entries').with.lengthOf(32192)
-    expect(message4).to.have.nested.property('blockPresences').with.lengthOf(11498)
+    expect(message4).to.have.nested.property('wantlist.entries').with.lengthOf(52427)
+    expect(message4).to.have.nested.property('blockPresences').with.lengthOf(1)
 
     const message5 = BitswapMessage.decode(output[4])
     expect(message5).to.have.property('blocks').with.lengthOf(0)
-    expect(message5).to.have.nested.property('wantlist.entries').with.lengthOf(22996)
+    expect(message5).to.have.nested.property('wantlist.entries').with.lengthOf(2)
     expect(message5).to.have.nested.property('blockPresences').with.lengthOf(0)
   })
 
