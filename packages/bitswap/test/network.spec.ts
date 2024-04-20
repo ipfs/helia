@@ -20,7 +20,7 @@ import { Network } from '../src/network.js'
 import { BitswapMessage, BlockPresenceType } from '../src/pb/message.js'
 import { cidToPrefix } from '../src/utils/cid-prefix.js'
 import type { Routing } from '@helia/interface/routing'
-import type { Connection, Libp2p, PeerId, IdentifyResult } from '@libp2p/interface'
+import type { Connection, Libp2p, PeerId, IdentifyResult, Stream } from '@libp2p/interface'
 
 interface StubbedNetworkComponents {
   routing: StubbedInstance<Routing>
@@ -91,8 +91,7 @@ describe('network', () => {
       remotePeer
     })
     const [localDuplex, remoteDuplex] = duplexPair<any>()
-    const localStream = mockStream(localDuplex)
-    const remoteStream = mockStream(remoteDuplex)
+    const remoteStream = stubInterface<Stream>(remoteDuplex)
     const handler = components.libp2p.handle.getCall(0).args[1]
 
     const messageEventPromise = pEvent<'bitswap:message', CustomEvent<{ peer: PeerId, message: BitswapMessage }>>(network, 'bitswap:message')
@@ -102,7 +101,7 @@ describe('network', () => {
       connection
     })
 
-    const pbstr = pbStream(localStream).pb(BitswapMessage)
+    const pbstr = pbStream(localDuplex).pb(BitswapMessage)
     await pbstr.write({
       blockPresences: [],
       blocks: [],
@@ -125,24 +124,21 @@ describe('network', () => {
       remotePeer
     })
     const [localDuplex, remoteDuplex] = duplexPair<any>()
-    const localStream = mockStream(localDuplex)
-    const remoteStream = mockStream(remoteDuplex)
+    const remoteStream = stubInterface<Stream>(remoteDuplex)
     const handler = components.libp2p.handle.getCall(0).args[1]
-
-    const spy = Sinon.spy(remoteStream, 'abort')
 
     handler({
       stream: remoteStream,
       connection
     })
 
-    const lpstr = lpStream(localStream)
+    const lpstr = lpStream(localDuplex)
 
     // garbage data, cannot be unmarshalled as protobuf
     await lpstr.write(Uint8Array.from([0, 1, 2, 3]))
 
     await pRetry(() => {
-      expect(spy.called).to.be.true()
+      expect(remoteStream.abort.called).to.be.true()
     })
   })
 
@@ -360,8 +356,7 @@ describe('network', () => {
   it('should send a message', async () => {
     const peerId = await createEd25519PeerId()
     const [localDuplex, remoteDuplex] = duplexPair<any>()
-    const localStream = mockStream(localDuplex)
-    const remoteStream = mockStream(remoteDuplex)
+    const remoteStream = stubInterface<Stream>(remoteDuplex)
 
     components.libp2p.dialProtocol.withArgs(peerId, BITSWAP_120).resolves(remoteStream)
 
@@ -375,7 +370,7 @@ describe('network', () => {
       pendingBytes: 0
     })
 
-    const pbstr = pbStream(localStream).pb(BitswapMessage)
+    const pbstr = pbStream(localDuplex).pb(BitswapMessage)
     const message = await pbstr.read()
 
     expect(message).to.have.nested.property('wantlist.full').that.is.true()
@@ -393,8 +388,7 @@ describe('network', () => {
 
     const peerId = await createEd25519PeerId()
     const [localDuplex, remoteDuplex] = duplexPair<any>()
-    const localStream = mockStream(localDuplex)
-    const remoteStream = mockStream(remoteDuplex)
+    const remoteStream = stubInterface<Stream>(remoteDuplex)
 
     components.libp2p.dialProtocol.withArgs(peerId, BITSWAP_120).resolves(remoteStream)
 
@@ -479,7 +473,7 @@ describe('network', () => {
     // one dial for slowPeer, one for peerId
     expect(components.libp2p.dialProtocol).to.have.property('callCount', 2, 'made too many dials')
 
-    const pbstr = pbStream(localStream).pb(BitswapMessage)
+    const pbstr = pbStream(localDuplex).pb(BitswapMessage)
     const message = await pbstr.read()
 
     expect(message).to.have.deep.property('blocks', [
@@ -509,6 +503,5 @@ describe('network', () => {
         priority: 0
       }]
     })
-    expect(message).to.have.property('pendingBytes', messageA.pendingBytes + messageB.pendingBytes)
   })
 })

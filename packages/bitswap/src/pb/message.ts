@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
-import { type Codec, decodeMessage, encodeMessage, enumeration, message } from 'protons-runtime'
+import { type Codec, CodeError, decodeMessage, type DecodeOptions, encodeMessage, enumeration, message } from 'protons-runtime'
 import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -69,7 +69,7 @@ export namespace WantlistEntry {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {
           cid: uint8ArrayAlloc(0),
           priority: 0
@@ -119,8 +119,8 @@ export namespace WantlistEntry {
     return encodeMessage(obj, WantlistEntry.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): WantlistEntry => {
-    return decodeMessage(buf, WantlistEntry.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<WantlistEntry>): WantlistEntry => {
+    return decodeMessage(buf, WantlistEntry.codec(), opts)
   }
 }
 
@@ -154,7 +154,7 @@ export namespace Wantlist {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {
           entries: []
         }
@@ -166,7 +166,13 @@ export namespace Wantlist {
 
           switch (tag >>> 3) {
             case 1: {
-              obj.entries.push(WantlistEntry.codec().decode(reader, reader.uint32()))
+              if (opts.limits?.entries != null && obj.entries.length === opts.limits.entries) {
+                throw new CodeError('decode error - map field "entries" had too many elements', 'ERR_MAX_LENGTH')
+              }
+
+              obj.entries.push(WantlistEntry.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.entries$
+              }))
               break
             }
             case 2: {
@@ -191,8 +197,8 @@ export namespace Wantlist {
     return encodeMessage(obj, Wantlist.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): Wantlist => {
-    return decodeMessage(buf, Wantlist.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Wantlist>): Wantlist => {
+    return decodeMessage(buf, Wantlist.codec(), opts)
   }
 }
 
@@ -224,7 +230,7 @@ export namespace Block {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {
           prefix: uint8ArrayAlloc(0),
           data: uint8ArrayAlloc(0)
@@ -262,8 +268,8 @@ export namespace Block {
     return encodeMessage(obj, Block.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): Block => {
-    return decodeMessage(buf, Block.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Block>): Block => {
+    return decodeMessage(buf, Block.codec(), opts)
   }
 }
 
@@ -310,7 +316,7 @@ export namespace BlockPresence {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {
           cid: uint8ArrayAlloc(0),
           type: BlockPresenceType.HaveBlock
@@ -348,8 +354,8 @@ export namespace BlockPresence {
     return encodeMessage(obj, BlockPresence.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): BlockPresence => {
-    return decodeMessage(buf, BlockPresence.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<BlockPresence>): BlockPresence => {
+    return decodeMessage(buf, BlockPresence.codec(), opts)
   }
 }
 
@@ -397,7 +403,7 @@ export namespace BitswapMessage {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {
           blocks: [],
           blockPresences: [],
@@ -411,15 +417,29 @@ export namespace BitswapMessage {
 
           switch (tag >>> 3) {
             case 1: {
-              obj.wantlist = Wantlist.codec().decode(reader, reader.uint32())
+              obj.wantlist = Wantlist.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.wantlist
+              })
               break
             }
             case 3: {
-              obj.blocks.push(Block.codec().decode(reader, reader.uint32()))
+              if (opts.limits?.blocks != null && obj.blocks.length === opts.limits.blocks) {
+                throw new CodeError('decode error - map field "blocks" had too many elements', 'ERR_MAX_LENGTH')
+              }
+
+              obj.blocks.push(Block.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.blocks$
+              }))
               break
             }
             case 4: {
-              obj.blockPresences.push(BlockPresence.codec().decode(reader, reader.uint32()))
+              if (opts.limits?.blockPresences != null && obj.blockPresences.length === opts.limits.blockPresences) {
+                throw new CodeError('decode error - map field "blockPresences" had too many elements', 'ERR_MAX_LENGTH')
+              }
+
+              obj.blockPresences.push(BlockPresence.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.blockPresences$
+              }))
               break
             }
             case 5: {
@@ -444,7 +464,7 @@ export namespace BitswapMessage {
     return encodeMessage(obj, BitswapMessage.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): BitswapMessage => {
-    return decodeMessage(buf, BitswapMessage.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<BitswapMessage>): BitswapMessage => {
+    return decodeMessage(buf, BitswapMessage.codec(), opts)
   }
 }

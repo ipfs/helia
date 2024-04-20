@@ -118,14 +118,6 @@ export interface BitswapOptions {
   protocol?: string
 
   /**
-   * When a new peer connects, sending our WantList should complete within this
-   * many ms
-   *
-   * @default 5000
-   */
-  messageSendTimeout?: number
-
-  /**
    * When sending want list updates to peers, how many messages to send at once
    *
    * @default 50
@@ -167,6 +159,28 @@ export interface BitswapOptions {
    * @default 1024
    */
   maxSizeReplaceHasWithBlock?: number
+
+  /**
+   * The maximum size in bytes of a message that we will send. If a message is
+   * larger than this (due to lots of blocks or wantlist entries) it will be
+   * broken up into several smaller messages that are under this size.
+   *
+   * @see https://github.com/ipfs/boxo/blob/eeea414587350401b6b804f0574ed8436833331d/bitswap/client/internal/messagequeue/messagequeue.go#L33
+   *
+   * @default 2097152
+   */
+  maxOutgoingMessageSize?: number
+
+  /**
+   * The maximum size in bytes of an incoming message that we will process.
+   *
+   * Messages larger than this will cause the incoming stream to be reset.
+   *
+   * Defaults to `maxOutgoingMessageSize`
+   *
+   * @default 2097152
+   */
+  maxIncomingMessageSize?: number
 }
 
 export const createBitswap = (components: BitswapComponents, options: BitswapOptions = {}): Bitswap => {

@@ -37,12 +37,14 @@ export class PeerWantLists {
   public readonly ledgerMap: PeerMap<Ledger>
   private readonly maxSizeReplaceHasWithBlock?: number
   private readonly log: Logger
+  private readonly logger: ComponentLogger
 
   constructor (components: PeerWantListsComponents, init: PeerWantListsInit = {}) {
     this.blockstore = components.blockstore
     this.network = components.network
     this.maxSizeReplaceHasWithBlock = init.maxSizeReplaceHasWithBlock
     this.log = components.logger.forComponent('helia:bitswap:peer-want-lists')
+    this.logger = components.logger
 
     this.ledgerMap = trackedPeerMap({
       name: 'helia_bitswap_ledger_map',
@@ -100,7 +102,8 @@ export class PeerWantLists {
       ledger = new Ledger({
         peerId,
         blockstore: this.blockstore,
-        network: this.network
+        network: this.network,
+        logger: this.logger
       }, {
         maxSizeReplaceHasWithBlock: this.maxSizeReplaceHasWithBlock
       })
@@ -141,6 +144,7 @@ export class PeerWantLists {
       }
     }
 
+    this.log('send blocks to peer')
     await ledger.sendBlocksToPeer()
   }
 
