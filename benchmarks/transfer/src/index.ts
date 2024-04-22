@@ -43,7 +43,7 @@ const opts: Record<string, ImportOptions> = {
     cidVersion: 1,
     maxChildrenPerNode: 1024
   },
-  '256KiB block size': {
+/*  '256KiB block size': {
     chunkSize: 256 * 1024,
     rawLeaves: true,
     cidVersion: 1,
@@ -80,6 +80,7 @@ const opts: Record<string, ImportOptions> = {
     maxChildrenPerNode: 174
   }
   // Kubo will not sent bitswap messages larger than this
+*/
 }
 
 const tests: Record<string, File[]> = {}

@@ -6,6 +6,7 @@ import { yamux } from '@chainsafe/libp2p-yamux'
 import type { TransferBenchmark } from './index.js'
 import os from 'node:os'
 import path from 'node:path'
+import fs from 'node:fs/promises'
 import { LevelDatastore } from 'datastore-level'
 import { FsBlockstore } from 'blockstore-fs'
 import drain from 'it-drain'
@@ -47,6 +48,10 @@ export async function createHeliaBenchmark (): Promise<TransferBenchmark> {
   return {
     async teardown () {
       await helia.stop()
+      await fs.rm(repoPath, {
+        recursive: true,
+        force: true
+      })
     },
     async addr () {
       return helia.libp2p.getMultiaddrs()[0]
