@@ -1,5 +1,20 @@
 # Changelog
 
+## [6.1.1](https://github.com/ipfs/helia/compare/interop-v6.1.0...interop-v6.1.1) (2024-04-22)
+
+
+### Dependencies
+
+* bump ipfsd-ctl from 13.0.0 to 14.0.0 ([#505](https://github.com/ipfs/helia/issues/505)) ([97fb1a7](https://github.com/ipfs/helia/commit/97fb1a78a2e585a66861a2d0fdc4eabf8b28bd04))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^2.1.0 to ^2.1.1
+    * @helia/car bumped from ^3.1.3 to ^3.1.4
+    * @helia/http bumped from ^1.0.4 to ^1.0.5
+    * @helia/mfs bumped from ^3.0.4 to ^3.0.5
+    * @helia/unixfs bumped from ^3.0.4 to ^3.0.5
+    * helia bumped from ^4.1.1 to ^4.1.2
+
 ## [6.1.0](https://github.com/ipfs/helia/compare/interop-v6.0.2...interop-v6.1.0) (2024-04-15)
 
 

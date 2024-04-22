@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.1](https://github.com/ipfs/helia/compare/bitswap-v1.0.0...bitswap-v1.0.1) (2024-04-22)
+
+
+### Bug Fixes
+
+* define max bitswap message sizes ([#510](https://github.com/ipfs/helia/issues/510)) ([58d7ddf](https://github.com/ipfs/helia/commit/58d7ddf19cd965a8a5cc1d8148fa073a6b44d8ae))
+* split bitswap messages ([#507](https://github.com/ipfs/helia/issues/507)) ([59de059](https://github.com/ipfs/helia/commit/59de0599367c828998069ac37dc93e10ddb565a1))
+
 ## 1.0.0 (2024-04-15)
 
 
