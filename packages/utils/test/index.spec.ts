@@ -4,7 +4,7 @@ import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { createHelia } from './fixtures/create-helia.js'
 import type { Helia, Routing } from '@helia/interface'
-import type { Startable } from '@libp2p/interface'
+import type { Startable, Metrics } from '@libp2p/interface'
 
 describe('helia', () => {
   let helia: Helia
@@ -19,7 +19,8 @@ describe('helia', () => {
       start: false,
       routers: [
         routing
-      ]
+      ],
+      metrics: stubInterface<Metrics>()
     })
   })
 
@@ -48,5 +49,9 @@ describe('helia', () => {
 
   it('should have a datastore', async () => {
     expect(helia).to.have.property('datastore').that.is.ok()
+  })
+
+  it('supports metrics', async () => {
+    expect(helia).to.have.property('metrics').that.is.ok()
   })
 })

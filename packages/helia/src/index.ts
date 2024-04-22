@@ -122,7 +122,8 @@ export async function createHelia (init: Partial<HeliaInit> = {}): Promise<Helia
     ],
     routers: [
       libp2pRouting(libp2p)
-    ]
+    ],
+    metrics: libp2p.metrics
   })
 
   if (init.start !== false) {

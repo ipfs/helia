@@ -17,7 +17,7 @@
 import type { Blocks } from './blocks.js'
 import type { Pins } from './pins.js'
 import type { Routing } from './routing.js'
-import type { AbortOptions, ComponentLogger } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, Metrics } from '@libp2p/interface'
 import type { DNS } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
 import type { MultihashHasher } from 'multiformats'
@@ -73,6 +73,12 @@ export interface Helia {
    * will use a resolver appropriate to the current platform.
    */
   dns: DNS
+
+  /**
+   * A metrics object that can be used to collected arbitrary stats about node
+   * usage.
+   */
+  metrics?: Metrics
 
   /**
    * Starts the Helia node
