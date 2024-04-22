@@ -17,7 +17,7 @@ export interface TransferBenchmark {
   get: (cid: CID) => Promise<void>
 }
 
-interface ImportOptions {
+export interface ImportOptions {
   cidVersion?: 0 | 1
   rawLeaves?: boolean
   chunkSize?: number
@@ -31,24 +31,55 @@ interface File {
 }
 
 const opts: Record<string, ImportOptions> = {
-  defaults: {},
   'kubo defaults': {
     chunkSize: 256 * 1024,
     rawLeaves: false,
     cidVersion: 0,
     maxChildrenPerNode: 174
   },
+  'filecoin defaults': {
+    chunkSize: 1024 * 1024,
+    rawLeaves: true,
+    cidVersion: 1,
+    maxChildrenPerNode: 1024
+  },
   '256KiB block size': {
-    chunkSize: 256 * 1024
+    chunkSize: 256 * 1024,
+    rawLeaves: true,
+    cidVersion: 1,
+    maxChildrenPerNode: 174
+  },
+  '512KiB block size': {
+    chunkSize: 256 * 1024 * 2,
+    rawLeaves: true,
+    cidVersion: 1,
+    maxChildrenPerNode: 174
   },
   '1MB block size': {
-    chunkSize: 1024 * 1024
+    chunkSize: 1024 * 1024,
+    rawLeaves: true,
+    cidVersion: 1,
+    maxChildrenPerNode: 174
   },
   '2MB block size': {
-    chunkSize: (1024 * 1024) * 2
+    chunkSize: (1024 * 1024) * 2,
+    rawLeaves: true,
+    cidVersion: 1,
+    maxChildrenPerNode: 174
+  },
+  '3MB block size': {
+    chunkSize: (1024 * 1024) * 3,
+    rawLeaves: true,
+    cidVersion: 1,
+    maxChildrenPerNode: 174
+  },
+  'Max block size': {
+    chunkSize: 4193648,
+    rawLeaves: true,
+    cidVersion: 1,
+    maxChildrenPerNode: 174
   }
-  // there is no point going larger than 2MB as it is bigger than bitswap's
-  // maximum message size
+  // Kubo will not sent bitswap messages larger than this
 }
 
 const tests: Record<string, File[]> = {}
