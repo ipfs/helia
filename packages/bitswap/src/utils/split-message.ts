@@ -4,6 +4,12 @@ import { encodingLength } from 'uint8-varint'
 import { BitswapMessage, Block, BlockPresence, WantlistEntry } from '../pb/message.js'
 
 /**
+ * https://github.com/ipfs/kubo/issues/4473#issuecomment-350390693
+ */
+export const MAX_BLOCK_SIZE = 4193648
+const MAX_ENCODED_BLOCK_SIZE = MAX_BLOCK_SIZE + 16
+
+/**
  * Split the passed Bitswap message into multiple smaller messages that when
  * serialized will be under the maximum message size.
  *
@@ -22,13 +28,12 @@ export async function * splitMessage (message: BitswapMessage, maxSize: number):
   let wantListIndex = 0
   let blockPresencesIndex = 0
   let blocksIndex = 0
-  let messagesSent = 0
   let doneSending = false
 
   while (true) {
     const subMessage: Required<BitswapMessage> = {
       wantlist: {
-        full: false,
+        full: message.wantlist?.full ?? false,
         entries: []
       },
       blockPresences: [],
@@ -36,7 +41,7 @@ export async function * splitMessage (message: BitswapMessage, maxSize: number):
       pendingBytes: 0
     }
 
-    let size = 4
+    let size = BitswapMessage.encode(subMessage).byteLength
 
     let { added, hasMore, newSize } = addToMessage(blocks, subMessage.blocks, blocksIndex, maxSize, size, calculateEncodedBlockSize)
 
@@ -58,15 +63,12 @@ export async function * splitMessage (message: BitswapMessage, maxSize: number):
 
     doneSending = !haveMoreBlocks && !haveMorePresences && !haveMoreWantlistEntries
 
-    // if we're only sending one message, and that message has the full wantlist
-    // make sure we let the remote know it's the full list
-    if (doneSending && messagesSent === 0 && message.wantlist?.full === true) {
-      subMessage.wantlist.full = true
+    // if we're sending multiple messages this is no longer the full wantlist
+    if (!doneSending) {
+      subMessage.wantlist.full = false
     }
 
     yield BitswapMessage.encode(subMessage)
-
-    messagesSent++
 
     if (doneSending) {
       break
@@ -89,13 +91,13 @@ function addToMessage <T> (input: T[], output: T[], start: number, maxSize: numb
     const item = input[i]
     const itemSize = calculateSize(item)
 
-    if (itemSize > maxSize) {
-      throw new CodeError('Cannot send block as it is over the max message size', 'ERR_BLOCK_TOO_LARGE')
+    if (itemSize > MAX_ENCODED_BLOCK_SIZE) {
+      throw new CodeError('Cannot send block as after encoding it is over the max message size', 'ERR_BLOCK_TOO_LARGE')
     }
 
     const newSize = size + itemSize
 
-    if (newSize >= maxSize) {
+    if (newSize > maxSize) {
       hasMore = true
       break
     }
