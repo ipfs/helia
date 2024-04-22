@@ -91,12 +91,20 @@ export class TrustlessGateway {
     }
 
     const blockId = this.#uniqueBlockId(cid)
+
+    // workaround for https://github.com/nodejs/node/issues/52635
+    const innerController = new AbortController()
+    const abortInnerSignal = (): void => {
+      innerController.abort()
+    }
+    signal?.addEventListener('abort', abortInnerSignal)
+
     try {
       let pendingResponse: Promise<Uint8Array> | undefined = this.#pendingResponses.get(blockId)
       if (pendingResponse == null) {
         this.#attempts++
         pendingResponse = fetch(gwUrl.toString(), {
-          signal,
+          signal: innerController.signal,
           headers: {
             Accept: 'application/vnd.ipld.raw'
           },
@@ -122,6 +130,7 @@ export class TrustlessGateway {
       this.#errors++
       throw new Error(`unable to fetch raw block for CID ${cid}`)
     } finally {
+      signal?.removeEventListener('abort', abortInnerSignal)
       this.#pendingResponses.delete(blockId)
     }
   }
