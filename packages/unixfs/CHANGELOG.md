@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.5](https://github.com/ipfs/helia/compare/unixfs-v3.0.4...unixfs-v3.0.5) (2024-04-22)
+
+
+### Bug Fixes
+
+* relax unixfs blockstore input type ([#509](https://github.com/ipfs/helia/issues/509)) ([5d62dfb](https://github.com/ipfs/helia/commit/5d62dfb3dd520e6d557b273e446e63b76f57144e))
+
 ## [3.0.4](https://github.com/ipfs/helia/compare/unixfs-v3.0.3...unixfs-v3.0.4) (2024-04-15)
 
 
