@@ -1,9 +1,9 @@
 import * as dagPb from '@ipld/dag-pb'
 import { UnixFS } from 'ipfs-unixfs'
 import { CID_V0, CID_V1 } from './dir-sharded.js'
+import type { GetStore } from '../../unixfs.js'
 import type { PBNode } from '@ipld/dag-pb'
 import type { AbortOptions } from '@libp2p/interface'
-import type { Blockstore } from 'interface-blockstore'
 
 /**
  * Estimate node size only based on DAGLink name and CID byte lengths
@@ -11,7 +11,7 @@ import type { Blockstore } from 'interface-blockstore'
  *
  * If the node is a hamt sharded directory the calculation is based on if it was a regular directory.
  */
-export async function isOverShardThreshold (node: PBNode, blockstore: Blockstore, threshold: number, options: AbortOptions): Promise<boolean> {
+export async function isOverShardThreshold (node: PBNode, blockstore: GetStore, threshold: number, options: AbortOptions): Promise<boolean> {
   if (node.Data == null) {
     throw new Error('DagPB node had no data')
   }
@@ -43,7 +43,7 @@ function estimateNodeSize (node: PBNode): number {
   return size
 }
 
-async function estimateShardSize (node: PBNode, current: number, max: number, blockstore: Blockstore, options: AbortOptions): Promise<number> {
+async function estimateShardSize (node: PBNode, current: number, max: number, blockstore: GetStore, options: AbortOptions): Promise<number> {
   if (current > max) {
     return max
   }

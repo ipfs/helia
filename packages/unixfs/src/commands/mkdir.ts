@@ -11,7 +11,7 @@ import { cidToDirectory } from './utils/cid-to-directory.js'
 import { cidToPBLink } from './utils/cid-to-pblink.js'
 import { SHARD_SPLIT_THRESHOLD_BYTES } from './utils/constants.js'
 import type { MkdirOptions } from '../index.js'
-import type { Blockstore } from 'interface-blockstore'
+import type { GetStore, PutStore } from '../unixfs.js'
 
 const mergeOptions = mergeOpts.bind({ ignoreUndefined: true })
 const log = logger('helia:unixfs:mkdir')
@@ -22,7 +22,7 @@ const defaultOptions: MkdirOptions = {
   shardSplitThresholdBytes: SHARD_SPLIT_THRESHOLD_BYTES
 }
 
-export async function mkdir (parentCid: CID, dirname: string, blockstore: Blockstore, options: Partial<MkdirOptions> = {}): Promise<CID> {
+export async function mkdir (parentCid: CID, dirname: string, blockstore: GetStore & PutStore, options: Partial<MkdirOptions> = {}): Promise<CID> {
   const opts: MkdirOptions = mergeOptions(defaultOptions, options)
 
   if (dirname.includes('/')) {

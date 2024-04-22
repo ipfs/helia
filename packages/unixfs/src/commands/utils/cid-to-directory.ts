@@ -1,7 +1,7 @@
 import { exporter, type ExporterOptions } from 'ipfs-unixfs-exporter'
 import { NotADirectoryError } from '../../errors.js'
+import type { GetStore } from '../../unixfs.js'
 import type { PBNode } from '@ipld/dag-pb'
-import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 
 export interface Directory {
@@ -9,7 +9,7 @@ export interface Directory {
   node: PBNode
 }
 
-export async function cidToDirectory (cid: CID, blockstore: Blockstore, options: ExporterOptions = {}): Promise<Directory> {
+export async function cidToDirectory (cid: CID, blockstore: GetStore, options: ExporterOptions = {}): Promise<Directory> {
   const entry = await exporter(cid, blockstore, options)
 
   if (entry.type !== 'directory') {

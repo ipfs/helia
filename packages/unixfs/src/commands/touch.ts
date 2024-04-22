@@ -14,8 +14,8 @@ import { SHARD_SPLIT_THRESHOLD_BYTES } from './utils/constants.js'
 import { persist } from './utils/persist.js'
 import { resolve, updatePathCids } from './utils/resolve.js'
 import type { TouchOptions } from '../index.js'
+import type { GetStore, PutStore } from '../unixfs.js'
 import type { PBNode, PBLink } from '@ipld/dag-pb'
-import type { Blockstore } from 'interface-blockstore'
 
 const mergeOptions = mergeOpts.bind({ ignoreUndefined: true })
 const log = logger('helia:unixfs:touch')
@@ -25,7 +25,7 @@ const defaultOptions: TouchOptions = {
   shardSplitThresholdBytes: SHARD_SPLIT_THRESHOLD_BYTES
 }
 
-export async function touch (cid: CID, blockstore: Blockstore, options: Partial<TouchOptions> = {}): Promise<CID> {
+export async function touch (cid: CID, blockstore: GetStore & PutStore, options: Partial<TouchOptions> = {}): Promise<CID> {
   const opts: TouchOptions = mergeOptions(defaultOptions, options)
   const resolved = await resolve(cid, opts.path, blockstore, opts)
   const mtime = opts.mtime ?? {

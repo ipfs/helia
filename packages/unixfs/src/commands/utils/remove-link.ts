@@ -11,9 +11,9 @@ import {
 import { isOverShardThreshold } from './is-over-shard-threshold.js'
 import { persist } from './persist.js'
 import type { Directory } from './cid-to-directory.js'
+import type { GetStore, PutStore } from '../../unixfs.js'
 import type { PBNode } from '@ipld/dag-pb'
 import type { AbortOptions } from '@libp2p/interface'
-import type { Blockstore } from 'interface-blockstore'
 import type { CID, Version } from 'multiformats/cid'
 
 const log = logger('helia:unixfs:utils:remove-link')
@@ -28,7 +28,7 @@ export interface RemoveLinkResult {
   cid: CID
 }
 
-export async function removeLink (parent: Directory, name: string, blockstore: Blockstore, options: RmLinkOptions): Promise<RemoveLinkResult> {
+export async function removeLink (parent: Directory, name: string, blockstore: PutStore & GetStore, options: RmLinkOptions): Promise<RemoveLinkResult> {
   if (parent.node.Data == null) {
     throw new InvalidPBNodeError('Parent node had no data')
   }
@@ -54,7 +54,7 @@ export async function removeLink (parent: Directory, name: string, blockstore: B
   return removeFromDirectory(parent, name, blockstore, options)
 }
 
-const removeFromDirectory = async (parent: Directory, name: string, blockstore: Blockstore, options: AbortOptions): Promise<RemoveLinkResult> => {
+const removeFromDirectory = async (parent: Directory, name: string, blockstore: PutStore & GetStore, options: AbortOptions): Promise<RemoveLinkResult> => {
   // Remove existing link if it exists
   parent.node.Links = parent.node.Links.filter((link) => {
     return link.Name !== name
@@ -74,7 +74,7 @@ const removeFromDirectory = async (parent: Directory, name: string, blockstore: 
   }
 }
 
-const removeFromShardedDirectory = async (parent: Directory, name: string, blockstore: Blockstore, options: UpdateHamtDirectoryOptions): Promise<{ cid: CID, node: PBNode }> => {
+const removeFromShardedDirectory = async (parent: Directory, name: string, blockstore: PutStore & GetStore, options: UpdateHamtDirectoryOptions): Promise<{ cid: CID, node: PBNode }> => {
   const { path } = await recreateShardedDirectory(parent.cid, name, blockstore, options)
   const finalSegment = path[path.length - 1]
 
@@ -131,7 +131,7 @@ const removeFromShardedDirectory = async (parent: Directory, name: string, block
   return updateShardedDirectory(path, blockstore, options)
 }
 
-const convertToFlatDirectory = async (parent: Directory, blockstore: Blockstore, options: RmLinkOptions): Promise<RemoveLinkResult> => {
+const convertToFlatDirectory = async (parent: Directory, blockstore: PutStore & GetStore, options: RmLinkOptions): Promise<RemoveLinkResult> => {
   if (parent.node.Data == null) {
     throw new InvalidParametersError('Invalid parent passed to convertToFlatDirectory')
   }
