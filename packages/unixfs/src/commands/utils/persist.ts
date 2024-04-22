@@ -1,7 +1,7 @@
 import * as dagPb from '@ipld/dag-pb'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
-import type { Blocks } from '@helia/interface/blocks'
+import type { PutStore } from '../../unixfs.js'
 import type { Version as CIDVersion } from 'multiformats/cid'
 import type { BlockCodec } from 'multiformats/codecs/interface'
 
@@ -10,8 +10,6 @@ export interface PersistOptions {
   cidVersion: CIDVersion
   signal?: AbortSignal
 }
-
-type PutStore = Pick<Blocks, 'put'>
 
 export const persist = async (buffer: Uint8Array, blockstore: PutStore, options: PersistOptions): Promise<CID> => {
   if (options.codec == null) {

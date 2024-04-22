@@ -8,7 +8,7 @@ import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { DEFAULT_MAX_OUTGOING_MESSAGE_SIZE } from '../../src/constants.js'
 import { BitswapMessage, BlockPresenceType } from '../../src/pb/message.js'
 import { cidToPrefix } from '../../src/utils/cid-prefix.js'
-import { splitMessage } from '../../src/utils/split-message.js'
+import { MAX_BLOCK_SIZE, splitMessage } from '../../src/utils/split-message.js'
 import type { Block, BlockPresence, WantlistEntry } from '../../src/pb/message.js'
 
 async function createBlock (size = 1024): Promise<{ cid: CID, data: Uint8Array }> {
@@ -67,6 +67,25 @@ describe('split-message', () => {
     expect(BitswapMessage.decode(output[0])).to.have.nested.property('wantlist.full', true)
   })
 
+  it('should split a message with a max size block', async () => {
+    const input: BitswapMessage = {
+      wantlist: {
+        full: true,
+        entries: []
+      },
+      blockPresences: [],
+      blocks: [
+        await createBitswapBlock(MAX_BLOCK_SIZE)
+      ],
+      pendingBytes: 0
+    }
+
+    const output = await all(splitMessage(input, DEFAULT_MAX_OUTGOING_MESSAGE_SIZE))
+
+    expect(output).to.have.lengthOf(1)
+    expect(output).to.have.nested.property('[0].byteLength').that.is.lessThan(DEFAULT_MAX_OUTGOING_MESSAGE_SIZE)
+  })
+
   it('should split a big message', async () => {
     const input: BitswapMessage = {
       wantlist: {
@@ -97,13 +116,13 @@ describe('split-message', () => {
         new Array(presences).fill(0).map(async () => createBlockPresence())
       ),
       blocks: [
-        await createBitswapBlock(DEFAULT_MAX_OUTGOING_MESSAGE_SIZE - 50),
-        await createBitswapBlock(DEFAULT_MAX_OUTGOING_MESSAGE_SIZE - 50)
+        await createBitswapBlock(MAX_BLOCK_SIZE),
+        await createBitswapBlock(MAX_BLOCK_SIZE)
       ],
       pendingBytes: 0
     }
 
-    const output = await all(splitMessage(input, DEFAULT_MAX_OUTGOING_MESSAGE_SIZE))
+    const output = await all(splitMessage(input, MAX_BLOCK_SIZE + 50))
     expect(output).to.have.lengthOf(3)
 
     expect(BitswapMessage.decode(output[0]).blockPresences).to.be.empty()
@@ -126,13 +145,13 @@ describe('split-message', () => {
         new Array(presences).fill(0).map(async () => createBlockPresence())
       ),
       blocks: [
-        await createBitswapBlock(DEFAULT_MAX_OUTGOING_MESSAGE_SIZE - 50),
-        await createBitswapBlock(DEFAULT_MAX_OUTGOING_MESSAGE_SIZE - 50)
+        await createBitswapBlock(MAX_BLOCK_SIZE),
+        await createBitswapBlock(MAX_BLOCK_SIZE)
       ],
       pendingBytes: 0
     }
 
-    const output = await all(splitMessage(input, DEFAULT_MAX_OUTGOING_MESSAGE_SIZE))
+    const output = await all(splitMessage(input, MAX_BLOCK_SIZE + 50))
     expect(output).to.have.lengthOf(5)
 
     for (const buf of output) {
@@ -152,16 +171,16 @@ describe('split-message', () => {
     const message3 = BitswapMessage.decode(output[2])
     expect(message3).to.have.property('blocks').with.lengthOf(0)
     expect(message3).to.have.nested.property('wantlist.entries').with.lengthOf(0)
-    expect(message3).to.have.nested.property('blockPresences').with.lengthOf(52428)
+    expect(message3).to.have.nested.property('blockPresences').with.lengthOf(104842)
 
     const message4 = BitswapMessage.decode(output[3])
     expect(message4).to.have.property('blocks').with.lengthOf(0)
-    expect(message4).to.have.nested.property('wantlist.entries').with.lengthOf(52427)
-    expect(message4).to.have.nested.property('blockPresences').with.lengthOf(1)
+    expect(message4).to.have.nested.property('wantlist.entries').with.lengthOf(104826)
+    expect(message4).to.have.nested.property('blockPresences').with.lengthOf(16)
 
     const message5 = BitswapMessage.decode(output[4])
     expect(message5).to.have.property('blocks').with.lengthOf(0)
-    expect(message5).to.have.nested.property('wantlist.entries').with.lengthOf(2)
+    expect(message5).to.have.nested.property('wantlist.entries').with.lengthOf(32)
     expect(message5).to.have.nested.property('blockPresences').with.lengthOf(0)
   })
 
@@ -173,7 +192,7 @@ describe('split-message', () => {
       },
       blockPresences: [],
       blocks: [
-        await createBitswapBlock(DEFAULT_MAX_OUTGOING_MESSAGE_SIZE + 1)
+        await createBitswapBlock(MAX_BLOCK_SIZE + 1)
       ],
       pendingBytes: 0
     }
