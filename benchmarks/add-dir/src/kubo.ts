@@ -1,7 +1,7 @@
 import { createNode } from 'ipfsd-ctl'
 import last from 'it-last'
 import { path as kuboPath } from 'kubo'
-import { create as kuboRpcClient } from 'kubo-rpc-client'
+import { globSource, create as kuboRpcClient } from 'kubo-rpc-client'
 import type { CID } from 'multiformats/cid'
 import fs, { promises as fsPromises } from 'node:fs'
 import nodePath from 'node:path'
@@ -27,8 +27,7 @@ export async function createKuboBenchmark (): Promise<AddDirBenchmark> {
   })).cid
 
   const addDir = async function (dir: string): Promise<CID> {
-    // @ts-expect-error types are messed up
-    const res = await last(controller.api.addAll(goRpcClient.globSource(nodePath.dirname(dir), `${nodePath.basename(dir)}/**/*`)))
+    const res = await last(controller.api.addAll(globSource(nodePath.dirname(dir), `${nodePath.basename(dir)}/**/*`)))
 
     if (res == null) {
       throw new Error('Import failed')

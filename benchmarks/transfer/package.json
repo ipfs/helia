@@ -1,0 +1,40 @@
+{
+  "name": "benchmarks-transfer",
+  "version": "1.0.0",
+  "main": "index.js",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "clean": "aegir clean",
+    "build": "aegir build --bundle false",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "start": "npm run build && node dist/src/index.js"
+  },
+  "devDependencies": {
+    "@chainsafe/libp2p-noise": "^15.0.0",
+    "@chainsafe/libp2p-yamux": "^6.0.2",
+    "@helia/unixfs": "^3.0.3",
+    "@ipld/dag-pb": "^4.0.2",
+    "@libp2p/websockets": "^8.0.19",
+    "aegir": "^42.2.5",
+    "blockstore-fs": "^1.0.1",
+    "datastore-level": "^10.0.1",
+    "execa": "^8.0.1",
+    "helia": "^4.1.0",
+    "ipfs-unixfs-importer": "^15.1.1",
+    "ipfsd-ctl": "^14.0.0",
+    "it-all": "^3.0.1",
+    "it-buffer-stream": "^3.0.2",
+    "it-drain": "^3.0.1",
+    "it-map": "^3.0.2",
+    "kubo": "^0.28.0",
+    "kubo-rpc-client": "^4.0.0",
+    "libp2p": "^1.4.0",
+    "multiformats": "^13.1.0",
+    "tinybench": "^2.4.0"
+  },
+  "dependencies": {
+    "pretty-bytes": "^6.1.0"
+  }
+}
