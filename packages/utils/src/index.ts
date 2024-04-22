@@ -32,7 +32,7 @@ import { NetworkedStorage } from './utils/networked-storage.js'
 import type { DAGWalker, GCOptions, Helia as HeliaInterface, Routing } from '@helia/interface'
 import type { BlockBroker } from '@helia/interface/blocks'
 import type { Pins } from '@helia/interface/pins'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
+import type { ComponentLogger, Logger, Metrics } from '@libp2p/interface'
 import type { DNS } from '@multiformats/dns'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
@@ -131,6 +131,12 @@ export interface HeliaInit {
    * An optional DNS implementation used to perform queries for DNS records.
    */
   dns?: DNS
+
+  /**
+   * A metrics object that can be used to collected arbitrary stats about node
+   * usage.
+   */
+  metrics?: Metrics
 }
 
 interface Components {
@@ -142,6 +148,7 @@ interface Components {
   blockBrokers: BlockBroker[]
   routing: Routing
   dns: DNS
+  metrics?: Metrics
 }
 
 export class Helia implements HeliaInterface {
@@ -153,6 +160,7 @@ export class Helia implements HeliaInterface {
   public dagWalkers: Record<number, DAGWalker>
   public hashers: Record<number, MultihashHasher>
   public dns: DNS
+  public metrics?: Metrics
   private readonly log: Logger
 
   constructor (init: HeliaInit) {
@@ -161,6 +169,7 @@ export class Helia implements HeliaInterface {
     this.hashers = defaultHashers(init.hashers)
     this.dagWalkers = defaultDagWalkers(init.dagWalkers)
     this.dns = init.dns ?? dns()
+    this.metrics = init.metrics
 
     // @ts-expect-error routing is not set
     const components: Components = {
@@ -171,6 +180,7 @@ export class Helia implements HeliaInterface {
       logger: this.logger,
       blockBrokers: [],
       dns: this.dns,
+      metrics: this.metrics,
       ...(init.components ?? {})
     }
 

@@ -17,7 +17,7 @@ import vd from './utils/varint-decoder.js'
 import type { BitswapNotifyProgressEvents, MultihashHasherLoader } from './index.js'
 import type { BitswapNetworkWantProgressEvents, Network } from './network.js'
 import type { BitswapMessage } from './pb/message.js'
-import type { ComponentLogger, PeerId, Startable, AbortOptions, Libp2p, TypedEventTarget } from '@libp2p/interface'
+import type { ComponentLogger, PeerId, Startable, AbortOptions, Libp2p, TypedEventTarget, Metrics } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { DeferredPromise } from 'p-defer'
@@ -27,6 +27,7 @@ export interface WantListComponents {
   network: Network
   logger: ComponentLogger
   libp2p: Libp2p
+  metrics?: Metrics
 }
 
 export interface WantListInit {
@@ -114,11 +115,11 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
     setMaxListeners(Infinity, this)
     this.peers = trackedPeerMap({
       name: 'helia_bitswap_peers',
-      metrics: components.libp2p.metrics
+      metrics: components.metrics
     })
     this.wants = trackedMap({
       name: 'helia_bitswap_wantlist',
-      metrics: components.libp2p.metrics
+      metrics: components.metrics
     })
     this.network = components.network
     this.sendMessagesDelay = init.sendMessagesDelay ?? DEFAULT_MESSAGE_SEND_DELAY

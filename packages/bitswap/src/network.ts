@@ -15,7 +15,7 @@ import type { WantOptions } from './bitswap.js'
 import type { MultihashHasherLoader } from './index.js'
 import type { Block } from './pb/message.js'
 import type { Provider, Routing } from '@helia/interface/routing'
-import type { Libp2p, AbortOptions, Connection, PeerId, IncomingStreamData, Topology, ComponentLogger, IdentifyResult, Counter } from '@libp2p/interface'
+import type { Libp2p, AbortOptions, Connection, PeerId, IncomingStreamData, Topology, ComponentLogger, IdentifyResult, Counter, Metrics } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
@@ -49,6 +49,7 @@ export interface NetworkComponents {
   routing: Routing
   logger: ComponentLogger
   libp2p: Libp2p
+  metrics?: Metrics
 }
 
 export interface BitswapMessageEventDetail {
@@ -101,13 +102,13 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
     this.maxIncomingMessageSize = init.maxIncomingMessageSize ?? DEFAULT_MAX_OUTGOING_MESSAGE_SIZE
     this.maxOutgoingMessageSize = init.maxOutgoingMessageSize ?? init.maxIncomingMessageSize ?? DEFAULT_MAX_INCOMING_MESSAGE_SIZE
     this.metrics = {
-      blocksSent: components.libp2p.metrics?.registerCounter('helia_bitswap_sent_blocks_total'),
-      dataSent: components.libp2p.metrics?.registerCounter('helia_bitswap_sent_data_bytes_total')
+      blocksSent: components.metrics?.registerCounter('helia_bitswap_sent_blocks_total'),
+      dataSent: components.metrics?.registerCounter('helia_bitswap_sent_data_bytes_total')
     }
 
     this.sendQueue = new PeerQueue({
       concurrency: init.messageSendConcurrency ?? DEFAULT_MESSAGE_SEND_CONCURRENCY,
-      metrics: components.libp2p.metrics,
+      metrics: components.metrics,
       metricName: 'helia_bitswap_message_send_queue'
     })
     this.sendQueue.addEventListener('error', (evt) => {

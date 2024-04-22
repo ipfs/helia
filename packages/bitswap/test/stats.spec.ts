@@ -6,6 +6,7 @@ import type { Libp2p, MetricGroup, Metrics } from '@libp2p/interface'
 
 interface StubbedStatsComponents {
   libp2p: StubbedInstance<Libp2p>
+  metrics: StubbedInstance<Metrics>
 }
 
 describe('stats', () => {
@@ -15,15 +16,14 @@ describe('stats', () => {
 
   beforeEach(() => {
     components = {
-      libp2p: stubInterface<Libp2p>({
-        metrics: stubInterface<Metrics>()
-      })
+      libp2p: stubInterface<Libp2p>(),
+      metrics: stubInterface<Metrics>()
     }
 
     metricGroup = stubInterface<MetricGroup>()
 
     // @ts-expect-error tsc does not select correct method overload sig
-    components.libp2p.metrics?.registerMetricGroup.returns(metricGroup)
+    components.metrics?.registerMetricGroup.returns(metricGroup)
 
     stats = new Stats(components)
   })
