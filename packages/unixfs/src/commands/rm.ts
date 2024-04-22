@@ -5,7 +5,7 @@ import { cidToDirectory } from './utils/cid-to-directory.js'
 import { SHARD_SPLIT_THRESHOLD_BYTES } from './utils/constants.js'
 import { removeLink } from './utils/remove-link.js'
 import type { RmOptions } from '../index.js'
-import type { Blockstore } from 'interface-blockstore'
+import type { GetStore, PutStore } from '../unixfs.js'
 import type { CID } from 'multiformats/cid'
 
 const mergeOptions = mergeOpts.bind({ ignoreUndefined: true })
@@ -15,7 +15,7 @@ const defaultOptions: RmOptions = {
   shardSplitThresholdBytes: SHARD_SPLIT_THRESHOLD_BYTES
 }
 
-export async function rm (target: CID, name: string, blockstore: Blockstore, options: Partial<RmOptions> = {}): Promise<CID> {
+export async function rm (target: CID, name: string, blockstore: GetStore & PutStore, options: Partial<RmOptions> = {}): Promise<CID> {
   const opts: RmOptions = mergeOptions(defaultOptions, options)
 
   if (name.includes('/')) {

@@ -7,8 +7,8 @@ import * as raw from 'multiformats/codecs/raw'
 import { InvalidPBNodeError, NotUnixFSError, UnknownError } from '../errors.js'
 import { resolve } from './utils/resolve.js'
 import type { StatOptions, UnixFSStats } from '../index.js'
+import type { GetStore, HasStore } from '../unixfs.js'
 import type { AbortOptions } from '@libp2p/interface'
-import type { Blockstore } from 'interface-blockstore'
 import type { Mtime } from 'ipfs-unixfs'
 import type { CID } from 'multiformats/cid'
 
@@ -19,7 +19,7 @@ const defaultOptions: StatOptions = {
 
 }
 
-export async function stat (cid: CID, blockstore: Blockstore, options: Partial<StatOptions> = {}): Promise<UnixFSStats> {
+export async function stat (cid: CID, blockstore: GetStore & HasStore, options: Partial<StatOptions> = {}): Promise<UnixFSStats> {
   const opts: StatOptions = mergeOptions(defaultOptions, options)
   const resolved = await resolve(cid, options.path, blockstore, opts)
 
@@ -93,7 +93,7 @@ interface InspectDagResults {
   blocks: number
 }
 
-async function inspectDag (cid: CID, blockstore: Blockstore, options: AbortOptions): Promise<InspectDagResults> {
+async function inspectDag (cid: CID, blockstore: GetStore & HasStore, options: AbortOptions): Promise<InspectDagResults> {
   const results = {
     localFileSize: 0,
     localDagSize: 0,

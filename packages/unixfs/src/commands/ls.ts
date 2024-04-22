@@ -3,7 +3,7 @@ import mergeOpts from 'merge-options'
 import { NoContentError, NotADirectoryError } from '../errors.js'
 import { resolve } from './utils/resolve.js'
 import type { LsOptions } from '../index.js'
-import type { Blockstore } from 'interface-blockstore'
+import type { GetStore } from '../unixfs.js'
 import type { CID } from 'multiformats/cid'
 
 const mergeOptions = mergeOpts.bind({ ignoreUndefined: true })
@@ -12,7 +12,7 @@ const defaultOptions: LsOptions = {
 
 }
 
-export async function * ls (cid: CID, blockstore: Blockstore, options: Partial<LsOptions> = {}): AsyncIterable<UnixFSEntry> {
+export async function * ls (cid: CID, blockstore: GetStore, options: Partial<LsOptions> = {}): AsyncIterable<UnixFSEntry> {
   const opts: LsOptions = mergeOptions(defaultOptions, options)
   const resolved = await resolve(cid, opts.path, blockstore, opts)
   const result = await exporter(resolved.cid, blockstore)

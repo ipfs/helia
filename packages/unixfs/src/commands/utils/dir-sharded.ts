@@ -7,7 +7,7 @@ import {
   hamtHashFn
 } from './hamt-constants.js'
 import { persist, type PersistOptions } from './persist.js'
-import type { Blockstore } from 'interface-blockstore'
+import type { PutStore } from '../../unixfs.js'
 import type { Mtime } from 'ipfs-unixfs'
 
 interface InProgressImportResult extends ImportResult {
@@ -69,7 +69,7 @@ abstract class Dir {
   abstract put (name: string, value: InProgressImportResult | Dir): Promise<void>
   abstract get (name: string): Promise<InProgressImportResult | Dir | undefined>
   abstract eachChildSeries (): AsyncIterable<{ key: string, child: InProgressImportResult | Dir }>
-  abstract flush (blockstore: Blockstore): AsyncGenerator<ImportResult>
+  abstract flush (blockstore: PutStore): AsyncGenerator<ImportResult>
   abstract estimateNodeSize (): number
   abstract childCount (): number
 }
@@ -129,7 +129,7 @@ export class DirSharded extends Dir {
     return this.nodeSize
   }
 
-  async * flush (blockstore: Blockstore): AsyncGenerator<ImportResult> {
+  async * flush (blockstore: PutStore): AsyncGenerator<ImportResult> {
     for await (const entry of flush(this._bucket, blockstore, this, this.options)) {
       yield {
         ...entry,
@@ -139,7 +139,7 @@ export class DirSharded extends Dir {
   }
 }
 
-async function * flush (bucket: Bucket<Dir | InProgressImportResult>, blockstore: Blockstore, shardRoot: DirSharded | null, options: PersistOptions): AsyncIterable<ImportResult> {
+async function * flush (bucket: Bucket<Dir | InProgressImportResult>, blockstore: PutStore, shardRoot: DirSharded | null, options: PersistOptions): AsyncIterable<ImportResult> {
   const children = bucket._children
   const links: PBLink[] = []
   let childrenSize = 0n

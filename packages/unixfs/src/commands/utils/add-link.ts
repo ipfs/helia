@@ -17,9 +17,9 @@ import {
 } from './hamt-utils.js'
 import { isOverShardThreshold } from './is-over-shard-threshold.js'
 import type { Directory } from './cid-to-directory.js'
+import type { GetStore, PutStore } from '../../unixfs.js'
 import type { PBNode, PBLink } from '@ipld/dag-pb/interface'
 import type { AbortOptions } from '@libp2p/interface'
-import type { Blockstore } from 'interface-blockstore'
 import type { ImportResult } from 'ipfs-unixfs-importer'
 
 const log = logger('helia:unixfs:components:utils:add-link')
@@ -35,7 +35,7 @@ export interface AddLinkOptions extends AbortOptions {
   cidVersion: Version
 }
 
-export async function addLink (parent: Directory, child: Required<PBLink>, blockstore: Blockstore, options: AddLinkOptions): Promise<AddLinkResult> {
+export async function addLink (parent: Directory, child: Required<PBLink>, blockstore: GetStore & PutStore, options: AddLinkOptions): Promise<AddLinkResult> {
   if (parent.node.Data == null) {
     throw new InvalidParametersError('Invalid parent passed to addLink')
   }
@@ -63,7 +63,7 @@ export async function addLink (parent: Directory, child: Required<PBLink>, block
   return result
 }
 
-const convertToShardedDirectory = async (parent: Directory, blockstore: Blockstore): Promise<ImportResult> => {
+const convertToShardedDirectory = async (parent: Directory, blockstore: PutStore): Promise<ImportResult> => {
   if (parent.node.Data == null) {
     throw new InvalidParametersError('Invalid parent passed to convertToShardedDirectory')
   }
@@ -85,7 +85,7 @@ const convertToShardedDirectory = async (parent: Directory, blockstore: Blocksto
   return result
 }
 
-const addToDirectory = async (parent: Directory, child: PBLink, blockstore: Blockstore, options: AddLinkOptions): Promise<AddLinkResult> => {
+const addToDirectory = async (parent: Directory, child: PBLink, blockstore: PutStore, options: AddLinkOptions): Promise<AddLinkResult> => {
   // Remove existing link if it exists
   const parentLinks = parent.node.Links.filter((link) => {
     const matches = link.Name === child.Name
@@ -137,7 +137,7 @@ const addToDirectory = async (parent: Directory, child: PBLink, blockstore: Bloc
   }
 }
 
-const addToShardedDirectory = async (parent: Directory, child: Required<PBLink>, blockstore: Blockstore, options: AddLinkOptions): Promise<AddLinkResult> => {
+const addToShardedDirectory = async (parent: Directory, child: Required<PBLink>, blockstore: GetStore & PutStore, options: AddLinkOptions): Promise<AddLinkResult> => {
   const { path, hash } = await recreateShardedDirectory(parent.cid, child.Name, blockstore, options)
   const finalSegment = path[path.length - 1]
 
