@@ -1,5 +1,14 @@
 # Changelog
 
+## [3.0.5](https://github.com/ipfs/helia/compare/mfs-v3.0.4...mfs-v3.0.5) (2024-04-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/unixfs bumped from ^3.0.4 to ^3.0.5
+
 ## [3.0.4](https://github.com/ipfs/helia/compare/mfs-v3.0.3...mfs-v3.0.4) (2024-04-15)
 
 

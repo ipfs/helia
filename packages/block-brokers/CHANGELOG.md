@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.1.1](https://github.com/ipfs/helia/compare/block-brokers-v2.1.0...block-brokers-v2.1.1) (2024-04-22)
+
+
+### Bug Fixes
+
+* prevent duplicate trustless-gateway reqs ([#503](https://github.com/ipfs/helia/issues/503)) ([338885f](https://github.com/ipfs/helia/commit/338885f20277a25277ba9192d8e15cca95e640e4))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^1.0.0 to ^1.0.1
+
 ## [2.1.0](https://github.com/ipfs/helia/compare/block-brokers-v2.0.3...block-brokers-v2.1.0) (2024-04-15)
 
 
