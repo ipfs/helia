@@ -4,7 +4,7 @@ import { identity } from 'multiformats/hashes/identity'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { Provider, Routing, RoutingOptions } from '@helia/interface'
-import type { PeerId, PeerInfo } from '@libp2p/interface'
+import { peerIdSymbol, type PeerId, type PeerInfo } from '@libp2p/interface'
 import type { MultihashDigest, Version } from 'multiformats'
 
 export interface HTTPGatwayRouterInit {
@@ -30,6 +30,8 @@ class URLPeerId {
   [inspect] (): string {
     return `PeerId(${this.url})`
   }
+
+  readonly [peerIdSymbol] = true
 
   toString (): string {
     return this.toCID().toString()
