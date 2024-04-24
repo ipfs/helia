@@ -1,6 +1,6 @@
-import type { PeerIdType } from '@libp2p/interface'
+import type { KeyType } from '@libp2p/interface'
 
-export const keyTypes: PeerIdType[] = [
+export const keyTypes: KeyType[] = [
   'Ed25519',
   'secp256k1',
   'RSA'
