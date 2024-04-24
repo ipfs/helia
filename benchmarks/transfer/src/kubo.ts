@@ -49,7 +49,6 @@ export async function createKuboBenchmark (): Promise<TransferBenchmark> {
           },
           async put (cid, block, options = {}) {
             const opts: BlockPutOptions = {
-              // @ts-expect-error https://github.com/ipfs/js-kubo-rpc-client/pull/227
               allowBigBlock: true
             }
 

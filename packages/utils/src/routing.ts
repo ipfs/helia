@@ -64,14 +64,6 @@ export class Routing implements RoutingInterface, Startable {
         continue
       }
 
-      peer.multiaddrs = peer.multiaddrs.map(ma => {
-        if (ma.getPeerId() != null) {
-          return ma
-        }
-
-        return ma.encapsulate(`/p2p/${peer.id}`)
-      })
-
       // have to refresh peer info for this peer to get updated multiaddrs
       if (peer.multiaddrs.length === 0) {
         // already looking this peer up
@@ -89,7 +81,7 @@ export class Routing implements RoutingInterface, Startable {
 
             return provider
           } catch (err) {
-            this.log.error('could not load multiaddrs for peer', peer.id, err)
+            this.log.error('could not load multiaddrs for peer %p', peer.id, err)
             return null
           }
         }, {
@@ -97,7 +89,7 @@ export class Routing implements RoutingInterface, Startable {
           signal: options.signal
         })
           .catch(err => {
-            this.log.error('could not load multiaddrs for peer', peer.id, err)
+            this.log.error('could not load multiaddrs for peer %p', peer.id, err)
           })
       }
 
