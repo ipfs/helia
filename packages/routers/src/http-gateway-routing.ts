@@ -13,9 +13,6 @@ export const DEFAULT_TRUSTLESS_GATEWAYS = [
   'https://trustless-gateway.link',
 
   // 2023-10-03: IPNS, Origin, and Block/CAR support from https://ipfs-public-gateway-checker.on.fleek.co/
-  'https://cloudflare-ipfs.com',
-
-  // 2023-10-03: IPNS, Origin, and Block/CAR support from https://ipfs-public-gateway-checker.on.fleek.co/
   'https://4everland.io'
 ]
 
