@@ -8,6 +8,17 @@ import type { Provider, Routing, RoutingOptions } from '@helia/interface'
 import type { PeerId, PeerInfo } from '@libp2p/interface'
 import type { MultihashDigest, Version } from 'multiformats'
 
+export const DEFAULT_TRUSTLESS_GATEWAYS = [
+  // 2023-10-03: IPNS, Origin, and Block/CAR support from https://ipfs-public-gateway-checker.on.fleek.co/
+  'https://trustless-gateway.link',
+
+  // 2023-10-03: IPNS, Origin, and Block/CAR support from https://ipfs-public-gateway-checker.on.fleek.co/
+  'https://cloudflare-ipfs.com',
+
+  // 2023-10-03: IPNS, Origin, and Block/CAR support from https://ipfs-public-gateway-checker.on.fleek.co/
+  'https://4everland.io'
+]
+
 export interface HTTPGatwayRouterInit {
   gateways?: Array<URL | string>
 }
@@ -74,11 +85,11 @@ class HTTPGatwayRouter implements Partial<Routing> {
   private readonly gateways: PeerInfo[]
 
   constructor (init: HTTPGatwayRouterInit = {}) {
-    this.gateways = (init.gateways ?? []).map(url => toPeerInfo(url))
+    this.gateways = (init.gateways ?? DEFAULT_TRUSTLESS_GATEWAYS).map(url => toPeerInfo(url))
   }
 
   async * findProviders (cid: CID<unknown, number, number, Version>, options?: RoutingOptions | undefined): AsyncIterable<Provider> {
-    yield * this.gateways.map(info => ({
+    yield * this.gateways.toSorted(() => Math.random() > 0.5 ? 1 : -1).map(info => ({
       ...info,
       protocols: ['transport-ipfs-gateway-http']
     }))

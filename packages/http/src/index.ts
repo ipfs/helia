@@ -44,7 +44,7 @@
  */
 
 import { trustlessGateway } from '@helia/block-brokers'
-import { delegatedHTTPRouting } from '@helia/routers'
+import { delegatedHTTPRouting, httpGatewayRouting } from '@helia/routers'
 import { Helia as HeliaClass, type HeliaInit } from '@helia/utils'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
@@ -62,7 +62,6 @@ export interface HeliaHTTPInit extends HeliaInit {
 }
 
 /**
-/**
  * Create and return a Helia node
  */
 export async function createHeliaHTTP (init: Partial<HeliaHTTPInit> = {}): Promise<Helia> {
@@ -77,7 +76,8 @@ export async function createHeliaHTTP (init: Partial<HeliaHTTPInit> = {}): Promi
       trustlessGateway()
     ],
     routers: init.routers ?? [
-      delegatedHTTPRouting('https://delegated-ipfs.dev')
+      delegatedHTTPRouting('https://delegated-ipfs.dev'),
+      httpGatewayRouting()
     ]
   })
 

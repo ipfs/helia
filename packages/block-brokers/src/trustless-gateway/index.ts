@@ -3,22 +3,28 @@ import type { Routing, BlockBroker } from '@helia/interface'
 import type { ComponentLogger } from '@libp2p/interface'
 import type { ProgressEvent } from 'progress-events'
 
-export const DEFAULT_TRUSTLESS_GATEWAYS = [
-  // 2023-10-03: IPNS, Origin, and Block/CAR support from https://ipfs-public-gateway-checker.on.fleek.co/
-  'https://trustless-gateway.link',
-
-  // 2023-10-03: IPNS, Origin, and Block/CAR support from https://ipfs-public-gateway-checker.on.fleek.co/
-  'https://cloudflare-ipfs.com',
-
-  // 2023-10-03: IPNS, Origin, and Block/CAR support from https://ipfs-public-gateway-checker.on.fleek.co/
-  'https://4everland.io'
-]
+export const DEFAULT_ALLOW_INSECURE = false
+export const DEFAULT_ALLOW_LOCAL = false
 
 export type TrustlessGatewayGetBlockProgressEvents =
   ProgressEvent<'trustless-gateway:get-block:fetch', URL>
 
 export interface TrustlessGatewayBlockBrokerInit {
-  gateways?: Array<string | URL>
+  /**
+   * By default we will only connect to peers with HTTPS addresses, pass true
+   * to also connect to HTTP addresses.
+   *
+   * @default false
+   */
+  allowInsecure?: boolean
+
+  /**
+   * By default we will only connect to peers with public or DNS addresses, pass
+   * true to also connect to private addresses.
+   *
+   * @default false
+   */
+  allowLocal?: boolean
 }
 
 export interface TrustlessGatewayComponents {
