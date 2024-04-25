@@ -170,7 +170,7 @@
     "ipfs-unixfs-exporter": "^13.5.0",
     "ipfs-unixfs-importer": "^15.2.4",
     "it-all": "^3.0.4",
-    "it-glob": "^2.0.6",
+    "it-glob": "^3.0.0",
     "it-last": "^3.0.4",
     "it-pipe": "^3.0.1",
     "merge-options": "^3.0.4",
