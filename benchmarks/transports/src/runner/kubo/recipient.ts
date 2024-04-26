@@ -15,7 +15,9 @@ await Promise.all(
 
 const start = Date.now()
 
-// pull data from remote
+// pull data from remote. this is going over HTTP so use pin in order to ensure
+// the data is loaded by Kubo but don't skew the benchmark by then also
+// streaming it to the client
 await kubo.api.pin.add(cid, {
   recursive: true
 })
