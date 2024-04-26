@@ -1,18 +1,13 @@
 import { AbstractSession } from '@helia/utils'
-import { isPrivateIp } from '@libp2p/utils/private-ip'
-import { DNS, HTTP, HTTPS } from '@multiformats/multiaddr-matcher'
-import { multiaddrToUri } from '@multiformats/multiaddr-to-uri'
-import { TrustlessGateway } from './trustless-gateway.js'
+import { findHttpGatewayProviders } from './utils.js'
+import { DEFAULT_ALLOW_INSECURE, DEFAULT_ALLOW_LOCAL } from './index.js'
 import type { CreateTrustlessGatewaySessionOptions } from './broker.js'
 import type { TrustlessGatewayGetBlockProgressEvents } from './index.js'
+import type { TrustlessGateway } from './trustless-gateway.js'
 import type { BlockRetrievalOptions, Routing } from '@helia/interface'
 import type { ComponentLogger } from '@libp2p/interface'
-import type { Multiaddr } from '@multiformats/multiaddr'
 import type { AbortOptions } from 'interface-store'
 import type { CID } from 'multiformats/cid'
-
-const DEFAULT_ALLOW_INSECURE = false
-const DEFAULT_ALLOW_LOCAL = false
 
 export interface TrustlessGatewaySessionComponents {
   logger: ComponentLogger
@@ -47,23 +42,7 @@ class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, Trustles
   }
 
   async * findNewProviders (cid: CID, options: AbortOptions = {}): AsyncGenerator<TrustlessGateway> {
-    for await (const provider of this.routing.findProviders(cid, options)) {
-      // require http(s) addresses
-      const httpAddresses = filterMultiaddrs(provider.multiaddrs, this.allowInsecure, this.allowLocal)
-
-      if (httpAddresses.length === 0) {
-        continue
-      }
-
-      // take first address?
-      // /ip4/x.x.x.x/tcp/31337/http
-      // /ip4/x.x.x.x/tcp/31337/https
-      // etc
-      const uri = multiaddrToUri(httpAddresses[0])
-
-      this.log('found http-gateway provider %p %s for cid %c', provider.id, uri, cid)
-      yield new TrustlessGateway(uri, this.logger)
-    }
+    yield * findHttpGatewayProviders(cid, this.routing, this.logger, this.allowInsecure, this.allowLocal, options)
   }
 
   toEvictionKey (provider: TrustlessGateway): Uint8Array | string {
@@ -73,24 +52,6 @@ class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, Trustles
   equals (providerA: TrustlessGateway, providerB: TrustlessGateway): boolean {
     return providerA.url.toString() === providerB.url.toString()
   }
-}
-
-function filterMultiaddrs (multiaddrs: Multiaddr[], allowInsecure: boolean, allowLocal: boolean): Multiaddr[] {
-  return multiaddrs.filter(ma => {
-    if (HTTPS.matches(ma) || (allowInsecure && HTTP.matches(ma))) {
-      if (allowLocal) {
-        return true
-      }
-
-      if (DNS.matches(ma)) {
-        return true
-      }
-
-      return isPrivateIp(ma.toOptions().host) === false
-    }
-
-    return false
-  })
 }
 
 export function createTrustlessGatewaySession (components: TrustlessGatewaySessionComponents, init: CreateTrustlessGatewaySessionOptions): TrustlessGatewaySession {

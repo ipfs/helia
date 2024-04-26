@@ -20,7 +20,7 @@
  */
 
 import { bitswap, trustlessGateway } from '@helia/block-brokers'
-import { libp2pRouting } from '@helia/routers'
+import { httpGatewayRouting, libp2pRouting } from '@helia/routers'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import { HeliaP2P } from './helia-p2p.js'
@@ -121,7 +121,8 @@ export async function createHelia (init: Partial<HeliaInit> = {}): Promise<Helia
       bitswap()
     ],
     routers: [
-      libp2pRouting(libp2p)
+      libp2pRouting(libp2p),
+      httpGatewayRouting()
     ],
     metrics: libp2p.metrics
   })
