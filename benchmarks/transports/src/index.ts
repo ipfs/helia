@@ -104,11 +104,15 @@ async function main (): Promise<void> {
 
   for (const [name, files] of Object.entries(tests)) {
     for (const impl of impls) {
-      console.info(`${impl.name} ${name}`)
+      process.stdout.write(`${impl.name} ${name}`)
 
       for (const file of files) {
-        await impl.runTest(file)
+        const time = await impl.runTest(file)
+
+        process.stdout.write(`, ${time}`)
       }
+
+      process.stdout.write('\n')
     }
   }
 

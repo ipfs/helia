@@ -4,6 +4,8 @@ import { fixedSize } from 'ipfs-unixfs-importer/chunker'
 import { balanced } from 'ipfs-unixfs-importer/layout'
 import bufferStream from 'it-buffer-stream'
 
+process.title = `helia transport benchmark ${process.env.HELIA_TYPE}`
+
 interface ImportOptions {
   cidVersion?: 0 | 1
   rawLeaves?: boolean

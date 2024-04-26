@@ -36,7 +36,7 @@ export class Test {
     this.startRecipient = init.startRecipient
   }
 
-  async runTest (file: File) {
+  async runTest (file: File): Promise<string> {
     this.senderProc = this.startSender(file)
 
     const { cid, multiaddrs } = await new Promise<{ cid: string, multiaddrs: string }>((resolve, reject) => {
@@ -61,6 +61,8 @@ export class Test {
 
     this.recipientProc = this.startRecipient(cid, multiaddrs)
 
+    let result: string = ''
+
     await new Promise<void>((resolve, reject) => {
       this.recipientProc?.stderr?.on('data', (buf) => {
         errorLog('error', buf.toString())
@@ -81,13 +83,34 @@ export class Test {
             if (str === 'done') {
               resolve()
             } else {
-              console.info(str)
+              result = str
             }
           })
       })
     })
 
-    this.recipientProc.kill('SIGTERM')
-    this.senderProc.kill('SIGTERM')
+    this.recipientProc.kill()
+    this.senderProc.kill()
+
+    // wait for processes to exit
+    await new Promise<void>((resolve) => {
+      const interval = setInterval(() => {
+        if (!isRunning(this.recipientProc?.pid) && !isRunning(this.senderProc?.pid)) {
+          clearInterval(interval)
+          resolve()
+        }
+      }, 100)
+    })
+
+    return result
+  }
+}
+
+function isRunning (pid: number = 0): boolean {
+  try {
+    process.kill(pid, 0)
+    return true
+  } catch(e) {
+    return false
   }
 }
