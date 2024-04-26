@@ -170,7 +170,7 @@
     "ipfs-unixfs-exporter": "^13.5.0",
     "ipfs-unixfs-importer": "^15.2.4",
     "it-all": "^3.0.4",
-    "it-glob": "^2.0.6",
+    "it-glob": "^3.0.0",
     "it-last": "^3.0.4",
     "it-pipe": "^3.0.1",
     "merge-options": "^3.0.4",
@@ -190,7 +190,7 @@
     "wherearewe": "^2.0.1"
   },
   "browser": {
-    "./dist/src/utils/glob-source.js": false,
+    "./dist/src/utils/glob-source.js": "./dist/src/utils/glob-source.browser.js",
     "fs": false,
     "path": false,
     "url": false

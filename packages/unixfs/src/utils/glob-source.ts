@@ -1,11 +1,13 @@
-import fs from 'fs'
-import fsp from 'fs/promises'
+import fs from 'node:fs'
+import fsp from 'node:fs/promises'
+import os from 'node:os'
 import Path from 'path'
 import glob from 'it-glob'
 import { InvalidParametersError } from '../errors.js'
 import { toMtime } from './to-mtime.js'
 import type { MtimeLike } from 'ipfs-unixfs'
 import type { ImportCandidate } from 'ipfs-unixfs-importer'
+import type { Options } from 'it-glob'
 
 export interface GlobSourceOptions {
   /**
@@ -58,15 +60,23 @@ export async function * globSource (cwd: string, pattern: string, options: GlobS
     cwd = Path.resolve(process.cwd(), cwd)
   }
 
-  const globOptions = Object.assign({}, {
-    nodir: false,
-    realpath: false,
+  if (os.platform() === 'win32') {
+    cwd = toPosix(cwd)
+  }
+
+  const globOptions: Options = {
+    onlyFiles: false,
     absolute: true,
     dot: Boolean(options.hidden),
-    follow: options.followSymlinks != null ? options.followSymlinks : true
-  })
+    followSymbolicLinks: options.followSymlinks != null ? options.followSymlinks : true
+  }
 
   for await (const p of glob(cwd, pattern, globOptions)) {
+    // Workaround for https://github.com/micromatch/micromatch/issues/251
+    if (Path.basename(p).startsWith('.') && options.hidden !== true) {
+      continue
+    }
+
     const stat = await fsp.stat(p)
 
     let mode = options.mode
@@ -82,7 +92,7 @@ export async function * globSource (cwd: string, pattern: string, options: GlobS
     }
 
     yield {
-      path: toPosix(p.replace(cwd, '')),
+      path: p.replace(cwd, ''),
       content: stat.isFile() ? fs.createReadStream(p) : undefined,
       mode,
       mtime: toMtime(mtime)
