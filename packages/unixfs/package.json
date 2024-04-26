@@ -190,7 +190,7 @@
     "wherearewe": "^2.0.1"
   },
   "browser": {
-    "./dist/src/utils/glob-source.js": false,
+    "./dist/src/utils/glob-source.js": "./dist/src/utils/glob-source.browser.js",
     "fs": false,
     "path": false,
     "url": false

@@ -1,5 +1,6 @@
-import fs from 'fs'
-import fsp from 'fs/promises'
+import fs from 'node:fs'
+import fsp from 'node:fs/promises'
+import os from 'node:os'
 import Path from 'path'
 import glob from 'it-glob'
 import { InvalidParametersError } from '../errors.js'
@@ -59,6 +60,10 @@ export async function * globSource (cwd: string, pattern: string, options: GlobS
     cwd = Path.resolve(process.cwd(), cwd)
   }
 
+  if (os.platform() === 'win32') {
+    cwd = toPosix(cwd)
+  }
+
   const globOptions: Options = {
     onlyFiles: false,
     absolute: true,
@@ -87,7 +92,7 @@ export async function * globSource (cwd: string, pattern: string, options: GlobS
     }
 
     yield {
-      path: toPosix(p.replace(cwd, '')),
+      path: p.replace(cwd, ''),
       content: stat.isFile() ? fs.createReadStream(p) : undefined,
       mode,
       mtime: toMtime(mtime)
