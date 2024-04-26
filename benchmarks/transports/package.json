@@ -25,6 +25,8 @@
     "@libp2p/websockets": "^8.0.19",
     "@multiformats/multiaddr": "^12.2.1",
     "aegir": "^42.2.5",
+    "blockstore-idb": "^1.1.8",
+    "datastore-idb": "^2.1.9",
     "debug": "^4.3.4",
     "execa": "^8.0.1",
     "helia": "^4.1.0",
@@ -37,6 +39,11 @@
     "pretty-bytes": "^6.1.0"
   },
   "browser": {
-    "@libp2p/tcp": false
+    "@libp2p/tcp": false,
+    "node:os": false,
+    "os": false,
+    "node:path": false,
+    "path": false,
+    "blockstore-fs": false
   }
 }

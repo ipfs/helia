@@ -63,9 +63,12 @@ for (const [name, options] of Object.entries(opts)) {
   }
 }
 
-for (const file of tests[Object.keys(opts)[0]]) {
-  console.info(prettyBytes(ONE_MEG * Number(file.name)))
-}
+console.info(
+  'Implementation,',
+  tests[Object.keys(opts)[0]]
+    .map(file => prettyBytes(ONE_MEG * Number(file.name)))
+    .join(', ')
+)
 
 async function main (): Promise<void> {
   const impls = createTests(relay.libp2p.getMultiaddrs()[0]).map(test => {
@@ -77,7 +80,9 @@ async function main (): Promise<void> {
             HELIA_IMPORT_OPTIONS: JSON.stringify(file.options),
             HELIA_FILE_SIZE: `${file.size}`,
             HELIA_LISTEN: test.senderListen,
-            HELIA_TRANSPORTS: test.senderTransports
+            HELIA_TRANSPORTS: test.senderTransports,
+            HELIA_DATASTORE: test.senderDatastore,
+            HELIA_BLOCKSTORE: test.senderBlockstore
           }
         })
       },
@@ -86,7 +91,9 @@ async function main (): Promise<void> {
           env: {
             HELIA_CID: cid,
             HELIA_MULTIADDRS: multiaddrs,
-            HELIA_TRANSPORTS: test.recipientTransports
+            HELIA_TRANSPORTS: test.recipientTransports,
+            HELIA_DATASTORE: test.recipientDatastore,
+            HELIA_BLOCKSTORE: test.recipientBlockstore
           }
         })
       }
