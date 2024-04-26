@@ -2,82 +2,72 @@ import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface Test {
   name: string
+
+  senderImplementation: string
   senderExec?: string
   senderArgs?: string[]
   senderListen: string
-  senderTransports: string
-  senderBlockstore: string
-  senderDatastore: string
+
+  recipientImplementation: string
   recipientExec?: string
   recipientArgs?: string[]
-  recipientTransports: string
-  recipientBlockstore: string
-  recipientDatastore: string
 }
 
 const PLAYWRIGHT = 'playwright-test'
 
 interface Impl {
+  type: 'helia' | 'kubo'
   exec?: string
   args?: string[]
-  transports: string
   listen?: (relay: Multiaddr) => string
-  blockstore: string
-  datastore: string
 }
 
 const webRTCimpls: Record<string, Impl> = {
   'node.js': {
-    transports: 'webRTC,circuitRelay,ws',
-    listen: (relay) => `${relay}/p2p-circuit,/webrtc`,
-    blockstore: 'fs',
-    datastore: 'level'
+    type: 'helia',
+    listen: (relay) => `${relay}/p2p-circuit,/webrtc`
   },
   'chromium': {
+    type: 'helia',
     exec: PLAYWRIGHT,
-    transports: 'webRTC,circuitRelay,ws',
-    listen: (relay) => `${relay}/p2p-circuit,/webrtc`,
-    blockstore: 'idb',
-    datastore: 'idb'
+    listen: (relay) => `${relay}/p2p-circuit,/webrtc`
   },
   'firefox': {
+    type: 'helia',
     exec: PLAYWRIGHT,
     args: ['--browser', 'firefox'],
-    transports: 'webRTC,circuitRelay,ws',
-    listen: (relay) => `${relay}/p2p-circuit,/webrtc`,
-    blockstore: 'idb',
-    datastore: 'idb'
+    listen: (relay) => `${relay}/p2p-circuit,/webrtc`
   }
 }
 
 const webSocketimpls: Record<string, Impl> = {
   'node.js': {
-    transports: 'ws',
-    listen: () => `/ip4/127.0.0.1/tcp/0/ws`,
-    blockstore: 'fs',
-    datastore: 'level'
+    type: 'helia',
+    listen: () => `/ip4/127.0.0.1/tcp/0/ws`
   },
   'chromium': {
-    exec: PLAYWRIGHT,
-    transports: 'ws',
-    blockstore: 'idb',
-    datastore: 'idb'
+    type: 'helia',
+    exec: PLAYWRIGHT
   },
   'firefox': {
+    type: 'helia',
     exec: PLAYWRIGHT,
-    args: ['--browser', 'firefox'],
-    transports: 'ws',
-    blockstore: 'idb',
-    datastore: 'idb'
+    args: ['--browser', 'firefox']
+  },
+  'kubo': {
+    type: 'kubo',
+    listen: () => `/ip4/127.0.0.1/tcp/0/ws`
   }
 }
 
 const tcpImpls: Record<string, Impl> = {
   'node.js': {
-    transports: 'tcp',
-    listen: () => `/ip4/127.0.0.1/tcp/0`,
-    blockstore: 'fs',
-    datastore: 'level'
+    type: 'helia',
+    listen: () => `/ip4/127.0.0.1/tcp/0`
+  },
+  'kubo': {
+    type: 'kubo',
+    listen: () => `/ip4/127.0.0.1/tcp/0`
   }
 }
 
@@ -91,18 +81,14 @@ function addTests (name: string, impls: Record<string, Impl>, tests: Test[], rel
       tests.push({
         name: `${name} (${implAName} -> ${implBName})`,
 
+        senderImplementation: implA.type,
         senderExec: implA.exec,
         senderArgs: implA.args,
         senderListen: implA.listen(relay),
-        senderTransports: implA.transports,
-        senderBlockstore: implA.blockstore,
-        senderDatastore: implA.datastore,
 
+        recipientImplementation: implB.type,
         recipientExec: implB.exec,
-        recipientArgs: implB.args,
-        recipientTransports: implB.transports,
-        recipientBlockstore: implB.blockstore,
-        recipientDatastore: implB.datastore
+        recipientArgs: implB.args
       })
     }
   }

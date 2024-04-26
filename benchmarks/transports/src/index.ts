@@ -75,27 +75,21 @@ async function main (): Promise<void> {
     return new Test({
       name: test.name,
       startSender: (file: File) => {
-        return execa(test.senderExec ?? 'node', [...(test.senderArgs ?? []), './dist/src/runner/helia-sender.js'], {
+        return execa(test.senderExec ?? 'node', [...(test.senderArgs ?? []), `./dist/src/runner/${test.senderImplementation}/sender.js`], {
           env: {
             HELIA_TYPE: 'sender',
             HELIA_IMPORT_OPTIONS: JSON.stringify(file.options),
             HELIA_FILE_SIZE: `${file.size}`,
-            HELIA_LISTEN: test.senderListen,
-            HELIA_TRANSPORTS: test.senderTransports,
-            HELIA_DATASTORE: test.senderDatastore,
-            HELIA_BLOCKSTORE: test.senderBlockstore
+            HELIA_LISTEN: test.senderListen
           }
         })
       },
       startRecipient: (cid: string, multiaddrs: string) => {
-        return execa(test.recipientExec ?? 'node', [...(test.recipientArgs ?? []), './dist/src/runner/helia-recipient.js'], {
+        return execa(test.recipientExec ?? 'node', [...(test.recipientArgs ?? []), `./dist/src/runner/${test.recipientImplementation}/recipient.js`], {
           env: {
             HELIA_TYPE: 'recipient',
             HELIA_CID: cid,
-            HELIA_MULTIADDRS: multiaddrs,
-            HELIA_TRANSPORTS: test.recipientTransports,
-            HELIA_DATASTORE: test.recipientDatastore,
-            HELIA_BLOCKSTORE: test.recipientBlockstore
+            HELIA_MULTIADDRS: multiaddrs
           }
         })
       }

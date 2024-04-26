@@ -17,6 +17,7 @@
     "@helia/block-brokers": "^2.1.1",
     "@helia/routers": "^1.0.3",
     "@helia/unixfs": "^3.0.3",
+    "@ipld/dag-pb": "^4.1.0",
     "@libp2p/circuit-relay-v2": "^1.0.21",
     "@libp2p/identify": "^1.0.20",
     "@libp2p/interface": "^1.3.0",
@@ -26,10 +27,8 @@
     "@libp2p/websockets": "^8.0.19",
     "@multiformats/multiaddr": "^12.2.1",
     "aegir": "^42.2.5",
-    "blockstore-core": "^4.4.1",
     "blockstore-fs": "^1.1.10",
     "blockstore-idb": "^1.1.8",
-    "datastore-core": "^9.2.9",
     "datastore-idb": "^2.1.9",
     "datastore-level": "^10.1.8",
     "debug": "^4.3.4",
@@ -38,19 +37,19 @@
     "interface-blockstore": "^5.2.10",
     "interface-datastore": "^8.2.11",
     "ipfs-unixfs-importer": "^15.1.1",
+    "ipfsd-ctl": "^14.0.6",
     "it-buffer-stream": "^3.0.2",
     "it-drain": "^3.0.7",
+    "kubo": "^0.28.0",
+    "kubo-rpc-client": "^4.1.1",
     "libp2p": "^1.4.0",
     "multiformats": "^13.1.0",
     "playwright-test": "^14.1.1",
-    "pretty-bytes": "^6.1.0"
+    "pretty-bytes": "^6.1.0",
+    "uint8arrays": "^5.0.3"
   },
   "browser": {
-    "@libp2p/tcp": false,
-    "node:os": false,
-    "os": false,
-    "node:path": false,
-    "path": false,
-    "blockstore-fs": false
+    "./dist/src/runner/helia/stores.js": "./dist/src/runner/helia/stores.browser.js",
+    "./dist/src/runner/helia/transports.js": "./dist/src/runner/helia/transports.browser.js"
   }
 }
