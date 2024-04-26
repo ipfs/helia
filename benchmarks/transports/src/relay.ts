@@ -1,12 +1,12 @@
-import { createHelia, type HeliaLibp2p } from 'helia'
-import { createLibp2p } from 'libp2p'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { webSockets } from '@libp2p/websockets'
 import { circuitRelayServer } from '@libp2p/circuit-relay-v2'
 import { identify } from '@libp2p/identify'
-import type { Libp2p } from '@libp2p/interface'
 import { prefixLogger } from '@libp2p/logger'
+import { webSockets } from '@libp2p/websockets'
+import { createHelia, type HeliaLibp2p } from 'helia'
+import { createLibp2p } from 'libp2p'
+import type { Libp2p } from '@libp2p/interface'
 
 export async function createRelay (): Promise<HeliaLibp2p<Libp2p<any>>> {
   const logger = prefixLogger('relay')

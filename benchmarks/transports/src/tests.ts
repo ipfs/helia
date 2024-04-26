@@ -19,23 +19,23 @@ interface Impl {
   type: 'helia' | 'kubo'
   exec?: string
   args?: string[]
-  listen?: (relay: Multiaddr) => string
+  listen?(relay: Multiaddr): string
 }
 
 const webRTCimpls: Record<string, Impl> = {
-  'node.js': {
-    type: 'helia',
-    listen: (relay) => `${relay}/p2p-circuit,/webrtc`
-  },
-  'chromium': {
+  chromium: {
     type: 'helia',
     exec: PLAYWRIGHT,
     listen: (relay) => `${relay}/p2p-circuit,/webrtc`
   },
-  'firefox': {
+  firefox: {
     type: 'helia',
     exec: PLAYWRIGHT,
     args: ['--browser', 'firefox'],
+    listen: (relay) => `${relay}/p2p-circuit,/webrtc`
+  },
+  'node.js': {
+    type: 'helia',
     listen: (relay) => `${relay}/p2p-circuit,/webrtc`
   }
 }
@@ -43,35 +43,35 @@ const webRTCimpls: Record<string, Impl> = {
 const webSocketimpls: Record<string, Impl> = {
   'node.js': {
     type: 'helia',
-    listen: () => `/ip4/127.0.0.1/tcp/0/ws`
+    listen: () => '/ip4/127.0.0.1/tcp/0/ws'
   },
-  'chromium': {
+  chromium: {
     type: 'helia',
     exec: PLAYWRIGHT
   },
-  'firefox': {
+  firefox: {
     type: 'helia',
     exec: PLAYWRIGHT,
     args: ['--browser', 'firefox']
   },
-  'kubo': {
+  kubo: {
     type: 'kubo',
-    listen: () => `/ip4/127.0.0.1/tcp/0/ws`
+    listen: () => '/ip4/127.0.0.1/tcp/0/ws'
   }
 }
 
 const tcpImpls: Record<string, Impl> = {
   'node.js': {
     type: 'helia',
-    listen: () => `/ip4/127.0.0.1/tcp/0`
+    listen: () => '/ip4/127.0.0.1/tcp/0'
   },
-  'kubo': {
+  kubo: {
     type: 'kubo',
-    listen: () => `/ip4/127.0.0.1/tcp/0`
+    listen: () => '/ip4/127.0.0.1/tcp/0'
   }
 }
 
-function addTests (name: string, impls: Record<string, Impl>, tests: Test[], relay: Multiaddr) {
+function addTests (name: string, impls: Record<string, Impl>, tests: Test[], relay: Multiaddr): void {
   for (const [implAName, implA] of Object.entries(impls)) {
     for (const [implBName, implB] of Object.entries(impls)) {
       if (implA.listen == null) {

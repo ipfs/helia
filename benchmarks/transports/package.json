@@ -37,7 +37,7 @@
     "interface-blockstore": "^5.2.10",
     "interface-datastore": "^8.2.11",
     "ipfs-unixfs-importer": "^15.1.1",
-    "ipfsd-ctl": "^14.0.6",
+    "ipfsd-ctl": "^14.1.0",
     "it-buffer-stream": "^3.0.2",
     "it-drain": "^3.0.7",
     "kubo": "^0.28.0",

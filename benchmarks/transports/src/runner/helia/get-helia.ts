@@ -1,14 +1,14 @@
-import { createHelia, type HeliaLibp2p } from 'helia'
-import { createLibp2p } from 'libp2p'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { identify } from '@libp2p/identify'
-import type { Libp2p } from '@libp2p/interface'
 import { bitswap } from '@helia/block-brokers'
 import { libp2pRouting } from '@helia/routers'
+import { identify } from '@libp2p/identify'
 import { prefixLogger } from '@libp2p/logger'
+import { createHelia, type HeliaLibp2p } from 'helia'
+import { createLibp2p } from 'libp2p'
 import { getStores } from './stores.js'
 import { getTransports } from './transports.js'
+import type { Libp2p } from '@libp2p/interface'
 
 export async function getHelia (): Promise<HeliaLibp2p<Libp2p<any>>> {
   const listen = `${process.env.HELIA_LISTEN ?? ''}`.split(',').filter(Boolean)
@@ -20,7 +20,7 @@ export async function getHelia (): Promise<HeliaLibp2p<Libp2p<any>>> {
     addresses: {
       listen
     },
-    transports: await getTransports(),
+    transports: getTransports(),
     connectionEncryption: [
       noise()
     ],
@@ -39,7 +39,7 @@ export async function getHelia (): Promise<HeliaLibp2p<Libp2p<any>>> {
     datastore
   })
 
-  return await createHelia({
+  return createHelia({
     logger,
     blockstore,
     datastore,

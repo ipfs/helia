@@ -1,8 +1,10 @@
+/* eslint-disable no-console */
+
 import { unixfs } from '@helia/unixfs'
+import * as dagPB from '@ipld/dag-pb'
 import { fixedSize } from 'ipfs-unixfs-importer/chunker'
 import { balanced } from 'ipfs-unixfs-importer/layout'
 import bufferStream from 'it-buffer-stream'
-import * as dagPB from '@ipld/dag-pb'
 import * as raw from 'multiformats/codecs/raw'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { getKubo } from './get-kubo.js'

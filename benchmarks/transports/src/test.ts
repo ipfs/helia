@@ -1,39 +1,24 @@
 /* eslint-disable no-console */
 
-import { type ExecaChildProcess } from 'execa'
 import debug from 'debug'
+import { execa, type ExecaChildProcess } from 'execa'
 import type { File } from './index.js'
+import type { Test as TestInit } from './tests.js'
 
 const outLog = debug('test:stdout')
 const errorLog = debug('test:stderr')
 
 const TEST_OUTPUT_PREFIX = 'TEST-OUTPUT:'
 
-export interface StartSender {
-  (file: File): ExecaChildProcess<string>
-}
-
-export interface StartRecipient {
-  (cid: string, multiaddrs: string): ExecaChildProcess<string>
-}
-
-interface TestInit {
-  name: string
-  startSender: StartSender
-  startRecipient: StartRecipient
-}
-
 export class Test {
   public name: string
-  public startSender: StartSender
-  public startRecipient: StartRecipient
   private senderProc?: ExecaChildProcess<string>
   private recipientProc?: ExecaChildProcess<string>
+  private readonly test: TestInit
 
   constructor (init: TestInit) {
     this.name = init.name
-    this.startSender = init.startSender
-    this.startRecipient = init.startRecipient
+    this.test = init
   }
 
   async runTest (file: File): Promise<string> {
@@ -49,7 +34,7 @@ export class Test {
 
         let output = buf.toString()
 
-        if (!output.startsWith(TEST_OUTPUT_PREFIX)) {
+        if (output.startsWith(TEST_OUTPUT_PREFIX) === false) {
           return
         }
 
@@ -71,7 +56,7 @@ export class Test {
       this.recipientProc?.stdout?.on('data', (buf) => {
         outLog('info', buf.toString())
 
-        let output: string = buf.toString()
+        const output: string = buf.toString()
 
         output
           .split('\n')
@@ -104,13 +89,34 @@ export class Test {
 
     return result
   }
+
+  startSender (file: File): ExecaChildProcess<string> {
+    return execa(this.test.senderExec ?? 'node', [...(this.test.senderArgs ?? []), `./dist/src/runner/${this.test.senderImplementation}/sender.js`], {
+      env: {
+        HELIA_TYPE: 'sender',
+        HELIA_IMPORT_OPTIONS: JSON.stringify(file.options),
+        HELIA_FILE_SIZE: `${file.size}`,
+        HELIA_LISTEN: this.test.senderListen
+      }
+    })
+  }
+
+  startRecipient (cid: string, multiaddrs: string): ExecaChildProcess<string> {
+    return execa(this.test.recipientExec ?? 'node', [...(this.test.recipientArgs ?? []), `./dist/src/runner/${this.test.recipientImplementation}/recipient.js`], {
+      env: {
+        HELIA_TYPE: 'recipient',
+        HELIA_CID: cid,
+        HELIA_MULTIADDRS: multiaddrs
+      }
+    })
+  }
 }
 
 function isRunning (pid: number = 0): boolean {
   try {
     process.kill(pid, 0)
     return true
-  } catch(e) {
+  } catch (e) {
     return false
   }
 }

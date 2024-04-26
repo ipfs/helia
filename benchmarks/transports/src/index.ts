@@ -1,22 +1,24 @@
 /* eslint-disable no-console */
 
-import type { CID } from 'multiformats/cid'
-import type { Multiaddr } from '@multiformats/multiaddr'
+import { createServer } from 'ipfsd-ctl'
+import { path as kuboPath } from 'kubo'
+import { create as kuboRpcClient } from 'kubo-rpc-client'
 import prettyBytes from 'pretty-bytes'
-import { execa } from 'execa'
 import { createRelay } from './relay.js'
-import { createTests } from './tests.js'
 import { Test } from './test.js'
+import { createTests } from './tests.js'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import type { CID } from 'multiformats/cid'
 
 const ONE_MEG = 1024 * 1024
 const relay = await createRelay()
 
 export interface TransferBenchmark {
-  teardown: () => Promise<void>
-  addrs: () => Promise<Multiaddr[]>
-  dial: (multiaddrs: Multiaddr[]) => Promise<void>
-  add: (content: AsyncIterable<Uint8Array>, options: ImportOptions) => Promise<CID>
-  get: (cid: CID) => Promise<void>
+  teardown(): Promise<void>
+  addrs(): Promise<Multiaddr[]>
+  dial(multiaddrs: Multiaddr[]): Promise<void>
+  add(content: AsyncIterable<Uint8Array>, options: ImportOptions): Promise<CID>
+  get(cid: CID): Promise<void>
 }
 
 export interface ImportOptions {
@@ -70,30 +72,19 @@ console.info(
     .join(', ')
 )
 
+const server = createServer(29834, {
+  type: 'kubo',
+  test: true,
+  bin: kuboPath(),
+  rpc: kuboRpcClient,
+  init: {
+    emptyRepo: true
+  }
+})
+
 async function main (): Promise<void> {
   const impls = createTests(relay.libp2p.getMultiaddrs()[0]).map(test => {
-    return new Test({
-      name: test.name,
-      startSender: (file: File) => {
-        return execa(test.senderExec ?? 'node', [...(test.senderArgs ?? []), `./dist/src/runner/${test.senderImplementation}/sender.js`], {
-          env: {
-            HELIA_TYPE: 'sender',
-            HELIA_IMPORT_OPTIONS: JSON.stringify(file.options),
-            HELIA_FILE_SIZE: `${file.size}`,
-            HELIA_LISTEN: test.senderListen
-          }
-        })
-      },
-      startRecipient: (cid: string, multiaddrs: string) => {
-        return execa(test.recipientExec ?? 'node', [...(test.recipientArgs ?? []), `./dist/src/runner/${test.recipientImplementation}/recipient.js`], {
-          env: {
-            HELIA_TYPE: 'recipient',
-            HELIA_CID: cid,
-            HELIA_MULTIADDRS: multiaddrs
-          }
-        })
-      }
-    })
+    return new Test(test)
   })
 
   for (const [name, files] of Object.entries(tests)) {
@@ -102,8 +93,8 @@ async function main (): Promise<void> {
 
       for (const file of files) {
         const time = await impl.runTest(file)
-
         process.stdout.write(`, ${time}`)
+        await server.clean()
       }
 
       process.stdout.write('\n')

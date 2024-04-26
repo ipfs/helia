@@ -1,5 +1,7 @@
-import { CID } from 'multiformats'
+/* eslint-disable no-console */
+
 import { multiaddr } from '@multiformats/multiaddr'
+import { CID } from 'multiformats'
 import { getKubo } from './get-kubo.js'
 
 process.title = `helia transport benchmark ${process.env.HELIA_TYPE}`

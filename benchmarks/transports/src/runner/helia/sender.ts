@@ -1,8 +1,10 @@
+/* eslint-disable no-console */
+
 import { unixfs } from '@helia/unixfs'
-import { getHelia } from './get-helia.js'
 import { fixedSize } from 'ipfs-unixfs-importer/chunker'
 import { balanced } from 'ipfs-unixfs-importer/layout'
 import bufferStream from 'it-buffer-stream'
+import { getHelia } from './get-helia.js'
 
 process.title = `helia transport benchmark ${process.env.HELIA_TYPE}`
 
