@@ -6,10 +6,15 @@ import { webSockets } from '@libp2p/websockets'
 import { circuitRelayServer } from '@libp2p/circuit-relay-v2'
 import { identify } from '@libp2p/identify'
 import type { Libp2p } from '@libp2p/interface'
+import { prefixLogger } from '@libp2p/logger'
 
 export async function createRelay (): Promise<HeliaLibp2p<Libp2p<any>>> {
+  const logger = prefixLogger('relay')
+
   return createHelia({
+    logger,
     libp2p: await createLibp2p({
+      logger,
       addresses: {
         listen: [
           '/ip4/127.0.0.1/tcp/0/ws'

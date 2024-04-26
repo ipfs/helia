@@ -21,6 +21,7 @@ import type { Datastore } from 'interface-datastore'
 import { MemoryDatastore } from 'datastore-core'
 import { IDBDatastore } from 'datastore-idb'
 import { IDBBlockstore } from 'blockstore-idb'
+import { prefixLogger } from '@libp2p/logger'
 
 type TransportFactory = (...args: any[]) => Transport
 
@@ -86,8 +87,10 @@ export async function getHelia (): Promise<HeliaLibp2p<Libp2p<any>>> {
   const listen = `${process.env.HELIA_LISTEN ?? ''}`.split(',').filter(Boolean)
   const transports = `${process.env.HELIA_TRANSPORTS ?? ''}`.split(',').filter(Boolean)
   const datastore = await getDatastore(process.env.HELIA_DATASTORE)
+  const logger = prefixLogger(`${process.env.HELIA_TYPE}`)
 
   const libp2p = await createLibp2p({
+    logger,
     addresses: {
       listen
     },
@@ -111,6 +114,7 @@ export async function getHelia (): Promise<HeliaLibp2p<Libp2p<any>>> {
   })
 
   return await createHelia({
+    logger,
     blockstore: await getBlockstore(process.env.HELIA_BLOCKSTORE),
     datastore,
     blockBrokers: [

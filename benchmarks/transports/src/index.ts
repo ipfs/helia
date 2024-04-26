@@ -77,6 +77,7 @@ async function main (): Promise<void> {
       startSender: (file: File) => {
         return execa(test.senderExec ?? 'node', [...(test.senderArgs ?? []), './dist/src/runner/helia-sender.js'], {
           env: {
+            HELIA_TYPE: 'sender',
             HELIA_IMPORT_OPTIONS: JSON.stringify(file.options),
             HELIA_FILE_SIZE: `${file.size}`,
             HELIA_LISTEN: test.senderListen,
@@ -89,6 +90,7 @@ async function main (): Promise<void> {
       startRecipient: (cid: string, multiaddrs: string) => {
         return execa(test.recipientExec ?? 'node', [...(test.recipientArgs ?? []), './dist/src/runner/helia-recipient.js'], {
           env: {
+            HELIA_TYPE: 'recipient',
             HELIA_CID: cid,
             HELIA_MULTIADDRS: multiaddrs,
             HELIA_TRANSPORTS: test.recipientTransports,
