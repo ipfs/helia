@@ -10,7 +10,7 @@ To run:
     $ npm run reset
     $ npm i
     $ npm run build
-    $ cd benchmarks/transport
+    $ cd benchmarks/transports
     $ npm start
 
     > benchmarks-transports@1.0.0 start
@@ -43,7 +43,6 @@ $ DEBUG=test* npm start
 or
 
 ```console
-$ DEBUG=test*,sender* npm start
+$ DEBUG='test*,sender*' npm start
 ```
 
-..etc
