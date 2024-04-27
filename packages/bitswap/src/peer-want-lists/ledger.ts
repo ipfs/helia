@@ -1,6 +1,7 @@
 /* eslint-disable max-depth */
 import { DEFAULT_MAX_SIZE_REPLACE_HAS_WITH_BLOCK } from '../constants.js'
-import { BlockPresenceType, type BitswapMessage, WantType } from '../pb/message.js'
+import { BlockPresenceType, WantType } from '../pb/message.js'
+import { QueuedBitswapMessage } from '../utils/bitswap-message.js'
 import { cidToPrefix } from '../utils/cid-prefix.js'
 import type { Network } from '../network.js'
 import type { ComponentLogger, Logger, PeerId } from '@libp2p/interface'
@@ -89,10 +90,7 @@ export class Ledger {
   }
 
   public async sendBlocksToPeer (options?: AbortOptions): Promise<void> {
-    const message: Pick<BitswapMessage, 'blockPresences' | 'blocks'> = {
-      blockPresences: [],
-      blocks: []
-    }
+    const message = new QueuedBitswapMessage()
     const sentBlocks = new Set<string>()
 
     for (const [key, entry] of this.wants.entries()) {
@@ -113,7 +111,7 @@ export class Ledger {
         }
 
         entry.sentDontHave = true
-        message.blockPresences.push({
+        message.addBlockPresence(entry.cid, {
           cid: entry.cid.bytes,
           type: BlockPresenceType.DontHaveBlock
         })
@@ -129,14 +127,14 @@ export class Ledger {
           this.log('sending have and block for %c', entry.cid)
           // if the block is small we just send it to them
           sentBlocks.add(key)
-          message.blocks.push({
+          message.addBlock(entry.cid, {
             data: block,
             prefix: cidToPrefix(entry.cid)
           })
         } else {
           this.log('sending have for %c', entry.cid)
           // otherwise tell them we have the block
-          message.blockPresences.push({
+          message.addBlockPresence(entry.cid, {
             cid: entry.cid.bytes,
             type: BlockPresenceType.HaveBlock
           })
@@ -145,7 +143,7 @@ export class Ledger {
         this.log('sending block for %c', entry.cid)
         // they want the block, send it to them
         sentBlocks.add(key)
-        message.blocks.push({
+        message.addBlock(entry.cid, {
           data: block,
           prefix: cidToPrefix(entry.cid)
         })
@@ -153,13 +151,13 @@ export class Ledger {
     }
 
     // only send the message if we actually have something to send
-    if (message.blocks.length > 0 || message.blockPresences.length > 0) {
+    if (message.blocks.size > 0 || message.blockPresences.size > 0) {
       this.log('sending message')
       await this.network.sendMessage(this.peerId, message, options)
       this.log('sent message')
 
       // update accounting
-      this.sentBytes(message.blocks.reduce((acc, curr) => acc + curr.data.byteLength, 0))
+      this.sentBytes([...message.blocks.values()].reduce((acc, curr) => acc + curr.data.byteLength, 0))
 
       // remove sent blocks from local copy of their want list - they can still
       // re-request if required

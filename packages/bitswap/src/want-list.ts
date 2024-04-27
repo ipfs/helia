@@ -1,10 +1,6 @@
 import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { trackedPeerMap } from '@libp2p/peer-collections'
 import { trackedMap } from '@libp2p/utils/tracked-map'
-import all from 'it-all'
-import filter from 'it-filter'
-import map from 'it-map'
-import { pipe } from 'it-pipe'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import pDefer from 'p-defer'
@@ -13,6 +9,7 @@ import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { DEFAULT_MESSAGE_SEND_DELAY } from './constants.js'
 import { BlockPresenceType, WantType } from './pb/message.js'
+import { QueuedBitswapMessage } from './utils/bitswap-message.js'
 import vd from './utils/varint-decoder.js'
 import type { BitswapNotifyProgressEvents, MultihashHasherLoader } from './index.js'
 import type { BitswapNetworkWantProgressEvents, Network } from './network.js'
@@ -219,39 +216,33 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
     await Promise.all(
       [...this.peers.entries()].map(async ([peerId, sentWants]) => {
         const sent = new Set<string>()
-        const message: Partial<BitswapMessage> = {
-          wantlist: {
-            full: false,
-            entries: pipe(
-              this.wants.entries(),
-              (source) => filter(source, ([key, entry]) => {
-                const sentPreviously = sentWants.has(key)
+        const message = new QueuedBitswapMessage()
 
-                // don't cancel if we've not sent it to them before
-                if (entry.cancel) {
-                  return sentPreviously
-                }
+        for (const [key, entry] of this.wants.entries()) {
+          const sentPreviously = sentWants.has(key)
 
-                // only send if we've not sent it to them before
-                return !sentPreviously
-              }),
-              (source) => map(source, ([key, entry]) => {
-                sent.add(key)
-
-                return {
-                  cid: entry.cid.bytes,
-                  priority: entry.priority,
-                  wantType: entry.wantType,
-                  cancel: entry.cancel,
-                  sendDontHave: entry.sendDontHave
-                }
-              }),
-              (source) => all(source)
-            )
+          // don't cancel if we've not sent it to them before
+          if (entry.cancel && !sentPreviously) {
+            continue
           }
+
+          // only send if we've not sent it to them before
+          if (sentPreviously) {
+            continue
+          }
+
+          sent.add(key)
+
+          message.addWantlistEntry(entry.cid, {
+            cid: entry.cid.bytes,
+            priority: entry.priority,
+            wantType: entry.wantType,
+            cancel: entry.cancel,
+            sendDontHave: entry.sendDontHave
+          })
         }
 
-        if (message.wantlist?.entries.length === 0) {
+        if (message.wantlist.size === 0) {
           return
         }
 
@@ -295,18 +286,16 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
    * Add a CID to the wantlist
    */
   async wantSessionPresence (cid: CID, peerId: PeerId, options: WantOptions = {}): Promise<WantPresenceResult> {
-    // sending WantHave directly to peer
-    await this.network.sendMessage(peerId, {
-      wantlist: {
-        full: false,
-        entries: [{
-          cid: cid.bytes,
-          sendDontHave: true,
-          wantType: WantType.WantHave,
-          priority: 1
-        }]
-      }
+    const message = new QueuedBitswapMessage()
+    message.addWantlistEntry(cid, {
+      cid: cid.bytes,
+      sendDontHave: true,
+      wantType: WantType.WantHave,
+      priority: 1
     })
+
+    // sending WantHave directly to peer
+    await this.network.sendMessage(peerId, message)
 
     // wait for peer response
     const event = await raceEvent<CustomEvent<WantHaveResult | WantDontHaveResult>>(this, 'presence', options.signal, {
@@ -332,18 +321,16 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
    * Add a CID to the wantlist
    */
   async wantSessionBlock (cid: CID, peerId: PeerId, options: WantOptions = {}): Promise<WantPresenceResult> {
-    // sending WantBlockResult directly to peer
-    await this.network.sendMessage(peerId, {
-      wantlist: {
-        full: false,
-        entries: [{
-          cid: cid.bytes,
-          sendDontHave: true,
-          wantType: WantType.WantBlock,
-          priority: 1
-        }]
-      }
+    const message = new QueuedBitswapMessage()
+    message.addWantlistEntry(cid, {
+      cid: cid.bytes,
+      sendDontHave: true,
+      wantType: WantType.WantBlock,
+      priority: 1
     })
+
+    // sending WantBlockResult directly to peer
+    await this.network.sendMessage(peerId, message)
 
     // wait for peer response
     const event = await raceEvent<CustomEvent<WantPresenceResult>>(this, 'presence', options.signal, {
@@ -376,7 +363,7 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
    * Invoked when a message is received from a bitswap peer
    */
   private async receiveMessage (sender: PeerId, message: BitswapMessage): Promise<void> {
-    this.log('received message %d from %p with %d blocks', sender, message.blocks.length)
+    this.log('received message from %p with %d blocks', sender, message.blocks.length)
     let blocksCancelled = false
 
     // process blocks
@@ -464,32 +451,27 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
    */
   async peerConnected (peerId: PeerId): Promise<void> {
     const sentWants = new Set<string>()
+    const message = new QueuedBitswapMessage(true)
 
     // new peer, give them the full wantlist
-    const message: Partial<BitswapMessage> = {
-      wantlist: {
-        full: true,
-        entries: pipe(
-          this.wants.entries(),
-          (source) => filter(source, ([key, entry]) => !entry.cancel),
-          (source) => map(source, ([key, entry]) => {
-            sentWants.add(key)
-
-            return {
-              cid: entry.cid.bytes,
-              priority: 1,
-              wantType: WantType.WantBlock,
-              cancel: false,
-              sendDontHave: false
-            }
-          }),
-          (source) => all(source)
-        )
+    for (const [key, entry] of this.wants.entries()) {
+      if (entry.cancel) {
+        continue
       }
+
+      sentWants.add(key)
+
+      message.addWantlistEntry(entry.cid, {
+        cid: entry.cid.bytes,
+        priority: 1,
+        wantType: WantType.WantBlock,
+        cancel: false,
+        sendDontHave: false
+      })
     }
 
     // only send the wantlist if we have something to send
-    if (message.wantlist?.entries.length === 0) {
+    if (message.wantlist.size === 0) {
       this.peers.set(peerId, sentWants)
 
       return

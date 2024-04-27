@@ -77,10 +77,10 @@ describe('wantlist', () => {
     expect(sentToPeer.toString()).equal(peerId.toString())
 
     const sentMessage = components.network.sendMessage.getCall(0).args[1]
-    expect(sentMessage).to.have.nested.property('wantlist.full', false)
-    expect(sentMessage).to.have.deep.nested.property('wantlist.entries[0].cid', cid.bytes)
-    expect(sentMessage).to.have.nested.property('wantlist.entries[0].wantType', WantType.WantBlock)
-    expect(sentMessage).to.have.nested.property('wantlist.entries[0].cancel', false)
+    expect(sentMessage).to.have.property('full', false)
+    expect([...sentMessage.wantlist.values()]).to.have.deep.nested.property('[0].cid', cid.bytes)
+    expect([...sentMessage.wantlist.values()]).to.have.nested.property('[0].wantType', WantType.WantBlock)
+    expect([...sentMessage.wantlist.values()]).to.have.nested.property('[0].cancel', false)
   })
 
   it('should not send session block wants to non-session peers', async () => {
@@ -102,8 +102,8 @@ describe('wantlist', () => {
     expect(sentToPeer.toString()).equal(sessionPeer.toString())
 
     const sentMessage = components.network.sendMessage.getCall(0).args[1]
-    expect(sentMessage).to.have.nested.property('wantlist.full', false)
-    expect(sentMessage).to.have.deep.nested.property('wantlist.entries[0].cid', cid.bytes)
-    expect(sentMessage).to.have.nested.property('wantlist.entries[0].wantType', WantType.WantBlock)
+    expect(sentMessage).to.have.property('full', false)
+    expect([...sentMessage.wantlist.values()]).to.have.deep.nested.property('[0].cid', cid.bytes)
+    expect([...sentMessage.wantlist.values()]).to.have.nested.property('[0].wantType', WantType.WantBlock)
   })
 })

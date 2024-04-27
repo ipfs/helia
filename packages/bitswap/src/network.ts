@@ -14,6 +14,7 @@ import { splitMessage } from './utils/split-message.js'
 import type { WantOptions } from './bitswap.js'
 import type { MultihashHasherLoader } from './index.js'
 import type { Block } from './pb/message.js'
+import type { QueuedBitswapMessage } from './utils/bitswap-message.js'
 import type { Provider, Routing } from '@helia/interface/routing'
 import type { Libp2p, AbortOptions, Connection, PeerId, IncomingStreamData, Topology, ComponentLogger, IdentifyResult, Counter, Metrics } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
@@ -64,7 +65,7 @@ export interface NetworkEvents {
 }
 
 interface SendMessageJobOptions extends AbortOptions, ProgressOptions, PeerQueueJobOptions {
-  message: BitswapMessage
+  message: QueuedBitswapMessage
 }
 
 export class Network extends TypedEventEmitter<NetworkEvents> {
@@ -276,19 +277,9 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
    * Connect to the given peer
    * Send the given msg (instance of Message) to the given peer
    */
-  async sendMessage (peerId: PeerId, msg: Partial<BitswapMessage>, options?: AbortOptions & ProgressOptions<BitswapNetworkWantProgressEvents>): Promise<void> {
+  async sendMessage (peerId: PeerId, message: QueuedBitswapMessage, options?: AbortOptions & ProgressOptions<BitswapNetworkWantProgressEvents>): Promise<void> {
     if (!this.running) {
       throw new Error('network isn\'t running')
-    }
-
-    const message: BitswapMessage = {
-      wantlist: {
-        full: msg.wantlist?.full ?? false,
-        entries: msg.wantlist?.entries ?? []
-      },
-      blocks: msg.blocks ?? [],
-      blockPresences: msg.blockPresences ?? [],
-      pendingBytes: msg.pendingBytes ?? 0
     }
 
     const existingJob = this.sendQueue.queue.find(job => {
@@ -296,7 +287,6 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
     })
 
     if (existingJob != null) {
-      // merge messages instead of adding new job
       existingJob.options.message = mergeMessages(existingJob.options.message, message)
 
       await existingJob.join({
@@ -377,7 +367,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
     return connection
   }
 
-  _updateSentStats (blocks: Block[] = []): void {
+  _updateSentStats (blocks: Map<string, Block>): void {
     let bytes = 0
 
     for (const block of blocks.values()) {
@@ -385,6 +375,6 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
     }
 
     this.metrics.dataSent?.increment(bytes)
-    this.metrics.blocksSent?.increment(blocks.length)
+    this.metrics.blocksSent?.increment(blocks.size)
   }
 }

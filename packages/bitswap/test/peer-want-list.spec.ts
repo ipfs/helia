@@ -254,8 +254,8 @@ describe('peer-want-lists', () => {
     const message = sendMessageStub.getCall(0).args[1]
 
     expect(message.blocks).to.have.lengthOf(1)
-    expect(message.blocks?.[0].data).to.equalBytes(block)
-    expect(message.blocks?.[0].prefix).to.equalBytes(ve([
+    expect([...message.blocks.values()][0].data).to.equalBytes(block)
+    expect([...message.blocks.values()][0].prefix).to.equalBytes(ve([
       cid.version, cid.code, cid.multihash.code, cid.multihash.digest.byteLength
     ]))
 
@@ -304,8 +304,8 @@ describe('peer-want-lists', () => {
 
     expect(message.blocks).to.be.empty('should not have sent blocks')
     expect(message.blockPresences).to.have.lengthOf(1)
-    expect(message.blockPresences?.[0].cid).to.equalBytes(cid.bytes)
-    expect(message.blockPresences?.[0].type).to.equal(BlockPresenceType.HaveBlock, 'should have sent HaveBlock presence')
+    expect([...message.blockPresences.values()][0].cid).to.equalBytes(cid.bytes)
+    expect([...message.blockPresences.values()][0].type).to.equal(BlockPresenceType.HaveBlock, 'should have sent HaveBlock presence')
   })
 
   it('should send requested lack of block presences to peer', async () => {
@@ -345,8 +345,8 @@ describe('peer-want-lists', () => {
 
     expect(message.blocks).to.be.empty('should not have sent blocks')
     expect(message.blockPresences).to.have.lengthOf(1)
-    expect(message.blockPresences?.[0].cid).to.equalBytes(cid.bytes)
-    expect(message.blockPresences?.[0].type).to.equal(BlockPresenceType.DontHaveBlock, 'should have sent DontHaveBlock presence')
+    expect([...message.blockPresences.values()][0].cid).to.equalBytes(cid.bytes)
+    expect([...message.blockPresences.values()][0].type).to.equal(BlockPresenceType.DontHaveBlock, 'should have sent DontHaveBlock presence')
   })
 
   it('should send requested blocks to peer when presence was requested but block size is less than maxSizeReplaceHasWithBlock', async () => {
@@ -388,8 +388,8 @@ describe('peer-want-lists', () => {
 
     expect(message.blockPresences).to.be.empty()
     expect(message.blocks).to.have.lengthOf(1)
-    expect(message.blocks?.[0].data).to.equalBytes(block)
-    expect(message.blocks?.[0].prefix).to.equalBytes(ve([
+    expect([...message.blocks.values()][0].data).to.equalBytes(block)
+    expect([...message.blocks.values()][0].prefix).to.equalBytes(ve([
       cid.version, cid.code, cid.multihash.code, cid.multihash.digest.byteLength
     ]))
 
@@ -435,8 +435,8 @@ describe('peer-want-lists', () => {
 
     expect(message.blocks).to.be.empty('should not have sent blocks')
     expect(message.blockPresences).to.have.lengthOf(1)
-    expect(message.blockPresences?.[0].cid).to.equalBytes(cid.bytes)
-    expect(message.blockPresences?.[0].type).to.equal(BlockPresenceType.DontHaveBlock, 'should have sent DontHaveBlock presence')
+    expect([...message.blockPresences.values()][0].cid).to.equalBytes(cid.bytes)
+    expect([...message.blockPresences.values()][0].type).to.equal(BlockPresenceType.DontHaveBlock, 'should have sent DontHaveBlock presence')
   })
 
   it('should remove wants when peer cancels', async () => {
@@ -586,8 +586,8 @@ describe('peer-want-lists', () => {
     const message = sendMessageStub.getCall(0).args[1]
 
     expect(message.blocks).to.have.lengthOf(1)
-    expect(message.blocks?.[0].data).to.equalBytes(block)
-    expect(message.blocks?.[0].prefix).to.equalBytes(ve([
+    expect([...message.blocks.values()][0].data).to.equalBytes(block)
+    expect([...message.blocks.values()][0].prefix).to.equalBytes(ve([
       cid.version, cid.code, cid.multihash.code, cid.multihash.digest.byteLength
     ]))
 
