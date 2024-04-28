@@ -94,9 +94,41 @@ export class Ledger {
     const sentBlocks = new Set<string>()
 
     for (const [key, entry] of this.wants.entries()) {
-      const has = await this.blockstore.has(entry.cid, options)
+      try {
+        const block = await this.blockstore.get(entry.cid, options)
 
-      if (!has) {
+        // do they want the block or just us to tell them we have the block
+        if (entry.wantType === WantType.WantHave) {
+          if (block.byteLength < this.maxSizeReplaceHasWithBlock) {
+            this.log('sending have and block for %c', entry.cid)
+            // if the block is small we just send it to them
+            sentBlocks.add(key)
+            message.addBlock(entry.cid, {
+              data: block,
+              prefix: cidToPrefix(entry.cid)
+            })
+          } else {
+            this.log('sending have for %c', entry.cid)
+            // otherwise tell them we have the block
+            message.addBlockPresence(entry.cid, {
+              cid: entry.cid.bytes,
+              type: BlockPresenceType.HaveBlock
+            })
+          }
+        } else {
+          this.log('sending block for %c', entry.cid)
+          // they want the block, send it to them
+          sentBlocks.add(key)
+          message.addBlock(entry.cid, {
+            data: block,
+            prefix: cidToPrefix(entry.cid)
+          })
+        }
+      } catch (err: any) {
+        if (err.code !== 'ERR_NOT_FOUND') {
+          throw err
+        }
+
         this.log('do not have block for %c', entry.cid)
 
         // we don't have the requested block and the remote is not interested
@@ -114,38 +146,6 @@ export class Ledger {
         message.addBlockPresence(entry.cid, {
           cid: entry.cid.bytes,
           type: BlockPresenceType.DontHaveBlock
-        })
-
-        continue
-      }
-
-      const block = await this.blockstore.get(entry.cid, options)
-
-      // do they want the block or just us to tell them we have the block
-      if (entry.wantType === WantType.WantHave) {
-        if (block.byteLength < this.maxSizeReplaceHasWithBlock) {
-          this.log('sending have and block for %c', entry.cid)
-          // if the block is small we just send it to them
-          sentBlocks.add(key)
-          message.addBlock(entry.cid, {
-            data: block,
-            prefix: cidToPrefix(entry.cid)
-          })
-        } else {
-          this.log('sending have for %c', entry.cid)
-          // otherwise tell them we have the block
-          message.addBlockPresence(entry.cid, {
-            cid: entry.cid.bytes,
-            type: BlockPresenceType.HaveBlock
-          })
-        }
-      } else {
-        this.log('sending block for %c', entry.cid)
-        // they want the block, send it to them
-        sentBlocks.add(key)
-        message.addBlock(entry.cid, {
-          data: block,
-          prefix: cidToPrefix(entry.cid)
         })
       }
     }

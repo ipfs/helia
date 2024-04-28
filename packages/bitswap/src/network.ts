@@ -188,9 +188,9 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
       this.log('incoming new bitswap %s stream from %p', stream.protocol, connection.remotePeer)
       const abortListener = (): void => {
         if (stream.status === 'open') {
-          stream.abort(new CodeError('Incoming Bitswap stream timed out', 'ERR_TIMEOUT'))
+          stream.abort(new CodeError(`Incoming Bitswap stream timed out after ${this.messageReceiveTimeout}ms`, 'ERR_TIMEOUT'))
         } else {
-          this.log('stream aborted with status', stream.status)
+          this.log('stream aborted with status %s', stream.status)
         }
       }
 
