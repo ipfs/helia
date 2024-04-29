@@ -221,13 +221,9 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
         for (const [key, entry] of this.wants.entries()) {
           const sentPreviously = sentWants.has(key)
 
-          // don't cancel if we've not sent it to them before
-          if (entry.cancel && !sentPreviously) {
-            continue
-          }
-
-          // only send if we've not sent it to them before
-          if (sentPreviously) {
+          // only send if either we've not sent it before, or we haven't sent it
+          // but we're also cancelling the want.
+          if (sentPreviously || entry.cancel) {
             continue
           }
 
