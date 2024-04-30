@@ -23,11 +23,14 @@ interface Impl {
 }
 
 const webRTCimpls: Record<string, Impl> = {
+  /*
+  https://issues.chromium.org/issues/40072842
   chromium: {
     type: 'helia',
     exec: PLAYWRIGHT,
     listen: (relay) => `${relay}/p2p-circuit,/webrtc`
   },
+  */
   firefox: {
     type: 'helia',
     exec: PLAYWRIGHT,
@@ -69,7 +72,7 @@ const webTransportImpls: Record<string, Impl> = {
   },
   */
   /*
-  support for serverCertificateHashes is still only in nightly as of now
+  playwright ships with firefox 121 at the time of writing, it needs 125
   firefox: {
     type: 'helia',
     exec: PLAYWRIGHT,
@@ -120,8 +123,8 @@ export function createTests (relay: Multiaddr): Test[] {
   const output: Test[] = []
 
   addTests('TCP', tcpImpls, output, relay)
-  addTests('WebRTC', webRTCimpls, output, relay)
   addTests('WebSockets', webSocketimpls, output, relay)
+  addTests('WebRTC', webRTCimpls, output, relay)
   addTests('WebTransport', webTransportImpls, output, relay)
 
   return output
