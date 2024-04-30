@@ -2,6 +2,7 @@
 import { CodeError } from '@libp2p/interface'
 import { encodingLength } from 'uint8-varint'
 import { BitswapMessage, Block, BlockPresence, WantlistEntry } from '../pb/message.js'
+import type { QueuedBitswapMessage } from './bitswap-message.js'
 
 /**
  * https://github.com/ipfs/kubo/issues/4473#issuecomment-350390693
@@ -20,10 +21,10 @@ const MAX_ENCODED_BLOCK_SIZE = MAX_BLOCK_SIZE + 16
  * If a block is encountered that is larger than the max message size an error
  * will be thrown.
  */
-export async function * splitMessage (message: BitswapMessage, maxSize: number): AsyncGenerator<Uint8Array> {
-  const wantListEntries = message.wantlist?.entries ?? []
-  const blockPresences = message.blockPresences
-  const blocks = message.blocks
+export function * splitMessage (message: QueuedBitswapMessage, maxSize: number): Generator<Uint8Array> {
+  const wantListEntries = [...message.wantlist.values()]
+  const blockPresences = [...message.blockPresences.values()]
+  const blocks = [...message.blocks.values()]
 
   let wantListIndex = 0
   let blockPresencesIndex = 0
@@ -33,7 +34,7 @@ export async function * splitMessage (message: BitswapMessage, maxSize: number):
   while (true) {
     const subMessage: Required<BitswapMessage> = {
       wantlist: {
-        full: message.wantlist?.full ?? false,
+        full: message.full ?? false,
         entries: []
       },
       blockPresences: [],
