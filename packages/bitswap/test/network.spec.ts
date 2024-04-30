@@ -18,6 +18,7 @@ import { stubInterface, type StubbedInstance } from 'sinon-ts'
 import { BITSWAP_120 } from '../src/constants.js'
 import { Network } from '../src/network.js'
 import { BitswapMessage, BlockPresenceType } from '../src/pb/message.js'
+import { QueuedBitswapMessage } from '../src/utils/bitswap-message.js'
 import { cidToPrefix } from '../src/utils/cid-prefix.js'
 import type { Routing } from '@helia/interface/routing'
 import type { Connection, Libp2p, PeerId, IdentifyResult, Stream } from '@libp2p/interface'
@@ -360,15 +361,7 @@ describe('network', () => {
 
     components.libp2p.dialProtocol.withArgs(peerId, BITSWAP_120).resolves(remoteStream)
 
-    void network.sendMessage(peerId, {
-      blocks: [],
-      blockPresences: [],
-      wantlist: {
-        full: true,
-        entries: []
-      },
-      pendingBytes: 0
-    })
+    void network.sendMessage(peerId, new QueuedBitswapMessage(true))
 
     const pbstr = pbStream(localDuplex).pb(BitswapMessage)
     const message = await pbstr.read()
@@ -400,55 +393,51 @@ describe('network', () => {
     const cid6 = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
     const cid7 = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3G')
 
-    const messageA = {
-      blocks: [{
-        prefix: cidToPrefix(cid1),
-        data: Uint8Array.from([0, 1, 2, 3, 4])
-      }],
-      blockPresences: [{
-        cid: cid3.bytes,
-        type: BlockPresenceType.DontHaveBlock
-      }, {
-        cid: cid5.bytes,
-        type: BlockPresenceType.DontHaveBlock
-      }],
-      wantlist: {
-        full: true,
-        entries: [{
-          cid: cid5.bytes,
-          priority: 5
-        }, {
-          cid: cid6.bytes,
-          priority: 100
-        }]
-      },
-      pendingBytes: 5
-    }
+    const messageA = new QueuedBitswapMessage(true)
+    messageA.addBlock(cid1, {
+      prefix: cidToPrefix(cid1),
+      data: Uint8Array.from([0, 1, 2, 3, 4])
+    })
+    messageA.addBlockPresence(cid3, {
+      cid: cid3.bytes,
+      type: BlockPresenceType.DontHaveBlock
+    })
+    messageA.addBlockPresence(cid5, {
+      cid: cid5.bytes,
+      type: BlockPresenceType.DontHaveBlock
+    })
+    messageA.addWantlistEntry(cid5, {
+      cid: cid5.bytes,
+      priority: 5
+    })
+    messageA.addWantlistEntry(cid6, {
+      cid: cid6.bytes,
+      priority: 100
+    })
+    messageA.pendingBytes = 5
 
-    const messageB = {
-      blocks: [{
-        prefix: cidToPrefix(cid2),
-        data: Uint8Array.from([5, 6, 7, 8])
-      }],
-      blockPresences: [{
-        cid: cid4.bytes,
-        type: BlockPresenceType.DontHaveBlock
-      }, {
-        cid: cid5.bytes,
-        type: BlockPresenceType.HaveBlock
-      }],
-      wantlist: {
-        full: false,
-        entries: [{
-          cid: cid6.bytes,
-          priority: 0
-        }, {
-          cid: cid7.bytes,
-          priority: 0
-        }]
-      },
-      pendingBytes: 7
-    }
+    const messageB = new QueuedBitswapMessage()
+    messageB.addBlock(cid2, {
+      prefix: cidToPrefix(cid2),
+      data: Uint8Array.from([5, 6, 7, 8])
+    })
+    messageB.addBlockPresence(cid4, {
+      cid: cid4.bytes,
+      type: BlockPresenceType.DontHaveBlock
+    })
+    messageB.addBlockPresence(cid5, {
+      cid: cid5.bytes,
+      type: BlockPresenceType.HaveBlock
+    })
+    messageB.addWantlistEntry(cid6, {
+      cid: cid6.bytes,
+      priority: 0
+    })
+    messageB.addWantlistEntry(cid7, {
+      cid: cid7.bytes,
+      priority: 0
+    })
+    messageB.pendingBytes = 7
 
     // block the queue with a slow request
     const slowPeer = await createEd25519PeerId()
@@ -456,12 +445,15 @@ describe('network', () => {
       await delay(100)
       throw new Error('Urk!')
     })
-    void network.sendMessage(slowPeer, {
-      blocks: [{
-        prefix: cidToPrefix(cid1),
-        data: Uint8Array.from([0, 1, 2, 3, 4])
-      }]
-    }).catch(() => {})
+
+    const messageC = new QueuedBitswapMessage()
+    messageC.addBlock(cid1, {
+      prefix: cidToPrefix(cid1),
+      data: Uint8Array.from([0, 1, 2, 3, 4])
+    })
+
+    void network.sendMessage(slowPeer, messageC)
+      .catch(() => {})
 
     // send two messages while the queue is blocked
     void network.sendMessage(peerId, messageA)
@@ -476,10 +468,13 @@ describe('network', () => {
     const pbstr = pbStream(localDuplex).pb(BitswapMessage)
     const message = await pbstr.read()
 
-    expect(message).to.have.deep.property('blocks', [
-      ...messageA.blocks,
-      ...messageB.blocks
-    ])
+    expect([...message.blocks.values()]).to.deep.equal([{
+      prefix: cidToPrefix(cid1),
+      data: Uint8Array.from([0, 1, 2, 3, 4])
+    }, {
+      prefix: cidToPrefix(cid2),
+      data: Uint8Array.from([5, 6, 7, 8])
+    }])
     expect(message).to.have.deep.property('blockPresences', [{
       cid: cid3.bytes,
       type: BlockPresenceType.DontHaveBlock
