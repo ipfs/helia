@@ -13,6 +13,8 @@ export async function createRelay (): Promise<HeliaLibp2p<Libp2p<any>>> {
 
   return createHelia({
     logger,
+    blockBrokers: [],
+    routers: [],
     libp2p: await createLibp2p({
       logger,
       addresses: {
@@ -33,7 +35,8 @@ export async function createRelay (): Promise<HeliaLibp2p<Libp2p<any>>> {
         identify: identify(),
         relay: circuitRelayServer({
           reservations: {
-            maxReservations: Infinity
+            maxReservations: Infinity,
+            applyDefaultLimit: false
           }
         })
       },

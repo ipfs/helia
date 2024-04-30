@@ -60,6 +60,28 @@ const webSocketimpls: Record<string, Impl> = {
   }
 }
 
+const webTransportImpls: Record<string, Impl> = {
+  /*
+  // https://issues.chromium.org/issues/326887753?pli=1
+  chromium: {
+    type: 'helia',
+    exec: PLAYWRIGHT
+  },
+  */
+  /*
+  support for serverCertificateHashes is still only in nightly as of now
+  firefox: {
+    type: 'helia',
+    exec: PLAYWRIGHT,
+    args: ['--browser', 'firefox']
+  },
+  */
+  kubo: {
+    type: 'kubo',
+    listen: () => '/ip4/127.0.0.1/udp/0/quic-v1/webtransport'
+  }
+}
+
 const tcpImpls: Record<string, Impl> = {
   'node.js': {
     type: 'helia',
@@ -98,8 +120,9 @@ export function createTests (relay: Multiaddr): Test[] {
   const output: Test[] = []
 
   addTests('TCP', tcpImpls, output, relay)
-  addTests('WebSockets', webSocketimpls, output, relay)
   addTests('WebRTC', webRTCimpls, output, relay)
+  addTests('WebSockets', webSocketimpls, output, relay)
+  addTests('WebTransport', webTransportImpls, output, relay)
 
   return output
 }

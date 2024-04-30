@@ -12,6 +12,7 @@ const cid = CID.parse(`${process.env.HELIA_CID}`)
 const mas = `${process.env.HELIA_MULTIADDRS}`.split(',').map(str => multiaddr(str))
 
 const helia = await getHelia()
+
 await helia.libp2p.dial(mas)
 
 const fs = unixfs(helia)

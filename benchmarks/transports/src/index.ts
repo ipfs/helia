@@ -35,14 +35,6 @@ export interface File {
 }
 
 const opts: Record<string, ImportOptions> = {
-  /*
-  'kubo defaults': {
-    chunkSize: 256 * 1024,
-    rawLeaves: false,
-    cidVersion: 0,
-    maxChildrenPerNode: 174
-  },
-  */
   'filecoin defaults': {
     chunkSize: 1024 * 1024,
     rawLeaves: true,
