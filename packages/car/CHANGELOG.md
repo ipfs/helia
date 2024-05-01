@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.1.5](https://github.com/ipfs/helia/compare/car-v3.1.4...car-v3.1.5) (2024-05-01)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^4.2.0 to ^4.3.0
+  * devDependencies
+    * @helia/unixfs bumped from ^3.0.5 to ^3.0.6
+
 ## [3.1.4](https://github.com/ipfs/helia/compare/car-v3.1.3...car-v3.1.4) (2024-04-22)
 
 

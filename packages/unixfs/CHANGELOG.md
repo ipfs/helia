@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.0.6](https://github.com/ipfs/helia/compare/unixfs-v3.0.5...unixfs-v3.0.6) (2024-05-01)
+
+
+### Dependencies
+
+* update it-glob ([#520](https://github.com/ipfs/helia/issues/520)) ([36081e0](https://github.com/ipfs/helia/commit/36081e063972e89c0c7b258aeb220e60bf024249))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^4.2.0 to ^4.3.0
+
 ## [3.0.5](https://github.com/ipfs/helia/compare/unixfs-v3.0.4...unixfs-v3.0.5) (2024-04-22)
 
 

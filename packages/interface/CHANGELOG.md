@@ -5,6 +5,13 @@
 
 * expose .dns property on @helia/interface ([#465](https://github.com/ipfs/helia/issues/465)) ([8c9bb7d](https://github.com/ipfs/helia/commit/8c9bb7d224a1b786cba1fba18bffe07001a3b95d))
 
+## [4.3.0](https://github.com/ipfs/helia/compare/interface-v4.2.0...interface-v4.3.0) (2024-05-01)
+
+
+### Features
+
+* add metrics property to helia interface ([#512](https://github.com/ipfs/helia/issues/512)) ([f7f71bb](https://github.com/ipfs/helia/commit/f7f71bb20ab0b4efbe802be5af1189e76153b826))
+
 ## [4.2.0](https://github.com/ipfs/helia/compare/interface-v4.1.0...interface-v4.2.0) (2024-04-15)
 
 

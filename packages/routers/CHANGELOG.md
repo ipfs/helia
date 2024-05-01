@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.1.0](https://github.com/ipfs/helia/compare/routers-v1.0.3...routers-v1.1.0) (2024-05-01)
+
+
+### Features
+
+* add static http gateway routing ([#515](https://github.com/ipfs/helia/issues/515)) ([2d070b9](https://github.com/ipfs/helia/commit/2d070b9cfe0e225e4a66be85cceac900516a8a1f))
+
+
+### Bug Fixes
+
+* http blockbroker loads gateways from routing ([#519](https://github.com/ipfs/helia/issues/519)) ([6a62d1c](https://github.com/ipfs/helia/commit/6a62d1c8dcfadead0498d0bb59958837dc204c91))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^4.2.0 to ^4.3.0
+
 ## [1.0.3](https://github.com/ipfs/helia/compare/routers-v1.0.2...routers-v1.0.3) (2024-04-15)
 
 

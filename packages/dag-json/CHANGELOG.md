@@ -1,5 +1,14 @@
 # Changelog
 
+## [3.0.4](https://github.com/ipfs/helia/compare/dag-json-v3.0.3...dag-json-v3.0.4) (2024-05-01)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^4.2.0 to ^4.3.0
+
 ## [3.0.3](https://github.com/ipfs/helia/compare/dag-json-v3.0.2...dag-json-v3.0.3) (2024-04-15)
 
 
