@@ -1,5 +1,8 @@
 /* eslint-disable no-console */
 
+import fs from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
 import debug from 'debug'
 import { execa, type ExecaChildProcess } from 'execa'
 import type { File } from './index.js'
@@ -22,7 +25,10 @@ export class Test {
   }
 
   async runTest (file: File): Promise<string> {
-    this.senderProc = this.startSender(file)
+    const senderRepo = path.join(os.tmpdir(), `helia-${Math.random()}`)
+    const recipientRepo = path.join(os.tmpdir(), `helia-${Math.random()}`)
+
+    this.senderProc = this.startSender(file, senderRepo)
 
     const { cid, multiaddrs } = await new Promise<{ cid: string, multiaddrs: string }>((resolve, reject) => {
       this.senderProc?.stderr?.on('data', (buf) => {
@@ -44,7 +50,7 @@ export class Test {
       })
     })
 
-    this.recipientProc = this.startRecipient(cid, multiaddrs)
+    this.recipientProc = this.startRecipient(cid, multiaddrs, recipientRepo)
 
     let result: string = ''
 
@@ -87,27 +93,41 @@ export class Test {
       }, 100)
     })
 
+    // remove temporary directories
+    await Promise.all([
+      fs.rm(senderRepo, {
+        recursive: true,
+        force: true
+      }),
+      fs.rm(recipientRepo, {
+        recursive: true,
+        force: true
+      })
+    ])
+
     return result
   }
 
-  startSender (file: File): ExecaChildProcess<string> {
+  startSender (file: File, repo: string): ExecaChildProcess<string> {
     return execa(this.test.senderExec ?? 'node', [...(this.test.senderArgs ?? []), `./dist/src/runner/${this.test.senderImplementation}/sender.js`], {
       env: {
         HELIA_TYPE: 'sender',
         HELIA_IMPORT_OPTIONS: JSON.stringify(file.options),
         HELIA_FILE_SIZE: `${file.size}`,
-        HELIA_LISTEN: this.test.senderListen
+        HELIA_LISTEN: this.test.senderListen,
+        HELIA_REPO: repo
       }
     })
   }
 
-  startRecipient (cid: string, multiaddrs: string): ExecaChildProcess<string> {
+  startRecipient (cid: string, multiaddrs: string, repo: string): ExecaChildProcess<string> {
     return execa(this.test.recipientExec ?? 'node', [...(this.test.recipientArgs ?? []), `./dist/src/runner/${this.test.recipientImplementation}/recipient.js`], {
       env: {
         HELIA_TYPE: 'recipient',
         HELIA_CID: cid,
         HELIA_MULTIADDRS: multiaddrs,
-        HELIA_TIMEOUT: `${60000 * 5}` // 5 minute timeout
+        HELIA_TIMEOUT: `${60000 * 5}`, // 5 minute timeout
+        HELIA_REPO: repo
       }
     })
   }

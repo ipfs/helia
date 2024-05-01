@@ -10,6 +10,7 @@ export async function getKubo (): Promise<KuboNode> {
     test: true,
     bin: kuboPath(),
     rpc: kuboRpcClient,
+    repo: process.env.HELIA_REPO,
     init: {
       emptyRepo: true,
       config: {

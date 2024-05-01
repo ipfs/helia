@@ -46,3 +46,14 @@ or
 $ DEBUG='test*,sender*' npm start
 ```
 
+## Results
+
+Recently generated graph:
+
+- Lower numbers are better
+- The legend arrow indicates direction of transfer
+    - e.g. `helia -> kubo` is the equivalent of
+      1. `ipfs.add` executed on Helia
+      2. `ipfs.pin` executed on Kubo which pulls the data from Helia
+
+<img width="1042" alt="image" src="https://github.com/ipfs/helia/assets/665810/d0d16ed0-d764-42ee-be73-ac7bbb938103">
