@@ -106,7 +106,8 @@ export class Test {
       env: {
         HELIA_TYPE: 'recipient',
         HELIA_CID: cid,
-        HELIA_MULTIADDRS: multiaddrs
+        HELIA_MULTIADDRS: multiaddrs,
+        HELIA_TIMEOUT: `${60000 * 5}` // 5 minute timeout
       }
     })
   }

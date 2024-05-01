@@ -122,10 +122,10 @@ function addTests (name: string, impls: Record<string, Impl>, tests: Test[], rel
 export function createTests (relay: Multiaddr): Test[] {
   const output: Test[] = []
 
-  addTests('TCP', tcpImpls, output, relay)
-  addTests('WebSockets', webSocketimpls, output, relay)
   addTests('WebRTC', webRTCimpls, output, relay)
   addTests('WebTransport', webTransportImpls, output, relay)
+  addTests('WebSockets', webSocketimpls, output, relay)
+  addTests('TCP', tcpImpls, output, relay)
 
   return output
 }

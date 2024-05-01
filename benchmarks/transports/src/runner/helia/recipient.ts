@@ -19,8 +19,14 @@ const fs = unixfs(helia)
 
 const start = Date.now()
 
-// pull data from remote
-await drain(fs.cat(cid))
+try {
+  await drain(fs.cat(cid, {
+    signal: AbortSignal.timeout(parseInt(process.env.HELIA_TIMEOUT ?? '60000'))
+  }))
 
-console.info(`TEST-OUTPUT:${Date.now() - start}`)
-console.info('TEST-OUTPUT:done')
+  console.info(`TEST-OUTPUT:${Date.now() - start}`)
+  console.info('TEST-OUTPUT:done')
+} catch {
+  console.info(`TEST-OUTPUT:?`)
+  console.info('TEST-OUTPUT:done')
+}

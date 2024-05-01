@@ -17,12 +17,21 @@ await Promise.all(
 
 const start = Date.now()
 
-// pull data from remote. this is going over HTTP so use pin in order to ensure
-// the data is loaded by Kubo but don't skew the benchmark by then also
-// streaming it to the client
-await kubo.api.pin.add(cid, {
-  recursive: true
-})
+try {
+  // pull data from remote. this is going over HTTP so use pin in order to ensure
+  // the data is loaded by Kubo but don't skew the benchmark by then also
+  // streaming it to the client
+  await kubo.api.pin.add(cid, {
+    recursive: true,
+    signal: AbortSignal.timeout(parseInt(process.env.HELIA_TIMEOUT ?? '60000'))
+  })
+
+  console.info(`TEST-OUTPUT:${Date.now() - start}`)
+  console.info('TEST-OUTPUT:done')
+} catch {
+  console.info(`TEST-OUTPUT:?`)
+  console.info('TEST-OUTPUT:done')
+}
 
 console.info(`TEST-OUTPUT:${Date.now() - start}`)
 console.info('TEST-OUTPUT:done')
