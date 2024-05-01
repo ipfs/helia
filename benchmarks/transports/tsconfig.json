@@ -1,0 +1,23 @@
+{
+  "extends": "aegir/src/config/tsconfig.aegir.json",
+  "compilerOptions": {
+    "outDir": "dist"
+  },
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "../../packages/block-brokers"
+    },
+    {
+      "path": "../../packages/helia"
+    },
+    {
+      "path": "../../packages/routers"
+    },
+    {
+      "path": "../../packages/unixfs"
+    }
+  ]
+}
