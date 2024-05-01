@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.1.2](https://github.com/ipfs/helia/compare/block-brokers-v2.1.1...block-brokers-v2.1.2) (2024-05-01)
+
+
+### Bug Fixes
+
+* http blockbroker loads gateways from routing ([#519](https://github.com/ipfs/helia/issues/519)) ([6a62d1c](https://github.com/ipfs/helia/commit/6a62d1c8dcfadead0498d0bb59958837dc204c91))
+* use a short-lived AbortSignal for fetch operations ([#511](https://github.com/ipfs/helia/issues/511)) ([5e98950](https://github.com/ipfs/helia/commit/5e989501203c48661416aff090c135268b5c8445))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^1.0.1 to ^1.1.0
+    * @helia/interface bumped from ^4.2.0 to ^4.3.0
+    * @helia/utils bumped from ^0.2.0 to ^0.3.0
+
 ## [2.1.1](https://github.com/ipfs/helia/compare/block-brokers-v2.1.0...block-brokers-v2.1.1) (2024-04-22)
 
 

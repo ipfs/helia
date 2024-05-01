@@ -1,5 +1,26 @@
 # Changelog
 
+## [6.1.2](https://github.com/ipfs/helia/compare/interop-v6.1.1...interop-v6.1.2) (2024-05-01)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^2.1.1 to ^2.1.2
+    * @helia/car bumped from ^3.1.4 to ^3.1.5
+    * @helia/dag-cbor bumped from ^3.0.3 to ^3.0.4
+    * @helia/dag-json bumped from ^3.0.3 to ^3.0.4
+    * @helia/http bumped from ^1.0.5 to ^1.0.6
+    * @helia/interface bumped from ^4.2.0 to ^4.3.0
+    * @helia/ipns bumped from ^7.2.1 to ^7.2.2
+    * @helia/json bumped from ^3.0.3 to ^3.0.4
+    * @helia/mfs bumped from ^3.0.5 to ^3.0.6
+    * @helia/routers bumped from ^1.0.3 to ^1.1.0
+    * @helia/strings bumped from ^3.0.3 to ^3.0.4
+    * @helia/unixfs bumped from ^3.0.5 to ^3.0.6
+    * helia bumped from ^4.1.2 to ^4.2.0
+
 ## [6.1.1](https://github.com/ipfs/helia/compare/interop-v6.1.0...interop-v6.1.1) (2024-04-22)
 
 

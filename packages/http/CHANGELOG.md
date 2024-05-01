@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.0.6](https://github.com/ipfs/helia/compare/http-v1.0.5...http-v1.0.6) (2024-05-01)
+
+
+### Bug Fixes
+
+* http blockbroker loads gateways from routing ([#519](https://github.com/ipfs/helia/issues/519)) ([6a62d1c](https://github.com/ipfs/helia/commit/6a62d1c8dcfadead0498d0bb59958837dc204c91))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^2.1.1 to ^2.1.2
+    * @helia/interface bumped from ^4.2.0 to ^4.3.0
+    * @helia/routers bumped from ^1.0.3 to ^1.1.0
+    * @helia/utils bumped from ^0.2.0 to ^0.3.0
+
 ## [1.0.5](https://github.com/ipfs/helia/compare/http-v1.0.4...http-v1.0.5) (2024-04-22)
 
 

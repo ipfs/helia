@@ -1,5 +1,14 @@
 # Changelog
 
+## [7.2.2](https://github.com/ipfs/helia/compare/ipns-v7.2.1...ipns-v7.2.2) (2024-05-01)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^4.2.0 to ^4.3.0
+
 ## [7.2.1](https://github.com/ipfs/helia/compare/ipns-v7.2.0...ipns-v7.2.1) (2024-04-15)
 
 

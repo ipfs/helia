@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.3.0](https://github.com/ipfs/helia/compare/utils-v0.2.0...utils-v0.3.0) (2024-05-01)
+
+
+### Features
+
+* add metrics property to helia interface ([#512](https://github.com/ipfs/helia/issues/512)) ([f7f71bb](https://github.com/ipfs/helia/commit/f7f71bb20ab0b4efbe802be5af1189e76153b826))
+
+
+### Bug Fixes
+
+* do not append peer ids to provider multiaddrs ([#516](https://github.com/ipfs/helia/issues/516)) ([e4e67d0](https://github.com/ipfs/helia/commit/e4e67d0cc64593eca8c3eaa67a4e27544a1692ee))
+* log peer id as string not object ([#514](https://github.com/ipfs/helia/issues/514)) ([f6bcbd4](https://github.com/ipfs/helia/commit/f6bcbd4e784a0c7a230f8c5ccb7889850d692af4))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^4.2.0 to ^4.3.0
+
 ## [0.2.0](https://github.com/ipfs/helia/compare/utils-v0.1.0...utils-v0.2.0) (2024-04-15)
 
 

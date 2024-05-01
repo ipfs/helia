@@ -1,6 +1,6 @@
 {
   "name": "@helia/car",
-  "version": "3.1.4",
+  "version": "3.1.5",
   "description": "Import/export car files from Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/car#readme",
@@ -139,7 +139,7 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@helia/interface": "^4.2.0",
+    "@helia/interface": "^4.3.0",
     "@ipld/car": "^5.3.0",
     "@libp2p/interfaces": "^3.3.2",
     "interface-blockstore": "^5.2.10",
@@ -151,7 +151,7 @@
     "progress-events": "^1.0.0"
   },
   "devDependencies": {
-    "@helia/unixfs": "^3.0.5",
+    "@helia/unixfs": "^3.0.6",
     "@ipld/dag-pb": "^4.1.0",
     "aegir": "^42.2.5",
     "blockstore-core": "^4.4.0",

@@ -1,5 +1,28 @@
 # Changelog
 
+## [4.2.0](https://github.com/ipfs/helia/compare/helia-v4.1.2...helia-v4.2.0) (2024-05-01)
+
+
+### Features
+
+* add metrics property to helia interface ([#512](https://github.com/ipfs/helia/issues/512)) ([f7f71bb](https://github.com/ipfs/helia/commit/f7f71bb20ab0b4efbe802be5af1189e76153b826))
+
+
+### Bug Fixes
+
+* http blockbroker loads gateways from routing ([#519](https://github.com/ipfs/helia/issues/519)) ([6a62d1c](https://github.com/ipfs/helia/commit/6a62d1c8dcfadead0498d0bb59958837dc204c91))
+* remove rust bootstrapper ([#523](https://github.com/ipfs/helia/issues/523)) ([fa9bd4b](https://github.com/ipfs/helia/commit/fa9bd4b53702f3ae71b76a46549535b63629d820))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^2.1.1 to ^2.1.2
+    * @helia/interface bumped from ^4.2.0 to ^4.3.0
+    * @helia/routers bumped from ^1.0.3 to ^1.1.0
+    * @helia/utils bumped from ^0.2.0 to ^0.3.0
+
 ## [4.1.2](https://github.com/ipfs/helia/compare/helia-v4.1.1...helia-v4.1.2) (2024-04-22)
 
 

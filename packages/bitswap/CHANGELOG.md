@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.1.0](https://github.com/ipfs/helia/compare/bitswap-v1.0.1...bitswap-v1.1.0) (2024-05-01)
+
+
+### Features
+
+* add metrics property to helia interface ([#512](https://github.com/ipfs/helia/issues/512)) ([f7f71bb](https://github.com/ipfs/helia/commit/f7f71bb20ab0b4efbe802be5af1189e76153b826))
+
+
+### Bug Fixes
+
+* improve bitswap message merging ([#522](https://github.com/ipfs/helia/issues/522)) ([7419dfc](https://github.com/ipfs/helia/commit/7419dfc2fe273d3f816d27b62062636be0964d7a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^4.2.0 to ^4.3.0
+    * @helia/utils bumped from ^0.2.0 to ^0.3.0
+
 ## [1.0.1](https://github.com/ipfs/helia/compare/bitswap-v1.0.0...bitswap-v1.0.1) (2024-04-22)
 
 
