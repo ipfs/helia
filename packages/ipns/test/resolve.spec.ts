@@ -209,7 +209,7 @@ describe('resolve', () => {
 
     // create a record with a valid lifetime and a non-expired TTL
     const ipnsRecord = await create(key, cid, 1, Math.pow(2, 10), {
-      ttlNs: 10_000_000
+      ttlNs: 10_000_000_000
     })
     const dhtRecord = new Record(customRoutingKey, marshal(ipnsRecord), new Date(Date.now()))
 
