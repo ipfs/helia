@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.0.0](https://github.com/ipfs/helia/compare/block-brokers-v2.1.2...block-brokers-v3.0.0) (2024-05-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* the gateways init option has been removed from trustless gateway block brokers
+
+### Bug Fixes
+
+* trustless gateway brokers no longer take a gateways arg ([#530](https://github.com/ipfs/helia/issues/530)) ([a8fdfc2](https://github.com/ipfs/helia/commit/a8fdfc27e3c2c75d75cc14dafe971796d70d8411))
+
 ## [2.1.2](https://github.com/ipfs/helia/compare/block-brokers-v2.1.1...block-brokers-v2.1.2) (2024-05-01)
 
 
