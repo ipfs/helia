@@ -36,6 +36,8 @@ export interface DefaultLibp2pServices extends Record<string, unknown> {
 }
 
 export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOptions<DefaultLibp2pServices> {
+  const agentVersion = `${name}/${version} ${libp2pInfo.name}/${libp2pInfo.version} UserAgent=${process.version}`
+
   return {
     peerId: options.peerId,
     dns: options.dns,
@@ -79,10 +81,10 @@ export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOpti
         }
       }),
       identify: identify({
-        agentVersion: `${name}/${version} ${libp2pInfo.name}/${libp2pInfo.version} UserAgent=${globalThis.process.version}`
+        agentVersion
       }),
       identifyPush: identifyPush({
-        agentVersion: `${name}/${version} ${libp2pInfo.name}/${libp2pInfo.version} UserAgent=${globalThis.process.version}`
+        agentVersion
       }),
       keychain: keychain(options.keychain),
       ping: ping(),
