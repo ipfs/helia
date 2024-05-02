@@ -5,7 +5,7 @@ import { autoNAT } from '@libp2p/autonat'
 import { bootstrap } from '@libp2p/bootstrap'
 import { circuitRelayTransport, circuitRelayServer, type CircuitRelayService } from '@libp2p/circuit-relay-v2'
 import { dcutr } from '@libp2p/dcutr'
-import { type Identify, identify } from '@libp2p/identify'
+import { type Identify, identify, identifyPush } from '@libp2p/identify'
 import { type KadDHT, kadDHT } from '@libp2p/kad-dht'
 import { keychain, type Keychain } from '@libp2p/keychain'
 import { mdns } from '@libp2p/mdns'
@@ -36,6 +36,8 @@ export interface DefaultLibp2pServices extends Record<string, unknown> {
 }
 
 export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOptions<DefaultLibp2pServices> {
+  const agentVersion = `${name}/${version} ${libp2pInfo.name}/${libp2pInfo.version} UserAgent=${process.version}`
+
   return {
     peerId: options.peerId,
     dns: options.dns,
@@ -79,7 +81,10 @@ export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOpti
         }
       }),
       identify: identify({
-        agentVersion: `${name}/${version} ${libp2pInfo.name}/${libp2pInfo.version} UserAgent=${globalThis.process.version}`
+        agentVersion
+      }),
+      identifyPush: identifyPush({
+        agentVersion
       }),
       keychain: keychain(options.keychain),
       ping: ping(),
