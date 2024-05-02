@@ -4,7 +4,7 @@ import polka from 'polka'
 /** @type {import('aegir').PartialOptions} */
 const options = {
   test: {
-    async before (options) {
+    async before () {
       const goodGateway = polka({
         port: 0,
         host: '127.0.0.1'
