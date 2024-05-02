@@ -1,5 +1,15 @@
 # Changelog
 
+## [4.2.1](https://github.com/ipfs/helia/compare/helia-v4.2.0...helia-v4.2.1) (2024-05-02)
+
+
+### Dependencies
+
+* bump @libp2p/identify from 1.0.21 to 2.0.0 ([#528](https://github.com/ipfs/helia/issues/528)) ([9fa2427](https://github.com/ipfs/helia/commit/9fa2427fece28a4b4dc0980ae65480ff002a2bc6))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^2.1.2 to ^3.0.0
+
 ## [4.2.0](https://github.com/ipfs/helia/compare/helia-v4.1.2...helia-v4.2.0) (2024-05-01)
 
 
