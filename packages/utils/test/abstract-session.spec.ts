@@ -233,4 +233,35 @@ describe('abstract-session', () => {
     })).to.eventually.be.rejected()
       .with.property('code', 'ABORT_ERR')
   })
+
+  it('should not make multiple requests to the only found provider', async () => {
+    const session = new Session()
+
+    const cid = CID.parse('bafybeifaymukvfkyw6xgh4th7tsctiifr4ea2btoznf46y6b2fnvikdczi')
+
+    const providers: SessionPeer[] = [
+      {
+        id: await createEd25519PeerId()
+      }
+    ]
+
+    // const deferredFindProviders = pDefer()
+    session.findNewProviders.callsFake(async function * () {
+      yield providers[0]
+    })
+
+    session.queryProvider.callsFake(async () => {
+      // always fails
+      throw new Error('Urk!')
+    })
+
+    await expect(session.retrieve(cid, { signal: AbortSignal.timeout(2000) })).to.eventually.be.rejected()
+
+    expect(session.findNewProviders.callCount).to.equal(1)
+
+    expect(session.providers).to.have.lengthOf(0)
+
+    // await expect(session.retrieve(cid)).to.eventually.deep.equal(block)
+    expect(session.providers.includes(providers[0])).to.be.false()
+  })
 })
