@@ -234,20 +234,30 @@ describe('abstract-session', () => {
       .with.property('code', 'ABORT_ERR')
   })
 
-  it('should not make multiple requests to the only found provider', async () => {
-    const session = new Session()
+  it('should not make multiple requests to the only found provider', async function () {
+    this.timeout(1000)
+    const session: Session | null = new Session()
 
     const cid = CID.parse('bafybeifaymukvfkyw6xgh4th7tsctiifr4ea2btoznf46y6b2fnvikdczi')
-
+    const id = await createEd25519PeerId() // same provider
     const providers: SessionPeer[] = [
       {
-        id: await createEd25519PeerId()
+        id
+      },
+      {
+        id
       }
     ]
 
-    // const deferredFindProviders = pDefer()
-    session.findNewProviders.callsFake(async function * () {
+    session.findNewProviders.onFirstCall().callsFake(async function * () {
       yield providers[0]
+    })
+    session.findNewProviders.onSecondCall().callsFake(async function * () {
+      yield providers[1]
+    })
+    // eslint-disable-next-line require-yield
+    session.findNewProviders.callsFake(async function * () {
+      yield providers[1]
     })
 
     session.queryProvider.callsFake(async () => {
@@ -255,13 +265,12 @@ describe('abstract-session', () => {
       throw new Error('Urk!')
     })
 
-    await expect(session.retrieve(cid, { signal: AbortSignal.timeout(2000) })).to.eventually.be.rejected()
+    await expect(session.retrieve(cid)).to.eventually.be.rejected()
 
-    expect(session.findNewProviders.callCount).to.equal(1)
+    expect(session.findNewProviders.callCount).to.equal(4)
 
     expect(session.providers).to.have.lengthOf(0)
 
-    // await expect(session.retrieve(cid)).to.eventually.deep.equal(block)
     expect(session.providers.includes(providers[0])).to.be.false()
   })
 })

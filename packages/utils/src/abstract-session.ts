@@ -33,6 +33,13 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
   public readonly providers: Provider[]
   private readonly evictionFilter: BloomFilter
 
+  /**
+   * Flag that is set when no new providers are found for a CID. This is used
+   * when foundBlock is still false, and signal is not aborted, because
+   * there's no new work we can do.
+   */
+  private noNewProviders: boolean
+
   constructor (components: AbstractSessionComponents, init: AbstractCreateSessionOptions) {
     super()
 
@@ -45,6 +52,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     this.maxProviders = init.maxProviders ?? DEFAULT_SESSION_MAX_PROVIDERS
     this.providers = []
     this.evictionFilter = BloomFilter.create(this.maxProviders)
+    this.noNewProviders = false
   }
 
   async retrieve (cid: CID, options: BlockRetrievalOptions<RetrieveBlockProgressEvents> = {}): Promise<Uint8Array> {
@@ -95,8 +103,9 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
       deferred.resolve(evt.detail.result)
     })
     queue.addEventListener('idle', () => {
-      if (foundBlock || options.signal?.aborted === true) {
-        // we either found the block or the user gave up
+      if (foundBlock || options.signal?.aborted === true || this.noNewProviders) {
+        // we either found the block, the user gave up, or cannot find any more providers
+        this.log('session aborted')
         return
       }
 
@@ -244,6 +253,11 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
             this.log('found max session peers', found)
             break
           }
+        }
+
+        if (found === 0) {
+          this.noNewProviders = true
+          throw new CodeError(`No new ${this.name} providers found for ${cid}`, 'ERR_NO_NEW_PROVIDERS_FOUND')
         }
 
         this.log('found %d/%d new session peers', found, this.maxProviders)
