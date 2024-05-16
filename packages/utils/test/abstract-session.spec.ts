@@ -233,4 +233,25 @@ describe('abstract-session', () => {
     })).to.eventually.be.rejected()
       .with.property('code', 'ABORT_ERR')
   })
+
+  it('should respect signals', async () => {
+    const signal = AbortSignal.timeout(10)
+    const session = new Session()
+
+    const cid = CID.parse('bafybeifaymukvfkyw6xgh4th7tsctiifr4ea2btoznf46y6b2fnvikdczi')
+
+    session.findNewProviders.callsFake(async function * () {
+      yield {
+        id: await createEd25519PeerId()
+      }
+    })
+    session.queryProvider.callsFake(async () => {
+      throw new Error('Urk!')
+    })
+
+    await expect(session.retrieve(cid, {
+      signal
+    })).to.eventually.be.rejected()
+      .with.property('code', 'ABORT_ERR')
+  })
 })
