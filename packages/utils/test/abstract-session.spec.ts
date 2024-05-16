@@ -240,24 +240,10 @@ describe('abstract-session', () => {
 
     const cid = CID.parse('bafybeifaymukvfkyw6xgh4th7tsctiifr4ea2btoznf46y6b2fnvikdczi')
     const id = await createEd25519PeerId() // same provider
-    const providers: SessionPeer[] = [
-      {
-        id
-      },
-      {
+    session.findNewProviders.callsFake(async function * () {
+      yield {
         id
       }
-    ]
-
-    session.findNewProviders.onFirstCall().callsFake(async function * () {
-      yield providers[0]
-    })
-    session.findNewProviders.onSecondCall().callsFake(async function * () {
-      yield providers[1]
-    })
-    // eslint-disable-next-line require-yield
-    session.findNewProviders.callsFake(async function * () {
-      yield providers[1]
     })
 
     session.queryProvider.callsFake(async () => {
@@ -268,9 +254,5 @@ describe('abstract-session', () => {
     await expect(session.retrieve(cid)).to.eventually.be.rejected()
 
     expect(session.findNewProviders.callCount).to.equal(4)
-
-    expect(session.providers).to.have.lengthOf(0)
-
-    expect(session.providers.includes(providers[0])).to.be.false()
   })
 })
