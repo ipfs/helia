@@ -32,13 +32,9 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
   private readonly maxProviders: number
   public readonly providers: Provider[]
   private readonly evictionFilter: BloomFilter
-
-  /**
-   * Flag that is set when no new providers are found for a CID. This is used
-   * when foundBlock is still false, and signal is not aborted, because
-   * there's no new work we can do.
-   */
-  private noNewProviders: boolean
+  private readonly evictionFilter2: Set<string>
+  findProviderQueue: Queue<void, AbortOptions>
+  queryProviderQueue: Queue<Uint8Array, { provider: Provider, priority?: number } & AbortOptions>
 
   constructor (components: AbstractSessionComponents, init: AbstractCreateSessionOptions) {
     super()
@@ -52,7 +48,13 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     this.maxProviders = init.maxProviders ?? DEFAULT_SESSION_MAX_PROVIDERS
     this.providers = []
     this.evictionFilter = BloomFilter.create(this.maxProviders)
-    this.noNewProviders = false
+    this.evictionFilter2 = new Set() // bloom Filter is not working properly.
+    this.findProviderQueue = new Queue({
+      concurrency: 1
+    })
+    this.queryProviderQueue = new Queue({
+      concurrency: this.maxProviders
+    })
   }
 
   async retrieve (cid: CID, options: BlockRetrievalOptions<RetrieveBlockProgressEvents> = {}): Promise<Uint8Array> {
@@ -64,9 +66,17 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
       this.log('join existing request for %c', cid)
       return existingJob
     }
-
+    let foundBlock = false
     const deferred: DeferredPromise<Uint8Array> = pDefer()
     this.requests.set(cidStr, deferred.promise)
+
+    const peerAddedToSessionListener = (event: CustomEvent<Provider>): void => {
+      this.log('peer added to session...')
+      this.addQueryProviderJob(cid, event.detail, options)
+    }
+
+    // add new session peers to query as they are discovered
+    this.addEventListener('provider', peerAddedToSessionListener)
 
     if (this.providers.length === 0) {
       let first = false
@@ -82,114 +92,133 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
       if (first) {
         this.log('found initial session peers for %c', cid)
       }
+    } else {
+      /**
+       * Query all existing providers.
+       *
+       * This is really only used when querying for subsequent blocks in the same
+       * session. e.g. You create the session for CID bafy1234, and then you want
+       * to retrieve bafy5678 from the same session. This call makes sure that we
+       * initially query the existing providers for the new CID before we start
+       * finding new providers.
+       */
+      Promise.all([...this.providers].map(async (provider) => {
+        this.log('querying existing provider %o', this.toEvictionKey(provider))
+        return this.addQueryProviderJob(cid, provider, options)
+      }))
     }
 
-    let foundBlock = false
+    let findProvidersErrored = false
+    this.findProviderQueue.addEventListener('failure', (evt) => {
+      this.log.error('error finding new providers for %c', cid, evt.detail.error)
 
-    // this queue manages outgoing requests - as new peers are added to the
-    // session they will be added to the queue so we can request the current
-    // block from multiple peers as they are discovered
-    const queue = new Queue<Uint8Array, { provider: Provider, priority?: number } & AbortOptions>({
-      concurrency: this.maxProviders
+      findProvidersErrored = true
+      if (['ERR_INSUFFICIENT_PROVIDERS_FOUND'].includes((evt.detail.error as CodeError).code)) {
+        deferred.reject(evt.detail.error)
+        return
+      }
     })
-    queue.addEventListener('error', () => {})
-    queue.addEventListener('failure', (evt) => {
-      this.log.error('error querying provider %o, evicting from session', evt.detail.job.options.provider, evt.detail.error)
-      this.evict(evt.detail.job.options.provider)
-    })
-    queue.addEventListener('success', (evt) => {
-      // peer has sent block, return it to the caller
-      foundBlock = true
-      deferred.resolve(evt.detail.result)
-    })
-    queue.addEventListener('idle', () => {
-      if (foundBlock || options.signal?.aborted === true || this.noNewProviders) {
-        // we either found the block, the user gave up, or cannot find any more providers
-        this.log('session aborted')
+
+    this.findProviderQueue.addEventListener('idle', () => {
+      this.log.trace('findProviderQueue idle')
+      if (options.signal?.aborted === true && !foundBlock) {
+        deferred.reject(new CodeError(options.signal.reason, 'ABORT_ERR'))
         return
       }
 
-      // find more session peers and retry
-      Promise.resolve()
-        .then(async () => {
-          this.log('no session peers had block for for %c, finding new providers', cid)
-
-          // evict this.minProviders random providers to make room for more
-          for (let i = 0; i < this.minProviders; i++) {
-            if (this.providers.length === 0) {
-              break
-            }
-
-            const provider = this.providers[Math.floor(Math.random() * this.providers.length)]
-            this.evict(provider)
-          }
-
-          // find new providers for the CID
-          await this.findProviders(cid, this.minProviders, options)
-
-          // keep trying until the abort signal fires
-          this.log('found new providers re-retrieving %c', cid)
-          this.requests.delete(cidStr)
-          deferred.resolve(await this.retrieve(cid, options))
-        })
-        .catch(err => {
-          this.log.error('could not find new providers for %c', cid, err)
-          deferred.reject(err)
-        })
+      if (foundBlock || findProvidersErrored || options.signal?.aborted === true) {
+        return
+      }
+      // continuously find new providers while we haven't found the block and signal is not aborted
+      this.addFindProviderJob(cid, options)
     })
 
-    const peerAddedToSessionListener = (event: CustomEvent<Provider>): void => {
-      queue.add(async () => {
-        return this.queryProvider(cid, event.detail, options)
-      }, {
-        provider: event.detail
-      })
-        .catch(err => {
-          if (options.signal?.aborted === true) {
-            // skip logging error if signal was aborted because abort can happen
-            // on success (e.g. another session found the block)
-            return
-          }
 
-          this.log.error('error retrieving session block for %c', cid, err)
-        })
-    }
+    this.queryProviderQueue.addEventListener('failure', (evt) => {
+      this.log.error('error querying provider %o, evicting from session', evt.detail.job.options.provider, evt.detail.error)
+      this.evict(evt.detail.job.options.provider)
+    })
 
-    // add new session peers to query as they are discovered
-    this.addEventListener('provider', peerAddedToSessionListener)
+    this.queryProviderQueue.addEventListener('success', (event) => {
+      this.log.trace('queryProviderQueue success')
+      foundBlock = true
+      // this.findProviderQueue.clear()
+      deferred.resolve(event.detail.result)
+    })
 
-    // query each session peer directly
-    Promise.all([...this.providers].map(async (provider) => {
-      return queue.add(async () => {
-        return this.queryProvider(cid, provider, options)
-      }, {
-        provider
-      })
-    }))
-      .catch(err => {
-        if (options.signal?.aborted === true) {
-          // skip logging error if signal was aborted because abort can happen
-          // on success (e.g. another session found the block)
-          return
-        }
-
-        this.log.error('error retrieving session block for %c', cid, err)
-      })
+    this.queryProviderQueue.addEventListener('idle', () => {
+      this.log.trace('queryProviderQueue is idle')
+      if (foundBlock) {
+        return
+      }
+      if (options.signal?.aborted === true) {
+        // if the signal was aborted, we should reject the request
+        deferred.reject(options.signal.reason)
+        return
+      }
+      // we're done querying found providers.. if we can't find new providers, we should reject
+      if (findProvidersErrored) {
+        deferred.reject(new CodeError('Done querying all found providers and unable to retrieve the block', 'ERR_NO_PROVIDERS_HAD_BLOCK'))
+        return
+      }
+      // otherwise, we're still waiting for more providers to query
+      this.log('waiting for more providers to query')
+      // if this.findProviders is not running, start it
+      if (this.findProviderQueue.running === 0) {
+        this.addFindProviderJob(cid, options)
+      }
+    })
 
     try {
+      // this.intialPeerSearchComplete = this.findProviders(cid, this.minProviders, options)
       return await deferred.promise
     } finally {
+      this.log('finally block, cleaning up session')
       this.removeEventListener('provider', peerAddedToSessionListener)
-      queue.clear()
+      this.findProviderQueue.clear()
+      this.queryProviderQueue.clear()
       this.requests.delete(cidStr)
     }
   }
 
+  addFindProviderJob(cid: CID, options: AbortOptions): any {
+    return this.findProviderQueue.add(async () => {
+      await this.findProviders(cid, this.minProviders, options)
+    }, { signal: options.signal })
+    .catch(err => {
+      if (options.signal?.aborted === true) {
+        // skip logging error if signal was aborted because abort can happen
+        // on success (e.g. another session found the block)
+        return
+      }
+    })
+  }
+
+  addQueryProviderJob(cid: CID, provider: Provider, options: AbortOptions): any {
+    return this.queryProviderQueue.add(async () => {
+      return this.queryProvider(cid, provider, options)
+    }, {
+      provider,
+      signal: options.signal
+    }).catch(err => {
+      if (options.signal?.aborted === true) {
+        // skip logging error if signal was aborted because abort can happen
+        // on success (e.g. another session found the block)
+        return
+      }
+    })
+  }
+
   evict (provider: Provider): void {
+    this.log('evicting provider %o', provider)
     this.evictionFilter.add(this.toEvictionKey(provider))
+    this.evictionFilter2.add(this.toEvictionKey(provider).toString())
+    this.log('provider added to evictionFilter')
     const index = this.providers.findIndex(prov => this.equals(prov, provider))
+    this.log('index of provider in this.providers: %d', index)
 
     if (index === -1) {
+      this.log('tried to evict provider, but it was not in this.providers')
       return
     }
 
@@ -202,19 +231,36 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
 
   hasProvider (provider: Provider): boolean {
     // dedupe existing gateways
-    if (this.providers.find(prov => this.equals(prov, provider)) != null) {
+    if (this.providers.some(prov => this.equals(prov, provider))) {
+      this.log('this.providers already has provider')
       return true
+    } else {
+      this.log('this.providers does not have provider')
     }
 
     // dedupe failed session peers
     if (this.isEvicted(provider)) {
+      this.log('provider was previously evicted')
+      return true
+    } else {
+      this.log('provider was not previously evicted')
+    }
+    if (this.evictionFilter2.has(this.toEvictionKey(provider).toString())) {
+      this.log('provider was *actually* previously evicted')
       return true
     }
 
     return false
   }
 
+  /**
+   * @param cid - The CID of the block to find providers for
+   * @param count - The number of providers to find
+   * @param options - AbortOptions
+   * @returns
+   */
   private async findProviders (cid: CID, count: number, options: AbortOptions): Promise<void> {
+    this.log('findProviders called')
     const deferred: DeferredPromise<void> = pDefer()
     let found = 0
 
@@ -225,23 +271,32 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
         this.log('finding %d-%d new provider(s) for %c', count, this.maxProviders, cid)
 
         for await (const provider of this.findNewProviders(cid, options)) {
-          if (found === this.maxProviders || options.signal?.aborted === true) {
+          this.log('found new provider %o', this.toEvictionKey(provider))
+          // options.signal?.throwIfAborted()
+          if (this.providers.length === this.maxProviders || options.signal?.aborted === true) {
+          // if (this.providers.length === this.maxProviders) {
             break
           }
 
           if (this.hasProvider(provider)) {
+            this.log('ignoring duplicate provider')
             continue
+          } else {
+            this.log('provider is not a duplicate')
           }
 
-          this.log('found %d/%d new providers', found, this.maxProviders)
+          found++
+          this.log('found %d/%d new providers, (total=%d)', found, this.maxProviders, found + this.providers.length)
+          // this.providers.push(provider)
+          // this.providerMap.set(this.toEvictionKey(provider), provider)
           this.providers.push(provider)
 
           // let the new peer join current queries
           this.safeDispatchEvent('provider', {
             detail: provider
           })
+          this.log('emitted provider event')
 
-          found++
 
           if (found === count) {
             this.log('session is ready')
@@ -253,11 +308,6 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
             this.log('found max session peers', found)
             break
           }
-        }
-
-        if (found === 0) {
-          this.noNewProviders = true
-          throw new CodeError(`No new ${this.name} providers found for ${cid}`, 'ERR_NO_NEW_PROVIDERS_FOUND')
         }
 
         this.log('found %d/%d new session peers', found, this.maxProviders)

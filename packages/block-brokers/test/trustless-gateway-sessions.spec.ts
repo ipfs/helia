@@ -99,13 +99,43 @@ describe('trustless-gateway sessions', () => {
       ]
     }
 
-    components.routing.findProviders.returns(async function * () {
+    components.routing.findProviders.callsFake(async function * () {
       yield prov
-      yield prov
-      yield prov
-    }())
+    })
 
     await expect(session.retrieve(cid)).to.eventually.deep.equal(block)
+    expect(queryProviderSpy.callCount).to.equal(1)
+  })
+
+  it('should ignore duplicate providers when unable to retrieve a block', async () => {
+    const session = createTrustlessGatewaySession(components, {
+      allowInsecure: true,
+      allowLocal: true
+    })
+
+    // changed the CID to end in `aa` instead of `aq`
+    const cid = CID.parse('bafkreiefnkxuhnq3536qo2i2w3tazvifek4mbbzb6zlq3ouhprjce5c3aa')
+
+    const queryProviderSpy = Sinon.spy(session, 'queryProvider')
+    const findNewProvidersSpy = Sinon.spy(session, 'findNewProviders')
+    const hasProviderSpy = Sinon.spy(session, 'hasProvider')
+
+    const prov = {
+      id: await createEd25519PeerId(),
+      multiaddrs: [
+        uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
+      ]
+    }
+
+    components.routing.findProviders.callsFake(async function * () {
+      yield prov
+    })
+
+    await expect(session.retrieve(cid)).to.eventually.be.rejected()
+    expect(hasProviderSpy.callCount).to.be.greaterThanOrEqual(2)
+    expect(hasProviderSpy.getCall(0).returnValue).to.be.false()
+    expect(hasProviderSpy.getCall(1).returnValue).to.be.true()
+    expect(findNewProvidersSpy.callCount).to.be.greaterThanOrEqual(2)
     expect(queryProviderSpy.callCount).to.equal(1)
   })
 })

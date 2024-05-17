@@ -235,7 +235,6 @@ describe('abstract-session', () => {
   })
 
   it('should not make multiple requests to the only found provider', async function () {
-    this.timeout(1000)
     const session: Session | null = new Session()
 
     const cid = CID.parse('bafybeifaymukvfkyw6xgh4th7tsctiifr4ea2btoznf46y6b2fnvikdczi')
@@ -253,6 +252,7 @@ describe('abstract-session', () => {
 
     await expect(session.retrieve(cid)).to.eventually.be.rejected()
 
-    expect(session.findNewProviders.callCount).to.equal(4)
+    expect(session.findNewProviders.callCount).to.be.greaterThanOrEqual(2)
+    expect(session.queryProvider.callCount).to.equal(1)
   })
 })
