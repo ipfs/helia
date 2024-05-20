@@ -99,9 +99,11 @@ describe('trustless-gateway sessions', () => {
       ]
     }
 
-    components.routing.findProviders.callsFake(async function * () {
+    components.routing.findProviders.returns(async function * () {
       yield prov
-    })
+      yield prov
+      yield prov
+    }())
 
     await expect(session.retrieve(cid)).to.eventually.deep.equal(block)
     expect(queryProviderSpy.callCount).to.equal(1)

@@ -42,7 +42,6 @@ class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, Trustles
   }
 
   async * findNewProviders (cid: CID, options: AbortOptions = {}): AsyncGenerator<TrustlessGateway> {
-    this.log('findNewProviders called')
     yield * findHttpGatewayProviders(cid, this.routing, this.logger, this.allowInsecure, this.allowLocal, options)
   }
 
