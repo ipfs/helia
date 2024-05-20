@@ -233,4 +233,35 @@ describe('abstract-session', () => {
     })).to.eventually.be.rejected()
       .with.property('code', 'ABORT_ERR')
   })
+
+  it('should return true for hasProvider if the provider is in the session', async () => {
+    const session = new Session()
+    const cid = CID.parse('bafybeifaymukvfkyw6xgh4th7tsctiifr4ea2btoznf46y6b2fnvikdczi')
+    const block = Uint8Array.from([0, 1, 2, 3])
+    const hasProviderSpy = Sinon.spy(session, 'hasProvider');
+
+    const providers: SessionPeer[] = [{
+      id: await createEd25519PeerId()
+    }, {
+      id: await createEd25519PeerId()
+    }]
+
+    session.findNewProviders.callsFake(async function * () {
+      yield providers[0]
+    })
+
+    session.findNewProviders.onCall(2).callsFake(async function * () {
+      yield providers[1]
+    })
+    session.queryProvider.callsFake(async () => {
+      throw new Error('Urk!')
+    })
+    session.queryProvider.withArgs(cid, providers[1]).callsFake(async () => {
+      return block
+    })
+
+    await expect(session.retrieve(cid)).to.eventually.deep.equal(block)
+    expect(hasProviderSpy.calledWith(providers[0])).to.be.true()
+    expect(hasProviderSpy.returnValues).to.include(true)
+  })
 })
