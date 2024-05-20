@@ -146,7 +146,6 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     this.queryProviderQueue.addEventListener('success', (event) => {
       this.log.trace('queryProviderQueue success')
       foundBlock = true
-      // this.findProviderQueue.clear()
       deferred.resolve(event.detail.result)
     })
 
@@ -174,7 +173,6 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     })
 
     try {
-      // this.intialPeerSearchComplete = this.findProviders(cid, this.minProviders, options)
       return await deferred.promise
     } finally {
       this.log('finally block, cleaning up session')
@@ -191,8 +189,8 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     }, { signal: options.signal })
       .catch(err => {
         if (options.signal?.aborted === true) {
-        // skip logging error if signal was aborted because abort can happen
-        // on success (e.g. another session found the block)
+          // skip logging error if signal was aborted because abort can happen
+          // on success (e.g. another session found the block)
           return
         }
         this.log.error('could not find new providers for %c', cid, err)
@@ -217,12 +215,10 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
 
   evict (provider: Provider): void {
     this.evictionFilter.add(this.toEvictionKey(provider))
-    this.log('provider added to evictionFilter')
     const index = this.providers.findIndex(prov => this.equals(prov, provider))
-    this.log('index of provider in this.providers: %d', index)
 
     if (index === -1) {
-      this.log('tried to evict provider, but it was not in this.providers')
+      this.log.trace('tried to evict provider, but it was not in this.providers')
       return
     }
 
@@ -251,7 +247,6 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
    * @param cid - The CID of the block to find providers for
    * @param count - The number of providers to find
    * @param options - AbortOptions
-   * @returns
    */
   private async findProviders (cid: CID, count: number, options: AbortOptions): Promise<void> {
     this.log('findProviders called')
@@ -266,9 +261,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
 
         for await (const provider of this.findNewProviders(cid, options)) {
           this.log('found new provider %o', this.toEvictionKey(provider))
-          // options.signal?.throwIfAborted()
           if (this.providers.length === this.maxProviders || options.signal?.aborted === true) {
-          // if (this.providers.length === this.maxProviders) {
             break
           }
 
@@ -281,15 +274,12 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
 
           found++
           this.log('found %d/%d new providers, (total=%d)', found, this.maxProviders, found + this.providers.length)
-          // this.providers.push(provider)
-          // this.providerMap.set(this.toEvictionKey(provider), provider)
           this.providers.push(provider)
 
           // let the new peer join current queries
           this.safeDispatchEvent('provider', {
             detail: provider
           })
-          this.log('emitted provider event')
 
           if (found === count) {
             this.log('session is ready')
