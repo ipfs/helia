@@ -143,10 +143,10 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
       this.evict(evt.detail.job.options.provider)
     })
 
-    this.queryProviderQueue.addEventListener('success', (event) => {
+    this.queryProviderQueue.addEventListener('success', (evt) => {
       this.log.trace('queryProviderQueue success')
       foundBlock = true
-      deferred.resolve(event.detail.result)
+      deferred.resolve(evt.detail.result)
     })
 
     this.queryProviderQueue.addEventListener('idle', () => {
