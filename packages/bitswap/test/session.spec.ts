@@ -112,7 +112,7 @@ describe('session', () => {
     })())
 
     await expect(session.retrieve(cid)).to.eventually.be.rejected
-      .with.property('code', 'ERR_NO_NEW_PROVIDERS_FOUND')
+      .with.property('code', 'ERR_INSUFFICIENT_PROVIDERS_FOUND')
   })
 
   it('should error when creating a session when no providers have the block', async () => {
@@ -137,7 +137,7 @@ describe('session', () => {
     const session = createBitswapSession(components, {})
 
     await expect(session.retrieve(cid)).to.eventually.be.rejected
-      .with.property('code', 'ERR_NO_NEW_PROVIDERS_FOUND')
+      .with.property('code', 'ERR_INSUFFICIENT_PROVIDERS_FOUND')
   })
 
   it('should exclude non-bitswap providers from the session', async () => {
