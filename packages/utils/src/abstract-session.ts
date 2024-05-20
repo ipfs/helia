@@ -81,7 +81,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     // this queue manages outgoing requests - as new peers are added to the
     // session they will be added to the queue so we can request the current
     // block from multiple peers as they are discovered
-    const queue = new Queue<Uint8Array, { provider: Provider, priority?: number }>({
+    const queue = new Queue<Uint8Array, { provider: Provider, priority?: number } & AbortOptions>({
       concurrency: this.maxProviders
     })
     queue.addEventListener('error', () => {})
@@ -188,7 +188,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
   }
 
   isEvicted (provider: Provider): boolean {
-    return this.providers.some(prov => this.equals(prov, provider))
+    return this.evictionFilter.has(this.toEvictionKey(provider))
   }
 
   hasProvider (provider: Provider): boolean {
