@@ -111,8 +111,16 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
       this.log.error('error finding new providers for %c', cid, evt.detail.error)
 
       findProvidersErrored = true
+      if (foundBlock) {
+        // we found the block, so we can ignore this error
+        return
+      }
       if (['ERR_INSUFFICIENT_PROVIDERS_FOUND'].includes((evt.detail.error as CodeError).code)) {
-        deferred.reject(evt.detail.error)
+        this.log.error('insufficient providers found for %c', cid)
+        if (this.queryProviderQueue.running === 0) {
+          // only reject if we're not currently querying any providers
+          deferred.reject(evt.detail.error)
+        }
       }
     })
 
