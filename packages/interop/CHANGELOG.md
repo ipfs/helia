@@ -1,5 +1,16 @@
 # Changelog
 
+## [6.1.4](https://github.com/ipfs/helia/compare/interop-v6.1.3...interop-v6.1.4) (2024-05-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^3.0.0 to ^3.0.1
+    * @helia/http bumped from ^1.0.7 to ^1.0.8
+    * helia bumped from ^4.2.1 to ^4.2.2
+
 ## [6.1.3](https://github.com/ipfs/helia/compare/interop-v6.1.2...interop-v6.1.3) (2024-05-02)
 
 
