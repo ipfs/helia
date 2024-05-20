@@ -175,7 +175,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     try {
       return await deferred.promise
     } finally {
-      this.log('finally block, cleaning up session')
+      this.log.trace('retrieve finished, cleaning up session')
       this.removeEventListener('provider', peerAddedToSessionListener)
       this.findProviderQueue.clear()
       this.queryProviderQueue.clear()
@@ -249,7 +249,6 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
    * @param options - AbortOptions
    */
   private async findProviders (cid: CID, count: number, options: AbortOptions): Promise<void> {
-    this.log('findProviders called')
     const deferred: DeferredPromise<void> = pDefer()
     let found = 0
 
@@ -266,10 +265,8 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
           }
 
           if (this.hasProvider(provider)) {
-            this.log('ignoring duplicate provider')
+            this.log.trace('ignoring duplicate provider')
             continue
-          } else {
-            this.log('provider is not a duplicate')
           }
 
           found++
