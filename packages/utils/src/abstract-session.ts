@@ -188,7 +188,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
   }
 
   isEvicted (provider: Provider): boolean {
-    return this.providers.some(prov => this.equals(prov, provider))
+    return this.evictionFilter.has(this.toEvictionKey(provider))
   }
 
   hasProvider (provider: Provider): boolean {
