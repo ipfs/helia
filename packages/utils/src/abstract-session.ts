@@ -32,7 +32,6 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
   private readonly maxProviders: number
   public readonly providers: Provider[]
   private readonly evictionFilter: BloomFilter
-  private readonly evictionFilter2: Set<string>
   findProviderQueue: Queue<void, AbortOptions>
   queryProviderQueue: Queue<Uint8Array, { provider: Provider, priority?: number } & AbortOptions>
 
@@ -48,7 +47,6 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     this.maxProviders = init.maxProviders ?? DEFAULT_SESSION_MAX_PROVIDERS
     this.providers = []
     this.evictionFilter = BloomFilter.create(this.maxProviders)
-    this.evictionFilter2 = new Set() // bloom Filter is not working properly.
     this.findProviderQueue = new Queue({
       concurrency: 1
     })
@@ -102,7 +100,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
        * initially query the existing providers for the new CID before we start
        * finding new providers.
        */
-      Promise.all([...this.providers].map(async (provider) => {
+      void Promise.all([...this.providers].map(async (provider) => {
         this.log('querying existing provider %o', this.toEvictionKey(provider))
         return this.addQueryProviderJob(cid, provider, options)
       }))
@@ -115,7 +113,6 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
       findProvidersErrored = true
       if (['ERR_INSUFFICIENT_PROVIDERS_FOUND'].includes((evt.detail.error as CodeError).code)) {
         deferred.reject(evt.detail.error)
-        return
       }
     })
 
@@ -132,7 +129,6 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
       // continuously find new providers while we haven't found the block and signal is not aborted
       this.addFindProviderJob(cid, options)
     })
-
 
     this.queryProviderQueue.addEventListener('failure', (evt) => {
       this.log.error('error querying provider %o, evicting from session', evt.detail.job.options.provider, evt.detail.error)
@@ -181,20 +177,21 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     }
   }
 
-  addFindProviderJob(cid: CID, options: AbortOptions): any {
+  addFindProviderJob (cid: CID, options: AbortOptions): any {
     return this.findProviderQueue.add(async () => {
       await this.findProviders(cid, this.minProviders, options)
     }, { signal: options.signal })
-    .catch(err => {
-      if (options.signal?.aborted === true) {
+      .catch(err => {
+        if (options.signal?.aborted === true) {
         // skip logging error if signal was aborted because abort can happen
         // on success (e.g. another session found the block)
-        return
-      }
-    })
+          return
+        }
+        this.log.error('could not find new providers for %c', cid, err)
+      })
   }
 
-  addQueryProviderJob(cid: CID, provider: Provider, options: AbortOptions): any {
+  addQueryProviderJob (cid: CID, provider: Provider, options: AbortOptions): any {
     return this.queryProviderQueue.add(async () => {
       return this.queryProvider(cid, provider, options)
     }, {
@@ -206,13 +203,12 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
         // on success (e.g. another session found the block)
         return
       }
+      this.log.error('error retrieving session block for %c', cid, err)
     })
   }
 
   evict (provider: Provider): void {
-    this.log('evicting provider %o', provider)
     this.evictionFilter.add(this.toEvictionKey(provider))
-    this.evictionFilter2.add(this.toEvictionKey(provider).toString())
     this.log('provider added to evictionFilter')
     const index = this.providers.findIndex(prov => this.equals(prov, provider))
     this.log('index of provider in this.providers: %d', index)
@@ -226,27 +222,17 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
   }
 
   isEvicted (provider: Provider): boolean {
-    return this.providers.some(prov => this.equals(prov, provider))
+    return this.evictionFilter.has(this.toEvictionKey(provider))
   }
 
   hasProvider (provider: Provider): boolean {
     // dedupe existing gateways
     if (this.providers.some(prov => this.equals(prov, provider))) {
-      this.log('this.providers already has provider')
       return true
-    } else {
-      this.log('this.providers does not have provider')
     }
 
     // dedupe failed session peers
     if (this.isEvicted(provider)) {
-      this.log('provider was previously evicted')
-      return true
-    } else {
-      this.log('provider was not previously evicted')
-    }
-    if (this.evictionFilter2.has(this.toEvictionKey(provider).toString())) {
-      this.log('provider was *actually* previously evicted')
       return true
     }
 
@@ -296,7 +282,6 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
             detail: provider
           })
           this.log('emitted provider event')
-
 
           if (found === count) {
             this.log('session is ready')

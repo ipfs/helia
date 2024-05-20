@@ -235,16 +235,15 @@ describe('abstract-session', () => {
   })
 
   it('should not make multiple requests to the only found provider', async function () {
-    const session: Session | null = new Session()
-
+    const session = new Session()
     const cid = CID.parse('bafybeifaymukvfkyw6xgh4th7tsctiifr4ea2btoznf46y6b2fnvikdczi')
     const id = await createEd25519PeerId() // same provider
+
     session.findNewProviders.callsFake(async function * () {
       yield {
         id
       }
     })
-
     session.queryProvider.callsFake(async () => {
       // always fails
       throw new Error('Urk!')
@@ -252,7 +251,7 @@ describe('abstract-session', () => {
 
     await expect(session.retrieve(cid)).to.eventually.be.rejected()
 
-    expect(session.findNewProviders.callCount).to.be.greaterThanOrEqual(2)
-    expect(session.queryProvider.callCount).to.equal(1)
+    expect(session.findNewProviders).to.have.property('callCount', 3)
+    expect(session.queryProvider).to.have.property('callCount', 1)
   })
 })
