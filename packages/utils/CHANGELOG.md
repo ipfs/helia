@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.1](https://github.com/ipfs/helia/compare/utils-v0.3.0...utils-v0.3.1) (2024-05-20)
+
+
+### Bug Fixes
+
+* check eviction filter for new providers ([#542](https://github.com/ipfs/helia/issues/542)) ([f46700f](https://github.com/ipfs/helia/commit/f46700fd871d5419e75ecfb0b00fb01aedbe84c7)), closes [#501](https://github.com/ipfs/helia/issues/501)
+* type error ([#537](https://github.com/ipfs/helia/issues/537)) ([e6b976a](https://github.com/ipfs/helia/commit/e6b976a4df96b27bf3aa239356d2e991801da28c))
+
 ## [0.3.0](https://github.com/ipfs/helia/compare/utils-v0.2.0...utils-v0.3.0) (2024-05-01)
 
 
