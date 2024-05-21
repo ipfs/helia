@@ -246,7 +246,7 @@ class SessionStorage extends Storage implements SessionBlockstore {
     this.closeController = new AbortController()
     setMaxListeners(Infinity, this.closeController.signal)
 
-    this.log = components.logger.forComponent(`helia:session-storage${init.root}`)
+    this.log = components.logger.forComponent(`helia:session-storage:${init.root}`)
   }
 
   close (): void {
