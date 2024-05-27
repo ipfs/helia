@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/ipfs/helia/compare/utils-v0.3.1...utils-v0.3.2) (2024-05-27)
+
+
+### Bug Fixes
+
+* add missing log prefix colon for helia:session-storage ([#544](https://github.com/ipfs/helia/issues/544)) ([011fa92](https://github.com/ipfs/helia/commit/011fa92c05bf42fb20666b1df4c86fb47889a07e))
+
 ## [0.3.1](https://github.com/ipfs/helia/compare/utils-v0.3.0...utils-v0.3.1) (2024-05-20)
 
 

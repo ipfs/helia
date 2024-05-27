@@ -1,5 +1,15 @@
 # Changelog
 
+## [4.2.3](https://github.com/ipfs/helia/compare/helia-v4.2.2...helia-v4.2.3) (2024-05-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^3.0.1 to ^3.0.2
+    * @helia/utils bumped from ^0.3.1 to ^0.3.2
+
 ## [4.2.2](https://github.com/ipfs/helia/compare/helia-v4.2.1...helia-v4.2.2) (2024-05-20)
 
 
