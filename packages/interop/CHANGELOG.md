@@ -1,5 +1,21 @@
 # Changelog
 
+## [6.1.5](https://github.com/ipfs/helia/compare/interop-v6.1.4...interop-v6.1.5) (2024-05-27)
+
+
+### Bug Fixes
+
+* do not depend on external domains in dnslink tests ([#547](https://github.com/ipfs/helia/issues/547)) ([21ef20c](https://github.com/ipfs/helia/commit/21ef20cd05e4d0231d0e3d7d2cfbd21fb75b78a2))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^3.0.1 to ^3.0.2
+    * @helia/http bumped from ^1.0.8 to ^1.0.9
+    * helia bumped from ^4.2.2 to ^4.2.3
+
 ## [6.1.4](https://github.com/ipfs/helia/compare/interop-v6.1.3...interop-v6.1.4) (2024-05-20)
 
 
