@@ -173,7 +173,7 @@ class DefaultCar implements Car {
   async export (root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): Promise<void> {
     const deferred = defer<Error | undefined>()
     const roots = Array.isArray(root) ? root : [root]
-    const writtenBlocks = new Set();
+    const writtenBlocks = new Set()
 
     // use a queue to walk the DAG instead of recursion so we can traverse very large DAGs
     const queue = new PQueue({
@@ -192,7 +192,7 @@ class DefaultCar implements Car {
         await this.#walkDag(root, queue, async (cid, bytes) => {
           // skip blocks that have already been written
           if (writtenBlocks.has(cid.toString())) {
-            return;
+            return
           }
           writtenBlocks.add(cid.toString())
           await writer.put({ cid, bytes })
