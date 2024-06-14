@@ -76,6 +76,10 @@ export interface CarComponents {
   dagWalkers: Record<number, DAGWalker>
 }
 
+interface ExportCarOptions {
+  allowDuplicateBlocks: boolean
+}
+
 /**
  * The Car interface provides operations for importing and exporting Car files
  * from Helia's underlying blockstore.
@@ -129,7 +133,7 @@ export interface Car {
    * await eventPromise
    * ```
    */
-  export(root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): Promise<void>
+  export(root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: ExportCarOptions & AbortOptions & ProgressOptions<GetBlockProgressEvents>): Promise<void>
 
   /**
    * Returns an AsyncGenerator that yields CAR file bytes.
@@ -170,7 +174,7 @@ class DefaultCar implements Car {
     ))
   }
 
-  async export (root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): Promise<void> {
+  async export (root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: ExportCarOptions & AbortOptions & ProgressOptions<GetBlockProgressEvents>): Promise<void> {
     const deferred = defer<Error | undefined>()
     const roots = Array.isArray(root) ? root : [root]
     const writtenBlocks = new Set()
@@ -190,11 +194,14 @@ class DefaultCar implements Car {
     for (const root of roots) {
       void queue.add(async () => {
         await this.#walkDag(root, queue, async (cid, bytes) => {
-          // skip blocks that have already been written
-          if (writtenBlocks.has(cid.toString())) {
-            return
+          // check if duplicate blocks should be skipped
+          if (options?.allowDuplicateBlocks !== true) {
+            // skip blocks that have already been written
+            if (writtenBlocks.has(cid.toString())) {
+              return
+            }
+            writtenBlocks.add(cid.toString())
           }
-          writtenBlocks.add(cid.toString())
           await writer.put({ cid, bytes })
         }, options)
       })
@@ -209,7 +216,7 @@ class DefaultCar implements Car {
     }
   }
 
-  async * stream (root: CID | CID[], options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): AsyncGenerator<Uint8Array, void, undefined> {
+  async * stream (root: CID | CID[], options?: ExportCarOptions & AbortOptions & ProgressOptions<GetBlockProgressEvents>): AsyncGenerator<Uint8Array, void, undefined> {
     const { writer, out } = CarWriter.create(root)
 
     // has to be done async so we write to `writer` and read from `out` at the
