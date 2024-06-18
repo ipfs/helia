@@ -45,7 +45,7 @@ const helia = await createHelia()
 const name = ipns(helia)
 
 // create a public key to publish as an IPNS name
-const keyInfo = await helia.libp2p.services.keychain.createKey('my-key', 'RSA', 4096)
+const keyInfo = await helia.libp2p.services.keychain.createKey('my-key', 'Ed25519')
 const peerId = await helia.libp2p.services.keychain.exportPeerId(keyInfo.name)
 
 // store some data to publish
@@ -75,7 +75,7 @@ const helia = await createHelia()
 const name = ipns(helia)
 
 // create a public key to publish as an IPNS name
-const keyInfo = await helia.libp2p.services.keychain.createKey('my-key', 'RSA', 4096)
+const keyInfo = await helia.libp2p.services.keychain.createKey('my-key', 'Ed25519')
 const peerId = await helia.libp2p.services.keychain.exportPeerId(keyInfo.name)
 
 // store some data to publish
@@ -86,7 +86,7 @@ const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
 await name.publish(peerId, cid)
 
 // create another public key to re-publish the original record
-const recursiveKeyInfo = await helia.libp2p.services.keychain.createKey('my-recursive-key', 'RSA', 4096)
+const recursiveKeyInfo = await helia.libp2p.services.keychain.createKey('my-recursive-key', 'Ed25519')
 const recursivePeerId = await helia.libp2p.services.keychain.exportPeerId(recursiveKeyInfo.name)
 
 // publish the recursive name
@@ -110,7 +110,7 @@ const helia = await createHelia()
 const name = ipns(helia)
 
 // create a public key to publish as an IPNS name
-const keyInfo = await helia.libp2p.services.keychain.createKey('my-key', 'RSA', 4096)
+const keyInfo = await helia.libp2p.services.keychain.createKey('my-key', 'Ed25519')
 const peerId = await helia.libp2p.services.keychain.exportPeerId(keyInfo.name)
 
 // store some data to publish
@@ -166,7 +166,7 @@ const name = ipns(helia, {
 })
 
 // create a public key to publish as an IPNS name
-const keyInfo = await helia.libp2p.services.keychain.createKey('my-key', 'RSA', 4096)
+const keyInfo = await helia.libp2p.services.keychain.createKey('my-key', 'Ed25519')
 const peerId = await helia.libp2p.services.keychain.exportPeerId(keyInfo.name)
 
 // store some data to publish
