@@ -1,6 +1,6 @@
 {
   "name": "helia",
-  "version": "4.2.3",
+  "version": "4.2.4",
   "description": "An implementation of IPFS in JavaScript",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/helia#readme",
@@ -90,7 +90,7 @@
   "devDependencies": {
     "@multiformats/mafmt": "^12.1.6",
     "@multiformats/multiaddr": "^12.1.14",
-    "aegir": "^42.2.5",
+    "aegir": "^43.0.1",
     "it-all": "^3.0.4",
     "it-drain": "^3.0.5"
   },

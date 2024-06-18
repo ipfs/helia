@@ -62,10 +62,10 @@
   },
   "devDependencies": {
     "@libp2p/interface": "^1.1.4",
-    "aegir": "^42.2.5",
+    "aegir": "^43.0.1",
     "interface-datastore": "^8.2.11",
     "multiformats": "^13.1.0",
-    "sinon": "^17.0.1",
+    "sinon": "^18.0.0",
     "sinon-ts": "^2.0.0"
   },
   "sideEffects": false
