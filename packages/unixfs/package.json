@@ -180,7 +180,7 @@
     "uint8arrays": "^5.0.2"
   },
   "devDependencies": {
-    "aegir": "^42.2.5",
+    "aegir": "^43.0.1",
     "blockstore-core": "^4.4.0",
     "delay": "^6.0.0",
     "iso-url": "^1.2.1",
