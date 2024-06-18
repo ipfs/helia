@@ -1,9 +1,11 @@
 /* eslint-env mocha */
 
+import { mfs } from '@helia/mfs'
 import { type UnixFS, unixfs } from '@helia/unixfs'
 import { CarReader } from '@ipld/car'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
+import { MemoryDatastore } from 'datastore-core'
 import { fixedSize } from 'ipfs-unixfs-importer/chunker'
 import toBuffer from 'it-to-buffer'
 import { car, type Car } from '../src/index.js'
@@ -114,5 +116,55 @@ describe('import/export car file', () => {
     expect(await toBuffer(u.cat(cid1))).to.equalBytes(fileData1)
     expect(await toBuffer(u.cat(cid2))).to.equalBytes(fileData2)
     expect(await toBuffer(u.cat(cid3))).to.equalBytes(fileData3)
+  })
+
+  it('exports a car file with duplicates', async () => {
+    const otherBlockstore = new MemoryBlockstore()
+    const otherUnixFS = unixfs({ blockstore: otherBlockstore })
+    const otherDatastore = new MemoryDatastore()
+    const otherMFS = mfs({ blockstore: otherBlockstore, datastore: otherDatastore })
+    const otherCar = car({ blockstore: otherBlockstore, dagWalkers })
+
+    await otherMFS.mkdir('/testDups')
+    await otherMFS.mkdir('/testDups/sub')
+
+    const sourceCid = await otherUnixFS.addBytes(smallFile)
+    await otherMFS.cp(sourceCid, '/testDups/a.smallfile')
+    await otherMFS.cp(sourceCid, '/testDups/sub/b.smallfile')
+
+    const rootObject = await otherMFS.stat('/testDups/')
+    const rootCid = rootObject.cid
+
+    const writer = memoryCarWriter(rootCid)
+    await otherCar.export(rootCid, writer, {
+      allowDuplicateBlocks: true
+    })
+
+    const carBytes = await writer.bytes()
+    expect(carBytes.length).to.equal(399)
+  })
+
+  it('exports a car file without duplicates', async () => {
+    const otherBlockstore = new MemoryBlockstore()
+    const otherUnixFS = unixfs({ blockstore: otherBlockstore })
+    const otherDatastore = new MemoryDatastore()
+    const otherMFS = mfs({ blockstore: otherBlockstore, datastore: otherDatastore })
+    const otherCar = car({ blockstore: otherBlockstore, dagWalkers })
+
+    await otherMFS.mkdir('/testDups')
+    await otherMFS.mkdir('/testDups/sub')
+
+    const sourceCid = await otherUnixFS.addBytes(smallFile)
+    await otherMFS.cp(sourceCid, '/testDups/a.smallfile')
+    await otherMFS.cp(sourceCid, '/testDups/sub/b.smallfile')
+
+    const rootObject = await otherMFS.stat('/testDups/')
+    const rootCid = rootObject.cid
+
+    const writer = memoryCarWriter(rootCid)
+    await otherCar.export(rootCid, writer)
+
+    const carBytes = await writer.bytes()
+    expect(carBytes.length).to.equal(349)
   })
 })
