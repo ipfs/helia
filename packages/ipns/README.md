@@ -45,12 +45,12 @@ const helia = await createHelia()
 const name = ipns(helia)
 
 // create a public key to publish as an IPNS name
-const keyInfo = await helia.libp2p.services.keychain.createKey('my-key')
+const keyInfo = await helia.libp2p.services.keychain.createKey('my-key', 'RSA', 4096)
 const peerId = await helia.libp2p.services.keychain.exportPeerId(keyInfo.name)
 
 // store some data to publish
 const fs = unixfs(helia)
-const cid = await fs.add(Uint8Array.from([0, 1, 2, 3, 4]))
+const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
 
 // publish the name
 await name.publish(peerId, cid)
@@ -75,18 +75,18 @@ const helia = await createHelia()
 const name = ipns(helia)
 
 // create a public key to publish as an IPNS name
-const keyInfo = await helia.libp2p.services.keychain.createKey('my-key')
+const keyInfo = await helia.libp2p.services.keychain.createKey('my-key', 'RSA', 4096)
 const peerId = await helia.libp2p.services.keychain.exportPeerId(keyInfo.name)
 
 // store some data to publish
 const fs = unixfs(helia)
-const cid = await fs.add(Uint8Array.from([0, 1, 2, 3, 4]))
+const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
 
 // publish the name
 await name.publish(peerId, cid)
 
 // create another public key to re-publish the original record
-const recursiveKeyInfo = await helia.libp2p.services.keychain.createKey('my-recursive-key')
+const recursiveKeyInfo = await helia.libp2p.services.keychain.createKey('my-recursive-key', 'RSA', 4096)
 const recursivePeerId = await helia.libp2p.services.keychain.exportPeerId(recursiveKeyInfo.name)
 
 // publish the recursive name
@@ -110,12 +110,12 @@ const helia = await createHelia()
 const name = ipns(helia)
 
 // create a public key to publish as an IPNS name
-const keyInfo = await helia.libp2p.services.keychain.createKey('my-key')
+const keyInfo = await helia.libp2p.services.keychain.createKey('my-key', 'RSA', 4096)
 const peerId = await helia.libp2p.services.keychain.exportPeerId(keyInfo.name)
 
 // store some data to publish
 const fs = unixfs(helia)
-const fileCid = await fs.add(Uint8Array.from([0, 1, 2, 3, 4]))
+const fileCid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
 
 // store the file in a directory
 const dirCid = await fs.mkdir()
@@ -166,12 +166,12 @@ const name = ipns(helia, {
 })
 
 // create a public key to publish as an IPNS name
-const keyInfo = await helia.libp2p.services.keychain.createKey('my-key')
+const keyInfo = await helia.libp2p.services.keychain.createKey('my-key', 'RSA', 4096)
 const peerId = await helia.libp2p.services.keychain.exportPeerId(keyInfo.name)
 
 // store some data to publish
 const fs = unixfs(helia)
-const cid = await fs.add(Uint8Array.from([0, 1, 2, 3, 4]))
+const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
 
 // publish the name
 await name.publish(peerId, cid)
