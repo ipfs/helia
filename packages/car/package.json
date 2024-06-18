@@ -153,7 +153,7 @@
   "devDependencies": {
     "@helia/unixfs": "^3.0.6",
     "@ipld/dag-pb": "^4.1.0",
-    "aegir": "^42.2.5",
+    "aegir": "^43.0.1",
     "blockstore-core": "^4.4.0",
     "ipfs-unixfs-importer": "^15.2.4",
     "it-to-buffer": "^4.0.5"
