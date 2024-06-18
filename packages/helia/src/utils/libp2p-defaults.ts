@@ -88,9 +88,7 @@ export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOpti
       }),
       keychain: keychain(options.keychain),
       ping: ping(),
-      relay: circuitRelayServer({
-        advertise: true
-      }),
+      relay: circuitRelayServer(),
       upnp: uPnPNAT()
     }
   }
