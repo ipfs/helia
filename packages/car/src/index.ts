@@ -59,6 +59,7 @@
  */
 
 import { CarWriter } from '@ipld/car'
+import { createScalableCuckooFilter } from '@libp2p/utils/filters'
 import drain from 'it-drain'
 import map from 'it-map'
 import defer from 'p-defer'
@@ -177,7 +178,7 @@ class DefaultCar implements Car {
   async export (root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: ExportCarOptions & AbortOptions & ProgressOptions<GetBlockProgressEvents>): Promise<void> {
     const deferred = defer<Error | undefined>()
     const roots = Array.isArray(root) ? root : [root]
-    const writtenBlocks = new Set()
+    const duplicateBlocksFilter = createScalableCuckooFilter(10000000)
 
     // use a queue to walk the DAG instead of recursion so we can traverse very large DAGs
     const queue = new PQueue({
@@ -197,10 +198,10 @@ class DefaultCar implements Car {
           // check if duplicate blocks should be skipped
           if (options?.allowDuplicateBlocks !== true) {
             // skip blocks that have already been written
-            if (writtenBlocks.has(cid.toString())) {
+            if (duplicateBlocksFilter.has(cid.bytes)) {
               return
             }
-            writtenBlocks.add(cid.toString())
+            duplicateBlocksFilter.add(cid.bytes)
           }
           await writer.put({ cid, bytes })
         }, options)
