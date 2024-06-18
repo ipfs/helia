@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.2.4](https://github.com/ipfs/helia/compare/helia-v4.2.3...helia-v4.2.4) (2024-06-18)
+
+
+### Bug Fixes
+
+* update circuit relay server args ([#561](https://github.com/ipfs/helia/issues/561)) ([3577d3d](https://github.com/ipfs/helia/commit/3577d3d106e255ff0d2a1d47a197f04632b903ec))
+
 ## [4.2.3](https://github.com/ipfs/helia/compare/helia-v4.2.2...helia-v4.2.3) (2024-05-27)
 
 
