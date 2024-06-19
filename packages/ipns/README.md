@@ -263,7 +263,7 @@ $ npm i @helia/ipns
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `HeliaIpns` in the global namespace.
+Loading this module through a script tag will make its exports available as `HeliaIpns` in the global namespace.
 
 ```html
 <script src="https://unpkg.com/@helia/ipns/dist/index.min.js"></script>
