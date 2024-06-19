@@ -3,6 +3,7 @@
 import { mfs } from '@helia/mfs'
 import { type UnixFS, unixfs } from '@helia/unixfs'
 import { CarReader } from '@ipld/car'
+import { createScalableCuckooFilter } from '@libp2p/utils/filters'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
@@ -118,7 +119,7 @@ describe('import/export car file', () => {
     expect(await toBuffer(u.cat(cid3))).to.equalBytes(fileData3)
   })
 
-  it('exports a car file with duplicates', async () => {
+  it('exports a car file without duplicates', async () => {
     const otherBlockstore = new MemoryBlockstore()
     const otherUnixFS = unixfs({ blockstore: otherBlockstore })
     const otherDatastore = new MemoryDatastore()
@@ -136,15 +137,16 @@ describe('import/export car file', () => {
     const rootCid = rootObject.cid
 
     const writer = memoryCarWriter(rootCid)
+    const blockFilter = createScalableCuckooFilter(5)
     await otherCar.export(rootCid, writer, {
-      allowDuplicateBlocks: true
+      blockFilter
     })
 
     const carBytes = await writer.bytes()
-    expect(carBytes.length).to.equal(399)
+    expect(carBytes.length).to.equal(349)
   })
 
-  it('exports a car file without duplicates', async () => {
+  it('exports a car file with duplicates', async () => {
     const otherBlockstore = new MemoryBlockstore()
     const otherUnixFS = unixfs({ blockstore: otherBlockstore })
     const otherDatastore = new MemoryDatastore()
@@ -165,6 +167,6 @@ describe('import/export car file', () => {
     await otherCar.export(rootCid, writer)
 
     const carBytes = await writer.bytes()
-    expect(carBytes.length).to.equal(349)
+    expect(carBytes.length).to.equal(399)
   })
 })

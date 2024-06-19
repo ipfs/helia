@@ -59,7 +59,6 @@
  */
 
 import { CarWriter } from '@ipld/car'
-import { createScalableCuckooFilter } from '@libp2p/utils/filters'
 import drain from 'it-drain'
 import map from 'it-map'
 import defer from 'p-defer'
@@ -68,6 +67,7 @@ import type { DAGWalker } from '@helia/interface'
 import type { GetBlockProgressEvents, PutManyBlocksProgressEvents } from '@helia/interface/blocks'
 import type { CarReader } from '@ipld/car'
 import type { AbortOptions } from '@libp2p/interfaces'
+import type { Filter } from '@libp2p/utils/filters'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 import type { ProgressOptions } from 'progress-events'
@@ -78,7 +78,7 @@ export interface CarComponents {
 }
 
 interface ExportCarOptions {
-  allowDuplicateBlocks: boolean
+  blockFilter: Filter
 }
 
 /**
@@ -178,7 +178,6 @@ class DefaultCar implements Car {
   async export (root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: ExportCarOptions & AbortOptions & ProgressOptions<GetBlockProgressEvents>): Promise<void> {
     const deferred = defer<Error | undefined>()
     const roots = Array.isArray(root) ? root : [root]
-    const duplicateBlocksFilter = createScalableCuckooFilter(10000000)
 
     // use a queue to walk the DAG instead of recursion so we can traverse very large DAGs
     const queue = new PQueue({
@@ -196,12 +195,12 @@ class DefaultCar implements Car {
       void queue.add(async () => {
         await this.#walkDag(root, queue, async (cid, bytes) => {
           // check if duplicate blocks should be skipped
-          if (options?.allowDuplicateBlocks !== true) {
+          if (typeof options?.blockFilter !== 'undefined') {
             // skip blocks that have already been written
-            if (duplicateBlocksFilter.has(cid.bytes)) {
+            if (options?.blockFilter.has(cid.bytes)) {
               return
             }
-            duplicateBlocksFilter.add(cid.bytes)
+            options?.blockFilter.add(cid.bytes)
           }
           await writer.put({ cid, bytes })
         }, options)
