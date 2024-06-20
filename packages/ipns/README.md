@@ -56,7 +56,7 @@ const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
 await name.publish(peerId, cid)
 
 // resolve the name
-const result = name.resolve(peerId)
+const result = await name.resolve(peerId)
 
 console.info(result.cid, result.path)
 ```
