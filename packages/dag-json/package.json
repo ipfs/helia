@@ -147,7 +147,7 @@
     "progress-events": "^1.0.0"
   },
   "devDependencies": {
-    "aegir": "^43.0.1",
+    "aegir": "^44.0.0",
     "blockstore-core": "^4.4.0"
   },
   "sideEffects": false
