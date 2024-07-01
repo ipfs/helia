@@ -179,7 +179,7 @@
   "devDependencies": {
     "@libp2p/peer-id-factory": "^4.0.7",
     "@types/dns-packet": "^5.6.5",
-    "aegir": "^43.0.1",
+    "aegir": "^44.0.1",
     "datastore-core": "^9.2.9",
     "it-drain": "^3.0.5",
     "sinon": "^18.0.0",
