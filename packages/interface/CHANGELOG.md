@@ -5,6 +5,18 @@
 
 * expose .dns property on @helia/interface ([#465](https://github.com/ipfs/helia/issues/465)) ([8c9bb7d](https://github.com/ipfs/helia/commit/8c9bb7d224a1b786cba1fba18bffe07001a3b95d))
 
+## [4.3.1](https://github.com/ipfs/helia/compare/interface-v4.3.0...interface-v4.3.1) (2024-07-01)
+
+
+### Documentation
+
+* fix grammar - it's -&gt; its ([#565](https://github.com/ipfs/helia/issues/565)) ([155e24d](https://github.com/ipfs/helia/commit/155e24db8c06c33972895d702a656e0c2996f3d9))
+
+
+### Dependencies
+
+* bump aegir from 42.2.11 to 43.0.1 ([#552](https://github.com/ipfs/helia/issues/552)) ([74ccc92](https://github.com/ipfs/helia/commit/74ccc92793a6d0bb4bee714d9fe4fa4183aa4ee8))
+
 ## [4.3.0](https://github.com/ipfs/helia/compare/interface-v4.2.0...interface-v4.3.0) (2024-05-01)
 
 
