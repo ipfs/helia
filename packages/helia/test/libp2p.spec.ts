@@ -25,6 +25,8 @@ describe('libp2p', () => {
 
   it('allows overriding libp2p config', async () => {
     const config = {
+      addresses: {},
+      transports: [],
       services: {}
     }
 
