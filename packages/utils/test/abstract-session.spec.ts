@@ -251,7 +251,7 @@ describe('abstract-session', () => {
 
     await expect(session.retrieve(cid)).to.eventually.be.rejected()
 
-    expect(session.findNewProviders).to.have.property('callCount', 2)
+    expect(session.findNewProviders).to.have.property('callCount', 3)
     expect(session.queryProvider).to.have.property('callCount', 1)
   })
 })
