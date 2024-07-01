@@ -90,6 +90,10 @@ export class TrustlessGatewayBlockBroker implements BlockBroker<TrustlessGateway
     return createTrustlessGatewaySession({
       logger: this.logger,
       routing: this.routing
-    }, options)
+    }, {
+      ...options,
+      allowLocal: this.allowLocal,
+      allowInsecure: this.allowInsecure
+    })
   }
 }
