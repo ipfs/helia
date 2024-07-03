@@ -197,10 +197,10 @@ class DefaultCar implements Car {
           // check if duplicate blocks should be skipped
           if (typeof options?.blockFilter !== 'undefined') {
             // skip blocks that have already been written
-            if (options?.blockFilter.has(cid.bytes)) {
+            if (options?.blockFilter.has(cid.toString())) {
               return
             }
-            options?.blockFilter.add(cid.bytes)
+            options?.blockFilter.add(cid.toString())
           }
           await writer.put({ cid, bytes })
         }, options)
