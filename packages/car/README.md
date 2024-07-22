@@ -94,7 +94,7 @@ $ npm i @helia/car
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `HeliaCar` in the global namespace.
+Loading this module through a script tag will make its exports available as `HeliaCar` in the global namespace.
 
 ```html
 <script src="https://unpkg.com/@helia/car/dist/index.min.js"></script>
