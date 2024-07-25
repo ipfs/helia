@@ -21,10 +21,9 @@ import * as libp2pInfo from 'libp2p/version'
 import { name, version } from '../version.js'
 import { bootstrapConfig } from './bootstrappers.js'
 import type { Libp2pDefaultsOptions } from './libp2p.js'
-import type { ServiceMap } from '@libp2p/interface'
 import type { Libp2pOptions } from 'libp2p'
 
-export interface DefaultLibp2pServices extends ServiceMap {
+export interface DefaultLibp2pServices extends Record<string, unknown> {
   autoNAT: unknown
   dcutr: unknown
   delegatedRouting: unknown
