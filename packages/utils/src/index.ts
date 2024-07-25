@@ -254,7 +254,7 @@ export class Helia implements HeliaInterface {
             yield cid
 
             options.onProgress?.(new CustomProgressEvent<CID>('helia:gc:deleted', cid))
-          } catch (err) {
+          } catch (err: any) {
             helia.log.error('Error during gc', err)
             options.onProgress?.(new CustomProgressEvent<Error>('helia:gc:error', err))
           }

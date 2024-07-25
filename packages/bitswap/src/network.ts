@@ -242,7 +242,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
    * Find bitswap providers for a given `cid`.
    */
   async * findProviders (cid: CID, options?: AbortOptions & ProgressOptions<BitswapNetworkWantProgressEvents>): AsyncIterable<Provider> {
-    options?.onProgress?.(new CustomProgressEvent<PeerId>('bitswap:network:find-providers', cid))
+    options?.onProgress?.(new CustomProgressEvent<CID>('bitswap:network:find-providers', cid))
 
     for await (const provider of this.routing.findProviders(cid, options)) {
       // make sure we can dial the provider
