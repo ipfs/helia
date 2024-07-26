@@ -68,7 +68,7 @@ export async function * globSource (cwd: string, pattern: string, options: GlobS
     onlyFiles: false,
     absolute: true,
     dot: Boolean(options.hidden),
-    followSymbolicLinks: options.followSymlinks != null ? options.followSymlinks : true
+    followSymbolicLinks: options.followSymlinks ?? true
   }
 
   for await (const p of glob(cwd, pattern, globOptions)) {
