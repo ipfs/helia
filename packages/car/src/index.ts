@@ -78,7 +78,10 @@ export interface CarComponents {
 }
 
 interface ExportCarOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents> {
-  blockFilter: Filter
+  /**
+   * If a filter is passed it will be used to deduplicate blocks exported in the car file
+   */
+  blockFilter?: Filter
 }
 
 /**
