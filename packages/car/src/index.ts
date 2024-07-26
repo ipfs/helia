@@ -77,7 +77,7 @@ export interface CarComponents {
   dagWalkers: Record<number, DAGWalker>
 }
 
-interface ExportCarOptions {
+interface ExportCarOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents> {
   blockFilter: Filter
 }
 
@@ -134,7 +134,7 @@ export interface Car {
    * await eventPromise
    * ```
    */
-  export(root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: ExportCarOptions & AbortOptions & ProgressOptions<GetBlockProgressEvents>): Promise<void>
+  export(root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: ExportCarOptions): Promise<void>
 
   /**
    * Returns an AsyncGenerator that yields CAR file bytes.
@@ -175,7 +175,7 @@ class DefaultCar implements Car {
     ))
   }
 
-  async export (root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: ExportCarOptions & AbortOptions & ProgressOptions<GetBlockProgressEvents>): Promise<void> {
+  async export (root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: ExportCarOptions): Promise<void> {
     const deferred = defer<Error | undefined>()
     const roots = Array.isArray(root) ? root : [root]
 
@@ -216,7 +216,7 @@ class DefaultCar implements Car {
     }
   }
 
-  async * stream (root: CID | CID[], options?: ExportCarOptions & AbortOptions & ProgressOptions<GetBlockProgressEvents>): AsyncGenerator<Uint8Array, void, undefined> {
+  async * stream (root: CID | CID[], options?: ExportCarOptions): AsyncGenerator<Uint8Array, void, undefined> {
     const { writer, out } = CarWriter.create(root)
 
     // has to be done async so we write to `writer` and read from `out` at the
