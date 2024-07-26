@@ -197,14 +197,12 @@ class DefaultCar implements Car {
     for (const root of roots) {
       void queue.add(async () => {
         await this.#walkDag(root, queue, async (cid, bytes) => {
-          // check if duplicate blocks should be skipped
-          if (options?.blockFilter != null) {
-            // skip blocks that have already been written
-            if (options.blockFilter.has(cid.toString())) {
-              return
-            }
-            options.blockFilter.add(cid.toString())
+          // if a filter has been passed, skip blocks that have already been written
+          if (options?.blockFilter?.has(cid.multihash.bytes) === true) {
+            return
           }
+
+          options?.blockFilter?.add(cid.multihash.bytes)
           await writer.put({ cid, bytes })
         }, options)
       })
