@@ -51,7 +51,7 @@ export class TrustlessGateway {
    * only one request per CID is made to a given gateway at a time, and that we
    * don't make multiple in-flight requests for the same CID to the same gateway.
    */
-  #pendingResponses = new Map<string, Promise<Uint8Array>>()
+  readonly #pendingResponses = new Map<string, Promise<Uint8Array>>()
 
   private readonly log: Logger
 
