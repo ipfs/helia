@@ -1,6 +1,6 @@
 {
   "name": "@helia/mfs",
-  "version": "3.0.6",
+  "version": "3.0.7",
   "description": "A mutable filesystem powered by Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/mfs#readme",
@@ -139,7 +139,7 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@helia/unixfs": "^3.0.6",
+    "@helia/unixfs": "^3.0.7",
     "@libp2p/interfaces": "^3.3.2",
     "@libp2p/logger": "^4.0.7",
     "interface-blockstore": "^5.2.10",
