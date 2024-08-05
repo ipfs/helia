@@ -157,7 +157,7 @@
     "@multiformats/multiaddr": "^12.1.14",
     "any-signal": "^4.1.1",
     "interface-blockstore": "^5.2.9",
-    "interface-store": "^5.1.7",
+    "interface-store": "^6.0.0",
     "it-drain": "^3.0.5",
     "it-length-prefixed": "^9.0.0",
     "it-length-prefixed-stream": "^1.1.6",
