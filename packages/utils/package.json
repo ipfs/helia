@@ -68,7 +68,7 @@
     "cborg": "^4.0.9",
     "interface-blockstore": "^5.2.10",
     "interface-datastore": "^8.2.11",
-    "interface-store": "^5.1.8",
+    "interface-store": "^6.0.0",
     "it-drain": "^3.0.5",
     "it-filter": "^3.0.4",
     "it-foreach": "^2.0.6",

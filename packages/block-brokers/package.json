@@ -62,7 +62,7 @@
     "@multiformats/multiaddr-matcher": "^1.2.0",
     "@multiformats/multiaddr-to-uri": "^10.0.1",
     "interface-blockstore": "^5.2.10",
-    "interface-store": "^5.1.8",
+    "interface-store": "^6.0.0",
     "multiformats": "^13.1.0",
     "progress-events": "^1.0.0"
   },
