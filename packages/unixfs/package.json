@@ -181,7 +181,7 @@
   },
   "devDependencies": {
     "aegir": "^44.0.1",
-    "blockstore-core": "^4.4.0",
+    "blockstore-core": "^5.0.0",
     "delay": "^6.0.0",
     "iso-url": "^1.2.1",
     "it-drain": "^3.0.5",
