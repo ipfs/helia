@@ -27,4 +27,28 @@ describe('trustless-gateway-block-broker-utils', () => {
 
     expect(filtered.length).to.deep.equal(0)
   })
+
+  it('filterNonHTTPMultiaddrs allows 127.0.0.1 when allowInsecure=false', async function () {
+    const localMaddr = uriToMultiaddr('http://127.0.0.1')
+
+    const filtered = filterNonHTTPMultiaddrs([localMaddr], false, true)
+
+    expect(filtered.length).to.deep.equal(1)
+  })
+
+  it('filterNonHTTPMultiaddrs allows localhost when allowInsecure=false', async function () {
+    const localMaddr = uriToMultiaddr('http://localhost')
+
+    const filtered = filterNonHTTPMultiaddrs([localMaddr], false, true)
+
+    expect(filtered.length).to.deep.equal(1)
+  })
+
+  it('filterNonHTTPMultiaddrs allows *.localhost when allowInsecure=false', async function () {
+    const localMaddr = uriToMultiaddr('http://example.localhost')
+
+    const filtered = filterNonHTTPMultiaddrs([localMaddr], false, true)
+
+    expect(filtered.length).to.deep.equal(1)
+  })
 })
