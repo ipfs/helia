@@ -94,6 +94,20 @@ describe('stat', function () {
     })
   })
 
+  it('stats a directory with content', async () => {
+    const emptyDirCid = await fs.addDirectory()
+    const fileCid = await fs.addBytes(Buffer.from("Hello World!"))
+    const updateDirCid = await fs.cp(fileCid, emptyDirCid, 'foo1.txt')
+    const finalDirCid = await fs.cp(fileCid, updateDirCid, 'foo2.txt')
+
+    await expect(fs.stat(finalDirCid)).to.eventually.include({
+      fileSize: 0n,
+      dagSize: 134n,
+      blocks: 2,
+      type: 'directory'
+    })
+  })
+
   it('should stat file with mode', async () => {
     const mode = 0o644
     const cid = await fs.addFile({
@@ -161,7 +175,7 @@ describe('stat', function () {
     })
   })
 
-  it('sstats a sharded directory', async function () {
+  it('stats a sharded directory', async function () {
     const mtime = {
       secs: 5n,
       nsecs: 0
