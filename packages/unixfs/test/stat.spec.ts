@@ -135,7 +135,7 @@ describe('stat', function () {
     })
   })
 
-  it('should stat a directory', async function () {
+  it('should sstat a directory', async function () {
     await expect(fs.stat(emptyDirCid)).to.eventually.include({
       type: 'directory',
       blocks: 1,
