@@ -21,6 +21,14 @@ export function filterNonHTTPMultiaddrs (multiaddrs: Multiaddr[], allowInsecure:
       return isPrivateIp(ma.toOptions().host) === false
     }
 
+    // When allowInsecure is false and allowLocal is true, allow multiaddrs with "127.0.0.1", "localhost", or any subdomain ending with ".localhost"
+    if (!allowInsecure && allowLocal) {
+      const { host } = ma.toOptions()
+      if (host === '127.0.0.1' || host === 'localhost' || host.endsWith('.localhost')) {
+        return true
+      }
+    }
+
     return false
   })
 }
