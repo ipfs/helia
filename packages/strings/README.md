@@ -9,7 +9,7 @@
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
 [![codecov](https://img.shields.io/codecov/c/github/ipfs/helia.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia)
-[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
+[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
 
 > Add/get IPLD blocks containing strings with your Helia node
 
@@ -37,15 +37,15 @@ See the [API docs](https://ipfs.github.io/helia/modules/_helia_strings.html) for
 ## Example
 
 ```typescript
-import { createHelia } from 'helia'
-import { strings } from '@helia/strings'
-import { CID } from 'multiformats/cid'
+import { createHelia } from "helia";
+import { strings } from "@helia/strings";
+import { CID } from "multiformats/cid";
 
-const str = strings(helia)
-const cid = await str.put('hello world')
-const string = await str.get(cid)
+const str = strings(helia);
+const cid = await str.put("hello world");
+const string = await str.get(cid);
 
-console.info(string)
+console.info(string);
 // hello world
 ```
 

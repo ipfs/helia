@@ -1,7 +1,3 @@
 {
-  "entryPoints": [
-    "./src/index.ts",
-    "./src/blocks.ts",
-    "./src/pins.ts"
-  ]
+  "entryPoints": ["./src/index.ts", "./src/blocks.ts", "./src/pins.ts"]
 }

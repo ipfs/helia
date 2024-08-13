@@ -29,47 +29,68 @@
  * ```
  */
 
-import { unixfs } from '@helia/unixfs'
-import { AlreadyExistsError, DoesNotExistError, InvalidParametersError, NotADirectoryError } from '@helia/unixfs/errors'
-import { logger } from '@libp2p/logger'
-import { Key } from 'interface-datastore'
-import { UnixFS as IPFSUnixFS, type Mtime } from 'ipfs-unixfs'
-import { CID } from 'multiformats/cid'
-import { basename } from './utils/basename.js'
-import type { AddOptions, CatOptions, ChmodOptions, CpOptions, LsOptions, MkdirOptions as UnixFsMkdirOptions, RmOptions as UnixFsRmOptions, StatOptions, TouchOptions, UnixFS, UnixFSStats } from '@helia/unixfs'
-import type { AbortOptions } from '@libp2p/interfaces'
-import type { Blockstore } from 'interface-blockstore'
-import type { Datastore } from 'interface-datastore'
-import type { UnixFSEntry } from 'ipfs-unixfs-exporter'
-import type { ByteStream } from 'ipfs-unixfs-importer'
+import { unixfs } from "@helia/unixfs";
+import {
+  AlreadyExistsError,
+  DoesNotExistError,
+  InvalidParametersError,
+  NotADirectoryError,
+} from "@helia/unixfs/errors";
+import { logger } from "@libp2p/logger";
+import { Key } from "interface-datastore";
+import { UnixFS as IPFSUnixFS, type Mtime } from "ipfs-unixfs";
+import { CID } from "multiformats/cid";
+import { basename } from "./utils/basename.js";
+import type {
+  AddOptions,
+  CatOptions,
+  ChmodOptions,
+  CpOptions,
+  LsOptions,
+  MkdirOptions as UnixFsMkdirOptions,
+  RmOptions as UnixFsRmOptions,
+  StatOptions,
+  TouchOptions,
+  UnixFS,
+  UnixFSStats,
+} from "@helia/unixfs";
+import type { AbortOptions } from "@libp2p/interfaces";
+import type { Blockstore } from "interface-blockstore";
+import type { Datastore } from "interface-datastore";
+import type { UnixFSEntry } from "ipfs-unixfs-exporter";
+import type { ByteStream } from "ipfs-unixfs-importer";
 
-const log = logger('helia:mfs')
+const log = logger("helia:mfs");
 
 export interface MFSComponents {
-  blockstore: Blockstore
-  datastore: Datastore
+  blockstore: Blockstore;
+  datastore: Datastore;
 }
 
 export interface MFSInit {
   /**
    * The key used to store the root CID in the datastore (default: '/local/filesroot')
    */
-  key?: string
+  key?: string;
 }
 
-export type WriteOptions = AddOptions & CpOptions & {
-  /**
-   * An optional mode to set on the new file
-   */
-  mode: number
+export type WriteOptions = AddOptions &
+  CpOptions & {
+    /**
+     * An optional mode to set on the new file
+     */
+    mode: number;
 
-  /**
-   * An optional mtime to set on the new file
-   */
-  mtime: Mtime
-}
+    /**
+     * An optional mtime to set on the new file
+     */
+    mtime: Mtime;
+  };
 
-export type MkdirOptions = AddOptions & StatOptions & CpOptions & UnixFsMkdirOptions
+export type MkdirOptions = AddOptions &
+  StatOptions &
+  CpOptions &
+  UnixFsMkdirOptions;
 
 /**
  * Options to pass to the rm command
@@ -79,7 +100,7 @@ export interface RmOptions extends UnixFsRmOptions {
    * If true, allow attempts to delete files or directories that do not exist
    * (default: false)
    */
-  force: boolean
+  force: boolean;
 }
 
 /**
@@ -96,7 +117,11 @@ export interface MFS {
    * await fs.writeBytes(Uint8Array.from([0, 1, 2, 3]), '/foo.txt')
    * ```
    */
-  writeBytes(bytes: Uint8Array, path: string, options?: Partial<WriteOptions>): Promise<void>
+  writeBytes(
+    bytes: Uint8Array,
+    path: string,
+    options?: Partial<WriteOptions>,
+  ): Promise<void>;
 
   /**
    * Add a stream of `Uint8Array` to your MFS as a file.
@@ -110,7 +135,11 @@ export interface MFS {
    * await fs.writeByteStream(stream, '/foo.txt')
    * ```
    */
-  writeByteStream(bytes: ByteStream, path: string, options?: Partial<WriteOptions>): Promise<void>
+  writeByteStream(
+    bytes: ByteStream,
+    path: string,
+    options?: Partial<WriteOptions>,
+  ): Promise<void>;
 
   /**
    * Retrieve the contents of a file from your MFS.
@@ -123,7 +152,7 @@ export interface MFS {
    * }
    * ```
    */
-  cat(path: string, options?: Partial<CatOptions>): AsyncIterable<Uint8Array>
+  cat(path: string, options?: Partial<CatOptions>): AsyncIterable<Uint8Array>;
 
   /**
    * Change the permissions on a file or directory in your MFS
@@ -141,7 +170,11 @@ export interface MFS {
    * console.info(afterStats)
    * ```
    */
-  chmod(path: string, mode: number, options?: Partial<ChmodOptions>): Promise<void>
+  chmod(
+    path: string,
+    mode: number,
+    options?: Partial<ChmodOptions>,
+  ): Promise<void>;
 
   /**
    * Add a file or directory to a target directory in your MFS.
@@ -165,7 +198,11 @@ export interface MFS {
    * await fs.cp('/foo.txt', '/bar.txt')
    * ```
    */
-  cp(source: CID | string, destination: string, options?: Partial<CpOptions>): Promise<void>
+  cp(
+    source: CID | string,
+    destination: string,
+    options?: Partial<CpOptions>,
+  ): Promise<void>;
 
   /**
    * List directory contents from your MFS.
@@ -178,7 +215,7 @@ export interface MFS {
    * }
    * ```
    */
-  ls(path?: string, options?: Partial<LsOptions>): AsyncIterable<UnixFSEntry>
+  ls(path?: string, options?: Partial<LsOptions>): AsyncIterable<UnixFSEntry>;
 
   /**
    * Make a new directory in your MFS.
@@ -189,7 +226,7 @@ export interface MFS {
    * await fs.mkdir('/new-dir')
    * ```
    */
-  mkdir(path: string, options?: Partial<MkdirOptions>): Promise<void>
+  mkdir(path: string, options?: Partial<MkdirOptions>): Promise<void>;
 
   /**
    * Remove a file or directory from your MFS.
@@ -201,7 +238,7 @@ export interface MFS {
    * await fs.rm('/new-dir')
    * ```
    */
-  rm(path: string, options?: Partial<RmOptions>): Promise<void>
+  rm(path: string, options?: Partial<RmOptions>): Promise<void>;
 
   /**
    * Return statistics about a UnixFS DAG in your MFS.
@@ -215,7 +252,7 @@ export interface MFS {
    * console.info(stats)
    * ```
    */
-  stat(path: string, options?: Partial<StatOptions>): Promise<UnixFSStats>
+  stat(path: string, options?: Partial<StatOptions>): Promise<UnixFSStats>;
 
   /**
    * Update the mtime of a UnixFS DAG in your MFS.
@@ -233,356 +270,427 @@ export interface MFS {
    * console.info(afterStats)
    * ```
    */
-  touch(path: string, options?: Partial<TouchOptions>): Promise<void>
+  touch(path: string, options?: Partial<TouchOptions>): Promise<void>;
 }
 
 interface PathEntry {
-  cid: CID
-  name: string
-  unixfs?: IPFSUnixFS
+  cid: CID;
+  name: string;
+  unixfs?: IPFSUnixFS;
 }
 
 interface WalkPathOptions extends AbortOptions {
-  createMissingDirectories: boolean
-  finalSegmentMustBeDirectory: boolean
+  createMissingDirectories: boolean;
+  finalSegmentMustBeDirectory: boolean;
 }
 
 class DefaultMFS implements MFS {
-  private readonly components: MFSComponents
-  private readonly unixfs: UnixFS
-  private root?: CID
-  private readonly key: Key
+  private readonly components: MFSComponents;
+  private readonly unixfs: UnixFS;
+  private root?: CID;
+  private readonly key: Key;
 
-  constructor (components: MFSComponents, init: MFSInit = {}) {
-    this.components = components
+  constructor(components: MFSComponents, init: MFSInit = {}) {
+    this.components = components;
 
-    this.key = new Key(init.key ?? '/locals/filesroot')
-    this.unixfs = unixfs(components)
+    this.key = new Key(init.key ?? "/locals/filesroot");
+    this.unixfs = unixfs(components);
   }
 
-  async #getRootCID (): Promise<CID> {
+  async #getRootCID(): Promise<CID> {
     if (this.root == null) {
       try {
-        const buf = await this.components.datastore.get(this.key)
-        this.root = CID.decode(buf)
+        const buf = await this.components.datastore.get(this.key);
+        this.root = CID.decode(buf);
       } catch (err: any) {
-        if (err.code !== 'ERR_NOT_FOUND') {
-          throw err
+        if (err.code !== "ERR_NOT_FOUND") {
+          throw err;
         }
 
-        this.root = await this.unixfs.addDirectory()
+        this.root = await this.unixfs.addDirectory();
       }
     }
 
-    return this.root
+    return this.root;
   }
 
-  async writeBytes (bytes: Uint8Array, path: string, options?: Partial<WriteOptions>): Promise<void> {
-    const cid = await this.unixfs.addFile({
-      content: bytes,
-      mode: options?.mode,
-      mtime: options?.mtime
-    }, options)
+  async writeBytes(
+    bytes: Uint8Array,
+    path: string,
+    options?: Partial<WriteOptions>,
+  ): Promise<void> {
+    const cid = await this.unixfs.addFile(
+      {
+        content: bytes,
+        mode: options?.mode,
+        mtime: options?.mtime,
+      },
+      options,
+    );
 
-    await this.cp(cid, path, options)
+    await this.cp(cid, path, options);
   }
 
-  async writeByteStream (bytes: ByteStream, path: string, options?: Partial<WriteOptions>): Promise<void> {
-    const cid = await this.unixfs.addFile({
-      content: bytes,
-      mode: options?.mode,
-      mtime: options?.mtime
-    }, options)
+  async writeByteStream(
+    bytes: ByteStream,
+    path: string,
+    options?: Partial<WriteOptions>,
+  ): Promise<void> {
+    const cid = await this.unixfs.addFile(
+      {
+        content: bytes,
+        mode: options?.mode,
+        mtime: options?.mtime,
+      },
+      options,
+    );
 
-    await this.cp(cid, path, options)
+    await this.cp(cid, path, options);
   }
 
-  async * cat (path: string, options: Partial<CatOptions> = {}): AsyncIterable<Uint8Array> {
-    const root = await this.#getRootCID()
+  async *cat(
+    path: string,
+    options: Partial<CatOptions> = {},
+  ): AsyncIterable<Uint8Array> {
+    const root = await this.#getRootCID();
     const trail = await this.#walkPath(root, path, {
       ...options,
       createMissingDirectories: false,
-      finalSegmentMustBeDirectory: false
-    })
+      finalSegmentMustBeDirectory: false,
+    });
 
-    yield * this.unixfs.cat(trail[trail.length - 1].cid, options)
+    yield* this.unixfs.cat(trail[trail.length - 1].cid, options);
   }
 
-  async chmod (path: string, mode: number, options: Partial<ChmodOptions> = {}): Promise<void> {
-    const root = await this.#getRootCID()
+  async chmod(
+    path: string,
+    mode: number,
+    options: Partial<ChmodOptions> = {},
+  ): Promise<void> {
+    const root = await this.#getRootCID();
 
     this.root = await this.unixfs.chmod(root, mode, {
       ...options,
-      path
-    })
+      path,
+    });
   }
 
-  async cp (source: CID | string, destination: string, options?: Partial<CpOptions>): Promise<void> {
-    const root = await this.#getRootCID()
-    const force = options?.force ?? false
+  async cp(
+    source: CID | string,
+    destination: string,
+    options?: Partial<CpOptions>,
+  ): Promise<void> {
+    const root = await this.#getRootCID();
+    const force = options?.force ?? false;
 
-    if (typeof source === 'string') {
-      const stat = await this.stat(source, options)
+    if (typeof source === "string") {
+      const stat = await this.stat(source, options);
 
-      source = stat.cid
+      source = stat.cid;
     }
 
     if (!force) {
-      await this.#ensurePathDoesNotExist(destination, options)
+      await this.#ensurePathDoesNotExist(destination, options);
     }
 
-    const fileName = basename(destination)
-    const containingDirectory = destination.substring(0, destination.length - `/${fileName}`.length)
+    const fileName = basename(destination);
+    const containingDirectory = destination.substring(
+      0,
+      destination.length - `/${fileName}`.length,
+    );
 
-    let trail: PathEntry[] = [{
-      cid: root,
-      name: ''
-    }]
+    let trail: PathEntry[] = [
+      {
+        cid: root,
+        name: "",
+      },
+    ];
 
-    if (containingDirectory !== '') {
+    if (containingDirectory !== "") {
       trail = await this.#walkPath(root, containingDirectory, {
         ...options,
         createMissingDirectories: options?.force ?? false,
-        finalSegmentMustBeDirectory: true
-      })
+        finalSegmentMustBeDirectory: true,
+      });
     }
 
     trail.push({
       cid: source,
-      name: fileName
-    })
+      name: fileName,
+    });
 
-    this.root = await this.#persistPath(trail, options)
+    this.root = await this.#persistPath(trail, options);
   }
 
-  async * ls (path?: string, options?: Partial<LsOptions>): AsyncIterable<UnixFSEntry> {
-    const root = await this.#getRootCID()
+  async *ls(
+    path?: string,
+    options?: Partial<LsOptions>,
+  ): AsyncIterable<UnixFSEntry> {
+    const root = await this.#getRootCID();
 
     if (options?.path != null) {
-      path = `${path}/${options.path}`
+      path = `${path}/${options.path}`;
     }
 
-    yield * this.unixfs.ls(root, {
+    yield* this.unixfs.ls(root, {
       ...options,
-      path
-    })
+      path,
+    });
   }
 
-  async mkdir (path: string, options?: Partial<MkdirOptions>): Promise<void> {
-    const force = options?.force ?? false
+  async mkdir(path: string, options?: Partial<MkdirOptions>): Promise<void> {
+    const force = options?.force ?? false;
 
     if (!force) {
-      await this.#ensurePathDoesNotExist(path, options)
+      await this.#ensurePathDoesNotExist(path, options);
     }
 
-    const dirName = basename(path)
-    const containingDirectory = path.substring(0, path.length - `/${dirName}`.length)
-    const root = await this.#getRootCID()
+    const dirName = basename(path);
+    const containingDirectory = path.substring(
+      0,
+      path.length - `/${dirName}`.length,
+    );
+    const root = await this.#getRootCID();
 
-    let trail: PathEntry[] = [{
-      cid: root,
-      name: ''
-    }]
+    let trail: PathEntry[] = [
+      {
+        cid: root,
+        name: "",
+      },
+    ];
 
-    if (containingDirectory !== '') {
+    if (containingDirectory !== "") {
       trail = await this.#walkPath(root, containingDirectory, {
         ...options,
         createMissingDirectories: force,
-        finalSegmentMustBeDirectory: true
-      })
+        finalSegmentMustBeDirectory: true,
+      });
     }
 
     trail.push({
-      cid: await this.unixfs.addDirectory({
-        mode: options?.mode,
-        mtime: options?.mtime
-      }, options),
-      name: basename(path)
-    })
+      cid: await this.unixfs.addDirectory(
+        {
+          mode: options?.mode,
+          mtime: options?.mtime,
+        },
+        options,
+      ),
+      name: basename(path),
+    });
 
-    this.root = await this.#persistPath(trail, options)
+    this.root = await this.#persistPath(trail, options);
   }
 
-  async rm (path: string, options?: Partial<RmOptions>): Promise<void> {
-    const force = options?.force ?? false
+  async rm(path: string, options?: Partial<RmOptions>): Promise<void> {
+    const force = options?.force ?? false;
 
     if (!force) {
-      await this.#ensurePathExists(path, options)
+      await this.#ensurePathExists(path, options);
     }
 
-    const root = await this.#getRootCID()
+    const root = await this.#getRootCID();
 
     const trail = await this.#walkPath(root, path, {
       ...options,
       createMissingDirectories: false,
-      finalSegmentMustBeDirectory: false
-    })
+      finalSegmentMustBeDirectory: false,
+    });
 
-    const lastSegment = trail.pop()
+    const lastSegment = trail.pop();
 
     if (lastSegment == null) {
-      throw new InvalidParametersError('path was too short')
+      throw new InvalidParametersError("path was too short");
     }
 
     // remove directory entry
-    const containingDir = trail[trail.length - 1]
-    containingDir.cid = await this.unixfs.rm(containingDir.cid, lastSegment.name, options)
+    const containingDir = trail[trail.length - 1];
+    containingDir.cid = await this.unixfs.rm(
+      containingDir.cid,
+      lastSegment.name,
+      options,
+    );
 
-    this.root = await this.#persistPath(trail, options)
+    this.root = await this.#persistPath(trail, options);
   }
 
-  async stat (path: string, options?: Partial<StatOptions>): Promise<UnixFSStats> {
-    const root = await this.#getRootCID()
+  async stat(
+    path: string,
+    options?: Partial<StatOptions>,
+  ): Promise<UnixFSStats> {
+    const root = await this.#getRootCID();
 
     const trail = await this.#walkPath(root, path, {
       ...options,
       createMissingDirectories: false,
-      finalSegmentMustBeDirectory: false
-    })
+      finalSegmentMustBeDirectory: false,
+    });
 
-    const finalEntry = trail.pop()
+    const finalEntry = trail.pop();
 
     if (finalEntry == null) {
-      throw new DoesNotExistError()
+      throw new DoesNotExistError();
     }
 
     return this.unixfs.stat(finalEntry.cid, {
-      ...options
-    })
+      ...options,
+    });
   }
 
-  async touch (path: string, options?: Partial<TouchOptions>): Promise<void> {
-    const root = await this.#getRootCID()
+  async touch(path: string, options?: Partial<TouchOptions>): Promise<void> {
+    const root = await this.#getRootCID();
     const trail = await this.#walkPath(root, path, {
       ...options,
       createMissingDirectories: false,
-      finalSegmentMustBeDirectory: false
-    })
+      finalSegmentMustBeDirectory: false,
+    });
 
-    const finalEntry = trail[trail.length - 1]
+    const finalEntry = trail[trail.length - 1];
 
     if (finalEntry == null) {
-      throw new DoesNotExistError()
+      throw new DoesNotExistError();
     }
 
-    finalEntry.cid = await this.unixfs.touch(finalEntry.cid, options)
+    finalEntry.cid = await this.unixfs.touch(finalEntry.cid, options);
 
-    this.root = await this.#persistPath(trail, options)
+    this.root = await this.#persistPath(trail, options);
   }
 
-  async #walkPath (root: CID, path: string, opts: WalkPathOptions): Promise<PathEntry[]> {
-    if (!path.startsWith('/')) {
-      throw new InvalidParametersError('path must be absolute')
+  async #walkPath(
+    root: CID,
+    path: string,
+    opts: WalkPathOptions,
+  ): Promise<PathEntry[]> {
+    if (!path.startsWith("/")) {
+      throw new InvalidParametersError("path must be absolute");
     }
 
     const stat = await this.unixfs.stat(root, {
       ...opts,
-      offline: true
-    })
+      offline: true,
+    });
 
-    const output: PathEntry[] = [{
-      cid: root,
-      name: '',
-      unixfs: stat.unixfs
-    }]
+    const output: PathEntry[] = [
+      {
+        cid: root,
+        name: "",
+        unixfs: stat.unixfs,
+      },
+    ];
 
-    let cid = root
-    const parts = path.split('/').filter(Boolean)
+    let cid = root;
+    const parts = path.split("/").filter(Boolean);
 
     for (let i = 0; i < parts.length; i++) {
-      const segment = parts[i]
+      const segment = parts[i];
 
       try {
         const stat = await this.unixfs.stat(cid, {
           ...opts,
           offline: true,
-          path: segment
-        })
+          path: segment,
+        });
 
         output.push({
           cid: stat.cid,
           name: segment,
-          unixfs: stat.unixfs
-        })
+          unixfs: stat.unixfs,
+        });
 
-        cid = stat.cid
+        cid = stat.cid;
       } catch (err) {
-        log.error('could not resolve path segment %s of %s under %c', segment, path, root)
+        log.error(
+          "could not resolve path segment %s of %s under %c",
+          segment,
+          path,
+          root,
+        );
 
         if (opts.createMissingDirectories) {
-          const cid = await this.unixfs.addDirectory()
+          const cid = await this.unixfs.addDirectory();
 
           output.push({
             cid,
             name: segment,
-            unixfs: new IPFSUnixFS({ type: 'directory' })
-          })
+            unixfs: new IPFSUnixFS({ type: "directory" }),
+          });
         } else {
-          throw new DoesNotExistError(`${path} does not exist`)
+          throw new DoesNotExistError(`${path} does not exist`);
         }
       }
     }
 
-    const lastSegment = output[output.length - 1]
+    const lastSegment = output[output.length - 1];
 
-    if (opts.finalSegmentMustBeDirectory && lastSegment.unixfs?.isDirectory() !== true) {
-      throw new NotADirectoryError(`${path} was not a directory`)
+    if (
+      opts.finalSegmentMustBeDirectory &&
+      lastSegment.unixfs?.isDirectory() !== true
+    ) {
+      throw new NotADirectoryError(`${path} was not a directory`);
     }
 
-    return output
+    return output;
   }
 
-  async #persistPath (path: PathEntry[], options: Partial<CpOptions> = {}): Promise<CID> {
-    let child = path.pop()
+  async #persistPath(
+    path: PathEntry[],
+    options: Partial<CpOptions> = {},
+  ): Promise<CID> {
+    let child = path.pop();
 
     if (child == null) {
-      throw new InvalidParametersError('path was too short')
+      throw new InvalidParametersError("path was too short");
     }
 
-    let cid = child.cid
+    let cid = child.cid;
 
     for (let i = path.length - 1; i > -1; i--) {
-      const segment = path[i]
+      const segment = path[i];
       segment.cid = await this.unixfs.cp(child.cid, segment.cid, child.name, {
         ...options,
-        force: true
-      })
+        force: true,
+      });
 
-      child = segment
-      cid = segment.cid
+      child = segment;
+      cid = segment.cid;
     }
 
-    await this.components.datastore.put(this.key, cid.bytes, options)
+    await this.components.datastore.put(this.key, cid.bytes, options);
 
-    return cid
+    return cid;
   }
 
-  async #ensurePathExists (path: string, options: StatOptions = {}): Promise<void> {
-    const exists = await this.#pathExists(path, options)
+  async #ensurePathExists(
+    path: string,
+    options: StatOptions = {},
+  ): Promise<void> {
+    const exists = await this.#pathExists(path, options);
 
     if (!exists) {
-      throw new DoesNotExistError()
+      throw new DoesNotExistError();
     }
   }
 
-  async #ensurePathDoesNotExist (path: string, options: StatOptions = {}): Promise<void> {
-    const exists = await this.#pathExists(path, options)
+  async #ensurePathDoesNotExist(
+    path: string,
+    options: StatOptions = {},
+  ): Promise<void> {
+    const exists = await this.#pathExists(path, options);
 
     if (exists) {
-      throw new AlreadyExistsError()
+      throw new AlreadyExistsError();
     }
   }
 
-  async #pathExists (path: string, options: StatOptions = {}): Promise<boolean> {
+  async #pathExists(path: string, options: StatOptions = {}): Promise<boolean> {
     try {
       await this.stat(path, {
         ...options,
-        offline: true
-      })
+        offline: true,
+      });
 
-      return true
+      return true;
     } catch {
-      return false
+      return false;
     }
   }
 }
@@ -590,6 +698,9 @@ class DefaultMFS implements MFS {
 /**
  * Create a {@link MFS} instance powered by {@link https://github.com/ipfs/helia Helia}
  */
-export function mfs (helia: { blockstore: Blockstore, datastore: Datastore }, init: MFSInit = {}): MFS {
-  return new DefaultMFS(helia, init)
+export function mfs(
+  helia: { blockstore: Blockstore; datastore: Datastore },
+  init: MFSInit = {},
+): MFS {
+  return new DefaultMFS(helia, init);
 }

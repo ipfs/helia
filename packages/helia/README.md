@@ -9,7 +9,7 @@
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
 [![codecov](https://img.shields.io/codecov/c/github/ipfs/helia.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia)
-[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
+[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
 
 > An implementation of IPFS in JavaScript
 
@@ -37,14 +37,14 @@ Pass it to other modules like @helia/unixfs to make files available on the distr
 ## Example
 
 ```typescript
-import { createHelia } from 'helia'
-import { unixfs } from '@helia/unixfs'
-import { CID } from 'multiformats/cid'
+import { createHelia } from "helia";
+import { unixfs } from "@helia/unixfs";
+import { CID } from "multiformats/cid";
 
-const helia = await createHelia()
+const helia = await createHelia();
 
-const fs = unixfs(helia)
-fs.cat(CID.parse('bafyFoo'))
+const fs = unixfs(helia);
+fs.cat(CID.parse("bafyFoo"));
 ```
 
 # Install

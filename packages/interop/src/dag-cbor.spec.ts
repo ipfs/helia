@@ -1,65 +1,69 @@
 /* eslint-env mocha */
 
-import { dagCbor, type DAGCBOR, type AddOptions } from '@helia/dag-cbor'
-import * as codec from '@ipld/dag-cbor'
-import { expect } from 'aegir/chai'
-import { CID } from 'multiformats/cid'
-import { createHeliaNode } from './fixtures/create-helia.js'
-import { createKuboNode } from './fixtures/create-kubo.js'
-import type { HeliaLibp2p } from 'helia'
-import type { KuboNode } from 'ipfsd-ctl'
-import type { AddOptions as KuboAddOptions } from 'kubo-rpc-client'
+import { dagCbor, type DAGCBOR, type AddOptions } from "@helia/dag-cbor";
+import * as codec from "@ipld/dag-cbor";
+import { expect } from "aegir/chai";
+import { CID } from "multiformats/cid";
+import { createHeliaNode } from "./fixtures/create-helia.js";
+import { createKuboNode } from "./fixtures/create-kubo.js";
+import type { HeliaLibp2p } from "helia";
+import type { KuboNode } from "ipfsd-ctl";
+import type { AddOptions as KuboAddOptions } from "kubo-rpc-client";
 
-describe('@helia/dag-cbor', () => {
-  let helia: HeliaLibp2p
-  let d: DAGCBOR
-  let kubo: KuboNode
+describe("@helia/dag-cbor", () => {
+  let helia: HeliaLibp2p;
+  let d: DAGCBOR;
+  let kubo: KuboNode;
 
-  async function expectSameCid (data: () => any, heliaOpts: Partial<AddOptions> = {}, kuboOpts: KuboAddOptions = {}): Promise<void> {
-    const heliaCid = await d.add(data(), heliaOpts)
-    const kuboCid = await kubo.api.dag.put(data(), kuboOpts)
+  async function expectSameCid(
+    data: () => any,
+    heliaOpts: Partial<AddOptions> = {},
+    kuboOpts: KuboAddOptions = {},
+  ): Promise<void> {
+    const heliaCid = await d.add(data(), heliaOpts);
+    const kuboCid = await kubo.api.dag.put(data(), kuboOpts);
 
-    expect(heliaCid.toString()).to.equal(kuboCid.toString())
+    expect(heliaCid.toString()).to.equal(kuboCid.toString());
   }
 
   beforeEach(async () => {
-    helia = await createHeliaNode()
-    d = dagCbor(helia)
-    kubo = await createKuboNode()
+    helia = await createHeliaNode();
+    d = dagCbor(helia);
+    kubo = await createKuboNode();
 
-    await helia.libp2p.dial((await (kubo.api.id())).addresses)
-  })
+    await helia.libp2p.dial((await kubo.api.id()).addresses);
+  });
 
   afterEach(async () => {
     if (helia != null) {
-      await helia.stop()
+      await helia.stop();
     }
 
     if (kubo != null) {
-      await kubo.stop()
+      await kubo.stop();
     }
-  })
+  });
 
-  it('should create the same CID for a string', async () => {
-    const candidate = (): any => ({ hello: 'world' })
+  it("should create the same CID for a string", async () => {
+    const candidate = (): any => ({ hello: "world" });
 
-    await expectSameCid(candidate)
-  })
+    await expectSameCid(candidate);
+  });
 
-  it('should add to helia and fetch from kubo', async () => {
-    const input = { hello: 'world' }
-    const cid = await d.add(input)
-    const block = await kubo.api.block.get(cid)
-    const output = codec.decode(block)
+  it("should add to helia and fetch from kubo", async () => {
+    const input = { hello: "world" };
+    const cid = await d.add(input);
+    const block = await kubo.api.block.get(cid);
+    const output = codec.decode(block);
 
-    expect(output).to.deep.equal(input)
-  })
+    expect(output).to.deep.equal(input);
+  });
 
-  it('should add to kubo and fetch from helia', async () => {
-    const input = { hello: 'world' }
-    const cid = await kubo.api.block.put(codec.encode(input))
-    const output = await d.get(CID.parse(cid.toString()))
+  it("should add to kubo and fetch from helia", async () => {
+    const input = { hello: "world" };
+    const cid = await kubo.api.block.put(codec.encode(input));
+    const output = await d.get(CID.parse(cid.toString()));
 
-    expect(output).to.deep.equal(input)
-  })
-})
+    expect(output).to.deep.equal(input);
+  });
+});

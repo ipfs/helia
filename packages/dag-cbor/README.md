@@ -9,7 +9,7 @@
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
 [![codecov](https://img.shields.io/codecov/c/github/ipfs/helia.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia)
-[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
+[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
 
 > Add/get IPLD blocks containing dag-cbor with your Helia node
 
@@ -37,17 +37,17 @@ See the DAGCBOR interface for all available operations.
 ## Example
 
 ```typescript
-import { createHelia } from 'helia'
-import { dagCbor } from '@helia/dag-cbor'
-import { CID } from 'multiformats/cid'
+import { createHelia } from "helia";
+import { dagCbor } from "@helia/dag-cbor";
+import { CID } from "multiformats/cid";
 
-const d = dagCbor(helia)
+const d = dagCbor(helia);
 const cid = await d.put({
-  hello: 'world'
-})
-const obj = await d.get(cid)
+  hello: "world",
+});
+const obj = await d.get(cid);
 
-console.info(obj)
+console.info(obj);
 // { hello: 'world' }
 ```
 

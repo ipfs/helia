@@ -9,7 +9,7 @@
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
 [![codecov](https://img.shields.io/codecov/c/github/ipfs/helia.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia)
-[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
+[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
 
 > A lightweight implementation of IPFS over HTTP in JavaScript
 
@@ -39,38 +39,36 @@ Pass it to other modules like @helia/unixfs to fetch files from the distributed 
 ## Example
 
 ```typescript
-import { createHeliaHTTP } from '@helia/http'
-import { unixfs } from '@helia/unixfs'
-import { CID } from 'multiformats/cid'
+import { createHeliaHTTP } from "@helia/http";
+import { unixfs } from "@helia/unixfs";
+import { CID } from "multiformats/cid";
 
-const helia = await createHeliaHTTP()
+const helia = await createHeliaHTTP();
 
-const fs = unixfs(helia)
-fs.cat(CID.parse('bafyFoo'))
+const fs = unixfs(helia);
+fs.cat(CID.parse("bafyFoo"));
 ```
 
 ## Example - with custom gateways and delegated routing endpoints
 
 ```typescript
-import { createHeliaHTTP } from '@helia/http'
-import { trustlessGateway } from '@helia/block-brokers'
-import { delegatedHTTPRouting } from '@helia/routers'
-import { unixfs } from '@helia/unixfs'
-import { CID } from 'multiformats/cid'
+import { createHeliaHTTP } from "@helia/http";
+import { trustlessGateway } from "@helia/block-brokers";
+import { delegatedHTTPRouting } from "@helia/routers";
+import { unixfs } from "@helia/unixfs";
+import { CID } from "multiformats/cid";
 
 const helia = await createHeliaHTTP({
   blockBrokers: [
     trustlessGateway({
-      gateways: ['https://cloudflare-ipfs.com', 'https://ipfs.io'],
+      gateways: ["https://cloudflare-ipfs.com", "https://ipfs.io"],
     }),
   ],
-  routers: [
-    delegatedHTTPRouting('https://delegated-ipfs.dev')
-  ]
-})
+  routers: [delegatedHTTPRouting("https://delegated-ipfs.dev")],
+});
 
-const fs = unixfs(helia)
-fs.cat(CID.parse('bafyFoo'))
+const fs = unixfs(helia);
+fs.cat(CID.parse("bafyFoo"));
 ```
 
 # Install

@@ -1,57 +1,57 @@
-import type { Mtime, MtimeLike } from 'ipfs-unixfs'
+import type { Mtime, MtimeLike } from "ipfs-unixfs";
 
-export function toMtime (mtimeLike: MtimeLike): Mtime
-export function toMtime (mtimeLike?: MtimeLike): Mtime | undefined
-export function toMtime (mtimeLike?: MtimeLike): Mtime | undefined {
+export function toMtime(mtimeLike: MtimeLike): Mtime;
+export function toMtime(mtimeLike?: MtimeLike): Mtime | undefined;
+export function toMtime(mtimeLike?: MtimeLike): Mtime | undefined {
   if (mtimeLike == null) {
-    return undefined
+    return undefined;
   }
 
   if (isMtime(mtimeLike)) {
-    return mtimeLike
+    return mtimeLike;
   }
 
   if (mtimeLike instanceof Date) {
-    return dateToTimespec(mtimeLike)
+    return dateToTimespec(mtimeLike);
   }
 
   if (Array.isArray(mtimeLike)) {
     const output: Mtime = {
-      secs: BigInt(mtimeLike[0])
-    }
+      secs: BigInt(mtimeLike[0]),
+    };
 
     if (mtimeLike.length > 1) {
-      output.nsecs = mtimeLike[1]
+      output.nsecs = mtimeLike[1];
     }
 
-    return output
+    return output;
   }
 
-  if (typeof mtimeLike.Seconds === 'number') {
+  if (typeof mtimeLike.Seconds === "number") {
     const output: Mtime = {
-      secs: BigInt(mtimeLike.Seconds)
-    }
+      secs: BigInt(mtimeLike.Seconds),
+    };
 
     if (mtimeLike.FractionalNanoseconds != null) {
-      output.nsecs = mtimeLike.FractionalNanoseconds
+      output.nsecs = mtimeLike.FractionalNanoseconds;
     }
 
-    return output
+    return output;
   }
 
-  throw new Error('Cannot convert object to mtime')
+  throw new Error("Cannot convert object to mtime");
 }
 
-function dateToTimespec (date: Date): Mtime {
-  const ms = date.getTime()
-  const secs = Math.floor(ms / 1000)
+function dateToTimespec(date: Date): Mtime {
+  const ms = date.getTime();
+  const secs = Math.floor(ms / 1000);
 
   return {
     secs: BigInt(secs),
-    nsecs: (ms - (secs * 1000)) * 1000
-  }
+    nsecs: (ms - secs * 1000) * 1000,
+  };
 }
 
-function isMtime (obj: any): obj is Mtime {
-  return typeof obj.secs === 'bigint'
+function isMtime(obj: any): obj is Mtime {
+  return typeof obj.secs === "bigint";
 }

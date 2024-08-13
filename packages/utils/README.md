@@ -9,7 +9,7 @@
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
 [![codecov](https://img.shields.io/codecov/c/github/ipfs/helia.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia)
-[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
+[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
 
 > Shared code that implements the Helia API
 
@@ -38,11 +38,11 @@ pre-configure Helia for certain use-cases (p2p or pure-HTTP).
 ## Example
 
 ```typescript
-import { Helia } from '@helia/utils'
+import { Helia } from "@helia/utils";
 
 const node = new Helia({
   // ...options
-})
+});
 ```
 
 # Install

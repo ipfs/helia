@@ -1,12 +1,12 @@
-import { createNode, type KuboNode } from 'ipfsd-ctl'
-import { path as kuboPath } from 'kubo'
-import { create as kuboRpcClient } from 'kubo-rpc-client'
+import { createNode, type KuboNode } from "ipfsd-ctl";
+import { path as kuboPath } from "kubo";
+import { create as kuboRpcClient } from "kubo-rpc-client";
 
-export async function getKubo (): Promise<KuboNode> {
-  const listen = `${process.env.HELIA_LISTEN ?? ''}`.split(',').filter(Boolean)
+export async function getKubo(): Promise<KuboNode> {
+  const listen = `${process.env.HELIA_LISTEN ?? ""}`.split(",").filter(Boolean);
 
   return createNode({
-    type: 'kubo',
+    type: "kubo",
     test: true,
     bin: kuboPath(),
     rpc: kuboRpcClient,
@@ -15,9 +15,9 @@ export async function getKubo (): Promise<KuboNode> {
       emptyRepo: true,
       config: {
         Addresses: {
-          Swarm: listen
-        }
-      }
-    }
-  })
+          Swarm: listen,
+        },
+      },
+    },
+  });
 }

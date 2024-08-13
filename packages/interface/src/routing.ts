@@ -1,6 +1,6 @@
-import type { AbortOptions, PeerId, PeerInfo } from '@libp2p/interface'
-import type { CID } from 'multiformats/cid'
-import type { ProgressOptions } from 'progress-events'
+import type { AbortOptions, PeerId, PeerInfo } from "@libp2p/interface";
+import type { CID } from "multiformats/cid";
+import type { ProgressOptions } from "progress-events";
 
 /**
  * When a routing operation involves reading values, these options allow
@@ -14,21 +14,21 @@ export interface RoutingOptions extends AbortOptions, ProgressOptions {
    *
    * @default true
    */
-  useNetwork?: boolean
+  useNetwork?: boolean;
 
   /**
    * Pass `false` to not use cached values
    *
    * @default true
    */
-  useCache?: boolean
+  useCache?: boolean;
 
   /**
    * Pass `false` to not perform validation
    *
    * @default true
    */
-  validate?: boolean
+  validate?: boolean;
 }
 
 /**
@@ -47,7 +47,7 @@ export interface Provider extends PeerInfo {
    * - transport-ipfs-gateway-http
    * - transport-bitswap
    */
-  protocols?: string[]
+  protocols?: string[];
 }
 
 export interface Routing {
@@ -62,7 +62,7 @@ export interface Routing {
    * await contentRouting.provide(cid)
    * ```
    */
-  provide(cid: CID, options?: RoutingOptions): Promise<void>
+  provide(cid: CID, options?: RoutingOptions): Promise<void>;
 
   /**
    * Find the providers of the passed CID.
@@ -76,7 +76,7 @@ export interface Routing {
    * }
    * ```
    */
-  findProviders(cid: CID, options?: RoutingOptions): AsyncIterable<Provider>
+  findProviders(cid: CID, options?: RoutingOptions): AsyncIterable<Provider>;
 
   /**
    * Puts a value corresponding to the passed key in a way that can later be
@@ -92,7 +92,11 @@ export interface Routing {
    * await contentRouting.put(key, value)
    * ```
    */
-  put(key: Uint8Array, value: Uint8Array, options?: RoutingOptions): Promise<void>
+  put(
+    key: Uint8Array,
+    value: Uint8Array,
+    options?: RoutingOptions,
+  ): Promise<void>;
 
   /**
    * Retrieves a value from the network corresponding to the passed key.
@@ -106,7 +110,7 @@ export interface Routing {
    * const value = await contentRouting.get(key)
    * ```
    */
-  get(key: Uint8Array, options?: RoutingOptions): Promise<Uint8Array>
+  get(key: Uint8Array, options?: RoutingOptions): Promise<Uint8Array>;
 
   /**
    * Searches the network for peer info corresponding to the passed peer id.
@@ -118,7 +122,7 @@ export interface Routing {
    * const peer = await peerRouting.findPeer(peerId, options)
    * ```
    */
-  findPeer(peerId: PeerId, options?: RoutingOptions): Promise<PeerInfo>
+  findPeer(peerId: PeerId, options?: RoutingOptions): Promise<PeerInfo>;
 
   /**
    * Search the network for peers that are closer to the passed key. Peer
@@ -133,5 +137,8 @@ export interface Routing {
    * }
    * ```
    */
-  getClosestPeers(key: Uint8Array, options?: RoutingOptions): AsyncIterable<PeerInfo>
+  getClosestPeers(
+    key: Uint8Array,
+    options?: RoutingOptions,
+  ): AsyncIterable<PeerInfo>;
 }

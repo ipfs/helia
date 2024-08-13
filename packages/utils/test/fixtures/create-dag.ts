@@ -1,12 +1,12 @@
-import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
-import { createAndPutBlock } from './create-block.js'
-import type { Blockstore } from 'interface-blockstore'
-import type { CID } from 'multiformats/cid'
+import { fromString as uint8arrayFromString } from "uint8arrays/from-string";
+import { createAndPutBlock } from "./create-block.js";
+import type { Blockstore } from "interface-blockstore";
+import type { CID } from "multiformats/cid";
 
 export interface DAGNode {
-  cid: CID
-  level: number
-  links: CID[]
+  cid: CID;
+  level: number;
+  links: CID[];
 }
 
 /**
@@ -58,33 +58,66 @@ export interface DAGNode {
  * }
  * ```
  */
-export async function createDag (codec: number, blocks: Blockstore, depth: number, children: number): Promise<Record<string, DAGNode>> {
-  const dag: Record<string, DAGNode> = {}
-  const root = await createAndPutBlock(codec, uint8arrayFromString('level-0'), blocks)
+export async function createDag(
+  codec: number,
+  blocks: Blockstore,
+  depth: number,
+  children: number,
+): Promise<Record<string, DAGNode>> {
+  const dag: Record<string, DAGNode> = {};
+  const root = await createAndPutBlock(
+    codec,
+    uint8arrayFromString("level-0"),
+    blocks,
+  );
 
-  await addChildren(root, 'level', 0, 0, depth, children, dag, codec, blocks)
+  await addChildren(root, "level", 0, 0, depth, children, dag, codec, blocks);
 
-  return dag
+  return dag;
 }
 
-async function addChildren (cid: CID, name: string, level: number, index: number, depth: number, children: number, dag: Record<string, DAGNode>, codec: number, blocks: Blockstore): Promise<void> {
+async function addChildren(
+  cid: CID,
+  name: string,
+  level: number,
+  index: number,
+  depth: number,
+  children: number,
+  dag: Record<string, DAGNode>,
+  codec: number,
+  blocks: Blockstore,
+): Promise<void> {
   if (depth === 0) {
-    return
+    return;
   }
 
-  name = `${name}-${index}`
+  name = `${name}-${index}`;
 
   dag[name] = {
     level,
     cid,
-    links: []
-  }
+    links: [],
+  };
 
   for (let i = 0; i < children; i++) {
-    const subChild = await createAndPutBlock(codec, uint8arrayFromString(`${name}-${i}`), blocks)
+    const subChild = await createAndPutBlock(
+      codec,
+      uint8arrayFromString(`${name}-${i}`),
+      blocks,
+    );
 
-    dag[name].links.push(subChild)
+    dag[name].links.push(subChild);
 
-    await addChildren(subChild, name, level + 1, index + i, depth - 1, children, dag, codec, blocks)
+    await addChildren(
+      subChild,
+      name,
+      level + 1,
+      index + i,
+      depth - 1,
+      children,
+      dag,
+      codec,
+      blocks,
+    );
   }
 }

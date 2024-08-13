@@ -1,102 +1,104 @@
 /* eslint-env mocha */
 
-import { car } from '@helia/car'
-import { type UnixFS, unixfs } from '@helia/unixfs'
-import { CarReader } from '@ipld/car'
-import { expect } from 'aegir/chai'
-import drain from 'it-drain'
-import toBuffer from 'it-to-buffer'
-import { CID } from 'multiformats/cid'
-import { createHeliaNode } from './fixtures/create-helia.js'
-import { createKuboNode } from './fixtures/create-kubo.js'
-import { memoryCarWriter } from './fixtures/memory-car.js'
-import type { Car } from '@helia/car'
-import type { HeliaLibp2p } from 'helia'
-import type { FileCandidate } from 'ipfs-unixfs-importer'
-import type { KuboNode } from 'ipfsd-ctl'
+import { car } from "@helia/car";
+import { type UnixFS, unixfs } from "@helia/unixfs";
+import { CarReader } from "@ipld/car";
+import { expect } from "aegir/chai";
+import drain from "it-drain";
+import toBuffer from "it-to-buffer";
+import { CID } from "multiformats/cid";
+import { createHeliaNode } from "./fixtures/create-helia.js";
+import { createKuboNode } from "./fixtures/create-kubo.js";
+import { memoryCarWriter } from "./fixtures/memory-car.js";
+import type { Car } from "@helia/car";
+import type { HeliaLibp2p } from "helia";
+import type { FileCandidate } from "ipfs-unixfs-importer";
+import type { KuboNode } from "ipfsd-ctl";
 
-describe('@helia/car', () => {
-  let helia: HeliaLibp2p
-  let c: Car
-  let u: UnixFS
-  let kubo: KuboNode
+describe("@helia/car", () => {
+  let helia: HeliaLibp2p;
+  let c: Car;
+  let u: UnixFS;
+  let kubo: KuboNode;
 
   beforeEach(async () => {
-    helia = await createHeliaNode()
-    c = car(helia)
-    u = unixfs(helia)
-    kubo = await createKuboNode()
+    helia = await createHeliaNode();
+    c = car(helia);
+    u = unixfs(helia);
+    kubo = await createKuboNode();
 
     // connect helia to kubo
-    await helia.libp2p.dial((await (kubo.api.id())).addresses)
-  })
+    await helia.libp2p.dial((await kubo.api.id()).addresses);
+  });
 
   afterEach(async () => {
     if (helia != null) {
-      await helia.stop()
+      await helia.stop();
     }
 
     if (kubo != null) {
-      await kubo.stop()
+      await kubo.stop();
     }
-  })
+  });
 
-  it('should export a car from Helia, import and read the contents from kubo', async () => {
-    const chunkSize = 1024 * 1024
-    const size = chunkSize * 10
-    const input: Uint8Array[] = []
+  it("should export a car from Helia, import and read the contents from kubo", async () => {
+    const chunkSize = 1024 * 1024;
+    const size = chunkSize * 10;
+    const input: Uint8Array[] = [];
 
     const candidate: FileCandidate = {
-      content: (async function * () {
+      content: (async function* () {
         for (let i = 0; i < size; i += chunkSize) {
-          const buf = new Uint8Array(chunkSize)
-          input.push(buf)
+          const buf = new Uint8Array(chunkSize);
+          input.push(buf);
 
-          yield buf
+          yield buf;
         }
-      }())
-    }
+      })(),
+    };
 
-    const cid = await u.addFile(candidate)
-    const writer = memoryCarWriter(cid)
-    await c.export(cid, writer)
+    const cid = await u.addFile(candidate);
+    const writer = memoryCarWriter(cid);
+    await c.export(cid, writer);
 
-    const buf = await writer.bytes()
+    const buf = await writer.bytes();
 
-    await drain(kubo.api.dag.import([buf]))
+    await drain(kubo.api.dag.import([buf]));
 
-    const output: Uint8Array[] = []
+    const output: Uint8Array[] = [];
 
     for await (const b of kubo.api.cat(cid)) {
-      output.push(b)
+      output.push(b);
     }
 
-    expect(toBuffer(output)).to.equalBytes(toBuffer(input))
-  })
+    expect(toBuffer(output)).to.equalBytes(toBuffer(input));
+  });
 
-  it('should export a car from kubo, import and read the contents from Helia', async () => {
-    const chunkSize = 1024 * 1024
-    const size = chunkSize * 10
-    const input: Uint8Array[] = []
+  it("should export a car from kubo, import and read the contents from Helia", async () => {
+    const chunkSize = 1024 * 1024;
+    const size = chunkSize * 10;
+    const input: Uint8Array[] = [];
 
     const candidate: FileCandidate = {
-      content: (async function * () {
+      content: (async function* () {
         for (let i = 0; i < size; i += chunkSize) {
-          const buf = new Uint8Array(chunkSize)
-          input.push(buf)
+          const buf = new Uint8Array(chunkSize);
+          input.push(buf);
 
-          yield buf
+          yield buf;
         }
-      }())
-    }
+      })(),
+    };
 
-    const { cid } = await kubo.api.add(candidate.content)
-    const bytes = await toBuffer(kubo.api.dag.export(cid))
+    const { cid } = await kubo.api.add(candidate.content);
+    const bytes = await toBuffer(kubo.api.dag.export(cid));
 
-    const reader = await CarReader.fromBytes(bytes)
+    const reader = await CarReader.fromBytes(bytes);
 
-    await c.import(reader)
+    await c.import(reader);
 
-    expect(await toBuffer(u.cat(CID.parse(cid.toString())))).to.equalBytes(toBuffer(input))
-  })
-})
+    expect(await toBuffer(u.cat(CID.parse(cid.toString())))).to.equalBytes(
+      toBuffer(input),
+    );
+  });
+});

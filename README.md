@@ -7,7 +7,7 @@
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
 [![codecov](https://img.shields.io/codecov/c/github/ipfs/helia.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia)
-[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
+[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
 
 [Helia](https://github.com/ipfs/helia) is a lean, modular, and modern TypeScript implementation of IPFS for the prolific JS and browser environments.
 
@@ -24,15 +24,15 @@ You can use the [@helia/strings](https://www.npmjs.com/package/@helia/strings)
 module to easily add and get strings from your Helia node:
 
 ```js
-import { createHelia } from 'helia'
-import { strings } from '@helia/strings'
+import { createHelia } from "helia";
+import { strings } from "@helia/strings";
 
-const helia = await createHelia()
-const s = strings(helia)
+const helia = await createHelia();
+const s = strings(helia);
 
-const myImmutableAddress = await s.add('hello world')
+const myImmutableAddress = await s.add("hello world");
 
-console.log(await s.get(myImmutableAddress))
+console.log(await s.get(myImmutableAddress));
 // hello world
 ```
 
@@ -42,15 +42,15 @@ The [@helia/json](https://www.npmjs.com/package/@helia/json) module lets you add
 or get plain JS objects:
 
 ```js
-import { createHelia } from 'helia'
-import { json } from '@helia/json'
+import { createHelia } from "helia";
+import { json } from "@helia/json";
 
-const helia = await createHelia()
-const j = json(helia)
+const helia = await createHelia();
+const j = json(helia);
 
-const myImmutableAddress = await j.add({ hello: 'world' })
+const myImmutableAddress = await j.add({ hello: "world" });
 
-console.log(await j.get(myImmutableAddress))
+console.log(await j.get(myImmutableAddress));
 // { hello: 'world' }
 ```
 
@@ -61,23 +61,23 @@ to store references to linked objects as
 [CIDs](https://docs.ipfs.tech/concepts/content-addressing):
 
 ```js
-import { createHelia } from 'helia'
-import { dagJson } from '@helia/dag-json'
+import { createHelia } from "helia";
+import { dagJson } from "@helia/dag-json";
 
-const helia = await createHelia()
-const d = dagJson(helia)
+const helia = await createHelia();
+const d = dagJson(helia);
 
-const object1 = { hello: 'world' }
-const myImmutableAddress1 = await d.add(object1)
+const object1 = { hello: "world" };
+const myImmutableAddress1 = await d.add(object1);
 
-const object2 = { link: myImmutableAddress1 }
-const myImmutableAddress2 = await d.add(object2)
+const object2 = { link: myImmutableAddress1 };
+const myImmutableAddress2 = await d.add(object2);
 
-const retrievedObject = await d.get(myImmutableAddress2)
-console.log(retrievedObject)
+const retrievedObject = await d.get(myImmutableAddress2);
+console.log(retrievedObject);
 // { link: CID(baguqeerasor...) }
 
-console.log(await d.get(retrievedObject.link))
+console.log(await d.get(retrievedObject.link));
 // { hello: 'world' }
 ```
 
@@ -88,23 +88,23 @@ similar way to `@helia/dag-json` but stores objects using
 [Concise Binary Object Representation](https://cbor.io/):
 
 ```js
-import { createHelia } from 'helia'
-import { dagCbor } from '@helia/dag-cbor'
+import { createHelia } from "helia";
+import { dagCbor } from "@helia/dag-cbor";
 
-const helia = await createHelia()
-const d = dagCbor(helia)
+const helia = await createHelia();
+const d = dagCbor(helia);
 
-const object1 = { hello: 'world' }
-const myImmutableAddress1 = await d.add(object1)
+const object1 = { hello: "world" };
+const myImmutableAddress1 = await d.add(object1);
 
-const object2 = { link: myImmutableAddress1 }
-const myImmutableAddress2 = await d.add(object2)
+const object2 = { link: myImmutableAddress1 };
+const myImmutableAddress2 = await d.add(object2);
 
-const retrievedObject = await d.get(myImmutableAddress2)
-console.log(retrievedObject)
+const retrievedObject = await d.get(myImmutableAddress2);
+console.log(retrievedObject);
 // { link: CID(baguqeerasor...) }
 
-console.log(await d.get(retrievedObject.link))
+console.log(await d.get(retrievedObject.link));
 // { hello: 'world' }
 ```
 
@@ -208,9 +208,9 @@ Please find and comment on [the Roadmap here](https://github.com/ipfs/helia/issu
 # 👫 Get involved
 
 - Watch our Helia Demo Day presentations [here](https://www.youtube.com/playlist?list=PLuhRWgmPaHtQAnt8INOe5-kV9TLVaUJ9v)
-- We are sharing about the progress at periodic [Helia Demos](https://lu.ma/helia).  This is a good place to find out the latest and learn of ways to get involved.  We'd love to see you there!
+- We are sharing about the progress at periodic [Helia Demos](https://lu.ma/helia). This is a good place to find out the latest and learn of ways to get involved. We'd love to see you there!
 - Pick up one of the [issues](https://github.com/ipfs/helia/issues).
-- Come chat in Filecoin Slack #ip-js.  (Yes, we should bridge this to other chat environments.  Please comment [here](https://github.com/ipfs/helia/issues/33) if you'd like this.)
+- Come chat in Filecoin Slack #ip-js. (Yes, we should bridge this to other chat environments. Please comment [here](https://github.com/ipfs/helia/issues/33) if you'd like this.)
 
 # 🤲 Contribute
 

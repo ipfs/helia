@@ -1,67 +1,74 @@
 /* eslint-env mocha */
 
-import { strings, type Strings, type AddOptions } from '@helia/strings'
-import { expect } from 'aegir/chai'
-import { CID } from 'multiformats/cid'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { createHeliaNode } from './fixtures/create-helia.js'
-import { createKuboNode } from './fixtures/create-kubo.js'
-import type { HeliaLibp2p } from 'helia'
-import type { KuboNode } from 'ipfsd-ctl'
-import type { BlockPutOptions as KuboAddOptions } from 'kubo-rpc-client'
+import { strings, type Strings, type AddOptions } from "@helia/strings";
+import { expect } from "aegir/chai";
+import { CID } from "multiformats/cid";
+import { fromString as uint8ArrayFromString } from "uint8arrays/from-string";
+import { toString as uint8ArrayToString } from "uint8arrays/to-string";
+import { createHeliaNode } from "./fixtures/create-helia.js";
+import { createKuboNode } from "./fixtures/create-kubo.js";
+import type { HeliaLibp2p } from "helia";
+import type { KuboNode } from "ipfsd-ctl";
+import type { BlockPutOptions as KuboAddOptions } from "kubo-rpc-client";
 
-describe('@helia/strings', () => {
-  let helia: HeliaLibp2p
-  let str: Strings
-  let kubo: KuboNode
+describe("@helia/strings", () => {
+  let helia: HeliaLibp2p;
+  let str: Strings;
+  let kubo: KuboNode;
 
-  async function expectSameCid (data: () => string, heliaOpts: Partial<AddOptions> = {}, kuboOpts: KuboAddOptions = {}): Promise<void> {
-    const heliaCid = await str.add(data(), heliaOpts)
-    const kuboCid = await kubo.api.block.put(uint8ArrayFromString(data()), kuboOpts)
+  async function expectSameCid(
+    data: () => string,
+    heliaOpts: Partial<AddOptions> = {},
+    kuboOpts: KuboAddOptions = {},
+  ): Promise<void> {
+    const heliaCid = await str.add(data(), heliaOpts);
+    const kuboCid = await kubo.api.block.put(
+      uint8ArrayFromString(data()),
+      kuboOpts,
+    );
 
-    expect(heliaCid.toString()).to.equal(kuboCid.toString())
+    expect(heliaCid.toString()).to.equal(kuboCid.toString());
   }
 
   beforeEach(async () => {
-    helia = await createHeliaNode()
-    str = strings(helia)
-    kubo = await createKuboNode()
+    helia = await createHeliaNode();
+    str = strings(helia);
+    kubo = await createKuboNode();
 
-    const id = await kubo.api.id()
-    await helia.libp2p.dial(id.addresses)
-  })
+    const id = await kubo.api.id();
+    await helia.libp2p.dial(id.addresses);
+  });
 
   afterEach(async () => {
     if (helia != null) {
-      await helia.stop()
+      await helia.stop();
     }
 
     if (kubo != null) {
-      await kubo.stop()
+      await kubo.stop();
     }
-  })
+  });
 
-  it('should create the same CID for a string', async () => {
-    const candidate = (): string => 'hello world'
+  it("should create the same CID for a string", async () => {
+    const candidate = (): string => "hello world";
 
-    await expectSameCid(candidate)
-  })
+    await expectSameCid(candidate);
+  });
 
-  it('should add to helia and fetch from kubo', async () => {
-    const input = 'hello world'
-    const cid = await str.add(input)
-    const block = await kubo.api.block.get(cid)
-    const output = uint8ArrayToString(block)
+  it("should add to helia and fetch from kubo", async () => {
+    const input = "hello world";
+    const cid = await str.add(input);
+    const block = await kubo.api.block.get(cid);
+    const output = uint8ArrayToString(block);
 
-    expect(output).to.equal(input)
-  })
+    expect(output).to.equal(input);
+  });
 
-  it('should add to kubo and fetch from helia', async () => {
-    const input = 'hello world'
-    const cid = await kubo.api.block.put(uint8ArrayFromString(input))
-    const output = await str.get(CID.parse(cid.toString()))
+  it("should add to kubo and fetch from helia", async () => {
+    const input = "hello world";
+    const cid = await kubo.api.block.put(uint8ArrayFromString(input));
+    const output = await str.get(CID.parse(cid.toString()));
 
-    expect(output).to.equal(input)
-  })
-})
+    expect(output).to.equal(input);
+  });
+});

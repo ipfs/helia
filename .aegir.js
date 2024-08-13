@@ -1,6 +1,6 @@
 /** @type {import('aegir').PartialOptions} */
 export default {
   docs: {
-    cname: 'helia.io'
-  }
-}
+    cname: "helia.io",
+  },
+};

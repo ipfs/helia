@@ -1,13 +1,15 @@
-import { TrustlessGatewayBlockBroker } from './broker.js'
-import type { Routing, BlockBroker } from '@helia/interface'
-import type { ComponentLogger } from '@libp2p/interface'
-import type { ProgressEvent } from 'progress-events'
+import { TrustlessGatewayBlockBroker } from "./broker.js";
+import type { Routing, BlockBroker } from "@helia/interface";
+import type { ComponentLogger } from "@libp2p/interface";
+import type { ProgressEvent } from "progress-events";
 
-export const DEFAULT_ALLOW_INSECURE = false
-export const DEFAULT_ALLOW_LOCAL = false
+export const DEFAULT_ALLOW_INSECURE = false;
+export const DEFAULT_ALLOW_LOCAL = false;
 
-export type TrustlessGatewayGetBlockProgressEvents =
-  ProgressEvent<'trustless-gateway:get-block:fetch', URL>
+export type TrustlessGatewayGetBlockProgressEvents = ProgressEvent<
+  "trustless-gateway:get-block:fetch",
+  URL
+>;
 
 export interface TrustlessGatewayBlockBrokerInit {
   /**
@@ -16,7 +18,7 @@ export interface TrustlessGatewayBlockBrokerInit {
    *
    * @default false
    */
-  allowInsecure?: boolean
+  allowInsecure?: boolean;
 
   /**
    * By default we will only connect to peers with public or DNS addresses, pass
@@ -24,14 +26,18 @@ export interface TrustlessGatewayBlockBrokerInit {
    *
    * @default false
    */
-  allowLocal?: boolean
+  allowLocal?: boolean;
 }
 
 export interface TrustlessGatewayComponents {
-  routing: Routing
-  logger: ComponentLogger
+  routing: Routing;
+  logger: ComponentLogger;
 }
 
-export function trustlessGateway (init: TrustlessGatewayBlockBrokerInit = {}): (components: TrustlessGatewayComponents) => BlockBroker<TrustlessGatewayGetBlockProgressEvents> {
-  return (components) => new TrustlessGatewayBlockBroker(components, init)
+export function trustlessGateway(
+  init: TrustlessGatewayBlockBrokerInit = {},
+): (
+  components: TrustlessGatewayComponents,
+) => BlockBroker<TrustlessGatewayGetBlockProgressEvents> {
+  return (components) => new TrustlessGatewayBlockBroker(components, init);
 }

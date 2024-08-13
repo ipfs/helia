@@ -58,30 +58,35 @@
  * ```
  */
 
-import { CarWriter } from '@ipld/car'
-import drain from 'it-drain'
-import map from 'it-map'
-import defer from 'p-defer'
-import PQueue from 'p-queue'
-import type { DAGWalker } from '@helia/interface'
-import type { GetBlockProgressEvents, PutManyBlocksProgressEvents } from '@helia/interface/blocks'
-import type { CarReader } from '@ipld/car'
-import type { AbortOptions } from '@libp2p/interfaces'
-import type { Filter } from '@libp2p/utils/filters'
-import type { Blockstore } from 'interface-blockstore'
-import type { CID } from 'multiformats/cid'
-import type { ProgressOptions } from 'progress-events'
+import { CarWriter } from "@ipld/car";
+import drain from "it-drain";
+import map from "it-map";
+import defer from "p-defer";
+import PQueue from "p-queue";
+import type { DAGWalker } from "@helia/interface";
+import type {
+  GetBlockProgressEvents,
+  PutManyBlocksProgressEvents,
+} from "@helia/interface/blocks";
+import type { CarReader } from "@ipld/car";
+import type { AbortOptions } from "@libp2p/interfaces";
+import type { Filter } from "@libp2p/utils/filters";
+import type { Blockstore } from "interface-blockstore";
+import type { CID } from "multiformats/cid";
+import type { ProgressOptions } from "progress-events";
 
 export interface CarComponents {
-  blockstore: Blockstore
-  dagWalkers: Record<number, DAGWalker>
+  blockstore: Blockstore;
+  dagWalkers: Record<number, DAGWalker>;
 }
 
-interface ExportCarOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents> {
+interface ExportCarOptions
+  extends AbortOptions,
+    ProgressOptions<GetBlockProgressEvents> {
   /**
    * If a filter is passed it will be used to deduplicate blocks exported in the car file
    */
-  blockFilter?: Filter
+  blockFilter?: Filter;
 }
 
 /**
@@ -109,7 +114,10 @@ export interface Car {
    * await c.import(reader)
    * ```
    */
-  import(reader: Pick<CarReader, 'blocks'>, options?: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents>): Promise<void>
+  import(
+    reader: Pick<CarReader, "blocks">,
+    options?: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents>,
+  ): Promise<void>;
 
   /**
    * Store all blocks that make up one or more DAGs in a car file.
@@ -137,7 +145,11 @@ export interface Car {
    * await eventPromise
    * ```
    */
-  export(root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: ExportCarOptions): Promise<void>
+  export(
+    root: CID | CID[],
+    writer: Pick<CarWriter, "put" | "close">,
+    options?: ExportCarOptions,
+  ): Promise<void>;
 
   /**
    * Returns an AsyncGenerator that yields CAR file bytes.
@@ -159,74 +171,94 @@ export interface Car {
    * }
    * ```
    */
-  stream(root: CID | CID[], options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): AsyncGenerator<Uint8Array>
+  stream(
+    root: CID | CID[],
+    options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>,
+  ): AsyncGenerator<Uint8Array>;
 }
 
-const DAG_WALK_QUEUE_CONCURRENCY = 1
+const DAG_WALK_QUEUE_CONCURRENCY = 1;
 
 class DefaultCar implements Car {
-  private readonly components: CarComponents
+  private readonly components: CarComponents;
 
-  constructor (components: CarComponents, init: any) {
-    this.components = components
+  constructor(components: CarComponents, init: any) {
+    this.components = components;
   }
 
-  async import (reader: Pick<CarReader, 'blocks'>, options?: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents>): Promise<void> {
-    await drain(this.components.blockstore.putMany(
-      map(reader.blocks(), ({ cid, bytes }) => ({ cid, block: bytes })),
-      options
-    ))
+  async import(
+    reader: Pick<CarReader, "blocks">,
+    options?: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents>,
+  ): Promise<void> {
+    await drain(
+      this.components.blockstore.putMany(
+        map(reader.blocks(), ({ cid, bytes }) => ({ cid, block: bytes })),
+        options,
+      ),
+    );
   }
 
-  async export (root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: ExportCarOptions): Promise<void> {
-    const deferred = defer<Error | undefined>()
-    const roots = Array.isArray(root) ? root : [root]
+  async export(
+    root: CID | CID[],
+    writer: Pick<CarWriter, "put" | "close">,
+    options?: ExportCarOptions,
+  ): Promise<void> {
+    const deferred = defer<Error | undefined>();
+    const roots = Array.isArray(root) ? root : [root];
 
     // use a queue to walk the DAG instead of recursion so we can traverse very large DAGs
     const queue = new PQueue({
-      concurrency: DAG_WALK_QUEUE_CONCURRENCY
-    })
-    queue.on('idle', () => {
-      deferred.resolve()
-    })
-    queue.on('error', (err) => {
-      queue.clear()
-      deferred.reject(err)
-    })
+      concurrency: DAG_WALK_QUEUE_CONCURRENCY,
+    });
+    queue.on("idle", () => {
+      deferred.resolve();
+    });
+    queue.on("error", (err) => {
+      queue.clear();
+      deferred.reject(err);
+    });
 
     for (const root of roots) {
-      void queue.add(async () => {
-        await this.#walkDag(root, queue, async (cid, bytes) => {
-          // if a filter has been passed, skip blocks that have already been written
-          if (options?.blockFilter?.has(cid.multihash.bytes) === true) {
-            return
-          }
+      void queue
+        .add(async () => {
+          await this.#walkDag(
+            root,
+            queue,
+            async (cid, bytes) => {
+              // if a filter has been passed, skip blocks that have already been written
+              if (options?.blockFilter?.has(cid.multihash.bytes) === true) {
+                return;
+              }
 
-          options?.blockFilter?.add(cid.multihash.bytes)
-          await writer.put({ cid, bytes })
-        }, options)
-      })
-        .catch(() => {})
+              options?.blockFilter?.add(cid.multihash.bytes);
+              await writer.put({ cid, bytes });
+            },
+            options,
+          );
+        })
+        .catch(() => {});
     }
 
     // wait for the writer to end
     try {
-      await deferred.promise
+      await deferred.promise;
     } finally {
-      await writer.close()
+      await writer.close();
     }
   }
 
-  async * stream (root: CID | CID[], options?: ExportCarOptions): AsyncGenerator<Uint8Array, void, undefined> {
-    const { writer, out } = CarWriter.create(root)
+  async *stream(
+    root: CID | CID[],
+    options?: ExportCarOptions,
+  ): AsyncGenerator<Uint8Array, void, undefined> {
+    const { writer, out } = CarWriter.create(root);
 
     // has to be done async so we write to `writer` and read from `out` at the
     // same time
-    this.export(root, writer, options)
-      .catch(() => {})
+    this.export(root, writer, options).catch(() => {});
 
     for await (const buf of out) {
-      yield buf
+      yield buf;
     }
   }
 
@@ -234,22 +266,27 @@ class DefaultCar implements Car {
    * Walk the DAG behind the passed CID, ensure all blocks are present in the blockstore
    * and update the pin count for them
    */
-  async #walkDag (cid: CID, queue: PQueue, withBlock: (cid: CID, block: Uint8Array) => Promise<void>, options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): Promise<void> {
-    const dagWalker = this.components.dagWalkers[cid.code]
+  async #walkDag(
+    cid: CID,
+    queue: PQueue,
+    withBlock: (cid: CID, block: Uint8Array) => Promise<void>,
+    options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>,
+  ): Promise<void> {
+    const dagWalker = this.components.dagWalkers[cid.code];
 
     if (dagWalker == null) {
-      throw new Error(`No dag walker found for cid codec ${cid.code}`)
+      throw new Error(`No dag walker found for cid codec ${cid.code}`);
     }
 
-    const block = await this.components.blockstore.get(cid, options)
+    const block = await this.components.blockstore.get(cid, options);
 
-    await withBlock(cid, block)
+    await withBlock(cid, block);
 
     // walk dag, ensure all blocks are present
     for await (const cid of dagWalker.walk(block)) {
       void queue.add(async () => {
-        await this.#walkDag(cid, queue, withBlock, options)
-      })
+        await this.#walkDag(cid, queue, withBlock, options);
+      });
     }
   }
 }
@@ -257,6 +294,9 @@ class DefaultCar implements Car {
 /**
  * Create a {@link Car} instance for use with {@link https://github.com/ipfs/helia Helia}
  */
-export function car (helia: { blockstore: Blockstore, dagWalkers: Record<number, DAGWalker> }, init: any = {}): Car {
-  return new DefaultCar(helia, init)
+export function car(
+  helia: { blockstore: Blockstore; dagWalkers: Record<number, DAGWalker> },
+  init: any = {},
+): Car {
+  return new DefaultCar(helia, init);
 }

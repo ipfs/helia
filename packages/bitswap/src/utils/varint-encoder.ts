@@ -1,18 +1,20 @@
-import { encode, encodingLength } from 'uint8-varint'
+import { encode, encodingLength } from "uint8-varint";
 
-function varintEncoder (buf: number[]): Uint8Array {
-  let out = new Uint8Array(buf.reduce((acc, curr) => {
-    return acc + encodingLength(curr)
-  }, 0))
-  let offset = 0
+function varintEncoder(buf: number[]): Uint8Array {
+  let out = new Uint8Array(
+    buf.reduce((acc, curr) => {
+      return acc + encodingLength(curr);
+    }, 0),
+  );
+  let offset = 0;
 
   for (const num of buf) {
-    out = encode(num, out, offset)
+    out = encode(num, out, offset);
 
-    offset += encodingLength(num)
+    offset += encodingLength(num);
   }
 
-  return out
+  return out;
 }
 
-export default varintEncoder
+export default varintEncoder;

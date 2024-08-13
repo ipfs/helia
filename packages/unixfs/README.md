@@ -9,7 +9,7 @@
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
 [![codecov](https://img.shields.io/codecov/c/github/ipfs/helia.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia)
-[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
+[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
 
 > A Helia-compatible wrapper for UnixFS
 
@@ -37,25 +37,27 @@ See the [API docs](https://ipfs.github.io/helia/modules/_helia_unixfs.html) for 
 ## Example - Creating files and directories
 
 ```typescript
-import { createHelia } from 'helia'
-import { unixfs } from '@helia/unixfs'
+import { createHelia } from "helia";
+import { unixfs } from "@helia/unixfs";
 
 const helia = createHelia({
   // ... helia config
-})
-const fs = unixfs(helia)
+});
+const fs = unixfs(helia);
 
 // create an empty dir and a file, then add the file to the dir
-const emptyDirCid = await fs.addDirectory()
-const fileCid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3]))
-const updateDirCid = await fs.cp(fileCid, emptyDirCid, 'foo.txt')
+const emptyDirCid = await fs.addDirectory();
+const fileCid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3]));
+const updateDirCid = await fs.cp(fileCid, emptyDirCid, "foo.txt");
 
 // or doing the same thing as a stream
-for await (const entry of fs.addAll([{
-  path: 'foo.txt',
-  content: Uint8Array.from([0, 1, 2, 3])
-}])) {
-  console.info(entry)
+for await (const entry of fs.addAll([
+  {
+    path: "foo.txt",
+    content: Uint8Array.from([0, 1, 2, 3]),
+  },
+])) {
+  console.info(entry);
 }
 ```
 
@@ -64,10 +66,12 @@ for await (const entry of fs.addAll([{
 Node.js-compatibly environments only:
 
 ```typescript
-import { globSource } from '@helia/unixfs'
+import { globSource } from "@helia/unixfs";
 
-for await (const entry of fs.addAll(globSource('path/to/containing/dir', 'glob-pattern'))) {
-  console.info(entry)
+for await (const entry of fs.addAll(
+  globSource("path/to/containing/dir", "glob-pattern"),
+)) {
+  console.info(entry);
 }
 ```
 

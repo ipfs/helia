@@ -1,26 +1,31 @@
 export interface WaitForOptions {
-  timeout: number
-  delay?: number
-  message?: string
+  timeout: number;
+  delay?: number;
+  message?: string;
 }
 
-export async function waitFor (fn: () => Promise<boolean>, options: WaitForOptions): Promise<void> {
-  const delay = options.delay ?? 100
-  const timeoutAt = Date.now() + options.timeout
+export async function waitFor(
+  fn: () => Promise<boolean>,
+  options: WaitForOptions,
+): Promise<void> {
+  const delay = options.delay ?? 100;
+  const timeoutAt = Date.now() + options.timeout;
 
   while (true) {
-    const result = await fn()
+    const result = await fn();
 
     if (result) {
-      return
+      return;
     }
 
     await new Promise<void>((resolve) => {
-      setTimeout(() => { resolve() }, delay)
-    })
+      setTimeout(() => {
+        resolve();
+      }, delay);
+    });
 
     if (Date.now() > timeoutAt) {
-      throw new Error(options.message ?? 'WaitFor timed out')
+      throw new Error(options.message ?? "WaitFor timed out");
     }
   }
 }

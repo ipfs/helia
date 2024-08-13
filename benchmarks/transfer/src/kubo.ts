@@ -1,89 +1,97 @@
-import drain from 'it-drain'
-import type { TransferBenchmark } from './index.js'
-import { path as kuboPath } from 'kubo'
-import { create as kuboRpcClient, type BlockPutOptions } from 'kubo-rpc-client'
-import { createNode } from 'ipfsd-ctl'
-import type { ImportOptions } from './index.js'
-import { unixfs } from '@helia/unixfs'
-import { fixedSize } from 'ipfs-unixfs-importer/chunker'
-import { balanced } from 'ipfs-unixfs-importer/layout'
-import * as dagPB from '@ipld/dag-pb'
-import * as raw from 'multiformats/codecs/raw'
-import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import drain from "it-drain";
+import type { TransferBenchmark } from "./index.js";
+import { path as kuboPath } from "kubo";
+import { create as kuboRpcClient, type BlockPutOptions } from "kubo-rpc-client";
+import { createNode } from "ipfsd-ctl";
+import type { ImportOptions } from "./index.js";
+import { unixfs } from "@helia/unixfs";
+import { fixedSize } from "ipfs-unixfs-importer/chunker";
+import { balanced } from "ipfs-unixfs-importer/layout";
+import * as dagPB from "@ipld/dag-pb";
+import * as raw from "multiformats/codecs/raw";
+import { equals as uint8ArrayEquals } from "uint8arrays/equals";
 
 const FORMAT_LOOKUP: Record<number, string> = {
-  [dagPB.code]: 'dag-pb',
-  [raw.code]: 'raw'
-}
+  [dagPB.code]: "dag-pb",
+  [raw.code]: "raw",
+};
 
-export async function createKuboBenchmark (): Promise<TransferBenchmark> {
+export async function createKuboBenchmark(): Promise<TransferBenchmark> {
   const controller = await createNode({
-    type: 'kubo',
+    type: "kubo",
     test: true,
     bin: kuboPath(),
     rpc: kuboRpcClient,
     init: {
-      emptyRepo: true
-    }
-  })
+      emptyRepo: true,
+    },
+  });
 
   return {
-    async teardown () {
-      await controller.stop()
+    async teardown() {
+      await controller.stop();
     },
-    async addr () {
-      const id = await controller.api.id()
+    async addr() {
+      const id = await controller.api.id();
 
-      return id.addresses[0]
+      return id.addresses[0];
     },
-    async dial (ma) {
-      await controller.api.swarm.connect(ma)
+    async dial(ma) {
+      await controller.api.swarm.connect(ma);
     },
-    async add (content, options: ImportOptions) {
+    async add(content, options: ImportOptions) {
       // use Helia's UnixFS tooling to create the DAG otherwise we are limited
       // to 1MB block sizes
       const fs = unixfs({
         blockstore: {
-          async get (cid, options = {}) {
-            return controller.api.block.get(cid, options)
+          async get(cid, options = {}) {
+            return controller.api.block.get(cid, options);
           },
-          async put (cid, block, options = {}) {
+          async put(cid, block, options = {}) {
             const opts: BlockPutOptions = {
-              allowBigBlock: true
-            }
+              allowBigBlock: true,
+            };
 
             if (cid.version === 1) {
-              opts.version = 1
-              opts.format = FORMAT_LOOKUP[cid.code]
+              opts.version = 1;
+              opts.format = FORMAT_LOOKUP[cid.code];
             }
 
-            const putCid = await controller.api.block.put(block, opts)
+            const putCid = await controller.api.block.put(block, opts);
 
-            if (!uint8ArrayEquals(cid.multihash.bytes, putCid.multihash.bytes)) {
-              throw new Error(`Put failed ${putCid} != ${cid}`)
+            if (
+              !uint8ArrayEquals(cid.multihash.bytes, putCid.multihash.bytes)
+            ) {
+              throw new Error(`Put failed ${putCid} != ${cid}`);
             }
 
-            return cid
+            return cid;
           },
-          async has (cid, options = {}) {
+          async has(cid, options = {}) {
             try {
-              await controller.api.block.get(cid, options)
-              return true
+              await controller.api.block.get(cid, options);
+              return true;
             } catch {
-              return false
+              return false;
             }
-          }
-        }
-      })
+          },
+        },
+      });
 
       return await fs.addByteStream(content, {
         ...options,
-        chunker: options.chunkSize != null ? fixedSize({ chunkSize: options.chunkSize }) : undefined,
-        layout: options.maxChildrenPerNode != null ? balanced({ maxChildrenPerNode: options.maxChildrenPerNode }) : undefined
-      })
+        chunker:
+          options.chunkSize != null
+            ? fixedSize({ chunkSize: options.chunkSize })
+            : undefined,
+        layout:
+          options.maxChildrenPerNode != null
+            ? balanced({ maxChildrenPerNode: options.maxChildrenPerNode })
+            : undefined,
+      });
     },
-    async get (cid) {
-      await drain(controller.api.cat(cid))
-    }
-  }
+    async get(cid) {
+      await drain(controller.api.cat(cid));
+    },
+  };
 }

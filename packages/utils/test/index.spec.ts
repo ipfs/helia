@@ -1,57 +1,55 @@
 /* eslint-env mocha */
-import { expect } from 'aegir/chai'
-import Sinon from 'sinon'
-import { stubInterface } from 'sinon-ts'
-import { createHelia } from './fixtures/create-helia.js'
-import type { Helia, Routing } from '@helia/interface'
-import type { Startable, Metrics } from '@libp2p/interface'
+import { expect } from "aegir/chai";
+import Sinon from "sinon";
+import { stubInterface } from "sinon-ts";
+import { createHelia } from "./fixtures/create-helia.js";
+import type { Helia, Routing } from "@helia/interface";
+import type { Startable, Metrics } from "@libp2p/interface";
 
-describe('helia', () => {
-  let helia: Helia
-  let routing: Routing
+describe("helia", () => {
+  let helia: Helia;
+  let routing: Routing;
 
   beforeEach(async () => {
     routing = stubInterface<Routing & Startable>({
       start: Sinon.stub(),
-      stop: Sinon.stub()
-    })
+      stop: Sinon.stub(),
+    });
     helia = await createHelia({
       start: false,
-      routers: [
-        routing
-      ],
-      metrics: stubInterface<Metrics>()
-    })
-  })
+      routers: [routing],
+      metrics: stubInterface<Metrics>(),
+    });
+  });
 
   afterEach(async () => {
     if (helia != null) {
-      await helia.stop()
+      await helia.stop();
     }
-  })
+  });
 
-  it('stops and starts', async () => {
-    expect(routing).to.have.nested.property('start.called', false)
+  it("stops and starts", async () => {
+    expect(routing).to.have.nested.property("start.called", false);
 
-    await helia.start()
+    await helia.start();
 
-    expect(routing).to.have.nested.property('start.called', true)
-    expect(routing).to.have.nested.property('stop.called', false)
+    expect(routing).to.have.nested.property("start.called", true);
+    expect(routing).to.have.nested.property("stop.called", false);
 
-    await helia.stop()
+    await helia.stop();
 
-    expect(routing).to.have.nested.property('stop.called', true)
-  })
+    expect(routing).to.have.nested.property("stop.called", true);
+  });
 
-  it('should have a blockstore', async () => {
-    expect(helia).to.have.property('blockstore').that.is.ok()
-  })
+  it("should have a blockstore", async () => {
+    expect(helia).to.have.property("blockstore").that.is.ok();
+  });
 
-  it('should have a datastore', async () => {
-    expect(helia).to.have.property('datastore').that.is.ok()
-  })
+  it("should have a datastore", async () => {
+    expect(helia).to.have.property("datastore").that.is.ok();
+  });
 
-  it('supports metrics', async () => {
-    expect(helia).to.have.property('metrics').that.is.ok()
-  })
-})
+  it("supports metrics", async () => {
+    expect(helia).to.have.property("metrics").that.is.ok();
+  });
+});

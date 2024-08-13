@@ -227,103 +227,114 @@
  * ```
  */
 
-import { CodeError } from '@libp2p/interface'
-import { logger } from '@libp2p/logger'
-import { peerIdFromString } from '@libp2p/peer-id'
-import { create, marshal, peerIdToRoutingKey, unmarshal } from 'ipns'
-import { ipnsSelector } from 'ipns/selector'
-import { ipnsValidator } from 'ipns/validator'
-import { CID } from 'multiformats/cid'
-import { CustomProgressEvent } from 'progress-events'
-import { resolveDNSLink } from './dnslink.js'
-import { helia } from './routing/helia.js'
-import { localStore, type LocalStore } from './routing/local-store.js'
-import type { IPNSRouting, IPNSRoutingEvents } from './routing/index.js'
-import type { Routing } from '@helia/interface'
-import type { AbortOptions, ComponentLogger, Logger, PeerId } from '@libp2p/interface'
-import type { Answer, DNS, ResolveDnsProgressEvents } from '@multiformats/dns'
-import type { Datastore } from 'interface-datastore'
-import type { IPNSRecord } from 'ipns'
-import type { ProgressEvent, ProgressOptions } from 'progress-events'
+import { CodeError } from "@libp2p/interface";
+import { logger } from "@libp2p/logger";
+import { peerIdFromString } from "@libp2p/peer-id";
+import { create, marshal, peerIdToRoutingKey, unmarshal } from "ipns";
+import { ipnsSelector } from "ipns/selector";
+import { ipnsValidator } from "ipns/validator";
+import { CID } from "multiformats/cid";
+import { CustomProgressEvent } from "progress-events";
+import { resolveDNSLink } from "./dnslink.js";
+import { helia } from "./routing/helia.js";
+import { localStore, type LocalStore } from "./routing/local-store.js";
+import type { IPNSRouting, IPNSRoutingEvents } from "./routing/index.js";
+import type { Routing } from "@helia/interface";
+import type {
+  AbortOptions,
+  ComponentLogger,
+  Logger,
+  PeerId,
+} from "@libp2p/interface";
+import type { Answer, DNS, ResolveDnsProgressEvents } from "@multiformats/dns";
+import type { Datastore } from "interface-datastore";
+import type { IPNSRecord } from "ipns";
+import type { ProgressEvent, ProgressOptions } from "progress-events";
 
-const log = logger('helia:ipns')
+const log = logger("helia:ipns");
 
-const MINUTE = 60 * 1000
-const HOUR = 60 * MINUTE
+const MINUTE = 60 * 1000;
+const HOUR = 60 * MINUTE;
 
-const DEFAULT_LIFETIME_MS = 24 * HOUR
-const DEFAULT_REPUBLISH_INTERVAL_MS = 23 * HOUR
+const DEFAULT_LIFETIME_MS = 24 * HOUR;
+const DEFAULT_REPUBLISH_INTERVAL_MS = 23 * HOUR;
 
-const DEFAULT_TTL_NS = BigInt(HOUR) * 1_000_000n
+const DEFAULT_TTL_NS = BigInt(HOUR) * 1_000_000n;
 
 export type PublishProgressEvents =
-  ProgressEvent<'ipns:publish:start'> |
-  ProgressEvent<'ipns:publish:success', IPNSRecord> |
-  ProgressEvent<'ipns:publish:error', Error>
+  | ProgressEvent<"ipns:publish:start">
+  | ProgressEvent<"ipns:publish:success", IPNSRecord>
+  | ProgressEvent<"ipns:publish:error", Error>;
 
 export type ResolveProgressEvents =
-  ProgressEvent<'ipns:resolve:start', unknown> |
-  ProgressEvent<'ipns:resolve:success', IPNSRecord> |
-  ProgressEvent<'ipns:resolve:error', Error>
+  | ProgressEvent<"ipns:resolve:start", unknown>
+  | ProgressEvent<"ipns:resolve:success", IPNSRecord>
+  | ProgressEvent<"ipns:resolve:error", Error>;
 
 export type RepublishProgressEvents =
-  ProgressEvent<'ipns:republish:start', unknown> |
-  ProgressEvent<'ipns:republish:success', IPNSRecord> |
-  ProgressEvent<'ipns:republish:error', { record: IPNSRecord, err: Error }>
+  | ProgressEvent<"ipns:republish:start", unknown>
+  | ProgressEvent<"ipns:republish:success", IPNSRecord>
+  | ProgressEvent<"ipns:republish:error", { record: IPNSRecord; err: Error }>;
 
 export type ResolveDNSLinkProgressEvents =
-  ResolveProgressEvents |
-  IPNSRoutingEvents |
-  ResolveDnsProgressEvents
+  | ResolveProgressEvents
+  | IPNSRoutingEvents
+  | ResolveDnsProgressEvents;
 
-export interface PublishOptions extends AbortOptions, ProgressOptions<PublishProgressEvents | IPNSRoutingEvents> {
+export interface PublishOptions
+  extends AbortOptions,
+    ProgressOptions<PublishProgressEvents | IPNSRoutingEvents> {
   /**
    * Time duration of the record in ms (default: 24hrs)
    */
-  lifetime?: number
+  lifetime?: number;
 
   /**
    * Only publish to a local datastore (default: false)
    */
-  offline?: boolean
+  offline?: boolean;
 
   /**
    * By default a IPNS V1 and a V2 signature is added to every record. Pass
    * false here to only add a V2 signature. (default: true)
    */
-  v1Compatible?: boolean
+  v1Compatible?: boolean;
 }
 
-export interface ResolveOptions extends AbortOptions, ProgressOptions<ResolveProgressEvents | IPNSRoutingEvents> {
+export interface ResolveOptions
+  extends AbortOptions,
+    ProgressOptions<ResolveProgressEvents | IPNSRoutingEvents> {
   /**
    * Do not query the network for the IPNS record
    *
    * @default false
    */
-  offline?: boolean
+  offline?: boolean;
 
   /**
    * Do not use cached IPNS Record entries
    *
    * @default false
    */
-  nocache?: boolean
+  nocache?: boolean;
 }
 
-export interface ResolveDNSLinkOptions extends AbortOptions, ProgressOptions<ResolveDNSLinkProgressEvents> {
+export interface ResolveDNSLinkOptions
+  extends AbortOptions,
+    ProgressOptions<ResolveDNSLinkProgressEvents> {
   /**
    * Do not query the network for the IPNS record
    *
    * @default false
    */
-  offline?: boolean
+  offline?: boolean;
 
   /**
    * Do not use cached DNS entries
    *
    * @default false
    */
-  nocache?: boolean
+  nocache?: boolean;
 
   /**
    * When resolving DNSLink records that resolve to other DNSLink records, limit
@@ -331,42 +342,44 @@ export interface ResolveDNSLinkOptions extends AbortOptions, ProgressOptions<Res
    *
    * @default 32
    */
-  maxRecursiveDepth?: number
+  maxRecursiveDepth?: number;
 }
 
-export interface RepublishOptions extends AbortOptions, ProgressOptions<RepublishProgressEvents | IPNSRoutingEvents> {
+export interface RepublishOptions
+  extends AbortOptions,
+    ProgressOptions<RepublishProgressEvents | IPNSRoutingEvents> {
   /**
    * The republish interval in ms (default: 23hrs)
    */
-  interval?: number
+  interval?: number;
 }
 
 export interface ResolveResult {
   /**
    * The CID that was resolved
    */
-  cid: CID
+  cid: CID;
 
   /**
    * Any path component that was part of the resolved record
    *
    * @default ""
    */
-  path: string
+  path: string;
 }
 
 export interface IPNSResolveResult extends ResolveResult {
   /**
    * The resolved record
    */
-  record: IPNSRecord
+  record: IPNSRecord;
 }
 
 export interface DNSLinkResolveResult extends ResolveResult {
   /**
    * The resolved record
    */
-  answer: Answer
+  answer: Answer;
 }
 
 export interface IPNS {
@@ -375,276 +388,327 @@ export interface IPNS {
    *
    * If the value is a PeerId, a recursive IPNS record will be created.
    */
-  publish(key: PeerId, value: CID | PeerId | string, options?: PublishOptions): Promise<IPNSRecord>
+  publish(
+    key: PeerId,
+    value: CID | PeerId | string,
+    options?: PublishOptions,
+  ): Promise<IPNSRecord>;
 
   /**
    * Accepts a public key formatted as a libp2p PeerID and resolves the IPNS record
    * corresponding to that public key until a value is found
    */
-  resolve(key: PeerId, options?: ResolveOptions): Promise<IPNSResolveResult>
+  resolve(key: PeerId, options?: ResolveOptions): Promise<IPNSResolveResult>;
 
   /**
    * Resolve a CID from a dns-link style IPNS record
    */
-  resolveDNSLink(domain: string, options?: ResolveDNSLinkOptions): Promise<DNSLinkResolveResult>
+  resolveDNSLink(
+    domain: string,
+    options?: ResolveDNSLinkOptions,
+  ): Promise<DNSLinkResolveResult>;
 
   /**
    * Periodically republish all IPNS records found in the datastore
    */
-  republish(options?: RepublishOptions): void
+  republish(options?: RepublishOptions): void;
 }
 
-export type { IPNSRouting } from './routing/index.js'
+export type { IPNSRouting } from "./routing/index.js";
 
 export interface IPNSComponents {
-  datastore: Datastore
-  routing: Routing
-  dns: DNS
-  logger: ComponentLogger
+  datastore: Datastore;
+  routing: Routing;
+  dns: DNS;
+  logger: ComponentLogger;
 }
 
 class DefaultIPNS implements IPNS {
-  private readonly routers: IPNSRouting[]
-  private readonly localStore: LocalStore
-  private timeout?: ReturnType<typeof setTimeout>
-  private readonly dns: DNS
-  private readonly log: Logger
+  private readonly routers: IPNSRouting[];
+  private readonly localStore: LocalStore;
+  private timeout?: ReturnType<typeof setTimeout>;
+  private readonly dns: DNS;
+  private readonly log: Logger;
 
-  constructor (components: IPNSComponents, routers: IPNSRouting[] = []) {
-    this.routers = [
-      helia(components.routing),
-      ...routers
-    ]
-    this.localStore = localStore(components.datastore)
-    this.dns = components.dns
-    this.log = components.logger.forComponent('helia:ipns')
+  constructor(components: IPNSComponents, routers: IPNSRouting[] = []) {
+    this.routers = [helia(components.routing), ...routers];
+    this.localStore = localStore(components.datastore);
+    this.dns = components.dns;
+    this.log = components.logger.forComponent("helia:ipns");
   }
 
-  async publish (key: PeerId, value: CID | PeerId | string, options: PublishOptions = {}): Promise<IPNSRecord> {
+  async publish(
+    key: PeerId,
+    value: CID | PeerId | string,
+    options: PublishOptions = {},
+  ): Promise<IPNSRecord> {
     try {
-      let sequenceNumber = 1n
-      const routingKey = peerIdToRoutingKey(key)
+      let sequenceNumber = 1n;
+      const routingKey = peerIdToRoutingKey(key);
 
       if (await this.localStore.has(routingKey, options)) {
         // if we have published under this key before, increment the sequence number
-        const { record } = await this.localStore.get(routingKey, options)
-        const existingRecord = unmarshal(record)
-        sequenceNumber = existingRecord.sequence + 1n
+        const { record } = await this.localStore.get(routingKey, options);
+        const existingRecord = unmarshal(record);
+        sequenceNumber = existingRecord.sequence + 1n;
       }
 
       // create record
-      const record = await create(key, value, sequenceNumber, options.lifetime ?? DEFAULT_LIFETIME_MS, options)
-      const marshaledRecord = marshal(record)
+      const record = await create(
+        key,
+        value,
+        sequenceNumber,
+        options.lifetime ?? DEFAULT_LIFETIME_MS,
+        options,
+      );
+      const marshaledRecord = marshal(record);
 
-      await this.localStore.put(routingKey, marshaledRecord, options)
+      await this.localStore.put(routingKey, marshaledRecord, options);
 
       if (options.offline !== true) {
         // publish record to routing
-        await Promise.all(this.routers.map(async r => { await r.put(routingKey, marshaledRecord, options) }))
+        await Promise.all(
+          this.routers.map(async (r) => {
+            await r.put(routingKey, marshaledRecord, options);
+          }),
+        );
       }
 
-      return record
+      return record;
     } catch (err: any) {
-      options.onProgress?.(new CustomProgressEvent<Error>('ipns:publish:error', err))
-      throw err
+      options.onProgress?.(
+        new CustomProgressEvent<Error>("ipns:publish:error", err),
+      );
+      throw err;
     }
   }
 
-  async resolve (key: PeerId, options: ResolveOptions = {}): Promise<IPNSResolveResult> {
-    const routingKey = peerIdToRoutingKey(key)
-    const record = await this.#findIpnsRecord(routingKey, options)
+  async resolve(
+    key: PeerId,
+    options: ResolveOptions = {},
+  ): Promise<IPNSResolveResult> {
+    const routingKey = peerIdToRoutingKey(key);
+    const record = await this.#findIpnsRecord(routingKey, options);
 
     return {
       ...(await this.#resolve(record.value, options)),
-      record
-    }
+      record,
+    };
   }
 
-  async resolveDNSLink (domain: string, options: ResolveDNSLinkOptions = {}): Promise<DNSLinkResolveResult> {
-    const dnslink = await resolveDNSLink(domain, this.dns, this.log, options)
+  async resolveDNSLink(
+    domain: string,
+    options: ResolveDNSLinkOptions = {},
+  ): Promise<DNSLinkResolveResult> {
+    const dnslink = await resolveDNSLink(domain, this.dns, this.log, options);
 
     return {
       ...(await this.#resolve(dnslink.value, options)),
-      answer: dnslink.answer
-    }
+      answer: dnslink.answer,
+    };
   }
 
-  republish (options: RepublishOptions = {}): void {
+  republish(options: RepublishOptions = {}): void {
     if (this.timeout != null) {
-      throw new Error('Republish is already running')
+      throw new Error("Republish is already running");
     }
 
-    options.signal?.addEventListener('abort', () => {
-      clearTimeout(this.timeout)
-    })
+    options.signal?.addEventListener("abort", () => {
+      clearTimeout(this.timeout);
+    });
 
-    async function republish (): Promise<void> {
-      const startTime = Date.now()
+    async function republish(): Promise<void> {
+      const startTime = Date.now();
 
-      options.onProgress?.(new CustomProgressEvent('ipns:republish:start'))
+      options.onProgress?.(new CustomProgressEvent("ipns:republish:start"));
 
-      const finishType = Date.now()
-      const timeTaken = finishType - startTime
-      let nextInterval = DEFAULT_REPUBLISH_INTERVAL_MS - timeTaken
+      const finishType = Date.now();
+      const timeTaken = finishType - startTime;
+      let nextInterval = DEFAULT_REPUBLISH_INTERVAL_MS - timeTaken;
 
       if (nextInterval < 0) {
-        nextInterval = options.interval ?? DEFAULT_REPUBLISH_INTERVAL_MS
+        nextInterval = options.interval ?? DEFAULT_REPUBLISH_INTERVAL_MS;
       }
 
       setTimeout(() => {
-        republish().catch(err => {
-          log.error('error republishing', err)
-        })
-      }, nextInterval)
+        republish().catch((err) => {
+          log.error("error republishing", err);
+        });
+      }, nextInterval);
     }
 
     this.timeout = setTimeout(() => {
-      republish().catch(err => {
-        log.error('error republishing', err)
-      })
-    }, options.interval ?? DEFAULT_REPUBLISH_INTERVAL_MS)
+      republish().catch((err) => {
+        log.error("error republishing", err);
+      });
+    }, options.interval ?? DEFAULT_REPUBLISH_INTERVAL_MS);
   }
 
-  async #resolve (ipfsPath: string, options: ResolveOptions = {}): Promise<{ cid: CID, path: string }> {
-    const parts = ipfsPath.split('/')
+  async #resolve(
+    ipfsPath: string,
+    options: ResolveOptions = {},
+  ): Promise<{ cid: CID; path: string }> {
+    const parts = ipfsPath.split("/");
     try {
-      const scheme = parts[1]
+      const scheme = parts[1];
 
-      if (scheme === 'ipns') {
-        const { cid } = await this.resolve(peerIdFromString(parts[2]), options)
-        const path = parts.slice(3).join('/')
+      if (scheme === "ipns") {
+        const { cid } = await this.resolve(peerIdFromString(parts[2]), options);
+        const path = parts.slice(3).join("/");
         return {
           cid,
-          path
-        }
-      } else if (scheme === 'ipfs') {
-        const cid = CID.parse(parts[2])
-        const path = parts.slice(3).join('/')
+          path,
+        };
+      } else if (scheme === "ipfs") {
+        const cid = CID.parse(parts[2]);
+        const path = parts.slice(3).join("/");
         return {
           cid,
-          path
-        }
+          path,
+        };
       }
     } catch (err) {
-      log.error('error parsing ipfs path', err)
+      log.error("error parsing ipfs path", err);
     }
 
-    log.error('invalid ipfs path %s', ipfsPath)
-    throw new Error('Invalid value')
+    log.error("invalid ipfs path %s", ipfsPath);
+    throw new Error("Invalid value");
   }
 
-  async #findIpnsRecord (routingKey: Uint8Array, options: ResolveOptions = {}): Promise<IPNSRecord> {
-    const records: Uint8Array[] = []
-    const cached = await this.localStore.has(routingKey, options)
+  async #findIpnsRecord(
+    routingKey: Uint8Array,
+    options: ResolveOptions = {},
+  ): Promise<IPNSRecord> {
+    const records: Uint8Array[] = [];
+    const cached = await this.localStore.has(routingKey, options);
 
     if (cached) {
-      log('record is present in the cache')
+      log("record is present in the cache");
 
       if (options.nocache !== true) {
         try {
           // check the local cache first
-          const { record, created } = await this.localStore.get(routingKey, options)
+          const { record, created } = await this.localStore.get(
+            routingKey,
+            options,
+          );
 
-          this.log('record retrieved from cache')
+          this.log("record retrieved from cache");
 
           // validate the record
-          await ipnsValidator(routingKey, record)
+          await ipnsValidator(routingKey, record);
 
-          this.log('record was valid')
+          this.log("record was valid");
 
           // check the TTL
-          const ipnsRecord = unmarshal(record)
+          const ipnsRecord = unmarshal(record);
 
           // IPNS TTL is in nanoseconds, convert to milliseconds, default to one
           // hour
-          const ttlMs = Number((ipnsRecord.ttl ?? DEFAULT_TTL_NS) / 1_000_000n)
-          const ttlExpires = created.getTime() + ttlMs
+          const ttlMs = Number((ipnsRecord.ttl ?? DEFAULT_TTL_NS) / 1_000_000n);
+          const ttlExpires = created.getTime() + ttlMs;
 
           if (ttlExpires > Date.now()) {
             // the TTL has not yet expired, return the cached record
-            this.log('record TTL was valid')
-            return ipnsRecord
+            this.log("record TTL was valid");
+            return ipnsRecord;
           }
 
           if (options.offline === true) {
             // the TTL has expired but we are skipping the routing search
-            this.log('record TTL has been reached but we are resolving offline-only, returning record')
-            return ipnsRecord
+            this.log(
+              "record TTL has been reached but we are resolving offline-only, returning record",
+            );
+            return ipnsRecord;
           }
 
-          this.log('record TTL has been reached, searching routing for updates')
+          this.log(
+            "record TTL has been reached, searching routing for updates",
+          );
 
           // add the local record to our list of resolved record, and also
           // search the routing for updates - the most up to date record will be
           // returned
-          records.push(record)
+          records.push(record);
         } catch (err) {
-          this.log('cached record was invalid', err)
-          await this.localStore.delete(routingKey, options)
+          this.log("cached record was invalid", err);
+          await this.localStore.delete(routingKey, options);
         }
       } else {
-        log('ignoring local cache due to nocache=true option')
+        log("ignoring local cache due to nocache=true option");
       }
     }
 
     if (options.offline === true) {
-      throw new CodeError('Record was not present in the cache or has expired', 'ERR_NOT_FOUND')
+      throw new CodeError(
+        "Record was not present in the cache or has expired",
+        "ERR_NOT_FOUND",
+      );
     }
 
-    log('did not have record locally')
+    log("did not have record locally");
 
-    let foundInvalid = 0
+    let foundInvalid = 0;
 
     await Promise.all(
       this.routers.map(async (router) => {
-        let record: Uint8Array
+        let record: Uint8Array;
 
         try {
           record = await router.get(routingKey, {
             ...options,
-            validate: false
-          })
+            validate: false,
+          });
         } catch (err: any) {
-          log.error('error finding IPNS record', err)
+          log.error("error finding IPNS record", err);
 
-          return
+          return;
         }
 
         try {
-          await ipnsValidator(routingKey, record)
+          await ipnsValidator(routingKey, record);
 
-          records.push(record)
+          records.push(record);
         } catch (err) {
           // we found a record, but the validator rejected it
-          foundInvalid++
-          log.error('error finding IPNS record', err)
+          foundInvalid++;
+          log.error("error finding IPNS record", err);
         }
-      })
-    )
+      }),
+    );
 
     if (records.length === 0) {
       if (foundInvalid > 0) {
-        throw new CodeError(`${foundInvalid > 1 ? `${foundInvalid} records` : 'Record'} found for routing key ${foundInvalid > 1 ? 'were' : 'was'} invalid`, 'ERR_RECORDS_FAILED_VALIDATION')
+        throw new CodeError(
+          `${foundInvalid > 1 ? `${foundInvalid} records` : "Record"} found for routing key ${foundInvalid > 1 ? "were" : "was"} invalid`,
+          "ERR_RECORDS_FAILED_VALIDATION",
+        );
       }
 
-      throw new CodeError('Could not find record for routing key', 'ERR_NOT_FOUND')
+      throw new CodeError(
+        "Could not find record for routing key",
+        "ERR_NOT_FOUND",
+      );
     }
 
-    const record = records[ipnsSelector(routingKey, records)]
+    const record = records[ipnsSelector(routingKey, records)];
 
-    await this.localStore.put(routingKey, record, options)
+    await this.localStore.put(routingKey, record, options);
 
-    return unmarshal(record)
+    return unmarshal(record);
   }
 }
 
 export interface IPNSOptions {
-  routers?: IPNSRouting[]
+  routers?: IPNSRouting[];
 }
 
-export function ipns (components: IPNSComponents, { routers = [] }: IPNSOptions = {}): IPNS {
-  return new DefaultIPNS(components, routers)
+export function ipns(
+  components: IPNSComponents,
+  { routers = [] }: IPNSOptions = {},
+): IPNS {
+  return new DefaultIPNS(components, routers);
 }
 
-export { ipnsValidator, type IPNSRoutingEvents }
-export { ipnsSelector } from 'ipns/selector'
+export { ipnsValidator, type IPNSRoutingEvents };
+export { ipnsSelector } from "ipns/selector";

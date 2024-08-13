@@ -43,29 +43,39 @@
  * ```
  */
 
-import { UnixFS as UnixFSClass } from './unixfs.js'
-import type { GetBlockProgressEvents, PutBlockProgressEvents } from '@helia/interface/blocks'
-import type { AbortOptions } from '@libp2p/interface'
-import type { Blockstore } from 'interface-blockstore'
-import type { Mtime, UnixFS as IPFSUnixFS } from 'ipfs-unixfs'
-import type { ExporterProgressEvents, UnixFSEntry } from 'ipfs-unixfs-exporter'
-import type { ByteStream, DirectoryCandidate, FileCandidate, ImportCandidateStream, ImporterOptions, ImporterProgressEvents, ImportResult } from 'ipfs-unixfs-importer'
-import type { CID, Version } from 'multiformats/cid'
-import type { ProgressOptions } from 'progress-events'
+import { UnixFS as UnixFSClass } from "./unixfs.js";
+import type {
+  GetBlockProgressEvents,
+  PutBlockProgressEvents,
+} from "@helia/interface/blocks";
+import type { AbortOptions } from "@libp2p/interface";
+import type { Blockstore } from "interface-blockstore";
+import type { Mtime, UnixFS as IPFSUnixFS } from "ipfs-unixfs";
+import type { ExporterProgressEvents, UnixFSEntry } from "ipfs-unixfs-exporter";
+import type {
+  ByteStream,
+  DirectoryCandidate,
+  FileCandidate,
+  ImportCandidateStream,
+  ImporterOptions,
+  ImporterProgressEvents,
+  ImportResult,
+} from "ipfs-unixfs-importer";
+import type { CID, Version } from "multiformats/cid";
+import type { ProgressOptions } from "progress-events";
 
 export interface UnixFSComponents {
-  blockstore: Pick<Blockstore, 'get' | 'put' | 'has'>
+  blockstore: Pick<Blockstore, "get" | "put" | "has">;
 }
 
-export type AddEvents = PutBlockProgressEvents
-| ImporterProgressEvents
+export type AddEvents = PutBlockProgressEvents | ImporterProgressEvents;
 
-export interface AddOptions extends AbortOptions, Omit<ImporterOptions, 'onProgress'>, ProgressOptions<AddEvents> {
+export interface AddOptions
+  extends AbortOptions,
+    Omit<ImporterOptions, "onProgress">,
+    ProgressOptions<AddEvents> {}
 
-}
-
-export type GetEvents = GetBlockProgressEvents
-| ExporterProgressEvents
+export type GetEvents = GetBlockProgressEvents | ExporterProgressEvents;
 
 /**
  * Options to pass to the cat command
@@ -74,73 +84,77 @@ export interface CatOptions extends AbortOptions, ProgressOptions<GetEvents> {
   /**
    * Start reading the file at this offset
    */
-  offset?: number
+  offset?: number;
 
   /**
    * Stop reading the file after this many bytes
    */
-  length?: number
+  length?: number;
 
   /**
    * An optional path to allow reading files inside directories
    */
-  path?: string
+  path?: string;
 
   /**
    * If true, do not perform any network operations and throw if blocks are
    * missing from the local store. (default: false)
    */
-  offline?: boolean
+  offline?: boolean;
 }
 
 /**
  * Options to pass to the chmod command
  */
-export interface ChmodOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents> {
+export interface ChmodOptions
+  extends AbortOptions,
+    ProgressOptions<GetEvents | PutBlockProgressEvents> {
   /**
    * If the target of the operation is a directory and this is true,
    * apply the new mode to all directory contents
    */
-  recursive: boolean
+  recursive: boolean;
 
   /**
    * Optional path to set the mode on directory contents
    */
-  path?: string
+  path?: string;
 
   /**
    * DAGs with a root block larger than this value will be sharded. Blocks
    * smaller than this value will be regular UnixFS directories.
    */
-  shardSplitThresholdBytes: number
+  shardSplitThresholdBytes: number;
 
   /**
    * If true, do not perform any network operations and throw if blocks are
    * missing from the local store. (default: false)
    */
-  offline?: boolean
+  offline?: boolean;
 }
 
 /**
  * Options to pass to the cp command
  */
-export interface CpOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents> {
+export interface CpOptions
+  extends AbortOptions,
+    ProgressOptions<GetEvents | PutBlockProgressEvents> {
   /**
    * If true, allow overwriting existing directory entries (default: false)
    */
-  force: boolean
+  force: boolean;
 
   /**
    * DAGs with a root block larger than this value will be sharded. Blocks
    * smaller than this value will be regular UnixFS directories.
    */
-  shardSplitThresholdBytes: number
+  shardSplitThresholdBytes: number;
 
   /**
    * If true, do not perform any network operations and throw if blocks are
    * missing from the local store. (default: false)
    */
-  offline?: boolean
+  offline?: boolean;
 }
 
 /**
@@ -151,78 +165,82 @@ export interface LsOptions extends AbortOptions, ProgressOptions<GetEvents> {
    * Optional path to list subdirectory contents if the target CID resolves to
    * a directory
    */
-  path?: string
+  path?: string;
 
   /**
    * Start reading the directory entries at this offset
    */
-  offset?: number
+  offset?: number;
 
   /**
    * Stop reading the directory contents after this many directory entries
    */
-  length?: number
+  length?: number;
 
   /**
    * If true, do not perform any network operations and throw if blocks are
    * missing from the local store. (default: false)
    */
-  offline?: boolean
+  offline?: boolean;
 }
 
 /**
  * Options to pass to the mkdir command
  */
-export interface MkdirOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents> {
+export interface MkdirOptions
+  extends AbortOptions,
+    ProgressOptions<GetEvents | PutBlockProgressEvents> {
   /**
    * The CID version to create the new directory with - defaults to the same
    * version as the containing directory
    */
-  cidVersion: Version
+  cidVersion: Version;
 
   /**
    * If true, allow overwriting existing directory entries (default: false)
    */
-  force: boolean
+  force: boolean;
 
   /**
    * An optional mode to set on the new directory
    */
-  mode?: number
+  mode?: number;
 
   /**
    * An optional mtime to set on the new directory
    */
-  mtime?: Mtime
+  mtime?: Mtime;
 
   /**
    * DAGs with a root block larger than this value will be sharded. Blocks
    * smaller than this value will be regular UnixFS directories.
    */
-  shardSplitThresholdBytes: number
+  shardSplitThresholdBytes: number;
 
   /**
    * If true, do not perform any network operations and throw if blocks are
    * missing from the local store. (default: false)
    */
-  offline?: boolean
+  offline?: boolean;
 }
 
 /**
  * Options to pass to the rm command
  */
-export interface RmOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents> {
+export interface RmOptions
+  extends AbortOptions,
+    ProgressOptions<GetEvents | PutBlockProgressEvents> {
   /**
    * DAGs with a root block larger than this value will be sharded. Blocks
    * smaller than this value will be regular UnixFS directories.
    */
-  shardSplitThresholdBytes: number
+  shardSplitThresholdBytes: number;
 
   /**
    * If true, do not perform any network operations and throw if blocks are
    * missing from the local store. (default: false)
    */
-  offline?: boolean
+  offline?: boolean;
 }
 
 /**
@@ -232,13 +250,13 @@ export interface StatOptions extends AbortOptions, ProgressOptions<GetEvents> {
   /**
    * An optional path to allow statting paths inside directories
    */
-  path?: string
+  path?: string;
 
   /**
    * If true, do not perform any network operations and throw if blocks are
    * missing from the local store. (default: false)
    */
-  offline?: boolean
+  offline?: boolean;
 }
 
 /**
@@ -248,86 +266,88 @@ export interface UnixFSStats {
   /**
    * The file or directory CID
    */
-  cid: CID
+  cid: CID;
 
   /**
    * The file or directory mode
    */
-  mode?: number
+  mode?: number;
 
   /**
    * The file or directory mtime
    */
-  mtime?: Mtime
+  mtime?: Mtime;
 
   /**
    * The size of the file in bytes
    */
-  fileSize: bigint
+  fileSize: bigint;
 
   /**
    * The size of the DAG that holds the file in bytes
    */
-  dagSize: bigint
+  dagSize: bigint;
 
   /**
    * How much of the file is in the local block store
    */
-  localFileSize: bigint
+  localFileSize: bigint;
 
   /**
    * How much of the DAG that holds the file is in the local blockstore
    */
-  localDagSize: bigint
+  localDagSize: bigint;
 
   /**
    * How many blocks make up the DAG - nb. this will only be accurate
    * if all blocks are present in the local blockstore
    */
-  blocks: number
+  blocks: number;
 
   /**
    * The type of file
    */
-  type: 'file' | 'directory' | 'raw'
+  type: "file" | "directory" | "raw";
 
   /**
    * UnixFS metadata about this file or directory. Will not be present
    * if the node is a `raw` type.
    */
-  unixfs?: IPFSUnixFS
+  unixfs?: IPFSUnixFS;
 }
 
 /**
  * Options to pass to the touch command
  */
-export interface TouchOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents> {
+export interface TouchOptions
+  extends AbortOptions,
+    ProgressOptions<GetEvents | PutBlockProgressEvents> {
   /**
    * Optional mtime to set on the DAG root, defaults to the current time
    */
-  mtime?: Mtime
+  mtime?: Mtime;
 
   /**
    * Optional path to set mtime on directory contents
    */
-  path?: string
+  path?: string;
 
   /**
    * If the DAG is a directory and this is true, update the mtime on all contents
    */
-  recursive: boolean
+  recursive: boolean;
 
   /**
    * DAGs with a root block larger than this value will be sharded. Blocks
    * smaller than this value will be regular UnixFS directories.
    */
-  shardSplitThresholdBytes: number
+  shardSplitThresholdBytes: number;
 
   /**
    * If true, do not perform any network operations and throw if blocks are
    * missing from the local store. (default: false)
    */
-  offline?: boolean
+  offline?: boolean;
 }
 
 /**
@@ -356,7 +376,10 @@ export interface UnixFS {
    * }
    * ```
    */
-  addAll(source: ImportCandidateStream, options?: Partial<AddOptions>): AsyncIterable<ImportResult>
+  addAll(
+    source: ImportCandidateStream,
+    options?: Partial<AddOptions>,
+  ): AsyncIterable<ImportResult>;
 
   /**
    * Add a single `Uint8Array` to your Helia node as a file.
@@ -369,7 +392,7 @@ export interface UnixFS {
    * console.info(cid)
    * ```
    */
-  addBytes(bytes: Uint8Array, options?: Partial<AddOptions>): Promise<CID>
+  addBytes(bytes: Uint8Array, options?: Partial<AddOptions>): Promise<CID>;
 
   /**
    * Add a stream of `Uint8Array` to your Helia node as a file.
@@ -385,7 +408,7 @@ export interface UnixFS {
    * console.info(cid)
    * ```
    */
-  addByteStream(bytes: ByteStream, options?: Partial<AddOptions>): Promise<CID>
+  addByteStream(bytes: ByteStream, options?: Partial<AddOptions>): Promise<CID>;
 
   /**
    * Add a file to your Helia node with optional metadata.
@@ -406,7 +429,7 @@ export interface UnixFS {
    * console.info(cid)
    * ```
    */
-  addFile(file: FileCandidate, options?: Partial<AddOptions>): Promise<CID>
+  addFile(file: FileCandidate, options?: Partial<AddOptions>): Promise<CID>;
 
   /**
    * Add a directory to your Helia node.
@@ -419,7 +442,10 @@ export interface UnixFS {
    * console.info(cid)
    * ```
    */
-  addDirectory(dir?: Partial<DirectoryCandidate>, options?: Partial<AddOptions>): Promise<CID>
+  addDirectory(
+    dir?: Partial<DirectoryCandidate>,
+    options?: Partial<AddOptions>,
+  ): Promise<CID>;
 
   /**
    * Retrieve the contents of a file from your Helia node.
@@ -432,7 +458,7 @@ export interface UnixFS {
    * }
    * ```
    */
-  cat(cid: CID, options?: Partial<CatOptions>): AsyncIterable<Uint8Array>
+  cat(cid: CID, options?: Partial<CatOptions>): AsyncIterable<Uint8Array>;
 
   /**
    * Change the permissions on a file or directory in a DAG
@@ -450,7 +476,7 @@ export interface UnixFS {
    * console.info(afterCid, afterStats)
    * ```
    */
-  chmod(cid: CID, mode: number, options?: Partial<ChmodOptions>): Promise<CID>
+  chmod(cid: CID, mode: number, options?: Partial<ChmodOptions>): Promise<CID>;
 
   /**
    * Add a file or directory to a target directory.
@@ -466,7 +492,12 @@ export interface UnixFS {
    * console.info(updatedCid)
    * ```
    */
-  cp(source: CID, target: CID, name: string, options?: Partial<CpOptions>): Promise<CID>
+  cp(
+    source: CID,
+    target: CID,
+    name: string,
+    options?: Partial<CpOptions>,
+  ): Promise<CID>;
 
   /**
    * List directory contents.
@@ -479,7 +510,7 @@ export interface UnixFS {
    * }
    * ```
    */
-  ls(cid: CID, options?: Partial<LsOptions>): AsyncIterable<UnixFSEntry>
+  ls(cid: CID, options?: Partial<LsOptions>): AsyncIterable<UnixFSEntry>;
 
   /**
    * Make a new directory under an existing directory.
@@ -494,7 +525,11 @@ export interface UnixFS {
    * console.info(updatedCid)
    * ```
    */
-  mkdir(cid: CID, dirname: string, options?: Partial<MkdirOptions>): Promise<CID>
+  mkdir(
+    cid: CID,
+    dirname: string,
+    options?: Partial<MkdirOptions>,
+  ): Promise<CID>;
 
   /**
    * Remove a file or directory from an existing directory.
@@ -510,7 +545,7 @@ export interface UnixFS {
    * console.info(finalCid)
    * ```
    */
-  rm(cid: CID, path: string, options?: Partial<RmOptions>): Promise<CID>
+  rm(cid: CID, path: string, options?: Partial<RmOptions>): Promise<CID>;
 
   /**
    * Return statistics about a UnixFS DAG.
@@ -525,7 +560,7 @@ export interface UnixFS {
    * console.info(stats)
    * ```
    */
-  stat(cid: CID, options?: Partial<StatOptions>): Promise<UnixFSStats>
+  stat(cid: CID, options?: Partial<StatOptions>): Promise<UnixFSStats>;
 
   /**
    * Update the mtime of a UnixFS DAG
@@ -543,15 +578,17 @@ export interface UnixFS {
    * console.info(afterCid, afterStats)
    * ```
    */
-  touch(cid: CID, options?: Partial<TouchOptions>): Promise<CID>
+  touch(cid: CID, options?: Partial<TouchOptions>): Promise<CID>;
 }
 
 /**
  * Create a {@link UnixFS} instance for use with {@link https://github.com/ipfs/helia Helia}
  */
-export function unixfs (helia: { blockstore: Pick<Blockstore, 'get' | 'put' | 'has'> }): UnixFS {
-  return new UnixFSClass(helia)
+export function unixfs(helia: {
+  blockstore: Pick<Blockstore, "get" | "put" | "has">;
+}): UnixFS {
+  return new UnixFSClass(helia);
 }
 
-export { globSource } from './utils/glob-source.js'
-export { urlSource } from './utils/url-source.js'
+export { globSource } from "./utils/glob-source.js";
+export { urlSource } from "./utils/url-source.js";

@@ -1,105 +1,115 @@
 /* eslint-env mocha */
 
-import { type MFS, mfs } from '@helia/mfs'
-import { expect } from 'aegir/chai'
-import { createHeliaNode } from './fixtures/create-helia.js'
-import { createKuboNode } from './fixtures/create-kubo.js'
-import type { HeliaLibp2p } from 'helia'
-import type { KuboNode } from 'ipfsd-ctl'
+import { type MFS, mfs } from "@helia/mfs";
+import { expect } from "aegir/chai";
+import { createHeliaNode } from "./fixtures/create-helia.js";
+import { createKuboNode } from "./fixtures/create-kubo.js";
+import type { HeliaLibp2p } from "helia";
+import type { KuboNode } from "ipfsd-ctl";
 
-describe('@helia/mfs', () => {
-  let helia: HeliaLibp2p
-  let fs: MFS
-  let kubo: KuboNode
+describe("@helia/mfs", () => {
+  let helia: HeliaLibp2p;
+  let fs: MFS;
+  let kubo: KuboNode;
 
   beforeEach(async () => {
-    helia = await createHeliaNode()
-    fs = mfs(helia)
-    kubo = await createKuboNode()
-  })
+    helia = await createHeliaNode();
+    fs = mfs(helia);
+    kubo = await createKuboNode();
+  });
 
   afterEach(async () => {
     if (helia != null) {
-      await helia.stop()
+      await helia.stop();
     }
 
     if (kubo != null) {
-      await kubo.stop()
+      await kubo.stop();
     }
-  })
+  });
 
-  it('should have the same CID initially', async () => {
-    const heliaStat = await fs.stat('/')
-    const kuboStat = await kubo.api.files.stat('/')
+  it("should have the same CID initially", async () => {
+    const heliaStat = await fs.stat("/");
+    const kuboStat = await kubo.api.files.stat("/");
 
-    expect(heliaStat.cid.toV1().toString()).to.equal(kuboStat.cid.toV1().toString())
-  })
+    expect(heliaStat.cid.toV1().toString()).to.equal(
+      kuboStat.cid.toV1().toString(),
+    );
+  });
 
-  it('should have the same CID after creating a directory', async () => {
-    const dirPath = '/foo'
-    await fs.mkdir(dirPath)
+  it("should have the same CID after creating a directory", async () => {
+    const dirPath = "/foo";
+    await fs.mkdir(dirPath);
     await kubo.api.files.mkdir(dirPath, {
-      cidVersion: 1
-    })
+      cidVersion: 1,
+    });
 
-    const heliaStat = await fs.stat('/')
-    const kuboStat = await kubo.api.files.stat('/')
+    const heliaStat = await fs.stat("/");
+    const kuboStat = await kubo.api.files.stat("/");
 
-    expect(heliaStat.cid.toV1().toString()).to.equal(kuboStat.cid.toV1().toString())
-  })
+    expect(heliaStat.cid.toV1().toString()).to.equal(
+      kuboStat.cid.toV1().toString(),
+    );
+  });
 
-  it('should have the same CID after removing a directory', async () => {
-    const dirPath = '/foo'
-    await fs.mkdir(dirPath)
-    await fs.rm(dirPath)
+  it("should have the same CID after removing a directory", async () => {
+    const dirPath = "/foo";
+    await fs.mkdir(dirPath);
+    await fs.rm(dirPath);
     await kubo.api.files.mkdir(dirPath, {
-      cidVersion: 1
-    })
+      cidVersion: 1,
+    });
     await kubo.api.files.rm(dirPath, {
-      recursive: true
-    })
+      recursive: true,
+    });
 
-    const heliaStat = await fs.stat('/')
-    const kuboStat = await kubo.api.files.stat('/')
+    const heliaStat = await fs.stat("/");
+    const kuboStat = await kubo.api.files.stat("/");
 
-    expect(heliaStat.cid.toV1().toString()).to.equal(kuboStat.cid.toV1().toString())
-  })
+    expect(heliaStat.cid.toV1().toString()).to.equal(
+      kuboStat.cid.toV1().toString(),
+    );
+  });
 
-  it('should have the same CID after creating a file', async () => {
-    const filePath = '/foo.txt'
-    const fileData = Uint8Array.from([0, 1, 2, 3, 4])
+  it("should have the same CID after creating a file", async () => {
+    const filePath = "/foo.txt";
+    const fileData = Uint8Array.from([0, 1, 2, 3, 4]);
     await fs.writeBytes(fileData, filePath, {
       rawLeaves: true,
-      reduceSingleLeafToSelf: false
-    })
+      reduceSingleLeafToSelf: false,
+    });
     await kubo.api.files.write(filePath, fileData, {
       cidVersion: 1,
-      create: true
-    })
+      create: true,
+    });
 
-    const heliaStat = await fs.stat('/')
-    const kuboStat = await kubo.api.files.stat('/')
+    const heliaStat = await fs.stat("/");
+    const kuboStat = await kubo.api.files.stat("/");
 
-    expect(heliaStat.cid.toV1().toString()).to.equal(kuboStat.cid.toV1().toString())
-  })
+    expect(heliaStat.cid.toV1().toString()).to.equal(
+      kuboStat.cid.toV1().toString(),
+    );
+  });
 
-  it('should have the same CID after removing a file', async () => {
-    const filePath = '/foo.txt'
-    const fileData = Uint8Array.from([0, 1, 2, 3, 4])
+  it("should have the same CID after removing a file", async () => {
+    const filePath = "/foo.txt";
+    const fileData = Uint8Array.from([0, 1, 2, 3, 4]);
     await fs.writeBytes(fileData, filePath, {
       rawLeaves: true,
-      reduceSingleLeafToSelf: false
-    })
-    await fs.rm(filePath)
+      reduceSingleLeafToSelf: false,
+    });
+    await fs.rm(filePath);
     await kubo.api.files.write(filePath, fileData, {
       cidVersion: 1,
-      create: true
-    })
-    await kubo.api.files.rm(filePath)
+      create: true,
+    });
+    await kubo.api.files.rm(filePath);
 
-    const heliaStat = await fs.stat('/')
-    const kuboStat = await kubo.api.files.stat('/')
+    const heliaStat = await fs.stat("/");
+    const kuboStat = await kubo.api.files.stat("/");
 
-    expect(heliaStat.cid.toV1().toString()).to.equal(kuboStat.cid.toV1().toString())
-  })
-})
+    expect(heliaStat.cid.toV1().toString()).to.equal(
+      kuboStat.cid.toV1().toString(),
+    );
+  });
+});

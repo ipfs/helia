@@ -3,9 +3,7 @@
   "compilerOptions": {
     "outDir": "dist"
   },
-  "include": [
-    "src"
-  ],
+  "include": ["src"],
   "references": [
     {
       "path": "../../packages/block-brokers"

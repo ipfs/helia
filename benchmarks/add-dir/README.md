@@ -18,28 +18,29 @@ To run:
 
 1. Add `benchmarks/*` to the `workspaces` entry in the root `package.json` of this repo
 2. Run
-    ```console
-    $ npm run reset
-    $ npm i
-    $ npm run build
-    $ cd benchmarks/add-dir
-    $ npm start
 
-    > benchmarks-gc@1.0.0 start
-    > npm run build && node dist/src/index.js
+   ```console
+   $ npm run reset
+   $ npm i
+   $ npm run build
+   $ cd benchmarks/add-dir
+   $ npm start
+
+   > benchmarks-gc@1.0.0 start
+   > npm run build && node dist/src/index.js
 
 
-    > benchmarks-gc@1.0.0 build
-    > aegir build --bundle false
+   > benchmarks-gc@1.0.0 build
+   > aegir build --bundle false
 
-    [14:51:28] tsc [started]
-    [14:51:33] tsc [completed]
-    generating Ed25519 keypair...
-    ┌─────────┬─────────────────────┬─────────┬───────────┬──────┬───────────┬───────────────────────────────────────────────────────────────┐
-    │ (index) │   Implementation    │  ops/s  │   ms/op   │ runs │    p99    │                              CID                              │
-    ├─────────┼─────────────────────┼─────────┼───────────┼──────┼───────────┼───────────────────────────────────────────────────────────────┤
-    //... results here
-    ```
+   [14:51:28] tsc [started]
+   [14:51:33] tsc [completed]
+   generating Ed25519 keypair...
+   ┌─────────┬─────────────────────┬─────────┬───────────┬──────┬───────────┬───────────────────────────────────────────────────────────────┐
+   │ (index) │   Implementation    │  ops/s  │   ms/op   │ runs │    p99    │                              CID                              │
+   ├─────────┼─────────────────────┼─────────┼───────────┼──────┼───────────┼───────────────────────────────────────────────────────────────┤
+   //... results here
+   ```
 
 ## Things to improve
 
@@ -56,6 +57,7 @@ You can set environment variables to change how the benchmark is ran
 ### ITERATIONS
 
 Change the number of iterations that are ran
+
 ```bash
 ITERATIONS=1 npm start
 
@@ -97,6 +99,7 @@ generating Ed25519 keypair...
 ### MIN_TIME
 
 Change how long we want to allow the test to run, running as many iterations as possible
+
 ```bash
 MIN_TIME=1000 npm start
 
@@ -130,6 +133,7 @@ generating Ed25519 keypair...
 ```
 
 ### TEST_PATH
+
 Test different paths
 
 ```bash

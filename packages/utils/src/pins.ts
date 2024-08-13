@@ -1,31 +1,39 @@
-import { Queue } from '@libp2p/utils/queue'
-import * as cborg from 'cborg'
-import { type Datastore, Key } from 'interface-datastore'
-import { base36 } from 'multiformats/bases/base36'
-import { CID, type Version } from 'multiformats/cid'
-import { CustomProgressEvent, type ProgressOptions } from 'progress-events'
-import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import type { DAGWalker } from '@helia/interface'
-import type { GetBlockProgressEvents } from '@helia/interface/blocks'
-import type { AddOptions, AddPinEvents, IsPinnedOptions, LsOptions, Pin, Pins, RmOptions } from '@helia/interface/pins'
-import type { AbortOptions } from '@libp2p/interface'
-import type { Blockstore } from 'interface-blockstore'
+import { Queue } from "@libp2p/utils/queue";
+import * as cborg from "cborg";
+import { type Datastore, Key } from "interface-datastore";
+import { base36 } from "multiformats/bases/base36";
+import { CID, type Version } from "multiformats/cid";
+import { CustomProgressEvent, type ProgressOptions } from "progress-events";
+import { equals as uint8ArrayEquals } from "uint8arrays/equals";
+import type { DAGWalker } from "@helia/interface";
+import type { GetBlockProgressEvents } from "@helia/interface/blocks";
+import type {
+  AddOptions,
+  AddPinEvents,
+  IsPinnedOptions,
+  LsOptions,
+  Pin,
+  Pins,
+  RmOptions,
+} from "@helia/interface/pins";
+import type { AbortOptions } from "@libp2p/interface";
+import type { Blockstore } from "interface-blockstore";
 
 interface DatastorePin {
   /**
    * 0 for a direct pin or an arbitrary (+ve, whole) number or Infinity
    */
-  depth: number
+  depth: number;
 
   /**
    * User-specific metadata for the pin
    */
-  metadata: Record<string, string | number | boolean>
+  metadata: Record<string, string | number | boolean>;
 }
 
 interface DatastorePinnedBlock {
-  pinCount: number
-  pinnedBy: Uint8Array[]
+  pinCount: number;
+  pinnedBy: Uint8Array[];
 }
 
 /**
@@ -36,192 +44,234 @@ interface DatastorePinnedBlock {
  * the block, and true in all other cases.
  */
 interface WithPinnedBlockCallback {
-  (pinnedBlock: DatastorePinnedBlock): boolean
+  (pinnedBlock: DatastorePinnedBlock): boolean;
 }
 
-const DATASTORE_PIN_PREFIX = '/pin/'
-const DATASTORE_BLOCK_PREFIX = '/pinned-block/'
-const DATASTORE_ENCODING = base36
-const DAG_WALK_QUEUE_CONCURRENCY = 1
+const DATASTORE_PIN_PREFIX = "/pin/";
+const DATASTORE_BLOCK_PREFIX = "/pinned-block/";
+const DATASTORE_ENCODING = base36;
+const DAG_WALK_QUEUE_CONCURRENCY = 1;
 
-interface WalkDagOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents | AddPinEvents> {
-  depth: number
+interface WalkDagOptions
+  extends AbortOptions,
+    ProgressOptions<GetBlockProgressEvents | AddPinEvents> {
+  depth: number;
 }
 
-function toDSKey (cid: CID): Key {
+function toDSKey(cid: CID): Key {
   if (cid.version === 0) {
-    cid = cid.toV1()
+    cid = cid.toV1();
   }
 
-  return new Key(`${DATASTORE_PIN_PREFIX}${cid.toString(DATASTORE_ENCODING)}`)
+  return new Key(`${DATASTORE_PIN_PREFIX}${cid.toString(DATASTORE_ENCODING)}`);
 }
 
 export class PinsImpl implements Pins {
-  private readonly datastore: Datastore
-  private readonly blockstore: Blockstore
-  private readonly dagWalkers: Record<number, DAGWalker>
+  private readonly datastore: Datastore;
+  private readonly blockstore: Blockstore;
+  private readonly dagWalkers: Record<number, DAGWalker>;
 
-  constructor (datastore: Datastore, blockstore: Blockstore, dagWalkers: Record<number, DAGWalker>) {
-    this.datastore = datastore
-    this.blockstore = blockstore
-    this.dagWalkers = dagWalkers
+  constructor(
+    datastore: Datastore,
+    blockstore: Blockstore,
+    dagWalkers: Record<number, DAGWalker>,
+  ) {
+    this.datastore = datastore;
+    this.blockstore = blockstore;
+    this.dagWalkers = dagWalkers;
   }
 
-  async * add (cid: CID<unknown, number, number, Version>, options: AddOptions = {}): AsyncGenerator<CID, void, undefined> {
-    const pinKey = toDSKey(cid)
+  async *add(
+    cid: CID<unknown, number, number, Version>,
+    options: AddOptions = {},
+  ): AsyncGenerator<CID, void, undefined> {
+    const pinKey = toDSKey(cid);
 
     if (await this.datastore.has(pinKey)) {
-      throw new Error('Already pinned')
+      throw new Error("Already pinned");
     }
 
-    const depth = Math.round(options.depth ?? Infinity)
+    const depth = Math.round(options.depth ?? Infinity);
 
     if (depth < 0) {
-      throw new Error('Depth must be greater than or equal to 0')
+      throw new Error("Depth must be greater than or equal to 0");
     }
 
     // use a queue to walk the DAG instead of recursion so we can traverse very large DAGs
     const queue = new Queue<AsyncGenerator<CID>>({
-      concurrency: DAG_WALK_QUEUE_CONCURRENCY
-    })
+      concurrency: DAG_WALK_QUEUE_CONCURRENCY,
+    });
 
     for await (const childCid of this.#walkDag(cid, queue, {
       ...options,
-      depth
+      depth,
     })) {
-      await this.#updatePinnedBlock(childCid, (pinnedBlock: DatastorePinnedBlock) => {
-        // do not update pinned block if this block is already pinned by this CID
-        if (pinnedBlock.pinnedBy.find(c => uint8ArrayEquals(c, cid.bytes)) != null) {
-          return false
-        }
+      await this.#updatePinnedBlock(
+        childCid,
+        (pinnedBlock: DatastorePinnedBlock) => {
+          // do not update pinned block if this block is already pinned by this CID
+          if (
+            pinnedBlock.pinnedBy.find((c) => uint8ArrayEquals(c, cid.bytes)) !=
+            null
+          ) {
+            return false;
+          }
 
-        pinnedBlock.pinCount++
-        pinnedBlock.pinnedBy.push(cid.bytes)
-        return true
-      }, options)
+          pinnedBlock.pinCount++;
+          pinnedBlock.pinnedBy.push(cid.bytes);
+          return true;
+        },
+        options,
+      );
 
-      yield childCid
+      yield childCid;
     }
 
     const pin: DatastorePin = {
       depth,
-      metadata: options.metadata ?? {}
-    }
+      metadata: options.metadata ?? {},
+    };
 
-    await this.datastore.put(pinKey, cborg.encode(pin), options)
+    await this.datastore.put(pinKey, cborg.encode(pin), options);
   }
 
   /**
    * Walk a DAG in an iterable fashion
    */
-  async * #walkDag (cid: CID, queue: Queue<AsyncGenerator<CID>>, options: WalkDagOptions): AsyncGenerator<CID> {
+  async *#walkDag(
+    cid: CID,
+    queue: Queue<AsyncGenerator<CID>>,
+    options: WalkDagOptions,
+  ): AsyncGenerator<CID> {
     if (options.depth === -1) {
-      return
+      return;
     }
 
-    const dagWalker = this.dagWalkers[cid.code]
+    const dagWalker = this.dagWalkers[cid.code];
 
     if (dagWalker == null) {
-      throw new Error(`No dag walker found for cid codec ${cid.code}`)
+      throw new Error(`No dag walker found for cid codec ${cid.code}`);
     }
 
-    const block = await this.blockstore.get(cid, options)
+    const block = await this.blockstore.get(cid, options);
 
-    yield cid
+    yield cid;
 
     // walk dag, ensure all blocks are present
     for await (const cid of dagWalker.walk(block)) {
-      yield * await queue.add(async () => {
+      yield* await queue.add(async () => {
         return this.#walkDag(cid, queue, {
           ...options,
-          depth: options.depth - 1
-        })
-      })
+          depth: options.depth - 1,
+        });
+      });
     }
   }
 
   /**
    * Update the pin count for the CID
    */
-  async #updatePinnedBlock (cid: CID, withPinnedBlock: WithPinnedBlockCallback, options: AddOptions): Promise<void> {
-    const blockKey = new Key(`${DATASTORE_BLOCK_PREFIX}${DATASTORE_ENCODING.encode(cid.multihash.bytes)}`)
+  async #updatePinnedBlock(
+    cid: CID,
+    withPinnedBlock: WithPinnedBlockCallback,
+    options: AddOptions,
+  ): Promise<void> {
+    const blockKey = new Key(
+      `${DATASTORE_BLOCK_PREFIX}${DATASTORE_ENCODING.encode(cid.multihash.bytes)}`,
+    );
 
     let pinnedBlock: DatastorePinnedBlock = {
       pinCount: 0,
-      pinnedBy: []
-    }
+      pinnedBy: [],
+    };
 
     try {
-      pinnedBlock = cborg.decode(await this.datastore.get(blockKey, options))
+      pinnedBlock = cborg.decode(await this.datastore.get(blockKey, options));
     } catch (err: any) {
-      if (err.code !== 'ERR_NOT_FOUND') {
-        throw err
+      if (err.code !== "ERR_NOT_FOUND") {
+        throw err;
       }
     }
 
-    const shouldContinue = withPinnedBlock(pinnedBlock)
+    const shouldContinue = withPinnedBlock(pinnedBlock);
 
     if (!shouldContinue) {
-      return
+      return;
     }
 
     if (pinnedBlock.pinCount === 0) {
       if (await this.datastore.has(blockKey)) {
-        await this.datastore.delete(blockKey)
-        return
+        await this.datastore.delete(blockKey);
+        return;
       }
     }
 
-    await this.datastore.put(blockKey, cborg.encode(pinnedBlock), options)
-    options.onProgress?.(new CustomProgressEvent<CID>('helia:pin:add', cid))
+    await this.datastore.put(blockKey, cborg.encode(pinnedBlock), options);
+    options.onProgress?.(new CustomProgressEvent<CID>("helia:pin:add", cid));
   }
 
-  async * rm (cid: CID<unknown, number, number, Version>, options: RmOptions = {}): AsyncGenerator<CID, void, undefined> {
-    const pinKey = toDSKey(cid)
-    const buf = await this.datastore.get(pinKey, options)
-    const pin = cborg.decode(buf)
+  async *rm(
+    cid: CID<unknown, number, number, Version>,
+    options: RmOptions = {},
+  ): AsyncGenerator<CID, void, undefined> {
+    const pinKey = toDSKey(cid);
+    const buf = await this.datastore.get(pinKey, options);
+    const pin = cborg.decode(buf);
 
-    await this.datastore.delete(pinKey, options)
+    await this.datastore.delete(pinKey, options);
 
     // use a queue to walk the DAG instead of recursion so we can traverse very large DAGs
     const queue = new Queue<AsyncGenerator<CID>>({
-      concurrency: DAG_WALK_QUEUE_CONCURRENCY
-    })
+      concurrency: DAG_WALK_QUEUE_CONCURRENCY,
+    });
 
     for await (const childCid of this.#walkDag(cid, queue, {
       ...options,
-      depth: pin.depth
+      depth: pin.depth,
     })) {
-      await this.#updatePinnedBlock(childCid, (pinnedBlock): boolean => {
-        pinnedBlock.pinCount--
-        pinnedBlock.pinnedBy = pinnedBlock.pinnedBy.filter(c => uint8ArrayEquals(c, cid.bytes))
-        return true
-      }, {
-        ...options,
-        depth: pin.depth
-      })
+      await this.#updatePinnedBlock(
+        childCid,
+        (pinnedBlock): boolean => {
+          pinnedBlock.pinCount--;
+          pinnedBlock.pinnedBy = pinnedBlock.pinnedBy.filter((c) =>
+            uint8ArrayEquals(c, cid.bytes),
+          );
+          return true;
+        },
+        {
+          ...options,
+          depth: pin.depth,
+        },
+      );
 
-      yield childCid
+      yield childCid;
     }
   }
 
-  async * ls (options: LsOptions = {}): AsyncGenerator<Pin, void, undefined> {
-    for await (const { key, value } of this.datastore.query({
-      prefix: DATASTORE_PIN_PREFIX + (options.cid != null ? `${options.cid.toString(base36)}` : '')
-    }, options)) {
-      const cid = CID.parse(key.toString().substring(5), base36)
-      const pin = cborg.decode(value)
+  async *ls(options: LsOptions = {}): AsyncGenerator<Pin, void, undefined> {
+    for await (const { key, value } of this.datastore.query(
+      {
+        prefix:
+          DATASTORE_PIN_PREFIX +
+          (options.cid != null ? `${options.cid.toString(base36)}` : ""),
+      },
+      options,
+    )) {
+      const cid = CID.parse(key.toString().substring(5), base36);
+      const pin = cborg.decode(value);
 
       yield {
         cid,
-        ...pin
-      }
+        ...pin,
+      };
     }
   }
 
-  async isPinned (cid: CID, options: IsPinnedOptions = {}): Promise<boolean> {
-    const blockKey = new Key(`${DATASTORE_BLOCK_PREFIX}${DATASTORE_ENCODING.encode(cid.multihash.bytes)}`)
+  async isPinned(cid: CID, options: IsPinnedOptions = {}): Promise<boolean> {
+    const blockKey = new Key(
+      `${DATASTORE_BLOCK_PREFIX}${DATASTORE_ENCODING.encode(cid.multihash.bytes)}`,
+    );
 
-    return this.datastore.has(blockKey, options)
+    return this.datastore.has(blockKey, options);
   }
 }

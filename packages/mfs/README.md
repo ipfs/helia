@@ -9,7 +9,7 @@
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
 [![codecov](https://img.shields.io/codecov/c/github/ipfs/helia.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia)
-[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
+[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
 
 > A mutable filesystem powered by Helia
 
@@ -37,23 +37,23 @@ See the [API docs](https://ipfs.github.io/helia/modules/_helia_mfs.html) for all
 ## Example
 
 ```typescript
-import { createHelia } from 'helia'
-import { mfs } from '@helia/mfs'
+import { createHelia } from "helia";
+import { mfs } from "@helia/mfs";
 
 const helia = createHelia({
   // ... helia config
-})
-const fs = mfs(helia)
+});
+const fs = mfs(helia);
 
 // create an empty directory
-await fs.mkdir('/my-directory')
+await fs.mkdir("/my-directory");
 
 // add a file to the directory
-await fs.writeBytes(Uint8Array.from([0, 1, 2, 3]), '/my-directory/foo.txt')
+await fs.writeBytes(Uint8Array.from([0, 1, 2, 3]), "/my-directory/foo.txt");
 
 // read the file
-for await (const buf of fs.cat('/my-directory/foo.txt')) {
-  console.info(buf)
+for await (const buf of fs.cat("/my-directory/foo.txt")) {
+  console.info(buf);
 }
 ```
 

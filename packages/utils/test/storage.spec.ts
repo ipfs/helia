@@ -1,136 +1,156 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import { MemoryBlockstore } from 'blockstore-core'
-import { MemoryDatastore } from 'datastore-core'
-import delay from 'delay'
-import all from 'it-all'
-import drain from 'it-drain'
-import * as raw from 'multiformats/codecs/raw'
-import { PinsImpl } from '../src/pins.js'
-import { BlockStorage } from '../src/storage.js'
-import { createBlock } from './fixtures/create-block.js'
-import type { Blocks, SessionBlockstore } from '@helia/interface'
-import type { Pins } from '@helia/interface/pins'
-import type { CID } from 'multiformats/cid'
+import { expect } from "aegir/chai";
+import { MemoryBlockstore } from "blockstore-core";
+import { MemoryDatastore } from "datastore-core";
+import delay from "delay";
+import all from "it-all";
+import drain from "it-drain";
+import * as raw from "multiformats/codecs/raw";
+import { PinsImpl } from "../src/pins.js";
+import { BlockStorage } from "../src/storage.js";
+import { createBlock } from "./fixtures/create-block.js";
+import type { Blocks, SessionBlockstore } from "@helia/interface";
+import type { Pins } from "@helia/interface/pins";
+import type { CID } from "multiformats/cid";
 
 class MemoryBlocks extends MemoryBlockstore implements Blocks {
-  createSession (): SessionBlockstore {
-    throw new Error('Not implemented')
+  createSession(): SessionBlockstore {
+    throw new Error("Not implemented");
   }
 }
 
-describe('storage', () => {
-  let storage: BlockStorage
-  let blockstore: Blocks
-  let pins: Pins
-  let blocks: Array<{ cid: CID, block: Uint8Array }>
+describe("storage", () => {
+  let storage: BlockStorage;
+  let blockstore: Blocks;
+  let pins: Pins;
+  let blocks: Array<{ cid: CID; block: Uint8Array }>;
 
   beforeEach(async () => {
-    blocks = []
+    blocks = [];
 
     for (let i = 0; i < 10; i++) {
-      blocks.push(await createBlock(raw.code, Uint8Array.from([0, 1, 2, i])))
+      blocks.push(await createBlock(raw.code, Uint8Array.from([0, 1, 2, i])));
     }
 
-    const datastore = new MemoryDatastore()
+    const datastore = new MemoryDatastore();
 
-    blockstore = new MemoryBlocks()
-    pins = new PinsImpl(datastore, blockstore, [])
+    blockstore = new MemoryBlocks();
+    pins = new PinsImpl(datastore, blockstore, []);
     storage = new BlockStorage(blockstore, pins, {
-      holdGcLock: true
-    })
-  })
+      holdGcLock: true,
+    });
+  });
 
-  it('gets a block from the blockstore', async () => {
-    const { cid, block } = blocks[0]
-    await blockstore.put(cid, block)
+  it("gets a block from the blockstore", async () => {
+    const { cid, block } = blocks[0];
+    await blockstore.put(cid, block);
 
-    const retrieved = await storage.get(cid)
-    expect(retrieved).to.equalBytes(block)
-  })
+    const retrieved = await storage.get(cid);
+    expect(retrieved).to.equalBytes(block);
+  });
 
-  it('aborts getting a block from the blockstore when passed an aborted signal', async () => {
-    const { cid } = blocks[0]
-    const controller = new AbortController()
-    controller.abort()
+  it("aborts getting a block from the blockstore when passed an aborted signal", async () => {
+    const { cid } = blocks[0];
+    const controller = new AbortController();
+    controller.abort();
 
-    await expect(storage.get(cid, {
-      signal: controller.signal
-    })).to.eventually.be.rejected
-      .with.property('name', 'AbortError')
-  })
+    await expect(
+      storage.get(cid, {
+        signal: controller.signal,
+      }),
+    ).to.eventually.be.rejected.with.property("name", "AbortError");
+  });
 
-  it('gets many blocks from the blockstore', async () => {
-    const count = 5
+  it("gets many blocks from the blockstore", async () => {
+    const count = 5;
 
     for (let i = 0; i < count; i++) {
-      const { cid, block } = blocks[i]
-      await blockstore.put(cid, block)
+      const { cid, block } = blocks[i];
+      await blockstore.put(cid, block);
     }
 
-    const retrieved = await all(storage.getMany(async function * () {
-      for (let i = 0; i < count; i++) {
-        yield blocks[i].cid
-        await delay(10)
-      }
-    }()))
+    const retrieved = await all(
+      storage.getMany(
+        (async function* () {
+          for (let i = 0; i < count; i++) {
+            yield blocks[i].cid;
+            await delay(10);
+          }
+        })(),
+      ),
+    );
 
-    expect(retrieved).to.deep.equal(new Array(count).fill(0).map((_, i) => blocks[i]))
-  })
+    expect(retrieved).to.deep.equal(
+      new Array(count).fill(0).map((_, i) => blocks[i]),
+    );
+  });
 
-  it('aborts getting many blocks from the blockstore when passed an aborted signal', async () => {
-    const { cid } = blocks[0]
-    const controller = new AbortController()
-    controller.abort()
+  it("aborts getting many blocks from the blockstore when passed an aborted signal", async () => {
+    const { cid } = blocks[0];
+    const controller = new AbortController();
+    controller.abort();
 
-    await expect(all(storage.getMany([cid], {
-      signal: controller.signal
-    }))).to.eventually.be.rejected
-      .with.property('name', 'AbortError')
-  })
+    await expect(
+      all(
+        storage.getMany([cid], {
+          signal: controller.signal,
+        }),
+      ),
+    ).to.eventually.be.rejected.with.property("name", "AbortError");
+  });
 
-  it('puts a block into the blockstore', async () => {
-    const { cid, block } = blocks[0]
-    await storage.put(cid, block)
+  it("puts a block into the blockstore", async () => {
+    const { cid, block } = blocks[0];
+    await storage.put(cid, block);
 
-    const retrieved = await blockstore.get(cid)
-    expect(retrieved).to.equalBytes(block)
-  })
+    const retrieved = await blockstore.get(cid);
+    expect(retrieved).to.equalBytes(block);
+  });
 
-  it('aborts putting a block into the blockstore when passed an aborted signal', async () => {
-    const { cid, block } = blocks[0]
-    const controller = new AbortController()
-    controller.abort()
+  it("aborts putting a block into the blockstore when passed an aborted signal", async () => {
+    const { cid, block } = blocks[0];
+    const controller = new AbortController();
+    controller.abort();
 
-    await expect(storage.put(cid, block, {
-      signal: controller.signal
-    })).to.eventually.be.rejected
-      .with.property('name', 'AbortError')
-  })
+    await expect(
+      storage.put(cid, block, {
+        signal: controller.signal,
+      }),
+    ).to.eventually.be.rejected.with.property("name", "AbortError");
+  });
 
-  it('puts many blocks into the blockstore', async () => {
-    const count = 5
+  it("puts many blocks into the blockstore", async () => {
+    const count = 5;
 
-    await drain(storage.putMany(async function * () {
-      for (let i = 0; i < count; i++) {
-        yield { cid: blocks[i].cid, block: blocks[i].block }
-        await delay(10)
-      }
-    }()))
+    await drain(
+      storage.putMany(
+        (async function* () {
+          for (let i = 0; i < count; i++) {
+            yield { cid: blocks[i].cid, block: blocks[i].block };
+            await delay(10);
+          }
+        })(),
+      ),
+    );
 
-    const retrieved = await all(blockstore.getMany(new Array(count).fill(0).map((_, i) => blocks[i].cid)))
-    expect(retrieved).to.deep.equal(retrieved)
-  })
+    const retrieved = await all(
+      blockstore.getMany(new Array(count).fill(0).map((_, i) => blocks[i].cid)),
+    );
+    expect(retrieved).to.deep.equal(retrieved);
+  });
 
-  it('aborts putting many blocks into the blockstore when passed an aborted signal', async () => {
-    const { cid, block } = blocks[0]
-    const controller = new AbortController()
-    controller.abort()
+  it("aborts putting many blocks into the blockstore when passed an aborted signal", async () => {
+    const { cid, block } = blocks[0];
+    const controller = new AbortController();
+    controller.abort();
 
-    await expect(all(storage.putMany([{ cid, block }], {
-      signal: controller.signal
-    }))).to.eventually.be.rejected
-      .with.property('name', 'AbortError')
-  })
-})
+    await expect(
+      all(
+        storage.putMany([{ cid, block }], {
+          signal: controller.signal,
+        }),
+      ),
+    ).to.eventually.be.rejected.with.property("name", "AbortError");
+  });
+});

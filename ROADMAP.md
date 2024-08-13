@@ -40,9 +40,10 @@ https://github.com/ipfs/helia/issues/5
 ### Q2
 
 #### Drive Adoption
+
 Improve "hospitality" of the project: https://github.com/ipfs/helia/issues/35
 
-After Helia is functional and users can adopt it, Protocol Labs EngRes ceases maintaining the legacy js-ipfs project.  Issue for tracking js-ipfs deprecation with roadsigns to Helia: https://github.com/ipfs/js-ipfs/issues/4336
+After Helia is functional and users can adopt it, Protocol Labs EngRes ceases maintaining the legacy js-ipfs project. Issue for tracking js-ipfs deprecation with roadsigns to Helia: https://github.com/ipfs/js-ipfs/issues/4336
 
 Port over examples from js-ipfs-examples to helia-examples to help with onramping: https://github.com/ipfs/helia/issues/29
 
@@ -54,7 +55,7 @@ Setup mechanism for measuring adoption: https://github.com/ipfs/helia/issues/41
 
 #### Support Fully Speced Delegated Routing Protocols and Endpoints
 
-While it will be possible from a connectivity perspective to make DHT queries from a browser, we expect various applications will want to still delegate out routing. [HTTP Routing v1](https://github.com/ipfs/specs/blob/main/routing/ROUTING_V1_HTTP.md) is a protocol for delegated routing that other IPFS implementations like Kubo have implemented. While it currently uses HTTP as a transport, it is speced and not tied to the Kubo RPC API. 
+While it will be possible from a connectivity perspective to make DHT queries from a browser, we expect various applications will want to still delegate out routing. [HTTP Routing v1](https://github.com/ipfs/specs/blob/main/routing/ROUTING_V1_HTTP.md) is a protocol for delegated routing that other IPFS implementations like Kubo have implemented. While it currently uses HTTP as a transport, it is speced and not tied to the Kubo RPC API.
 
 #### PL Delegate and Preload Nodes Will Be Shutting Down
 
@@ -75,6 +76,7 @@ https://github.com/ipfs/ipfs/issues/499
 **Problem to solve:** Currently, very few know the direction for IPFS-in-JS and how they can best help. This affects project resourcing, recruiting, and IPFS adoption in general.
 
 **Done state:**
+
 - Present and share the IPFS Camp 2022 presentation. (Done: [State of IPFS in JS](https://www.youtube.com/watch?v=4BPah-xItxA), [slides](https://github.com/achingbrain/state-of-ipfs-in-js-2022-talk))
 - Write and publish a blog post. (Done: [State of IPFS in JS](https://blog.ipfs.tech/state-of-ipfs-in-js/))
 - Hold a community vote and communication about a name for the new IPFS-in-JS implementation. (Done: [Name](https://github.com/ipfs/helia#name))

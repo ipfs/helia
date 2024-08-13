@@ -9,7 +9,7 @@
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
 [![codecov](https://img.shields.io/codecov/c/github/ipfs/helia.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia)
-[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
+[![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
 
 > Import/export car files from Helia
 
@@ -39,51 +39,51 @@ By default it supports `dag-pb`, `dag-cbor`, `dag-json` and `raw` CIDs, more eso
 ## Example - Exporting a DAG as a CAR file
 
 ```typescript
-import { createHelia } from 'helia'
-import { unixfs } from '@helia/unixfs'
-import { car } from '@helia/car'
-import { CarWriter } from '@ipld/car'
-import { Readable } from 'node:stream'
-import nodeFs from 'node:fs'
+import { createHelia } from "helia";
+import { unixfs } from "@helia/unixfs";
+import { car } from "@helia/car";
+import { CarWriter } from "@ipld/car";
+import { Readable } from "node:stream";
+import nodeFs from "node:fs";
 
 const helia = createHelia({
   // ... helia config
-})
-const fs = unixfs(helia)
+});
+const fs = unixfs(helia);
 
 // add some UnixFS data
-const cid = await fs.addBytes(fileData1)
+const cid = await fs.addBytes(fileData1);
 
 // export it as a Car
-const c = car(helia)
-const { writer, out } = await CarWriter.create(cid)
+const c = car(helia);
+const { writer, out } = await CarWriter.create(cid);
 
 // `out` needs to be directed somewhere, see the @ipld/car docs for more information
-Readable.from(out).pipe(nodeFs.createWriteStream('example.car'))
+Readable.from(out).pipe(nodeFs.createWriteStream("example.car"));
 
 // write the DAG behind `cid` into the writer
-await c.export(cid, writer)
+await c.export(cid, writer);
 ```
 
 ## Example - Importing all blocks from a CAR file
 
 ```typescript
-import { createHelia } from 'helia'
-import { unixfs } from '@helia/unixfs'
-import { car } from '@helia/car'
-import { CarReader } from '@ipld/car'
-import { Readable } from 'node:stream'
-import nodeFs from 'node:fs'
+import { createHelia } from "helia";
+import { unixfs } from "@helia/unixfs";
+import { car } from "@helia/car";
+import { CarReader } from "@ipld/car";
+import { Readable } from "node:stream";
+import nodeFs from "node:fs";
 
 const helia = createHelia({
   // ... helia config
-})
+});
 
 // import the car
-const inStream = nodeFs.createReadStream('example.car')
-const reader = await CarReader.fromIterable(inStream)
+const inStream = nodeFs.createReadStream("example.car");
+const reader = await CarReader.fromIterable(inStream);
 
-await c.import(reader)
+await c.import(reader);
 ```
 
 # Install
