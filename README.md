@@ -201,6 +201,10 @@ There are several other modules available outside this repo:
 
 Helia v1 shipped in 202303 (see [releases](https://github.com/ipfs/helia/releases)), and development keeps on trucking as we work on initiatives in the [roadmap](#roadmap) and make performance improvements and bug fixes along the way.
 
+## Release Process
+
+For information about our release process, please see our [release process wiki](https://github.com/ipfs/helia/wiki/Development-and-Release-Process#how-helia-is-released).
+
 # 🛣️ Roadmap
 
 Please find and comment on [the Roadmap here](https://github.com/ipfs/helia/issues/5).
