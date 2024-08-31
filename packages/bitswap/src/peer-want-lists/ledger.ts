@@ -125,7 +125,10 @@ export class Ledger {
           })
         }
       } catch (err: any) {
-        if (err.code !== 'ERR_NOT_FOUND') {
+        if (
+          (err.code !== undefined && err.code !== 'ERR_NOT_FOUND') ||
+          (err.name !== undefined && err.name !== 'NotFoundError')
+        ) {
           throw err
         }
 
