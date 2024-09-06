@@ -12,9 +12,9 @@ const cid = CID.parse(`${process.env.HELIA_CID}`)
 const mas = `${process.env.HELIA_MULTIADDRS}`.split(',').map(str => multiaddr(str))
 const signal = AbortSignal.timeout(parseInt(process.env.HELIA_TIMEOUT ?? '60000'))
 
-const helia = await getHelia()
-
 try {
+  const helia = await getHelia()
+
   await helia.libp2p.dial(mas, {
     signal
   })
@@ -27,7 +27,8 @@ try {
   }))
 
   console.info(`TEST-OUTPUT:${Date.now() - start}`)
-} catch {
+} catch (err: any) {
+  console.error(err)
   console.info('TEST-OUTPUT:?')
 }
 
