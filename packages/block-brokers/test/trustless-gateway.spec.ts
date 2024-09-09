@@ -149,7 +149,7 @@ describe('trustless-gateway-block-broker', () => {
     if (process.env.TRUSTLESS_GATEWAY == null) {
       return this.skip()
     }
-    const trustlessGateway = new TrustlessGateway(process.env.TRUSTLESS_GATEWAY, defaultLogger())
+    const trustlessGateway = new TrustlessGateway(process.env.TRUSTLESS_GATEWAY, {}, defaultLogger())
 
     // Call getRawBlock multiple times with the same CID
     const promises = Array.from({ length: 10 }, async () => trustlessGateway.getRawBlock(cid))

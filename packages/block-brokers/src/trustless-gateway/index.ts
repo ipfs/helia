@@ -25,6 +25,8 @@ export interface TrustlessGatewayBlockBrokerInit {
    * @default false
    */
   allowLocal?: boolean
+
+  headers?: Record<string, string>
 }
 
 export interface TrustlessGatewayBlockBrokerComponents {

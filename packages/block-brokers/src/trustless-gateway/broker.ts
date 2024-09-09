@@ -22,6 +22,8 @@ export interface CreateTrustlessGatewaySessionOptions extends CreateSessionOptio
    * @default false
    */
   allowLocal?: boolean
+
+  headers?: Record<string, string>
 }
 
 /**
@@ -31,6 +33,7 @@ export interface CreateTrustlessGatewaySessionOptions extends CreateSessionOptio
 export class TrustlessGatewayBlockBroker implements BlockBroker<TrustlessGatewayGetBlockProgressEvents> {
   private readonly allowInsecure: boolean
   private readonly allowLocal: boolean
+  private readonly headers?: Record<string, string>
   private readonly routing: Routing
   private readonly log: Logger
   private readonly logger: ComponentLogger
@@ -41,12 +44,13 @@ export class TrustlessGatewayBlockBroker implements BlockBroker<TrustlessGateway
     this.routing = components.routing
     this.allowInsecure = init.allowInsecure ?? DEFAULT_ALLOW_INSECURE
     this.allowLocal = init.allowLocal ?? DEFAULT_ALLOW_LOCAL
+    this.headers = init.headers ?? {}
   }
 
   async retrieve (cid: CID, options: BlockRetrievalOptions<TrustlessGatewayGetBlockProgressEvents> = {}): Promise<Uint8Array> {
     const aggregateErrors: Error[] = []
 
-    for await (const gateway of findHttpGatewayProviders(cid, this.routing, this.logger, this.allowInsecure, this.allowLocal, options)) {
+    for await (const gateway of findHttpGatewayProviders(cid, this.routing, this.logger, this.allowInsecure, this.allowLocal, this.headers,  options)) {
       this.log('getting block for %c from %s', cid, gateway.url)
 
       try {
@@ -93,7 +97,11 @@ export class TrustlessGatewayBlockBroker implements BlockBroker<TrustlessGateway
     }, {
       ...options,
       allowLocal: this.allowLocal,
-      allowInsecure: this.allowInsecure
+      allowInsecure: this.allowInsecure,
+      headers: {
+        ...this.headers,
+        ...options.headers
+      }
     })
   }
 }
