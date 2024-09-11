@@ -142,7 +142,7 @@
     "@helia/interface": "^4.3.1",
     "@ipld/car": "^5.3.0",
     "@libp2p/interface": "^1.1.4",
-    "@libp2p/utils": "^5.4.6",
+    "@libp2p/utils": "^6.0.0",
     "interface-blockstore": "^5.2.10",
     "it-drain": "^3.0.5",
     "it-map": "^3.0.5",

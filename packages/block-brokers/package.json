@@ -57,7 +57,7 @@
     "@helia/interface": "^4.3.1",
     "@helia/utils": "^0.3.3",
     "@libp2p/interface": "^1.1.4",
-    "@libp2p/utils": "^5.2.6",
+    "@libp2p/utils": "^6.0.0",
     "@multiformats/multiaddr": "^12.2.1",
     "@multiformats/multiaddr-matcher": "^1.2.0",
     "@multiformats/multiaddr-to-uri": "^10.0.1",
