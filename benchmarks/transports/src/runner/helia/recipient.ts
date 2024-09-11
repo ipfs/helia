@@ -27,8 +27,7 @@ try {
   }))
 
   console.info(`TEST-OUTPUT:${Date.now() - start}`)
-} catch (err: any) {
-  console.error(err)
+} catch {
   console.info('TEST-OUTPUT:?')
 }
 
