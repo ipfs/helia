@@ -96,10 +96,6 @@ const tcpImpls: Record<string, Impl> = {
 function addTests (name: string, impls: Record<string, Impl>, tests: Test[], relay: Multiaddr): void {
   for (const [implAName, implA] of Object.entries(impls)) {
     for (const [implBName, implB] of Object.entries(impls)) {
-      if (implAName !== implBName) {
-        continue
-      }
-
       if (implA.listen == null) {
         continue
       }
