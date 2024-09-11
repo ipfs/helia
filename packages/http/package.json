@@ -61,7 +61,7 @@
     "datastore-core": "^9.2.9"
   },
   "devDependencies": {
-    "@libp2p/interface": "^1.1.4",
+    "@libp2p/interface": "^2.0.0",
     "aegir": "^44.0.1",
     "interface-datastore": "^8.2.11",
     "multiformats": "^13.1.0",
