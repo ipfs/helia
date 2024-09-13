@@ -179,7 +179,7 @@
     "@libp2p/peer-id-factory": "^4.0.5",
     "@types/sinon": "^17.0.3",
     "aegir": "^44.0.1",
-    "blockstore-core": "^4.3.10",
+    "blockstore-core": "^5.0.1",
     "delay": "^6.0.0",
     "it-all": "^3.0.4",
     "it-pair": "^2.0.6",

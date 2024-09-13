@@ -57,7 +57,7 @@
     "@helia/interface": "^4.3.1",
     "@helia/routers": "^1.1.1",
     "@helia/utils": "^0.3.3",
-    "blockstore-core": "^4.4.0",
+    "blockstore-core": "^5.0.1",
     "datastore-core": "^9.2.9"
   },
   "devDependencies": {
