@@ -78,31 +78,39 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
         throw new Error('No public key present')
       }
 
-      // first publish should fail because kubo isn't subscribed to key update channel
-      await expect(name.publish(peerId, cid)).to.eventually.be.rejected()
-        .with.property('message', 'PublishError.NoPeersSubscribedToTopic')
-
-      // should fail to resolve the first time as kubo was not subscribed to the pubsub channel
+      // first call to pubsub resolver will fail but we should trigger subscribing pubsub for updates
       await expect(last(kubo.api.name.resolve(peerId, {
         timeout: 100
       }))).to.eventually.be.undefined()
 
-      // magic pubsub subscription name
-      const subscriptionName = `/ipns/${CID.createV1(LIBP2P_KEY_CODEC, identity.digest(peerId.publicKey)).toString(base36)}`
-
       // wait for kubo to be subscribed to updates
+      const kuboSubscriptionName = `/ipns/${CID.createV1(LIBP2P_KEY_CODEC, identity.digest(peerId.publicKey)).toString(base36)}`
       await waitFor(async () => {
         const subs = await kubo.api.name.pubsub.subs()
-
-        return subs.includes(subscriptionName)
+        return subs.includes(kuboSubscriptionName)
       }, {
-        timeout: 30000
+        timeout: 30000,
+        message: 'Kubo did not register for record updates'
+      })
+
+      // wait for helia to see that kubo is subscribed to the topic for record updates
+      const heliaSubscriptionName = `/record/${uint8ArrayToString(uint8ArrayConcat([
+        uint8ArrayFromString('/ipns/'),
+        peerId.toBytes()
+      ]), 'base64url')}`
+      const kuboPeerId = (await kubo.api.id()).id.toString()
+      await waitFor(async () => {
+        const peers = helia.libp2p.services.pubsub.getSubscribers(heliaSubscriptionName)
+        return peers.map(p => p.toString()).includes(kuboPeerId)
+      }, {
+        timeout: 30000,
+        message: 'Helia did not see that Kubo was registered for record updates'
       })
 
       // publish should now succeed
       await name.publish(peerId, cid)
 
-      // kubo should now be able to resolve IPNS name
+      // kubo should now be able to resolve IPNS name instantly
       const resolved = await last(kubo.api.name.resolve(peerId, {
         timeout: 100
       }))
