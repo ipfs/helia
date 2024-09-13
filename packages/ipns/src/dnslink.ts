@@ -144,7 +144,7 @@ async function recursiveResolveDomain (domain: string, depth: number, dns: DNS, 
     }
 
     // If this throws then we propagate the error
-    return await recursiveResolveDnslink(domain, depth, dns, log, options)
+    return recursiveResolveDnslink(domain, depth, dns, log, options)
   }
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "@helia/bitswap",
-  "version": "1.1.0",
+  "version": "1.1.4",
   "description": "JavaScript implementation of the Bitswap data exchange protocol used by Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/bitswap#readme",
@@ -148,9 +148,9 @@
     "docs": "aegir docs"
   },
   "dependencies": {
-    "@helia/interface": "^4.3.0",
-    "@helia/utils": "^0.3.0",
-    "@libp2p/interface": "^1.1.2",
+    "@helia/interface": "^4.3.1",
+    "@helia/utils": "^0.3.3",
+    "@libp2p/interface": "^1.1.4",
     "@libp2p/logger": "^4.0.5",
     "@libp2p/peer-collections": "^5.1.6",
     "@libp2p/utils": "^5.2.3",
@@ -178,7 +178,7 @@
     "@libp2p/interface-compliance-tests": "^5.1.3",
     "@libp2p/peer-id-factory": "^4.0.5",
     "@types/sinon": "^17.0.3",
-    "aegir": "^42.2.2",
+    "aegir": "^44.0.1",
     "blockstore-core": "^4.3.10",
     "delay": "^6.0.0",
     "it-all": "^3.0.4",
@@ -188,7 +188,7 @@
     "p-retry": "^6.2.0",
     "p-wait-for": "^5.0.2",
     "protons": "^7.0.2",
-    "sinon": "^17.0.1",
+    "sinon": "^18.0.0",
     "sinon-ts": "^2.0.0"
   },
   "browser": {

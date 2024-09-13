@@ -17,7 +17,7 @@
     "@helia/unixfs": "^3.0.3",
     "@ipld/dag-pb": "^4.0.2",
     "@libp2p/websockets": "^8.0.19",
-    "aegir": "^42.2.5",
+    "aegir": "^44.0.1",
     "blockstore-fs": "^1.0.1",
     "datastore-level": "^10.0.1",
     "execa": "^8.0.1",

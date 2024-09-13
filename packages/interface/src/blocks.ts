@@ -84,7 +84,7 @@ export interface BlockRetrievalOptions <ProgressEvents extends ProgressEvent<any
   /**
    * A function that blockBrokers should call prior to returning a block to ensure it can maintain control
    * of the block request flow. e.g. TrustedGatewayBlockBroker will use this to ensure that the block
-   * is valid from one of the gateways before assuming it's work is done. If the block is not valid, it should try another gateway
+   * is valid from one of the gateways before assuming its work is done. If the block is not valid, it should try another gateway
    * and WILL consider the gateway that returned the invalid blocks completely unreliable.
    */
   validateFn?(block: Uint8Array): Promise<void>

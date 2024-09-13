@@ -1,5 +1,97 @@
 # Changelog
 
+## [6.1.8](https://github.com/ipfs/helia/compare/interop-v6.1.7...interop-v6.1.8) (2024-09-13)
+
+
+### Bug Fixes
+
+* test for subscribers to ipns pubsub topic ([#584](https://github.com/ipfs/helia/issues/584)) ([c9c644c](https://github.com/ipfs/helia/commit/c9c644c11657ec1411b3f04933fa62501151f732))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^3.0.3 to ^3.0.4
+    * @helia/car bumped from ^3.2.0 to ^3.2.1
+    * @helia/dag-cbor bumped from ^3.0.5 to ^3.0.6
+    * @helia/dag-json bumped from ^3.0.5 to ^3.0.6
+    * @helia/http bumped from ^1.0.10 to ^1.0.11
+    * @helia/json bumped from ^3.0.5 to ^3.0.6
+    * @helia/mfs bumped from ^3.0.7 to ^3.0.8
+    * @helia/strings bumped from ^3.0.5 to ^3.0.6
+    * helia bumped from ^4.2.5 to ^4.2.6
+
+## [6.1.7](https://github.com/ipfs/helia/compare/interop-v6.1.6...interop-v6.1.7) (2024-07-31)
+
+
+### Bug Fixes
+
+* update js-libp2p types ([#570](https://github.com/ipfs/helia/issues/570)) ([b4877b5](https://github.com/ipfs/helia/commit/b4877b5b768895684be90a26f4303ae65fc209e7))
+
+
+### Documentation
+
+* fix grammar - it's -&gt; its ([#565](https://github.com/ipfs/helia/issues/565)) ([155e24d](https://github.com/ipfs/helia/commit/155e24db8c06c33972895d702a656e0c2996f3d9))
+
+
+### Dependencies
+
+* bump aegir from 42.2.11 to 43.0.1 ([#552](https://github.com/ipfs/helia/issues/552)) ([74ccc92](https://github.com/ipfs/helia/commit/74ccc92793a6d0bb4bee714d9fe4fa4183aa4ee8))
+* bump aegir from 43.0.3 to 44.0.1 ([#569](https://github.com/ipfs/helia/issues/569)) ([6952f05](https://github.com/ipfs/helia/commit/6952f05357844e5aa3dffb2afaf261df06b9b7c1))
+* bump kubo from 0.28.0 to 0.29.0 ([#555](https://github.com/ipfs/helia/issues/555)) ([117198f](https://github.com/ipfs/helia/commit/117198f85511bfe339b96b588cd62015ed6e69a4))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^3.0.2 to ^3.0.3
+    * @helia/car bumped from ^3.1.5 to ^3.2.0
+    * @helia/dag-cbor bumped from ^3.0.4 to ^3.0.5
+    * @helia/dag-json bumped from ^3.0.4 to ^3.0.5
+    * @helia/http bumped from ^1.0.9 to ^1.0.10
+    * @helia/interface bumped from ^4.3.0 to ^4.3.1
+    * @helia/ipns bumped from ^7.2.2 to ^7.2.3
+    * @helia/json bumped from ^3.0.4 to ^3.0.5
+    * @helia/mfs bumped from ^3.0.6 to ^3.0.7
+    * @helia/routers bumped from ^1.1.0 to ^1.1.1
+    * @helia/strings bumped from ^3.0.4 to ^3.0.5
+    * @helia/unixfs bumped from ^3.0.6 to ^3.0.7
+    * helia bumped from ^4.2.4 to ^4.2.5
+
+## [6.1.6](https://github.com/ipfs/helia/compare/interop-v6.1.5...interop-v6.1.6) (2024-06-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * helia bumped from ^4.2.3 to ^4.2.4
+
+## [6.1.5](https://github.com/ipfs/helia/compare/interop-v6.1.4...interop-v6.1.5) (2024-05-27)
+
+
+### Bug Fixes
+
+* do not depend on external domains in dnslink tests ([#547](https://github.com/ipfs/helia/issues/547)) ([21ef20c](https://github.com/ipfs/helia/commit/21ef20cd05e4d0231d0e3d7d2cfbd21fb75b78a2))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^3.0.1 to ^3.0.2
+    * @helia/http bumped from ^1.0.8 to ^1.0.9
+    * helia bumped from ^4.2.2 to ^4.2.3
+
+## [6.1.4](https://github.com/ipfs/helia/compare/interop-v6.1.3...interop-v6.1.4) (2024-05-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^3.0.0 to ^3.0.1
+    * @helia/http bumped from ^1.0.7 to ^1.0.8
+    * helia bumped from ^4.2.1 to ^4.2.2
+
 ## [6.1.3](https://github.com/ipfs/helia/compare/interop-v6.1.2...interop-v6.1.3) (2024-05-02)
 
 

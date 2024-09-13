@@ -1,5 +1,28 @@
 # Changelog
 
+## [3.0.8](https://github.com/ipfs/helia/compare/mfs-v3.0.7...mfs-v3.0.8) (2024-09-13)
+
+
+### Bug Fixes
+
+* remove @libp2p/interfaces dep ([#591](https://github.com/ipfs/helia/issues/591)) ([e567717](https://github.com/ipfs/helia/commit/e567717102464a925f87cb10fc05808a50be960e))
+
+## [3.0.7](https://github.com/ipfs/helia/compare/mfs-v3.0.6...mfs-v3.0.7) (2024-07-31)
+
+
+### Documentation
+
+* fix grammar - it's -&gt; its ([#565](https://github.com/ipfs/helia/issues/565)) ([155e24d](https://github.com/ipfs/helia/commit/155e24db8c06c33972895d702a656e0c2996f3d9))
+
+
+### Dependencies
+
+* bump aegir from 42.2.11 to 43.0.1 ([#552](https://github.com/ipfs/helia/issues/552)) ([74ccc92](https://github.com/ipfs/helia/commit/74ccc92793a6d0bb4bee714d9fe4fa4183aa4ee8))
+* bump aegir from 43.0.3 to 44.0.1 ([#569](https://github.com/ipfs/helia/issues/569)) ([6952f05](https://github.com/ipfs/helia/commit/6952f05357844e5aa3dffb2afaf261df06b9b7c1))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/unixfs bumped from ^3.0.6 to ^3.0.7
+
 ## [3.0.6](https://github.com/ipfs/helia/compare/mfs-v3.0.5...mfs-v3.0.6) (2024-05-01)
 
 

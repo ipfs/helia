@@ -1,6 +1,6 @@
 {
   "name": "@helia/strings",
-  "version": "3.0.4",
+  "version": "3.0.6",
   "description": "Add/get IPLD blocks containing strings with your Helia node",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/strings#readme",
@@ -141,15 +141,15 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@helia/interface": "^4.3.0",
-    "@libp2p/interfaces": "^3.3.2",
+    "@helia/interface": "^4.3.1",
+    "@libp2p/interface": "^1.1.4",
     "interface-blockstore": "^5.2.10",
     "multiformats": "^13.1.0",
     "progress-events": "^1.0.0",
     "uint8arrays": "^5.0.2"
   },
   "devDependencies": {
-    "aegir": "^42.2.5",
+    "aegir": "^44.0.1",
     "blockstore-core": "^4.4.0"
   },
   "sideEffects": false

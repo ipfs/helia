@@ -14,7 +14,7 @@
   "dependencies": {
     "@chainsafe/libp2p-noise": "^15.0.0",
     "@chainsafe/libp2p-yamux": "^6.0.2",
-    "@helia/block-brokers": "^2.1.1",
+    "@helia/block-brokers": "^3.0.2",
     "@helia/routers": "^1.0.3",
     "@helia/unixfs": "^3.0.3",
     "@ipld/dag-pb": "^4.1.0",
@@ -27,7 +27,7 @@
     "@libp2p/websockets": "^8.0.19",
     "@libp2p/webtransport": "^4.0.29",
     "@multiformats/multiaddr": "^12.2.1",
-    "aegir": "^42.2.5",
+    "aegir": "^44.0.1",
     "blockstore-fs": "^1.1.10",
     "blockstore-idb": "^1.1.8",
     "datastore-idb": "^2.1.9",

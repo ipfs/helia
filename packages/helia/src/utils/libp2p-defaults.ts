@@ -35,7 +35,7 @@ export interface DefaultLibp2pServices extends Record<string, unknown> {
   upnp: unknown
 }
 
-export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOptions<DefaultLibp2pServices> {
+export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOptions<DefaultLibp2pServices> & Required<Pick<Libp2pOptions<DefaultLibp2pServices>, 'services'>> {
   const agentVersion = `${name}/${version} ${libp2pInfo.name}/${libp2pInfo.version} UserAgent=${process.version}`
 
   return {
@@ -88,9 +88,7 @@ export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOpti
       }),
       keychain: keychain(options.keychain),
       ping: ping(),
-      relay: circuitRelayServer({
-        advertise: true
-      }),
+      relay: circuitRelayServer(),
       upnp: uPnPNAT()
     }
   }

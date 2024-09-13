@@ -66,7 +66,8 @@ import PQueue from 'p-queue'
 import type { DAGWalker } from '@helia/interface'
 import type { GetBlockProgressEvents, PutManyBlocksProgressEvents } from '@helia/interface/blocks'
 import type { CarReader } from '@ipld/car'
-import type { AbortOptions } from '@libp2p/interfaces'
+import type { AbortOptions } from '@libp2p/interface'
+import type { Filter } from '@libp2p/utils/filters'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 import type { ProgressOptions } from 'progress-events'
@@ -74,6 +75,13 @@ import type { ProgressOptions } from 'progress-events'
 export interface CarComponents {
   blockstore: Blockstore
   dagWalkers: Record<number, DAGWalker>
+}
+
+interface ExportCarOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents> {
+  /**
+   * If a filter is passed it will be used to deduplicate blocks exported in the car file
+   */
+  blockFilter?: Filter
 }
 
 /**
@@ -129,7 +137,7 @@ export interface Car {
    * await eventPromise
    * ```
    */
-  export(root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): Promise<void>
+  export(root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: ExportCarOptions): Promise<void>
 
   /**
    * Returns an AsyncGenerator that yields CAR file bytes.
@@ -170,7 +178,7 @@ class DefaultCar implements Car {
     ))
   }
 
-  async export (root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): Promise<void> {
+  async export (root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: ExportCarOptions): Promise<void> {
     const deferred = defer<Error | undefined>()
     const roots = Array.isArray(root) ? root : [root]
 
@@ -189,6 +197,12 @@ class DefaultCar implements Car {
     for (const root of roots) {
       void queue.add(async () => {
         await this.#walkDag(root, queue, async (cid, bytes) => {
+          // if a filter has been passed, skip blocks that have already been written
+          if (options?.blockFilter?.has(cid.multihash.bytes) === true) {
+            return
+          }
+
+          options?.blockFilter?.add(cid.multihash.bytes)
           await writer.put({ cid, bytes })
         }, options)
       })
@@ -203,7 +217,7 @@ class DefaultCar implements Car {
     }
   }
 
-  async * stream (root: CID | CID[], options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): AsyncGenerator<Uint8Array, void, undefined> {
+  async * stream (root: CID | CID[], options?: ExportCarOptions): AsyncGenerator<Uint8Array, void, undefined> {
     const { writer, out } = CarWriter.create(root)
 
     // has to be done async so we write to `writer` and read from `out` at the

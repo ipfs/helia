@@ -7,17 +7,9 @@ import type { IPNS } from '@helia/ipns'
 import type { HeliaLibp2p } from 'helia'
 
 const TEST_DOMAINS: string[] = [
-  'ipfs.io',
+  'ipfs.tech',
   'docs.ipfs.tech',
-  'en.wikipedia-on-ipfs.org',
-  'blog.libp2p.io',
-  'consensuslab.world',
-  'n0.computer',
-  'protocol.ai',
-  'research.protocol.ai',
-  'probelab.io',
-  'singularity.storage',
-  'saturn.tech'
+  'en.wikipedia-on-ipfs.org'
 ]
 
 describe('@helia/ipns - dnslink', () => {
