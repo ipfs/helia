@@ -5,8 +5,8 @@ import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import toBuffer from 'it-to-buffer'
 import { car, type Car } from '../src/index.js'
-import { dagWalkers } from './fixtures/dag-walkers.js'
 import { smallFile } from './fixtures/files.js'
+import { getCodec } from './fixtures/get-codec.js'
 import { memoryCarWriter } from './fixtures/memory-car.js'
 import type { Blockstore } from 'interface-blockstore'
 
@@ -18,7 +18,7 @@ describe('stream car file', () => {
   beforeEach(async () => {
     blockstore = new MemoryBlockstore()
 
-    c = car({ blockstore, dagWalkers })
+    c = car({ blockstore, getCodec })
     u = unixfs({ blockstore })
   })
 

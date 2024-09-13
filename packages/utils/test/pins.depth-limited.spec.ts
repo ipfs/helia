@@ -4,7 +4,6 @@ import { MemoryBlockstore } from 'blockstore-core'
 import drain from 'it-drain'
 import { createDag, type DAGNode } from './fixtures/create-dag.js'
 import { createHelia } from './fixtures/create-helia.js'
-import { dagWalker } from './fixtures/dag-walker.js'
 import type { Helia } from '@helia/interface'
 
 const MAX_DEPTH = 3
@@ -16,18 +15,12 @@ describe('pins (depth limited)', () => {
   beforeEach(async () => {
     const blockstore = new MemoryBlockstore()
 
-    // arbitrary CID codec value
-    const codec = 7
-
     // create a DAG, MAX_DEPTH levels deep with each level having three children
-    dag = await createDag(codec, blockstore, MAX_DEPTH, 3)
+    dag = await createDag(blockstore, MAX_DEPTH, 3)
 
     helia = await createHelia({
       blockstore,
-      blockBrokers: [],
-      dagWalkers: [
-        dagWalker(codec, dag)
-      ]
+      blockBrokers: []
     })
   })
 

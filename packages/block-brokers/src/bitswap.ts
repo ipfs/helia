@@ -1,6 +1,6 @@
 import { createBitswap } from '@helia/bitswap'
 import type { BitswapOptions, Bitswap, BitswapWantBlockProgressEvents, BitswapNotifyProgressEvents } from '@helia/bitswap'
-import type { BlockAnnounceOptions, BlockBroker, BlockRetrievalOptions, CreateSessionOptions, Routing } from '@helia/interface'
+import type { BlockAnnounceOptions, BlockBroker, BlockRetrievalOptions, CreateSessionOptions, Routing, HasherLoader } from '@helia/interface'
 import type { Libp2p, Startable, ComponentLogger } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
@@ -9,9 +9,9 @@ import type { MultihashHasher } from 'multiformats/hashes/interface'
 interface BitswapComponents {
   libp2p: Libp2p
   blockstore: Blockstore
-  hashers: Record<string, MultihashHasher>
   routing: Routing
   logger: ComponentLogger
+  getHasher: HasherLoader
 }
 
 export interface BitswapInit extends BitswapOptions {
@@ -23,26 +23,12 @@ class BitswapBlockBroker implements BlockBroker<BitswapWantBlockProgressEvents, 
   private started: boolean
 
   constructor (components: BitswapComponents, init: BitswapInit = {}) {
-    const { hashers } = components
+    const { getHasher } = components
 
     this.bitswap = createBitswap(components, {
       hashLoader: {
-        getHasher: async (codecOrName: string | number): Promise<MultihashHasher<number>> => {
-          let hasher: MultihashHasher | undefined
-
-          if (typeof codecOrName === 'string') {
-            hasher = Object.values(hashers).find(hasher => {
-              return hasher.name === codecOrName
-            })
-          } else {
-            hasher = hashers[codecOrName]
-          }
-
-          if (hasher != null) {
-            return hasher
-          }
-
-          throw new Error(`Could not load hasher for code/name "${codecOrName}"`)
+        getHasher: async (codecOrName: number): Promise<MultihashHasher<number>> => {
+          return getHasher(codecOrName)
         }
       },
       ...init
