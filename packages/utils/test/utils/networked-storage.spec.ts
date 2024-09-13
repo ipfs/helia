@@ -60,7 +60,7 @@ describe('networked-storage', () => {
 
     await expect(storage.get(cid, {
       offline: true
-    })).to.eventually.be.rejected.with.property('code', 'ERR_NOT_FOUND')
+    })).to.eventually.be.rejected.with.property('name', 'NotFoundError')
   })
 
   it('gets a block from the blockstore with progress', async () => {
@@ -98,7 +98,7 @@ describe('networked-storage', () => {
 
     await expect(drain(storage.getMany([cid], {
       offline: true
-    }))).to.eventually.be.rejected.with.property('code', 'ERR_NOT_FOUND')
+    }))).to.eventually.be.rejected.with.property('name', 'NotFoundError')
   })
 
   it('puts a block into the blockstore', async () => {

@@ -1,5 +1,6 @@
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import delay from 'delay'
@@ -42,7 +43,7 @@ describe('peer-want-lists', () => {
     })
 
     components = {
-      peerId: await createEd25519PeerId(),
+      peerId: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       blockstore: new MemoryBlockstore(),
       network,
       libp2p,
@@ -53,7 +54,7 @@ describe('peer-want-lists', () => {
   })
 
   it('should keep a ledger for a peer', async () => {
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     expect(wantLists.ledgerForPeer(remotePeer)).to.be.undefined('should not have list initially')
 
@@ -87,7 +88,7 @@ describe('peer-want-lists', () => {
   })
 
   it('should replace the wantlist for a peer when the full list is received', async () => {
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const cid1 = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
     const cid2 = CID.parse('bafyreidykglsfhoixmivffc5uwhcgshx4j465xwqntbmu43nb2dzqwfvae')
@@ -140,7 +141,7 @@ describe('peer-want-lists', () => {
   })
 
   it('should merge the wantlist for a peer when a partial list is received', async () => {
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const cid1 = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
     const cid2 = CID.parse('bafyreidykglsfhoixmivffc5uwhcgshx4j465xwqntbmu43nb2dzqwfvae')
@@ -192,7 +193,7 @@ describe('peer-want-lists', () => {
   })
 
   it('should record the amount of incoming data', async () => {
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     network.safeDispatchEvent('bitswap:message', {
       detail: {
@@ -218,7 +219,7 @@ describe('peer-want-lists', () => {
 
   it('should send requested blocks to peer', async () => {
     const sendMessageStub = network.sendMessage = Sinon.stub()
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
     const block = Uint8Array.from([0, 1, 2, 3, 4])
@@ -267,7 +268,7 @@ describe('peer-want-lists', () => {
 
   it('should send requested block presences to peer', async () => {
     const sendMessageStub = network.sendMessage = Sinon.stub()
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
     const block = Uint8Array.from(new Array(DEFAULT_MAX_SIZE_REPLACE_HAS_WITH_BLOCK + 1))
@@ -310,7 +311,7 @@ describe('peer-want-lists', () => {
 
   it('should send requested lack of block presences to peer', async () => {
     const sendMessageStub = network.sendMessage = Sinon.stub()
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     // CID for a block we don't have
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
@@ -351,7 +352,7 @@ describe('peer-want-lists', () => {
 
   it('should send requested blocks to peer when presence was requested but block size is less than maxSizeReplaceHasWithBlock', async () => {
     const sendMessageStub = network.sendMessage = Sinon.stub()
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
     const block = Uint8Array.from([0, 1, 2, 3, 4])
@@ -401,7 +402,7 @@ describe('peer-want-lists', () => {
 
   it('should send requested block presences to peer for blocks we don\'t have', async () => {
     const sendMessageStub = network.sendMessage = Sinon.stub()
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
 
@@ -440,7 +441,7 @@ describe('peer-want-lists', () => {
   })
 
   it('should remove wants when peer cancels', async () => {
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
 
@@ -485,7 +486,7 @@ describe('peer-want-lists', () => {
   })
 
   it('should remove wantlist and ledger when peer disconnects', async () => {
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
     const block = Uint8Array.from([0, 1, 2, 3, 4])
@@ -520,7 +521,7 @@ describe('peer-want-lists', () => {
   })
 
   it('should return peers with want lists', async () => {
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     expect(wantLists.peers()).to.be.empty()
 
@@ -546,7 +547,7 @@ describe('peer-want-lists', () => {
 
   it('should send requested blocks to peer when they are received', async () => {
     const sendMessageStub = network.sendMessage = Sinon.stub()
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
     const block = Uint8Array.from([0, 1, 2, 3, 4])

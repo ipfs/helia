@@ -12,6 +12,7 @@ import { mdns } from '@libp2p/mdns'
 import { mplex } from '@libp2p/mplex'
 import { ping, type PingService } from '@libp2p/ping'
 import { tcp } from '@libp2p/tcp'
+import { tls } from '@libp2p/tls'
 import { uPnPNAT } from '@libp2p/upnp-nat'
 import { webRTC, webRTCDirect } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
@@ -39,7 +40,7 @@ export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOpti
   const agentVersion = `${name}/${version} ${libp2pInfo.name}/${libp2pInfo.version} UserAgent=${process.version}`
 
   return {
-    peerId: options.peerId,
+    privateKey: options.privateKey,
     dns: options.dns,
     addresses: {
       listen: [
@@ -57,8 +58,9 @@ export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOpti
       webRTCDirect(),
       webSockets()
     ],
-    connectionEncryption: [
-      noise()
+    connectionEncrypters: [
+      noise(),
+      tls()
     ],
     streamMuxers: [
       yamux(),

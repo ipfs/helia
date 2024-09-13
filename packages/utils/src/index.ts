@@ -37,7 +37,7 @@ import type { DNS } from '@multiformats/dns'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
-import type { MultihashHasher } from 'multiformats/hashes/interface'
+import type { MultihashDigest, MultihashHasher } from 'multiformats/hashes/interface'
 
 export { AbstractSession, type AbstractCreateSessionOptions } from './abstract-session.js'
 export { BloomFilter } from './bloom-filter.js'
@@ -266,4 +266,13 @@ export class Helia implements HeliaInterface {
 
     this.log('gc finished')
   }
+}
+
+/**
+ * Used to check that the passed multihash has the passed code
+ *
+ * Remove after https://github.com/multiformats/js-multiformats/pull/308
+ */
+export function hasCode <T extends number> (digest: MultihashDigest, code: T): digest is MultihashDigest<T> {
+  return digest.code === code
 }

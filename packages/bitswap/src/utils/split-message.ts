@@ -1,6 +1,7 @@
 /* eslint-disable complexity */
-import { CodeError } from '@libp2p/interface'
+
 import { encodingLength } from 'uint8-varint'
+import { BlockTooLargeError } from '../errors.js'
 import { BitswapMessage, Block, BlockPresence, WantlistEntry } from '../pb/message.js'
 import type { QueuedBitswapMessage } from './bitswap-message.js'
 
@@ -93,7 +94,7 @@ function addToMessage <T> (input: T[], output: T[], start: number, maxSize: numb
     const itemSize = calculateSize(item)
 
     if (itemSize > MAX_ENCODED_BLOCK_SIZE) {
-      throw new CodeError('Cannot send block as after encoding it is over the max message size', 'ERR_BLOCK_TOO_LARGE')
+      throw new BlockTooLargeError('Cannot send block as after encoding it is over the max message size')
     }
 
     const newSize = size + itemSize

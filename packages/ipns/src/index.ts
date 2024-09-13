@@ -227,23 +227,28 @@
  * ```
  */
 
-import { CodeError } from '@libp2p/interface'
+import { NotFoundError, isPublicKey } from '@libp2p/interface'
 import { logger } from '@libp2p/logger'
-import { peerIdFromString } from '@libp2p/peer-id'
-import { create, marshal, peerIdToRoutingKey, unmarshal } from 'ipns'
+import { createIPNSRecord, marshalIPNSRecord, multihashToIPNSRoutingKey, unmarshalIPNSRecord, type IPNSRecord } from 'ipns'
 import { ipnsSelector } from 'ipns/selector'
 import { ipnsValidator } from 'ipns/validator'
+import { base36 } from 'multiformats/bases/base36'
+import { base58btc } from 'multiformats/bases/base58'
 import { CID } from 'multiformats/cid'
+import * as Digest from 'multiformats/hashes/digest'
 import { CustomProgressEvent } from 'progress-events'
 import { resolveDNSLink } from './dnslink.js'
+import { InvalidValueError, RecordsFailedValidationError, UnsupportedMultibasePrefixError, UnsupportedMultihashCodecError } from './errors.js'
 import { helia } from './routing/helia.js'
 import { localStore, type LocalStore } from './routing/local-store.js'
+import { isCodec, IDENTITY_CODEC, SHA2_256_CODEC } from './utils.js'
 import type { IPNSRouting, IPNSRoutingEvents } from './routing/index.js'
 import type { Routing } from '@helia/interface'
-import type { AbortOptions, ComponentLogger, Logger, PeerId } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, Logger, PrivateKey, PublicKey } from '@libp2p/interface'
 import type { Answer, DNS, ResolveDnsProgressEvents } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
-import type { IPNSRecord } from 'ipns'
+import type { MultibaseDecoder } from 'multiformats/bases/interface'
+import type { MultihashDigest } from 'multiformats/hashes/interface'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
 const log = logger('helia:ipns')
@@ -375,13 +380,13 @@ export interface IPNS {
    *
    * If the value is a PeerId, a recursive IPNS record will be created.
    */
-  publish(key: PeerId, value: CID | PeerId | string, options?: PublishOptions): Promise<IPNSRecord>
+  publish(key: PrivateKey, value: CID | PublicKey | MultihashDigest<0x00 | 0x12> | string, options?: PublishOptions): Promise<IPNSRecord>
 
   /**
    * Accepts a public key formatted as a libp2p PeerID and resolves the IPNS record
    * corresponding to that public key until a value is found
    */
-  resolve(key: PeerId, options?: ResolveOptions): Promise<IPNSResolveResult>
+  resolve(key: PublicKey | MultihashDigest<0x00 | 0x12>, options?: ResolveOptions): Promise<IPNSResolveResult>
 
   /**
    * Resolve a CID from a dns-link style IPNS record
@@ -403,6 +408,11 @@ export interface IPNSComponents {
   logger: ComponentLogger
 }
 
+const bases: Record<string, MultibaseDecoder<string>> = {
+  [base36.prefix]: base36,
+  [base58btc.prefix]: base58btc
+}
+
 class DefaultIPNS implements IPNS {
   private readonly routers: IPNSRouting[]
   private readonly localStore: LocalStore
@@ -420,21 +430,21 @@ class DefaultIPNS implements IPNS {
     this.log = components.logger.forComponent('helia:ipns')
   }
 
-  async publish (key: PeerId, value: CID | PeerId | string, options: PublishOptions = {}): Promise<IPNSRecord> {
+  async publish (key: PrivateKey, value: CID | PublicKey | MultihashDigest<0x00 | 0x12> | string, options: PublishOptions = {}): Promise<IPNSRecord> {
     try {
       let sequenceNumber = 1n
-      const routingKey = peerIdToRoutingKey(key)
+      const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
       if (await this.localStore.has(routingKey, options)) {
         // if we have published under this key before, increment the sequence number
         const { record } = await this.localStore.get(routingKey, options)
-        const existingRecord = unmarshal(record)
+        const existingRecord = unmarshalIPNSRecord(record)
         sequenceNumber = existingRecord.sequence + 1n
       }
 
       // create record
-      const record = await create(key, value, sequenceNumber, options.lifetime ?? DEFAULT_LIFETIME_MS, options)
-      const marshaledRecord = marshal(record)
+      const record = await createIPNSRecord(key, value, sequenceNumber, options.lifetime ?? DEFAULT_LIFETIME_MS, options)
+      const marshaledRecord = marshalIPNSRecord(record)
 
       await this.localStore.put(routingKey, marshaledRecord, options)
 
@@ -450,8 +460,9 @@ class DefaultIPNS implements IPNS {
     }
   }
 
-  async resolve (key: PeerId, options: ResolveOptions = {}): Promise<IPNSResolveResult> {
-    const routingKey = peerIdToRoutingKey(key)
+  async resolve (key: PublicKey | MultihashDigest<0x00 | 0x12>, options: ResolveOptions = {}): Promise<IPNSResolveResult> {
+    const digest = isPublicKey(key) ? key.toMultihash() : key
+    const routingKey = multihashToIPNSRoutingKey(digest)
     const record = await this.#findIpnsRecord(routingKey, options)
 
     return {
@@ -511,7 +522,31 @@ class DefaultIPNS implements IPNS {
       const scheme = parts[1]
 
       if (scheme === 'ipns') {
-        const { cid } = await this.resolve(peerIdFromString(parts[2]), options)
+        const str = parts[2]
+        const prefix = str.substring(0, 1)
+        let buf: Uint8Array | undefined
+
+        if (prefix === '1' || prefix === 'Q') {
+          buf = base58btc.decode(`z${str}`)
+        } else if (bases[prefix] != null) {
+          buf = bases[prefix].decode(str)
+        } else {
+          throw new UnsupportedMultibasePrefixError(`Unsupported multibase prefix "${prefix}"`)
+        }
+
+        let digest: MultihashDigest<number>
+
+        try {
+          digest = Digest.decode(buf)
+        } catch {
+          digest = CID.decode(buf).multihash
+        }
+
+        if (!isCodec(digest, IDENTITY_CODEC) && !isCodec(digest, SHA2_256_CODEC)) {
+          throw new UnsupportedMultihashCodecError(`Unsupported multihash codec "${digest.code}"`)
+        }
+
+        const { cid } = await this.resolve(digest, options)
         const path = parts.slice(3).join('/')
         return {
           cid,
@@ -530,7 +565,7 @@ class DefaultIPNS implements IPNS {
     }
 
     log.error('invalid ipfs path %s', ipfsPath)
-    throw new Error('Invalid value')
+    throw new InvalidValueError('Invalid value')
   }
 
   async #findIpnsRecord (routingKey: Uint8Array, options: ResolveOptions = {}): Promise<IPNSRecord> {
@@ -553,7 +588,7 @@ class DefaultIPNS implements IPNS {
           this.log('record was valid')
 
           // check the TTL
-          const ipnsRecord = unmarshal(record)
+          const ipnsRecord = unmarshalIPNSRecord(record)
 
           // IPNS TTL is in nanoseconds, convert to milliseconds, default to one
           // hour
@@ -588,7 +623,7 @@ class DefaultIPNS implements IPNS {
     }
 
     if (options.offline === true) {
-      throw new CodeError('Record was not present in the cache or has expired', 'ERR_NOT_FOUND')
+      throw new NotFoundError('Record was not present in the cache or has expired')
     }
 
     log('did not have record locally')
@@ -624,17 +659,17 @@ class DefaultIPNS implements IPNS {
 
     if (records.length === 0) {
       if (foundInvalid > 0) {
-        throw new CodeError(`${foundInvalid > 1 ? `${foundInvalid} records` : 'Record'} found for routing key ${foundInvalid > 1 ? 'were' : 'was'} invalid`, 'ERR_RECORDS_FAILED_VALIDATION')
+        throw new RecordsFailedValidationError(`${foundInvalid > 1 ? `${foundInvalid} records` : 'Record'} found for routing key ${foundInvalid > 1 ? 'were' : 'was'} invalid`)
       }
 
-      throw new CodeError('Could not find record for routing key', 'ERR_NOT_FOUND')
+      throw new NotFoundError('Could not find record for routing key')
     }
 
     const record = records[ipnsSelector(routingKey, records)]
 
     await this.localStore.put(routingKey, record, options)
 
-    return unmarshal(record)
+    return unmarshalIPNSRecord(record)
   }
 }
 

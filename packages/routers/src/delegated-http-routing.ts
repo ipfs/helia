@@ -1,14 +1,15 @@
 import { createDelegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
-import { CodeError } from '@libp2p/interface'
-import { marshal, unmarshal, peerIdFromRoutingKey } from 'ipns'
+import { NotFoundError } from '@libp2p/interface'
+import { marshalIPNSRecord, multihashFromIPNSRoutingKey, unmarshalIPNSRecord } from 'ipns'
 import first from 'it-first'
 import map from 'it-map'
+import { CID } from 'multiformats/cid'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import type { DelegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
 import type { Provider, Routing, RoutingOptions } from '@helia/interface'
 import type { PeerId, PeerInfo } from '@libp2p/interface'
-import type { CID, Version } from 'multiformats'
+import type { Version } from 'multiformats'
 
 const IPNS_PREFIX = uint8ArrayFromString('/ipns/')
 
@@ -42,28 +43,30 @@ class DelegatedHTTPRouter implements Routing {
       return
     }
 
-    const peerId = peerIdFromRoutingKey(key)
-    const record = unmarshal(value)
+    const digest = multihashFromIPNSRoutingKey(key)
+    const cid = CID.createV1(0x72, digest)
+    const record = unmarshalIPNSRecord(value)
 
-    await this.client.putIPNS(peerId, record, options)
+    await this.client.putIPNS(cid, record, options)
   }
 
   async get (key: Uint8Array, options?: RoutingOptions | undefined): Promise<Uint8Array> {
     if (!isIPNSKey(key)) {
-      throw new CodeError('Not found', 'ERR_NOT_FOUND')
+      throw new NotFoundError('Not found')
     }
 
-    const peerId = peerIdFromRoutingKey(key)
+    const digest = multihashFromIPNSRoutingKey(key)
+    const cid = CID.createV1(0x72, digest)
 
     try {
-      const record = await this.client.getIPNS(peerId, options)
+      const record = await this.client.getIPNS(cid, options)
 
-      return marshal(record)
+      return marshalIPNSRecord(record)
     } catch (err: any) {
-      // ERR_BAD_RESPONSE is thrown when the response had no body, which means
+      // BadResponseError is thrown when the response had no body, which means
       // the record couldn't be found
-      if (err.code === 'ERR_BAD_RESPONSE') {
-        throw new CodeError('Not found', 'ERR_NOT_FOUND')
+      if (err.name === 'BadResponseError') {
+        throw new NotFoundError('Not found')
       }
 
       throw err
@@ -80,7 +83,7 @@ class DelegatedHTTPRouter implements Routing {
       }
     }
 
-    throw new CodeError('Not found', 'ERR_NOT_FOUND')
+    throw new NotFoundError('Not found')
   }
 
   async * getClosestPeers (key: Uint8Array, options?: RoutingOptions | undefined): AsyncIterable<PeerInfo> {

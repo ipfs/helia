@@ -156,6 +156,6 @@ describe('.files.touch', () => {
     await expect(fs.touch(cid, {
       offline: true
     })).to.eventually.be.rejected
-      .with.property('code', 'ERR_NOT_FOUND')
+      .with.property('name', 'NotFoundError')
   })
 })

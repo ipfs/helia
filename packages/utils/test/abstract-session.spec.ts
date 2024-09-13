@@ -1,5 +1,6 @@
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { CID } from 'multiformats/cid'
@@ -43,7 +44,7 @@ describe('abstract-session', () => {
 
     session.findNewProviders.callsFake(async function * () {
       yield {
-        id: await createEd25519PeerId()
+        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
       }
     })
     session.queryProvider.withArgs(cid).resolves(block)
@@ -58,9 +59,9 @@ describe('abstract-session', () => {
     const block = Uint8Array.from([0, 1, 2, 3])
 
     const providers: SessionPeer[] = [{
-      id: await createEd25519PeerId()
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     }, {
-      id: await createEd25519PeerId()
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     }]
 
     session.findNewProviders.callsFake(async function * () {
@@ -92,9 +93,9 @@ describe('abstract-session', () => {
     const block = Uint8Array.from([0, 1, 2, 3])
 
     const providers: SessionPeer[] = [{
-      id: await createEd25519PeerId()
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     }, {
-      id: await createEd25519PeerId()
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     }]
 
     session.findNewProviders.callsFake(async function * () {
@@ -119,7 +120,7 @@ describe('abstract-session', () => {
 
     session.findNewProviders.callsFake(async function * () {
       yield {
-        id: await createEd25519PeerId()
+        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
       }
     })
     session.queryProvider.callsFake(async () => {
@@ -156,7 +157,7 @@ describe('abstract-session', () => {
         await delay(100)
 
         return {
-          id: await createEd25519PeerId()
+          id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
         }
       })(), options.signal)
     })
@@ -164,7 +165,7 @@ describe('abstract-session', () => {
     await expect(session.retrieve(cid, {
       signal
     })).to.eventually.be.rejected
-      .with.property('code', 'ABORT_ERR')
+      .with.property('name', 'AbortError')
   })
 
   it('should search for more session providers if the current ones cannot provide the block', async () => {
@@ -174,9 +175,9 @@ describe('abstract-session', () => {
     const block = Uint8Array.from([0, 1, 2, 3])
 
     const providers: SessionPeer[] = [{
-      id: await createEd25519PeerId()
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     }, {
-      id: await createEd25519PeerId()
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     }]
 
     session.findNewProviders.onFirstCall().callsFake(async function * () {
@@ -204,9 +205,9 @@ describe('abstract-session', () => {
     const block = Uint8Array.from([0, 1, 2, 3])
 
     const providers: SessionPeer[] = [{
-      id: await createEd25519PeerId()
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     }, {
-      id: await createEd25519PeerId()
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     }]
 
     session.findNewProviders.onFirstCall().callsFake(async function * () {
@@ -217,7 +218,7 @@ describe('abstract-session', () => {
         await delay(100)
 
         return {
-          id: await createEd25519PeerId()
+          id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
         }
       })(), options.signal)
     })
@@ -231,13 +232,13 @@ describe('abstract-session', () => {
     await expect(session.retrieve(cid, {
       signal
     })).to.eventually.be.rejected()
-      .with.property('code', 'ABORT_ERR')
+      .with.property('name', 'AbortError')
   })
 
   it('should not make multiple requests to the only found provider', async function () {
     const session = new Session()
     const cid = CID.parse('bafybeifaymukvfkyw6xgh4th7tsctiifr4ea2btoznf46y6b2fnvikdczi')
-    const id = await createEd25519PeerId() // same provider
+    const id = peerIdFromPrivateKey(await generateKeyPair('Ed25519')) // same provider
 
     session.findNewProviders.callsFake(async function * () {
       yield {

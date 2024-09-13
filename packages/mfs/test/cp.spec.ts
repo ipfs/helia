@@ -51,12 +51,12 @@ describe('cp', () => {
     const source = CID.createV1(identity.code, hash)
 
     await expect(fs.cp(source, '/foo.txt')).to.eventually.be.rejected
-      .with.property('code', 'ERR_NOT_UNIXFS')
+      .with.property('name', 'NotUnixFSError')
   })
 
   it('refuses to copy a non-existant file', async () => {
     await expect(fs.cp('/foo.txt', '/bar.txt')).to.eventually.be.rejected
-      .with.property('code', 'ERR_DOES_NOT_EXIST')
+      .with.property('name', 'DoesNotExistError')
   })
 
   it('refuses to copy files to an existing file', async () => {
@@ -64,7 +64,7 @@ describe('cp', () => {
     await fs.writeBytes(Uint8Array.from([0, 1, 3, 4]), path)
 
     await expect(fs.cp(path, path)).to.eventually.be.rejected
-      .with.property('code', 'ERR_ALREADY_EXISTS')
+      .with.property('name', 'AlreadyExistsError')
 
     // should succeed with force option
     await expect(fs.cp(path, path, {
@@ -160,7 +160,7 @@ describe('cp', () => {
     }
 
     await expect(fs.cp(file.cid, `${shardedDirPath}/${file.name}`)).to.eventually.be.rejected
-      .with.property('code', 'ERR_ALREADY_EXISTS')
+      .with.property('name', 'AlreadyExistsError')
 
     // should succeed with force option
     await expect(fs.cp(file.cid, `${shardedDirPath}/${file.name}`, {

@@ -1,5 +1,5 @@
-import { DEFAULT_SESSION_MIN_PROVIDERS, DEFAULT_SESSION_MAX_PROVIDERS } from '@helia/interface'
-import { CodeError, TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
+import { DEFAULT_SESSION_MIN_PROVIDERS, DEFAULT_SESSION_MAX_PROVIDERS, InsufficientProvidersError } from '@helia/interface'
+import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { Queue } from '@libp2p/utils/queue'
 import { base64 } from 'multiformats/bases/base64'
 import pDefer from 'p-defer'
@@ -249,7 +249,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
         this.log('found %d/%d new session peers', found, this.maxProviders)
 
         if (found < count) {
-          throw new CodeError(`Found ${found} of ${count} ${this.name} providers for ${cid}`, 'ERR_INSUFFICIENT_PROVIDERS_FOUND')
+          throw new InsufficientProvidersError(`Found ${found} of ${count} ${this.name} providers for ${cid}`)
         }
       })
       .catch(err => {

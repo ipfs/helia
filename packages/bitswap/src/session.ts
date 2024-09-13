@@ -48,7 +48,7 @@ class BitswapSession extends AbstractSession<PeerId, BitswapWantProgressEvents> 
   }
 
   toEvictionKey (provider: PeerId): Uint8Array | string {
-    return provider.toBytes()
+    return provider.toMultihash().bytes
   }
 
   equals (providerA: PeerId, providerB: PeerId): boolean {

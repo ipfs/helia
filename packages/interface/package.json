@@ -70,11 +70,11 @@
     "build": "aegir build"
   },
   "dependencies": {
-    "@libp2p/interface": "^1.1.4",
+    "@libp2p/interface": "^2.0.0",
     "@multiformats/dns": "^1.0.1",
     "interface-blockstore": "^5.2.10",
     "interface-datastore": "^8.2.11",
-    "interface-store": "^5.1.8",
+    "interface-store": "^6.0.0",
     "multiformats": "^13.1.0",
     "progress-events": "^1.0.0"
   },

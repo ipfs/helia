@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
-import { type Codec, CodeError, decodeMessage, type DecodeOptions, encodeMessage, enumeration, message } from 'protons-runtime'
+import { type Codec, decodeMessage, type DecodeOptions, encodeMessage, enumeration, MaxLengthError, message } from 'protons-runtime'
 import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -167,7 +167,7 @@ export namespace Wantlist {
           switch (tag >>> 3) {
             case 1: {
               if (opts.limits?.entries != null && obj.entries.length === opts.limits.entries) {
-                throw new CodeError('decode error - map field "entries" had too many elements', 'ERR_MAX_LENGTH')
+                throw new MaxLengthError('Decode error - map field "entries" had too many elements')
               }
 
               obj.entries.push(WantlistEntry.codec().decode(reader, reader.uint32(), {
@@ -424,7 +424,7 @@ export namespace BitswapMessage {
             }
             case 3: {
               if (opts.limits?.blocks != null && obj.blocks.length === opts.limits.blocks) {
-                throw new CodeError('decode error - map field "blocks" had too many elements', 'ERR_MAX_LENGTH')
+                throw new MaxLengthError('Decode error - map field "blocks" had too many elements')
               }
 
               obj.blocks.push(Block.codec().decode(reader, reader.uint32(), {
@@ -434,7 +434,7 @@ export namespace BitswapMessage {
             }
             case 4: {
               if (opts.limits?.blockPresences != null && obj.blockPresences.length === opts.limits.blockPresences) {
-                throw new CodeError('decode error - map field "blockPresences" had too many elements', 'ERR_MAX_LENGTH')
+                throw new MaxLengthError('Decode error - map field "blockPresences" had too many elements')
               }
 
               obj.blockPresences.push(BlockPresence.codec().decode(reader, reader.uint32(), {

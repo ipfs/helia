@@ -42,7 +42,7 @@
     "it-buffer-stream": "^3.0.2",
     "it-drain": "^3.0.7",
     "kubo": "^0.28.0",
-    "kubo-rpc-client": "^4.1.1",
+    "kubo-rpc-client": "^5.0.0",
     "libp2p": "^1.4.0",
     "multiformats": "^13.1.0",
     "playwright-test": "^14.1.1",

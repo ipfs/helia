@@ -57,11 +57,11 @@
     "@helia/interface": "^4.3.1",
     "@helia/routers": "^1.1.1",
     "@helia/utils": "^0.3.3",
-    "blockstore-core": "^4.4.0",
-    "datastore-core": "^9.2.9"
+    "blockstore-core": "^5.0.0",
+    "datastore-core": "^10.0.0"
   },
   "devDependencies": {
-    "@libp2p/interface": "^1.1.4",
+    "@libp2p/interface": "^2.0.0",
     "aegir": "^44.0.1",
     "interface-datastore": "^8.2.11",
     "multiformats": "^13.1.0",

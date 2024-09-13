@@ -55,17 +55,16 @@
   "dependencies": {
     "@helia/delegated-routing-v1-http-api-client": "^3.0.0",
     "@helia/interface": "^4.3.1",
-    "@libp2p/interface": "^1.1.4",
+    "@libp2p/interface": "^2.0.0",
     "@multiformats/uri-to-multiaddr": "^8.0.0",
-    "ipns": "^9.0.0",
+    "ipns": "^10.0.0",
     "it-first": "^3.0.4",
     "it-map": "^3.0.5",
     "multiformats": "^13.1.0",
     "uint8arrays": "^5.0.2"
   },
   "devDependencies": {
-    "@libp2p/peer-id": "^4.0.7",
-    "@libp2p/peer-id-factory": "^4.0.7",
+    "@libp2p/peer-id": "^5.0.0",
     "aegir": "^44.0.1",
     "it-all": "^3.0.4",
     "it-drain": "^3.0.5",

@@ -65,7 +65,7 @@ describe('cat', () => {
 
   it('refuses to read a directory', async () => {
     await expect(drain(fs.cat(emptyDirCid))).to.eventually.be.rejected
-      .with.property('code', 'ERR_NOT_A_FILE')
+      .with.property('name', 'NotAFileError')
   })
 
   it('refuses to read missing blocks', async () => {
@@ -77,7 +77,7 @@ describe('cat', () => {
     await expect(drain(fs.cat(cid, {
       offline: true
     }))).to.eventually.be.rejected
-      .with.property('code', 'ERR_NOT_FOUND')
+      .with.property('name', 'NotFoundError')
   })
 
   it('reads file from inside a sharded directory', async () => {

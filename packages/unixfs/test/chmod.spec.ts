@@ -99,6 +99,6 @@ describe('chmod', () => {
     await expect(fs.chmod(cid, 0o777, {
       offline: true
     })).to.eventually.be.rejected
-      .with.property('code', 'ERR_NOT_FOUND')
+      .with.property('name', 'NotFoundError')
   })
 })

@@ -1,8 +1,10 @@
-import { CodeError, type Logger } from '@libp2p/interface'
+import { } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { RecordType } from '@multiformats/dns'
 import { CID } from 'multiformats/cid'
+import { DNSLinkNotFoundError } from './errors.js'
 import type { ResolveDNSLinkOptions } from './index.js'
+import type { Logger } from '@libp2p/interface'
 import type { Answer, DNS } from '@multiformats/dns'
 
 const MAX_RECURSIVE_DEPTH = 32
@@ -26,7 +28,7 @@ async function recursiveResolveDnslink (domain: string, depth: number, dns: DNS,
   })
 
   // sort the TXT records to ensure deterministic processing
-  const txtRecords = txtRecordsResponse.Answer
+  const txtRecords = (txtRecordsResponse?.Answer ?? [])
     .sort((a, b) => a.data.localeCompare(b.data))
 
   log('found %d TXT records for %s', txtRecords.length, domain)
@@ -98,7 +100,7 @@ async function recursiveResolveDnslink (domain: string, depth: number, dns: DNS,
   })
 
   // sort the CNAME records to ensure deterministic processing
-  const cnameRecords = cnameRecordsResponse.Answer
+  const cnameRecords = (cnameRecordsResponse?.Answer ?? [])
     .sort((a, b) => a.data.localeCompare(b.data))
 
   log('found %d CNAME records for %s', cnameRecords.length, domain)
@@ -111,7 +113,7 @@ async function recursiveResolveDnslink (domain: string, depth: number, dns: DNS,
     }
   }
 
-  throw new CodeError(`No DNSLink records found for domain: ${domain}`, 'ERR_DNSLINK_NOT_FOUND')
+  throw new DNSLinkNotFoundError(`No DNSLink records found for domain: ${domain}`)
 }
 
 async function recursiveResolveDomain (domain: string, depth: number, dns: DNS, log: Logger, options: ResolveDNSLinkOptions = {}): Promise<DNSLinkResult> {
@@ -130,7 +132,7 @@ async function recursiveResolveDomain (domain: string, depth: number, dns: DNS, 
     return await recursiveResolveDnslink(domain, depth, dns, log, options)
   } catch (err: any) {
     // If the code is not ENOTFOUND or ERR_DNSLINK_NOT_FOUND or ENODATA then throw the error
-    if (err.code !== 'ENOTFOUND' && err.code !== 'ERR_DNSLINK_NOT_FOUND' && err.code !== 'ENODATA') {
+    if (err.code !== 'ENOTFOUND' && err.code !== 'ENODATA' && err.name !== 'DNSLinkNotFoundError' && err.name !== 'NotFoundError') {
       throw err
     }
 
