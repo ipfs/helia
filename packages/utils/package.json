@@ -82,6 +82,7 @@
     "uint8arrays": "^5.0.2"
   },
   "devDependencies": {
+    "@libp2p/peer-id": "^5.0.0",
     "@types/sinon": "^17.0.3",
     "aegir": "^44.0.1",
     "datastore-core": "^10.0.0",

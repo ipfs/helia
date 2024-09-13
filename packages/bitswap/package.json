@@ -176,6 +176,7 @@
   "devDependencies": {
     "@libp2p/crypto": "^5.0.0",
     "@libp2p/interface-compliance-tests": "^6.0.0",
+    "@libp2p/peer-id": "^5.0.0",
     "@types/sinon": "^17.0.3",
     "aegir": "^44.0.1",
     "blockstore-core": "^5.0.0",
