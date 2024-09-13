@@ -73,7 +73,7 @@
     "@libp2p/mdns": "^10.0.16",
     "@libp2p/mplex": "^10.0.16",
     "@libp2p/ping": "^1.0.12",
-    "@libp2p/tcp": "^9.0.16",
+    "@libp2p/tcp": "^10.0.1",
     "@libp2p/upnp-nat": "^1.0.14",
     "@libp2p/webrtc": "^4.0.20",
     "@libp2p/websockets": "^8.0.16",
