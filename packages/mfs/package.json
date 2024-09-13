@@ -153,7 +153,7 @@
     "@ipld/dag-pb": "^4.1.0",
     "aegir": "^44.0.1",
     "blockstore-core": "^4.4.0",
-    "datastore-core": "^9.2.9",
+    "datastore-core": "^10.0.1",
     "delay": "^6.0.0",
     "it-all": "^3.0.4",
     "it-drain": "^3.0.5",
