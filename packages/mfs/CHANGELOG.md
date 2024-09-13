@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.8](https://github.com/ipfs/helia/compare/mfs-v3.0.7...mfs-v3.0.8) (2024-09-13)
+
+
+### Bug Fixes
+
+* remove @libp2p/interfaces dep ([#591](https://github.com/ipfs/helia/issues/591)) ([e567717](https://github.com/ipfs/helia/commit/e567717102464a925f87cb10fc05808a50be960e))
+
 ## [3.0.7](https://github.com/ipfs/helia/compare/mfs-v3.0.6...mfs-v3.0.7) (2024-07-31)
 
 

@@ -1,5 +1,27 @@
 # Changelog
 
+## [6.1.8](https://github.com/ipfs/helia/compare/interop-v6.1.7...interop-v6.1.8) (2024-09-13)
+
+
+### Bug Fixes
+
+* test for subscribers to ipns pubsub topic ([#584](https://github.com/ipfs/helia/issues/584)) ([c9c644c](https://github.com/ipfs/helia/commit/c9c644c11657ec1411b3f04933fa62501151f732))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^3.0.3 to ^3.0.4
+    * @helia/car bumped from ^3.2.0 to ^3.2.1
+    * @helia/dag-cbor bumped from ^3.0.5 to ^3.0.6
+    * @helia/dag-json bumped from ^3.0.5 to ^3.0.6
+    * @helia/http bumped from ^1.0.10 to ^1.0.11
+    * @helia/json bumped from ^3.0.5 to ^3.0.6
+    * @helia/mfs bumped from ^3.0.7 to ^3.0.8
+    * @helia/strings bumped from ^3.0.5 to ^3.0.6
+    * helia bumped from ^4.2.5 to ^4.2.6
+
 ## [6.1.7](https://github.com/ipfs/helia/compare/interop-v6.1.6...interop-v6.1.7) (2024-07-31)
 
 
