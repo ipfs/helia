@@ -1,6 +1,6 @@
 {
   "name": "@helia/http",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "A lightweight implementation of IPFS over HTTP in JavaScript",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/http#readme",
@@ -53,7 +53,7 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@helia/block-brokers": "^3.0.3",
+    "@helia/block-brokers": "^3.0.4",
     "@helia/interface": "^4.3.1",
     "@helia/routers": "^1.1.1",
     "@helia/utils": "^0.3.3",

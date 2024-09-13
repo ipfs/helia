@@ -23,18 +23,21 @@ interface Impl {
 }
 
 const webRTCimpls: Record<string, Impl> = {
-  /*
-  https://issues.chromium.org/issues/40072842
   chromium: {
     type: 'helia',
     exec: PLAYWRIGHT,
     listen: (relay) => `${relay}/p2p-circuit,/webrtc`
   },
-  */
   firefox: {
     type: 'helia',
     exec: PLAYWRIGHT,
     args: ['--browser', 'firefox'],
+    listen: (relay) => `${relay}/p2p-circuit,/webrtc`
+  },
+  webkit: {
+    type: 'helia',
+    exec: PLAYWRIGHT,
+    args: ['--browser', 'webkit'],
     listen: (relay) => `${relay}/p2p-circuit,/webrtc`
   },
   'node.js': {
@@ -64,21 +67,15 @@ const webSocketimpls: Record<string, Impl> = {
 }
 
 const webTransportImpls: Record<string, Impl> = {
-  /*
-  // https://issues.chromium.org/issues/326887753?pli=1
   chromium: {
     type: 'helia',
     exec: PLAYWRIGHT
   },
-  */
-  /*
-  playwright ships with firefox 121 at the time of writing, it needs 125
   firefox: {
     type: 'helia',
     exec: PLAYWRIGHT,
     args: ['--browser', 'firefox']
   },
-  */
   kubo: {
     type: 'kubo',
     listen: () => '/ip4/127.0.0.1/udp/0/quic-v1/webtransport'
