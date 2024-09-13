@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.4](https://github.com/ipfs/helia/compare/bitswap-v1.1.3...bitswap-v1.1.4) (2024-09-13)
+
+
+### Bug Fixes
+
+* remove @libp2p/interfaces dep ([#591](https://github.com/ipfs/helia/issues/591)) ([e567717](https://github.com/ipfs/helia/commit/e567717102464a925f87cb10fc05808a50be960e))
+
 ## [1.1.3](https://github.com/ipfs/helia/compare/bitswap-v1.1.2...bitswap-v1.1.3) (2024-07-31)
 
 

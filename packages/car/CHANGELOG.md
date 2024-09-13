@@ -1,5 +1,19 @@
 # Changelog
 
+## [3.2.1](https://github.com/ipfs/helia/compare/car-v3.2.0...car-v3.2.1) (2024-09-13)
+
+
+### Bug Fixes
+
+* remove @libp2p/interfaces dep ([#591](https://github.com/ipfs/helia/issues/591)) ([e567717](https://github.com/ipfs/helia/commit/e567717102464a925f87cb10fc05808a50be960e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @helia/mfs bumped from ^3.0.7 to ^3.0.8
+
 ## [3.2.0](https://github.com/ipfs/helia/compare/car-v3.1.5...car-v3.2.0) (2024-07-31)
 
 

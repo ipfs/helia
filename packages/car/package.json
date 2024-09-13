@@ -1,6 +1,6 @@
 {
   "name": "@helia/car",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "description": "Import/export car files from Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/car#readme",
@@ -152,7 +152,7 @@
     "progress-events": "^1.0.0"
   },
   "devDependencies": {
-    "@helia/mfs": "^3.0.7",
+    "@helia/mfs": "^3.0.8",
     "@helia/unixfs": "^3.0.7",
     "@ipld/dag-pb": "^4.1.0",
     "aegir": "^44.0.1",

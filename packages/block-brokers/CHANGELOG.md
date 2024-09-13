@@ -1,5 +1,19 @@
 # Changelog
 
+## [3.0.4](https://github.com/ipfs/helia/compare/block-brokers-v3.0.3...block-brokers-v3.0.4) (2024-09-13)
+
+
+### Bug Fixes
+
+* Adjust filtering logic for secure contexts; improve tests ([#579](https://github.com/ipfs/helia/issues/579)) ([ac4bdb8](https://github.com/ipfs/helia/commit/ac4bdb8a73cab23500221340830969552a1d8db6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^1.1.3 to ^1.1.4
+
 ## [3.0.3](https://github.com/ipfs/helia/compare/block-brokers-v3.0.2...block-brokers-v3.0.3) (2024-07-31)
 
 
