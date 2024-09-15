@@ -53,7 +53,7 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@helia/delegated-routing-v1-http-api-client": "^3.0.0",
+    "@helia/delegated-routing-v1-http-api-client": "^4.0.0",
     "@helia/interface": "^4.3.1",
     "@libp2p/peer-id": "^5.0.0",
     "@libp2p/interface": "^2.0.0",
