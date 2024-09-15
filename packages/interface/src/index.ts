@@ -113,5 +113,6 @@ export interface DAGWalker {
 }
 
 export * from './blocks.js'
+export * from './errors.js'
 export * from './pins.js'
 export * from './routing.js'

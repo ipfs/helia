@@ -207,6 +207,6 @@ describe('stat', function () {
     await expect(fs.stat(cid, {
       offline: true
     })).to.eventually.be.rejected
-      .with.property('code', 'ERR_NOT_FOUND')
+      .with.property('name', 'NotFoundError')
   })
 })

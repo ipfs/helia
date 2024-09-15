@@ -1,16 +1,18 @@
-import { CodeError } from '@libp2p/interface'
+import { isPublicKey } from '@libp2p/interface'
 import { logger } from '@libp2p/logger'
-import { peerIdToRoutingKey } from 'ipns'
+import { multihashToIPNSRoutingKey } from 'ipns'
 import { ipnsSelector } from 'ipns/selector'
 import { ipnsValidator } from 'ipns/validator'
 import { CustomProgressEvent, type ProgressEvent } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { InvalidTopicError } from '../errors.js'
 import { localStore, type LocalStore } from './local-store.js'
 import type { GetOptions, IPNSRouting, PutOptions } from './index.js'
-import type { PeerId, Message, PublishResult, PubSub } from '@libp2p/interface'
+import type { PeerId, Message, PublishResult, PubSub, PublicKey } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
+import type { MultihashDigest } from 'multiformats/hashes/interface'
 
 const log = logger('helia:ipns:routing:pubsub')
 
@@ -147,8 +149,9 @@ class PubSubRouting implements IPNSRouting {
   /**
    * Cancel pubsub subscriptions related to ipns
    */
-  cancel (key: PeerId): void {
-    const routingKey = peerIdToRoutingKey(key)
+  cancel (key: PublicKey | MultihashDigest<0x00 | 0x12>): void {
+    const digest = isPublicKey(key) ? key.toMultihash() : key
+    const routingKey = multihashToIPNSRoutingKey(digest)
     const topic = keyToTopic(routingKey)
 
     // Not found topic
@@ -177,7 +180,7 @@ function keyToTopic (key: Uint8Array): string {
  */
 function topicToKey (topic: string): Uint8Array {
   if (topic.substring(0, PUBSUB_NAMESPACE.length) !== PUBSUB_NAMESPACE) {
-    throw new CodeError('topic received is not from a record', 'ERR_TOPIC_IS_NOT_FROM_RECORD_NAMESPACE')
+    throw new InvalidTopicError('Topic received is not from a record')
   }
 
   const key = topic.substring(PUBSUB_NAMESPACE.length)

@@ -1,4 +1,5 @@
-import { CodeError, start, stop } from '@libp2p/interface'
+import { NoRoutersAvailableError } from '@helia/interface'
+import { NotFoundError, start, stop } from '@libp2p/interface'
 import { PeerQueue } from '@libp2p/utils/peer-queue'
 import merge from 'it-merge'
 import type { Routing as RoutingInterface, Provider, RoutingOptions } from '@helia/interface'
@@ -41,7 +42,7 @@ export class Routing implements RoutingInterface, Startable {
    */
   async * findProviders (key: CID, options: RoutingOptions = {}): AsyncIterable<Provider> {
     if (this.routers.length === 0) {
-      throw new CodeError('No content routers available', 'ERR_NO_ROUTERS_AVAILABLE')
+      throw new NoRoutersAvailableError('No content routers available')
     }
 
     // provider multiaddrs are only cached for a limited time, so they can come
@@ -103,7 +104,7 @@ export class Routing implements RoutingInterface, Startable {
    */
   async provide (key: CID, options: AbortOptions = {}): Promise<void> {
     if (this.routers.length === 0) {
-      throw new CodeError('No content routers available', 'ERR_NO_ROUTERS_AVAILABLE')
+      throw new NoRoutersAvailableError('No content routers available')
     }
 
     await Promise.all(
@@ -144,7 +145,7 @@ export class Routing implements RoutingInterface, Startable {
    */
   async findPeer (id: PeerId, options?: RoutingOptions): Promise<PeerInfo> {
     if (this.routers.length === 0) {
-      throw new CodeError('No peer routers available', 'ERR_NO_ROUTERS_AVAILABLE')
+      throw new NoRoutersAvailableError('No peer routers available')
     }
 
     const self = this
@@ -167,7 +168,7 @@ export class Routing implements RoutingInterface, Startable {
       return peer
     }
 
-    throw new CodeError('Could not find peer in routing', 'ERR_NOT_FOUND')
+    throw new NotFoundError('Could not find peer in routing')
   }
 
   /**
@@ -175,7 +176,7 @@ export class Routing implements RoutingInterface, Startable {
    */
   async * getClosestPeers (key: Uint8Array, options: RoutingOptions = {}): AsyncIterable<PeerInfo> {
     if (this.routers.length === 0) {
-      throw new CodeError('No peer routers available', 'ERR_NO_ROUTERS_AVAILABLE')
+      throw new NoRoutersAvailableError('No peer routers available')
     }
 
     for await (const peer of merge(

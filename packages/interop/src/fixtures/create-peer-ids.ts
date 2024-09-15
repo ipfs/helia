@@ -33,7 +33,7 @@ export async function sortClosestPeers (buf: Uint8Array, peers: PeerId[]): Promi
  * Creates a DHT ID by hashing a Peer ID
  */
 export async function convertPeerId (peerId: PeerId): Promise<Uint8Array> {
-  return convertBuffer(peerId.toBytes())
+  return convertBuffer(peerId.toMultihash().bytes)
 }
 
 /**

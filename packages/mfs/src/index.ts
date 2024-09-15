@@ -266,7 +266,7 @@ class DefaultMFS implements MFS {
         const buf = await this.components.datastore.get(this.key)
         this.root = CID.decode(buf)
       } catch (err: any) {
-        if (err.code !== 'ERR_NOT_FOUND') {
+        if (err.name !== 'NotFoundError') {
           throw err
         }
 

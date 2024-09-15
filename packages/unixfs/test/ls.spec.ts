@@ -130,6 +130,6 @@ describe('ls', () => {
     await expect(drain(fs.ls(cid, {
       offline: true
     }))).to.eventually.be.rejected
-      .with.property('code', 'ERR_NOT_FOUND')
+      .with.property('name', 'NotFoundError')
   })
 })

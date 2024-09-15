@@ -65,7 +65,7 @@ describe('mkdir', () => {
     await fs.mkdir(dirPath)
 
     await expect(fs.mkdir(dirPath)).to.eventually.be.rejected()
-      .with.property('code', 'ERR_ALREADY_EXISTS')
+      .with.property('name', 'AlreadyExistsError')
   })
 
   it('creates a nested directory with a different CID version to the parent', async () => {

@@ -52,7 +52,7 @@ describe('cp', () => {
     const target = CID.createV1(identity.code, hash)
 
     await expect(fs.cp(source, target, 'foo')).to.eventually.be.rejected
-      .with.property('code', 'ERR_NOT_A_DIRECTORY')
+      .with.property('name', 'NotADirectoryError')
   })
 
   it('refuses to copy files from an unreadable node', async () => {
@@ -60,7 +60,7 @@ describe('cp', () => {
     const source = CID.createV1(identity.code, hash)
 
     await expect(fs.cp(source, emptyDirCid, 'foo')).to.eventually.be.rejected
-      .with.property('code', 'ERR_NOT_UNIXFS')
+      .with.property('name', 'NotUnixFSError')
   })
 
   it('refuses to copy files to an existing file', async () => {
@@ -69,7 +69,7 @@ describe('cp', () => {
     const target = await fs.cp(source, emptyDirCid, path)
 
     await expect(fs.cp(source, target, path)).to.eventually.be.rejected
-      .with.property('code', 'ERR_ALREADY_EXISTS')
+      .with.property('name', 'AlreadyExistsError')
 
     // should succeed with force option
     await expect(fs.cp(source, target, path, {
@@ -159,7 +159,7 @@ describe('cp', () => {
     }
 
     await expect(fs.cp(file.cid, shardedDirCid, file.name)).to.eventually.be.rejected
-      .with.property('code', 'ERR_ALREADY_EXISTS')
+      .with.property('name', 'AlreadyExistsError')
 
     // should succeed with force option
     await expect(fs.cp(file.cid, shardedDirCid, file.name, {
@@ -190,6 +190,6 @@ describe('cp', () => {
     await expect(fs.cp(cid, cid, 'file.txt', {
       offline: true
     })).to.eventually.be.rejected
-      .with.property('code', 'ERR_NOT_FOUND')
+      .with.property('name', 'NotFoundError')
   })
 })

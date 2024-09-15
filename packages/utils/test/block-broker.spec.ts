@@ -142,7 +142,7 @@ describe('block-broker', () => {
       const error = err as AggregateError & { errors: Error & { code: string } }
       expect(error).to.be.an('error')
       expect(error.errors).to.be.an('array').with.lengthOf(1)
-      expect(error.errors[0]).to.be.an('error').with.property('code', 'ERR_HASH_MISMATCH')
+      expect(error.errors[0]).to.be.an('error').with.property('name', 'InvalidMultihashError')
     }
   })
 })

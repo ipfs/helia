@@ -1,7 +1,8 @@
 /* eslint-env mocha */
 
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { uriToMultiaddr } from '@multiformats/uri-to-multiaddr'
 import { expect } from 'aegir/chai'
@@ -31,13 +32,13 @@ describe('trustless-gateway-block-broker', () => {
     routing = stubInterface<Routing>()
 
     badGatewayPeer = {
-      id: await createEd25519PeerId(),
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       multiaddrs: [
         uriToMultiaddr(process.env.BAD_TRUSTLESS_GATEWAY ?? '')
       ]
     }
     goodGatewayPeer = {
-      id: await createEd25519PeerId(),
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       multiaddrs: [
         uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
       ]
@@ -112,19 +113,19 @@ describe('trustless-gateway-block-broker', () => {
     routing.findProviders.returns(async function * () {
       // non-http provider
       yield {
-        id: await createEd25519PeerId(),
+        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
         multiaddrs: [
           multiaddr('/ip4/132.32.25.6/tcp/1234')
         ]
       }
       // expired peer info
       yield {
-        id: await createEd25519PeerId(),
+        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
         multiaddrs: []
       }
       // http gateway
       yield {
-        id: await createEd25519PeerId(),
+        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
         multiaddrs: [
           uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
         ]

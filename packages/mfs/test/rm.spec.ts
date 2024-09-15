@@ -38,7 +38,7 @@ describe('rm', () => {
     await fs.rm(filePath)
 
     await expect(fs.stat(filePath)).to.eventually.be.rejected
-      .with.property('code', 'ERR_DOES_NOT_EXIST')
+      .with.property('name', 'DoesNotExistError')
   })
 
   it('removes a directory', async () => {
@@ -49,7 +49,7 @@ describe('rm', () => {
     await fs.rm(dirPath)
 
     await expect(fs.stat(dirPath)).to.eventually.be.rejected
-      .with.property('code', 'ERR_DOES_NOT_EXIST')
+      .with.property('name', 'DoesNotExistError')
   })
 
   it('removes a sharded directory inside a normal directory', async () => {
@@ -68,7 +68,7 @@ describe('rm', () => {
     await fs.rm(shardedDirPath)
 
     await expect(fs.stat(shardedDirPath)).to.eventually.be.rejected
-      .with.property('code', 'ERR_DOES_NOT_EXIST')
+      .with.property('name', 'DoesNotExistError')
 
     await expect(fs.stat(dirPath)).to.eventually.have.nested.property('unixfs.type', 'directory')
   })
@@ -89,7 +89,7 @@ describe('rm', () => {
     await fs.rm(shardedSubDirPath)
 
     await expect(fs.stat(shardedSubDirPath)).to.eventually.be.rejected
-      .with.property('code', 'ERR_DOES_NOT_EXIST')
+      .with.property('name', 'DoesNotExistError')
 
     const shardedDirStats = await fs.stat(shardedDirPath)
     expect(shardedDirStats.cid.toString()).to.equal(shardedDirCid.toString(), 'adding and removing a file from a sharded directory did not result in the original sharded CID')

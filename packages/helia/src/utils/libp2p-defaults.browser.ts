@@ -35,7 +35,7 @@ export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOpti
   const agentVersion = `${name}/${version} ${libp2pInfo.name}/${libp2pInfo.version} UserAgent=${globalThis.navigator.userAgent}`
 
   return {
-    peerId: options.peerId,
+    privateKey: options.privateKey,
     dns: options.dns,
     addresses: {
       listen: [
@@ -51,7 +51,7 @@ export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOpti
       webTransport(),
       webSockets()
     ],
-    connectionEncryption: [
+    connectionEncrypters: [
       noise()
     ],
     streamMuxers: [

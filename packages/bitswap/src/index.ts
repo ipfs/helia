@@ -103,7 +103,7 @@ export interface BitswapOptions {
    *
    * @default false
    */
-  runOnTransientConnections?: boolean
+  runOnLimitedConnections?: boolean
 
   /**
    * Enables loading esoteric hash functions

@@ -1,6 +1,7 @@
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { CID } from 'multiformats/cid'
@@ -35,7 +36,7 @@ describe('bitswap', () => {
     cid = CID.createV0(mh).toV1()
 
     components = {
-      peerId: await createEd25519PeerId(),
+      peerId: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       routing: stubInterface<Routing>(),
       blockstore: new MemoryBlockstore(),
       libp2p: stubInterface<Libp2p>({
@@ -61,7 +62,7 @@ describe('bitswap', () => {
 
   describe('want', () => {
     it('should want a block that is available on the network', async () => {
-      const remotePeer = await createEd25519PeerId()
+      const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
       const findProvsSpy = bitswap.network.findAndConnect = Sinon.stub()
       findProvsSpy.resolves()
 
@@ -112,7 +113,7 @@ describe('bitswap', () => {
       })
 
       await expect(p).to.eventually.be.rejected
-        .with.property('code', 'ABORT_ERR')
+        .with.property('name', 'AbortError')
     })
 
     it('should notify peers we have a block', async () => {
@@ -126,7 +127,7 @@ describe('bitswap', () => {
 
   describe('wantlist', () => {
     it('should remove CIDs from the wantlist when the block arrives', async () => {
-      const remotePeer = await createEd25519PeerId()
+      const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
       expect(bitswap.getWantlist()).to.be.empty()
 
       const findProvsSpy = bitswap.network.findAndConnect = Sinon.stub()
@@ -182,7 +183,7 @@ describe('bitswap', () => {
       expect(bitswap.getWantlist().map(w => w.cid)).to.include(cid)
 
       await expect(p).to.eventually.be.rejected
-        .with.property('code', 'ABORT_ERR')
+        .with.property('name', 'AbortError')
 
       expect(bitswap.getWantlist()).to.be.empty()
     })
@@ -190,7 +191,7 @@ describe('bitswap', () => {
 
   describe('peer wantlist', () => {
     it('should return a peer wantlist', async () => {
-      const remotePeer = await createEd25519PeerId()
+      const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
       // don't have this peer yet
       expect(bitswap.getPeerWantlist(remotePeer)).to.be.undefined()

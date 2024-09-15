@@ -1,7 +1,7 @@
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
-import { peerIdToRoutingKey, create, marshal } from 'ipns'
+import { multihashToIPNSRoutingKey, createIPNSRecord, marshalIPNSRecord } from 'ipns'
 import drain from 'it-drain'
 import { CID } from 'multiformats'
 import { stubInterface } from 'sinon-ts'
@@ -47,10 +47,10 @@ describe('delegated-http-routing', () => {
   })
 
   it('should put a IPNS record value', async () => {
-    const peerId = await createEd25519PeerId()
-    const key = peerIdToRoutingKey(peerId)
-    const record = await create(peerId, '/hello world', 0, 100)
-    const value = marshal(record)
+    const privateKey = await generateKeyPair('Ed25519')
+    const key = multihashToIPNSRoutingKey(privateKey.publicKey.toMultihash())
+    const record = await createIPNSRecord(privateKey, '/hello world', 0, 100)
+    const value = marshalIPNSRecord(record)
     const options = {}
 
     await router.put(key, value, options)
@@ -69,9 +69,9 @@ describe('delegated-http-routing', () => {
   })
 
   it('should get a IPNS record value', async () => {
-    const peerId = await createEd25519PeerId()
-    const key = peerIdToRoutingKey(peerId)
-    const record = await create(peerId, '/hello world', 0, 100)
+    const privateKey = await generateKeyPair('Ed25519')
+    const key = multihashToIPNSRoutingKey(privateKey.publicKey.toMultihash())
+    const record = await createIPNSRecord(privateKey, '/hello world', 0, 100)
     const options = {}
 
     client.getIPNS.resolves(record)
@@ -86,7 +86,7 @@ describe('delegated-http-routing', () => {
     const options = {}
 
     await expect(router.get(key, options)).to.eventually.be.rejected
-      .with.property('code', 'ERR_NOT_FOUND')
+      .with.property('name', 'NotFoundError')
 
     expect(client.getIPNS.called).to.be.false()
   })

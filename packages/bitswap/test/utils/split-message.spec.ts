@@ -174,6 +174,6 @@ describe('split-message', () => {
     input.addBlock(block.cid, block.block)
 
     expect(() => all(splitMessage(input, DEFAULT_MAX_OUTGOING_MESSAGE_SIZE))).to.throw()
-      .with.property('code', 'ERR_BLOCK_TOO_LARGE')
+      .with.property('name', 'BlockTooLargeError')
   })
 })
