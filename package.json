@@ -45,6 +45,7 @@
   },
   "type": "module",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "benchmarks/*"
   ]
 }

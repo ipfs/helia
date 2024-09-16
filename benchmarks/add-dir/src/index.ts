@@ -15,10 +15,10 @@ const TEST_PATH = process.env.TEST_PATH
 const RESULT_PRECISION = 2
 
 export interface AddDirBenchmark {
-  teardown: () => Promise<void>
-  addFile?: (path: string) => Promise<CID>
-  addDir: (path: string) => Promise<CID>
-  getSize?: (cid: CID) => Promise<bigint>
+  teardown(): Promise<void>
+  addFile?(path: string): Promise<CID>
+  addDir(path: string): Promise<CID>
+  getSize?(cid: CID): Promise<bigint>
 }
 
 interface BenchmarkTaskResult {
@@ -33,7 +33,7 @@ const getDefaultResults = (): BenchmarkTaskResult => ({
   sizes: new Map<string, Set<string>>()
 })
 
-const impls: Array<{ name: string, create: () => Promise<AddDirBenchmark>, results: BenchmarkTaskResult }> = [
+const impls: Array<{ name: string, create(): Promise<AddDirBenchmark>, results: BenchmarkTaskResult }> = [
   {
     name: 'helia-fs',
     create: async () => createHeliaBenchmark(),
