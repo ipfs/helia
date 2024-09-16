@@ -1,20 +1,20 @@
 /* eslint-disable no-console */
 
-import type { CID } from 'multiformats/cid'
+import bufferStream from 'it-buffer-stream'
+import prettyBytes from 'pretty-bytes'
 import { createHeliaBenchmark } from './helia.js'
 import { createKuboBenchmark } from './kubo.js'
-import bufferStream from 'it-buffer-stream'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import prettyBytes from 'pretty-bytes'
+import type { CID } from 'multiformats/cid'
 
 const ONE_MEG = 1024 * 1024
 
 export interface TransferBenchmark {
-  teardown: () => Promise<void>
-  addr: () => Promise<Multiaddr>
-  dial: (multiaddr: Multiaddr) => Promise<void>
-  add: (content: AsyncIterable<Uint8Array>, options: ImportOptions) => Promise<CID>
-  get: (cid: CID) => Promise<void>
+  teardown(): Promise<void>
+  addr(): Promise<Multiaddr>
+  dial(multiaddr: Multiaddr): Promise<void>
+  add(content: AsyncIterable<Uint8Array>, options: ImportOptions): Promise<CID>
+  get(cid: CID): Promise<void>
 }
 
 export interface ImportOptions {
@@ -42,7 +42,7 @@ const opts: Record<string, ImportOptions> = {
     rawLeaves: true,
     cidVersion: 1,
     maxChildrenPerNode: 1024
-  },
+  }
 /*  '256KiB block size': {
     chunkSize: 256 * 1024,
     rawLeaves: true,
@@ -99,12 +99,12 @@ for (const [name, options] of Object.entries(opts)) {
   }
 }
 
-const impls: Array<{ name: string, create: () => Promise<TransferBenchmark> }> = [{
+const impls: Array<{ name: string, create(): Promise<TransferBenchmark> }> = [{
   name: 'helia',
-  create: async () => await createHeliaBenchmark()
+  create: async () => createHeliaBenchmark()
 }, {
   name: 'kubo',
-  create: async () => await createKuboBenchmark()
+  create: async () => createKuboBenchmark()
 }]
 
 async function main (): Promise<void> {

@@ -9,12 +9,10 @@ import { createHeliaBenchmark } from './helia.js'
 import { createKuboBenchmark } from './kubo.js'
 
 const PINNED_DAG_COUNT = parseInt(process.env.INCREMENT ?? '10000')
-const GARBAGE_BLOCK_COUNT = parseInt(process.env.INCREMENT ?? '10000')
 const ITERATIONS = parseInt(process.env.ITERATIONS ?? '5')
 const RESULT_PRECISION = 2
 
 export interface GcBenchmark {
-  gc(): Promise<void>
   teardown(): Promise<void>
   pin(cid: CID): Promise<void>
   putBlocks(blocks: Array<{ key: CID, value: Uint8Array }>): Promise<void>
@@ -24,7 +22,6 @@ export interface GcBenchmark {
 }
 
 const blocks: Array<{ key: CID, value: Uint8Array }> = []
-const garbageBlocks: Array<{ key: CID, value: Uint8Array }> = []
 const pins: CID[] = []
 
 /**
@@ -64,24 +61,6 @@ async function generateBlocks (): Promise<void> {
     blocks.push({ key: cid3, value: block3 })
     pins.push(cid3)
   }
-
-  // generate garbage blocks that will be deleted
-  for (let i = 0; i < GARBAGE_BLOCK_COUNT; i++) {
-    const block = dagPb.encode({
-      Data: crypto.randomBytes(5),
-      Links: []
-    })
-    const mh = await sha256.digest(block)
-    const cid = CID.createV1(dagPb.code, mh)
-
-    garbageBlocks.push({ key: cid, value: block })
-  }
-}
-
-async function addBlocks (benchmark: GcBenchmark): Promise<void> {
-  // add all the blocks
-  await benchmark.putBlocks(blocks)
-  await benchmark.putBlocks(garbageBlocks)
 }
 
 async function pinBlocks (benchmark: GcBenchmark): Promise<void> {
@@ -124,7 +103,7 @@ async function main (): Promise<void> {
   for (const impl of impls) {
     suite.add(impl.name, async () => {
       const start = Date.now()
-      await subject.gc()
+      await pinBlocks(subject)
       impl.results.gc.push(Date.now() - start)
     }, {
       beforeAll: async () => {
@@ -139,12 +118,8 @@ async function main (): Promise<void> {
         }
 
         start = Date.now()
-        await addBlocks(subject)
+        await subject.putBlocks(blocks)
         impl.results.addedBlocks.push(Date.now() - start)
-
-        start = Date.now()
-        await pinBlocks(subject)
-        impl.results.pinnedBlocks.push(Date.now() - start)
       },
       afterAll: async () => {
         await subject.teardown()

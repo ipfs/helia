@@ -1,24 +1,22 @@
 /* eslint-disable no-console,no-loop-func */
 
 import nodePath from 'node:path'
-import debug from 'debug'
 import { CID } from 'multiformats/cid'
 import { Bench } from 'tinybench'
 import { createHeliaBenchmark } from './helia.js'
 import { createKuboDirectBenchmark } from './kubo-direct.js'
 import { createKuboBenchmark } from './kubo.js'
 
-const log = debug('bench:add-dir')
 const ITERATIONS = parseInt(process.env.ITERATIONS ?? '5')
 const MIN_TIME = parseInt(process.env.MIN_TIME ?? '1')
 const TEST_PATH = process.env.TEST_PATH
 const RESULT_PRECISION = 2
 
 export interface AddDirBenchmark {
-  teardown: () => Promise<void>
-  addFile?: (path: string) => Promise<CID>
-  addDir: (path: string) => Promise<CID>
-  getSize?: (cid: CID) => Promise<bigint>
+  teardown(): Promise<void>
+  addFile?(path: string): Promise<CID>
+  addDir(path: string): Promise<CID>
+  getSize?(cid: CID): Promise<bigint>
 }
 
 interface BenchmarkTaskResult {
@@ -33,7 +31,7 @@ const getDefaultResults = (): BenchmarkTaskResult => ({
   sizes: new Map<string, Set<string>>()
 })
 
-const impls: Array<{ name: string, create: () => Promise<AddDirBenchmark>, results: BenchmarkTaskResult }> = [
+const impls: Array<{ name: string, create(): Promise<AddDirBenchmark>, results: BenchmarkTaskResult }> = [
   {
     name: 'helia-fs',
     create: async () => createHeliaBenchmark(),
@@ -63,19 +61,15 @@ async function main (): Promise<void> {
     iterations: ITERATIONS,
     time: MIN_TIME,
     setup: async (task) => {
-      log('Start: setup')
       const impl = impls.find(({ name }) => task.name.includes(name))
       if (impl != null) {
         subject = await impl.create()
       } else {
         throw new Error(`No implementation with name '${task.name}'`)
       }
-      log('End: setup')
     },
     teardown: async () => {
-      log('Start: teardown')
       await subject.teardown()
-      log('End: teardown')
     }
   })
 
@@ -99,11 +93,7 @@ async function main (): Promise<void> {
         impl.results.cids.set(testPath, cidSet)
       },
       {
-        beforeEach: async () => {
-          log(`Start: test ${impl.name}`)
-        },
         afterEach: async () => {
-          log(`End: test ${impl.name}`)
           const cidSet = impl.results.cids.get(testPath)
           if (cidSet != null) {
             for (const cid of cidSet.values()) {

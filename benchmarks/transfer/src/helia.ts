@@ -1,19 +1,19 @@
-import { createHelia } from 'helia'
-import { createLibp2p } from 'libp2p'
-import { tcp } from '@libp2p/tcp'
-import { noise } from '@chainsafe/libp2p-noise'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import type { TransferBenchmark } from './index.js'
+import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
-import fs from 'node:fs/promises'
-import { LevelDatastore } from 'datastore-level'
-import { FsBlockstore } from 'blockstore-fs'
-import drain from 'it-drain'
+import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { unixfs } from '@helia/unixfs'
 import { identify } from '@libp2p/identify'
+import { tcp } from '@libp2p/tcp'
+import { FsBlockstore } from 'blockstore-fs'
+import { LevelDatastore } from 'datastore-level'
+import { createHelia } from 'helia'
 import { fixedSize } from 'ipfs-unixfs-importer/chunker'
 import { balanced } from 'ipfs-unixfs-importer/layout'
+import drain from 'it-drain'
+import { createLibp2p } from 'libp2p'
+import type { TransferBenchmark } from './index.js'
 
 export async function createHeliaBenchmark (): Promise<TransferBenchmark> {
   const repoPath = path.join(os.tmpdir(), `helia-${Math.random()}`)
@@ -30,7 +30,7 @@ export async function createHeliaBenchmark (): Promise<TransferBenchmark> {
       transports: [
         tcp()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         noise()
       ],
       streamMuxers: [
@@ -38,9 +38,6 @@ export async function createHeliaBenchmark (): Promise<TransferBenchmark> {
       ],
       services: {
         identify: identify()
-      },
-      connectionManager: {
-        minConnections: 0
       }
     })
   })
@@ -62,7 +59,7 @@ export async function createHeliaBenchmark (): Promise<TransferBenchmark> {
     async add (content, options) {
       const fs = unixfs(helia)
 
-      return await fs.addByteStream(content, {
+      return fs.addByteStream(content, {
         ...options,
         chunker: options.chunkSize != null ? fixedSize({ chunkSize: options.chunkSize }) : undefined,
         layout: options.maxChildrenPerNode != null ? balanced({ maxChildrenPerNode: options.maxChildrenPerNode }) : undefined
