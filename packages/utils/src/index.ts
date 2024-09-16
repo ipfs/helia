@@ -280,12 +280,3 @@ export class Helia implements HeliaInterface {
     this.log('gc finished')
   }
 }
-
-/**
- * Used to check that the passed multihash has the passed code
- *
- * Remove after https://github.com/multiformats/js-multiformats/pull/308
- */
-export function hasCode <T extends number> (digest: MultihashDigest, code: T): digest is MultihashDigest<T> {
-  return digest.code === code
-}
