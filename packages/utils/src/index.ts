@@ -38,7 +38,7 @@ import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { BlockCodec } from 'multiformats'
 import type { CID } from 'multiformats/cid'
-import type { MultihashDigest, MultihashHasher } from 'multiformats/hashes/interface'
+import type { MultihashHasher } from 'multiformats/hashes/interface'
 
 export { AbstractSession, type AbstractCreateSessionOptions } from './abstract-session.js'
 export { BloomFilter } from './bloom-filter.js'
