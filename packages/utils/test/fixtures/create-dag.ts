@@ -1,4 +1,4 @@
-import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
+import * as dagCbor from '@ipld/dag-cbor'
 import { createAndPutBlock } from './create-block.js'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
@@ -58,33 +58,67 @@ export interface DAGNode {
  * }
  * ```
  */
-export async function createDag (codec: number, blocks: Blockstore, depth: number, children: number): Promise<Record<string, DAGNode>> {
+export async function createDag (blocks: Blockstore, depth: number, children: number): Promise<Record<string, DAGNode>> {
   const dag: Record<string, DAGNode> = {}
-  const root = await createAndPutBlock(codec, uint8arrayFromString('level-0'), blocks)
 
-  await addChildren(root, 'level', 0, 0, depth, children, dag, codec, blocks)
-
-  return dag
-}
-
-async function addChildren (cid: CID, name: string, level: number, index: number, depth: number, children: number, dag: Record<string, DAGNode>, codec: number, blocks: Blockstore): Promise<void> {
-  if (depth === 0) {
-    return
+  interface Parent {
+    name: string
+    depth: number
+    links: Parent[]
   }
 
-  name = `${name}-${index}`
+  async function descend (parent: Parent, level: number): Promise<void> {
+    if (level === -1) {
+      return
+    }
 
-  dag[name] = {
-    level,
-    cid,
+    for (let i = 0; i < children; i++) {
+      const node: Parent = {
+        name: `${parent.name}-${i}`,
+        depth: depth - level,
+        links: []
+      }
+
+      parent.links.push(node)
+
+      await descend(node, level - 1)
+    }
+  }
+
+  const node: Parent = {
+    name: 'level-0',
+    depth: 0,
     links: []
   }
 
-  for (let i = 0; i < children; i++) {
-    const subChild = await createAndPutBlock(codec, uint8arrayFromString(`${name}-${i}`), blocks)
+  await descend(node, depth - 1)
 
-    dag[name].links.push(subChild)
+  async function write (parent: Parent): Promise<void> {
+    const links: CID[] = []
 
-    await addChildren(subChild, name, level + 1, index + i, depth - 1, children, dag, codec, blocks)
+    for (const child of parent.links) {
+      if (child.links.length > 0) {
+        await write(child)
+      }
+
+      links.push(
+        await createAndPutBlock(dagCbor.code, dagCbor.encode(child), blocks)
+      )
+    }
+
+    // @ts-expect-error changing type
+    parent.links = links
+
+    const cid = await createAndPutBlock(dagCbor.code, dagCbor.encode(parent), blocks)
+
+    dag[parent.name] = {
+      cid,
+      level: parent.depth,
+      links
+    }
   }
+
+  await write(node)
+
+  return dag
 }

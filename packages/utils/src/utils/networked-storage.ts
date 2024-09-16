@@ -5,12 +5,14 @@ import filter from 'it-filter'
 import forEach from 'it-foreach'
 import { CustomProgressEvent, type ProgressOptions } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import { isPromise } from './is-promise.js'
+import type { HasherLoader } from '@helia/interface'
 import type { BlockBroker, Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions, BlockRetrievalOptions, CreateSessionOptions, SessionBlockstore } from '@helia/interface/blocks'
 import type { AbortOptions, ComponentLogger, Logger, LoggerOptions, Startable } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { AwaitIterable } from 'interface-store'
 import type { CID } from 'multiformats/cid'
-import type { MultihashHasher } from 'multiformats/hashes/interface'
+import type { MultihashDigest, MultihashHasher } from 'multiformats/hashes/interface'
 
 export interface GetOptions extends AbortOptions {
   progress?(evt: Event): void
@@ -20,12 +22,12 @@ export interface StorageComponents {
   blockstore: Blockstore
   logger: ComponentLogger
   blockBrokers: BlockBroker[]
-  hashers: Record<number, MultihashHasher>
+  getHasher: HasherLoader
 }
 
 class Storage implements Blockstore {
   protected readonly child: Blockstore
-  protected readonly hashers: Record<number, MultihashHasher>
+  protected readonly getHasher: HasherLoader
   protected log: Logger
   protected readonly logger: ComponentLogger
   protected readonly components: StorageComponents
@@ -38,7 +40,7 @@ class Storage implements Blockstore {
     this.logger = components.logger
     this.components = components
     this.child = new IdentityBlockstore(components.blockstore)
-    this.hashers = components.hashers ?? {}
+    this.getHasher = components.getHasher
   }
 
   /**
@@ -91,9 +93,11 @@ class Storage implements Blockstore {
    */
   async get (cid: CID, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetBlockProgressEvents> = {}): Promise<Uint8Array> {
     if (options.offline !== true && !(await this.child.has(cid, options))) {
+      const hasher = await this.getHasher(cid.multihash.code)
+
       // we do not have the block locally, get it from a block provider
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:providers:get', cid))
-      const block = await raceBlockRetrievers(cid, this.components.blockBrokers, this.hashers[cid.multihash.code], {
+      const block = await raceBlockRetrievers(cid, this.components.blockBrokers, hasher, {
         ...options,
         log: this.log
       })
@@ -122,9 +126,11 @@ class Storage implements Blockstore {
 
     yield * this.child.getMany(forEach(cids, async (cid): Promise<void> => {
       if (options.offline !== true && !(await this.child.has(cid, options))) {
+        const hasher = await this.getHasher(cid.multihash.code)
+
         // we do not have the block locally, get it from a block provider
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:providers:get', cid))
-        const block = await raceBlockRetrievers(cid, this.components.blockBrokers, this.hashers[cid.multihash.code], {
+        const block = await raceBlockRetrievers(cid, this.components.blockBrokers, hasher, {
           ...options,
           log: this.log
         })
@@ -219,7 +225,7 @@ export class NetworkedStorage extends Storage implements Blocks, Startable {
     return new SessionStorage({
       blockstore: this.child,
       blockBrokers,
-      hashers: this.hashers,
+      getHasher: this.getHasher,
       logger: this.logger
     }, {
       root
@@ -395,7 +401,14 @@ export const getCidBlockVerifierFunction = (cid: CID, hasher: MultihashHasher): 
 
   return async (block: Uint8Array): Promise<void> => {
     // verify block
-    const hash = await hasher.digest(block)
+    let hash: MultihashDigest<number>
+    const res = hasher.digest(block)
+
+    if (isPromise(res)) {
+      hash = await res
+    } else {
+      hash = res
+    }
 
     if (!uint8ArrayEquals(hash.digest, cid.multihash.digest)) {
       // if a hash mismatch occurs for a TrustlessGatewayBlockBroker, we should try another gateway

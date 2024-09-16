@@ -20,11 +20,20 @@ import type { Routing } from './routing.js'
 import type { AbortOptions, ComponentLogger, Metrics } from '@libp2p/interface'
 import type { DNS } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
-import type { MultihashHasher } from 'multiformats'
+import type { Await } from 'interface-store'
+import type { BlockCodec, MultihashHasher } from 'multiformats'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
 export type { Await, AwaitIterable } from 'interface-store'
+
+export interface CodecLoader {
+  <T = any, Code extends number = any>(code: Code): Await<BlockCodec<Code, T>>
+}
+
+export interface HasherLoader {
+  (code: number): Await<MultihashHasher>
+}
 
 /**
  * The API presented by a Helia node
@@ -57,18 +66,6 @@ export interface Helia {
   routing: Routing
 
   /**
-   * DAGWalkers are codec-specific implementations that know how to yield all
-   * CIDs contained within a block that corresponds to that codec.
-   */
-  dagWalkers: Record<number, DAGWalker>
-
-  /**
-   * Hashers can be used to hash a piece of data with the specified hashing
-   * algorithm.
-   */
-  hashers: Record<number, MultihashHasher>
-
-  /**
    * The DNS property can be used to perform lookups of various record types and
    * will use a resolver appropriate to the current platform.
    */
@@ -94,6 +91,19 @@ export interface Helia {
    * Remove any unpinned blocks from the blockstore
    */
   gc(options?: GCOptions): Promise<void>
+
+  /**
+   * Load an IPLD codec. Implementations may return a promise if, for example,
+   * the codec is being fetched from the network.
+   */
+  getCodec: CodecLoader
+
+  /**
+   * Hashers can be used to hash a piece of data with the specified hashing
+   * algorithm. Implementations may return a promise if, for example,
+   * the hasher is being fetched from the network.
+   */
+  getHasher: HasherLoader
 }
 
 export type GcEvents =
@@ -102,14 +112,6 @@ export type GcEvents =
 
 export interface GCOptions extends AbortOptions, ProgressOptions<GcEvents> {
 
-}
-
-/**
- * DAGWalkers take a block and yield CIDs encoded in that block
- */
-export interface DAGWalker {
-  codec: number
-  walk(block: Uint8Array): Generator<CID, void, undefined>
 }
 
 export * from './blocks.js'
