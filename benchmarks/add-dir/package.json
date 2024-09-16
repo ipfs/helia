@@ -11,25 +11,20 @@
     "dep-check": "aegir dep-check",
     "start": "npm run build && node dist/src/index.js"
   },
-  "devDependencies": {
-    "@chainsafe/libp2p-noise": "^16.0.0",
-    "@chainsafe/libp2p-yamux": "^7.0.0",
+  "dependencies": {
     "@helia/unixfs": "^3.0.4",
-    "@ipld/dag-pb": "^4.0.2",
-    "@libp2p/websockets": "^9.0.0",
     "aegir": "^44.0.1",
+    "blockstore-core": "^5.0.2",
     "blockstore-fs": "^2.0.1",
+    "datastore-core": "^10.0.2",
     "datastore-level": "^11.0.1",
     "execa": "^8.0.1",
     "helia": "^4.1.1",
     "ipfs-unixfs-importer": "^15.1.5",
     "ipfsd-ctl": "^15.0.0",
-    "it-all": "^3.0.4",
-    "it-drain": "^3.0.5",
-    "it-map": "^3.0.5",
+    "it-last": "^3.0.6",
     "kubo": "^0.30.0",
     "kubo-rpc-client": "^5.0.0",
-    "libp2p": "^2.0.0",
     "multiformats": "^13.1.0",
     "tinybench": "^2.4.0"
   }
