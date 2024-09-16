@@ -1,7 +1,8 @@
 /* eslint-env mocha */
 
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { uriToMultiaddr } from '@multiformats/uri-to-multiaddr'
 import { expect } from 'aegir/chai'
@@ -38,7 +39,7 @@ describe('trustless-gateway sessions', () => {
 
     components.routing.findProviders.returns(async function * () {
       yield {
-        id: await createEd25519PeerId(),
+        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
         multiaddrs: [
           uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
         ]
@@ -59,19 +60,19 @@ describe('trustless-gateway sessions', () => {
 
     components.routing.findProviders.returns(async function * () {
       yield {
-        id: await createEd25519PeerId(),
+        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
         multiaddrs: [
           multiaddr('/ip4/127.0.0.1/tcp/1234')
         ]
       }
       yield {
-        id: await createEd25519PeerId(),
+        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
         multiaddrs: [
           multiaddr('/ip4/127.0.0.1/udp/1234/quic-v1')
         ]
       }
       yield {
-        id: await createEd25519PeerId(),
+        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
         multiaddrs: [
           uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
         ]
@@ -93,7 +94,7 @@ describe('trustless-gateway sessions', () => {
     const queryProviderSpy = Sinon.spy(session, 'queryProvider')
 
     const prov = {
-      id: await createEd25519PeerId(),
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       multiaddrs: [
         uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
       ]

@@ -4,13 +4,14 @@
 import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 import { ipns } from '@helia/ipns'
 import { pubsub } from '@helia/ipns/routing'
-import { peerIdFromKeys } from '@libp2p/peer-id'
+import { hasCode } from '@helia/utils'
+import { generateKeyPair } from '@libp2p/crypto/keys'
+import { peerIdFromCID } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import last from 'it-last'
 import { base36 } from 'multiformats/bases/base36'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
-import { identity } from 'multiformats/hashes/identity'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -25,8 +26,6 @@ import type { Libp2p, PubSub } from '@libp2p/interface'
 import type { Keychain } from '@libp2p/keychain'
 import type { HeliaLibp2p } from 'helia'
 import type { KuboNode } from 'ipfsd-ctl'
-
-const LIBP2P_KEY_CODEC = 0x72
 
 // skip RSA tests because we need the DHT enabled to find the public key
 // component of the keypair, but that means we can't test pubsub
@@ -70,40 +69,43 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
       const digest = await sha256.digest(input)
       const cid = CID.createV1(raw.code, digest)
 
-      const keyName = 'my-ipns-key'
-      await helia.libp2p.services.keychain.createKey(keyName, keyType)
-      const peerId = await helia.libp2p.services.keychain.exportPeerId(keyName)
+      const privateKey = await generateKeyPair('Ed25519')
 
-      if (peerId.publicKey == null) {
-        throw new Error('No public key present')
-      }
-
-      // first publish should fail because kubo isn't subscribed to key update channel
-      await expect(name.publish(peerId, cid)).to.eventually.be.rejected()
-        .with.property('message', 'PublishError.NoPeersSubscribedToTopic')
-
-      // should fail to resolve the first time as kubo was not subscribed to the pubsub channel
-      await expect(last(kubo.api.name.resolve(peerId, {
+      // first call to pubsub resolver will fail but we should trigger
+      // subscribing pubsub for updates
+      await expect(last(kubo.api.name.resolve(privateKey.publicKey.toString(), {
         timeout: 100
       }))).to.eventually.be.undefined()
 
-      // magic pubsub subscription name
-      const subscriptionName = `/ipns/${CID.createV1(LIBP2P_KEY_CODEC, identity.digest(peerId.publicKey)).toString(base36)}`
-
       // wait for kubo to be subscribed to updates
+      const kuboSubscriptionName = `/ipns/${privateKey.publicKey.toCID().toString(base36)}`
       await waitFor(async () => {
         const subs = await kubo.api.name.pubsub.subs()
-
-        return subs.includes(subscriptionName)
+        return subs.includes(kuboSubscriptionName)
       }, {
-        timeout: 30000
+        timeout: 30000,
+        message: 'Kubo did not register for record updates'
+      })
+
+      // wait for helia to see that kubo is subscribed to the topic for record updates
+      const heliaSubscriptionName = `/record/${uint8ArrayToString(uint8ArrayConcat([
+        uint8ArrayFromString('/ipns/'),
+        privateKey.publicKey.toMultihash().bytes
+      ]), 'base64url')}`
+      const kuboPeerId = (await kubo.api.id()).id.toString()
+      await waitFor(async () => {
+        const peers = helia.libp2p.services.pubsub.getSubscribers(heliaSubscriptionName)
+        return peers.map(p => p.toString()).includes(kuboPeerId)
+      }, {
+        timeout: 30000,
+        message: 'Helia did not see that Kubo was registered for record updates'
       })
 
       // publish should now succeed
-      await name.publish(peerId, cid)
+      await name.publish(privateKey, cid)
 
-      // kubo should now be able to resolve IPNS name
-      const resolved = await last(kubo.api.name.resolve(peerId, {
+      // kubo should now be able to resolve IPNS name instantly
+      const resolved = await last(kubo.api.name.resolve(privateKey.publicKey.toString(), {
         timeout: 100
       }))
 
@@ -125,15 +127,19 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
 
       // the generated id is libp2p-key CID with the public key as an identity multihash
       const peerCid = CID.parse(result.id, base36)
-      const peerId = await peerIdFromKeys(peerCid.multihash.digest)
+      const peerId = peerIdFromCID(peerCid)
+
+      if (!hasCode(peerCid.multihash, 0)) {
+        throw new Error('Incorrect hash type')
+      }
 
       // first call to pubsub resolver should fail but we should now be subscribed for updates
-      await expect(name.resolve(peerId)).to.eventually.be.rejected()
+      await expect(name.resolve(peerCid.multihash)).to.eventually.be.rejected()
 
       // actual pubsub subscription name
       const subscriptionName = `/record/${uint8ArrayToString(uint8ArrayConcat([
         uint8ArrayFromString('/ipns/'),
-        peerId.toBytes()
+        peerId.toMultihash().bytes
       ]), 'base64url')}`
 
       // wait for helia to be subscribed to the topic for record updates
@@ -164,7 +170,7 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
       // we should get an update eventually
       await waitFor(async () => {
         try {
-          resolveResult = await name.resolve(peerId)
+          resolveResult = await name.resolve(peerId.toMultihash())
 
           return true
         } catch {

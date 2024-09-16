@@ -1,4 +1,4 @@
-import { CodeError, TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
+import { InvalidParametersError, NotStartedError, TimeoutError, TypedEventEmitter, UnsupportedProtocolError, setMaxListeners } from '@libp2p/interface'
 import { PeerQueue, type PeerQueueJobOptions } from '@libp2p/utils/peer-queue'
 import drain from 'it-drain'
 import * as lp from 'it-length-prefixed'
@@ -41,7 +41,7 @@ export interface NetworkInit {
   messageReceiveTimeout?: number
   messageSendConcurrency?: number
   protocols?: string[]
-  runOnTransientConnections?: boolean
+  runOnLimitedConnections?: boolean
   maxOutgoingMessageSize?: number
   maxIncomingMessageSize?: number
 }
@@ -80,7 +80,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
   private registrarIds: string[]
   private readonly metrics: { blocksSent?: Counter, dataSent?: Counter }
   private readonly sendQueue: PeerQueue<void, SendMessageJobOptions>
-  private readonly runOnTransientConnections: boolean
+  private readonly runOnLimitedConnections: boolean
   private readonly maxOutgoingMessageSize: number
   private readonly maxIncomingMessageSize: number
 
@@ -99,7 +99,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
     this.maxInboundStreams = init.maxInboundStreams ?? DEFAULT_MAX_INBOUND_STREAMS
     this.maxOutboundStreams = init.maxOutboundStreams ?? DEFAULT_MAX_OUTBOUND_STREAMS
     this.messageReceiveTimeout = init.messageReceiveTimeout ?? DEFAULT_MESSAGE_RECEIVE_TIMEOUT
-    this.runOnTransientConnections = init.runOnTransientConnections ?? DEFAULT_RUN_ON_TRANSIENT_CONNECTIONS
+    this.runOnLimitedConnections = init.runOnLimitedConnections ?? DEFAULT_RUN_ON_TRANSIENT_CONNECTIONS
     this.maxIncomingMessageSize = init.maxIncomingMessageSize ?? DEFAULT_MAX_OUTGOING_MESSAGE_SIZE
     this.maxOutgoingMessageSize = init.maxOutgoingMessageSize ?? init.maxIncomingMessageSize ?? DEFAULT_MAX_INCOMING_MESSAGE_SIZE
     this.metrics = {
@@ -127,7 +127,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
     await this.libp2p.handle(this.protocols, this._onStream, {
       maxInboundStreams: this.maxInboundStreams,
       maxOutboundStreams: this.maxOutboundStreams,
-      runOnTransientConnection: this.runOnTransientConnections
+      runOnLimitedConnection: this.runOnLimitedConnections
     })
 
     // register protocol with topology
@@ -188,7 +188,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
       this.log('incoming new bitswap %s stream from %p', stream.protocol, connection.remotePeer)
       const abortListener = (): void => {
         if (stream.status === 'open') {
-          stream.abort(new CodeError(`Incoming Bitswap stream timed out after ${this.messageReceiveTimeout}ms`, 'ERR_TIMEOUT'))
+          stream.abort(new TimeoutError(`Incoming Bitswap stream timed out after ${this.messageReceiveTimeout}ms`))
         } else {
           this.log('stream aborted with status %s', stream.status)
         }
@@ -247,7 +247,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
     for await (const provider of this.routing.findProviders(cid, options)) {
       // make sure we can dial the provider
       const dialable = await this.libp2p.isDialable(provider.multiaddrs, {
-        runOnTransientConnection: this.runOnTransientConnections
+        runOnLimitedConnection: this.runOnLimitedConnections
       })
 
       if (!dialable) {
@@ -300,7 +300,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
       const message = options?.message
 
       if (message == null) {
-        throw new CodeError('No message to send', 'ERR_NO_MESSAGE')
+        throw new InvalidParametersError('No message to send')
       }
 
       this.log('sendMessage to %p', peerId)
@@ -337,7 +337,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
    */
   async connectTo (peer: PeerId, options?: AbortOptions & ProgressOptions<BitswapNetworkProgressEvents>): Promise<Connection> { // eslint-disable-line require-await
     if (!this.running) {
-      throw new CodeError('Network isn\'t running', 'ERR_NOT_STARTED')
+      throw new NotStartedError('Network isn\'t running')
     }
 
     options?.onProgress?.(new CustomProgressEvent<PeerId>('bitswap:network:dial', peer))
@@ -359,7 +359,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
             return true
           }
 
-          throw new CodeError(`${peer} did not support ${BITSWAP_120}`, 'ERR_BITSWAP_UNSUPPORTED_BY_PEER')
+          throw new UnsupportedProtocolError(`${peer} did not support ${BITSWAP_120}`)
         }
       })
     ])

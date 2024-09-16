@@ -1,6 +1,7 @@
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { matchPeerId } from '@libp2p/interface-compliance-tests/matchers'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
 import { stubInterface, type StubbedInstance } from 'sinon-ts'
@@ -41,7 +42,7 @@ describe('wantlist', () => {
   })
 
   it('should add peers to peer list on connect', async () => {
-    const peerId = await createEd25519PeerId()
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     await wantList.peerConnected(peerId)
 
@@ -49,7 +50,7 @@ describe('wantlist', () => {
   })
 
   it('should remove peers to peer list on disconnect', async () => {
-    const peerId = await createEd25519PeerId()
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     await wantList.peerConnected(peerId)
 
@@ -62,7 +63,7 @@ describe('wantlist', () => {
 
   it('should want blocks', async () => {
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
-    const peerId = await createEd25519PeerId()
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     await wantList.peerConnected(peerId)
 
@@ -71,7 +72,7 @@ describe('wantlist', () => {
     await expect(wantList.wantBlock(cid, {
       signal: AbortSignal.timeout(500)
     })).to.eventually.be.rejected
-      .with.property('code', 'ABORT_ERR')
+      .with.property('name', 'AbortError')
 
     const sentToPeer = components.network.sendMessage.getCall(0).args[0]
     expect(sentToPeer.toString()).equal(peerId.toString())
@@ -85,8 +86,8 @@ describe('wantlist', () => {
 
   it('should not send session block wants to non-session peers', async () => {
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
-    const sessionPeer = await createEd25519PeerId()
-    const nonSessionPeer = await createEd25519PeerId()
+    const sessionPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const nonSessionPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     await wantList.peerConnected(sessionPeer)
     await wantList.peerConnected(nonSessionPeer)
@@ -94,7 +95,7 @@ describe('wantlist', () => {
     await expect(wantList.wantSessionBlock(cid, sessionPeer, {
       signal: AbortSignal.timeout(500)
     })).to.eventually.be.rejected
-      .with.property('code', 'ABORT_ERR')
+      .with.property('name', 'AbortError')
 
     expect(components.network.sendMessage.callCount).to.equal(1)
 

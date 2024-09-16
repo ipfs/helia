@@ -1,4 +1,4 @@
-import { CodeError, setMaxListeners, start, stop } from '@libp2p/interface'
+import { InvalidMultihashError, InvalidParametersError, setMaxListeners, start, stop } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
 import { IdentityBlockstore } from 'blockstore-core/identity'
 import filter from 'it-filter'
@@ -390,7 +390,7 @@ function isRetrievingBlockBroker (broker: BlockBroker): broker is Required<Pick<
 
 export const getCidBlockVerifierFunction = (cid: CID, hasher: MultihashHasher): Required<BlockRetrievalOptions>['validateFn'] => {
   if (hasher == null) {
-    throw new CodeError(`No hasher configured for multihash code 0x${cid.multihash.code.toString(16)}, please configure one. You can look up which hash this is at https://github.com/multiformats/multicodec/blob/master/table.csv`, 'ERR_UNKNOWN_HASH_ALG')
+    throw new InvalidParametersError(`No hasher configured for multihash code 0x${cid.multihash.code.toString(16)}, please configure one. You can look up which hash this is at https://github.com/multiformats/multicodec/blob/master/table.csv`)
   }
 
   return async (block: Uint8Array): Promise<void> => {
@@ -399,7 +399,7 @@ export const getCidBlockVerifierFunction = (cid: CID, hasher: MultihashHasher): 
 
     if (!uint8ArrayEquals(hash.digest, cid.multihash.digest)) {
       // if a hash mismatch occurs for a TrustlessGatewayBlockBroker, we should try another gateway
-      throw new CodeError('Hash of downloaded block did not match multihash from passed CID', 'ERR_HASH_MISMATCH')
+      throw new InvalidMultihashError('Hash of downloaded block did not match multihash from passed CID')
     }
   }
 }

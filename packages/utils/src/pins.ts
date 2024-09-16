@@ -154,7 +154,7 @@ export class PinsImpl implements Pins {
     try {
       pinnedBlock = cborg.decode(await this.datastore.get(blockKey, options))
     } catch (err: any) {
-      if (err.code !== 'ERR_NOT_FOUND') {
+      if (err.name !== 'NotFoundError') {
         throw err
       }
     }

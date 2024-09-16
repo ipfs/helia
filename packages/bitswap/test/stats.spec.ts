@@ -1,4 +1,5 @@
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { generateKeyPair } from '@libp2p/crypto/keys'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { stubInterface, type StubbedInstance } from 'sinon-ts'
 import { Stats } from '../src/stats.js'
@@ -37,7 +38,7 @@ describe('stats', () => {
   })
 
   it('should update blocks received from a peer', async () => {
-    const peerId = await createEd25519PeerId()
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     stats.updateBlocksReceived(1, peerId)
 
@@ -56,7 +57,7 @@ describe('stats', () => {
   })
 
   it('should update duplicate blocks received from a peer', async () => {
-    const peerId = await createEd25519PeerId()
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     stats.updateDuplicateBlocksReceived(1, peerId)
 
@@ -75,7 +76,7 @@ describe('stats', () => {
   })
 
   it('should update data received from a peer', async () => {
-    const peerId = await createEd25519PeerId()
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     stats.updateDataReceived(1, peerId)
 
@@ -94,7 +95,7 @@ describe('stats', () => {
   })
 
   it('should update duplicate data received from a peer', async () => {
-    const peerId = await createEd25519PeerId()
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     stats.updateDuplicateDataReceived(1, peerId)
 

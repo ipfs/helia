@@ -1,8 +1,9 @@
-import { CustomEvent, isPeerId } from '@libp2p/interface'
+import { generateKeyPair } from '@libp2p/crypto/keys'
+import { isPeerId } from '@libp2p/interface'
 import { matchMultiaddr } from '@libp2p/interface-compliance-tests/matchers'
 import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
@@ -61,10 +62,10 @@ describe('network', () => {
   it('should not connect if not running', async () => {
     await network.stop()
 
-    const peerId = await createEd25519PeerId()
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
-    await expect(network.connectTo(peerId))
-      .to.eventually.be.rejected.with.property('code', 'ERR_NOT_STARTED')
+    await expect(network.connectTo(peerId)).to.eventually.be.rejected
+      .with.property('name', 'NotStartedError')
   })
 
   it('should register protocol handlers', () => {
@@ -87,7 +88,7 @@ describe('network', () => {
   })
 
   it('should emit a bitswap:message event when receiving an incoming message', async () => {
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const connection = stubInterface<Connection>({
       remotePeer
     })
@@ -120,7 +121,7 @@ describe('network', () => {
   })
 
   it('should close the stream if parsing an incoming message fails', async () => {
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const connection = stubInterface<Connection>({
       remotePeer
     })
@@ -144,7 +145,7 @@ describe('network', () => {
   })
 
   it('should close the stream if no message is received', async () => {
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const connection = stubInterface<Connection>({
       remotePeer
     })
@@ -166,7 +167,7 @@ describe('network', () => {
 
   it('should find providers', async () => {
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
-    const peerId = await createEd25519PeerId()
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const providers = [{
       id: peerId,
@@ -189,7 +190,7 @@ describe('network', () => {
 
   it('should ignore providers with only transient addresses', async () => {
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
-    const peerId = await createEd25519PeerId()
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const providers = [{
       id: peerId,
@@ -204,7 +205,7 @@ describe('network', () => {
 
     components.libp2p.isDialable = Sinon.stub()
     components.libp2p.isDialable.withArgs(matchMultiaddr(providers[0].multiaddrs[0]), {
-      runOnTransientConnection: false
+      runOnLimitedConnection: false
     })
 
     const output = await all(network.findProviders(cid))
@@ -218,13 +219,13 @@ describe('network', () => {
       ...components,
       logger: defaultLogger()
     }, {
-      runOnTransientConnections: true
+      runOnLimitedConnections: true
     })
 
     await network.start()
 
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
-    const peerId = await createEd25519PeerId()
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const providers = [{
       id: peerId,
@@ -247,7 +248,7 @@ describe('network', () => {
 
   it('should find and connect to a peer', async () => {
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
-    const peerId = await createEd25519PeerId()
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const providers = [{
       id: peerId,
@@ -301,12 +302,12 @@ describe('network', () => {
       ...components,
       logger: defaultLogger()
     }, {
-      runOnTransientConnections: true
+      runOnLimitedConnections: true
     })
     await network.start()
 
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
-    const peerId = await createEd25519PeerId()
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const providers = [{
       id: peerId,
@@ -355,7 +356,7 @@ describe('network', () => {
   })
 
   it('should send a message', async () => {
-    const peerId = await createEd25519PeerId()
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const [localDuplex, remoteDuplex] = duplexPair<any>()
     const remoteStream = stubInterface<Stream>(remoteDuplex)
 
@@ -379,7 +380,7 @@ describe('network', () => {
     })
     await network.start()
 
-    const peerId = await createEd25519PeerId()
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const [localDuplex, remoteDuplex] = duplexPair<any>()
     const remoteStream = stubInterface<Stream>(remoteDuplex)
 
@@ -440,7 +441,7 @@ describe('network', () => {
     messageB.pendingBytes = 7
 
     // block the queue with a slow request
-    const slowPeer = await createEd25519PeerId()
+    const slowPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     components.libp2p.dialProtocol.withArgs(slowPeer).callsFake(async () => {
       await delay(100)
       throw new Error('Urk!')

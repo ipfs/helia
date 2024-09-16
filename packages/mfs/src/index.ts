@@ -37,7 +37,7 @@ import { UnixFS as IPFSUnixFS, type Mtime } from 'ipfs-unixfs'
 import { CID } from 'multiformats/cid'
 import { basename } from './utils/basename.js'
 import type { AddOptions, CatOptions, ChmodOptions, CpOptions, LsOptions, MkdirOptions as UnixFsMkdirOptions, RmOptions as UnixFsRmOptions, StatOptions, TouchOptions, UnixFS, UnixFSStats } from '@helia/unixfs'
-import type { AbortOptions } from '@libp2p/interfaces'
+import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { UnixFSEntry } from 'ipfs-unixfs-exporter'
@@ -266,7 +266,7 @@ class DefaultMFS implements MFS {
         const buf = await this.components.datastore.get(this.key)
         this.root = CID.decode(buf)
       } catch (err: any) {
-        if (err.code !== 'ERR_NOT_FOUND') {
+        if (err.name !== 'NotFoundError') {
           throw err
         }
 

@@ -19,7 +19,7 @@ export class Stats {
   }
 
   updateBlocksReceived (count: number = 1, peerId?: PeerId): void {
-    const stats: Record<string, number | unknown> = {
+    const stats: Record<string, number | true> = {
       global: count
     }
 
@@ -31,7 +31,7 @@ export class Stats {
   }
 
   updateDuplicateBlocksReceived (count: number = 1, peerId?: PeerId): void {
-    const stats: Record<string, number | unknown> = {
+    const stats: Record<string, number | true> = {
       global: count
     }
 

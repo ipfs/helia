@@ -38,7 +38,7 @@ describe('rm', () => {
     await expect(fs.stat(updatedDirCid, {
       path
     })).to.eventually.be.rejected
-      .with.property('code', 'ERR_NOT_FOUND')
+      .with.property('name', 'NotFoundError')
   })
 
   it('removes a directory', async () => {
@@ -49,7 +49,7 @@ describe('rm', () => {
     await expect(fs.stat(updatedDirCid, {
       path
     })).to.eventually.be.rejected
-      .with.property('code', 'ERR_NOT_FOUND')
+      .with.property('name', 'NotFoundError')
   })
 
   it('removes a sharded directory inside a normal directory', async () => {
@@ -67,7 +67,7 @@ describe('rm', () => {
     await expect(fs.stat(updatedContainingDirCid, {
       path: dirName
     })).to.eventually.be.rejected
-      .with.property('code', 'ERR_NOT_FOUND')
+      .with.property('name', 'NotFoundError')
   })
 
   it('removes a sharded directory inside a sharded directory', async () => {
@@ -86,7 +86,7 @@ describe('rm', () => {
     await expect(fs.stat(updatedContainingDirCid, {
       path: dirName
     })).to.eventually.be.rejected
-      .with.property('code', 'ERR_NOT_FOUND')
+      .with.property('name', 'NotFoundError')
 
     expect(updatedContainingDirCid.toString()).to.equal(shardedDirCid.toString(), 'adding and removing a file from a sharded directory did not result in the original sharded CID')
   })
@@ -227,6 +227,6 @@ describe('rm', () => {
     await expect(fs.rm(cid, 'dir', {
       offline: true
     })).to.eventually.be.rejected
-      .with.property('code', 'ERR_NOT_FOUND')
+      .with.property('name', 'NotFoundError')
   })
 })

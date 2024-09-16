@@ -1,13 +1,14 @@
 import { DEFAULT_SESSION_MAX_PROVIDERS } from '@helia/interface'
+import { generateKeyPair } from '@libp2p/crypto/keys'
+import { UnsupportedProtocolError } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerMap } from '@libp2p/peer-collections'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { CID } from 'multiformats/cid'
 import pWaitFor from 'p-wait-for'
-import { CodeError } from 'protons-runtime'
 import { stubInterface, type StubbedInstance } from 'sinon-ts'
 import { createBitswapSession } from '../src/session.js'
 import type { Network } from '../src/network.js'
@@ -45,7 +46,7 @@ describe('session', () => {
     const providers = await Promise.all(
       new Array(10).fill(0).map(async (_, i) => {
         return {
-          id: await createEd25519PeerId(),
+          id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
           multiaddrs: [
             multiaddr(`/ip4/4${i}.4${i}.4${i}.4${i}/tcp/${1234 + i}`)
           ]
@@ -112,13 +113,13 @@ describe('session', () => {
     })())
 
     await expect(session.retrieve(cid)).to.eventually.be.rejected
-      .with.property('code', 'ERR_INSUFFICIENT_PROVIDERS_FOUND')
+      .with.property('name', 'InsufficientProvidersError')
   })
 
   it('should error when creating a session when no providers have the block', async () => {
     // providers found via routing
     const providers = [{
-      id: await createEd25519PeerId(),
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       multiaddrs: [
         multiaddr('/ip4/41.41.41.41/tcp/1234')
       ]
@@ -137,18 +138,18 @@ describe('session', () => {
     const session = createBitswapSession(components, {})
 
     await expect(session.retrieve(cid)).to.eventually.be.rejected
-      .with.property('code', 'ERR_INSUFFICIENT_PROVIDERS_FOUND')
+      .with.property('name', 'InsufficientProvidersError')
   })
 
   it('should exclude non-bitswap providers from the session', async () => {
     // providers found via routing
     const providers = [{
-      id: await createEd25519PeerId(),
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       multiaddrs: [
         multiaddr('/ip4/41.41.41.41/tcp/1234')
       ]
     }, {
-      id: await createEd25519PeerId(),
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       multiaddrs: [
         multiaddr('/ip4/41.41.41.41/tcp/1235')
       ]
@@ -158,7 +159,7 @@ describe('session', () => {
       yield * providers
     })())
 
-    components.wantList.wantSessionBlock.withArgs(cid, providers[0].id).rejects(new CodeError('Protocol negotiation failed', 'ERR_UNSUPPORTED_PROTOCOL'))
+    components.wantList.wantSessionBlock.withArgs(cid, providers[0].id).rejects(new UnsupportedProtocolError('Protocol negotiation failed'))
     components.wantList.wantSessionBlock.withArgs(cid, providers[1].id).resolves({
       sender: providers[1].id,
       has: true,

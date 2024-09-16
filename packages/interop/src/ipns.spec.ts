@@ -1,15 +1,14 @@
 /* eslint-env mocha */
 
 import { ipns } from '@helia/ipns'
+import { generateKeyPair, privateKeyToProtobuf } from '@libp2p/crypto/keys'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { createEd25519PeerId, createRSAPeerId, createSecp256k1PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
+import { multihashToIPNSRoutingKey } from 'ipns'
 import last from 'it-last'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
 import { sha256 } from 'multiformats/hashes/sha2'
-import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { isElectronMain } from 'wherearewe'
 import { connect } from './fixtures/connect.js'
 import { createHeliaNode } from './fixtures/create-helia.js'
@@ -18,7 +17,7 @@ import { sortClosestPeers } from './fixtures/create-peer-ids.js'
 import { keyTypes } from './fixtures/key-types.js'
 import { waitFor } from './fixtures/wait-for.js'
 import type { IPNS } from '@helia/ipns'
-import type { PeerId } from '@libp2p/interface'
+import type { PrivateKey } from '@libp2p/interface'
 import type { HeliaLibp2p } from 'helia'
 import type { KuboNode } from 'ipfsd-ctl'
 
@@ -32,7 +31,7 @@ keyTypes.forEach(type => {
     let value: CID
 
     // the public key we will use to publish the value
-    let key: PeerId
+    let key: PrivateKey
 
     /**
      * Ensure that for the CID we are going to publish, the resolver has a peer ID that
@@ -50,17 +49,14 @@ keyTypes.forEach(type => {
       // find a PeerId that is KAD-closer to the resolver than the publisher when used as an IPNS key
       while (true) {
         if (type === 'Ed25519') {
-          key = await createEd25519PeerId()
+          key = await generateKeyPair('Ed25519')
         } else if (type === 'secp256k1') {
-          key = await createSecp256k1PeerId()
+          key = await generateKeyPair('secp256k1')
         } else {
-          key = await createRSAPeerId()
+          key = await generateKeyPair('RSA', 2048)
         }
 
-        const routingKey = uint8ArrayConcat([
-          uint8ArrayFromString('/ipns/'),
-          key.toBytes()
-        ])
+        const routingKey = multihashToIPNSRoutingKey(key.publicKey?.toMultihash())
 
         const [closest] = await sortClosestPeers(routingKey, [
           helia.libp2p.peerId,
@@ -128,12 +124,11 @@ keyTypes.forEach(type => {
     it(`should publish on helia and resolve on kubo using a ${type} key`, async () => {
       await createNodes('kubo')
 
-      const keyName = 'my-ipns-key'
-      await helia.libp2p.services.keychain.importPeer(keyName, key)
+      const privateKey = await generateKeyPair('Ed25519')
 
-      await name.publish(key, value)
+      await name.publish(privateKey, value)
 
-      const resolved = await last(kubo.api.name.resolve(key.toString()))
+      const resolved = await last(kubo.api.name.resolve(privateKey.publicKey.toString()))
 
       if (resolved == null) {
         throw new Error('kubo failed to resolve name')
@@ -161,7 +156,7 @@ keyTypes.forEach(type => {
 
       // ensure the key is in the kubo keychain so we can use it to publish the IPNS record
       const body = new FormData()
-      body.append('key', new Blob([key.privateKey ?? new Uint8Array(0)]))
+      body.append('key', new Blob([privateKeyToProtobuf(key)]))
 
       // can't use the kubo-rpc-api for this call yet
       const config = kubo.api.getEndpointConfig()
@@ -179,7 +174,7 @@ keyTypes.forEach(type => {
         ttl: '1h'
       })
 
-      const { cid: resolvedCid, record } = await name.resolve(key)
+      const { cid: resolvedCid, record } = await name.resolve(key.publicKey)
       expect(resolvedCid.toString()).to.equal(cid.toString())
       expect(record.ttl).to.equal(oneHourNS)
     })

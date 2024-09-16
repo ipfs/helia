@@ -72,7 +72,7 @@ describe('mkdir', () => {
     const dirCid = await fs.mkdir(emptyDirCid, path)
 
     await expect(fs.mkdir(dirCid, path)).to.eventually.be.rejected()
-      .with.property('code', 'ERR_ALREADY_EXISTS')
+      .with.property('name', 'AlreadyExistsError')
   })
 
   it('creates a nested directory with a different CID version to the parent', async () => {
@@ -127,6 +127,6 @@ describe('mkdir', () => {
     await expect(fs.mkdir(cid, 'dir', {
       offline: true
     })).to.eventually.be.rejected
-      .with.property('code', 'ERR_NOT_FOUND')
+      .with.property('name', 'NotFoundError')
   })
 })

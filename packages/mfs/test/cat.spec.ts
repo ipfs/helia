@@ -76,7 +76,7 @@ describe('cat', () => {
     await fs.mkdir(path)
 
     await expect(drain(fs.cat(path))).to.eventually.be.rejected
-      .with.property('code', 'ERR_NOT_A_FILE')
+      .with.property('name', 'NotAFileError')
   })
 
   it('reads file from inside a sharded directory', async () => {

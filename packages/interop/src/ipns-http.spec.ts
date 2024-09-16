@@ -2,8 +2,9 @@
 
 import { ipns } from '@helia/ipns'
 import { delegatedHTTPRouting } from '@helia/routers'
-import { peerIdFromString } from '@libp2p/peer-id'
+import { peerIdFromCID } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
+import { CID } from 'multiformats/cid'
 import { isNode } from 'wherearewe'
 import { createHeliaHTTP } from './fixtures/create-helia-http.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
@@ -58,9 +59,8 @@ describe('@helia/ipns - http', () => {
       key: keyName
     })
 
-    const key = peerIdFromString(res.name)
-
-    const { cid: resolvedCid } = await name.resolve(key)
+    const key = peerIdFromCID(CID.parse(res.name))
+    const { cid: resolvedCid } = await name.resolve(key.toMultihash())
     expect(resolvedCid.toString()).to.equal(cid.toString())
   })
 })
