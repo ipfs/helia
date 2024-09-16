@@ -1,15 +1,14 @@
-import drain from 'it-drain'
-import type { TransferBenchmark } from './index.js'
-import { path as kuboPath } from 'kubo'
-import { create as kuboRpcClient, type BlockPutOptions } from 'kubo-rpc-client'
-import { createNode } from 'ipfsd-ctl'
-import type { ImportOptions } from './index.js'
 import { unixfs } from '@helia/unixfs'
+import * as dagPB from '@ipld/dag-pb'
 import { fixedSize } from 'ipfs-unixfs-importer/chunker'
 import { balanced } from 'ipfs-unixfs-importer/layout'
-import * as dagPB from '@ipld/dag-pb'
+import { createNode } from 'ipfsd-ctl'
+import drain from 'it-drain'
+import { path as kuboPath } from 'kubo'
+import { create as kuboRpcClient, type BlockPutOptions } from 'kubo-rpc-client'
 import * as raw from 'multiformats/codecs/raw'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import type { ImportOptions, TransferBenchmark } from './index.js'
 
 const FORMAT_LOOKUP: Record<number, string> = {
   [dagPB.code]: 'dag-pb',
@@ -76,7 +75,7 @@ export async function createKuboBenchmark (): Promise<TransferBenchmark> {
         }
       })
 
-      return await fs.addByteStream(content, {
+      return fs.addByteStream(content, {
         ...options,
         chunker: options.chunkSize != null ? fixedSize({ chunkSize: options.chunkSize }) : undefined,
         layout: options.maxChildrenPerNode != null ? balanced({ maxChildrenPerNode: options.maxChildrenPerNode }) : undefined

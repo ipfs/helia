@@ -21,7 +21,7 @@ export async function getHelia (): Promise<HeliaLibp2p<Libp2p<any>>> {
       listen
     },
     transports: getTransports(),
-    connectionEncryption: [
+    connectionEncrypters: [
       noise()
     ],
     streamMuxers: [
@@ -29,9 +29,6 @@ export async function getHelia (): Promise<HeliaLibp2p<Libp2p<any>>> {
     ],
     services: {
       identify: identify()
-    },
-    connectionManager: {
-      minConnections: 0
     },
     connectionGater: {
       denyDialMultiaddr: async () => false

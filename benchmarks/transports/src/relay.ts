@@ -25,7 +25,7 @@ export async function createRelay (): Promise<HeliaLibp2p<Libp2p<any>>> {
       transports: [
         webSockets()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         noise()
       ],
       streamMuxers: [
@@ -39,9 +39,6 @@ export async function createRelay (): Promise<HeliaLibp2p<Libp2p<any>>> {
             applyDefaultLimit: false
           }
         })
-      },
-      connectionManager: {
-        minConnections: 0
       },
       connectionGater: {
         denyDialMultiaddr: async () => false

@@ -1,5 +1,5 @@
 {
-  "name": "benchmarks-gc",
+  "name": "benchmarks-pinning",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
