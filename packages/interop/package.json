@@ -69,7 +69,6 @@
     "@helia/mfs": "^3.0.8",
     "@helia/routers": "^1.1.1",
     "@helia/strings": "^3.0.6",
-    "@helia/utils": "^0.3.3",
     "@helia/unixfs": "^3.0.7",
     "@ipld/car": "^5.3.0",
     "@ipld/dag-cbor": "^9.2.0",

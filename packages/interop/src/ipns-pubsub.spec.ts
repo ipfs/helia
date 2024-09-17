@@ -4,7 +4,6 @@
 import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 import { ipns } from '@helia/ipns'
 import { pubsub } from '@helia/ipns/routing'
-import { hasCode } from '@helia/utils'
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
@@ -12,6 +11,8 @@ import last from 'it-last'
 import { base36 } from 'multiformats/bases/base36'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
+import { hasCode } from 'multiformats/hashes/digest'
+import { identity } from 'multiformats/hashes/identity'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -129,7 +130,7 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
       const peerCid = CID.parse(result.id, base36)
       const peerId = peerIdFromCID(peerCid)
 
-      if (!hasCode(peerCid.multihash, 0)) {
+      if (!hasCode(peerCid.multihash, identity.code)) {
         throw new Error('Incorrect hash type')
       }
 
