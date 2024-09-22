@@ -557,4 +557,5 @@ export function unixfs (helia: { blockstore: Pick<Blockstore, 'get' | 'put' | 'h
 }
 
 export { globSource } from './utils/glob-source.js'
+export type { GlobSourceResult, GlobSourceOptions } from './utils/glob-source.js'
 export { urlSource } from './utils/url-source.js'

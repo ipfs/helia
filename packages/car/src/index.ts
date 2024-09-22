@@ -79,7 +79,7 @@ export interface CarComponents {
   getCodec: CodecLoader
 }
 
-interface ExportCarOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents> {
+export interface ExportCarOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents> {
   /**
    * If a filter is passed it will be used to deduplicate blocks exported in the car file
    */

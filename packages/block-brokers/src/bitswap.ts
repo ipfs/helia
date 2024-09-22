@@ -6,7 +6,7 @@ import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 
-interface BitswapComponents {
+export interface BitswapBlockBrokerComponents {
   libp2p: Libp2p
   blockstore: Blockstore
   routing: Routing
@@ -14,7 +14,7 @@ interface BitswapComponents {
   getHasher: HasherLoader
 }
 
-export interface BitswapInit extends BitswapOptions {
+export interface BitswapBlockBrokerInit extends BitswapOptions {
 
 }
 
@@ -22,7 +22,7 @@ class BitswapBlockBroker implements BlockBroker<BitswapWantBlockProgressEvents, 
   private readonly bitswap: Bitswap
   private started: boolean
 
-  constructor (components: BitswapComponents, init: BitswapInit = {}) {
+  constructor (components: BitswapBlockBrokerComponents, init: BitswapBlockBrokerInit = {}) {
     const { getHasher } = components
 
     this.bitswap = createBitswap(components, {
@@ -77,6 +77,6 @@ class BitswapBlockBroker implements BlockBroker<BitswapWantBlockProgressEvents, 
  * A helper factory for users who want to override Helia `blockBrokers` but
  * still want to use the default `BitswapBlockBroker`.
  */
-export function bitswap (init: BitswapInit = {}): (components: BitswapComponents) => BlockBroker {
+export function bitswap (init: BitswapBlockBrokerInit = {}): (components: BitswapBlockBrokerComponents) => BlockBroker {
   return (components) => new BitswapBlockBroker(components, init)
 }

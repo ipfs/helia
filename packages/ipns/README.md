@@ -183,7 +183,7 @@ const result = await name.resolve(privateKey.publicKey)
 
 ## Example - Using custom DNS over HTTPS resolvers
 
-With default DNSResolver resolvers:
+To use custom resolvers, configure Helia's `dns` option:
 
 ```TypeScript
 import { createHelia } from 'helia'

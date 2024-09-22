@@ -7,7 +7,7 @@
  */
 
 import { Bitswap as BitswapClass } from './bitswap.js'
-import type { BitswapNetworkNotifyProgressEvents, BitswapNetworkWantProgressEvents } from './network.js'
+import type { BitswapNetworkNotifyProgressEvents, BitswapNetworkWantProgressEvents, BitswapNetworkProgressEvents } from './network.js'
 import type { WantType } from './pb/message.js'
 import type { BlockBroker, CreateSessionOptions } from '@helia/interface'
 import type { Routing } from '@helia/interface/routing'
@@ -27,6 +27,11 @@ export type BitswapWantBlockProgressEvents =
   ProgressEvent<'bitswap:want-block:unwant', CID> |
   ProgressEvent<'bitswap:want-block:block', CID> |
   BitswapNetworkWantProgressEvents
+
+export type { BitswapNetworkNotifyProgressEvents }
+export type { BitswapNetworkWantProgressEvents }
+export type { BitswapNetworkProgressEvents }
+export type { WantType }
 
 export interface WantListEntry {
   cid: CID

@@ -154,7 +154,7 @@
  *
  * @example Using custom DNS over HTTPS resolvers
  *
- * With default {@link DNSResolver} resolvers:
+ * To use custom resolvers, configure Helia's `dns` option:
  *
  * ```TypeScript
  * import { createHelia } from 'helia'

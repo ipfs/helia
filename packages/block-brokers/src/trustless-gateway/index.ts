@@ -27,11 +27,11 @@ export interface TrustlessGatewayBlockBrokerInit {
   allowLocal?: boolean
 }
 
-export interface TrustlessGatewayComponents {
+export interface TrustlessGatewayBlockBrokerComponents {
   routing: Routing
   logger: ComponentLogger
 }
 
-export function trustlessGateway (init: TrustlessGatewayBlockBrokerInit = {}): (components: TrustlessGatewayComponents) => BlockBroker<TrustlessGatewayGetBlockProgressEvents> {
+export function trustlessGateway (init: TrustlessGatewayBlockBrokerInit = {}): (components: TrustlessGatewayBlockBrokerComponents) => BlockBroker<TrustlessGatewayGetBlockProgressEvents> {
   return (components) => new TrustlessGatewayBlockBroker(components, init)
 }

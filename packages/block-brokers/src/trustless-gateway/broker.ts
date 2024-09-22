@@ -1,7 +1,7 @@
 import { createTrustlessGatewaySession } from './session.js'
 import { findHttpGatewayProviders } from './utils.js'
 import { DEFAULT_ALLOW_INSECURE, DEFAULT_ALLOW_LOCAL } from './index.js'
-import type { TrustlessGatewayBlockBrokerInit, TrustlessGatewayComponents, TrustlessGatewayGetBlockProgressEvents } from './index.js'
+import type { TrustlessGatewayBlockBrokerInit, TrustlessGatewayBlockBrokerComponents, TrustlessGatewayGetBlockProgressEvents } from './index.js'
 import type { Routing, BlockRetrievalOptions, BlockBroker, CreateSessionOptions } from '@helia/interface'
 import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
@@ -35,7 +35,7 @@ export class TrustlessGatewayBlockBroker implements BlockBroker<TrustlessGateway
   private readonly log: Logger
   private readonly logger: ComponentLogger
 
-  constructor (components: TrustlessGatewayComponents, init: TrustlessGatewayBlockBrokerInit = {}) {
+  constructor (components: TrustlessGatewayBlockBrokerComponents, init: TrustlessGatewayBlockBrokerInit = {}) {
     this.log = components.logger.forComponent('helia:trustless-gateway-block-broker')
     this.logger = components.logger
     this.routing = components.routing
