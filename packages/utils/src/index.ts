@@ -10,10 +10,11 @@
  *
  * ```typescript
  * import { Helia } from '@helia/utils'
+ * import type { HeliaInit } from '@helia/utils'
  *
  * const node = new Helia({
  *   // ...options
- * })
+ * } as HeliaInit)
  * ```
  */
 

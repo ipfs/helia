@@ -17,13 +17,13 @@
  * import { Readable } from 'node:stream'
  * import nodeFs from 'node:fs'
  *
- * const helia = createHelia({
+ * const helia = await createHelia({
  *   // ... helia config
  * })
  * const fs = unixfs(helia)
  *
  * // add some UnixFS data
- * const cid = await fs.addBytes(fileData1)
+ * const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
  *
  * // export it as a Car
  * const c = car(helia)
@@ -46,7 +46,7 @@
  * import { Readable } from 'node:stream'
  * import nodeFs from 'node:fs'
  *
- * const helia = createHelia({
+ * const helia = await createHelia({
  *   // ... helia config
  * })
  *
@@ -54,6 +54,7 @@
  * const inStream = nodeFs.createReadStream('example.car')
  * const reader = await CarReader.fromIterable(inStream)
  *
+ * const c = car(helia)
  * await c.import(reader)
  * ```
  */

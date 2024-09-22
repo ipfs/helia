@@ -9,11 +9,13 @@
  *
  * ```typescript
  * import { createHelia } from 'helia'
- * import { json } from '@helia/dag-json'
+ * import { dagJson } from '@helia/dag-json'
  * import { CID } from 'multiformats/cid'
  *
- * const j = json(helia)
- * const cid = await j.put({
+ * const helia = await createHelia()
+ * const j = dagJson(helia)
+ *
+ * const cid = await j.add({
  *   hello: 'world'
  * })
  * const obj = await j.get(cid)
@@ -57,9 +59,12 @@ export interface DAGJSON {
    * @example
    *
    * ```typescript
-   * import { json } from '@helia/dag-json'
+   * import { createHelia } from 'helia'
+   * import { dagJson } from '@helia/dag-json'
    *
-   * const j = json(helia)
+   * const helia = await createHelia()
+   * const j = dagJson(helia)
+   *
    * const cid = await str.add({ hello: 'world' })
    *
    * console.info(cid)
@@ -75,10 +80,13 @@ export interface DAGJSON {
    * @example
    *
    * ```typescript
-   * import { json } from '@helia/dag-json'
+   * import { createHelia } from 'helia'
+   * import { dagJson } from '@helia/dag-json'
    * import { CID } from 'multiformats/cid'
    *
-   * const j = json(helia)
+   * const helia = await createHelia()
+   * const j = dagJson(helia)
+   *
    * const cid = CID.parse('baguqeerasords4njcts6vs7qvdjfcvgnume4hqohf65zsfguprqphs3icwea')
    * const obj = await j.get(cid)
    *

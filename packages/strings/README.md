@@ -41,8 +41,9 @@ import { createHelia } from 'helia'
 import { strings } from '@helia/strings'
 import { CID } from 'multiformats/cid'
 
+const helia = await createHelia()
 const str = strings(helia)
-const cid = await str.put('hello world')
+const cid = await str.add('hello world')
 const string = await str.get(cid)
 
 console.info(string)

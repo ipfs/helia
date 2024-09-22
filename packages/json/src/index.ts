@@ -12,8 +12,10 @@
  * import { json } from '@helia/json'
  * import { CID } from 'multiformats/cid'
  *
+ * const helia = await createHelia()
  * const j = json(helia)
- * const cid = await j.put({
+ *
+ * const cid = await j.add({
  *   hello: 'world'
  * })
  * const obj = await j.get(cid)
@@ -57,9 +59,12 @@ export interface JSON {
    * @example
    *
    * ```typescript
+   * import { createHelia } from 'helia'
    * import { json } from '@helia/json'
    *
+   * const helia = await createHelia()
    * const j = json(helia)
+   *
    * const cid = await str.add({ hello: 'world' })
    *
    * console.info(cid)
@@ -75,10 +80,13 @@ export interface JSON {
    * @example
    *
    * ```typescript
+   * import { createHelia } from 'helia'
    * import { json } from '@helia/json'
    * import { CID } from 'multiformats/cid'
    *
+   * const helia = await createHelia()
    * const j = json(helia)
+   *
    * const cid = CID.parse('bagaaierasords4njcts6vs7qvdjfcvgnume4hqohf65zsfguprqphs3icwea')
    * const obj = await j.get(cid)
    *

@@ -54,18 +54,19 @@ fs.cat(CID.parse('bafyFoo'))
 ```typescript
 import { createHeliaHTTP } from '@helia/http'
 import { trustlessGateway } from '@helia/block-brokers'
-import { delegatedHTTPRouting } from '@helia/routers'
+import { delegatedHTTPRouting, httpGatewayRouting } from '@helia/routers'
 import { unixfs } from '@helia/unixfs'
 import { CID } from 'multiformats/cid'
 
 const helia = await createHeliaHTTP({
   blockBrokers: [
-    trustlessGateway({
-      gateways: ['https://cloudflare-ipfs.com', 'https://ipfs.io'],
-    }),
+    trustlessGateway()
   ],
   routers: [
-    delegatedHTTPRouting('https://delegated-ipfs.dev')
+    delegatedHTTPRouting('https://delegated-ipfs.dev'),
+    httpGatewayRouting({
+      gateways: ['https://cloudflare-ipfs.com', 'https://ipfs.io']
+    })
   ]
 })
 
