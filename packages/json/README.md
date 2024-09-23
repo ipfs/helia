@@ -41,8 +41,10 @@ import { createHelia } from 'helia'
 import { json } from '@helia/json'
 import { CID } from 'multiformats/cid'
 
+const helia = await createHelia()
 const j = json(helia)
-const cid = await j.put({
+
+const cid = await j.add({
   hello: 'world'
 })
 const obj = await j.get(cid)

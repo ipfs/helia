@@ -1,7 +1,7 @@
 /**
  * @packageDocumentation
  *
- * Exports a `Helia` class that implements the {@link HeliaInterface} API.
+ * Exports a `Helia` class that implements the Helia API.
  *
  * In general you should use the `helia` or `@helia/http` modules instead which
  * pre-configure Helia for certain use-cases (p2p or pure-HTTP).
@@ -10,10 +10,11 @@
  *
  * ```typescript
  * import { Helia } from '@helia/utils'
+ * import type { HeliaInit } from '@helia/utils'
  *
  * const node = new Helia({
  *   // ...options
- * })
+ * } as HeliaInit)
  * ```
  */
 
@@ -29,6 +30,7 @@ import { assertDatastoreVersionIsCurrent } from './utils/datastore-version.js'
 import { getCodec } from './utils/get-codec.js'
 import { getHasher } from './utils/get-hasher.js'
 import { NetworkedStorage } from './utils/networked-storage.js'
+import type { BlockStorageInit } from './storage.js'
 import type { Await, CodecLoader, GCOptions, HasherLoader, Helia as HeliaInterface, Routing } from '@helia/interface'
 import type { BlockBroker } from '@helia/interface/blocks'
 import type { Pins } from '@helia/interface/pins'
@@ -40,8 +42,12 @@ import type { BlockCodec } from 'multiformats'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 
-export { AbstractSession, type AbstractCreateSessionOptions } from './abstract-session.js'
+export { AbstractSession } from './abstract-session.js'
+export type { AbstractCreateSessionOptions, BlockstoreSessionEvents, AbstractSessionComponents } from './abstract-session.js'
 export { BloomFilter } from './bloom-filter.js'
+export type { BloomFilterOptions } from './bloom-filter.js'
+
+export type { BlockStorage, BlockStorageInit }
 
 /**
  * Options used to create a Helia node.

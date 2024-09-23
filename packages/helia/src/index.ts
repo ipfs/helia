@@ -27,6 +27,7 @@ import { HeliaP2P } from './helia-p2p.js'
 import { libp2pDefaults } from './utils/libp2p-defaults.js'
 import { createLibp2p } from './utils/libp2p.js'
 import type { DefaultLibp2pServices } from './utils/libp2p-defaults.js'
+import type { Libp2pDefaultsOptions } from './utils/libp2p.js'
 import type { Helia } from '@helia/interface'
 import type { HeliaInit as HeliaClassInit } from '@helia/utils'
 import type { Libp2p } from '@libp2p/interface'
@@ -38,7 +39,7 @@ import type { CID } from 'multiformats/cid'
 // if they don't want to
 export * from '@helia/interface'
 
-export type { DefaultLibp2pServices }
+export type { DefaultLibp2pServices, Libp2pDefaultsOptions }
 export { libp2pDefaults }
 
 /**

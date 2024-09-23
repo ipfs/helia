@@ -22,6 +22,10 @@ export interface IPNSRouting {
   get(routingKey: Uint8Array, options?: GetOptions): Promise<Uint8Array>
 }
 
+export type { DatastoreProgressEvents }
+export type { HeliaRoutingProgressEvents }
+export type { PubSubProgressEvents }
+
 export type IPNSRoutingEvents =
   DatastoreProgressEvents |
   HeliaRoutingProgressEvents |
@@ -29,3 +33,4 @@ export type IPNSRoutingEvents =
 
 export { helia } from './helia.js'
 export { pubsub } from './pubsub.js'
+export type { PubsubRoutingComponents } from './pubsub.js'

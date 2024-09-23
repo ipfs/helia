@@ -38,11 +38,13 @@ See the DAGJSON interface for all available operations.
 
 ```typescript
 import { createHelia } from 'helia'
-import { json } from '@helia/dag-json'
+import { dagJson } from '@helia/dag-json'
 import { CID } from 'multiformats/cid'
 
-const j = json(helia)
-const cid = await j.put({
+const helia = await createHelia()
+const j = dagJson(helia)
+
+const cid = await j.add({
   hello: 'world'
 })
 const obj = await j.get(cid)

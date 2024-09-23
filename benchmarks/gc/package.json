@@ -7,6 +7,7 @@
     "build": "aegir build --bundle false",
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check",
     "start": "npm run build && node dist/src/index.js"
   },
   "dependencies": {

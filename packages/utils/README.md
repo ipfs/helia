@@ -30,7 +30,7 @@ repo and examine the changes made.
 
 -->
 
-Exports a `Helia` class that implements the HeliaInterface API.
+Exports a `Helia` class that implements the Helia API.
 
 In general you should use the `helia` or `@helia/http` modules instead which
 pre-configure Helia for certain use-cases (p2p or pure-HTTP).
@@ -39,10 +39,11 @@ pre-configure Helia for certain use-cases (p2p or pure-HTTP).
 
 ```typescript
 import { Helia } from '@helia/utils'
+import type { HeliaInit } from '@helia/utils'
 
 const node = new Helia({
   // ...options
-})
+} as HeliaInit)
 ```
 
 # Install

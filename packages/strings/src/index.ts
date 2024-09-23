@@ -12,8 +12,9 @@
  * import { strings } from '@helia/strings'
  * import { CID } from 'multiformats/cid'
  *
+ * const helia = await createHelia()
  * const str = strings(helia)
- * const cid = await str.put('hello world')
+ * const cid = await str.add('hello world')
  * const string = await str.get(cid)
  *
  * console.info(string)
@@ -58,8 +59,10 @@ export interface Strings {
    * @example
    *
    * ```typescript
+   * import { createHelia } from 'helia'
    * import { strings } from '@helia/strings'
    *
+   * const helia = wait createHelia()
    * const str = strings(helia)
    * const cid = await str.add('hello world')
    *
@@ -76,9 +79,11 @@ export interface Strings {
    * @example
    *
    * ```typescript
+   * import { createHelia } from 'helia'
    * import { strings } from '@helia/strings'
    * import { CID } from 'multiformats/cid'
    *
+   * const helia = await createHelia()
    * const str = strings(helia)
    * const cid = CID.parse('bafkreifzjut3te2nhyekklss27nh3k72ysco7y32koao5eei66wof36n5e')
    * const string = await str.get(cid)

@@ -40,9 +40,7 @@ See the [API docs](https://ipfs.github.io/helia/modules/_helia_unixfs.html) for 
 import { createHelia } from 'helia'
 import { unixfs } from '@helia/unixfs'
 
-const helia = createHelia({
-  // ... helia config
-})
+const helia = await createHelia()
 const fs = unixfs(helia)
 
 // create an empty dir and a file, then add the file to the dir
@@ -64,7 +62,12 @@ for await (const entry of fs.addAll([{
 Node.js-compatibly environments only:
 
 ```typescript
+import { createHelia } from 'helia'
+import { unixfs } from '@helia/unixfs'
 import { globSource } from '@helia/unixfs'
+
+const helia = await createHelia()
+const fs = unixfs(helia)
 
 for await (const entry of fs.addAll(globSource('path/to/containing/dir', 'glob-pattern'))) {
   console.info(entry)

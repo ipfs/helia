@@ -40,23 +40,23 @@ With IPNSRouting routers:
 import { createHelia } from 'helia'
 import { ipns } from '@helia/ipns'
 import { unixfs } from '@helia/unixfs'
+import { generateKeyPair } from '@libp2p/crypto/keys'
 
 const helia = await createHelia()
 const name = ipns(helia)
 
-// create a public key to publish as an IPNS name
-const keyInfo = await helia.libp2p.services.keychain.createKey('my-key')
-const peerId = await helia.libp2p.services.keychain.exportPeerId(keyInfo.name)
+// create a keypair to publish an IPNS name
+const privateKey = await generateKeyPair('Ed25519')
 
 // store some data to publish
 const fs = unixfs(helia)
-const cid = await fs.add(Uint8Array.from([0, 1, 2, 3, 4]))
+const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
 
 // publish the name
-await name.publish(peerId, cid)
+await name.publish(privateKey, cid)
 
 // resolve the name
-const result = name.resolve(peerId)
+const result = await name.resolve(privateKey.publicKey)
 
 console.info(result.cid, result.path)
 ```
@@ -70,30 +70,29 @@ value.
 import { createHelia } from 'helia'
 import { ipns } from '@helia/ipns'
 import { unixfs } from '@helia/unixfs'
+import { generateKeyPair } from '@libp2p/crypto/keys'
 
 const helia = await createHelia()
 const name = ipns(helia)
 
-// create a public key to publish as an IPNS name
-const keyInfo = await helia.libp2p.services.keychain.createKey('my-key')
-const peerId = await helia.libp2p.services.keychain.exportPeerId(keyInfo.name)
+// create a keypair to publish an IPNS name
+const privateKey = await generateKeyPair('Ed25519')
 
 // store some data to publish
 const fs = unixfs(helia)
-const cid = await fs.add(Uint8Array.from([0, 1, 2, 3, 4]))
+const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
 
 // publish the name
-await name.publish(peerId, cid)
+await name.publish(privateKey, cid)
 
-// create another public key to re-publish the original record
-const recursiveKeyInfo = await helia.libp2p.services.keychain.createKey('my-recursive-key')
-const recursivePeerId = await helia.libp2p.services.keychain.exportPeerId(recursiveKeyInfo.name)
+// create another keypair to re-publish the original record
+const recursivePrivateKey = await generateKeyPair('Ed25519')
 
 // publish the recursive name
-await name.publish(recursivePeerId, peerId)
+await name.publish(recursivePrivateKey, privateKey.publicKey)
 
 // resolve the name recursively - it resolves until a CID is found
-const result = name.resolve(recursivePeerId)
+const result = await name.resolve(recursivePrivateKey.publicKey)
 console.info(result.cid.toString() === cid.toString()) // true
 ```
 
@@ -105,27 +104,27 @@ It is possible to publish CIDs with an associated path.
 import { createHelia } from 'helia'
 import { ipns } from '@helia/ipns'
 import { unixfs } from '@helia/unixfs'
+import { generateKeyPair } from '@libp2p/crypto/keys'
 
 const helia = await createHelia()
 const name = ipns(helia)
 
-// create a public key to publish as an IPNS name
-const keyInfo = await helia.libp2p.services.keychain.createKey('my-key')
-const peerId = await helia.libp2p.services.keychain.exportPeerId(keyInfo.name)
+// create a keypair to publish an IPNS name
+const privateKey = await generateKeyPair('Ed25519')
 
 // store some data to publish
 const fs = unixfs(helia)
-const fileCid = await fs.add(Uint8Array.from([0, 1, 2, 3, 4]))
+const fileCid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
 
 // store the file in a directory
-const dirCid = await fs.mkdir()
+const dirCid = await fs.addDirectory()
 const finalDirCid = await fs.cp(fileCid, dirCid, '/foo.txt')
 
 // publish the name
-await name.publish(peerId, `/ipfs/${finalDirCid}/foo.txt)
+await name.publish(privateKey, `/ipfs/${finalDirCid}/foo.txt`)
 
 // resolve the name
-const result = name.resolve(peerId)
+const result = await name.resolve(privateKey.publicKey)
 
 console.info(result.cid, result.path) // QmFoo.. 'foo.txt'
 ```
@@ -152,11 +151,14 @@ import { ipns } from '@helia/ipns'
 import { pubsub } from '@helia/ipns/routing'
 import { unixfs } from '@helia/unixfs'
 import { gossipsub } from '@chainsafe/libp2p-gossipsub'
+import { generateKeyPair } from '@libp2p/crypto/keys'
+import type { Libp2p, PubSub } from '@libp2p/interface'
+import type { DefaultLibp2pServices } from 'helia'
 
 const libp2pOptions = libp2pDefaults()
 libp2pOptions.services.pubsub = gossipsub()
 
-const helia = await createHelia({
+const helia = await createHelia<Libp2p<DefaultLibp2pServices & { pubsub: PubSub }>>({
   libp2p: libp2pOptions
 })
 const name = ipns(helia, {
@@ -165,44 +167,50 @@ const name = ipns(helia, {
  ]
 })
 
-// create a public key to publish as an IPNS name
-const keyInfo = await helia.libp2p.services.keychain.createKey('my-key')
-const peerId = await helia.libp2p.services.keychain.exportPeerId(keyInfo.name)
+// create a keypair to publish an IPNS name
+const privateKey = await generateKeyPair('Ed25519')
 
 // store some data to publish
 const fs = unixfs(helia)
-const cid = await fs.add(Uint8Array.from([0, 1, 2, 3, 4]))
+const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
 
 // publish the name
-await name.publish(peerId, cid)
+await name.publish(privateKey, cid)
 
 // resolve the name
-const { cid, path } = name.resolve(peerId)
+const result = await name.resolve(privateKey.publicKey)
 ```
 
 ## Example - Using custom DNS over HTTPS resolvers
 
-With default DNSResolver resolvers:
+To use custom resolvers, configure Helia's `dns` option:
 
 ```TypeScript
 import { createHelia } from 'helia'
 import { ipns } from '@helia/ipns'
-import { unixfs } from '@helia/unixfs'
-import { dnsOverHttps } from '@helia/ipns/dns-resolvers'
+import { dns } from '@multiformats/dns'
+import { dnsOverHttps } from '@multiformats/dns/resolvers'
+import { helia } from '@helia/ipns/routing'
 
-const helia = await createHelia()
-const name = ipns(helia, {
- resolvers: [
-   dnsOverHttps('https://private-dns-server.me/dns-query'),
+const node = await createHelia({
+  dns: dns({
+    resolvers: {
+      '.': dnsOverHttps('https://private-dns-server.me/dns-query')
+    }
+  })
+})
+const name = ipns(node, {
+ routers: [
+   helia(node.routing)
  ]
 })
 
-const { cid, path } = name.resolveDns('some-domain-with-dnslink-entry.com')
+const result = name.resolveDNSLink('some-domain-with-dnslink-entry.com')
 ```
 
 ## Example - Resolving a domain with a dnslink entry
 
-Calling `resolveDns` with the `@helia/ipns` instance:
+Calling `resolveDNSLink` with the `@helia/ipns` instance:
 
 ```TypeScript
 // resolve a CID from a TXT record in a DNS zone file, using the default
@@ -214,10 +222,16 @@ Calling `resolveDns` with the `@helia/ipns` instance:
 // ;; ANSWER SECTION:
 // _dnslink.website.ipfs.io.  60     IN      TXT     "dnslink=/ipfs/QmWebsite"
 
-const { cid, path } = name.resolveDns('ipfs.io')
+import { createHelia } from 'helia'
+import { ipns } from '@helia/ipns'
 
-console.info(cid)
-// QmWebsite
+const node = await createHelia()
+const name = ipns(node)
+
+const { answer } = await name.resolveDNSLink('ipfs.io')
+
+console.info(answer)
+// { data: '/ipfs/QmWebsite' }
 ```
 
 ## Example - Using DNS-Over-HTTPS
@@ -229,14 +243,21 @@ response which can increase browser bundle sizes.
 If this is a concern, use the DNS-JSON-Over-HTTPS resolver instead.
 
 ```TypeScript
-// use DNS-Over-HTTPS
-import { dnsOverHttps } from '@helia/ipns/dns-resolvers'
+import { createHelia } from 'helia'
+import { ipns } from '@helia/ipns'
+import { dns } from '@multiformats/dns'
+import { dnsOverHttps } from '@multiformats/dns/resolvers'
 
-const { cid, path } = name.resolveDns('ipfs.io', {
-  resolvers: [
-    dnsOverHttps('https://mozilla.cloudflare-dns.com/dns-query')
-  ]
+const node = await createHelia({
+  dns: dns({
+    resolvers: {
+      '.': dnsOverHttps('https://mozilla.cloudflare-dns.com/dns-query')
+    }
+  })
 })
+const name = ipns(node)
+
+const result = await name.resolveDNSLink('ipfs.io')
 ```
 
 ## Example - Using DNS-JSON-Over-HTTPS
@@ -245,14 +266,21 @@ DNS-JSON-Over-HTTPS resolvers use the RFC 8427 `application/dns-json` and can
 result in a smaller browser bundle due to the response being plain JSON.
 
 ```TypeScript
-// use DNS-JSON-Over-HTTPS
-import { dnsJsonOverHttps } from '@helia/ipns/dns-resolvers'
+import { createHelia } from 'helia'
+import { ipns } from '@helia/ipns'
+import { dns } from '@multiformats/dns'
+import { dnsJsonOverHttps } from '@multiformats/dns/resolvers'
 
-const { cid, path } = name.resolveDns('ipfs.io', {
-  resolvers: [
-    dnsJsonOverHttps('https://mozilla.cloudflare-dns.com/dns-query')
-  ]
+const node = await createHelia({
+  dns: dns({
+    resolvers: {
+      '.': dnsJsonOverHttps('https://mozilla.cloudflare-dns.com/dns-query')
+    }
+  })
 })
+const name = ipns(node)
+
+const result = await name.resolveDNSLink('ipfs.io')
 ```
 
 # Install

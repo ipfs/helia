@@ -41,8 +41,10 @@ import { createHelia } from 'helia'
 import { dagCbor } from '@helia/dag-cbor'
 import { CID } from 'multiformats/cid'
 
+const helia = await createHelia()
+
 const d = dagCbor(helia)
-const cid = await d.put({
+const cid = await d.add({
   hello: 'world'
 })
 const obj = await d.get(cid)

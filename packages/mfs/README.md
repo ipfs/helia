@@ -40,9 +40,7 @@ See the [API docs](https://ipfs.github.io/helia/modules/_helia_mfs.html) for all
 import { createHelia } from 'helia'
 import { mfs } from '@helia/mfs'
 
-const helia = createHelia({
-  // ... helia config
-})
+const helia = await createHelia()
 const fs = mfs(helia)
 
 // create an empty directory
