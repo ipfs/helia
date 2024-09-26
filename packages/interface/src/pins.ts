@@ -8,7 +8,7 @@ export type PinType = 'recursive' | 'direct' | 'indirect'
 export interface Pin {
   cid: CID
   depth: number
-  metadata: Record<string, any>
+  metadata: Record<string, string | number | boolean>
 }
 
 export type AddPinEvents =
