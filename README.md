@@ -108,6 +108,41 @@ console.log(await d.get(retrievedObject.link))
 // { hello: 'world' }
 ```
 
+## 🔒 Custom Hasher
+
+A [hasher](https://github.com/multiformats/js-multiformats?tab=readme-ov-file#multihash-hashers) is used to determine the immutable address of the content (aka the [**CID**](https://github.com/multiformats/cid?tab=readme-ov-file#what-is-it)) being imported into helia. The default hasher used by the methods above is [sha2-256 multihash](https://github.com/multiformats/js-multiformats?tab=readme-ov-file#multihash-hashers-1), but others can be provided with [AddOptions](https://helia.io/interfaces/_helia_dag_cbor.AddOptions.html). This is useful for applications that require hashers with specific properties; so in most cases keeping the default is recommended.
+
+> **Changing the hasher will cause a different CID to be returned for the same content! In other words: the same content imported with different hashers is treated like unique content with a unique address.**
+
+```js
+import { createHelia } from 'helia'
+import { dagCbor } from '@helia/dag-cbor'
+import { sha512 as hasher } from 'multiformats/hashes/sha2'
+
+const helia = await createHelia()
+const d = dagCbor(helia)
+
+const object1 = { hello: 'world' }
+
+const myImmutableAddress1 = await d.add(object1)
+const myImmutableAddress2 = await d.add(object1, { hasher })
+
+/** The same objects with different CIDs are treated as different objects */
+
+console.log(myImmutableAddress1)
+// CID(bafyreidykglsfhoixmivffc5uwhcgshx4j465xwqntbmu43nb2dzqwfvae)
+console.log(myImmutableAddress2)
+// CID(bafyrgqhai26anf3i7pips7q22coa4sz2fr4gk4q4sqdtymvvjyginfzaqewveaeqdh524nsktaq43j65v22xxrybrtertmcfxufdam3da3hbk)
+
+const retrievedObject1 = await d.get(myImmutableAddress1)
+const retrievedObject2 = await d.get(myImmutableAddress2)
+
+console.log(retrievedObject1)
+// { hello: 'world' }
+console.log(retrievedObject2)
+// { hello: 'world' }
+```
+
 # 🐾 Next steps
 
 Check out the [helia-examples](https://github.com/ipfs-examples/helia-examples)
