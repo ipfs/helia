@@ -69,7 +69,7 @@
     "@libp2p/dcutr": "^2.0.0",
     "@libp2p/identify": "^3.0.0",
     "@libp2p/interface": "^2.0.0",
-    "@libp2p/kad-dht": "^13.0.0",
+    "@libp2p/kad-dht": "^14.0.0",
     "@libp2p/keychain": "^5.0.2",
     "@libp2p/logger": "^5.0.0",
     "@libp2p/mdns": "^11.0.0",
