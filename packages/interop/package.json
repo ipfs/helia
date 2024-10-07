@@ -75,7 +75,7 @@
     "@ipld/dag-cbor": "^9.2.0",
     "@libp2p/crypto": "^5.0.0",
     "@libp2p/interface": "^2.0.0",
-    "@libp2p/kad-dht": "^13.0.0",
+    "@libp2p/kad-dht": "^14.0.0",
     "@libp2p/keychain": "^5.0.2",
     "@libp2p/peer-id": "^5.0.0",
     "@libp2p/websockets": "^9.0.0",
