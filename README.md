@@ -117,25 +117,27 @@ A [hasher](https://github.com/multiformats/js-multiformats?tab=readme-ov-file#mu
 ```js
 import { createHelia } from 'helia'
 import { dagCbor } from '@helia/dag-cbor'
-import { sha512 as hasher } from 'multiformats/hashes/sha2'
+import { sha512 } from 'multiformats/hashes/sha2'
 
 const helia = await createHelia()
 const d = dagCbor(helia)
 
 const object1 = { hello: 'world' }
 
-const myImmutableAddress1 = await d.add(object1)
-const myImmutableAddress2 = await d.add(object1, { hasher })
+const cidWithSHA256 = await d.add(object1)
+const cidWithSHA512 = await d.add(object1, {
+  hasher: sha512
+})
 
 /** The same objects with different CIDs are treated as different objects */
 
-console.log(myImmutableAddress1)
+console.log(cidWithSHA256)
 // CID(bafyreidykglsfhoixmivffc5uwhcgshx4j465xwqntbmu43nb2dzqwfvae)
-console.log(myImmutableAddress2)
+console.log(cidWithSHA512)
 // CID(bafyrgqhai26anf3i7pips7q22coa4sz2fr4gk4q4sqdtymvvjyginfzaqewveaeqdh524nsktaq43j65v22xxrybrtertmcfxufdam3da3hbk)
 
-const retrievedObject1 = await d.get(myImmutableAddress1)
-const retrievedObject2 = await d.get(myImmutableAddress2)
+const retrievedObject1 = await d.get(cidWithSHA256)
+const retrievedObject2 = await d.get(cidWithSHA512)
 
 console.log(retrievedObject1)
 // { hello: 'world' }
