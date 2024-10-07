@@ -1,6 +1,6 @@
 {
   "name": "@helia/routers",
-  "version": "1.1.1",
+  "version": "2.0.0",
   "description": "Routers for Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/routers#readme",
@@ -55,7 +55,7 @@
   },
   "dependencies": {
     "@helia/delegated-routing-v1-http-api-client": "^4.0.0",
-    "@helia/interface": "^4.3.1",
+    "@helia/interface": "^5.0.0",
     "@libp2p/peer-id": "^5.0.0",
     "@libp2p/interface": "^2.0.0",
     "@multiformats/uri-to-multiaddr": "^8.0.0",

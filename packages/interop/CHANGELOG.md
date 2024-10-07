@@ -1,5 +1,38 @@
 # Changelog
 
+## [7.0.0](https://github.com/ipfs/helia/compare/interop-v6.1.8...interop-v7.0.0) (2024-10-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* helia now uses libp2p@2.x.x
+
+### Bug Fixes
+
+* add doc-check script and export types used by functions ([#637](https://github.com/ipfs/helia/issues/637)) ([4f14996](https://github.com/ipfs/helia/commit/4f14996a9b976f2b60f4c8fe52a4fd1632420749))
+* update to libp2p@2.x.x ([#630](https://github.com/ipfs/helia/issues/630)) ([ec8bf66](https://github.com/ipfs/helia/commit/ec8bf66dd870b42d6e5ef2b41706102397e0d39a))
+* use hasCode from multiformats ([#635](https://github.com/ipfs/helia/issues/635)) ([f5a03fc](https://github.com/ipfs/helia/commit/f5a03fc28d0cd59841b842306f912c092aeabd5f))
+
+
+### Dependencies
+
+* update kad-dht to 14.0.0 ([#648](https://github.com/ipfs/helia/issues/648)) ([60d8c8a](https://github.com/ipfs/helia/commit/60d8c8a9ff2104302d1c87bcf39258f1da33cd45))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^3.0.4 to ^4.0.0
+    * @helia/car bumped from ^3.2.1 to ^4.0.0
+    * @helia/dag-cbor bumped from ^3.0.6 to ^4.0.0
+    * @helia/dag-json bumped from ^3.0.6 to ^4.0.0
+    * @helia/http bumped from ^1.0.11 to ^2.0.0
+    * @helia/interface bumped from ^4.3.1 to ^5.0.0
+    * @helia/ipns bumped from ^7.2.3 to ^8.0.0
+    * @helia/json bumped from ^3.0.6 to ^4.0.0
+    * @helia/mfs bumped from ^3.0.8 to ^4.0.0
+    * @helia/routers bumped from ^1.1.1 to ^2.0.0
+    * @helia/strings bumped from ^3.0.6 to ^4.0.0
+    * @helia/unixfs bumped from ^3.0.7 to ^4.0.0
+    * helia bumped from ^4.2.6 to ^5.0.0
+
 ## [6.1.8](https://github.com/ipfs/helia/compare/interop-v6.1.7...interop-v6.1.8) (2024-09-13)
 
 
