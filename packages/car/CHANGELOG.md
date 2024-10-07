@@ -1,5 +1,29 @@
 # Changelog
 
+## [4.0.0](https://github.com/ipfs/helia/compare/car-v3.2.1...car-v4.0.0) (2024-10-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `.dagWalkers` property has been removed
+* helia now uses libp2p@2.x.x
+
+### Bug Fixes
+
+* add doc-check script and export types used by functions ([#637](https://github.com/ipfs/helia/issues/637)) ([4f14996](https://github.com/ipfs/helia/commit/4f14996a9b976f2b60f4c8fe52a4fd1632420749))
+* replace dag walkers with generic CID extraction from blocks ([#447](https://github.com/ipfs/helia/issues/447)) ([5ff6998](https://github.com/ipfs/helia/commit/5ff6998e6bc8b04e3407bc98c1924c55f632d9b7))
+* update to libp2p@2.x.x ([#630](https://github.com/ipfs/helia/issues/630)) ([ec8bf66](https://github.com/ipfs/helia/commit/ec8bf66dd870b42d6e5ef2b41706102397e0d39a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^4.3.1 to ^5.0.0
+  * devDependencies
+    * @helia/mfs bumped from ^3.0.8 to ^4.0.0
+    * @helia/unixfs bumped from ^3.0.7 to ^4.0.0
+
 ## [3.2.1](https://github.com/ipfs/helia/compare/car-v3.2.0...car-v3.2.1) (2024-09-13)
 
 

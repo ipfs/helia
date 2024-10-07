@@ -1,5 +1,26 @@
 # Changelog
 
+## [8.0.0](https://github.com/ipfs/helia/compare/ipns-v7.2.3...ipns-v8.0.0) (2024-10-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* helia now uses libp2p@2.x.x
+
+### Bug Fixes
+
+* add doc-check script and export types used by functions ([#637](https://github.com/ipfs/helia/issues/637)) ([4f14996](https://github.com/ipfs/helia/commit/4f14996a9b976f2b60f4c8fe52a4fd1632420749))
+* update to libp2p@2.x.x ([#630](https://github.com/ipfs/helia/issues/630)) ([ec8bf66](https://github.com/ipfs/helia/commit/ec8bf66dd870b42d6e5ef2b41706102397e0d39a))
+
+
+### Dependencies
+
+* **dev:** bump sinon from 18.0.1 to 19.0.2 ([#634](https://github.com/ipfs/helia/issues/634)) ([23e62e1](https://github.com/ipfs/helia/commit/23e62e16b8962bfe982a1bbb157a144382ca7099))
+* update kad-dht to 14.0.0 ([#648](https://github.com/ipfs/helia/issues/648)) ([60d8c8a](https://github.com/ipfs/helia/commit/60d8c8a9ff2104302d1c87bcf39258f1da33cd45))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^4.3.1 to ^5.0.0
+
 ## [7.2.3](https://github.com/ipfs/helia/compare/ipns-v7.2.2...ipns-v7.2.3) (2024-07-31)
 
 

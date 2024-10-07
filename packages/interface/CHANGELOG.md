@@ -5,6 +5,27 @@
 
 * expose .dns property on @helia/interface ([#465](https://github.com/ipfs/helia/issues/465)) ([8c9bb7d](https://github.com/ipfs/helia/commit/8c9bb7d224a1b786cba1fba18bffe07001a3b95d))
 
+## [5.0.0](https://github.com/ipfs/helia/compare/interface-v4.3.1...interface-v5.0.0) (2024-10-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* the metadata record value field has changed from `any` to `string | number | boolean`
+* the `.dagWalkers` property has been removed
+* helia now uses libp2p@2.x.x
+
+### Features
+
+* allow updating pin metadata ([#647](https://github.com/ipfs/helia/issues/647)) ([bc64f47](https://github.com/ipfs/helia/commit/bc64f47897691295435568beee61383116b0032b))
+
+
+### Bug Fixes
+
+* add doc-check script and export types used by functions ([#637](https://github.com/ipfs/helia/issues/637)) ([4f14996](https://github.com/ipfs/helia/commit/4f14996a9b976f2b60f4c8fe52a4fd1632420749))
+* define string metadata type ([#641](https://github.com/ipfs/helia/issues/641)) ([c04dbf5](https://github.com/ipfs/helia/commit/c04dbf5f6bf5ef37ba9fc854c0c3080f37d5c7c3))
+* replace dag walkers with generic CID extraction from blocks ([#447](https://github.com/ipfs/helia/issues/447)) ([5ff6998](https://github.com/ipfs/helia/commit/5ff6998e6bc8b04e3407bc98c1924c55f632d9b7))
+* update to libp2p@2.x.x ([#630](https://github.com/ipfs/helia/issues/630)) ([ec8bf66](https://github.com/ipfs/helia/commit/ec8bf66dd870b42d6e5ef2b41706102397e0d39a))
+
 ## [4.3.1](https://github.com/ipfs/helia/compare/interface-v4.3.0...interface-v4.3.1) (2024-07-31)
 
 

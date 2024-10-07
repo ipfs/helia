@@ -1,5 +1,33 @@
 # Changelog
 
+## [1.0.0](https://github.com/ipfs/helia/compare/utils-v0.3.3...utils-v1.0.0) (2024-10-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `.dagWalkers` property has been removed
+* helia now uses libp2p@2.x.x
+
+### Features
+
+* allow updating pin metadata ([#647](https://github.com/ipfs/helia/issues/647)) ([bc64f47](https://github.com/ipfs/helia/commit/bc64f47897691295435568beee61383116b0032b))
+
+
+### Bug Fixes
+
+* add doc-check script and export types used by functions ([#637](https://github.com/ipfs/helia/issues/637)) ([4f14996](https://github.com/ipfs/helia/commit/4f14996a9b976f2b60f4c8fe52a4fd1632420749))
+* replace dag walkers with generic CID extraction from blocks ([#447](https://github.com/ipfs/helia/issues/447)) ([5ff6998](https://github.com/ipfs/helia/commit/5ff6998e6bc8b04e3407bc98c1924c55f632d9b7))
+* update to libp2p@2.x.x ([#630](https://github.com/ipfs/helia/issues/630)) ([ec8bf66](https://github.com/ipfs/helia/commit/ec8bf66dd870b42d6e5ef2b41706102397e0d39a))
+* use hasCode from multiformats ([#635](https://github.com/ipfs/helia/issues/635)) ([f5a03fc](https://github.com/ipfs/helia/commit/f5a03fc28d0cd59841b842306f912c092aeabd5f))
+
+
+### Dependencies
+
+* **dev:** bump sinon from 18.0.1 to 19.0.2 ([#634](https://github.com/ipfs/helia/issues/634)) ([23e62e1](https://github.com/ipfs/helia/commit/23e62e16b8962bfe982a1bbb157a144382ca7099))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^4.3.1 to ^5.0.0
+
 ## [0.3.3](https://github.com/ipfs/helia/compare/utils-v0.3.2...utils-v0.3.3) (2024-07-31)
 
 

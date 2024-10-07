@@ -1,5 +1,28 @@
 # Changelog
 
+## [2.0.0](https://github.com/ipfs/helia/compare/http-v1.0.11...http-v2.0.0) (2024-10-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* helia now uses libp2p@2.x.x
+
+### Bug Fixes
+
+* add doc-check script and export types used by functions ([#637](https://github.com/ipfs/helia/issues/637)) ([4f14996](https://github.com/ipfs/helia/commit/4f14996a9b976f2b60f4c8fe52a4fd1632420749))
+* update to libp2p@2.x.x ([#630](https://github.com/ipfs/helia/issues/630)) ([ec8bf66](https://github.com/ipfs/helia/commit/ec8bf66dd870b42d6e5ef2b41706102397e0d39a))
+
+
+### Dependencies
+
+* **dev:** bump sinon from 18.0.1 to 19.0.2 ([#634](https://github.com/ipfs/helia/issues/634)) ([23e62e1](https://github.com/ipfs/helia/commit/23e62e16b8962bfe982a1bbb157a144382ca7099))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^3.0.4 to ^4.0.0
+    * @helia/interface bumped from ^4.3.1 to ^5.0.0
+    * @helia/routers bumped from ^1.1.1 to ^2.0.0
+    * @helia/utils bumped from ^0.3.3 to ^1.0.0
+
 ## [1.0.11](https://github.com/ipfs/helia/compare/http-v1.0.10...http-v1.0.11) (2024-09-13)
 
 
