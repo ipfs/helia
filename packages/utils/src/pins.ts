@@ -221,4 +221,21 @@ export class PinsImpl implements Pins {
 
     return this.datastore.has(blockKey, options)
   }
+
+  async get (cid: CID, options?: AbortOptions): Promise<Pin> {
+    const pinKey = toDSKey(cid)
+    const buf = await this.datastore.get(pinKey, options)
+
+    return cborg.decode(buf)
+  }
+
+  async setMetadata (cid: CID, metadata: Record<string, string | number | boolean> | undefined, options?: AbortOptions): Promise<void> {
+    const pinKey = toDSKey(cid)
+    const buf = await this.datastore.get(pinKey, options)
+    const pin: DatastorePin = cborg.decode(buf)
+
+    pin.metadata = metadata ?? {}
+
+    await this.datastore.put(pinKey, cborg.encode(pin), options)
+  }
 }

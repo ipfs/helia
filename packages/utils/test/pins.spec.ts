@@ -37,6 +37,39 @@ describe('pins', () => {
     await expect(helia.pins.isPinned(cidV0)).to.eventually.be.true('did not pin v0 CID')
   })
 
+  it('gets a pin', async () => {
+    const cid = await createAndPutBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
+
+    await drain(helia.pins.add(cid))
+
+    const pin = await helia.pins.get(cid)
+
+    expect(pin).to.have.property('depth', Infinity)
+    expect(pin).to.have.deep.property('metadata', {})
+  })
+
+  it('updates metadata for a pin', async () => {
+    const cid = await createAndPutBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
+
+    await drain(helia.pins.add(cid))
+
+    const pin = await helia.pins.get(cid)
+
+    expect(pin).to.have.deep.property('metadata', {})
+
+    const newMetadata = {
+      foo: 'bar',
+      baz: true,
+      qux: 5
+    }
+
+    await helia.pins.setMetadata(cid, newMetadata)
+
+    const updatedPin = await helia.pins.get(cid)
+
+    expect(updatedPin).to.have.deep.property('metadata', newMetadata)
+  })
+
   it('pins a block with progress events', async () => {
     const cidV1 = await createAndPutBlock(raw.code, Uint8Array.from([0, 1, 2, 3]), helia.blockstore)
 
