@@ -40,14 +40,14 @@ export interface IsPinnedOptions extends AbortOptions {
 
 export interface Pins {
   /**
-   * Pin a block in the blockstore. It will not be deleted
-   * when garbage collection is run.
+   * Pin a block in the blockstore. It will not be deleted when garbage
+   * collection is run.
    */
   add(cid: CID, options?: AddOptions): AsyncGenerator<CID, void, undefined>
 
   /**
-   * Unpin the block that corresponds to the passed CID. The block will
-   * be deleted when garbage collection is run.
+   * Unpin the block that corresponds to the passed CID. The block will be
+   * deleted when garbage collection is run.
    */
   rm(cid: CID, options?: RmOptions): AsyncGenerator<CID, void, undefined>
 
@@ -57,7 +57,18 @@ export interface Pins {
   ls(options?: LsOptions): AsyncGenerator<Pin, void, undefined>
 
   /**
+   * If the CID is pinned, return details of the pin, otherwise throw an error
+   */
+  get(cid: CID, options?: AbortOptions): Promise<Pin>
+
+  /**
    * Return true if the passed CID is pinned
    */
   isPinned(cid: CID, options?: IsPinnedOptions): Promise<boolean>
+
+  /**
+   * If the CID is pinned, update the metadata associated with the pin,
+   * otherwise throw an error
+   */
+  setMetadata(cid: CID, metadata: Record<string, string | number | boolean> | undefined, options?: AbortOptions): Promise<void>
 }
