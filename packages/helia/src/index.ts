@@ -121,7 +121,7 @@ export async function createHelia (init: Partial<HeliaInit> = {}): Promise<Helia
       trustlessGateway(),
       bitswap()
     ],
-    routers: [
+    routers: init.routers ?? [
       libp2pRouting(libp2p),
       httpGatewayRouting()
     ],
