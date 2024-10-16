@@ -1,5 +1,14 @@
 # Changelog
 
+## [7.0.1](https://github.com/ipfs/helia/compare/interop-v7.0.0...interop-v7.0.1) (2024-10-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * helia bumped from ^5.0.0 to ^5.0.1
+
 ## [7.0.0](https://github.com/ipfs/helia/compare/interop-v6.1.8...interop-v7.0.0) (2024-10-07)
 
 
