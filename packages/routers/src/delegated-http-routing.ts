@@ -6,7 +6,7 @@ import map from 'it-map'
 import { CID } from 'multiformats/cid'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import type { DelegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
+import type { DelegatedRoutingV1HttpApiClient, DelegatedRoutingV1HttpApiClientInit } from '@helia/delegated-routing-v1-http-api-client'
 import type { Provider, Routing, RoutingOptions } from '@helia/interface'
 import type { PeerId, PeerInfo } from '@libp2p/interface'
 import type { Version } from 'multiformats'
@@ -20,8 +20,8 @@ function isIPNSKey (key: Uint8Array): boolean {
 class DelegatedHTTPRouter implements Routing {
   private readonly client: DelegatedRoutingV1HttpApiClient
 
-  constructor (url: URL) {
-    this.client = createDelegatedRoutingV1HttpApiClient(url)
+  constructor (url: URL, init: DelegatedRoutingV1HttpApiClientInit = {}) {
+    this.client = createDelegatedRoutingV1HttpApiClient(url, init)
   }
 
   async provide (cid: CID, options?: RoutingOptions | undefined): Promise<void> {
@@ -94,6 +94,6 @@ class DelegatedHTTPRouter implements Routing {
 /**
  * Creates a Helia Router that connects to an endpoint that supports the [Delegated Routing V1 HTTP API](https://specs.ipfs.tech/routing/http-routing-v1/) spec.
  */
-export function delegatedHTTPRouting (url: string | URL): Routing {
-  return new DelegatedHTTPRouter(new URL(url))
+export function delegatedHTTPRouting (url: string | URL, init: DelegatedRoutingV1HttpApiClientInit = {}): Routing {
+  return new DelegatedHTTPRouter(new URL(url), init)
 }
