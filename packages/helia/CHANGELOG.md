@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.0.1](https://github.com/ipfs/helia/compare/helia-v5.0.0...helia-v5.0.1) (2024-10-16)
+
+
+### Bug Fixes
+
+* respect routers config in helia constructor ([#652](https://github.com/ipfs/helia/issues/652)) ([1b2934b](https://github.com/ipfs/helia/commit/1b2934b313800fdb0c9684fe203f44471769eb17))
+
 ## [5.0.0](https://github.com/ipfs/helia/compare/helia-v4.2.6...helia-v5.0.0) (2024-10-07)
 
 
