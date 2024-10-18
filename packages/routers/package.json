@@ -72,5 +72,8 @@
     "it-drain": "^3.0.5",
     "sinon-ts": "^2.0.0"
   },
+  "browser": {
+    "./dist/src/utils/delegated-http-routing-defaults.js": "./dist/src/utils/delegated-http-routing-defaults.browser.js"
+  },
   "sideEffects": false
 }
