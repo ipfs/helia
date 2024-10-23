@@ -39,13 +39,12 @@ export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOpti
     dns: options.dns,
     addresses: {
       listen: [
+        '/p2p-circuit',
         '/webrtc'
       ]
     },
     transports: [
-      circuitRelayTransport({
-        discoverRelays: 1
-      }),
+      circuitRelayTransport(),
       webRTC(),
       webRTCDirect(),
       webTransport(),

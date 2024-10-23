@@ -46,13 +46,12 @@ export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOpti
       listen: [
         '/ip4/0.0.0.0/tcp/0',
         '/ip6/::/tcp/0',
+        '/p2p-circuit',
         '/webrtc'
       ]
     },
     transports: [
-      circuitRelayTransport({
-        discoverRelays: 1
-      }),
+      circuitRelayTransport(),
       tcp(),
       webRTC(),
       webRTCDirect(),
