@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/ipfs/helia/compare/utils-v1.0.0...utils-v1.0.1) (2024-10-23)
+
+
+### Bug Fixes
+
+* remove redundant filter ([#663](https://github.com/ipfs/helia/issues/663)) ([efc47fa](https://github.com/ipfs/helia/commit/efc47fa081107d31a8985ed72b36a244385b55ca))
+
 ## [1.0.0](https://github.com/ipfs/helia/compare/utils-v0.3.3...utils-v1.0.0) (2024-10-07)
 
 

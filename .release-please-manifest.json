@@ -1,18 +1,18 @@
 {
-  "packages/block-brokers": "4.0.0",
-  "packages/bitswap": "2.0.0",
+  "packages/block-brokers": "4.0.1",
+  "packages/bitswap": "2.0.1",
   "packages/car": "4.0.0",
   "packages/dag-cbor": "4.0.0",
   "packages/dag-json": "4.0.0",
-  "packages/helia": "5.0.1",
+  "packages/helia": "5.1.0",
   "packages/interface": "5.0.0",
-  "packages/interop": "7.0.1",
+  "packages/interop": "7.0.2",
   "packages/ipns": "8.0.0",
   "packages/json": "4.0.0",
   "packages/mfs": "4.0.0",
   "packages/strings": "4.0.0",
   "packages/unixfs": "4.0.0",
-  "packages/utils": "1.0.0",
-  "packages/http": "2.0.0",
-  "packages/routers": "2.0.0"
+  "packages/utils": "1.0.1",
+  "packages/http": "2.0.1",
+  "packages/routers": "2.1.0"
 }

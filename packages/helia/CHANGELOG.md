@@ -1,5 +1,27 @@
 # Changelog
 
+## [5.1.0](https://github.com/ipfs/helia/compare/helia-v5.0.1...helia-v5.1.0) (2024-10-23)
+
+
+### Features
+
+* enable filtering in delegated routing client ([#651](https://github.com/ipfs/helia/issues/651)) ([23ebae1](https://github.com/ipfs/helia/commit/23ebae1072fbbda371ee1d68efb5ecd25d6e339e))
+
+
+### Bug Fixes
+
+* add va1 bootstrapper ([#649](https://github.com/ipfs/helia/issues/649)) ([460853f](https://github.com/ipfs/helia/commit/460853f915661c794e52299529bda41a893f7b5b))
+
+
+### Dependencies
+
+* update @libp2p/circuit-relay-v2 to 3.x.x ([#661](https://github.com/ipfs/helia/issues/661)) ([0238ed4](https://github.com/ipfs/helia/commit/0238ed47a63a4f51f66010c50659e6f892b212b5))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^4.0.0 to ^4.0.1
+    * @helia/routers bumped from ^2.0.0 to ^2.1.0
+    * @helia/utils bumped from ^1.0.0 to ^1.0.1
+
 ## [5.0.1](https://github.com/ipfs/helia/compare/helia-v5.0.0...helia-v5.0.1) (2024-10-16)
 
 
