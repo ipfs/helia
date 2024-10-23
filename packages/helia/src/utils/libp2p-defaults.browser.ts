@@ -63,7 +63,10 @@ export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOpti
     services: {
       autoNAT: autoNAT(),
       dcutr: dcutr(),
-      delegatedRouting: () => createDelegatedRoutingV1HttpApiClient('https://delegated-ipfs.dev'),
+      delegatedRouting: () => createDelegatedRoutingV1HttpApiClient('https://delegated-ipfs.dev', {
+        filterProtocols: ['unknown', 'transport-bitswap', 'transport-ipfs-gateway-http'],
+        filterAddrs: ['https', 'webtransport', 'webrtc', 'webrtc-direct', 'wss']
+      }),
       dht: kadDHT({
         clientMode: true,
         validators: {
