@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/ipfs/helia/compare/routers-v2.0.0...routers-v2.1.0) (2024-10-23)
+
+
+### Features
+
+* enable customising delegated http router ([#654](https://github.com/ipfs/helia/issues/654)) ([693c82d](https://github.com/ipfs/helia/commit/693c82d2117536d89b2e82d9c482ad807af2e1be))
+
 ## [2.0.0](https://github.com/ipfs/helia/compare/routers-v1.1.1...routers-v2.0.0) (2024-10-07)
 
 
