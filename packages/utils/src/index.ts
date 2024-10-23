@@ -44,8 +44,6 @@ import type { MultihashHasher } from 'multiformats/hashes/interface'
 
 export { AbstractSession } from './abstract-session.js'
 export type { AbstractCreateSessionOptions, BlockstoreSessionEvents, AbstractSessionComponents } from './abstract-session.js'
-export { BloomFilter } from './bloom-filter.js'
-export type { BloomFilterOptions } from './bloom-filter.js'
 
 export type { BlockStorage, BlockStorageInit }
 
