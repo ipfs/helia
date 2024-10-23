@@ -1,11 +1,12 @@
 import { DEFAULT_SESSION_MIN_PROVIDERS, DEFAULT_SESSION_MAX_PROVIDERS, InsufficientProvidersError } from '@helia/interface'
 import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
+import { createScalableCuckooFilter } from '@libp2p/utils/filters'
 import { Queue } from '@libp2p/utils/queue'
 import { base64 } from 'multiformats/bases/base64'
 import pDefer from 'p-defer'
-import { BloomFilter } from './bloom-filter.js'
 import type { BlockBroker, BlockRetrievalOptions, CreateSessionOptions } from '@helia/interface'
 import type { AbortOptions, ComponentLogger, Logger } from '@libp2p/interface'
+import type { Filter } from '@libp2p/utils/filters'
 import type { CID } from 'multiformats/cid'
 import type { DeferredPromise } from 'p-defer'
 import type { ProgressEvent } from 'progress-events'
@@ -31,7 +32,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
   private readonly minProviders: number
   private readonly maxProviders: number
   public readonly providers: Provider[]
-  private readonly evictionFilter: BloomFilter
+  private readonly evictionFilter: Filter
 
   constructor (components: AbstractSessionComponents, init: AbstractCreateSessionOptions) {
     super()
@@ -44,7 +45,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     this.minProviders = init.minProviders ?? DEFAULT_SESSION_MIN_PROVIDERS
     this.maxProviders = init.maxProviders ?? DEFAULT_SESSION_MAX_PROVIDERS
     this.providers = []
-    this.evictionFilter = BloomFilter.create(this.maxProviders)
+    this.evictionFilter = createScalableCuckooFilter(this.maxProviders)
   }
 
   async retrieve (cid: CID, options: BlockRetrievalOptions<RetrieveBlockProgressEvents> = {}): Promise<Uint8Array> {
