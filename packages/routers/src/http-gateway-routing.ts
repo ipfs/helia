@@ -33,7 +33,7 @@ function toPeerInfo (url: string | URL): PeerInfo {
   }
 }
 
-class HTTPGatwayRouter implements Partial<Routing> {
+class HTTPGatewayRouter implements Partial<Routing> {
   private readonly gateways: PeerInfo[]
 
   constructor (init: HTTPGatwayRouterInit = {}) {
@@ -52,5 +52,5 @@ class HTTPGatwayRouter implements Partial<Routing> {
  * Returns a static list of HTTP Gateways as providers
  */
 export function httpGatewayRouting (init: HTTPGatwayRouterInit = {}): Partial<Routing> {
-  return new HTTPGatwayRouter(init)
+  return new HTTPGatewayRouter(init)
 }
