@@ -80,7 +80,7 @@
     "@libp2p/peer-id": "^5.0.0",
     "@libp2p/websockets": "^9.0.0",
     "@multiformats/sha3": "^3.0.2",
-    "aegir": "^44.0.1",
+    "aegir": "^45.0.1",
     "helia": "^5.1.0",
     "ipfs-unixfs-importer": "^15.2.4",
     "ipfsd-ctl": "^15.0.0",
