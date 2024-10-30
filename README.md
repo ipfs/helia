@@ -110,7 +110,7 @@ console.log(await d.get(retrievedObject.link))
 
 ## 🔒 Custom Hasher
 
-A [hasher](https://github.com/multiformats/js-multiformats?tab=readme-ov-file#multihash-hashers) is used to determine the immutable address of the content (aka the [**CID**](https://github.com/multiformats/cid?tab=readme-ov-file#what-is-it)) being imported into helia. The default hasher used by the methods above is [sha2-256 multihash](https://github.com/multiformats/js-multiformats?tab=readme-ov-file#multihash-hashers-1), but others can be provided with [AddOptions](https://helia.io/interfaces/_helia_dag_cbor.AddOptions.html). This is useful for applications that require hashers with specific properties; so in most cases keeping the default is recommended.
+A [hasher](https://github.com/multiformats/js-multiformats?tab=readme-ov-file#multihash-hashers) is used to determine the immutable address of the content (aka the [**CID**](https://github.com/multiformats/cid?tab=readme-ov-file#what-is-it)) being imported into helia. The default hasher used by the methods above is [sha2-256 multihash](https://github.com/multiformats/js-multiformats?tab=readme-ov-file#multihash-hashers-1), but others can be provided with [AddOptions](https://ipfs.github.io/helia/interfaces/_helia_dag_cbor.AddOptions.html). This is useful for applications that require hashers with specific properties; so in most cases keeping the default is recommended.
 
 > **Changing the hasher will cause a different CID to be returned for the same content! In other words: the same content imported with different hashers is treated like unique content with a unique address.**
 
