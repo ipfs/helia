@@ -115,6 +115,15 @@ export class Routing implements RoutingInterface, Startable {
     )
   }
 
+  async cancelReprovide (key: CID, options: AbortOptions = {}): Promise<void> {
+    await Promise.all(
+      supports(this.routers, 'cancelReprovide')
+        .map(async (router) => {
+          await router.cancelReprovide(key, options)
+        })
+    )
+  }
+
   /**
    * Store the given key/value pair in the available content routings
    */

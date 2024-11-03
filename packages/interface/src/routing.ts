@@ -65,6 +65,19 @@ export interface Routing {
   provide(cid: CID, options?: RoutingOptions): Promise<void>
 
   /**
+   * Helia will periodically re-provide every previously provided CID. Use this
+   * method to no longer re-provide the passed CID.
+   *
+   * @example
+   *
+   * ```js
+   * // ...
+   * await contentRouting.cancelReprovide(cid)
+   * ```
+   */
+  cancelReprovide(key: CID, options?: AbortOptions): Promise<void>
+
+  /**
    * Find the providers of the passed CID.
    *
    * @example

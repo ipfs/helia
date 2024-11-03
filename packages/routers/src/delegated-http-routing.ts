@@ -25,11 +25,15 @@ class DelegatedHTTPRouter implements Routing {
     this.client = createDelegatedRoutingV1HttpApiClient(url, init)
   }
 
-  async provide (cid: CID, options?: RoutingOptions | undefined): Promise<void> {
+  async provide (cid: CID, options?: RoutingOptions): Promise<void> {
     // noop
   }
 
-  async * findProviders (cid: CID<unknown, number, number, Version>, options?: RoutingOptions | undefined): AsyncIterable<Provider> {
+  async cancelReprovide (cid?: CID, options?: RoutingOptions): Promise<void> {
+    // noop
+  }
+
+  async * findProviders (cid: CID<unknown, number, number, Version>, options?: RoutingOptions): AsyncIterable<Provider> {
     yield * map(this.client.getProviders(cid, options), (record) => {
       return {
         id: record.ID,
@@ -39,7 +43,7 @@ class DelegatedHTTPRouter implements Routing {
     })
   }
 
-  async put (key: Uint8Array, value: Uint8Array, options?: RoutingOptions | undefined): Promise<void> {
+  async put (key: Uint8Array, value: Uint8Array, options?: RoutingOptions): Promise<void> {
     if (!isIPNSKey(key)) {
       return
     }
@@ -51,7 +55,7 @@ class DelegatedHTTPRouter implements Routing {
     await this.client.putIPNS(cid, record, options)
   }
 
-  async get (key: Uint8Array, options?: RoutingOptions | undefined): Promise<Uint8Array> {
+  async get (key: Uint8Array, options?: RoutingOptions): Promise<Uint8Array> {
     if (!isIPNSKey(key)) {
       throw new NotFoundError('Not found')
     }
@@ -74,7 +78,7 @@ class DelegatedHTTPRouter implements Routing {
     }
   }
 
-  async findPeer (peerId: PeerId, options?: RoutingOptions | undefined): Promise<PeerInfo> {
+  async findPeer (peerId: PeerId, options?: RoutingOptions): Promise<PeerInfo> {
     const peer = await first(this.client.getPeers(peerId, options))
 
     if (peer != null) {
@@ -87,7 +91,7 @@ class DelegatedHTTPRouter implements Routing {
     throw new NotFoundError('Not found')
   }
 
-  async * getClosestPeers (key: Uint8Array, options?: RoutingOptions | undefined): AsyncIterable<PeerInfo> {
+  async * getClosestPeers (key: Uint8Array, options?: RoutingOptions): AsyncIterable<PeerInfo> {
     // noop
   }
 }
