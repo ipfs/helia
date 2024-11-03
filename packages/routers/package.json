@@ -67,7 +67,7 @@
   },
   "devDependencies": {
     "@libp2p/crypto": "^5.0.0",
-    "aegir": "^44.0.1",
+    "aegir": "^45.0.1",
     "it-all": "^3.0.4",
     "it-drain": "^3.0.5",
     "sinon-ts": "^2.0.0"
