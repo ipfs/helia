@@ -1,6 +1,7 @@
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { createDelegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
+import { delegatedHTTPRoutingDefaults } from '@helia/routers'
 import { autoNAT } from '@libp2p/autonat'
 import { bootstrap } from '@libp2p/bootstrap'
 import { circuitRelayTransport, circuitRelayServer, type CircuitRelayService } from '@libp2p/circuit-relay-v2'
@@ -72,10 +73,7 @@ export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOpti
     services: {
       autoNAT: autoNAT(),
       dcutr: dcutr(),
-      delegatedRouting: () => createDelegatedRoutingV1HttpApiClient('https://delegated-ipfs.dev', {
-        filterProtocols: ['unknown', 'transport-bitswap', 'transport-ipfs-gateway-http'],
-        filterAddrs: ['https', 'tcp', 'webrtc', 'webrtc-direct', 'wss']
-      }),
+      delegatedRouting: () => createDelegatedRoutingV1HttpApiClient('https://delegated-ipfs.dev', delegatedHTTPRoutingDefaults()),
       dht: kadDHT({
         validators: {
           ipns: ipnsValidator
