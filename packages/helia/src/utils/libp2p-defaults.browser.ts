@@ -13,7 +13,6 @@ import { mplex } from '@libp2p/mplex'
 import { ping, type PingService } from '@libp2p/ping'
 import { webRTC, webRTCDirect } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
-import { webTransport } from '@libp2p/webtransport'
 import { ipnsSelector } from 'ipns/selector'
 import { ipnsValidator } from 'ipns/validator'
 import * as libp2pInfo from 'libp2p/version'
@@ -48,7 +47,6 @@ export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOpti
       circuitRelayTransport(),
       webRTC(),
       webRTCDirect(),
-      webTransport(),
       webSockets()
     ],
     connectionEncrypters: [
