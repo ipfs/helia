@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.0.2](https://github.com/ipfs/helia/compare/block-brokers-v4.0.1...block-brokers-v4.0.2) (2024-11-18)
+
+
+### Dependencies
+
+* bump @multiformats/multiaddr-to-uri from 10.1.2 to 11.0.0 ([#676](https://github.com/ipfs/helia/issues/676)) ([74f392c](https://github.com/ipfs/helia/commit/74f392c207db3536c597d2fa59ad86a647672ec9))
+* bump aegir from 44.1.4 to 45.0.1 ([#669](https://github.com/ipfs/helia/issues/669)) ([e58e49c](https://github.com/ipfs/helia/commit/e58e49c6aed8ea9d1e9851435a25e33fdbee3781))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^2.0.1 to ^2.0.2
+    * @helia/interface bumped from ^5.0.0 to ^5.1.0
+    * @helia/utils bumped from ^1.0.1 to ^1.1.0
+
 ## [4.0.1](https://github.com/ipfs/helia/compare/block-brokers-v4.0.0...block-brokers-v4.0.1) (2024-10-23)
 
 

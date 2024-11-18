@@ -1,5 +1,25 @@
 # Changelog
 
+## [2.2.0](https://github.com/ipfs/helia/compare/routers-v2.1.0...routers-v2.2.0) (2024-11-18)
+
+
+### Features
+
+* add cancelReprovide function to routing ([#672](https://github.com/ipfs/helia/issues/672)) ([dc13525](https://github.com/ipfs/helia/commit/dc1352563ab5ed7b204ae702c1e48035d196a470))
+
+
+### Bug Fixes
+
+* add tls to default delegated routing filters ([#670](https://github.com/ipfs/helia/issues/670)) ([aecac3d](https://github.com/ipfs/helia/commit/aecac3d92cbd22a7331afee8e6f87ef31a9f7d95))
+
+
+### Dependencies
+
+* bump aegir from 44.1.4 to 45.0.1 ([#669](https://github.com/ipfs/helia/issues/669)) ([e58e49c](https://github.com/ipfs/helia/commit/e58e49c6aed8ea9d1e9851435a25e33fdbee3781))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.0.0 to ^5.1.0
+
 ## [2.1.0](https://github.com/ipfs/helia/compare/routers-v2.0.0...routers-v2.1.0) (2024-10-23)
 
 

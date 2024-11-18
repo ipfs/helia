@@ -1,5 +1,28 @@
 # Changelog
 
+## [7.0.3](https://github.com/ipfs/helia/compare/interop-v7.0.2...interop-v7.0.3) (2024-11-18)
+
+
+### Dependencies
+
+* bump aegir from 44.1.4 to 45.0.1 ([#669](https://github.com/ipfs/helia/issues/669)) ([e58e49c](https://github.com/ipfs/helia/commit/e58e49c6aed8ea9d1e9851435a25e33fdbee3781))
+* bump kubo from 0.31.0 to 0.32.0 ([#679](https://github.com/ipfs/helia/issues/679)) ([c09fef2](https://github.com/ipfs/helia/commit/c09fef29b749eecf969f9812dea7ab49477582f7))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^4.0.1 to ^4.0.2
+    * @helia/car bumped from ^4.0.0 to ^4.0.1
+    * @helia/dag-cbor bumped from ^4.0.0 to ^4.0.1
+    * @helia/dag-json bumped from ^4.0.0 to ^4.0.1
+    * @helia/http bumped from ^2.0.1 to ^2.0.2
+    * @helia/interface bumped from ^5.0.0 to ^5.1.0
+    * @helia/ipns bumped from ^8.0.0 to ^8.0.1
+    * @helia/json bumped from ^4.0.0 to ^4.0.1
+    * @helia/mfs bumped from ^4.0.0 to ^4.0.1
+    * @helia/routers bumped from ^2.1.0 to ^2.2.0
+    * @helia/strings bumped from ^4.0.0 to ^4.0.1
+    * @helia/unixfs bumped from ^4.0.0 to ^4.0.1
+    * helia bumped from ^5.1.0 to ^5.1.1
+
 ## [7.0.2](https://github.com/ipfs/helia/compare/interop-v7.0.1...interop-v7.0.2) (2024-10-23)
 
 
