@@ -54,22 +54,22 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@helia/delegated-routing-v1-http-api-client": "^4.1.0",
+    "@helia/delegated-routing-v1-http-api-client": "^4.2.1",
     "@helia/interface": "^5.1.0",
-    "@libp2p/peer-id": "^5.0.0",
-    "@libp2p/interface": "^2.0.0",
+    "@libp2p/interface": "^2.2.1",
+    "@libp2p/peer-id": "^5.0.8",
     "@multiformats/uri-to-multiaddr": "^8.0.0",
     "ipns": "^10.0.0",
-    "it-first": "^3.0.4",
-    "it-map": "^3.0.5",
-    "multiformats": "^13.1.0",
-    "uint8arrays": "^5.0.2"
+    "it-first": "^3.0.6",
+    "it-map": "^3.1.1",
+    "multiformats": "^13.3.1",
+    "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@libp2p/crypto": "^5.0.0",
-    "aegir": "^45.0.1",
-    "it-all": "^3.0.4",
-    "it-drain": "^3.0.5",
+    "@libp2p/crypto": "^5.0.7",
+    "aegir": "^45.0.6",
+    "it-all": "^3.0.6",
+    "it-drain": "^3.0.7",
     "sinon-ts": "^2.0.0"
   },
   "browser": {

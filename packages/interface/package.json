@@ -71,16 +71,16 @@
     "build": "aegir build"
   },
   "dependencies": {
-    "@libp2p/interface": "^2.0.0",
-    "@multiformats/dns": "^1.0.1",
-    "interface-blockstore": "^5.2.10",
-    "interface-datastore": "^8.2.11",
-    "interface-store": "^6.0.0",
-    "multiformats": "^13.1.0",
-    "progress-events": "^1.0.0"
+    "@libp2p/interface": "^2.2.1",
+    "@multiformats/dns": "^1.0.6",
+    "interface-blockstore": "^5.3.1",
+    "interface-datastore": "^8.3.1",
+    "interface-store": "^6.0.2",
+    "multiformats": "^13.3.1",
+    "progress-events": "^1.0.1"
   },
   "devDependencies": {
-    "aegir": "^45.0.1"
+    "aegir": "^45.0.6"
   },
   "sideEffects": false
 }

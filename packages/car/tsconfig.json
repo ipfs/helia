@@ -12,6 +12,9 @@
       "path": "../interface"
     },
     {
+      "path": "../mfs"
+    },
+    {
       "path": "../unixfs"
     }
   ]

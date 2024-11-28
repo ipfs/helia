@@ -160,7 +160,7 @@ Check out the [Helia examples repo](https://github.com/ipfs-examples/helia-examp
 
 # 📒 API Docs
 
-- https://ipfs.github.io/helia
+- <https://ipfs.github.io/helia>
 
 # 📐 System diagram
 
@@ -277,5 +277,5 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 Licensed under either of
 
-- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+- Apache 2.0, ([LICENSE-APACHE](https://github.com/ipfs/helia/blob/main/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](https://github.com/ipfs/helia/blob/main/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
