@@ -57,28 +57,28 @@
     "@helia/bitswap": "^2.0.2",
     "@helia/interface": "^5.1.0",
     "@helia/utils": "^1.1.0",
-    "@libp2p/interface": "^2.0.0",
-    "@libp2p/utils": "^6.0.0",
-    "@multiformats/multiaddr": "^12.2.1",
-    "@multiformats/multiaddr-matcher": "^1.2.0",
+    "@libp2p/interface": "^2.2.1",
+    "@libp2p/utils": "^6.2.1",
+    "@multiformats/multiaddr": "^12.3.3",
+    "@multiformats/multiaddr-matcher": "^1.6.0",
     "@multiformats/multiaddr-to-uri": "^11.0.0",
-    "interface-blockstore": "^5.2.10",
-    "interface-store": "^6.0.0",
-    "multiformats": "^13.1.0",
-    "progress-events": "^1.0.0"
+    "interface-blockstore": "^5.3.1",
+    "interface-store": "^6.0.2",
+    "multiformats": "^13.3.1",
+    "progress-events": "^1.0.1"
   },
   "devDependencies": {
-    "@libp2p/crypto": "^5.0.0",
-    "@libp2p/logger": "^5.0.0",
-    "@libp2p/peer-id": "^5.0.0",
+    "@libp2p/crypto": "^5.0.7",
+    "@libp2p/logger": "^5.1.4",
+    "@libp2p/peer-id": "^5.0.8",
     "@multiformats/uri-to-multiaddr": "^8.0.0",
     "@types/polka": "^0.5.7",
     "@types/sinon": "^17.0.3",
-    "aegir": "^45.0.1",
+    "aegir": "^45.0.6",
     "cors": "^2.8.5",
     "polka": "^0.5.2",
     "sinon": "^19.0.2",
     "sinon-ts": "^2.0.0",
-    "uint8arrays": "^5.0.3"
+    "uint8arrays": "^5.1.0"
   }
 }

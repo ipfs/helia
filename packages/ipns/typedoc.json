@@ -1,6 +1,7 @@
 {
   "entryPoints": [
     "./src/index.ts",
+    "./src/dns-resolvers/index.ts",
     "./src/routing/index.ts"
   ]
 }
