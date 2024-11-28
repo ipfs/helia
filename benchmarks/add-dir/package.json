@@ -13,14 +13,14 @@
     "start": "npm run build && node dist/src/index.js"
   },
   "dependencies": {
-    "@helia/unixfs": "^3.0.4",
+    "@helia/unixfs": "^4.0.1",
     "aegir": "^45.0.1",
     "blockstore-core": "^5.0.2",
     "blockstore-fs": "^2.0.1",
     "datastore-core": "^10.0.2",
     "datastore-level": "^11.0.1",
     "execa": "^8.0.1",
-    "helia": "^4.1.1",
+    "helia": "^5.1.1",
     "ipfs-unixfs-importer": "^15.1.5",
     "ipfsd-ctl": "^15.0.0",
     "it-last": "^3.0.6",
