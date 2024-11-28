@@ -24,7 +24,7 @@
     "ipfs-unixfs-importer": "^15.1.5",
     "ipfsd-ctl": "^15.0.0",
     "it-last": "^3.0.6",
-    "kubo": "^0.30.0",
+    "kubo": "^0.32.1",
     "kubo-rpc-client": "^5.0.0",
     "multiformats": "^13.1.0",
     "tinybench": "^2.4.0"

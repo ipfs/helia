@@ -28,7 +28,7 @@
     "ipfsd-ctl": "^15.0.0",
     "it-buffer-stream": "^3.0.2",
     "it-drain": "^3.0.1",
-    "kubo": "^0.30.0",
+    "kubo": "^0.32.1",
     "kubo-rpc-client": "^5.0.0",
     "libp2p": "^2.0.0",
     "multiformats": "^13.1.0",
