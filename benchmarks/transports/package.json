@@ -33,7 +33,7 @@
     "datastore-idb": "^3.0.0",
     "datastore-level": "^11.0.1",
     "debug": "^4.3.4",
-    "execa": "^8.0.1",
+    "execa": "^9.5.2",
     "helia": "^5.1.1",
     "interface-blockstore": "^5.2.10",
     "interface-datastore": "^8.2.11",
