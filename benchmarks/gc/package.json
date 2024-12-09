@@ -15,7 +15,7 @@
     "aegir": "^45.0.1",
     "blockstore-fs": "^2.0.1",
     "datastore-level": "^11.0.1",
-    "execa": "^8.0.1",
+    "execa": "^9.5.2",
     "helia": "^5.1.1",
     "ipfsd-ctl": "^15.0.0",
     "it-all": "^3.0.4",
