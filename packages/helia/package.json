@@ -77,7 +77,7 @@
     "@libp2p/ping": "^2.0.12",
     "@libp2p/tcp": "^10.0.13",
     "@libp2p/tls": "^2.0.11",
-    "@libp2p/upnp-nat": "^2.0.12",
+    "@libp2p/upnp-nat": "^3.0.0",
     "@libp2p/webrtc": "^5.0.19",
     "@libp2p/websockets": "^9.0.13",
     "@multiformats/dns": "^1.0.6",
