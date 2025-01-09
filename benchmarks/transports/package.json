@@ -11,7 +11,7 @@
     "dep-check": "aegir dep-check -i playwright-test",
     "start": "npm run build && node dist/src/index.js"
   },
-  "dependencies": {
+  "devDependencies": {
     "@chainsafe/libp2p-noise": "^16.0.0",
     "@chainsafe/libp2p-yamux": "^7.0.0",
     "@helia/block-brokers": "^4.0.2",

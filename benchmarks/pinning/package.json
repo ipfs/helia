@@ -10,7 +10,7 @@
     "doc-check": "aegir doc-check",
     "start": "npm run build && node dist/src/index.js"
   },
-  "dependencies": {
+  "devDependencies": {
     "@ipld/dag-pb": "^4.0.6",
     "aegir": "^45.0.1",
     "blockstore-fs": "^2.0.1",
