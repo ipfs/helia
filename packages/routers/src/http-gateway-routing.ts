@@ -15,7 +15,7 @@ export const DEFAULT_TRUSTLESS_GATEWAYS = [
   'https://4everland.io'
 ]
 
-export interface HTTPGatwayRouterInit {
+export interface HTTPGatewayRouterInit {
   gateways?: Array<URL | string>
 }
 
@@ -36,7 +36,7 @@ function toPeerInfo (url: string | URL): PeerInfo {
 class HTTPGatewayRouter implements Partial<Routing> {
   private readonly gateways: PeerInfo[]
 
-  constructor (init: HTTPGatwayRouterInit = {}) {
+  constructor (init: HTTPGatewayRouterInit = {}) {
     this.gateways = (init.gateways ?? DEFAULT_TRUSTLESS_GATEWAYS).map(url => toPeerInfo(url))
   }
 
@@ -51,6 +51,6 @@ class HTTPGatewayRouter implements Partial<Routing> {
 /**
  * Returns a static list of HTTP Gateways as providers
  */
-export function httpGatewayRouting (init: HTTPGatwayRouterInit = {}): Partial<Routing> {
+export function httpGatewayRouting (init: HTTPGatewayRouterInit = {}): Partial<Routing> {
   return new HTTPGatewayRouter(init)
 }
