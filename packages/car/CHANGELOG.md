@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.0.1](https://github.com/ipfs/helia/compare/car-v4.0.0...car-v4.0.1) (2024-11-18)
+
+
+### Dependencies
+
+* bump aegir from 44.1.4 to 45.0.1 ([#669](https://github.com/ipfs/helia/issues/669)) ([e58e49c](https://github.com/ipfs/helia/commit/e58e49c6aed8ea9d1e9851435a25e33fdbee3781))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.0.0 to ^5.1.0
+  * devDependencies
+    * @helia/mfs bumped from ^4.0.0 to ^4.0.1
+    * @helia/unixfs bumped from ^4.0.0 to ^4.0.1
+
 ## [4.0.0](https://github.com/ipfs/helia/compare/car-v3.2.1...car-v4.0.0) (2024-10-07)
 
 

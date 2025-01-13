@@ -38,10 +38,14 @@ export async function createHeliaNode (libp2pOptions?: Libp2pOptions): Promise<H
   // remove services that are not used in tests
   // @ts-expect-error services.autoNAT is not optional
   delete defaults.services.autoNAT
+  // @ts-expect-error services.upnp is not optional
+  delete defaults.services.upnp
   // @ts-expect-error services.dcutr is not optional
   delete defaults.services.dcutr
   // @ts-expect-error services.delegatedRouting is not optional
   delete defaults.services.delegatedRouting
+  // @ts-expect-error services.autoTLS is not optional
+  delete defaults.services.autoTLS
 
   return createHelia<Libp2p<DefaultLibp2pServices>>({
     blockBrokers: [

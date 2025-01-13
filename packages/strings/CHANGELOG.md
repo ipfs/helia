@@ -1,5 +1,15 @@
 # Changelog
 
+## [4.0.1](https://github.com/ipfs/helia/compare/strings-v4.0.0...strings-v4.0.1) (2024-11-18)
+
+
+### Dependencies
+
+* bump aegir from 44.1.4 to 45.0.1 ([#669](https://github.com/ipfs/helia/issues/669)) ([e58e49c](https://github.com/ipfs/helia/commit/e58e49c6aed8ea9d1e9851435a25e33fdbee3781))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.0.0 to ^5.1.0
+
 ## [4.0.0](https://github.com/ipfs/helia/compare/strings-v3.0.6...strings-v4.0.0) (2024-10-07)
 
 

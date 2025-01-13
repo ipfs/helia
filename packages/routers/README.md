@@ -54,8 +54,8 @@ Loading this module through a script tag will make its exports available as `Hel
 
 Licensed under either of
 
-- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+- Apache 2.0, ([LICENSE-APACHE](https://github.com/ipfs/helia/blob/main/packages/routers/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](https://github.com/ipfs/helia/blob/main/packages/routers/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
 # Contribute
 
