@@ -2,6 +2,7 @@ import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { createDelegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
 import { delegatedHTTPRoutingDefaults } from '@helia/routers'
+import { autoTLS } from '@libp2p/auto-tls'
 import { autoNAT } from '@libp2p/autonat'
 import { bootstrap } from '@libp2p/bootstrap'
 import { circuitRelayTransport, circuitRelayServer, type CircuitRelayService } from '@libp2p/circuit-relay-v2'
@@ -23,10 +24,12 @@ import * as libp2pInfo from 'libp2p/version'
 import { name, version } from '../version.js'
 import { bootstrapConfig } from './bootstrappers.js'
 import type { Libp2pDefaultsOptions } from './libp2p.js'
+import type { AutoTLS } from '@libp2p/auto-tls'
 import type { Libp2pOptions } from 'libp2p'
 
 export interface DefaultLibp2pServices extends Record<string, unknown> {
   autoNAT: unknown
+  autoTLS: AutoTLS
   dcutr: unknown
   delegatedRouting: unknown
   dht: KadDHT
@@ -46,7 +49,9 @@ export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOpti
     addresses: {
       listen: [
         '/ip4/0.0.0.0/tcp/0',
+        '/ip4/0.0.0.0/tcp/0/ws',
         '/ip6/::/tcp/0',
+        '/ip6/::/tcp/0/ws',
         '/p2p-circuit',
         '/webrtc'
       ]
@@ -72,6 +77,7 @@ export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOpti
     ],
     services: {
       autoNAT: autoNAT(),
+      autoTLS: autoTLS(),
       dcutr: dcutr(),
       delegatedRouting: () => createDelegatedRoutingV1HttpApiClient('https://delegated-ipfs.dev', delegatedHTTPRoutingDefaults()),
       dht: kadDHT({
