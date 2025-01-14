@@ -1,5 +1,28 @@
 # Changelog
 
+## [5.2.0](https://github.com/ipfs/helia/compare/helia-v5.1.1...helia-v5.2.0) (2025-01-14)
+
+
+### Features
+
+* add auto-tls support ([#716](https://github.com/ipfs/helia/issues/716)) ([e45e1de](https://github.com/ipfs/helia/commit/e45e1dea40120b993f009f8fbb81a9737742196c))
+
+
+### Bug Fixes
+
+* use @libp2p/config to load private key from keystore ([#714](https://github.com/ipfs/helia/issues/714)) ([b4f9d4f](https://github.com/ipfs/helia/commit/b4f9d4fc234cc66e9cdf444900e365b1c63b9920))
+
+
+### Dependencies
+
+* bump the helia-deps group across 2 directories with 1 update ([#717](https://github.com/ipfs/helia/issues/717)) ([1c8583c](https://github.com/ipfs/helia/commit/1c8583c89bbf47bfbe10636a9e226aabb61e20da))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^4.0.2 to ^4.0.3
+    * @helia/interface bumped from ^5.1.0 to ^5.2.0
+    * @helia/routers bumped from ^2.2.0 to ^3.0.0
+    * @helia/utils bumped from ^1.1.0 to ^1.2.0
+
 ## [5.1.1](https://github.com/ipfs/helia/compare/helia-v5.1.0...helia-v5.1.1) (2024-11-18)
 
 

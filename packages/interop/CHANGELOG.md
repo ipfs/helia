@@ -1,5 +1,31 @@
 # Changelog
 
+## [7.1.0](https://github.com/ipfs/helia/compare/interop-v7.0.3...interop-v7.1.0) (2025-01-14)
+
+
+### Features
+
+* add auto-tls support ([#716](https://github.com/ipfs/helia/issues/716)) ([e45e1de](https://github.com/ipfs/helia/commit/e45e1dea40120b993f009f8fbb81a9737742196c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^4.0.2 to ^4.0.3
+    * @helia/car bumped from ^4.0.1 to ^4.0.2
+    * @helia/dag-cbor bumped from ^4.0.1 to ^4.0.2
+    * @helia/dag-json bumped from ^4.0.1 to ^4.0.2
+    * @helia/http bumped from ^2.0.2 to ^2.0.3
+    * @helia/interface bumped from ^5.1.0 to ^5.2.0
+    * @helia/ipns bumped from ^8.0.1 to ^8.0.2
+    * @helia/json bumped from ^4.0.1 to ^4.0.2
+    * @helia/mfs bumped from ^4.0.1 to ^4.0.2
+    * @helia/routers bumped from ^2.2.0 to ^3.0.0
+    * @helia/strings bumped from ^4.0.1 to ^4.0.2
+    * @helia/unixfs bumped from ^4.0.1 to ^4.0.2
+    * helia bumped from ^5.1.1 to ^5.2.0
+
 ## [7.0.3](https://github.com/ipfs/helia/compare/interop-v7.0.2...interop-v7.0.3) (2024-11-18)
 
 

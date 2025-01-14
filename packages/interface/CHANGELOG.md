@@ -5,6 +5,13 @@
 
 * expose .dns property on @helia/interface ([#465](https://github.com/ipfs/helia/issues/465)) ([8c9bb7d](https://github.com/ipfs/helia/commit/8c9bb7d224a1b786cba1fba18bffe07001a3b95d))
 
+## [5.2.0](https://github.com/ipfs/helia/compare/interface-v5.1.0...interface-v5.2.0) (2025-01-14)
+
+
+### Features
+
+* add method tracing to routing ([#715](https://github.com/ipfs/helia/issues/715)) ([5784ceb](https://github.com/ipfs/helia/commit/5784cebb3225157d6220668d4f58481f046debf2))
+
 ## [5.1.0](https://github.com/ipfs/helia/compare/interface-v5.0.0...interface-v5.1.0) (2024-11-18)
 
 
