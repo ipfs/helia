@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.0.2](https://github.com/ipfs/helia/compare/json-v4.0.1...json-v4.0.2) (2025-01-14)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.1.0 to ^5.2.0
+
 ## [4.0.1](https://github.com/ipfs/helia/compare/json-v4.0.0...json-v4.0.1) (2024-11-18)
 
 
