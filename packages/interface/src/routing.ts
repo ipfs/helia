@@ -1,4 +1,4 @@
-import type { AbortOptions, PeerId, PeerInfo } from '@libp2p/interface'
+import type { AbortOptions, PeerId, PeerInfo, TraceOptions } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 import type { ProgressOptions } from 'progress-events'
 
@@ -8,7 +8,7 @@ import type { ProgressOptions } from 'progress-events'
  * local cache that may be used in preference over network calls, for example
  * when a record has a TTL.
  */
-export interface RoutingOptions extends AbortOptions, ProgressOptions {
+export interface RoutingOptions extends AbortOptions, ProgressOptions, TraceOptions {
   /**
    * Pass `false` to not use the network
    *
@@ -63,6 +63,19 @@ export interface Routing {
    * ```
    */
   provide(cid: CID, options?: RoutingOptions): Promise<void>
+
+  /**
+   * Helia will periodically re-provide every previously provided CID. Use this
+   * method to no longer re-provide the passed CID.
+   *
+   * @example
+   *
+   * ```js
+   * // ...
+   * await contentRouting.cancelReprovide(cid)
+   * ```
+   */
+  cancelReprovide(key: CID, options?: AbortOptions): Promise<void>
 
   /**
    * Find the providers of the passed CID.

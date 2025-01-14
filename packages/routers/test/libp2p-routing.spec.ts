@@ -33,6 +33,15 @@ describe('libp2p-routing', () => {
     expect(contentRouting.provide.calledWith(cid, options)).to.be.true()
   })
 
+  it('should call through to contentRouting.cancelReprovide', async () => {
+    const cid = CID.parse('bafyreidykglsfhoixmivffc5uwhcgshx4j465xwqntbmu43nb2dzqwfvae')
+    const options = {}
+
+    await router.cancelReprovide(cid, options)
+
+    expect(contentRouting.cancelReprovide.calledWith(cid, options)).to.be.true()
+  })
+
   it('should call through to contentRouting.findProviders', async () => {
     contentRouting.findProviders.returns(async function * () {}())
 

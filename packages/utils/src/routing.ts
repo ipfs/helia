@@ -3,7 +3,7 @@ import { NotFoundError, start, stop } from '@libp2p/interface'
 import { PeerQueue } from '@libp2p/utils/peer-queue'
 import merge from 'it-merge'
 import type { Routing as RoutingInterface, Provider, RoutingOptions } from '@helia/interface'
-import type { AbortOptions, ComponentLogger, Logger, PeerId, PeerInfo, Startable } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, Logger, Metrics, PeerId, PeerInfo, Startable } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 
 const DEFAULT_PROVIDER_LOOKUP_CONCURRENCY = 5
@@ -15,6 +15,7 @@ export interface RoutingInit {
 
 export interface RoutingComponents {
   logger: ComponentLogger
+  metrics?: Metrics
 }
 
 export class Routing implements RoutingInterface, Startable {
@@ -26,6 +27,28 @@ export class Routing implements RoutingInterface, Startable {
     this.log = components.logger.forComponent('helia:routing')
     this.routers = init.routers ?? []
     this.providerLookupConcurrency = init.providerLookupConcurrency ?? DEFAULT_PROVIDER_LOOKUP_CONCURRENCY
+
+    this.findProviders = components.metrics?.traceFunction('helia.routing.findProviders', this.findProviders.bind(this), {
+      optionsIndex: 1
+    }) ?? this.findProviders
+    this.provide = components.metrics?.traceFunction('helia.routing.provide', this.provide.bind(this), {
+      optionsIndex: 1
+    }) ?? this.provide
+    this.cancelReprovide = components.metrics?.traceFunction('helia.routing.cancelReprovide', this.cancelReprovide.bind(this), {
+      optionsIndex: 1
+    }) ?? this.cancelReprovide
+    this.put = components.metrics?.traceFunction('helia.routing.put', this.put.bind(this), {
+      optionsIndex: 2
+    }) ?? this.put
+    this.get = components.metrics?.traceFunction('helia.routing.get', this.get.bind(this), {
+      optionsIndex: 1
+    }) ?? this.get
+    this.findPeer = components.metrics?.traceFunction('helia.routing.findPeer', this.findPeer.bind(this), {
+      optionsIndex: 1
+    }) ?? this.findPeer
+    this.getClosestPeers = components.metrics?.traceFunction('helia.routing.getClosestPeers', this.getClosestPeers.bind(this), {
+      optionsIndex: 1
+    }) ?? this.getClosestPeers
   }
 
   async start (): Promise<void> {
@@ -111,6 +134,15 @@ export class Routing implements RoutingInterface, Startable {
       supports(this.routers, 'provide')
         .map(async (router) => {
           await router.provide(key, options)
+        })
+    )
+  }
+
+  async cancelReprovide (key: CID, options: AbortOptions = {}): Promise<void> {
+    await Promise.all(
+      supports(this.routers, 'cancelReprovide')
+        .map(async (router) => {
+          await router.cancelReprovide(key, options)
         })
     )
   }

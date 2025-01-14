@@ -110,7 +110,7 @@ console.log(await d.get(retrievedObject.link))
 
 ## 🔒 Custom Hasher
 
-A [hasher](https://github.com/multiformats/js-multiformats?tab=readme-ov-file#multihash-hashers) is used to determine the immutable address of the content (aka the [**CID**](https://github.com/multiformats/cid?tab=readme-ov-file#what-is-it)) being imported into helia. The default hasher used by the methods above is [sha2-256 multihash](https://github.com/multiformats/js-multiformats?tab=readme-ov-file#multihash-hashers-1), but others can be provided with [AddOptions](https://helia.io/interfaces/_helia_dag_cbor.AddOptions.html). This is useful for applications that require hashers with specific properties; so in most cases keeping the default is recommended.
+A [hasher](https://github.com/multiformats/js-multiformats?tab=readme-ov-file#multihash-hashers) is used to determine the immutable address of the content (aka the [**CID**](https://github.com/multiformats/cid?tab=readme-ov-file#what-is-it)) being imported into helia. The default hasher used by the methods above is [sha2-256 multihash](https://github.com/multiformats/js-multiformats?tab=readme-ov-file#multihash-hashers-1), but others can be provided with [AddOptions](https://ipfs.github.io/helia/interfaces/_helia_dag_cbor.AddOptions.html). This is useful for applications that require hashers with specific properties; so in most cases keeping the default is recommended.
 
 > **Changing the hasher will cause a different CID to be returned for the same content! In other words: the same content imported with different hashers is treated like unique content with a unique address.**
 
@@ -160,7 +160,7 @@ Check out the [Helia examples repo](https://github.com/ipfs-examples/helia-examp
 
 # 📒 API Docs
 
-- https://ipfs.github.io/helia
+- <https://ipfs.github.io/helia>
 
 # 📐 System diagram
 
@@ -277,5 +277,5 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 Licensed under either of
 
-- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+- Apache 2.0, ([LICENSE-APACHE](https://github.com/ipfs/helia/blob/main/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](https://github.com/ipfs/helia/blob/main/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)

@@ -1,6 +1,6 @@
 {
   "name": "@helia/strings",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Add/get IPLD blocks containing strings with your Helia node",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/strings#readme",
@@ -40,91 +40,6 @@
       "package": true
     }
   },
-  "release": {
-    "branches": [
-      "main"
-    ],
-    "plugins": [
-      [
-        "@semantic-release/commit-analyzer",
-        {
-          "preset": "conventionalcommits",
-          "releaseRules": [
-            {
-              "breaking": true,
-              "release": "major"
-            },
-            {
-              "revert": true,
-              "release": "patch"
-            },
-            {
-              "type": "feat",
-              "release": "minor"
-            },
-            {
-              "type": "fix",
-              "release": "patch"
-            },
-            {
-              "type": "docs",
-              "release": "patch"
-            },
-            {
-              "type": "test",
-              "release": "patch"
-            },
-            {
-              "type": "deps",
-              "release": "patch"
-            },
-            {
-              "scope": "no-release",
-              "release": false
-            }
-          ]
-        }
-      ],
-      [
-        "@semantic-release/release-notes-generator",
-        {
-          "preset": "conventionalcommits",
-          "presetConfig": {
-            "types": [
-              {
-                "type": "feat",
-                "section": "Features"
-              },
-              {
-                "type": "fix",
-                "section": "Bug Fixes"
-              },
-              {
-                "type": "chore",
-                "section": "Trivial Changes"
-              },
-              {
-                "type": "docs",
-                "section": "Documentation"
-              },
-              {
-                "type": "deps",
-                "section": "Dependencies"
-              },
-              {
-                "type": "test",
-                "section": "Tests"
-              }
-            ]
-          }
-        }
-      ],
-      "@semantic-release/changelog",
-      "@semantic-release/npm",
-      "@semantic-release/github",
-      "@semantic-release/git"
-    ]
-  },
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
@@ -138,20 +53,19 @@
     "test:firefox": "aegir test -t browser -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
     "test:node": "aegir test -t node --cov",
-    "test:electron-main": "aegir test -t electron-main",
-    "release": "aegir release"
+    "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@helia/interface": "^5.0.0",
-    "@libp2p/interface": "^2.0.0",
-    "interface-blockstore": "^5.2.10",
-    "multiformats": "^13.1.0",
-    "progress-events": "^1.0.0",
-    "uint8arrays": "^5.0.2"
+    "@helia/interface": "^5.1.0",
+    "@libp2p/interface": "^2.2.1",
+    "interface-blockstore": "^5.3.1",
+    "multiformats": "^13.3.1",
+    "progress-events": "^1.0.1",
+    "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "aegir": "^44.0.1",
-    "blockstore-core": "^5.0.0"
+    "aegir": "^45.0.6",
+    "blockstore-core": "^5.0.2"
   },
   "sideEffects": false
 }

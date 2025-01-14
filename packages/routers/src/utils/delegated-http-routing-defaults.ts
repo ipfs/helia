@@ -3,6 +3,6 @@ import type { DelegatedRoutingV1HttpApiClientInit } from '@helia/delegated-routi
 export function delegatedHTTPRoutingDefaults (): DelegatedRoutingV1HttpApiClientInit {
   return {
     filterProtocols: ['unknown', 'transport-bitswap', 'transport-ipfs-gateway-http'],
-    filterAddrs: ['https', 'tcp', 'webrtc', 'webrtc-direct', 'wss']
+    filterAddrs: ['https', 'tcp', 'webrtc', 'webrtc-direct', 'wss', 'tls']
   }
 }
