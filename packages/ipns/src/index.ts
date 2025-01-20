@@ -429,6 +429,8 @@ export interface IPNS {
 
 export type { IPNSRouting } from './routing/index.js'
 
+export type { IPNSRecord } from 'ipns'
+
 export interface IPNSComponents {
   datastore: Datastore
   routing: Routing
