@@ -1,10 +1,10 @@
 import { } from '@libp2p/interface'
-import { peerIdFromString } from '@libp2p/peer-id'
+import { peerIdFromCID, peerIdFromString } from '@libp2p/peer-id'
 import { RecordType } from '@multiformats/dns'
 import { CID } from 'multiformats/cid'
 import { DNSLinkNotFoundError } from './errors.js'
 import type { ResolveDNSLinkOptions } from './index.js'
-import type { Logger } from '@libp2p/interface'
+import type { Logger, PeerId } from '@libp2p/interface'
 import type { Answer, DNS } from '@multiformats/dns'
 
 const MAX_RECURSIVE_DEPTH = 32
@@ -66,7 +66,15 @@ async function recursiveResolveDnslink (domain: string, depth: number, dns: DNS,
         } catch {}
       } else if (protocol === 'ipns') {
         try {
-          const peerId = peerIdFromString(domainOrCID)
+          let peerId: PeerId
+
+          // eslint-disable-next-line max-depth
+          if (domainOrCID.charAt(0) === '1' || domainOrCID.charAt(0) === 'Q') {
+            peerId = peerIdFromString(domainOrCID)
+          } else {
+            // try parsing as a CID
+            peerId = peerIdFromCID(CID.parse(domainOrCID))
+          }
 
           // if the result is a PeerId, we've reached the end of the recursion
           return {
