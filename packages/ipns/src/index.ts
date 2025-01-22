@@ -325,6 +325,11 @@ export interface PublishOptions extends AbortOptions, ProgressOptions<PublishPro
    * false here to only add a V2 signature. (default: true)
    */
   v1Compatible?: boolean
+
+  /**
+   * The TTL of the record in ms (default: 1 hour)
+   */
+  ttl?: number
 }
 
 export interface ResolveOptions extends AbortOptions, ProgressOptions<ResolveProgressEvents | IPNSRoutingEvents> {
@@ -472,8 +477,9 @@ class DefaultIPNS implements IPNS {
         sequenceNumber = existingRecord.sequence + 1n
       }
 
-      // create record
-      const record = await createIPNSRecord(key, value, sequenceNumber, options.lifetime ?? DEFAULT_LIFETIME_MS, options)
+      // convert ttl from milliseconds to nanoseconds as createIPNSRecord expects
+      const ttlNs = options.ttl != null ? BigInt(options.ttl) * 1_000_000n : DEFAULT_TTL_NS
+      const record = await createIPNSRecord(key, value, sequenceNumber, options.lifetime ?? DEFAULT_LIFETIME_MS, { ...options, ttlNs })
       const marshaledRecord = marshalIPNSRecord(record)
 
       await this.localStore.put(routingKey, marshaledRecord, options)
