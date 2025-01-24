@@ -7,6 +7,7 @@ import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { RecordType } from '@multiformats/dns'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
+import { base36 } from 'multiformats/bases/base36'
 import { CID } from 'multiformats/cid'
 import { stubInterface } from 'sinon-ts'
 import { ipns } from '../src/index.js'
@@ -158,6 +159,30 @@ describe('resolveDNSLink', () => {
       TTL: 60,
       type: RecordType.TXT,
       data: `dnslink=/ipns/${peerId}/foobar/path/123`
+    }]))
+
+    await name.publish(key, cid)
+
+    const result = await name.resolveDNSLink('foobar.baz')
+
+    if (result == null) {
+      throw new Error('Did not resolve entry')
+    }
+
+    expect(result.cid.toString()).to.equal(cid.toV1().toString())
+    expect(result.path).to.equal('foobar/path/123')
+  })
+
+  it('should resolve recursive dnslink -> <IPNS_base36_CID>/<path>', async () => {
+    const cid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
+    const key = await generateKeyPair('Ed25519')
+    const peerId = peerIdFromPrivateKey(key)
+    const peerIdBase36CID = peerId.toCID().toString(base36)
+    dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
+      name: 'foobar.baz.',
+      TTL: 60,
+      type: RecordType.TXT,
+      data: `dnslink=/ipns/${peerIdBase36CID}/foobar/path/123`
     }]))
 
     await name.publish(key, cid)
