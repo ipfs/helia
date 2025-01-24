@@ -1,5 +1,17 @@
 # Changelog
 
+## [8.1.0](https://github.com/ipfs/helia/compare/ipns-v8.0.2...ipns-v8.1.0) (2025-01-24)
+
+
+### Features
+
+* allow passing custom ttl when publishing ipns ([#723](https://github.com/ipfs/helia/issues/723)) ([12df657](https://github.com/ipfs/helia/commit/12df657aa421c86df53bc54becf1d505b1c145ce))
+
+
+### Bug Fixes
+
+* handle dnslink pointing to CID with peer id (ipns name) ([#722](https://github.com/ipfs/helia/issues/722)) ([2666d64](https://github.com/ipfs/helia/commit/2666d643d8bd90db077095f20edb1924c8594185))
+
 ## [8.0.2](https://github.com/ipfs/helia/compare/ipns-v8.0.1...ipns-v8.0.2) (2025-01-14)
 
 
