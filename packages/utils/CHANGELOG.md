@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/ipfs/helia/compare/utils-v1.2.0...utils-v1.2.1) (2025-02-10)
+
+
+### Bug Fixes
+
+* update libp2p deps, send user agent with auto-tls ([#736](https://github.com/ipfs/helia/issues/736)) ([c015793](https://github.com/ipfs/helia/commit/c01579393ddd622352d0d0179c67adaf5ccc4c8f))
+
 ## [1.2.0](https://github.com/ipfs/helia/compare/utils-v1.1.0...utils-v1.2.0) (2025-01-14)
 
 

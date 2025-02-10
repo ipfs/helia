@@ -1,5 +1,20 @@
 # Changelog
 
+## [5.2.1](https://github.com/ipfs/helia/compare/helia-v5.2.0...helia-v5.2.1) (2025-02-10)
+
+
+### Bug Fixes
+
+* update libp2p deps, send user agent with auto-tls ([#736](https://github.com/ipfs/helia/issues/736)) ([c015793](https://github.com/ipfs/helia/commit/c01579393ddd622352d0d0179c67adaf5ccc4c8f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^4.0.3 to ^4.0.4
+    * @helia/utils bumped from ^1.2.0 to ^1.2.1
+
 ## [5.2.0](https://github.com/ipfs/helia/compare/helia-v5.1.1...helia-v5.2.0) (2025-01-14)
 
 
