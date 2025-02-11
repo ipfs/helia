@@ -73,7 +73,7 @@
     "interface-blockstore": "^5.3.1",
     "interface-store": "^6.0.2",
     "it-drain": "^3.0.7",
-    "it-length-prefixed": "^9.1.0",
+    "it-length-prefixed": "^10.0.0",
     "it-length-prefixed-stream": "^1.2.0",
     "it-map": "^3.1.1",
     "it-pipe": "^3.0.1",
