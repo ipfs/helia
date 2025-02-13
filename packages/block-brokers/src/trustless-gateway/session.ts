@@ -18,6 +18,7 @@ class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, Trustles
   private readonly routing: Routing
   private readonly allowInsecure: boolean
   private readonly allowLocal: boolean
+  private readonly headers?: Record<string, string>
 
   constructor (components: TrustlessGatewaySessionComponents, init: CreateTrustlessGatewaySessionOptions) {
     super(components, {
@@ -28,6 +29,7 @@ class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, Trustles
     this.routing = components.routing
     this.allowInsecure = init.allowInsecure ?? DEFAULT_ALLOW_INSECURE
     this.allowLocal = init.allowLocal ?? DEFAULT_ALLOW_LOCAL
+    this.headers = init.headers ?? {}
   }
 
   async queryProvider (cid: CID, provider: TrustlessGateway, options: BlockRetrievalOptions): Promise<Uint8Array> {
@@ -41,8 +43,8 @@ class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, Trustles
     return block
   }
 
-  async * findNewProviders (cid: CID, options: AbortOptions = {}): AsyncGenerator<TrustlessGateway> {
-    yield * findHttpGatewayProviders(cid, this.routing, this.logger, this.allowInsecure, this.allowLocal, options)
+  async * findNewProviders (cid: CID, options: AbortOptions = {}, headers: Record<string, string> = {}): AsyncGenerator<TrustlessGateway> {
+    yield * findHttpGatewayProviders(cid, this.routing, this.logger, this.allowInsecure, this.allowLocal, this.headers, options)
   }
 
   toEvictionKey (provider: TrustlessGateway): Uint8Array | string {
