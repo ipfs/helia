@@ -1,5 +1,17 @@
 # Changelog
 
+## [7.1.2](https://github.com/ipfs/helia/compare/interop-v7.1.1...interop-v7.1.2) (2025-02-10)
+
+
+### Dependencies
+
+* bump the kubo-deps group across 7 directories with 1 update ([#734](https://github.com/ipfs/helia/issues/734)) ([f7155d8](https://github.com/ipfs/helia/commit/f7155d8bece43dd91d19060881294f61df9d222c))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^4.0.3 to ^4.0.4
+    * @helia/http bumped from ^2.0.3 to ^2.0.4
+    * helia bumped from ^5.2.0 to ^5.2.1
+
 ## [7.1.1](https://github.com/ipfs/helia/compare/interop-v7.1.0...interop-v7.1.1) (2025-01-24)
 
 
