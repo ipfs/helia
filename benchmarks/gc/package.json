@@ -24,7 +24,7 @@
     "kubo": "^0.33.1",
     "kubo-rpc-client": "^5.0.0",
     "multiformats": "^13.0.0",
-    "tinybench": "^2.5.1"
+    "tinybench": "^3.1.1"
   },
   "private": true
 }
