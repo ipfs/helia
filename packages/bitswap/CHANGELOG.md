@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.5](https://github.com/ipfs/helia/compare/bitswap-v2.0.4...bitswap-v2.0.5) (2025-02-19)
+
+
+### Dependencies
+
+* bump it-length-prefixed from 9.1.1 to 10.0.1 ([#740](https://github.com/ipfs/helia/issues/740)) ([ac7185a](https://github.com/ipfs/helia/commit/ac7185af8f0da0782f6273fba76ccfe9427d2fa4))
+
 ## [2.0.4](https://github.com/ipfs/helia/compare/bitswap-v2.0.3...bitswap-v2.0.4) (2025-02-10)
 
 
