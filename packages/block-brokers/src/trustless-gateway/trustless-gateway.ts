@@ -54,9 +54,11 @@ export class TrustlessGateway {
   readonly #pendingResponses = new Map<string, Promise<Uint8Array>>()
 
   private readonly log: Logger
+  private readonly headers: Record<string, string>
 
-  constructor (url: URL | string, logger: ComponentLogger) {
+  constructor (url: URL | string, headers: Record<string, string>, logger: ComponentLogger) {
     this.url = url instanceof URL ? url : new URL(url)
+    this.headers = headers
     this.log = logger.forComponent(`helia:trustless-gateway-block-broker:${this.url.hostname}`)
   }
 
@@ -106,7 +108,8 @@ export class TrustlessGateway {
         pendingResponse = fetch(gwUrl.toString(), {
           signal: innerController.signal,
           headers: {
-            Accept: 'application/vnd.ipld.raw'
+            Accept: 'application/vnd.ipld.raw',
+            ...this.headers
           },
           cache: 'force-cache'
         }).then(async (res) => {
