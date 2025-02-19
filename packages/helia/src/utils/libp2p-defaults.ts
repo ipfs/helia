@@ -53,10 +53,11 @@ export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOpti
       listen: [
         '/ip4/0.0.0.0/tcp/0',
         '/ip4/0.0.0.0/tcp/0/ws',
+        '/ip4/0.0.0.0/udp/0/webrtc-direct',
         '/ip6/::/tcp/0',
         '/ip6/::/tcp/0/ws',
-        '/p2p-circuit',
-        '/webrtc'
+        '/ip6/::/udp/0/webrtc-direct',
+        '/p2p-circuit'
       ]
     },
     transports: [

@@ -78,7 +78,7 @@
     "@libp2p/tcp": "^10.0.18",
     "@libp2p/tls": "^2.0.15",
     "@libp2p/upnp-nat": "^3.1.1",
-    "@libp2p/webrtc": "^5.0.26",
+    "@libp2p/webrtc": "^5.1.0",
     "@libp2p/websockets": "^9.1.5",
     "@multiformats/dns": "^1.0.6",
     "blockstore-core": "^5.0.2",
