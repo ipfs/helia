@@ -1,5 +1,16 @@
 # Changelog
 
+## [7.1.3](https://github.com/ipfs/helia/compare/interop-v7.1.2...interop-v7.1.3) (2025-02-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^4.0.4 to ^4.0.5
+    * @helia/http bumped from ^2.0.4 to ^2.0.5
+    * helia bumped from ^5.2.1 to ^5.3.0
+
 ## [7.1.2](https://github.com/ipfs/helia/compare/interop-v7.1.1...interop-v7.1.2) (2025-02-10)
 
 

@@ -1,5 +1,19 @@
 # Changelog
 
+## [5.3.0](https://github.com/ipfs/helia/compare/helia-v5.2.1...helia-v5.3.0) (2025-02-19)
+
+
+### Features
+
+* add WebRTC-Direct listener ([#741](https://github.com/ipfs/helia/issues/741)) ([deb9165](https://github.com/ipfs/helia/commit/deb9165efe92ce9590c400955c073625eb358bb6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^4.0.4 to ^4.0.5
+
 ## [5.2.1](https://github.com/ipfs/helia/compare/helia-v5.2.0...helia-v5.2.1) (2025-02-10)
 
 
