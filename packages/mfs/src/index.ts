@@ -254,6 +254,7 @@ class DefaultMFS implements MFS {
   constructor (components: MFSComponents, init: MFSInit = {}) {
     this.components = components
 
+    // spellchecker:disable-next-line
     this.key = new Key(init.key ?? '/locals/filesroot')
     this.unixfs = unixfs(components)
   }
