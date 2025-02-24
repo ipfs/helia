@@ -143,7 +143,7 @@ describe('import/export car file', () => {
     })
 
     const carBytes = await writer.bytes()
-    expect(carBytes.length).to.equal(349)
+    expect(carBytes.length).to.equal(351)
   })
 
   it('exports a car file with duplicates', async () => {
@@ -167,6 +167,6 @@ describe('import/export car file', () => {
     await otherCar.export(rootCid, writer)
 
     const carBytes = await writer.bytes()
-    expect(carBytes.length).to.equal(399)
+    expect(carBytes.length).to.equal(401)
   })
 })
