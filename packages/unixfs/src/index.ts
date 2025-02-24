@@ -233,7 +233,7 @@ export interface RmOptions extends AbortOptions, ProgressOptions<GetEvents | Put
  */
 export interface StatOptions extends AbortOptions, ProgressOptions<GetEvents> {
   /**
-   * An optional path to allow statting paths inside directories
+   * An optional path to allow getting stats of paths inside directories
    */
   path?: string
 

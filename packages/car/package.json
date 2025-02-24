@@ -70,7 +70,7 @@
     "@helia/mfs": "^4.0.2",
     "@helia/unixfs": "^4.0.2",
     "@ipld/dag-pb": "^4.1.3",
-    "aegir": "^45.0.6",
+    "aegir": "^45.1.1",
     "blockstore-core": "^5.0.2",
     "datastore-core": "^10.0.2",
     "ipfs-unixfs-importer": "^15.3.1",

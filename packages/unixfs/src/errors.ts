@@ -18,7 +18,7 @@ export class NotUnixFSError extends UnixFSError {
 
 export class InvalidPBNodeError extends UnixFSError {
   constructor (message = 'invalid PBNode') {
-    super(message, 'InvalidPBNodeError', 'ERR_INVALID_PBNODE')
+    super(message, 'InvalidPBNodeError', 'ERR_INVALID_PB_NODE')
   }
 }
 

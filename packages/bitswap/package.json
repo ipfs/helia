@@ -92,7 +92,7 @@
     "@libp2p/interface-compliance-tests": "^6.1.11",
     "@libp2p/peer-id": "^5.0.8",
     "@types/sinon": "^17.0.3",
-    "aegir": "^45.0.6",
+    "aegir": "^45.1.1",
     "blockstore-core": "^5.0.2",
     "delay": "^6.0.0",
     "it-all": "^3.0.6",

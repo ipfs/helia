@@ -28,7 +28,7 @@ To run:
     WebSockets (node.js -> node.js) filecoin defaults, 1068, 1642, 2092, 2812, 4117, 4423, 6117, 7820, 7182, 7816
     //... results here
     ```
-3. Graph the CSV data with your favourite graphing tool
+3. Graph the CSV data with your favorite graphing tool
 
 ## Debugging
 

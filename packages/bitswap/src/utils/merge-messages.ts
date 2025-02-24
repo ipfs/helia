@@ -13,7 +13,7 @@ export function mergeMessages (existingMessage: QueuedBitswapMessage, newMessage
       // take later values if passed, otherwise use earlier ones
       entry.cancel = entry.cancel ?? existingEntry.cancel
       entry.wantType = entry.wantType ?? existingEntry.wantType
-      entry.sendDontHave = entry.sendDontHave ?? existingEntry.sendDontHave
+      entry.sendDoNotHave = entry.sendDoNotHave ?? existingEntry.sendDoNotHave
     }
 
     existingMessage.wantlist.set(key, entry)

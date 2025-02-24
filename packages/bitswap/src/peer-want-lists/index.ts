@@ -139,7 +139,7 @@ export class PeerWantLists {
             cid,
             priority: entry.priority,
             wantType: entry.wantType ?? WantType.WantBlock,
-            sendDontHave: entry.sendDontHave ?? false
+            sendDoNotHave: entry.sendDoNotHave ?? false
           })
         }
       }

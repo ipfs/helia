@@ -30,6 +30,7 @@ jobs:
     - run: npm run --if-present lint
     - run: npm run --if-present dep-check
     - run: npm run --if-present doc-check
+    - run: npm run --if-present spell-check
 
   test-node:
     needs: build
