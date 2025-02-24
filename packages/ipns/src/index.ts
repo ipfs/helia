@@ -722,15 +722,15 @@ class DefaultIPNS implements IPNS {
     return unmarshalIPNSRecord(record)
   }
 
-  async republishRecord(record: IPNSRecord, pubKey?: PublicKey, options: RepublishRecordOptions = {}): Promise<void> {
+  async republishRecord (record: IPNSRecord, pubKey?: PublicKey, options: RepublishRecordOptions = {}): Promise<void> {
     try {
       let mh = extractPublicKeyFromIPNSRecord(record)?.toMultihash() // try to extract the public key from the record
-      if (!mh) {
+      if (mh == null) {
         // if no public key is provided, use the pubKey that was passed in
         mh = pubKey?.toMultihash()
       }
 
-      if (!mh) {
+      if (mh == null) {
         throw new Error('No public key found to determine the routing key')
       }
 

@@ -4,6 +4,7 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
+import { createIPNSRecord } from 'ipns'
 import { CID } from 'multiformats/cid'
 import { stubInterface } from 'sinon-ts'
 import { ipns } from '../src/index.js'
@@ -12,7 +13,6 @@ import type { Routing } from '@helia/interface'
 import type { PrivateKey } from '@libp2p/interface'
 import type { DNS } from '@multiformats/dns'
 import type { StubbedInstance } from 'sinon-ts'
-import { createIPNSRecord } from 'ipns'
 
 describe('republishRecord', () => {
   let testCid: CID
@@ -36,11 +36,11 @@ describe('republishRecord', () => {
         datastore,
         routing: heliaRouting,
         dns,
-        logger: defaultLogger(),
+        logger: defaultLogger()
       },
       {
-        routers: [customRouting],
-      },
+        routers: [customRouting]
+      }
     )
 
     testCid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
@@ -60,7 +60,7 @@ describe('republishRecord', () => {
 
   it('should fail when no public key is available', async () => {
     await expect(name.republishRecord(ed25519Record)).to.be.rejectedWith(
-      'No public key found to determine the routing key',
+      'No public key found to determine the routing key'
     )
   })
 
@@ -73,8 +73,8 @@ describe('republishRecord', () => {
           if (evt.type === 'ipns:publish:error') {
             events.push(evt.detail)
           }
-        },
-      }),
+        }
+      })
     ).to.be.rejected
 
     expect(events).to.have.lengthOf(1)
