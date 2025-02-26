@@ -165,7 +165,7 @@ const addToShardedDirectory = async (parent: Directory, child: Required<PBLink>,
         throw new AlreadyExistsError()
       }
 
-      log('overwriting %s in subshard', child.Name)
+      log('overwriting %s in sub-shard', child.Name)
       finalSegment.node.Links = finalSegment.node.Links.filter(l => l.Name !== linkName)
       finalSegment.node.Links.push({
         Name: linkName,
@@ -173,10 +173,10 @@ const addToShardedDirectory = async (parent: Directory, child: Required<PBLink>,
         Tsize: child.Tsize
       })
     } else if (existingLink.Name?.length === 2) {
-      throw new Error('Existing link was subshard?!')
+      throw new Error('Existing link was sub-shard?!')
     } else {
       // conflict, add a new HAMT segment
-      log('prefix %s already exists, creating new subshard', prefix)
+      log('prefix %s already exists, creating new sub-shard', prefix)
       // find the sibling we are going to replace
       const index = finalSegment.node.Links.findIndex(l => l.Name?.startsWith(prefix))
       const sibling = finalSegment.node.Links.splice(index, 1)[0]
@@ -186,7 +186,7 @@ const addToShardedDirectory = async (parent: Directory, child: Required<PBLink>,
       const wrapped = wrapHash(hamtHashFn)
       const siblingHash = wrapped(uint8ArrayFromString(siblingName))
 
-      // discard hash bits until we reach the subshard depth
+      // discard hash bits until we reach the sub-shard depth
       for (let i = 0; i < path.length; i++) {
         await siblingHash.take(hamtBucketBits)
       }

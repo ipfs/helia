@@ -275,12 +275,12 @@ export namespace Block {
 
 export enum BlockPresenceType {
   HaveBlock = 'HaveBlock',
-  DontHaveBlock = 'DontHaveBlock'
+  DoNotHaveBlock = 'DoNotHaveBlock'
 }
 
 enum __BlockPresenceTypeValues {
   HaveBlock = 0,
-  DontHaveBlock = 1
+  DoNotHaveBlock = 1
 }
 
 export namespace BlockPresenceType {

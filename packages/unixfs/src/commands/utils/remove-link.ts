@@ -96,7 +96,7 @@ const removeFromShardedDirectory = async (parent: Directory, name: string, block
   finalSegment.children.unset(index)
 
   if (finalSegment.node.Links.length === 1) {
-    // replace the subshard with the last remaining file in the parent
+    // replace the sub-shard with the last remaining file in the parent
     while (true) {
       if (path.length === 1) {
         break

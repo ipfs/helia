@@ -344,7 +344,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
 
     // dial and wait for identify - this is to avoid opening a protocol stream
     // that we are not going to use but depends on the remote node running the
-    // identitfy protocol
+    // identify protocol
     const [
       connection
     ] = await Promise.all([

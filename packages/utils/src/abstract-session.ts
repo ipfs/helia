@@ -24,7 +24,7 @@ export interface BlockstoreSessionEvents<Provider> {
 }
 
 export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents extends ProgressEvent> extends TypedEventEmitter<BlockstoreSessionEvents<Provider>> implements BlockBroker<RetrieveBlockProgressEvents> {
-  private intialPeerSearchComplete?: Promise<void>
+  private initialPeerSearchComplete?: Promise<void>
   private readonly requests: Map<string, Promise<Uint8Array>>
   private readonly name: string
   protected log: Logger
@@ -64,13 +64,13 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     if (this.providers.length === 0) {
       let first = false
 
-      if (this.intialPeerSearchComplete == null) {
+      if (this.initialPeerSearchComplete == null) {
         first = true
         this.log = this.logger.forComponent(`${this.name}:${cid}`)
-        this.intialPeerSearchComplete = this.findProviders(cid, this.minProviders, options)
+        this.initialPeerSearchComplete = this.findProviders(cid, this.minProviders, options)
       }
 
-      await this.intialPeerSearchComplete
+      await this.initialPeerSearchComplete
 
       if (first) {
         this.log('found initial session peers for %c', cid)
