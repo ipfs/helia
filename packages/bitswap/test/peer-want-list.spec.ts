@@ -328,7 +328,7 @@ describe('peer-want-lists', () => {
               cid: cid.bytes,
               priority: 1,
               wantType: WantType.WantBlock,
-              sendDontHave: true
+              sendDoNotHave: true
             }]
           }
         }
@@ -418,7 +418,7 @@ describe('peer-want-lists', () => {
               cid: cid.bytes,
               priority: 1,
               wantType: WantType.WantHave,
-              sendDontHave: true
+              sendDoNotHave: true
             }]
           }
         }

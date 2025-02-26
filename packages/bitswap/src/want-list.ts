@@ -57,7 +57,7 @@ export interface WantListEntry {
   /**
    * Whether the remote should tell us if they have the block or not
    */
-  sendDontHave: boolean
+  sendDoNotHave: boolean
 }
 
 export interface WantOptions extends AbortOptions, ProgressOptions<BitswapNetworkWantProgressEvents> {
@@ -152,7 +152,7 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
         priority: options.priority ?? 1,
         wantType: options.wantType ?? WantType.WantBlock,
         cancel: false,
-        sendDontHave: true
+        sendDoNotHave: true
       }
 
       this.wants.set(cidStr, entry)
@@ -234,7 +234,7 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
             priority: entry.priority,
             wantType: entry.wantType,
             cancel: entry.cancel,
-            sendDontHave: entry.sendDontHave
+            sendDoNotHave: entry.sendDoNotHave
           })
         }
 
@@ -285,7 +285,7 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
     const message = new QueuedBitswapMessage()
     message.addWantlistEntry(cid, {
       cid: cid.bytes,
-      sendDontHave: true,
+      sendDoNotHave: true,
       wantType: WantType.WantHave,
       priority: 1
     })
@@ -320,7 +320,7 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
     const message = new QueuedBitswapMessage()
     message.addWantlistEntry(cid, {
       cid: cid.bytes,
-      sendDontHave: true,
+      sendDoNotHave: true,
       wantType: WantType.WantBlock,
       priority: 1
     })
@@ -462,7 +462,7 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
         priority: 1,
         wantType: WantType.WantBlock,
         cancel: false,
-        sendDontHave: false
+        sendDoNotHave: false
       })
     }
 

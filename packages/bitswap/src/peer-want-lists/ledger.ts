@@ -40,7 +40,7 @@ export interface PeerWantListEntry {
   /**
    * Whether the remote should tell us if they have the block or not
    */
-  sendDontHave: boolean
+  sendDoNotHave: boolean
 
   /**
    * If we don't have the block and we've told them we don't have the block
@@ -133,7 +133,7 @@ export class Ledger {
 
         // we don't have the requested block and the remote is not interested
         // in us telling them that
-        if (!entry.sendDontHave) {
+        if (!entry.sendDoNotHave) {
           continue
         }
 
