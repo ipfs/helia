@@ -28,7 +28,7 @@ export interface WantlistEntry {
   priority: number
   cancel?: boolean
   wantType?: WantType
-  sendDoNotHave?: boolean
+  sendDontHave?: boolean
 }
 
 export namespace WantlistEntry {
@@ -61,9 +61,9 @@ export namespace WantlistEntry {
           WantType.codec().encode(obj.wantType, w)
         }
 
-        if (obj.sendDoNotHave != null) {
+        if (obj.sendDontHave != null) {
           w.uint32(40)
-          w.bool(obj.sendDoNotHave)
+          w.bool(obj.sendDontHave)
         }
 
         if (opts.lengthDelimited !== false) {
@@ -98,7 +98,7 @@ export namespace WantlistEntry {
               break
             }
             case 5: {
-              obj.sendDoNotHave = reader.bool()
+              obj.sendDontHave = reader.bool()
               break
             }
             default: {

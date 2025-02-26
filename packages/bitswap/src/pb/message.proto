@@ -11,7 +11,7 @@ message WantlistEntry {
   int32 priority = 2;                   // the priority (normalized). default to 1
   optional bool cancel = 3;             // whether this revokes an entry
   optional WantType wantType = 4;       // Note: defaults to enum 0, ie Block
-  optional bool sendDoNotHave = 5;       // Note: defaults to false
+  optional bool sendDontHave = 5;       // Note: defaults to false
 }
 
 message Wantlist {
