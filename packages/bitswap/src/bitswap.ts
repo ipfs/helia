@@ -117,9 +117,7 @@ export class Bitswap implements BitswapInterface {
   async notify (cid: CID, block: Uint8Array, options: ProgressOptions<BitswapNotifyProgressEvents> & AbortOptions = {}): Promise<void> {
     if (this.peerWantLists === undefined) {
       // download only
-      await Promise.all([
-        this.wantList.receivedBlock(cid, options)
-      ])
+      await this.wantList.receivedBlock(cid, options)
     } else {
       await Promise.all([
         this.peerWantLists.receivedBlock(cid, options),
