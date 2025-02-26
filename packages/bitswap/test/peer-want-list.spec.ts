@@ -347,7 +347,7 @@ describe('peer-want-lists', () => {
     expect(message.blocks).to.be.empty('should not have sent blocks')
     expect(message.blockPresences).to.have.lengthOf(1)
     expect([...message.blockPresences.values()][0].cid).to.equalBytes(cid.bytes)
-    expect([...message.blockPresences.values()][0].type).to.equal(BlockPresenceType.DontHaveBlock, 'should have sent DontHaveBlock presence')
+    expect([...message.blockPresences.values()][0].type).to.equal(BlockPresenceType.DoNotHaveBlock, 'should have sent DoNotHaveBlock presence')
   })
 
   it('should send requested blocks to peer when presence was requested but block size is less than maxSizeReplaceHasWithBlock', async () => {
@@ -437,7 +437,7 @@ describe('peer-want-lists', () => {
     expect(message.blocks).to.be.empty('should not have sent blocks')
     expect(message.blockPresences).to.have.lengthOf(1)
     expect([...message.blockPresences.values()][0].cid).to.equalBytes(cid.bytes)
-    expect([...message.blockPresences.values()][0].type).to.equal(BlockPresenceType.DontHaveBlock, 'should have sent DontHaveBlock presence')
+    expect([...message.blockPresences.values()][0].type).to.equal(BlockPresenceType.DoNotHaveBlock, 'should have sent DoNotHaveBlock presence')
   })
 
   it('should remove wants when peer cancels', async () => {

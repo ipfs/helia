@@ -21,6 +21,7 @@ describe('put', () => {
       hello: 'world'
     })
 
+    // spellchecker:disable-next-line
     expect(`${cid}`).to.equal('bagaaierasords4njcts6vs7qvdjfcvgnume4hqohf65zsfguprqphs3icwea')
   })
 
@@ -31,6 +32,7 @@ describe('put', () => {
       hasher: identity
     })
 
+    // spellchecker:disable-next-line
     expect(`${cid}`).to.equal('bagaaiaarpmrgqzlmnrxseorco5xxe3deej6q')
   })
 })

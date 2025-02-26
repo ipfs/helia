@@ -161,7 +161,7 @@ async function * flush (bucket: Bucket<Dir | InProgressImportResult>, blockstore
       }
 
       if (shard == null) {
-        throw new Error('Could not flush sharded directory, no subshard found')
+        throw new Error('Could not flush sharded directory, no sub-shard found')
       }
 
       links.push({

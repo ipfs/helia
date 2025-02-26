@@ -17,7 +17,7 @@ import type { DNS, Answer, DNSResponse } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
 import type { StubbedInstance } from 'sinon-ts'
 
-function dnsResponse (ansers: Answer[]): DNSResponse {
+function dnsResponse (answers: Answer[]): DNSResponse {
   return {
     Status: 0,
     TC: true,
@@ -26,7 +26,7 @@ function dnsResponse (ansers: Answer[]): DNSResponse {
     AD: true,
     CD: true,
     Question: [],
-    Answer: ansers
+    Answer: answers
   }
 }
 
@@ -129,10 +129,12 @@ describe('resolveDNSLink', () => {
       name: 'foobar.baz.',
       TTL: 60,
       type: RecordType.TXT,
+      // spellchecker:disable-next-line
       data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe/'
     }]))
 
     const result = await name.resolveDNSLink('foobar.baz', { nocache: true })
+    // spellchecker:disable-next-line
     expect(result.cid.toString()).to.equal('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe', 'doesn\'t support trailing slashes')
   })
 
@@ -142,10 +144,12 @@ describe('resolveDNSLink', () => {
       name: 'foobar.baz.',
       TTL: 60,
       type: RecordType.TXT,
+      // spellchecker:disable-next-line
       data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe/foobar/path/123'
     }]))
 
     const result = await name.resolveDNSLink('foobar.baz', { nocache: true })
+    // spellchecker:disable-next-line
     expect(result.cid.toString()).to.equal('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe', 'doesn\'t support trailing slashes')
     expect(result.path).to.equal('foobar/path/123')
   })
@@ -210,6 +214,7 @@ describe('resolveDNSLink', () => {
       name: '_dnslink.delegated.foobar.baz.',
       TTL: 60,
       type: RecordType.TXT,
+      // spellchecker:disable-next-line
       data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'
     }]))
 
@@ -237,6 +242,7 @@ describe('resolveDNSLink', () => {
       name: '_dnslink.delegated.foobar.baz.',
       TTL: 60,
       type: RecordType.TXT,
+      // spellchecker:disable-next-line
       data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'
     }]))
 
@@ -258,6 +264,7 @@ describe('resolveDNSLink', () => {
       name: '_dnslink.foobar.baz.',
       TTL: 60,
       type: RecordType.TXT,
+      // spellchecker:disable-next-line
       data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'
     }
     dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([answer]))
