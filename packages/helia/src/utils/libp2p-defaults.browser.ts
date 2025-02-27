@@ -15,7 +15,7 @@ import { webRTC, webRTCDirect } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
 import { ipnsSelector } from 'ipns/selector'
 import { ipnsValidator } from 'ipns/validator'
-import * as libp2pInfo from 'libp2p/version'
+import { userAgent } from 'libp2p/user-agent'
 import { name, version } from '../version.js'
 import { bootstrapConfig } from './bootstrappers.js'
 import type { Libp2pDefaultsOptions } from './libp2p.js'
@@ -32,11 +32,14 @@ export interface DefaultLibp2pServices extends Record<string, unknown> {
 }
 
 export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOptions<DefaultLibp2pServices> & Required<Pick<Libp2pOptions<DefaultLibp2pServices>, 'services'>> {
-  const agentVersion = `${name}/${version} ${libp2pInfo.name}/${libp2pInfo.version} UserAgent=${globalThis.navigator.userAgent}`
+  const agentVersion = `${name}/${version} ${userAgent()}`
 
   return {
     privateKey: options.privateKey,
     dns: options.dns,
+    nodeInfo: {
+      userAgent: agentVersion
+    },
     addresses: {
       listen: [
         '/p2p-circuit',
@@ -72,12 +75,8 @@ export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOpti
           ipns: ipnsSelector
         }
       }),
-      identify: identify({
-        agentVersion
-      }),
-      identifyPush: identifyPush({
-        agentVersion
-      }),
+      identify: identify(),
+      identifyPush: identifyPush(),
       keychain: keychain(options.keychain),
       ping: ping()
     }

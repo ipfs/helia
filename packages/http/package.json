@@ -1,6 +1,6 @@
 {
   "name": "@helia/http",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "A lightweight implementation of IPFS over HTTP in JavaScript",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/http#readme",
@@ -54,16 +54,16 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@helia/block-brokers": "^4.0.3",
+    "@helia/block-brokers": "^4.0.4",
     "@helia/interface": "^5.2.0",
     "@helia/routers": "^3.0.0",
-    "@helia/utils": "^1.2.0",
+    "@helia/utils": "^1.2.1",
     "blockstore-core": "^5.0.2",
     "datastore-core": "^10.0.2"
   },
   "devDependencies": {
     "@libp2p/interface": "^2.2.1",
-    "aegir": "^45.0.6",
+    "aegir": "^45.1.1",
     "interface-datastore": "^8.3.1",
     "multiformats": "^13.3.1",
     "sinon": "^19.0.2",

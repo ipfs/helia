@@ -1,5 +1,15 @@
 # Changelog
 
+## [4.0.4](https://github.com/ipfs/helia/compare/block-brokers-v4.0.3...block-brokers-v4.0.4) (2025-02-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^2.0.3 to ^2.0.4
+    * @helia/utils bumped from ^1.2.0 to ^1.2.1
+
 ## [4.0.3](https://github.com/ipfs/helia/compare/block-brokers-v4.0.2...block-brokers-v4.0.3) (2025-01-14)
 
 

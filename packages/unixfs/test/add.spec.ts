@@ -28,7 +28,9 @@ describe('addAll', () => {
     }]))
 
     expect(output).to.have.lengthOf(2)
+    // spellchecker:disable-next-line
     expect(output[0].cid.toString()).to.equal('bafkreiaixnpf23vkyecj5xqispjq5ubcwgsntnnurw2bjby7khe4wnjihu')
+    // spellchecker:disable-next-line
     expect(output[1].cid.toString()).to.equal('bafkreidmuy2n45xj3cdknzprtzo2uvgm3hak6mzy5sllxty457agsftd34')
   })
 
@@ -39,6 +41,7 @@ describe('addAll', () => {
 
     const res = await last(fs.addAll(globSource('./test/fixtures', 'files/**/*')))
 
+    // spellchecker:disable-next-line
     expect(res?.cid.toString()).to.equal('bafybeievhllpjjjbyg53g74wcl5hckdccjjj7zgtexqcacjegoduegnkyu')
   })
 })
@@ -56,6 +59,7 @@ describe('addBytes', () => {
   it('adds bytes', async () => {
     const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
 
+    // spellchecker:disable-next-line
     expect(cid.toString()).to.equal('bafkreiaixnpf23vkyecj5xqispjq5ubcwgsntnnurw2bjby7khe4wnjihu')
   })
 })
@@ -73,6 +77,7 @@ describe('addByteStream', () => {
   it('adds bytes', async () => {
     const cid = await fs.addByteStream([Uint8Array.from([0, 1, 2, 3, 4])])
 
+    // spellchecker:disable-next-line
     expect(cid.toString()).to.equal('bafkreiaixnpf23vkyecj5xqispjq5ubcwgsntnnurw2bjby7khe4wnjihu')
   })
 })
@@ -92,12 +97,14 @@ describe('addFile', () => {
       content: Uint8Array.from([0, 1, 2, 3, 4])
     })
 
+    // spellchecker:disable-next-line
     expect(cid.toString()).to.equal('bafkreiaixnpf23vkyecj5xqispjq5ubcwgsntnnurw2bjby7khe4wnjihu')
   })
 
   it('adds a file from a URL', async () => {
     const cid = await fs.addFile(urlSource(new URL(`${process.env.ECHO_SERVER}/download?data=hello-world`)))
 
+    // spellchecker:disable-next-line
     expect(cid.toString()).to.equal('bafkreifpuj5ujvb3aku75ja5cphnylsac3h47b6f3p4zbzmtm2nkrtrinu')
   })
 })
@@ -117,12 +124,14 @@ describe('addDirectory', () => {
       cidVersion: 0
     })
 
+    // spellchecker:disable-next-line
     expect(cid.toString()).to.equal('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
   })
 
   it('adds an empty directory with no args', async () => {
     const cid = await fs.addDirectory()
 
+    // spellchecker:disable-next-line
     expect(cid.toString()).to.equal('bafybeiczsscdsbs7ffqz55asqdf3smv6klcw3gofszvwlyarci47bgf354')
   })
 })
