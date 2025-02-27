@@ -68,7 +68,6 @@ const options = {
       })
 
       await goodGateway.listen()
-
       const { port: goodGatewayPort } = goodGateway.server.address()
 
       const badGateway = polka({

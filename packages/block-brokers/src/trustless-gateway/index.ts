@@ -26,7 +26,9 @@ export interface TrustlessGatewayBlockBrokerInit {
    * @default false
    */
   allowLocal?: boolean
-
+  /**
+   * Provide a function that will be called before querying trustless-gateways. This lets you modify the fetch options to pass custom headers or other necessary things.
+   */
   transformRequestInit?: TransformRequestInit
 }
 
