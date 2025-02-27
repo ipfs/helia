@@ -1,6 +1,23 @@
 import cors from 'cors'
 import polka from 'polka'
 
+
+/**
+ * Middleware to log requests
+ */
+const requestLogs = []
+let enableLogs = false
+function logRequests(req, res, next) {
+  if (!req.url.includes('/logs') && enableLogs) {
+    requestLogs.push({
+      method: req.method,
+      url: req.url,
+      headers: req.headers
+    })
+  }
+  next()
+}
+
 /** @type {import('aegir').PartialOptions} */
 const options = {
   test: {
@@ -10,6 +27,7 @@ const options = {
         host: '127.0.0.1'
       })
       goodGateway.use(cors())
+      goodGateway.use(logRequests)
       goodGateway.all('/ipfs/bafkreiefnkxuhnq3536qo2i2w3tazvifek4mbbzb6zlq3ouhprjce5c3aq', (req, res) => {
         res.writeHead(200, {
           'content-type': 'application/octet-stream',
@@ -29,7 +47,28 @@ const options = {
         res.end(Uint8Array.from([104, 101, 108, 108, 111]))
       })
 
+      goodGateway.all('/logs', (req, res) => {
+        res.writeHead(200, { 'content-type': 'application/json' })
+        res.end(JSON.stringify(requestLogs))
+      })
+      goodGateway.all('/logs/enable', (req, res) => {
+        enableLogs = true
+        res.writeHead(200, { 'content-type': 'application/json' })
+        res.end(JSON.stringify({ message: 'Logging enabled' }))
+      })
+      goodGateway.all('/logs/disable', (req, res) => {
+        enableLogs = false
+        res.writeHead(200, { 'content-type': 'application/json' })
+        res.end(JSON.stringify({ message: 'Logging disabled' }))
+      })
+      goodGateway.all('/logs/clear', (req, res) => {
+        requestLogs.length = 0
+        res.writeHead(200, { 'content-type': 'application/json' })
+        res.end(JSON.stringify({ message: 'Logs cleared' }))
+      })
+
       await goodGateway.listen()
+
       const { port: goodGatewayPort } = goodGateway.server.address()
 
       const badGateway = polka({
