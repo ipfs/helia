@@ -10,6 +10,15 @@ export interface TrustlessGatewayStats {
   pendingResponses?: number
 }
 
+export interface TransformRequestInit {
+  (defaultReqInit: RequestInit): Promise<RequestInit> | RequestInit
+}
+
+export interface TrustlessGatewayComponents {
+  logger: ComponentLogger
+  transformRequestInit?: TransformRequestInit
+}
+
 /**
  * A `TrustlessGateway` keeps track of the number of attempts, errors, and
  * successes for a given gateway url so that we can prioritize gateways that
@@ -54,11 +63,11 @@ export class TrustlessGateway {
   readonly #pendingResponses = new Map<string, Promise<Uint8Array>>()
 
   private readonly log: Logger
-  private readonly headers: Record<string, string>
+  private readonly transformRequestInit?: TransformRequestInit
 
-  constructor (url: URL | string, headers: Record<string, string>, logger: ComponentLogger) {
+  constructor (url: URL | string, { logger, transformRequestInit }: TrustlessGatewayComponents) {
     this.url = url instanceof URL ? url : new URL(url)
-    this.headers = headers
+    this.transformRequestInit = transformRequestInit
     this.log = logger.forComponent(`helia:trustless-gateway-block-broker:${this.url.hostname}`)
   }
 
@@ -105,14 +114,17 @@ export class TrustlessGateway {
       let pendingResponse: Promise<Uint8Array> | undefined = this.#pendingResponses.get(blockId)
       if (pendingResponse == null) {
         this.#attempts++
-        pendingResponse = fetch(gwUrl.toString(), {
+        const defaultReqInit: RequestInit = {
           signal: innerController.signal,
           headers: {
-            Accept: 'application/vnd.ipld.raw',
-            ...this.headers
+            Accept: 'application/vnd.ipld.raw'
           },
           cache: 'force-cache'
-        }).then(async (res) => {
+        }
+
+        const reqInit: RequestInit = this.transformRequestInit != null ? await this.transformRequestInit(defaultReqInit) : defaultReqInit
+
+        pendingResponse = fetch(gwUrl.toString(), reqInit).then(async (res) => {
           this.log('GET %s %d', gwUrl, res.status)
           if (!res.ok) {
             this.#errors++

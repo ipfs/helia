@@ -2,6 +2,7 @@ import { createTrustlessGatewaySession } from './session.js'
 import { findHttpGatewayProviders } from './utils.js'
 import { DEFAULT_ALLOW_INSECURE, DEFAULT_ALLOW_LOCAL } from './index.js'
 import type { TrustlessGatewayBlockBrokerInit, TrustlessGatewayBlockBrokerComponents, TrustlessGatewayGetBlockProgressEvents } from './index.js'
+import type { TransformRequestInit } from './trustless-gateway.js'
 import type { Routing, BlockRetrievalOptions, BlockBroker, CreateSessionOptions } from '@helia/interface'
 import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
@@ -23,7 +24,7 @@ export interface CreateTrustlessGatewaySessionOptions extends CreateSessionOptio
    */
   allowLocal?: boolean
 
-  headers?: Record<string, string>
+  transformRequestInit?: TransformRequestInit
 }
 
 /**
@@ -33,7 +34,7 @@ export interface CreateTrustlessGatewaySessionOptions extends CreateSessionOptio
 export class TrustlessGatewayBlockBroker implements BlockBroker<TrustlessGatewayGetBlockProgressEvents> {
   private readonly allowInsecure: boolean
   private readonly allowLocal: boolean
-  private readonly headers?: Record<string, string>
+  private readonly transformRequestInit?: TransformRequestInit
   private readonly routing: Routing
   private readonly log: Logger
   private readonly logger: ComponentLogger
@@ -44,13 +45,13 @@ export class TrustlessGatewayBlockBroker implements BlockBroker<TrustlessGateway
     this.routing = components.routing
     this.allowInsecure = init.allowInsecure ?? DEFAULT_ALLOW_INSECURE
     this.allowLocal = init.allowLocal ?? DEFAULT_ALLOW_LOCAL
-    this.headers = init.headers ?? {}
+    this.transformRequestInit = init.transformRequestInit
   }
 
   async retrieve (cid: CID, options: BlockRetrievalOptions<TrustlessGatewayGetBlockProgressEvents> = {}): Promise<Uint8Array> {
     const aggregateErrors: Error[] = []
 
-    for await (const gateway of findHttpGatewayProviders(cid, this.routing, this.logger, this.allowInsecure, this.allowLocal, this.headers,  options)) {
+    for await (const gateway of findHttpGatewayProviders(cid, this.routing, this.logger, this.allowInsecure, this.allowLocal, this.transformRequestInit, options)) {
       this.log('getting block for %c from %s', cid, gateway.url)
 
       try {
@@ -98,10 +99,7 @@ export class TrustlessGatewayBlockBroker implements BlockBroker<TrustlessGateway
       ...options,
       allowLocal: this.allowLocal,
       allowInsecure: this.allowInsecure,
-      headers: {
-        ...this.headers,
-        ...options.headers
-      }
+      transformRequestInit: this.transformRequestInit
     })
   }
 }

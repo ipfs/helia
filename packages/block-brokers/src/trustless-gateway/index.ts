@@ -1,4 +1,5 @@
 import { TrustlessGatewayBlockBroker } from './broker.js'
+import type { TransformRequestInit } from './trustless-gateway.js'
 import type { Routing, BlockBroker } from '@helia/interface'
 import type { ComponentLogger } from '@libp2p/interface'
 import type { ProgressEvent } from 'progress-events'
@@ -26,7 +27,7 @@ export interface TrustlessGatewayBlockBrokerInit {
    */
   allowLocal?: boolean
 
-  headers?: Record<string, string>
+  transformRequestInit?: TransformRequestInit
 }
 
 export interface TrustlessGatewayBlockBrokerComponents {

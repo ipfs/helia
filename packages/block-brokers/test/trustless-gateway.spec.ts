@@ -149,7 +149,7 @@ describe('trustless-gateway-block-broker', () => {
     if (process.env.TRUSTLESS_GATEWAY == null) {
       return this.skip()
     }
-    const trustlessGateway = new TrustlessGateway(process.env.TRUSTLESS_GATEWAY, {}, defaultLogger())
+    const trustlessGateway = new TrustlessGateway(process.env.TRUSTLESS_GATEWAY, { logger: defaultLogger() })
 
     // Call getRawBlock multiple times with the same CID
     const promises = Array.from({ length: 10 }, async () => trustlessGateway.getRawBlock(cid))
@@ -170,5 +170,35 @@ describe('trustless-gateway-block-broker', () => {
       successes: 1,
       pendingResponses: 0 // the queue is empty
     })
+  })
+
+  it('can pass custom headers to the gateway', async function () {
+    if (process.env.TRUSTLESS_GATEWAY == null) {
+      return this.skip()
+    }
+    const cid = CID.parse('bafkreiefnkxuhnq3536qo2i2w3tazvifek4mbbzb6zlq3ouhprjce5c3aq')
+
+    const trustlessGateway = new TrustlessGateway(process.env.TRUSTLESS_GATEWAY, {
+      logger: defaultLogger(),
+      transformRequestInit: (requestInit) => {
+        requestInit.headers = {
+          ...requestInit.headers,
+          'X-My-Header': 'my-value'
+        }
+
+        return requestInit
+      }
+    })
+
+    await fetch(`${process.env.TRUSTLESS_GATEWAY}/logs/enable`)
+    await trustlessGateway.getRawBlock(cid)
+    await fetch(`${process.env.TRUSTLESS_GATEWAY}/logs/disable`)
+
+    const reqLogs = await fetch(`${process.env.TRUSTLESS_GATEWAY}/logs`)
+    const logs = await reqLogs.json()
+
+    // assert that fetch was called with the custom header
+    expect(logs).to.have.lengthOf(1)
+    expect(logs[0].headers['x-my-header']).to.equal('my-value')
   })
 })

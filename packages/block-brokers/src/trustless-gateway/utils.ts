@@ -1,7 +1,7 @@
 import { isPrivateIp } from '@libp2p/utils/private-ip'
 import { DNS, HTTP, HTTPS } from '@multiformats/multiaddr-matcher'
 import { multiaddrToUri } from '@multiformats/multiaddr-to-uri'
-import { TrustlessGateway } from './trustless-gateway.js'
+import { TrustlessGateway, type TransformRequestInit } from './trustless-gateway.js'
 import type { Routing } from '@helia/interface'
 import type { ComponentLogger } from '@libp2p/interface'
 import type { AbortOptions, Multiaddr } from '@multiformats/multiaddr'
@@ -33,7 +33,7 @@ export function filterNonHTTPMultiaddrs (multiaddrs: Multiaddr[], allowInsecure:
   })
 }
 
-export async function * findHttpGatewayProviders (cid: CID, routing: Routing, logger: ComponentLogger, allowInsecure: boolean, allowLocal: boolean, headers: Record<string, string> = {}, options: AbortOptions = {}): AsyncGenerator<TrustlessGateway> {
+export async function * findHttpGatewayProviders (cid: CID, routing: Routing, logger: ComponentLogger, allowInsecure: boolean, allowLocal: boolean, transformRequestInit?: TransformRequestInit, options: AbortOptions = {}): AsyncGenerator<TrustlessGateway> {
   for await (const provider of routing.findProviders(cid, options)) {
     // require http(s) addresses
     const httpAddresses = filterNonHTTPMultiaddrs(provider.multiaddrs, allowInsecure, allowLocal)
@@ -48,6 +48,6 @@ export async function * findHttpGatewayProviders (cid: CID, routing: Routing, lo
     // etc
     const uri = multiaddrToUri(httpAddresses[0])
 
-    yield new TrustlessGateway(uri, headers, logger)
+    yield new TrustlessGateway(uri, { logger, transformRequestInit })
   }
 }
