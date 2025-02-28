@@ -176,7 +176,7 @@ describe('trustless-gateway-block-broker', () => {
     if (process.env.TRUSTLESS_GATEWAY == null) {
       return this.skip()
     }
-    const cid = CID.parse('bafkreiefnkxuhnq3536qo2i2w3tazvifek4mbbzb6zlq3ouhprjce5c3aq')
+    const cid = CID.parse('bafybeic3q4y65yxu3yckr76q63bcvanhklwf6cwxuacnrot6v3gykrgsvq')
 
     const trustlessGateway = new TrustlessGateway(process.env.TRUSTLESS_GATEWAY, {
       logger: defaultLogger(),

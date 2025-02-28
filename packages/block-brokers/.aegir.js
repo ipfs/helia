@@ -46,6 +46,11 @@ const options = {
         // "hello"
         res.end(Uint8Array.from([104, 101, 108, 108, 111]))
       })
+      goodGateway.all('/ipfs/*', (req, res) => {
+        // succeeds with empty block for any other CID
+        res.writeHead(200)
+        res.end(Uint8Array.from([]))
+      })
 
       goodGateway.all('/logs', (req, res) => {
         res.writeHead(200, { 'content-type': 'application/json' })
