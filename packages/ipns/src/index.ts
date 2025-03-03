@@ -270,6 +270,8 @@ import { InvalidValueError, RecordsFailedValidationError, UnsupportedMultibasePr
 import { helia } from './routing/helia.js'
 import { localStore, type LocalStore } from './routing/local-store.js'
 import { isCodec, IDENTITY_CODEC, SHA2_256_CODEC } from './utils.js'
+import { generateKeyPair } from '@libp2p/crypto/keys'
+import { unixfs } from '@helia/unixfs'
 import type { IPNSRouting, IPNSRoutingEvents } from './routing/index.js'
 import type { Routing } from '@helia/interface'
 import type { AbortOptions, ComponentLogger, Logger, PrivateKey, PublicKey } from '@libp2p/interface'
@@ -278,6 +280,7 @@ import type { Datastore } from 'interface-datastore'
 import type { MultibaseDecoder } from 'multiformats/bases/interface'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
+
 
 const log = logger('helia:ipns')
 
@@ -532,11 +535,12 @@ class DefaultIPNS implements IPNS {
   options.onProgress?.(new CustomProgressEvent('ipns:republish:start'));
 
   try {
-    // Retrieve the key from your key management system
-    const key = await getKey();  // Replace with actual key retrieval method
+    // Generate a new key pair
+    const key = await generateKeyPair('Ed25519');
 
     // Define the value to be published
-    const value = 'CID_value';  // Replace with the actual value or CID you wish to publish
+    const fs = unixfs(helia);
+    const value = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]));  // Replace with actual value or CID
 
     // Retrieve the current sequence number or set it to 1 if it's a new record
     let sequenceNumber = 1n;
