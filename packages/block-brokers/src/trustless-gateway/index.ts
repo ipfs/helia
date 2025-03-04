@@ -1,4 +1,5 @@
 import { TrustlessGatewayBlockBroker } from './broker.js'
+import type { TransformRequestInit } from './trustless-gateway.js'
 import type { Routing, BlockBroker } from '@helia/interface'
 import type { ComponentLogger } from '@libp2p/interface'
 import type { ProgressEvent } from 'progress-events'
@@ -25,6 +26,10 @@ export interface TrustlessGatewayBlockBrokerInit {
    * @default false
    */
   allowLocal?: boolean
+  /**
+   * Provide a function that will be called before querying trustless-gateways. This lets you modify the fetch options to pass custom headers or other necessary things.
+   */
+  transformRequestInit?: TransformRequestInit
 }
 
 export interface TrustlessGatewayBlockBrokerComponents {
