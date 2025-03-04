@@ -1,5 +1,21 @@
 # Changelog
 
+## [4.0.5](https://github.com/ipfs/helia/compare/block-brokers-v4.0.4...block-brokers-v4.0.5) (2025-03-04)
+
+
+### Documentation
+
+* add spell checker to ci ([#743](https://github.com/ipfs/helia/issues/743)) ([45ca6bc](https://github.com/ipfs/helia/commit/45ca6bc70b1644028500101044595fa0e2199b07))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^2.0.4 to ^2.0.5
+    * @helia/interface bumped from ^5.2.0 to ^5.2.1
+    * @helia/utils bumped from ^1.2.1 to ^1.2.2
+
 ## [4.0.4](https://github.com/ipfs/helia/compare/block-brokers-v4.0.3...block-brokers-v4.0.4) (2025-02-10)
 
 

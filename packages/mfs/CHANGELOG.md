@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.0.3](https://github.com/ipfs/helia/compare/mfs-v4.0.2...mfs-v4.0.3) (2025-03-04)
+
+
+### Documentation
+
+* add spell checker to ci ([#743](https://github.com/ipfs/helia/issues/743)) ([45ca6bc](https://github.com/ipfs/helia/commit/45ca6bc70b1644028500101044595fa0e2199b07))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/unixfs bumped from ^4.0.2 to ^4.0.3
+
 ## [4.0.2](https://github.com/ipfs/helia/compare/mfs-v4.0.1...mfs-v4.0.2) (2025-01-14)
 
 

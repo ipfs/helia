@@ -1,5 +1,24 @@
 # Changelog
 
+## [8.1.1](https://github.com/ipfs/helia/compare/ipns-v8.1.0...ipns-v8.1.1) (2025-03-04)
+
+
+### Bug Fixes
+
+* align implicit default ttl with specs ([#749](https://github.com/ipfs/helia/issues/749)) ([375796a](https://github.com/ipfs/helia/commit/375796aaead36111c4d663b061bf0edfe01c62ca))
+
+
+### Documentation
+
+* add spell checker to ci ([#743](https://github.com/ipfs/helia/issues/743)) ([45ca6bc](https://github.com/ipfs/helia/commit/45ca6bc70b1644028500101044595fa0e2199b07))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.2.0 to ^5.2.1
+
 ## [8.1.0](https://github.com/ipfs/helia/compare/ipns-v8.0.2...ipns-v8.1.0) (2025-01-24)
 
 
