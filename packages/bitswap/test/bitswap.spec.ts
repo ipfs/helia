@@ -117,7 +117,8 @@ describe('bitswap', () => {
     })
 
     it('should notify peers we have a block', async () => {
-      const receivedBlockSpy = Sinon.spy(bitswap.peerWantLists, 'receivedBlock')
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const receivedBlockSpy = Sinon.spy(bitswap.peerWantLists!, 'receivedBlock')
 
       await bitswap.notify(cid, block)
 
@@ -216,6 +217,210 @@ describe('bitswap', () => {
       })
 
       expect(bitswap.getPeerWantlist(remotePeer)?.map(entry => entry.cid)).to.deep.equal([cid])
+    })
+  })
+})
+
+describe('bitswap download only', () => {
+  let components: StubbedBitswapComponents
+  let bitswap: Bitswap
+  let cid: CID
+  let block: Uint8Array
+
+  beforeEach(async () => {
+    block = Uint8Array.from([0, 1, 2, 3, 4])
+    const mh = await sha256.digest(block)
+    cid = CID.createV0(mh).toV1()
+
+    components = {
+      peerId: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      routing: stubInterface<Routing>(),
+      blockstore: new MemoryBlockstore(),
+      libp2p: stubInterface<Libp2p>({
+        metrics: undefined
+      })
+    }
+
+    bitswap = new Bitswap(
+      {
+        ...components,
+        logger: defaultLogger()
+      },
+      {
+        downloadOnly: true
+      }
+    )
+
+    components.libp2p.getConnections.returns([])
+
+    await start(bitswap)
+  })
+
+  afterEach(async () => {
+    if (bitswap != null) {
+      await stop(bitswap)
+    }
+  })
+
+  describe('want', () => {
+    it('should want a block that is available on the network', async () => {
+      const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      const findProvsSpy = bitswap.network.findAndConnect = Sinon.stub()
+      findProvsSpy.resolves()
+
+      // add peer
+      bitswap.wantList.peers.set(remotePeer, new Set())
+
+      // wait for message send to peer
+      const sentMessages = pDefer()
+
+      bitswap.network.sendMessage = async (peerId) => {
+        if (remotePeer.equals(peerId)) {
+          sentMessages.resolve()
+        }
+      }
+
+      const p = bitswap.want(cid)
+
+      // wait for message send to peer
+      await sentMessages.promise
+
+      // provider sends message
+      bitswap.network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
+        detail: {
+          peer: remotePeer,
+          message: {
+            blocks: [{
+              prefix: cidToPrefix(cid),
+              data: block
+            }],
+            blockPresences: [],
+            pendingBytes: 0
+          }
+        }
+      })
+
+      const b = await p
+
+      // should have added cid to wantlist and searched for providers
+      expect(findProvsSpy.called).to.be.true()
+
+      // should have cancelled the notification request
+      expect(b).to.equalBytes(block)
+    })
+
+    it('should abort wanting a block that is not available on the network', async () => {
+      const p = bitswap.want(cid, {
+        signal: AbortSignal.timeout(100)
+      })
+
+      await expect(p).to.eventually.be.rejected
+        .with.property('name', 'AbortError')
+    })
+
+    it('should not notify peers we have a block', async () => {
+      // Ensure peerWantLists is undefined.
+      bitswap.peerWantLists = undefined
+
+      // Call the notify function and assert it doesn't throw.
+      await expect(bitswap.notify(cid, block)).to.eventually.be.fulfilled
+
+      // Optionally, check that peerWantLists remains undefined.
+      expect(bitswap.peerWantLists).to.equal(undefined)
+    })
+  })
+
+  describe('wantlist', () => {
+    it('should remove CIDs from the wantlist when the block arrives', async () => {
+      const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      expect(bitswap.getWantlist()).to.be.empty()
+
+      const findProvsSpy = bitswap.network.findAndConnect = Sinon.stub()
+      findProvsSpy.resolves()
+
+      // add peer
+      bitswap.wantList.peers.set(remotePeer, new Set())
+
+      // wait for message send to peer
+      const sentMessages = pDefer()
+
+      bitswap.network.sendMessage = async (peerId) => {
+        if (remotePeer.equals(peerId)) {
+          sentMessages.resolve()
+        }
+      }
+
+      const p = bitswap.want(cid)
+
+      // wait for message send to peer
+      await sentMessages.promise
+
+      expect(bitswap.getWantlist().map(w => w.cid)).to.include(cid)
+
+      // provider sends message
+      bitswap.network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
+        detail: {
+          peer: remotePeer,
+          message: {
+            blocks: [{
+              prefix: cidToPrefix(cid),
+              data: block
+            }],
+            blockPresences: [],
+            pendingBytes: 0
+          }
+        }
+      })
+
+      const b = await p
+
+      expect(bitswap.getWantlist()).to.be.empty()
+      expect(b).to.equalBytes(block)
+    })
+
+    it('should remove CIDs from the wantlist when the want is aborted', async () => {
+      expect(bitswap.getWantlist()).to.be.empty()
+
+      const p = bitswap.want(cid, {
+        signal: AbortSignal.timeout(100)
+      })
+
+      expect(bitswap.getWantlist().map(w => w.cid)).to.include(cid)
+
+      await expect(p).to.eventually.be.rejected
+        .with.property('name', 'AbortError')
+
+      expect(bitswap.getWantlist()).to.be.empty()
+    })
+  })
+
+  describe('peer wantlist', () => {
+    it('should not return a peer wantlist', async () => {
+      const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+
+      // don't have this peer yet
+      expect(bitswap.getPeerWantlist(remotePeer)).to.be.undefined()
+
+      // peers sends message with wantlist
+      bitswap.network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
+        detail: {
+          peer: remotePeer,
+          message: {
+            wantlist: {
+              full: false,
+              entries: [{
+                cid: cid.bytes,
+                priority: 100
+              }]
+            },
+            blockPresences: [],
+            blocks: [],
+            pendingBytes: 0
+          }
+        }
+      })
+
+      expect(bitswap.getPeerWantlist(remotePeer)).to.be.undefined()
     })
   })
 })
