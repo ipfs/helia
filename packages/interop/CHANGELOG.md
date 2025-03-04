@@ -1,5 +1,31 @@
 # Changelog
 
+## [7.1.3](https://github.com/ipfs/helia/compare/interop-v7.1.2...interop-v7.1.3) (2025-03-04)
+
+
+### Documentation
+
+* add spell checker to ci ([#743](https://github.com/ipfs/helia/issues/743)) ([45ca6bc](https://github.com/ipfs/helia/commit/45ca6bc70b1644028500101044595fa0e2199b07))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^4.0.4 to ^4.0.5
+    * @helia/car bumped from ^4.0.2 to ^4.0.3
+    * @helia/dag-cbor bumped from ^4.0.2 to ^4.0.3
+    * @helia/dag-json bumped from ^4.0.2 to ^4.0.3
+    * @helia/http bumped from ^2.0.4 to ^2.0.5
+    * @helia/interface bumped from ^5.2.0 to ^5.2.1
+    * @helia/ipns bumped from ^8.1.0 to ^8.1.1
+    * @helia/json bumped from ^4.0.2 to ^4.0.3
+    * @helia/mfs bumped from ^4.0.2 to ^4.0.3
+    * @helia/routers bumped from ^3.0.0 to ^3.0.1
+    * @helia/strings bumped from ^4.0.2 to ^4.0.3
+    * @helia/unixfs bumped from ^4.0.2 to ^4.0.3
+    * helia bumped from ^5.2.1 to ^5.3.0
+
 ## [7.1.2](https://github.com/ipfs/helia/compare/interop-v7.1.1...interop-v7.1.2) (2025-02-10)
 
 
