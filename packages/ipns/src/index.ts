@@ -270,6 +270,8 @@ import { InvalidValueError, RecordsFailedValidationError, UnsupportedMultibasePr
 import { helia } from './routing/helia.js'
 import { localStore, type LocalStore } from './routing/local-store.js'
 import { isCodec, IDENTITY_CODEC, SHA2_256_CODEC } from './utils.js'
+import { generateKeyPair } from '@libp2p/crypto/keys'
+import { unixfs } from '@helia/unixfs'
 import type { IPNSRouting, IPNSRoutingEvents } from './routing/index.js'
 import type { Routing } from '@helia/interface'
 import type { AbortOptions, ComponentLogger, Logger, PrivateKey, PublicKey } from '@libp2p/interface'
@@ -278,6 +280,7 @@ import type { Datastore } from 'interface-datastore'
 import type { MultibaseDecoder } from 'multiformats/bases/interface'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
+
 
 const log = logger('helia:ipns')
 
@@ -526,32 +529,72 @@ class DefaultIPNS implements IPNS {
     })
 
     async function republish (): Promise<void> {
-      const startTime = Date.now()
+  const startTime = Date.now()
 
-      options.onProgress?.(new CustomProgressEvent('ipns:republish:start'))
+  // Start progress
+  options.onProgress?.(new CustomProgressEvent('ipns:republish:start'))
 
-      const finishType = Date.now()
-      const timeTaken = finishType - startTime
-      let nextInterval = DEFAULT_REPUBLISH_INTERVAL_MS - timeTaken
+  try {
+    // Generate a new key pair
+    const key = await generateKeyPair('Ed25519')
 
-      if (nextInterval < 0) {
-        nextInterval = options.interval ?? DEFAULT_REPUBLISH_INTERVAL_MS
-      }
+    // Define the value to be published
+    const fs = unixfs(helia)
+    const value = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))  // Replace with actual value or CID
 
-      setTimeout(() => {
-        republish().catch(err => {
-          log.error('error republishing', err)
-        })
-      }, nextInterval)
+    // Retrieve the current sequence number or set it to 1 if it's a new record
+    let sequenceNumber = 1n
+    const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+    if (await this.localStore.has(routingKey, options)) {
+      const { record } = await this.localStore.get(routingKey, options)
+      const existingRecord = unmarshalIPNSRecord(record)
+      sequenceNumber = existingRecord.sequence + 1n
     }
 
-    this.timeout = setTimeout(() => {
-      republish().catch(err => {
-        log.error('error republishing', err)
-      })
-    }, options.interval ?? DEFAULT_REPUBLISH_INTERVAL_MS)
+    // Create a new IPNS record
+    const ttlNs = options.ttl != null ? BigInt(options.ttl) * 1_000_000n : DEFAULT_TTL_NS
+    const record = await createIPNSRecord(key, value, sequenceNumber, options.lifetime ?? DEFAULT_LIFETIME_MS, { ...options, ttlNs })
+    const marshaledRecord = marshalIPNSRecord(record)
+
+    // Store the record locally
+    await this.localStore.put(routingKey, marshaledRecord, options)
+
+    if (options.offline !== true) {
+      // Publish record to routing
+      await Promise.all(this.routers.map(async r => { await r.put(routingKey, marshaledRecord, options) }))
+    }
+
+    // Finish progress
+    options.onProgress?.(new CustomProgressEvent('ipns:republish:success', record))
+  } catch (err: any) {
+    // Handle errors
+    options.onProgress?.(new CustomProgressEvent('ipns:republish:error', err))
+    throw err
   }
 
+  const finishType = Date.now()
+  const timeTaken = finishType - startTime
+  let nextInterval = DEFAULT_REPUBLISH_INTERVAL_MS - timeTaken
+
+  if (nextInterval < 0) {
+    nextInterval = options.interval ?? DEFAULT_REPUBLISH_INTERVAL_MS
+  }
+
+  setTimeout(() => {
+    republish().catch(err => {
+      log.error('error republishing', err)
+    })
+  }, nextInterval)
+}
+
+// Initial call to start republishing
+this.timeout = setTimeout(() => {
+  republish().catch(err => {
+    log.error('error republishing', err)
+  })
+}, options.interval ?? DEFAULT_REPUBLISH_INTERVAL_MS)
+    
   async #resolve (ipfsPath: string, options: ResolveOptions = {}): Promise<{ cid: CID, path: string }> {
     const parts = ipfsPath.split('/')
     try {
