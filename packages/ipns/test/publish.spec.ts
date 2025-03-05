@@ -45,7 +45,7 @@ describe('publish', () => {
     const ipnsEntry = await name.publish(key, cid)
 
     expect(ipnsEntry).to.have.property('sequence', 1n)
-    expect(ipnsEntry).to.have.property('ttl', 3_600_000_000_000n) // 1 hour
+    expect(ipnsEntry).to.have.property('ttl', 300_000_000_000n) // 5 minutes
   })
 
   it('should publish an IPNS record with a custom lifetime params', async function () {

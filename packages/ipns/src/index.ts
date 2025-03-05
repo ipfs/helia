@@ -287,10 +287,10 @@ const log = logger('helia:ipns')
 const MINUTE = 60 * 1000
 const HOUR = 60 * MINUTE
 
-const DEFAULT_LIFETIME_MS = 24 * HOUR
+const DEFAULT_LIFETIME_MS = 48 * HOUR
 const DEFAULT_REPUBLISH_INTERVAL_MS = 23 * HOUR
 
-const DEFAULT_TTL_NS = BigInt(HOUR) * 1_000_000n
+const DEFAULT_TTL_NS = BigInt(MINUTE) * 5_000_000n // 5 minutes
 
 export type PublishProgressEvents =
   ProgressEvent<'ipns:publish:start'> |
@@ -314,7 +314,7 @@ export type ResolveDNSLinkProgressEvents =
 
 export interface PublishOptions extends AbortOptions, ProgressOptions<PublishProgressEvents | IPNSRoutingEvents> {
   /**
-   * Time duration of the record in ms (default: 24hrs)
+   * Time duration of the signature validity in ms (default: 48hrs)
    */
   lifetime?: number
 
@@ -330,7 +330,7 @@ export interface PublishOptions extends AbortOptions, ProgressOptions<PublishPro
   v1Compatible?: boolean
 
   /**
-   * The TTL of the record in ms (default: 1 hour)
+   * The TTL of the record in ms (default: 5 minutes)
    */
   ttl?: number
 }
