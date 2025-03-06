@@ -102,10 +102,57 @@ describe('addFile', () => {
   })
 
   it('adds a file from a URL', async () => {
-    const cid = await fs.addFile(urlSource(new URL(`${process.env.ECHO_SERVER}/download?data=hello-world`)))
+    const cid = await fs.addFile(urlSource(new URL(`${process.env.ECHO_SERVER}/download?data=hello-world`), {
+      ignorePath: true
+    }))
 
     // spellchecker:disable-next-line
     expect(cid.toString()).to.equal('bafkreifpuj5ujvb3aku75ja5cphnylsac3h47b6f3p4zbzmtm2nkrtrinu')
+    await expect(fs.stat(cid)).to.eventually.have.property('type', 'raw')
+  })
+
+  it('adds a file from a URL and wraps it in a directory', async () => {
+    const cid = await fs.addFile(urlSource(new URL(`${process.env.ECHO_SERVER}/download?data=hello-world`)))
+
+    // spellchecker:disable-next-line
+    expect(cid.toString()).to.equal('bafybeieij4nwevti7uttnkvutw5samohrnqxpakitwnoagwl55vn5oltrm')
+    await expect(fs.stat(cid)).to.eventually.have.property('type', 'directory')
+  })
+
+  it('adds a file with a path', async () => {
+    const cid = await fs.addFile({
+      content: Uint8Array.from([0, 1, 2, 3, 4]),
+      path: '/file.txt'
+    })
+
+    // spellchecker:disable-next-line
+    expect(cid.toString()).to.equal('bafybeid5m2zdvy6yz2ozuzidsaxex53epmminr4dkynmxjhcnbpvglql74')
+
+    await expect(fs.stat(cid)).to.eventually.have.property('type', 'directory')
+
+    const contents = await all(fs.ls(cid))
+    expect(contents).to.have.lengthOf(1)
+    expect(contents).to.have.nested.property('[0].name', 'file.txt')
+    expect(contents).to.have.nested.property('[0].path', 'bafybeid5m2zdvy6yz2ozuzidsaxex53epmminr4dkynmxjhcnbpvglql74/file.txt')
+  })
+
+  it('adds a file with a path wrapped with a directory', async () => {
+    const cid = await fs.addFile({
+      content: Uint8Array.from([0, 1, 2, 3, 4]),
+      path: '/file.txt'
+    }, {
+      wrapWithDirectory: true
+    })
+
+    // spellchecker:disable-next-line
+    expect(cid.toString()).to.equal('bafybeid5m2zdvy6yz2ozuzidsaxex53epmminr4dkynmxjhcnbpvglql74')
+
+    await expect(fs.stat(cid)).to.eventually.have.property('type', 'directory')
+
+    const contents = await all(fs.ls(cid))
+    expect(contents).to.have.lengthOf(1)
+    expect(contents).to.have.nested.property('[0].name', 'file.txt')
+    expect(contents).to.have.nested.property('[0].path', 'bafybeid5m2zdvy6yz2ozuzidsaxex53epmminr4dkynmxjhcnbpvglql74/file.txt')
   })
 })
 

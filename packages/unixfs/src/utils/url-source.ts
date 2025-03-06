@@ -1,9 +1,21 @@
 import { UnknownError } from '../errors.js'
 import type { FileCandidate } from 'ipfs-unixfs-importer'
 
-export function urlSource (url: URL, options?: RequestInit): FileCandidate<AsyncGenerator<Uint8Array, void, unknown>> {
+export interface URLSourceOptions extends RequestInit {
+  /**
+   * By default the path segment of a URL is included in the FileCandidate as
+   * the path, pass `false` here to ignore it.
+   *
+   * @default {true}
+   */
+  ignorePath?: boolean
+}
+
+export function urlSource (url: URL | string, options?: URLSourceOptions): FileCandidate<AsyncGenerator<Uint8Array, void, unknown>> {
+  url = new URL(url)
+
   return {
-    path: decodeURIComponent(new URL(url).pathname.split('/').pop() ?? ''),
+    path: options?.ignorePath === true ? undefined : decodeURIComponent(new URL(url).pathname.split('/').pop() ?? ''),
     content: readURLContent(url, options)
   }
 }

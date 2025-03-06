@@ -1,6 +1,8 @@
 import { type ByteStream, type DirectoryCandidate, type FileCandidate, importBytes, importByteStream, type ImportCandidateStream, importDirectory, importer, type ImporterOptions, importFile, type ImportResult } from 'ipfs-unixfs-importer'
 import { fixedSize } from 'ipfs-unixfs-importer/chunker'
 import { balanced } from 'ipfs-unixfs-importer/layout'
+import last from 'it-last'
+import { InvalidParametersError } from '../errors.js'
 import type { PutStore } from '../unixfs.js'
 import type { CID } from 'multiformats/cid'
 
@@ -44,6 +46,20 @@ export async function addByteStream (bytes: ByteStream, blockstore: PutStore, op
 }
 
 export async function addFile (file: FileCandidate, blockstore: PutStore, options: Partial<ImporterOptions> = {}): Promise<CID> {
+  if (file.path != null || options.wrapWithDirectory === true) {
+    const result = await last(addAll([file], blockstore, {
+      ...defaultImporterSettings,
+      ...options,
+      wrapWithDirectory: true
+    }))
+
+    if (result == null) {
+      throw new InvalidParametersError('Nothing imported')
+    }
+
+    return result.cid
+  }
+
   const { cid } = await importFile(file, blockstore, {
     ...defaultImporterSettings,
     ...options
