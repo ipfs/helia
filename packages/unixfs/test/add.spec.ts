@@ -154,6 +154,25 @@ describe('addFile', () => {
     expect(contents).to.have.nested.property('[0].name', 'file.txt')
     expect(contents).to.have.nested.property('[0].path', 'bafybeid5m2zdvy6yz2ozuzidsaxex53epmminr4dkynmxjhcnbpvglql74/file.txt')
   })
+
+  it('adds a file without a path wrapped with a directory', async () => {
+    const cid = await fs.addFile({
+      content: Uint8Array.from([0, 1, 2, 3, 4])
+    }, {
+      wrapWithDirectory: true
+    })
+
+    // spellchecker:disable-next-line
+    expect(cid.toString()).to.equal('bafybeiczsscdsbs7ffqz55asqdf3smv6klcw3gofszvwlyarci47bgf354')
+
+    await expect(fs.stat(cid)).to.eventually.have.property('type', 'directory')
+
+    const contents = await all(fs.ls(cid))
+    // TODO: fix this
+    expect(contents).to.have.lengthOf(1)
+    // expect(contents).to.have.nested.property('[0].name', 'file.txt')
+    // expect(contents).to.have.nested.property('[0].path', 'bafybeiczsscdsbs7ffqz55asqdf3smv6klcw3gofszvwlyarci47bgf354/file.txt')
+  })
 })
 
 describe('addDirectory', () => {
