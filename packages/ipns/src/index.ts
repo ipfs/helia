@@ -257,6 +257,7 @@
 
 import { NotFoundError, isPublicKey } from '@libp2p/interface'
 import { logger } from '@libp2p/logger'
+import { Record as Libp2pRecord } from '@libp2p/kad-dht'
 import { createIPNSRecord, extractPublicKeyFromIPNSRecord, marshalIPNSRecord, multihashToIPNSRoutingKey, unmarshalIPNSRecord, type IPNSRecord } from 'ipns'
 import { ipnsSelector } from 'ipns/selector'
 import { ipnsValidator } from 'ipns/validator'
@@ -265,6 +266,7 @@ import { base58btc } from 'multiformats/bases/base58'
 import { CID } from 'multiformats/cid'
 import * as Digest from 'multiformats/hashes/digest'
 import { CustomProgressEvent } from 'progress-events'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { resolveDNSLink } from './dnslink.js'
 import { InvalidValueError, RecordsFailedValidationError, UnsupportedMultibasePrefixError, UnsupportedMultihashCodecError } from './errors.js'
 import { helia } from './routing/helia.js'
@@ -468,6 +470,7 @@ class DefaultIPNS implements IPNS {
   private timeout?: ReturnType<typeof setTimeout>
   private readonly dns: DNS
   private readonly log: Logger
+  private readonly components: IPNSComponents
 
   constructor (components: IPNSComponents, routers: IPNSRouting[] = []) {
     this.routers = [
@@ -477,6 +480,7 @@ class DefaultIPNS implements IPNS {
     this.localStore = localStore(components.datastore)
     this.dns = components.dns
     this.log = components.logger.forComponent('helia:ipns')
+    this.components = components
   }
 
   async publish (key: PrivateKey, value: CID | PublicKey | MultihashDigest<0x00 | 0x12> | string, options: PublishOptions = {}): Promise<IPNSRecord> {
@@ -539,29 +543,70 @@ class DefaultIPNS implements IPNS {
       clearTimeout(this.timeout)
     })
 
-    async function republish (): Promise<void> {
+    const republishAllRecords = async (): Promise<void> => {
       const startTime = Date.now()
 
       options.onProgress?.(new CustomProgressEvent('ipns:republish:start'))
 
-      const finishType = Date.now()
-      const timeTaken = finishType - startTime
-      let nextInterval = DEFAULT_REPUBLISH_INTERVAL_MS - timeTaken
+      try {
+        // Use the localStore.list method to get all IPNS records
+        const recordsToRepublish: Array<{ routingKey: Uint8Array, record: IPNSRecord }> = []
+
+        // Find all records using the localStore.list method
+        for await (const { routingKey, record } of this.localStore.list({
+          signal: options.signal,
+          onProgress: options.onProgress
+        })) {
+          try {
+            // Unmarshal the IPNS record
+            const ipnsRecord = unmarshalIPNSRecord(record)
+            recordsToRepublish.push({ routingKey, record: ipnsRecord })
+          } catch (err) {
+            this.log.error('error unmarshaling record', err)
+          }
+        }
+
+        this.log(`found ${recordsToRepublish.length} records to republish`)
+
+        // Republish each record
+        for (const { routingKey, record } of recordsToRepublish) {
+          try {
+            // Republish the record to all routers
+            const marshaledRecord = marshalIPNSRecord(record)
+
+            // Publish to all routers
+            await Promise.all(this.routers.map(async r => {
+              await r.put(routingKey, marshaledRecord, options)
+            }))
+
+            options.onProgress?.(new CustomProgressEvent('ipns:republish:success', record))
+          } catch (err: any) {
+            this.log.error('error republishing record', err)
+            options.onProgress?.(new CustomProgressEvent('ipns:republish:error', { record, err }))
+          }
+        }
+      } catch (err: any) {
+        this.log.error('error during republish', err)
+      }
+
+      const finishTime = Date.now()
+      const timeTaken = finishTime - startTime
+      let nextInterval = (options.interval ?? DEFAULT_REPUBLISH_INTERVAL_MS) - timeTaken
 
       if (nextInterval < 0) {
         nextInterval = options.interval ?? DEFAULT_REPUBLISH_INTERVAL_MS
       }
 
-      setTimeout(() => {
-        republish().catch(err => {
-          log.error('error republishing', err)
+      this.timeout = setTimeout(() => {
+        republishAllRecords().catch(err => {
+          this.log.error('error republishing', err)
         })
       }, nextInterval)
     }
 
     this.timeout = setTimeout(() => {
-      republish().catch(err => {
-        log.error('error republishing', err)
+      republishAllRecords().catch(err => {
+        this.log.error('error republishing', err)
       })
     }, options.interval ?? DEFAULT_REPUBLISH_INTERVAL_MS)
   }

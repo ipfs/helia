@@ -2,17 +2,21 @@ import { Record } from '@libp2p/kad-dht'
 import { type Datastore, Key } from 'interface-datastore'
 import { CustomProgressEvent, type ProgressEvent } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { GetOptions, PutOptions } from '../routing'
 import type { AbortOptions } from '@libp2p/interface'
 
+const DHT_RECORD_PREFIX = '/dht/record/'
+
 function dhtRoutingKey (key: Uint8Array): Key {
-  return new Key('/dht/record/' + uint8ArrayToString(key, 'base32'), false)
+  return new Key(DHT_RECORD_PREFIX + uint8ArrayToString(key, 'base32'), false)
 }
 
 export type DatastoreProgressEvents =
   ProgressEvent<'ipns:routing:datastore:put'> |
   ProgressEvent<'ipns:routing:datastore:get'> |
+  ProgressEvent<'ipns:routing:datastore:list'> |
   ProgressEvent<'ipns:routing:datastore:error', Error>
 
 export interface GetResult {
@@ -20,11 +24,25 @@ export interface GetResult {
   created: Date
 }
 
+export interface ListResult {
+  routingKey: Uint8Array
+  record: Uint8Array
+  created: Date
+}
+
+export interface ListOptions extends AbortOptions {
+  onProgress?: (evt: DatastoreProgressEvents) => void
+}
+
 export interface LocalStore {
   put(routingKey: Uint8Array, marshaledRecord: Uint8Array, options?: PutOptions): Promise<void>
   get(routingKey: Uint8Array, options?: GetOptions): Promise<GetResult>
   has(routingKey: Uint8Array, options?: AbortOptions): Promise<boolean>
   delete(routingKey: Uint8Array, options?: AbortOptions): Promise<void>
+  /**
+   * List all IPNS records in the datastore
+   */
+  list(options?: ListOptions): AsyncIterable<ListResult>
 }
 
 /**
@@ -89,6 +107,38 @@ export function localStore (datastore: Datastore): LocalStore {
     async delete (routingKey, options): Promise<void> {
       const key = dhtRoutingKey(routingKey)
       return datastore.delete(key, options)
+    },
+    async * list (options: ListOptions = {}): AsyncIterable<ListResult> {
+      try {
+        options.onProgress?.(new CustomProgressEvent('ipns:routing:datastore:list'))
+
+        // Query all records with the DHT_RECORD_PREFIX
+        for await (const { key, value } of datastore.query({
+          prefix: DHT_RECORD_PREFIX
+        }, options)) {
+          try {
+            // Deserialize the record
+            const libp2pRecord = Record.deserialize(value)
+
+            // Extract the routing key from the datastore key
+            const keyString = key.toString()
+            const routingKeyBase32 = keyString.substring(DHT_RECORD_PREFIX.length)
+            const routingKey = uint8ArrayFromString(routingKeyBase32, 'base32')
+
+            yield {
+              routingKey,
+              record: libp2pRecord.value,
+              created: libp2pRecord.timeReceived
+            }
+          } catch (err) {
+            // Skip invalid records
+            console.error('Error deserializing record:', err)
+          }
+        }
+      } catch (err: any) {
+        options.onProgress?.(new CustomProgressEvent<Error>('ipns:routing:datastore:error', err))
+        throw err
+      }
     }
   }
 }
