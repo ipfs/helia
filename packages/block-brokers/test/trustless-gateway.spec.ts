@@ -196,6 +196,7 @@ describe('trustless-gateway-block-broker', () => {
 
     const reqLogs = await fetch(`${process.env.TRUSTLESS_GATEWAY}/logs`)
     const logs = await reqLogs.json()
+    await fetch(`${process.env.TRUSTLESS_GATEWAY}/logs/clear`)
 
     // assert that fetch was called with the custom header
     expect(logs).to.have.lengthOf(1)

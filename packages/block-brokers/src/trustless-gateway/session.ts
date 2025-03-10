@@ -43,7 +43,7 @@ class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, Trustles
     return block
   }
 
-  async * findNewProviders (cid: CID, options: AbortOptions = {}, headers: Record<string, string> = {}): AsyncGenerator<TrustlessGateway> {
+  async * findNewProviders (cid: CID, options: AbortOptions = {}): AsyncGenerator<TrustlessGateway> {
     yield * findHttpGatewayProviders(cid, this.routing, this.logger, this.allowInsecure, this.allowLocal, this.transformRequestInit, options)
   }
 
