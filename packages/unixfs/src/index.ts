@@ -52,12 +52,19 @@ import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { Mtime, UnixFS as IPFSUnixFS } from 'ipfs-unixfs'
 import type { ExporterProgressEvents, UnixFSEntry } from 'ipfs-unixfs-exporter'
-import type { ByteStream, DirectoryCandidate, FileCandidate, ImportCandidateStream, ImporterOptions, ImporterProgressEvents, ImportResult } from 'ipfs-unixfs-importer'
+import type { ByteStream, DirectoryCandidate, ImportCandidateStream, ImporterOptions, ImporterProgressEvents, ImportResult, ImportContent } from 'ipfs-unixfs-importer'
 import type { CID, Version } from 'multiformats/cid'
 import type { ProgressOptions } from 'progress-events'
 
 export interface UnixFSComponents {
   blockstore: Pick<Blockstore, 'get' | 'put' | 'has'>
+}
+
+export interface FileCandidate<T extends ImportContent = ImportContent> {
+  path: string
+  content: T
+  mtime?: Mtime
+  mode?: number
 }
 
 export type AddEvents = PutBlockProgressEvents
@@ -66,6 +73,8 @@ export type AddEvents = PutBlockProgressEvents
 export interface AddOptions extends AbortOptions, Omit<ImporterOptions, 'onProgress'>, ProgressOptions<AddEvents> {
 
 }
+
+export type AddFileOptions = Omit<AddOptions, 'wrapWithDirectory'>
 
 export type GetEvents = GetBlockProgressEvents
 | ExporterProgressEvents
@@ -372,7 +381,7 @@ export interface UnixFS {
    * console.info(cid)
    * ```
    */
-  addBytes(bytes: Uint8Array, options?: Partial<AddOptions>): Promise<CID>
+  addBytes(bytes: Uint8Array, options?: Partial<AddFileOptions>): Promise<CID>
 
   /**
    * Add a stream of `Uint8Array` to your Helia node as a file.
@@ -388,10 +397,11 @@ export interface UnixFS {
    * console.info(cid)
    * ```
    */
-  addByteStream(bytes: ByteStream, options?: Partial<AddOptions>): Promise<CID>
+  addByteStream(bytes: ByteStream, options?: Partial<AddFileOptions>): Promise<CID>
 
   /**
-   * Add a file to your Helia node with optional metadata.
+   * Add a file to your Helia node with metadata. The returned CID will resolve
+   * to a directory with one file entry.
    *
    * @example
    *
@@ -409,7 +419,7 @@ export interface UnixFS {
    * console.info(cid)
    * ```
    */
-  addFile(file: FileCandidate, options?: Partial<AddOptions>): Promise<CID>
+  addFile(file: FileCandidate, options?: Partial<AddFileOptions>): Promise<CID>
 
   /**
    * Add a directory to your Helia node.
@@ -422,7 +432,7 @@ export interface UnixFS {
    * console.info(cid)
    * ```
    */
-  addDirectory(dir?: Partial<DirectoryCandidate>, options?: Partial<AddOptions>): Promise<CID>
+  addDirectory(dir?: Partial<DirectoryCandidate>, options?: Partial<AddFileOptions>): Promise<CID>
 
   /**
    * Retrieve the contents of a file from your Helia node.

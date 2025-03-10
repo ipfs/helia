@@ -7,10 +7,10 @@ import { mkdir } from './commands/mkdir.js'
 import { rm } from './commands/rm.js'
 import { stat } from './commands/stat.js'
 import { touch } from './commands/touch.js'
-import type { AddOptions, CatOptions, ChmodOptions, CpOptions, LsOptions, MkdirOptions, RmOptions, StatOptions, TouchOptions, UnixFSComponents, UnixFS as UnixFSInterface, UnixFSStats } from './index.js'
+import type { AddOptions, CatOptions, ChmodOptions, CpOptions, FileCandidate, LsOptions, MkdirOptions, RmOptions, StatOptions, TouchOptions, UnixFSComponents, UnixFS as UnixFSInterface, UnixFSStats } from './index.js'
 import type { Blockstore } from 'interface-blockstore'
 import type { UnixFSEntry } from 'ipfs-unixfs-exporter'
-import type { ByteStream, DirectoryCandidate, FileCandidate, ImportCandidateStream, ImportResult } from 'ipfs-unixfs-importer'
+import type { ByteStream, DirectoryCandidate, ImportCandidateStream, ImportResult } from 'ipfs-unixfs-importer'
 import type { CID } from 'multiformats/cid'
 
 export type PutStore = Pick<Blockstore, 'put'>

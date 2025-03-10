@@ -6,6 +6,7 @@ import all from 'it-all'
 import last from 'it-last'
 import { isNode } from 'wherearewe'
 import { globSource, unixfs, urlSource, type UnixFS } from '../src/index.js'
+import { urlByteSource } from '../src/utils/url-source.js'
 import type { Blockstore } from 'interface-blockstore'
 
 describe('addAll', () => {
@@ -94,29 +95,44 @@ describe('addFile', () => {
 
   it('adds a file', async () => {
     const cid = await fs.addFile({
+      path: '/file.txt',
       content: Uint8Array.from([0, 1, 2, 3, 4])
     })
 
-    // spellchecker:disable-next-line
-    expect(cid.toString()).to.equal('bafkreiaixnpf23vkyecj5xqispjq5ubcwgsntnnurw2bjby7khe4wnjihu')
+    expect(cid.toString()).to.equal('bafybeid5m2zdvy6yz2ozuzidsaxex53epmminr4dkynmxjhcnbpvglql74')
+    await expect(fs.stat(cid)).to.eventually.have.property('type', 'directory')
+
+    const contents = await all(fs.ls(cid))
+    expect(contents).to.have.lengthOf(1)
+    expect(contents).to.have.nested.property('[0].type', 'raw')
+    expect(contents).to.have.nested.property('[0].name', 'file.txt')
+    expect(contents).to.have.nested.property('[0].path', 'bafybeid5m2zdvy6yz2ozuzidsaxex53epmminr4dkynmxjhcnbpvglql74/file.txt')
   })
 
   it('adds a file from a URL', async () => {
-    const cid = await fs.addFile(urlSource(new URL(`${process.env.ECHO_SERVER}/download?data=hello-world`), {
-      ignorePath: true
-    }))
+    const cid = await fs.addByteStream(urlByteSource(new URL(`${process.env.ECHO_SERVER}/download?data=hello-world`)))
 
-    // spellchecker:disable-next-line
     expect(cid.toString()).to.equal('bafkreifpuj5ujvb3aku75ja5cphnylsac3h47b6f3p4zbzmtm2nkrtrinu')
     await expect(fs.stat(cid)).to.eventually.have.property('type', 'raw')
+
+    const contents = await all(fs.ls(cid))
+    expect(contents).to.have.lengthOf(1)
+    expect(contents).to.have.nested.property('[0].type', 'raw')
+    expect(contents).to.have.nested.property('[0].name', 'bafkreifpuj5ujvb3aku75ja5cphnylsac3h47b6f3p4zbzmtm2nkrtrinu')
+    expect(contents).to.have.nested.property('[0].path', 'bafkreifpuj5ujvb3aku75ja5cphnylsac3h47b6f3p4zbzmtm2nkrtrinu')
   })
 
-  it('adds a file from a URL and wraps it in a directory', async () => {
+  it('adds a file from a URL and includes the path', async () => {
     const cid = await fs.addFile(urlSource(new URL(`${process.env.ECHO_SERVER}/download?data=hello-world`)))
 
-    // spellchecker:disable-next-line
     expect(cid.toString()).to.equal('bafybeieij4nwevti7uttnkvutw5samohrnqxpakitwnoagwl55vn5oltrm')
     await expect(fs.stat(cid)).to.eventually.have.property('type', 'directory')
+
+    const contents = await all(fs.ls(cid))
+    expect(contents).to.have.lengthOf(1)
+    expect(contents).to.have.nested.property('[0].type', 'raw')
+    expect(contents).to.have.nested.property('[0].name', 'download')
+    expect(contents).to.have.nested.property('[0].path', 'bafybeieij4nwevti7uttnkvutw5samohrnqxpakitwnoagwl55vn5oltrm/download')
   })
 
   it('adds a file with a path', async () => {
@@ -140,11 +156,8 @@ describe('addFile', () => {
     const cid = await fs.addFile({
       content: Uint8Array.from([0, 1, 2, 3, 4]),
       path: '/file.txt'
-    }, {
-      wrapWithDirectory: true
     })
 
-    // spellchecker:disable-next-line
     expect(cid.toString()).to.equal('bafybeid5m2zdvy6yz2ozuzidsaxex53epmminr4dkynmxjhcnbpvglql74')
 
     await expect(fs.stat(cid)).to.eventually.have.property('type', 'directory')
@@ -153,25 +166,6 @@ describe('addFile', () => {
     expect(contents).to.have.lengthOf(1)
     expect(contents).to.have.nested.property('[0].name', 'file.txt')
     expect(contents).to.have.nested.property('[0].path', 'bafybeid5m2zdvy6yz2ozuzidsaxex53epmminr4dkynmxjhcnbpvglql74/file.txt')
-  })
-
-  it('adds a file without a path wrapped with a directory', async () => {
-    const cid = await fs.addFile({
-      content: Uint8Array.from([0, 1, 2, 3, 4])
-    }, {
-      wrapWithDirectory: true
-    })
-
-    // spellchecker:disable-next-line
-    expect(cid.toString()).to.equal('bafybeiczsscdsbs7ffqz55asqdf3smv6klcw3gofszvwlyarci47bgf354')
-
-    await expect(fs.stat(cid)).to.eventually.have.property('type', 'directory')
-
-    const contents = await all(fs.ls(cid))
-    // TODO: fix this
-    expect(contents).to.have.lengthOf(1)
-    // expect(contents).to.have.nested.property('[0].name', 'file.txt')
-    // expect(contents).to.have.nested.property('[0].path', 'bafybeiczsscdsbs7ffqz55asqdf3smv6klcw3gofszvwlyarci47bgf354/file.txt')
   })
 })
 
@@ -190,14 +184,12 @@ describe('addDirectory', () => {
       cidVersion: 0
     })
 
-    // spellchecker:disable-next-line
     expect(cid.toString()).to.equal('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
   })
 
   it('adds an empty directory with no args', async () => {
     const cid = await fs.addDirectory()
 
-    // spellchecker:disable-next-line
     expect(cid.toString()).to.equal('bafybeiczsscdsbs7ffqz55asqdf3smv6klcw3gofszvwlyarci47bgf354')
   })
 })
