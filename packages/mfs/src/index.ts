@@ -277,23 +277,31 @@ class DefaultMFS implements MFS {
   }
 
   async writeBytes (bytes: Uint8Array, path: string, options?: Partial<WriteOptions>): Promise<void> {
-    const cid = await this.unixfs.addFile({
-      content: bytes,
-      mode: options?.mode,
-      mtime: options?.mtime
-    }, options)
+    const cid = await this.unixfs.addBytes(bytes, options)
 
     await this.cp(cid, path, options)
+
+    if (options?.mode != null) {
+      await this.chmod(path, options.mode, options)
+    }
+
+    if (options?.mtime != null) {
+      await this.touch(path, options)
+    }
   }
 
   async writeByteStream (bytes: ByteStream, path: string, options?: Partial<WriteOptions>): Promise<void> {
-    const cid = await this.unixfs.addFile({
-      content: bytes,
-      mode: options?.mode,
-      mtime: options?.mtime
-    }, options)
+    const cid = await this.unixfs.addByteStream(bytes, options)
 
     await this.cp(cid, path, options)
+
+    if (options?.mode != null) {
+      await this.chmod(path, options.mode, options)
+    }
+
+    if (options?.mtime != null) {
+      await this.touch(path, options)
+    }
   }
 
   async * cat (path: string, options: Partial<CatOptions> = {}): AsyncIterable<Uint8Array> {
