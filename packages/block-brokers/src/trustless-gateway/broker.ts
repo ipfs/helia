@@ -53,7 +53,7 @@ export class TrustlessGatewayBlockBroker implements BlockBroker<TrustlessGateway
   async retrieve (cid: CID, options: BlockRetrievalOptions<TrustlessGatewayGetBlockProgressEvents> = {}): Promise<Uint8Array> {
     const aggregateErrors: Error[] = []
 
-    for await (const gateway of findHttpGatewayProviders(cid, this.routing, this.logger, this.allowInsecure, this.allowLocal, this.transformRequestInit, options)) {
+    for await (const gateway of findHttpGatewayProviders(cid, this.routing, this.logger, this.allowInsecure, this.allowLocal, { ...options, transformRequestInit: this.transformRequestInit })) {
       this.log('getting block for %c from %s', cid, gateway.url)
 
       try {

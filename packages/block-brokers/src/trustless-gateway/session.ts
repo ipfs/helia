@@ -44,7 +44,7 @@ class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, Trustles
   }
 
   async * findNewProviders (cid: CID, options: AbortOptions = {}): AsyncGenerator<TrustlessGateway> {
-    yield * findHttpGatewayProviders(cid, this.routing, this.logger, this.allowInsecure, this.allowLocal, this.transformRequestInit, options)
+    yield * findHttpGatewayProviders(cid, this.routing, this.logger, this.allowInsecure, this.allowLocal, { ...options, transformRequestInit: this.transformRequestInit })
   }
 
   toEvictionKey (provider: TrustlessGateway): Uint8Array | string {
