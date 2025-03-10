@@ -1,11 +1,19 @@
 import { UnknownError } from '../errors.js'
-import type { FileCandidate } from 'ipfs-unixfs-importer'
+import type { FileCandidate } from '../index.js'
 
-export function urlSource (url: URL, options?: RequestInit): FileCandidate<AsyncGenerator<Uint8Array, void, unknown>> {
+export function urlSource (url: URL | string, options?: RequestInit): FileCandidate<AsyncGenerator<Uint8Array, void, unknown>> {
+  url = new URL(url)
+
   return {
     path: decodeURIComponent(new URL(url).pathname.split('/').pop() ?? ''),
     content: readURLContent(url, options)
   }
+}
+
+export function urlByteSource (url: URL | string, options?: RequestInit): AsyncGenerator<Uint8Array, void, unknown> {
+  url = new URL(url)
+
+  return readURLContent(url, options)
 }
 
 async function * readURLContent (url: URL, options?: RequestInit): AsyncGenerator<Uint8Array, void, unknown> {

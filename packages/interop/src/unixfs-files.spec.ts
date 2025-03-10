@@ -1,14 +1,15 @@
 /* eslint-env mocha */
 
-import { type AddOptions, type UnixFS, unixfs } from '@helia/unixfs'
+import { unixfs } from '@helia/unixfs'
 import { expect } from 'aegir/chai'
 import { fixedSize } from 'ipfs-unixfs-importer/chunker'
 import { balanced } from 'ipfs-unixfs-importer/layout'
 import { CID } from 'multiformats/cid'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
+import type { AddOptions, UnixFS } from '@helia/unixfs'
 import type { HeliaLibp2p } from 'helia'
-import type { FileCandidate } from 'ipfs-unixfs-importer'
+import type { ByteStream } from 'ipfs-unixfs-importer'
 import type { KuboNode } from 'ipfsd-ctl'
 import type { AddOptions as KuboAddOptions } from 'kubo-rpc-client'
 
@@ -17,19 +18,19 @@ describe('@helia/unixfs - files', () => {
   let unixFs: UnixFS
   let kubo: KuboNode
 
-  async function importToHelia (data: FileCandidate, opts?: Partial<AddOptions>): Promise<CID> {
-    const cid = await unixFs.addFile(data, opts)
+  async function importToHelia (data: ByteStream, opts?: Partial<AddOptions>): Promise<CID> {
+    const cid = await unixFs.addByteStream(data, opts)
 
     return cid
   }
 
-  async function importToKubo (data: FileCandidate, opts?: KuboAddOptions): Promise<CID> {
-    const result = await kubo.api.add(data.content, opts)
+  async function importToKubo (data: ByteStream, opts?: KuboAddOptions): Promise<CID> {
+    const result = await kubo.api.add(data, opts)
 
     return CID.parse(result.cid.toString())
   }
 
-  async function expectSameCid (data: () => FileCandidate, heliaOpts: Partial<AddOptions> = {}, kuboOpts: KuboAddOptions = {}): Promise<void> {
+  async function expectSameCid (data: () => ByteStream, heliaOpts: Partial<AddOptions> = {}, kuboOpts: KuboAddOptions = {}): Promise<void> {
     const heliaCid = await importToHelia(data(), {
       // these are the default kubo options
       cidVersion: 0,
@@ -65,9 +66,9 @@ describe('@helia/unixfs - files', () => {
   })
 
   it('should create the same CID for a small file', async () => {
-    const candidate = (): FileCandidate => ({
-      content: Uint8Array.from([0, 1, 2, 3, 4])
-    })
+    const candidate = (): ByteStream => (async function * () {
+      yield Uint8Array.from([0, 1, 2, 3, 4])
+    }())
 
     await expectSameCid(candidate)
   })
@@ -76,13 +77,11 @@ describe('@helia/unixfs - files', () => {
     const chunkSize = 1024 * 1024
     const size = chunkSize * 10
 
-    const candidate = (): FileCandidate => ({
-      content: (async function * () {
-        for (let i = 0; i < size; i += chunkSize) {
-          yield new Uint8Array(chunkSize)
-        }
-      }())
-    })
+    const candidate = (): ByteStream => (async function * () {
+      for (let i = 0; i < size; i += chunkSize) {
+        yield new Uint8Array(chunkSize)
+      }
+    }())
 
     await expectSameCid(candidate)
   })

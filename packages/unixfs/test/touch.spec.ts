@@ -43,6 +43,7 @@ describe('.files.touch', () => {
     const seconds = BigInt(Math.floor(mtime.getTime() / 1000))
 
     const cid = await fs.addFile({
+      path: '/file.txt',
       content: Uint8Array.from([0, 1, 2, 3, 4]),
       mtime: {
         secs: seconds
