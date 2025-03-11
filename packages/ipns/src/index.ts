@@ -272,12 +272,13 @@ import { localStore, type LocalStore } from './routing/local-store.js'
 import { isCodec, IDENTITY_CODEC, SHA2_256_CODEC } from './utils.js'
 import type { IPNSRouting, IPNSRoutingEvents } from './routing/index.js'
 import type { Routing } from '@helia/interface'
-import type { AbortOptions, ComponentLogger, Logger, PrivateKey, PublicKey } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, Logger, PeerId, PrivateKey, PublicKey } from '@libp2p/interface'
 import type { Answer, DNS, ResolveDnsProgressEvents } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
 import type { MultibaseDecoder } from 'multiformats/bases/interface'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
+import { peerIdFromCID, peerIdFromString } from '@libp2p/peer-id'
 
 const log = logger('helia:ipns')
 
@@ -441,9 +442,9 @@ export interface IPNS {
   /**
    * Republish an existing IPNS record without the private key
    *
-   * The key is a multihash of the public key
+   * The key is a multihash of the public key or a string representation of the PeerID (either base58btc encoded multihash or base36 encoded CID)
    */
-  republishRecord(key: MultihashDigest<0x00 | 0x12>, record: IPNSRecord , options?: RepublishRecordOptions): Promise<void>
+  republishRecord(key: MultihashDigest<0x00 | 0x12> | string, record: IPNSRecord , options?: RepublishRecordOptions): Promise<void>
 }
 
 export type { IPNSRouting } from './routing/index.js'
@@ -722,15 +723,35 @@ class DefaultIPNS implements IPNS {
     return unmarshalIPNSRecord(record)
   }
 
+  /**
+   * Convert a string to a PeerId
+   */
+  #getPeerIdFromString (peerIdString: string): PeerId {
+    // It's either base58btc encoded multihash (identity or sha256)
+    if (peerIdString.charAt(0) === '1' || peerIdString.charAt(0) === 'Q') {
+      return peerIdFromString(peerIdString)
+    }
 
-  // TODO: accept string `key` of the IPNS name (both CID and multihash base58btc encoded)
-  async republishRecord (key: MultihashDigest<0x00 | 0x12>, record: IPNSRecord, options: RepublishRecordOptions = {}): Promise<void> {
+    // or base36 encoded CID
+    return peerIdFromCID(CID.parse(peerIdString))
+  }
+
+  async republishRecord (key: MultihashDigest<0x00 | 0x12> | string, record: IPNSRecord, options: RepublishRecordOptions = {}): Promise<void> {
     let mh: MultihashDigest<0x00 | 0x12> | undefined
     try {
-      mh = extractPublicKeyFromIPNSRecord(record)?.toMultihash() // embedded public key take precedence (if present)
+      mh = extractPublicKeyFromIPNSRecord(record)?.toMultihash() // embedded public key take precedence, if present
       if (mh == null) {
         // if no public key is embedded in the record, use the key that was passed in
-        mh = key
+        if (typeof key === 'string') {
+          // Convert string key to MultihashDigest
+          try {
+            mh = this.#getPeerIdFromString(key).toMultihash()
+          } catch (err: any) {
+            throw new Error(`Invalid string key: ${err.message}`)
+          }
+        } else {
+          mh = key
+        }
       }
 
       if (mh == null) {
