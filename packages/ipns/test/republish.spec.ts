@@ -94,6 +94,6 @@ describe('republishRecord', () => {
           expect(evt.type).to.equal('ipns:republish:error')
         }
       })
-    ).to.eventually.be.rejected
+    ).to.eventually.be.rejected.with.property('name', 'SignatureVerificationError')
   })
 })
