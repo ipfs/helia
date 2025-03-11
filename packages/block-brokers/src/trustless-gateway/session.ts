@@ -3,7 +3,7 @@ import { findHttpGatewayProviders } from './utils.js'
 import { DEFAULT_ALLOW_INSECURE, DEFAULT_ALLOW_LOCAL } from './index.js'
 import type { CreateTrustlessGatewaySessionOptions } from './broker.js'
 import type { TrustlessGatewayGetBlockProgressEvents } from './index.js'
-import type { TrustlessGateway } from './trustless-gateway.js'
+import type { TransformRequestInit, TrustlessGateway } from './trustless-gateway.js'
 import type { BlockRetrievalOptions, Routing } from '@helia/interface'
 import type { ComponentLogger } from '@libp2p/interface'
 import type { AbortOptions } from 'interface-store'
@@ -18,6 +18,7 @@ class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, Trustles
   private readonly routing: Routing
   private readonly allowInsecure: boolean
   private readonly allowLocal: boolean
+  private readonly transformRequestInit?: TransformRequestInit
 
   constructor (components: TrustlessGatewaySessionComponents, init: CreateTrustlessGatewaySessionOptions) {
     super(components, {
@@ -28,6 +29,7 @@ class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, Trustles
     this.routing = components.routing
     this.allowInsecure = init.allowInsecure ?? DEFAULT_ALLOW_INSECURE
     this.allowLocal = init.allowLocal ?? DEFAULT_ALLOW_LOCAL
+    this.transformRequestInit = init.transformRequestInit
   }
 
   async queryProvider (cid: CID, provider: TrustlessGateway, options: BlockRetrievalOptions): Promise<Uint8Array> {
@@ -42,7 +44,7 @@ class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, Trustles
   }
 
   async * findNewProviders (cid: CID, options: AbortOptions = {}): AsyncGenerator<TrustlessGateway> {
-    yield * findHttpGatewayProviders(cid, this.routing, this.logger, this.allowInsecure, this.allowLocal, options)
+    yield * findHttpGatewayProviders(cid, this.routing, this.logger, this.allowInsecure, this.allowLocal, { ...options, transformRequestInit: this.transformRequestInit })
   }
 
   toEvictionKey (provider: TrustlessGateway): Uint8Array | string {

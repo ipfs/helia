@@ -161,7 +161,7 @@ describe('stat', function () {
     })
   })
 
-  it('sstats a sharded directory', async function () {
+  it('stats a sharded directory', async function () {
     const mtime = {
       secs: 5n,
       nsecs: 0

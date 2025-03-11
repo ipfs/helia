@@ -56,7 +56,7 @@ export interface DAGWalker {
 export interface HeliaInit<T extends Libp2p = Libp2p> extends HeliaClassInit {
   /**
    * A libp2p node is required to perform network operations. Either a
-   * preconfigured node or options to configure a node can be passed
+   * pre-configured node or options to configure a node can be passed
    * here.
    *
    * If node options are passed, they will be merged with the default

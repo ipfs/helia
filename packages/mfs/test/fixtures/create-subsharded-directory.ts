@@ -5,7 +5,7 @@ import last from 'it-last'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 
-export async function createSubshardedDirectory (blockstore: Blockstore, depth: number = 1, files: number = 5000): Promise<{
+export async function createSubShardedDirectory (blockstore: Blockstore, depth: number = 1, files: number = 5000): Promise<{
   importerCid: CID
   containingDirCid: CID
   fileName: string
@@ -23,7 +23,7 @@ export async function createSubshardedDirectory (blockstore: Blockstore, depth: 
       shardSplitThresholdBytes: 1
     })
 
-    if (await searchCIDForSubshards(containingDirCid, blockstore, depth)) {
+    if (await searchCIDForSubShards(containingDirCid, blockstore, depth)) {
       count = i
 
       break
@@ -31,7 +31,7 @@ export async function createSubshardedDirectory (blockstore: Blockstore, depth: 
   }
 
   if (fileName == null) {
-    throw new Error('could not find file that would create a subshard')
+    throw new Error('could not find file that would create a sub-shard')
   }
 
   // create a shard with the importer that is the same as the directory after we delete the file that causes a sub-shard to be created
@@ -59,11 +59,11 @@ export async function createSubshardedDirectory (blockstore: Blockstore, depth: 
   }
 }
 
-async function searchCIDForSubshards (cid: CID, blockstore: Blockstore, depth: number = 1): Promise<boolean> {
+async function searchCIDForSubShards (cid: CID, blockstore: Blockstore, depth: number = 1): Promise<boolean> {
   const block = await blockstore.get(cid)
   const node = dagPb.decode(block)
 
-  // search links for subshard
+  // search links for sub-shard
   for (const link of node.Links) {
     if (link.Name?.length === 2) {
       const block = await blockstore.get(link.Hash)
@@ -71,18 +71,18 @@ async function searchCIDForSubshards (cid: CID, blockstore: Blockstore, depth: n
       const firstLink = node.Links[1]
 
       if (firstLink == null) {
-        throw new Error('Subshard had no child links')
+        throw new Error('Sub-shard had no child links')
       }
 
       if (firstLink.Name == null) {
-        throw new Error('Subshard child had no name')
+        throw new Error('Sub-shard child had no name')
       }
 
       if (depth === 1) {
         return true
       }
 
-      if (await searchCIDForSubshards(link.Hash, blockstore, depth - 1)) {
+      if (await searchCIDForSubShards(link.Hash, blockstore, depth - 1)) {
         return true
       }
     }

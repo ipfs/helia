@@ -136,7 +136,7 @@ describe('network', () => {
 
     const lpstr = lpStream(localDuplex)
 
-    // garbage data, cannot be unmarshalled as protobuf
+    // garbage data, cannot be unmarshaled as protobuf
     await lpstr.write(Uint8Array.from([0, 1, 2, 3]))
 
     await pRetry(() => {
@@ -401,11 +401,11 @@ describe('network', () => {
     })
     messageA.addBlockPresence(cid3, {
       cid: cid3.bytes,
-      type: BlockPresenceType.DontHaveBlock
+      type: BlockPresenceType.DoNotHaveBlock
     })
     messageA.addBlockPresence(cid5, {
       cid: cid5.bytes,
-      type: BlockPresenceType.DontHaveBlock
+      type: BlockPresenceType.DoNotHaveBlock
     })
     messageA.addWantlistEntry(cid5, {
       cid: cid5.bytes,
@@ -424,7 +424,7 @@ describe('network', () => {
     })
     messageB.addBlockPresence(cid4, {
       cid: cid4.bytes,
-      type: BlockPresenceType.DontHaveBlock
+      type: BlockPresenceType.DoNotHaveBlock
     })
     messageB.addBlockPresence(cid5, {
       cid: cid5.bytes,
@@ -478,13 +478,13 @@ describe('network', () => {
     }])
     expect(message).to.have.deep.property('blockPresences', [{
       cid: cid3.bytes,
-      type: BlockPresenceType.DontHaveBlock
+      type: BlockPresenceType.DoNotHaveBlock
     }, {
       cid: cid5.bytes,
       type: BlockPresenceType.HaveBlock
     }, {
       cid: cid4.bytes,
-      type: BlockPresenceType.DontHaveBlock
+      type: BlockPresenceType.DoNotHaveBlock
     }])
     expect(message).to.have.deep.property('wantlist', {
       full: true,
