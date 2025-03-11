@@ -7,7 +7,7 @@ import { CID } from 'multiformats/cid'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import type { HeliaLibp2p } from 'helia'
-import type { FileCandidate } from 'ipfs-unixfs-importer'
+import type { ByteStream, FileCandidate } from 'ipfs-unixfs-importer'
 import type { KuboNode } from 'ipfsd-ctl'
 
 describe('@helia/unixfs - bitswap', () => {
@@ -39,22 +39,20 @@ describe('@helia/unixfs - bitswap', () => {
     const size = chunkSize * 10
     const input: Uint8Array[] = []
 
-    const candidate: FileCandidate = {
-      content: (async function * () {
-        for (let i = 0; i < size; i += chunkSize) {
-          const buf = new Uint8Array(chunkSize)
-          input.push(buf)
+    const bytes: ByteStream = (async function * () {
+      for (let i = 0; i < size; i += chunkSize) {
+        const buf = new Uint8Array(chunkSize)
+        input.push(buf)
 
-          yield buf
-        }
-      }())
-    }
+        yield buf
+      }
+    }())
 
-    const cid = await unixFs.addFile(candidate)
+    const cid = await unixFs.addByteStream(bytes)
 
-    const bytes = await toBuffer(kubo.api.cat(CID.parse(cid.toString())))
+    const output = await toBuffer(kubo.api.cat(CID.parse(cid.toString())))
 
-    expect(bytes).to.equalBytes(toBuffer(input))
+    expect(output).to.equalBytes(toBuffer(input))
   })
 
   it('should add a large file to kubo and fetch it from helia', async () => {
