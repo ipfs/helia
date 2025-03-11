@@ -121,22 +121,27 @@ export interface Car {
    * ```typescript
    * import fs from 'node:fs'
    * import { Readable } from 'stream'
+   * import { car } from '@helia/car'
+   * import { CarWriter } from '@ipld/car'
    * import { createHelia } from 'helia'
-   * import { car } from '@helia/car
    * import { CID } from 'multiformats/cid'
-   * import pEvent from 'p-event'
    *
    * const helia = await createHelia()
    * const cid = CID.parse('QmFoo...')
    *
    * const c = car(helia)
-   *
-   * const byteStream = await c.export(cid)
+   * const { writer, out } = CarWriter.create(cid)
+   * c.export(cid, writer)
    * const output = fs.createWriteStream('example.car')
-   * const eventPromise = pEvent(output, 'end')
-   * Readable.from(byteStream).pipe(output)
-   *
-   * await eventPromise
+   * await new Promise((resolve, reject) => {
+   *   const stream = Readable.from(out).pipe(output)
+   *   stream.on('finish', () => {
+   *     resolve()
+   *   })
+   *   stream.on('error', (err) => {
+   *     reject(err)
+   *   })
+   * })
    * ```
    */
   export(root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: ExportCarOptions): Promise<void>
