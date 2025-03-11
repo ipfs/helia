@@ -302,7 +302,7 @@ export type ResolveProgressEvents =
 export type RepublishProgressEvents =
   ProgressEvent<'ipns:republish:start', unknown> |
   ProgressEvent<'ipns:republish:success', IPNSRecord> |
-  ProgressEvent<'ipns:republish:error', { record: IPNSRecord, err: Error }>
+  ProgressEvent<'ipns:republish:error', { mh?: MultihashDigest<0x00 | 0x12>, record: IPNSRecord, err: Error }>
 
 export type ResolveDNSLinkProgressEvents =
   ResolveProgressEvents |
@@ -379,7 +379,7 @@ export interface RepublishOptions extends AbortOptions, ProgressOptions<Republis
   interval?: number
 }
 
-export interface RepublishRecordOptions extends AbortOptions, ProgressOptions<PublishProgressEvents | IPNSRoutingEvents> {
+export interface RepublishRecordOptions extends AbortOptions, ProgressOptions<RepublishProgressEvents | IPNSRoutingEvents> {
   /**
    * Only publish to a local datastore (default: false)
    */
@@ -441,9 +441,9 @@ export interface IPNS {
   /**
    * Republish an existing IPNS record without the private key
    *
-   * The public key is optional if the record has an embedded public key.
+   * The key is a multihash of the public key
    */
-  republishRecord(record: IPNSRecord, pubKey?: PublicKey, options?: RepublishRecordOptions): Promise<void>
+  republishRecord(key: MultihashDigest<0x00 | 0x12>, record: IPNSRecord , options?: RepublishRecordOptions): Promise<void>
 }
 
 export type { IPNSRouting } from './routing/index.js'
@@ -722,20 +722,25 @@ class DefaultIPNS implements IPNS {
     return unmarshalIPNSRecord(record)
   }
 
-  async republishRecord (record: IPNSRecord, pubKey?: PublicKey, options: RepublishRecordOptions = {}): Promise<void> {
+
+  // TODO: accept string `key` of the IPNS name (both CID and multihash base58btc encoded)
+  async republishRecord (key: MultihashDigest<0x00 | 0x12>, record: IPNSRecord, options: RepublishRecordOptions = {}): Promise<void> {
+    let mh: MultihashDigest<0x00 | 0x12> | undefined
     try {
-      let mh = extractPublicKeyFromIPNSRecord(record)?.toMultihash() // try to extract the public key from the record
+      mh = extractPublicKeyFromIPNSRecord(record)?.toMultihash() // embedded public key take precedence (if present)
       if (mh == null) {
-        // if no public key is provided, use the pubKey that was passed in
-        mh = pubKey?.toMultihash()
+        // if no public key is embedded in the record, use the key that was passed in
+        mh = key
       }
 
       if (mh == null) {
-        throw new Error('No public key found to determine the routing key')
+        throw new Error('No public key multihash found to determine the routing key')
       }
 
       const routingKey = multihashToIPNSRoutingKey(mh)
       const marshaledRecord = marshalIPNSRecord(record)
+
+      await ipnsValidator(routingKey, marshaledRecord) // validate that they key corresponds to the record
 
       await this.localStore.put(routingKey, marshaledRecord, options)
 
@@ -744,7 +749,7 @@ class DefaultIPNS implements IPNS {
         await Promise.all(this.routers.map(async r => { await r.put(routingKey, marshaledRecord, options) }))
       }
     } catch (err: any) {
-      options.onProgress?.(new CustomProgressEvent<Error>('ipns:publish:error', err))
+      options.onProgress?.(new CustomProgressEvent('ipns:republish:error', { mh, record, err }))
       throw err
     }
   }

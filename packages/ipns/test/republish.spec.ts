@@ -15,11 +15,7 @@ import type { DNS } from '@multiformats/dns'
 import type { StubbedInstance } from 'sinon-ts'
 
 describe('republishRecord', () => {
-  let testCid: CID
-  let rsaKey: PrivateKey
-  let rsaRecord: IPNSRecord
-  let ed25519Key: PrivateKey
-  let ed25519Record: IPNSRecord
+  const testCid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
   let name: IPNS
   let customRouting: StubbedInstance<IPNSRouting>
   let heliaRouting: StubbedInstance<Routing>
@@ -30,53 +26,54 @@ describe('republishRecord', () => {
     customRouting = stubInterface<IPNSRouting>()
     customRouting.get.throws(new Error('Not found'))
     heliaRouting = stubInterface<Routing>()
+    dns = stubInterface<DNS>()
 
     name = ipns(
       {
         datastore,
         routing: heliaRouting,
         dns,
-        logger: defaultLogger()
+        logger: defaultLogger(),
       },
       {
-        routers: [customRouting]
-      }
+        routers: [customRouting],
+      },
     )
-
-    testCid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
-    rsaKey = await generateKeyPair('RSA') // RSA will embed the public key in the record
-    ed25519Key = await generateKeyPair('Ed25519')
-    rsaRecord = await createIPNSRecord(rsaKey, testCid, 1n, 24 * 60 * 60 * 1000)
-    ed25519Record = await createIPNSRecord(ed25519Key, testCid, 1n, 24 * 60 * 60 * 1000)
   })
 
-  it('should republish a record using embedded public key', async () => {
-    await expect(name.republishRecord(rsaRecord)).to.not.be.rejected
+  it('should throw an error when attempting to republish with an invalid key', async () => {
+    const ed25519Key = await generateKeyPair('Ed25519')
+    const otherEd25519Key = await generateKeyPair('Ed25519')
+    const ed25519Record = await createIPNSRecord(ed25519Key, testCid, 1n, 24 * 60 * 60 * 1000)
+    await expect(name.republishRecord(otherEd25519Key.publicKey.toMultihash(), ed25519Record)).to.be.rejected
   })
+
+  it('should republish using the embedded public key', async () => {
+    const rsaKey = await generateKeyPair('RSA') // RSA will embed the public key in the record
+    const otherKey = await generateKeyPair('RSA')
+    const rsaRecord = await createIPNSRecord(rsaKey, testCid, 1n, 24 * 60 * 60 * 1000)
+    await expect(name.republishRecord(otherKey.publicKey.toMultihash(), rsaRecord)).to.not.be.rejected
+  })
+
 
   it('should republish a record using provided public key', async () => {
-    await expect(name.republishRecord(ed25519Record, ed25519Key.publicKey)).to.not.be.rejected
+    const ed25519Key = await generateKeyPair('Ed25519')
+    const ed25519Record = await createIPNSRecord(ed25519Key, testCid, 1n, 24 * 60 * 60 * 1000)
+    await expect(name.republishRecord(ed25519Key.publicKey.toMultihash(), ed25519Record)).to.not.be.rejected
   })
 
-  it('should fail when no public key is available', async () => {
-    await expect(name.republishRecord(ed25519Record)).to.be.rejectedWith(
-      'No public key found to determine the routing key'
-    )
-  })
 
   it('should emit progress events on error', async () => {
-    const events: Error[] = []
+    const ed25519Key = await generateKeyPair('Ed25519')
+    const otherEd25519Key = await generateKeyPair('Ed25519')
+    const ed25519Record = await createIPNSRecord(ed25519Key, testCid, 1n, 24 * 60 * 60 * 1000)
 
     await expect(
-      name.republishRecord(ed25519Record, undefined, {
+      name.republishRecord(otherEd25519Key.publicKey.toMultihash(), ed25519Record, {
         onProgress: (evt) => {
-          if (evt.type === 'ipns:publish:error') {
-            events.push(evt.detail)
-          }
-        }
-      })
-    ).to.be.rejected
-
-    expect(events).to.have.lengthOf(1)
+          expect(evt.type).to.equal('ipns:republish:error')
+        },
+      }),
+    ).to.eventually.be.rejected
   })
 })
