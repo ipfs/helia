@@ -4,12 +4,14 @@ import { unixfs } from '@helia/unixfs'
 import { expect } from 'aegir/chai'
 import { fixedSize } from 'ipfs-unixfs-importer/chunker'
 import { balanced } from 'ipfs-unixfs-importer/layout'
+import last from 'it-last'
 import { CID } from 'multiformats/cid'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import type { AddOptions, UnixFS } from '@helia/unixfs'
 import type { HeliaLibp2p } from 'helia'
-import type { ByteStream } from 'ipfs-unixfs-importer'
+import type { ByteStream, ImportCandidateStream } from 'ipfs-unixfs-importer'
 import type { KuboNode } from 'ipfsd-ctl'
 import type { AddOptions as KuboAddOptions } from 'kubo-rpc-client'
 
@@ -24,8 +26,28 @@ describe('@helia/unixfs - files', () => {
     return cid
   }
 
+  async function importDirectoryToHelia (data: ImportCandidateStream, opts?: Partial<AddOptions>): Promise<CID> {
+    const result = await last(unixFs.addAll(data, opts))
+
+    if (result == null) {
+      throw new Error('Nothing imported')
+    }
+
+    return CID.parse(result.cid.toString())
+  }
+
   async function importToKubo (data: ByteStream, opts?: KuboAddOptions): Promise<CID> {
     const result = await kubo.api.add(data, opts)
+
+    return CID.parse(result.cid.toString())
+  }
+
+  async function importDirectoryToKubo (data: ImportCandidateStream, opts?: KuboAddOptions): Promise<CID> {
+    const result = await last(kubo.api.addAll(data, opts))
+
+    if (result == null) {
+      throw new Error('Nothing imported')
+    }
 
     return CID.parse(result.cid.toString())
   }
@@ -84,5 +106,40 @@ describe('@helia/unixfs - files', () => {
     }())
 
     await expectSameCid(candidate)
+  })
+
+  it('should return the same directory stats', async () => {
+    const candidates = [{
+      path: '/foo1.txt',
+      content: uint8ArrayFromString('Hello World!')
+    }, {
+      path: '/foo2.txt',
+      content: uint8ArrayFromString('Hello World!')
+    }]
+
+    const heliaCid = await importDirectoryToHelia(candidates, {
+      wrapWithDirectory: true
+    })
+    const kuboCid = await importDirectoryToKubo(candidates, {
+      cidVersion: 1,
+      chunker: `size-${1024 * 1024}`,
+      rawLeaves: true,
+      wrapWithDirectory: true
+    })
+
+    expect(heliaCid.toString()).to.equal(kuboCid.toString())
+
+    const heliaStat = await unixFs.stat(heliaCid, {
+      extended: true
+    })
+    const kuboStat = await kubo.api.files.stat(`/ipfs/${kuboCid}`, {
+      withLocal: true
+    })
+
+    expect(heliaStat.dagSize.toString()).to.equal(kuboStat.cumulativeSize.toString())
+    expect(heliaStat.dagSize.toString()).to.equal(kuboStat.sizeLocal?.toString())
+
+    // +1 because kubo doesn't count the root directory block
+    expect(heliaStat.blocks.toString()).to.equal((kuboStat.blocks + 1).toString())
   })
 })
