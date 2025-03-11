@@ -382,7 +382,9 @@ export interface RepublishOptions extends AbortOptions, ProgressOptions<Republis
 
 export interface RepublishRecordOptions extends AbortOptions, ProgressOptions<RepublishProgressEvents | IPNSRoutingEvents> {
   /**
-   * Only publish to a local datastore (default: false)
+   * Only publish to a local datastore
+   *
+   * @default false
    */
   offline?: boolean
 }
