@@ -5,17 +5,15 @@ import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import { createIPNSRecord } from 'ipns'
+import { base32 } from 'multiformats/bases/base32'
+import { base36 } from 'multiformats/bases/base36'
 import { CID } from 'multiformats/cid'
 import { stubInterface } from 'sinon-ts'
 import { ipns } from '../src/index.js'
-import type { IPNS, IPNSRecord, IPNSRouting } from '../src/index.js'
+import type { IPNS, IPNSRouting } from '../src/index.js'
 import type { Routing } from '@helia/interface'
-import type { PrivateKey } from '@libp2p/interface'
 import type { DNS } from '@multiformats/dns'
 import type { StubbedInstance } from 'sinon-ts'
-import { base36 } from 'multiformats/bases/base36'
-import { base32 } from 'multiformats/bases/base32'
-import { base58btc } from 'multiformats/bases/base58'
 
 describe('republishRecord', () => {
   const testCid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
@@ -36,11 +34,11 @@ describe('republishRecord', () => {
         datastore,
         routing: heliaRouting,
         dns,
-        logger: defaultLogger(),
+        logger: defaultLogger()
       },
       {
-        routers: [customRouting],
-      },
+        routers: [customRouting]
+      }
     )
   })
 
@@ -94,8 +92,8 @@ describe('republishRecord', () => {
       name.republishRecord(otherEd25519Key.publicKey.toMultihash(), ed25519Record, {
         onProgress: (evt) => {
           expect(evt.type).to.equal('ipns:republish:error')
-        },
-      }),
+        }
+      })
     ).to.eventually.be.rejected
   })
 })

@@ -257,6 +257,7 @@
 
 import { NotFoundError, isPublicKey } from '@libp2p/interface'
 import { logger } from '@libp2p/logger'
+import { peerIdFromCID, peerIdFromString } from '@libp2p/peer-id'
 import { createIPNSRecord, extractPublicKeyFromIPNSRecord, marshalIPNSRecord, multihashToIPNSRoutingKey, unmarshalIPNSRecord, type IPNSRecord } from 'ipns'
 import { ipnsSelector } from 'ipns/selector'
 import { ipnsValidator } from 'ipns/validator'
@@ -278,7 +279,6 @@ import type { Datastore } from 'interface-datastore'
 import type { MultibaseDecoder } from 'multiformats/bases/interface'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
-import { peerIdFromCID, peerIdFromString } from '@libp2p/peer-id'
 
 const log = logger('helia:ipns')
 
@@ -444,7 +444,7 @@ export interface IPNS {
    *
    * The key is a multihash of the public key or a string representation of the PeerID (either base58btc encoded multihash or base36 encoded CID)
    */
-  republishRecord(key: MultihashDigest<0x00 | 0x12> | string, record: IPNSRecord , options?: RepublishRecordOptions): Promise<void>
+  republishRecord(key: MultihashDigest<0x00 | 0x12> | string, record: IPNSRecord, options?: RepublishRecordOptions): Promise<void>
 }
 
 export type { IPNSRouting } from './routing/index.js'
