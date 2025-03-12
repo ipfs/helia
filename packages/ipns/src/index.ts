@@ -270,9 +270,8 @@
  * const name = ipns(helia)
  *
  * const ipnsName = 'k51qzi5uqu5dktsyfv7xz8h631pri4ct7osmb43nibxiojpttxzoft6hdyyzg4'
- * const parsedCid = CID.parse('k51qzi5uqu5dktsyfv7xz8h631pri4ct7osmb43nibxiojpttxzoft6hdyyzg4')
+ * const parsedCid: CID<unknown, 114, 0 | 18, 1> = CID.parse(ipnsName)
  * const delegatedClient = createDelegatedRoutingV1HttpApiClient('https://delegated-ipfs.dev')
- * // @ts-expect-error
  * const record = await delegatedClient.getIPNS(parsedCid)
  *
  * await name.republishRecord(ipnsName, record)
