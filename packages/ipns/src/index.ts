@@ -280,7 +280,7 @@
 
 import { NotFoundError, isPublicKey } from '@libp2p/interface'
 import { logger } from '@libp2p/logger'
-import { peerIdFromCID, peerIdFromString } from '@libp2p/peer-id'
+import { peerIdFromString } from '@libp2p/peer-id'
 import { createIPNSRecord, extractPublicKeyFromIPNSRecord, marshalIPNSRecord, multihashToIPNSRoutingKey, unmarshalIPNSRecord, type IPNSRecord } from 'ipns'
 import { ipnsSelector } from 'ipns/selector'
 import { ipnsValidator } from 'ipns/validator'
@@ -749,18 +749,6 @@ class DefaultIPNS implements IPNS {
     return unmarshalIPNSRecord(record)
   }
 
-  /**
-   * Convert a string to a PeerId
-   */
-  #getPeerIdFromString (peerIdString: string): PeerId {
-    // It's either base58btc encoded multihash (identity or sha256)
-    if (peerIdString.charAt(0) === '1' || peerIdString.charAt(0) === 'Q') {
-      return peerIdFromString(peerIdString)
-    }
-
-    // or base36 encoded CID
-    return peerIdFromCID(CID.parse(peerIdString))
-  }
 
   async republishRecord (key: MultihashDigest<0x00 | 0x12> | string, record: IPNSRecord, options: RepublishRecordOptions = {}): Promise<void> {
     let mh: MultihashDigest<0x00 | 0x12> | undefined
@@ -771,7 +759,7 @@ class DefaultIPNS implements IPNS {
         if (typeof key === 'string') {
           // Convert string key to MultihashDigest
           try {
-            mh = this.#getPeerIdFromString(key).toMultihash()
+            mh = peerIdFromString(key).toMultihash()
           } catch (err: any) {
             throw new Error(`Invalid string key: ${err.message}`)
           }
