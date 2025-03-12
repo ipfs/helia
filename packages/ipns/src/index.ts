@@ -766,7 +766,7 @@ class DefaultIPNS implements IPNS {
 
       await ipnsValidator(routingKey, marshaledRecord) // validate that they key corresponds to the record
 
-      await this.localStore.put(routingKey, marshaledRecord, options)
+      await this.localStore.put(routingKey, marshaledRecord, options) // add to local store
 
       if (options.offline !== true) {
         // publish record to routing
