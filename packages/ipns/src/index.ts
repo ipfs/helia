@@ -442,8 +442,9 @@ export interface IPNS {
   republish(options?: RepublishOptions): void
 
   /**
-   * Republish an existing IPNS record without the private key
+   * Republish an existing IPNS record without the private key.
    *
+   * Before republishing the record will be validated to ensure it has a valid signature and lifetime(validity) in the future.
    * The key is a multihash of the public key or a string representation of the PeerID (either base58btc encoded multihash or base36 encoded CID)
    */
   republishRecord(key: MultihashDigest<0x00 | 0x12> | string, record: IPNSRecord, options?: RepublishRecordOptions): Promise<void>
