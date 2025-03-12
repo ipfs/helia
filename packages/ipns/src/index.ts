@@ -253,6 +253,28 @@
  *
  * const result = await name.resolveDNSLink('ipfs.io')
  * ```
+ *
+ * @example Republishing an existing IPNS record
+ *
+ * The `republishRecord` method allows you to republish an existing IPNS record without
+ * needing the private key. This is useful for relay nodes or when you want to extend
+ * the availability of a record that was created elsewhere.
+ *
+ * ```TypeScript
+ * import { createHelia } from 'helia'
+ * import { ipns } from '@helia/ipns'
+ * import { createDelegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
+ * import { CID } from 'multiformats/cid'
+ *
+ * const helia = await createHelia()
+ * const name = ipns(helia)
+ *
+ * const ipnsName = CID.parse('k51qzi5uqu5dktsyfv7xz8h631pri4ct7osmb43nibxiojpttxzoft6hdyyzg4')
+ * const delegatedClient = createDelegatedRoutingV1HttpApiClient('https://delegated-ipfs.dev')
+ * const record = await delegatedClient.get(ipnsName)
+ *
+ * await name.republishRecord(ipnsName.multihash, record)
+ * ```
  */
 
 import { NotFoundError, isPublicKey } from '@libp2p/interface'
