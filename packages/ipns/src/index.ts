@@ -269,11 +269,12 @@
  * const helia = await createHelia()
  * const name = ipns(helia)
  *
- * const ipnsName = CID.parse('k51qzi5uqu5dktsyfv7xz8h631pri4ct7osmb43nibxiojpttxzoft6hdyyzg4')
+ * const ipnsName = 'k51qzi5uqu5dktsyfv7xz8h631pri4ct7osmb43nibxiojpttxzoft6hdyyzg4'
+ * const parsedCid = CID.parse('k51qzi5uqu5dktsyfv7xz8h631pri4ct7osmb43nibxiojpttxzoft6hdyyzg4')
  * const delegatedClient = createDelegatedRoutingV1HttpApiClient('https://delegated-ipfs.dev')
- * const record = await delegatedClient.get(ipnsName)
+ * const record = await delegatedClient.getIPNS(parsedCid)
  *
- * await name.republishRecord(ipnsName.multihash, record)
+ * await name.republishRecord(ipnsName, record)
  * ```
  */
 
