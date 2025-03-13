@@ -79,6 +79,7 @@ export async function addDirectory (dir: Partial<DirectoryCandidate>, blockstore
   const ord = dir.path == null ? first : last
 
   const result = await ord(addAll([{
+    ...dir,
     path: dir.path ?? '-'
   }], blockstore, {
     ...defaultImporterSettings,

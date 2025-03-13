@@ -208,6 +208,25 @@ describe('addDirectory', () => {
     expect(cid.toString()).to.equal('bafybeiczsscdsbs7ffqz55asqdf3smv6klcw3gofszvwlyarci47bgf354')
   })
 
+  it('adds an empty directory with metadata', async () => {
+    const cid = await fs.addDirectory({
+      mode: 0x123,
+      mtime: {
+        secs: 5n,
+        nsecs: 5
+      }
+    })
+
+    expect(cid.toString()).to.equal('bafybeifj2yuv5mnnbw57oceooov4rrphvs7grxhbien42g3orki2t6xgae')
+
+    const stat = await fs.stat(cid)
+    expect(stat.mode).to.equal(0x123)
+    expect(stat.mtime).to.deep.equal({
+      secs: 5n,
+      nsecs: 5
+    })
+  })
+
   it('adds a directory with a path', async () => {
     const cid = await fs.addDirectory({
       path: 'dir'
