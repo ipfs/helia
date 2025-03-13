@@ -131,7 +131,7 @@ export interface Car {
    *
    * const c = car(helia)
    * const { writer, out } = CarWriter.create(cid)
-   * c.export(cid, writer)
+   * c.export(cid, writer).catch(console.error)
    * const output = fs.createWriteStream('example.car')
    * await new Promise((resolve, reject) => {
    *   const stream = Readable.from(out).pipe(output)
@@ -142,6 +142,8 @@ export interface Car {
    *     reject(err)
    *   })
    * })
+   *
+   * @deprecated Use `stream` instead. In a future release `stream` will be renamed `export`.
    * ```
    */
   export(root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: ExportCarOptions): Promise<void>
