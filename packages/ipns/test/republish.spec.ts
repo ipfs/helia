@@ -10,6 +10,7 @@ import { base36 } from 'multiformats/bases/base36'
 import { CID } from 'multiformats/cid'
 import { stubInterface } from 'sinon-ts'
 import { ipns } from '../src/index.js'
+import { IPNS_STRING_PREFIX } from '../src/utils.js'
 import type { IPNS, IPNSRouting } from '../src/index.js'
 import type { Routing } from '@helia/interface'
 import type { DNS } from '@multiformats/dns'
@@ -80,6 +81,13 @@ describe('republishRecord', () => {
     const ed25519Key = await generateKeyPair('Ed25519')
     const ed25519Record = await createIPNSRecord(ed25519Key, testCid, 1n, 24 * 60 * 60 * 1000)
     const keyString = ed25519Key.publicKey.toCID().toString(base32)
+    await expect(name.republishRecord(keyString, ed25519Record)).to.not.be.rejected
+  })
+
+  it('should republish a record using a string key (base36 encoded CID) prefixed with /ipns/', async () => {
+    const ed25519Key = await generateKeyPair('Ed25519')
+    const ed25519Record = await createIPNSRecord(ed25519Key, testCid, 1n, 24 * 60 * 60 * 1000)
+    const keyString = `${IPNS_STRING_PREFIX}${ed25519Key.publicKey.toCID().toString(base36)}`
     await expect(name.republishRecord(keyString, ed25519Record)).to.not.be.rejected
   })
 
