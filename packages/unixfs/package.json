@@ -85,6 +85,7 @@
     "ipfs-unixfs-exporter": "^13.6.1",
     "ipfs-unixfs-importer": "^15.3.1",
     "it-all": "^3.0.6",
+    "it-first": "^3.0.6",
     "it-glob": "^3.0.1",
     "it-last": "^3.0.6",
     "it-pipe": "^3.0.1",
@@ -100,7 +101,6 @@
     "delay": "^6.0.0",
     "iso-url": "^1.2.1",
     "it-drain": "^3.0.7",
-    "it-first": "^3.0.6",
     "it-to-buffer": "^4.0.7",
     "wherearewe": "^2.0.1"
   },

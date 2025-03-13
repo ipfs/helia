@@ -1,6 +1,7 @@
-import { importBytes, importByteStream, importDirectory, importer } from 'ipfs-unixfs-importer'
+import { importBytes, importByteStream, importer } from 'ipfs-unixfs-importer'
 import { fixedSize } from 'ipfs-unixfs-importer/chunker'
 import { balanced } from 'ipfs-unixfs-importer/layout'
+import first from 'it-first'
 import last from 'it-last'
 import { InvalidParametersError } from '../errors.js'
 import type { FileCandidate, AddOptions, AddFileOptions } from '../index.js'
@@ -75,13 +76,19 @@ export async function addDirectory (dir: Partial<DirectoryCandidate>, blockstore
     throw new InvalidParametersError('Directories cannot have content, use addFile instead')
   }
 
-  const { cid } = await importDirectory({
-    ...dir,
-    path: dir.path ?? '-'
-  }, blockstore, {
-    ...defaultImporterSettings,
-    ...options
-  })
+  const ord = dir.path == null ? first : last
 
-  return cid
+  const result = await ord(addAll([{
+    path: dir.path ?? '-'
+  }], blockstore, {
+    ...defaultImporterSettings,
+    ...options,
+    wrapWithDirectory: dir.path != null
+  }))
+
+  if (result == null) {
+    throw new InvalidParametersError('Nothing imported')
+  }
+
+  return result.cid
 }

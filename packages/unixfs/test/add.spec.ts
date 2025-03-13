@@ -207,4 +207,17 @@ describe('addDirectory', () => {
 
     expect(cid.toString()).to.equal('bafybeiczsscdsbs7ffqz55asqdf3smv6klcw3gofszvwlyarci47bgf354')
   })
+
+  it('adds a directory with a path', async () => {
+    const cid = await fs.addDirectory({
+      path: 'dir'
+    })
+
+    expect(cid.toString()).to.equal('bafybeid7d2tgynb3lcfgiqdln5vo73dhzw57febadhgu4cqrhm5vltvnbe')
+
+    const stat = await fs.stat(cid, {
+      path: 'dir'
+    })
+    expect(stat.cid.toString()).to.equal('bafybeiczsscdsbs7ffqz55asqdf3smv6klcw3gofszvwlyarci47bgf354')
+  })
 })

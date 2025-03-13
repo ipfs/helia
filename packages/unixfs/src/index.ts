@@ -371,7 +371,11 @@ export interface UnixFS {
   addAll(source: ImportCandidateStream, options?: Partial<AddOptions>): AsyncIterable<ImportResult>
 
   /**
-   * Add a single `Uint8Array` to your Helia node as a file.
+   * Add a single `Uint8Array` to your Helia node and receive a CID that will
+   * resolve to it.
+   *
+   * If you want to preserve a file name or other metadata such as modification
+   * time or mode, use `addFile` instead.
    *
    * @example
    *
@@ -384,7 +388,11 @@ export interface UnixFS {
   addBytes(bytes: Uint8Array, options?: Partial<AddFileOptions>): Promise<CID>
 
   /**
-   * Add a stream of `Uint8Array` to your Helia node as a file.
+   * Add a stream of `Uint8Array`s to your Helia node and receive a CID that
+   * will resolve to them.
+   *
+   * If you want to preserve a file name or other metadata such as modification
+   * time or mode, use `addFile` instead.
    *
    * @example
    *
@@ -402,6 +410,9 @@ export interface UnixFS {
   /**
    * Add a file to your Helia node with metadata. The returned CID will resolve
    * to a directory with one file entry.
+   *
+   * If you don't care about file names and just want a CID that will resolve to
+   * the contents of the file, use `addBytes` or `addByeStream` instead.
    *
    * @example
    *
@@ -426,10 +437,32 @@ export interface UnixFS {
    *
    * @example
    *
+   * If no path is specified, the returned CID will resolve to an empty
+   * directory.
+   *
    * ```typescript
    * const cid = await fs.addDirectory()
    *
-   * console.info(cid)
+   * console.info(cid) // empty directory CID
+   * ```
+   *
+   * @example
+   *
+   * If a path is specified, the CID will resolve to a directory that contains
+   * an empty directory with the specified name.
+   *
+   * ```typescript
+   * const cid = await fs.addDirectory({
+   *   path: 'my-dir'
+   * })
+   *
+   * console.info(cid) // containing directory CID
+   *
+   * const stat = await fs.stat(cid, {
+   *   path: 'my-dir'
+   * })
+   *
+   * console.info(stat.cid) // empty directory CID
    * ```
    */
   addDirectory(dir?: Partial<DirectoryCandidate>, options?: Partial<AddFileOptions>): Promise<CID>
