@@ -19,7 +19,7 @@ https://github.com/ipfs/helia/issues/5
     - [Q2](#q2)
       - [Drive Adoption](#drive-adoption)
     - [Q3](#q3)
-      - [Support Fully Speced Delegated Routing Protocols and Endpoints](#support-fully-speced-delegated-routing-protocols-and-endpoints)
+      - [Support Fully Specified Delegated Routing Protocols and Endpoints](#support-fully-specified-delegated-routing-protocols-and-endpoints)
       - [PL Delegate and Preload Nodes Will Be Shutting Down](#pl-delegate-and-preload-nodes-will-be-shutting-down)
 - [Past Milestones](#past-milestones)
   - [2022](#2022)
@@ -44,7 +44,7 @@ Improve "hospitality" of the project: https://github.com/ipfs/helia/issues/35
 
 After Helia is functional and users can adopt it, Protocol Labs EngRes ceases maintaining the legacy js-ipfs project.  Issue for tracking js-ipfs deprecation with roadsigns to Helia: https://github.com/ipfs/js-ipfs/issues/4336
 
-Port over examples from js-ipfs-examples to helia-examples to help with onramping: https://github.com/ipfs/helia/issues/29
+Port over examples from js-ipfs-examples to helia-examples to help with on-ramping: https://github.com/ipfs/helia/issues/29
 
 Demonstrate a practical example of Helia in a service worker as a fallback for HTTP gateways: https://github.com/ipfs/in-web-browsers/issues/207
 
@@ -52,9 +52,9 @@ Setup mechanism for measuring adoption: https://github.com/ipfs/helia/issues/41
 
 ### Q3
 
-#### Support Fully Speced Delegated Routing Protocols and Endpoints
+#### Support Fully Specified Delegated Routing Protocols and Endpoints
 
-While it will be possible from a connectivity perspective to make DHT queries from a browser, we expect various applications will want to still delegate out routing. [HTTP Routing v1](https://github.com/ipfs/specs/blob/main/routing/ROUTING_V1_HTTP.md) is a protocol for delegated routing that other IPFS implementations like Kubo have implemented. While it currently uses HTTP as a transport, it is speced and not tied to the Kubo RPC API. 
+While it will be possible from a connectivity perspective to make DHT queries from a browser, we expect various applications will want to still delegate out routing. [HTTP Routing v1](https://github.com/ipfs/specs/blob/main/routing/ROUTING_V1_HTTP.md) is a protocol for delegated routing that other IPFS implementations like Kubo have implemented. While it currently uses HTTP as a transport, it is specified and not tied to the Kubo RPC API.
 
 #### PL Delegate and Preload Nodes Will Be Shutting Down
 

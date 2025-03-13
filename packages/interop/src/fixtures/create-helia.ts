@@ -32,7 +32,7 @@ export async function createHeliaNode (libp2pOptions?: Libp2pOptions): Promise<H
     })
   }
 
-  // remove bootstrappers, mdns, etc
+  // remove bootstrapper(s), mdns, etc
   defaults.peerDiscovery = []
 
   // remove services that are not used in tests
