@@ -1,5 +1,16 @@
 # Changelog
 
+## [5.0.0](https://github.com/ipfs/helia/compare/unixfs-v4.0.3...unixfs-v5.0.0) (2025-03-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* addFile requires the import candidate to have `path` and `content` properties and the returned CID will always resolve to a directory
+
+### Bug Fixes
+
+* require path in addFile call ([#754](https://github.com/ipfs/helia/issues/754)) ([c0bf36e](https://github.com/ipfs/helia/commit/c0bf36eb45ae0551a1c406e5b806d01425abb1f9))
+
 ## [4.0.3](https://github.com/ipfs/helia/compare/unixfs-v4.0.2...unixfs-v4.0.3) (2025-03-13)
 
 
