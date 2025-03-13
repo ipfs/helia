@@ -296,7 +296,7 @@ import { localStore, type LocalStore } from './routing/local-store.js'
 import { isCodec, IDENTITY_CODEC, SHA2_256_CODEC } from './utils.js'
 import type { IPNSRouting, IPNSRoutingEvents } from './routing/index.js'
 import type { Routing } from '@helia/interface'
-import type { AbortOptions, ComponentLogger, Logger, PeerId, PrivateKey, PublicKey } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, Logger, PrivateKey, PublicKey } from '@libp2p/interface'
 import type { Answer, DNS, ResolveDnsProgressEvents } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
 import type { MultibaseDecoder } from 'multiformats/bases/interface'
@@ -748,7 +748,6 @@ class DefaultIPNS implements IPNS {
 
     return unmarshalIPNSRecord(record)
   }
-
 
   async republishRecord (key: MultihashDigest<0x00 | 0x12> | string, record: IPNSRecord, options: RepublishRecordOptions = {}): Promise<void> {
     let mh: MultihashDigest<0x00 | 0x12> | undefined
