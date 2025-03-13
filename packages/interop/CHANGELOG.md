@@ -1,5 +1,16 @@
 # Changelog
 
+## [7.1.4](https://github.com/ipfs/helia/compare/interop-v7.1.3...interop-v7.1.4) (2025-03-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/car bumped from ^4.0.3 to ^4.0.4
+    * @helia/mfs bumped from ^4.0.3 to ^4.0.4
+    * @helia/unixfs bumped from ^4.0.3 to ^5.0.0
+
 ## [7.1.3](https://github.com/ipfs/helia/compare/interop-v7.1.2...interop-v7.1.3) (2025-03-13)
 
 
