@@ -1,5 +1,23 @@
 # Changelog
 
+## [4.0.3](https://github.com/ipfs/helia/compare/car-v4.0.2...car-v4.0.3) (2025-03-13)
+
+
+### Documentation
+
+* add spell checker to ci ([#743](https://github.com/ipfs/helia/issues/743)) ([45ca6bc](https://github.com/ipfs/helia/commit/45ca6bc70b1644028500101044595fa0e2199b07))
+* update @helia/car export method example ([#761](https://github.com/ipfs/helia/issues/761)) ([73cb631](https://github.com/ipfs/helia/commit/73cb631e7347688012f429cd69b1046db249e694))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.2.0 to ^5.2.1
+  * devDependencies
+    * @helia/mfs bumped from ^4.0.2 to ^4.0.3
+    * @helia/unixfs bumped from ^4.0.2 to ^4.0.3
+
 ## [4.0.2](https://github.com/ipfs/helia/compare/car-v4.0.1...car-v4.0.2) (2025-01-14)
 
 
