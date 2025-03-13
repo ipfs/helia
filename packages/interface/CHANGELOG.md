@@ -5,6 +5,13 @@
 
 * expose .dns property on @helia/interface ([#465](https://github.com/ipfs/helia/issues/465)) ([8c9bb7d](https://github.com/ipfs/helia/commit/8c9bb7d224a1b786cba1fba18bffe07001a3b95d))
 
+## [5.2.1](https://github.com/ipfs/helia/compare/interface-v5.2.0...interface-v5.2.1) (2025-03-13)
+
+
+### Documentation
+
+* add spell checker to ci ([#743](https://github.com/ipfs/helia/issues/743)) ([45ca6bc](https://github.com/ipfs/helia/commit/45ca6bc70b1644028500101044595fa0e2199b07))
+
 ## [5.2.0](https://github.com/ipfs/helia/compare/interface-v5.1.0...interface-v5.2.0) (2025-01-14)
 
 
