@@ -5,8 +5,9 @@ import { MemoryBlockstore } from 'blockstore-core'
 import all from 'it-all'
 import last from 'it-last'
 import { isNode } from 'wherearewe'
-import { globSource, unixfs, urlSource, type UnixFS } from '../src/index.js'
+import { globSource, unixfs, urlSource } from '../src/index.js'
 import { urlByteSource } from '../src/utils/url-source.js'
+import type { UnixFS } from '../src/index.js'
 import type { Blockstore } from 'interface-blockstore'
 
 describe('addAll', () => {
@@ -166,6 +167,20 @@ describe('addFile', () => {
     expect(contents).to.have.lengthOf(1)
     expect(contents).to.have.nested.property('[0].name', 'file.txt')
     expect(contents).to.have.nested.property('[0].path', 'bafybeid5m2zdvy6yz2ozuzidsaxex53epmminr4dkynmxjhcnbpvglql74/file.txt')
+  })
+
+  it('requires content to add a file', async () => {
+    // @ts-expect-error missing field
+    await expect(fs.addFile({
+      path: '/foo.txt'
+    })).to.eventually.be.rejectedWith(/content is required/)
+  })
+
+  it('requires path to add a file', async () => {
+    // @ts-expect-error missing field
+    await expect(fs.addFile({
+      content: Uint8Array.from([0, 1, 2, 3])
+    })).to.eventually.be.rejectedWith(/path is required/)
   })
 })
 

@@ -48,6 +48,14 @@ export async function addByteStream (bytes: ByteStream, blockstore: PutStore, op
 }
 
 export async function addFile (file: FileCandidate, blockstore: PutStore, options: Partial<AddFileOptions> = {}): Promise<CID> {
+  if (file.path == null) {
+    throw new InvalidParametersError('path is required')
+  }
+
+  if (file.content == null) {
+    throw new InvalidParametersError('content is required')
+  }
+
   const result = await last(addAll([file], blockstore, {
     ...defaultImporterSettings,
     ...options,
@@ -62,6 +70,11 @@ export async function addFile (file: FileCandidate, blockstore: PutStore, option
 }
 
 export async function addDirectory (dir: Partial<DirectoryCandidate>, blockstore: PutStore, options: Partial<AddFileOptions> = {}): Promise<CID> {
+  // @ts-expect-error field is not in the types
+  if (dir.content != null) {
+    throw new InvalidParametersError('Directories cannot have content, use addFile instead')
+  }
+
   const { cid } = await importDirectory({
     ...dir,
     path: dir.path ?? '-'
