@@ -52,12 +52,19 @@ import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { Mtime, UnixFS as IPFSUnixFS } from 'ipfs-unixfs'
 import type { ExporterProgressEvents, UnixFSEntry } from 'ipfs-unixfs-exporter'
-import type { ByteStream, DirectoryCandidate, FileCandidate, ImportCandidateStream, ImporterOptions, ImporterProgressEvents, ImportResult } from 'ipfs-unixfs-importer'
+import type { ByteStream, DirectoryCandidate, ImportCandidateStream, ImporterOptions, ImporterProgressEvents, ImportResult, ImportContent } from 'ipfs-unixfs-importer'
 import type { CID, Version } from 'multiformats/cid'
 import type { ProgressOptions } from 'progress-events'
 
 export interface UnixFSComponents {
   blockstore: Pick<Blockstore, 'get' | 'put' | 'has'>
+}
+
+export interface FileCandidate<T extends ImportContent = ImportContent> {
+  path: string
+  content: T
+  mtime?: Mtime
+  mode?: number
 }
 
 export type AddEvents = PutBlockProgressEvents
@@ -66,6 +73,8 @@ export type AddEvents = PutBlockProgressEvents
 export interface AddOptions extends AbortOptions, Omit<ImporterOptions, 'onProgress'>, ProgressOptions<AddEvents> {
 
 }
+
+export type AddFileOptions = Omit<AddOptions, 'wrapWithDirectory'>
 
 export type GetEvents = GetBlockProgressEvents
 | ExporterProgressEvents
@@ -362,7 +371,11 @@ export interface UnixFS {
   addAll(source: ImportCandidateStream, options?: Partial<AddOptions>): AsyncIterable<ImportResult>
 
   /**
-   * Add a single `Uint8Array` to your Helia node as a file.
+   * Add a single `Uint8Array` to your Helia node and receive a CID that will
+   * resolve to it.
+   *
+   * If you want to preserve a file name or other metadata such as modification
+   * time or mode, use `addFile` instead.
    *
    * @example
    *
@@ -372,10 +385,14 @@ export interface UnixFS {
    * console.info(cid)
    * ```
    */
-  addBytes(bytes: Uint8Array, options?: Partial<AddOptions>): Promise<CID>
+  addBytes(bytes: Uint8Array, options?: Partial<AddFileOptions>): Promise<CID>
 
   /**
-   * Add a stream of `Uint8Array` to your Helia node as a file.
+   * Add a stream of `Uint8Array`s to your Helia node and receive a CID that
+   * will resolve to them.
+   *
+   * If you want to preserve a file name or other metadata such as modification
+   * time or mode, use `addFile` instead.
    *
    * @example
    *
@@ -388,10 +405,14 @@ export interface UnixFS {
    * console.info(cid)
    * ```
    */
-  addByteStream(bytes: ByteStream, options?: Partial<AddOptions>): Promise<CID>
+  addByteStream(bytes: ByteStream, options?: Partial<AddFileOptions>): Promise<CID>
 
   /**
-   * Add a file to your Helia node with optional metadata.
+   * Add a file to your Helia node with metadata. The returned CID will resolve
+   * to a directory with one file entry.
+   *
+   * If you don't care about file names and just want a CID that will resolve to
+   * the contents of the file, use `addBytes` or `addByeStream` instead.
    *
    * @example
    *
@@ -409,20 +430,42 @@ export interface UnixFS {
    * console.info(cid)
    * ```
    */
-  addFile(file: FileCandidate, options?: Partial<AddOptions>): Promise<CID>
+  addFile(file: FileCandidate, options?: Partial<AddFileOptions>): Promise<CID>
 
   /**
    * Add a directory to your Helia node.
    *
    * @example
    *
+   * If no path is specified, the returned CID will resolve to an empty
+   * directory.
+   *
    * ```typescript
    * const cid = await fs.addDirectory()
    *
-   * console.info(cid)
+   * console.info(cid) // empty directory CID
+   * ```
+   *
+   * @example
+   *
+   * If a path is specified, the CID will resolve to a directory that contains
+   * an empty directory with the specified name.
+   *
+   * ```typescript
+   * const cid = await fs.addDirectory({
+   *   path: 'my-dir'
+   * })
+   *
+   * console.info(cid) // containing directory CID
+   *
+   * const stat = await fs.stat(cid, {
+   *   path: 'my-dir'
+   * })
+   *
+   * console.info(stat.cid) // empty directory CID
    * ```
    */
-  addDirectory(dir?: Partial<DirectoryCandidate>, options?: Partial<AddOptions>): Promise<CID>
+  addDirectory(dir?: Partial<DirectoryCandidate>, options?: Partial<AddFileOptions>): Promise<CID>
 
   /**
    * Retrieve the contents of a file from your Helia node.
