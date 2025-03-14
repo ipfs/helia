@@ -14,15 +14,6 @@ export interface CarEqualsOptions {
 /**
  * A helper function to assert that two car files are identical
  *
- * Car files are identical if:
- * 1. They have the same root(s)
- * 2. They have the same blocks
- * 3. The blocks are the same
- * 4. The block order is the same
- * 5. The codec is the same
- * 6. The car version is the same
- * 7. The car header is the same
- * 8. The car length is the same
  */
 export async function carEquals (car1: CarReader, car2: CarReader, options?: CarEqualsOptions): Promise<void> {
   if (options?.skip?.includes(CarEqualsSkip.header) !== true) {
