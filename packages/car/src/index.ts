@@ -194,33 +194,7 @@ class DefaultCar implements Car {
       deferred.reject(err)
     })
 
-    // Validate knownDagPath if provided
-    if (options?.knownDagPath != null && options.knownDagPath.length > 0) {
-      const knownPath = options.knownDagPath
-
-      // ensure dagRoot is provided and matches the first CID in the path
-      if (options?.dagRoot == null) {
-        options.dagRoot = knownPath[0]
-      } else if (!options.dagRoot.equals(knownPath[0])) {
-        throw new Error('knownDagPath must start with dagRoot')
-      }
-
-      // Ensure the last CID in the path is one of the target roots
-      const lastCid = knownPath[knownPath.length - 1]
-      const isTargetRoot = roots.some(r => r.equals(lastCid))
-      if (!isTargetRoot) {
-        throw new Error('knownDagPath must end with one of the target roots')
-      }
-
-      // knownDagPath is valid, we should double-check that the blockstore has all the blocks
-      const blockstore = this.components.blockstore
-      for (let i = 0; i < knownPath.length; i++) {
-        const cid = knownPath[i]
-        if (!(await blockstore.has(cid))) {
-          throw new Error(`CID in knownDagPath at index ${i} not found in blockstore`)
-        }
-      }
-    }
+    await this.#validateOptions(roots, options)
 
     const knownPath = options?.knownDagPath ?? []
     let dagRoot = options?.dagRoot
@@ -263,6 +237,36 @@ class DefaultCar implements Car {
 
     for await (const buf of out) {
       yield buf
+    }
+  }
+
+  async #validateOptions (roots: CID[], options: ExportCarOptions | undefined): Promise<void> {
+    // Validate knownDagPath if provided
+    if (options?.knownDagPath != null && options.knownDagPath.length > 0) {
+      const knownPath = options.knownDagPath
+
+      // ensure dagRoot is provided and matches the first CID in the path
+      if (options?.dagRoot == null) {
+        options.dagRoot = knownPath[0]
+      } else if (!options.dagRoot.equals(knownPath[0])) {
+        throw new Error('knownDagPath must start with dagRoot')
+      }
+
+      // Ensure the last CID in the path is one of the target roots
+      const lastCid = knownPath[knownPath.length - 1]
+      const isTargetRoot = roots.some(r => r.equals(lastCid))
+      if (!isTargetRoot) {
+        throw new Error('knownDagPath must end with one of the target roots')
+      }
+
+      // knownDagPath is valid, we should double-check that the blockstore has all the blocks
+      const blockstore = this.components.blockstore
+      for (let i = 0; i < knownPath.length; i++) {
+        const cid = knownPath[i]
+        if (!(await blockstore.has(cid))) {
+          throw new Error(`CID in knownDagPath at index ${i} not found in blockstore`)
+        }
+      }
     }
   }
 
