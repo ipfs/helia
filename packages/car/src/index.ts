@@ -223,47 +223,27 @@ class DefaultCar implements Car {
     }
 
     const knownPath = options?.knownDagPath ?? []
-    const dagRoot = options?.dagRoot
+    let dagRoot = options?.dagRoot
+    let strategy: TraversalStrategy
     if (dagRoot != null && knownPath.length > 0) {
-      // If dagRoot is specified and knownDagPath is provided, use the known path
-      void queue.add(async () => {
-        await this.#processBlock(
-          dagRoot,
-          queue,
-          writer,
-          new KnownPathStrategy(knownPath),
-          options
-        )
-      })
-        .catch(() => {})
+      strategy = new KnownPathStrategy(knownPath)
     } else if (dagRoot != null) {
-      void queue.add(async () => {
-        // Use path finding strategy to navigate from dagRoot to target roots
-        await this.#processBlock(
-          dagRoot,
-          queue,
-          writer,
-          new PathFindingStrategy(roots),
-          options
-        )
-      })
-        .catch(() => {})
+      strategy = new PathFindingStrategy(roots)
     } else {
-      // Regular walk from the roots
-      for (const root of roots) {
-        void queue.add(async () => {
-          // Use standard walk strategy for traversing from roots
-          await this.#processBlock(
-            root,
-            queue,
-            writer,
-            new StandardWalkStrategy(),
-            options
-          )
-        })
-          .catch(() => {})
-      }
+      strategy = new StandardWalkStrategy(roots)
+      dagRoot = roots[0]
     }
+
+    void queue.add(async () => {
+      await this.#processBlock(
+        dagRoot,
+        queue,
+        writer,
+        strategy,
+        options
+      )
+    })
+      .catch(() => {})
 
     // wait for the writer to end
     try {
