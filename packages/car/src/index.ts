@@ -60,99 +60,24 @@
  */
 
 import { CarWriter } from '@ipld/car'
+import { logger } from '@libp2p/logger'
 import drain from 'it-drain'
 import map from 'it-map'
 import { createUnsafe } from 'multiformats/block'
 import defer from 'p-defer'
 import PQueue from 'p-queue'
-import type { CodecLoader } from '@helia/interface'
-import type { GetBlockProgressEvents, PutManyBlocksProgressEvents } from '@helia/interface/blocks'
+import { DAG_WALK_QUEUE_CONCURRENCY } from './constants.js'
+import { DagScope } from './dag-scope.js'
+import { PathFindingStrategy } from './strategies/path-finding-strategy.js'
+import { StandardWalkStrategy } from './strategies/standard-walk-strategy.js'
+import type { ExportCarOptions, TraversalStrategy, CarComponents } from './types.js'
+import type { PutManyBlocksProgressEvents } from '@helia/interface/blocks'
 import type { CarReader } from '@ipld/car'
 import type { AbortOptions } from '@libp2p/interface'
-import type { Filter } from '@libp2p/utils/filters'
-import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 import type { ProgressOptions } from 'progress-events'
 
-export interface CarComponents {
-  blockstore: Blockstore
-  getCodec: CodecLoader
-}
-
-/**
- * DAG scope for CAR exports as specified in the trustless gateway spec
- */
-export enum DagScope {
-  /**
-   * Only the root block at the end of the path is returned after blocks required
-   * to verify the specified path segments.
-   */
-  BLOCK = 'block',
-
-  /**
-   * For queries that traverse UnixFS data, 'entity' roughly means return blocks
-   * needed to verify the terminating element of the requested content path.
-   * For UnixFS, all the blocks needed to read an entire UnixFS file, or enumerate
-   * a UnixFS directory. For all queries that reference non-UnixFS data, 'entity'
-   * is equivalent to 'block'
-   */
-  ENTITY = 'entity',
-
-  /**
-   * Transmit the entire contiguous DAG that begins at the end of the path
-   * query, after blocks required to verify path segments
-   *
-   * This is the default behavior.
-   */
-  ALL = 'all'
-}
-
-export interface ExportCarOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents> {
-  /**
-   * If a filter is passed it will be used to deduplicate blocks exported in the car file
-   */
-  blockFilter?: Filter
-
-  /**
-   * The DAG scope to use for the export.
-   *
-   * @default DagScope.ALL
-   */
-  dagScope?: DagScope
-
-  /**
-   * Root CID of the DAG being operated on. If the CAR root provided to `export` or `stream` is not the root of the dag,
-   * we will use this CID as the root of the dag to walk.
-   *
-   * This allows us to include blocks for path parents, but those are "extra", do not belong to the DAG of exported
-   * file, but act as a proof that file DAG belongs to some other parent DAG. This proof can be disregarded if the user
-   * only cares about file, without its provenance.
-   *
-   * If you provide `knownDagPath` and no `dagRoot`, the first CID in `knownDagPath` will be used as `dagRoot`.
-   */
-  dagRoot?: CID
-
-  /**
-   * An ordered array of CIDs representing the known path from dagRoot to the target root.
-   * The array should start with dagRoot (at index 0) and end with the target root CID.
-   *
-   * This allows optimizing the path traversal by skipping the expensive path-finding process
-   * when the path from dagRoot to the target root is already known, reducing network requests
-   * and computation time.
-   *
-   * Example usage:
-   * ```typescript
-   * await c.export(targetCid, writer, {
-   *   dagRoot: rootCid,
-   *   knownDagPath: [rootCid, ...intermediateCids, targetCid]
-   * })
-   * ```
-   *
-   * Note: If any CID in the path cannot be found in the blockstore, the code
-   * will automatically fall back to the regular path-finding algorithm.
-   */
-  knownDagPath?: CID[]
-}
+export { DagScope, type ExportCarOptions, type CarComponents }
 
 /**
  * The Car interface provides operations for importing and exporting Car files
@@ -236,10 +161,7 @@ export interface Car {
   stream(root: CID | CID[], options?: ExportCarOptions): AsyncGenerator<Uint8Array, void, undefined>
 }
 
-const DAG_WALK_QUEUE_CONCURRENCY = 1
-
-// DAG-PB codec code (0x70) - used for identifying UnixFS data
-const DAG_PB_CODEC_CODE = 0x70
+const log = logger('helia:car')
 
 class DefaultCar implements Car {
   private readonly components: CarComponents
@@ -288,20 +210,36 @@ class DefaultCar implements Car {
       if (!isTargetRoot) {
         throw new Error('knownDagPath must end with one of the target roots')
       }
+
+      // knownDagPath is valid, we should double-check that the blockstore has all the blocks
+      const blockstore = this.components.blockstore
+      for (let i = 0; i < knownPath.length; i++) {
+        const cid = knownPath[i]
+        if (!(await blockstore.has(cid))) {
+          throw new Error(`CID in knownDagPath at index ${i} not found in blockstore`)
+        }
+      }
     }
 
     // If dagRoot is specified and knownDagPath is provided, use the known path
     if (options?.dagRoot != null && options?.knownDagPath != null && options.knownDagPath.length > 0) {
       const knownPath = options.knownDagPath
       void queue.add(async () => {
-        await this.#processCIDsInKnownPath(knownPath, queue, writer, options)
+        await this.#processKnownPathStrategy(knownPath, queue, writer, options)
       })
         .catch(() => {})
     } else if (options?.dagRoot != null) {
       void queue.add(async () => {
         const dagRoot = options.dagRoot
         if (dagRoot != null) {
-          await this.#findPathAndWalkDag(dagRoot, roots, queue, writer, options)
+          // Use path finding strategy to navigate from dagRoot to target roots
+          await this.#processBlock(
+            dagRoot,
+            queue,
+            writer,
+            new PathFindingStrategy(roots),
+            options
+          )
         }
       })
         .catch(() => {})
@@ -309,7 +247,14 @@ class DefaultCar implements Car {
       // Regular walk from the roots
       for (const root of roots) {
         void queue.add(async () => {
-          await this.#walkDag(root, queue, writer, options)
+          // Use standard walk strategy for traversing from roots
+          await this.#processBlock(
+            root,
+            queue,
+            writer,
+            new StandardWalkStrategy(),
+            options
+          )
         })
           .catch(() => {})
       }
@@ -337,121 +282,63 @@ class DefaultCar implements Car {
   }
 
   /**
-   * Find a path from dagRoot to the target roots, then walk the DAG
-   * to export blocks that are in that path. Respects the dagScope option
-   * when a target root is found.
+   * Common method for processing a block with a specific traversal strategy
    */
-  async #findPathAndWalkDag (
-    dagRoot: CID,
-    targetRoots: CID[],
-    queue: PQueue,
-    writer: Pick<CarWriter, 'put'>,
-    options?: ExportCarOptions
-  ): Promise<void> {
-    // Skip if already processed
-    if (options?.blockFilter?.has(dagRoot.multihash.bytes) === true) {
-      return
-    }
-
-    const codec = await this.components.getCodec(dagRoot.code)
-    const bytes = await this.components.blockstore.get(dagRoot, options)
-
-    options?.blockFilter?.add(dagRoot.multihash.bytes)
-
-    await writer.put({ cid: dagRoot, bytes })
-
-    // check if we've reached one of our target roots
-    // TODO: We need to handle the case where users might want to process multiple target roots, with different knownDagPaths
-    const isTargetRoot = targetRoots.some(r => r.equals(dagRoot))
-
-    if (isTargetRoot) {
-      // if we've found a target root, respect the dag scope
-      const block = createUnsafe({ bytes, cid: dagRoot, codec })
-
-      // if dagScope is BLOCK, don't walk the DAG at all
-      if (options?.dagScope === DagScope.BLOCK) {
-        return
-      }
-
-      // if dagScope is ENTITY, only walk the DAG for UnixFS data (dag-pb codec)
-      if (options?.dagScope === DagScope.ENTITY && dagRoot.code !== DAG_PB_CODEC_CODE) {
-        return
-      }
-
-      // walk all links in the target root's DAG
-      for await (const [, cid] of block.links()) {
-        void queue.add(async () => {
-          await this.#walkDag(cid, queue, writer, options)
-        })
-      }
-    } else {
-      // still looking for path to target, continue searching
-      const block = createUnsafe({ bytes, cid: dagRoot, codec })
-
-      // continue search through links
-      for await (const [, cid] of block.links()) {
-        void queue.add(async () => {
-          await this.#findPathAndWalkDag(cid, targetRoots, queue, writer, options)
-        })
-      }
-    }
-  }
-
-  /**
-   * Walk the DAG behind the passed CID, ensure all blocks are present in the blockstore
-   * and update the pin count for them. Respects the dagScope option:
-   * - BLOCK: Only include the root block
-   * - ENTITY: For UnixFS data (dag-pb codec), include all blocks; for non-UnixFS, only the root block
-   * - ALL: Include all blocks in the DAG (default)
-   */
-  async #walkDag (
+  async #processBlock (
     cid: CID,
     queue: PQueue,
     writer: Pick<CarWriter, 'put'>,
-    options?: ExportCarOptions
+    strategy: TraversalStrategy,
+    options: ExportCarOptions | undefined
   ): Promise<void> {
-    // Skip this block, before fetching from the network, if it's already been processed
-    if (options?.blockFilter?.has(cid.multihash.bytes) === true) {
-      return
-    }
+    try {
+      // Skip if already processed
+      if (options?.blockFilter?.has(cid.multihash.bytes) === true) {
+        return
+      }
 
-    const codec = await this.components.getCodec(cid.code)
-    const bytes = await this.components.blockstore.get(cid, options)
+      const codec = await this.components.getCodec(cid.code)
+      const bytes = await this.components.blockstore.get(cid, options)
 
-    // Mark the block as processed
-    options?.blockFilter?.add(cid.multihash.bytes)
+      // Mark as processed
+      options?.blockFilter?.add(cid.multihash.bytes)
 
-    await writer.put({ cid, bytes })
+      // Write to CAR
+      await writer.put({ cid, bytes })
 
-    const block = createUnsafe({ bytes, cid, codec })
+      const decodedBlock = createUnsafe({ bytes, cid, codec })
 
-    // if dagScope is BLOCK, don't walk the DAG at all
-    if (options?.dagScope === DagScope.BLOCK) {
-      return
-    }
-
-    // if dagScope is ENTITY, only walk the DAG for UnixFS data (dag-pb codec)
-    if (options?.dagScope === DagScope.ENTITY && cid.code !== DAG_PB_CODEC_CODE) { // 0x70 is the code for dag-pb
-      return
-    }
-
-    // walk dag, ensure all blocks are present
-    for await (const [,cid] of block.links()) {
-      void queue.add(async () => {
-        await this.#walkDag(cid, queue, writer, options)
-      })
+      // Determine if we should traverse using the provided strategy
+      if (strategy.shouldTraverse(cid, options)) {
+        // Process links according to the strategy
+        for await (const result of strategy.getNextCidStrategy(cid, decodedBlock)) {
+          if (typeof result === 'object' && 'cid' in result) {
+            // If strategy returns a new CID with a strategy
+            void queue.add(async () => {
+              await this.#processBlock(result.cid, queue, writer, result.strategy, options)
+            })
+          } else {
+            // If strategy just returns a CID
+            void queue.add(async () => {
+              await this.#processBlock(result, queue, writer, strategy, options)
+            })
+          }
+        }
+      }
+    } catch (err) {
+      // Handle errors, but don't propagate them to avoid breaking the queue
+      log.error('Error processing block', err)
     }
   }
 
   /**
-   * Process CIDs in the known path. For the last CID in the path (the target root),
-   * respect the dagScope option to control how much of the DAG is traversed.
+   * Special method for processing known paths, which has different error handling
    */
-  async #processCIDsInKnownPath (
+  async #processKnownPathStrategy (
     cids: CID[],
     queue: PQueue,
     writer: Pick<CarWriter, 'put'>,
-    options?: ExportCarOptions
+    options: ExportCarOptions | undefined
   ): Promise<void> {
     if (cids.length === 0) {
       return
@@ -460,61 +347,54 @@ class DefaultCar implements Car {
     // process each CID in the path
     for (let i = 0; i < cids.length; i++) {
       const cid = cids[i]
-
-      // skip this block if it's already been processed
-      if (options?.blockFilter?.has(cid.multihash.bytes) === true) {
-        continue
-      }
+      const isLastCID = i === cids.length - 1
 
       try {
+        // Skip this block if it's already been processed
+        if (options?.blockFilter?.has(cid.multihash.bytes) === true) {
+          continue
+        }
+
         const codec = await this.components.getCodec(cid.code)
         const bytes = await this.components.blockstore.get(cid, options)
 
-        // Mark the block as processed
+        // Mark as processed
         options?.blockFilter?.add(cid.multihash.bytes)
 
-        // Add the block
+        // Write to CAR
         await writer.put({ cid, bytes })
 
-        // if this is the last CID in the path (the target root),
-        // respect the dag scope
-        if (i === cids.length - 1) {
-          const block = createUnsafe({ bytes, cid, codec })
+        const decodedBlock = createUnsafe({ bytes, cid, codec })
 
-          // if dagScope is BLOCK, don't walk the DAG at all
-          if (options?.dagScope === DagScope.BLOCK) {
-            continue
-          }
-
-          // If dagScope is ENTITY, only walk the DAG for UnixFS data (dag-pb codec)
-          if (options?.dagScope === DagScope.ENTITY && cid.code !== DAG_PB_CODEC_CODE) { // 0x70 is the code for dag-pb
-            continue
-          }
-
-          // Walk all links in the target root's DAG
-          for await (const [, linkedCid] of block.links()) {
-            void queue.add(async () => {
-              await this.#walkDag(linkedCid, queue, writer, options)
-            })
-          }
+        // Only the last CID (the target) needs traversal with dagScope rules
+        if (isLastCID) {
+          await this.#processLastCidInPath(cid, decodedBlock, queue, writer, options)
         }
       } catch (err) {
-        // if we can't get a block in the known path, fall back to regular dag walking
-        // from this point forward
-        if (i === 0 && options?.dagRoot != null) {
-          // if it's the very first block and we have dagRoot, fall back to findPathAndWalkDag
-          await this.#findPathAndWalkDag(options.dagRoot, [cids[cids.length - 1]], queue, writer, options)
-          return
-        } else if (i < cids.length - 1) {
-          // For intermediate blocks, use the next CID in the path as the target
-          await this.#findPathAndWalkDag(cid, [cids[i + 1]], queue, writer, options)
-          return
-        } else {
-          // For the last block, just walk its DAG
-          await this.#walkDag(cid, queue, writer, options)
-          return
-        }
+        log.error('Error processing block in knownDagPath', err)
       }
+    }
+  }
+
+  /**
+   * Helper to process the last CID in a known path
+   */
+  async #processLastCidInPath (
+    cid: CID,
+    decodedBlock: any,
+    queue: PQueue,
+    writer: Pick<CarWriter, 'put'>,
+    options: ExportCarOptions | undefined
+  ): Promise<void> {
+    const strategy = new StandardWalkStrategy()
+    if (!strategy.shouldTraverse(cid, options)) {
+      return
+    }
+
+    for await (const linkedCid of strategy.getNextCidStrategy(cid, decodedBlock)) {
+      void queue.add(async () => {
+        await this.#processBlock(linkedCid, queue, writer, strategy, options)
+      })
     }
   }
 }

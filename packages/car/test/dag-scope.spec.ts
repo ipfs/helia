@@ -189,4 +189,19 @@ describe('dag-scope', () => {
     }
     expect(blockCount).to.equal(3)
   })
+
+  it('errors when a block in knownDagPath is not in blockstore', async () => {
+    const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
+
+    await c.import(reader)
+
+    // intermediate cid is not present in the dag nor blockstore.
+    const knownDagPath = [dagRoot, CID.parse('bafyreif3tfdpr5n4jdrbielmcapwvbpcthepfkwq2vwonmlhirbjmotedi'), subdagRoot]
+
+    const writer = memoryCarWriter(subdagRoot)
+    await expect(c.export(subdagRoot, writer, {
+      dagRoot,
+      knownDagPath
+    })).to.eventually.be.rejectedWith('CID in knownDagPath at index 1 not found in blockstore')
+  })
 })
