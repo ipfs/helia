@@ -248,15 +248,26 @@ export interface StatOptions extends AbortOptions, ProgressOptions<GetEvents> {
 
   /**
    * If true, do not perform any network operations and throw if blocks are
-   * missing from the local store. (default: false)
+   * missing from the local store.
+   *
+   * @default false
    */
   offline?: boolean
+}
+
+export interface ExtendedStatOptions extends StatOptions {
+  /**
+   * If true, traverse the whole DAG to return additional stats. If all data is
+   * not in the local blockstore, this may involve fetching them from the
+   * network.
+   */
+  extended: true
 }
 
 /**
  * Statistics relating to a UnixFS DAG
  */
-export interface UnixFSStats {
+export interface Stats {
   /**
    * The file or directory CID
    */
@@ -265,7 +276,7 @@ export interface UnixFSStats {
   /**
    * The file or directory mode
    */
-  mode?: number
+  mode: number
 
   /**
    * The file or directory mtime
@@ -273,41 +284,80 @@ export interface UnixFSStats {
   mtime?: Mtime
 
   /**
-   * The size of the file in bytes
-   */
-  fileSize: bigint
-
-  /**
-   * The size of the DAG that holds the file in bytes
-   */
-  dagSize: bigint
-
-  /**
-   * How much of the file is in the local block store
-   */
-  localFileSize: bigint
-
-  /**
-   * How much of the DAG that holds the file is in the local blockstore
-   */
-  localDagSize: bigint
-
-  /**
-   * How many blocks make up the DAG - nb. this will only be accurate
-   * if all blocks are present in the local blockstore
-   */
-  blocks: number
-
-  /**
-   * The type of file
+   * The type of UnixFS node - 'file' or 'directory'
    */
   type: 'file' | 'directory' | 'raw'
 
   /**
-   * UnixFS metadata about this file or directory. Will not be present
-   * if the node is a `raw` type.
+   * UnixFS metadata about this file or directory
    */
   unixfs?: IPFSUnixFS
+
+  /**
+   * The size of the filesystem entry. By default this is accurate for 'file'
+   * and 'raw' entries, for directories please stat with the `extended` option.
+   */
+  size: bigint
+}
+
+export interface FileStats extends Stats {
+  type: 'file'
+  unixfs: IPFSUnixFS
+}
+
+export interface DirectoryStats extends Stats {
+  type: 'directory'
+  unixfs: IPFSUnixFS
+}
+
+export interface RawStats extends Stats {
+  type: 'raw'
+  unixfs: undefined
+}
+
+/**
+ * More detailed statistics relating to a UnixFS DAG. These can involve
+ * traversing the DAG behind the CID so can involve network operations and/or
+ * more disk activity.
+ */
+export interface ExtendedStats extends Stats {
+  /**
+   * The size of the DAG that holds the file or directory in bytes - this is
+   * the sum of all block sizes so includes any protobuf overhead, etc.
+   *
+   * nb. this will only be accurate if either all blocks are present in the
+   * local blockstore or the `offline` option was not `true`
+   */
+  dagSize: bigint
+
+  /**
+   * How much of the file or directory is in the local block store. If this is a
+   * directory it will include the size of all child files and directories.
+   */
+  localSize: bigint
+
+  /**
+   * How many blocks make up the DAG.
+   *
+   * nb. this will only be accurate if either all blocks are present in the
+   * local blockstore or the `offline` option was not `true`
+   */
+  blocks: bigint
+}
+
+export interface ExtendedFileStats extends ExtendedStats {
+  type: 'file'
+  unixfs: IPFSUnixFS
+}
+
+export interface ExtendedDirectoryStats extends ExtendedStats {
+  type: 'directory'
+  unixfs: IPFSUnixFS
+}
+
+export interface ExtendedRawStats extends ExtendedStats {
+  type: 'raw'
+  unixfs: undefined
 }
 
 /**
@@ -571,7 +621,8 @@ export interface UnixFS {
    * console.info(stats)
    * ```
    */
-  stat(cid: CID, options?: Partial<StatOptions>): Promise<UnixFSStats>
+  stat(cid: CID, options?: StatOptions): Promise<FileStats | DirectoryStats | RawStats>
+  stat(cid: CID, options?: ExtendedStatOptions): Promise<ExtendedFileStats | ExtendedDirectoryStats | ExtendedRawStats>
 
   /**
    * Update the mtime of a UnixFS DAG
