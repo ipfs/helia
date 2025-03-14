@@ -60,7 +60,7 @@
  */
 
 import { CarWriter } from '@ipld/car'
-import { logger } from '@libp2p/logger'
+import { defaultLogger, logger } from '@libp2p/logger'
 import drain from 'it-drain'
 import map from 'it-map'
 import { createUnsafe } from 'multiformats/block'
@@ -73,7 +73,7 @@ import { StandardWalkStrategy } from './strategies/standard-walk-strategy.js'
 import type { ExportCarOptions, TraversalStrategy, CarComponents } from './types.js'
 import type { PutManyBlocksProgressEvents } from '@helia/interface/blocks'
 import type { CarReader } from '@ipld/car'
-import type { AbortOptions } from '@libp2p/interface'
+import type { AbortOptions, Logger } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 import type { ProgressOptions } from 'progress-events'
 
@@ -161,13 +161,13 @@ export interface Car {
   stream(root: CID | CID[], options?: ExportCarOptions): AsyncGenerator<Uint8Array, void, undefined>
 }
 
-const log = logger('helia:car')
-
 class DefaultCar implements Car {
   private readonly components: CarComponents
+  private readonly log: Logger
 
   constructor (components: CarComponents, init: any) {
     this.components = components
+    this.log = (init.logger ?? defaultLogger()).forComponent('helia:car')
   }
 
   async import (reader: Pick<CarReader, 'blocks'>, options?: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents>): Promise<void> {
@@ -327,7 +327,7 @@ class DefaultCar implements Car {
       }
     } catch (err) {
       // Handle errors, but don't propagate them to avoid breaking the queue
-      log.error('Error processing block', err)
+      this.log.error('Error processing block', err)
     }
   }
 
@@ -371,7 +371,7 @@ class DefaultCar implements Car {
           await this.#processLastCidInPath(cid, decodedBlock, queue, writer, options)
         }
       } catch (err) {
-        log.error('Error processing block in knownDagPath', err)
+        this.log.error('Error processing block in knownDagPath', err)
       }
     }
   }
