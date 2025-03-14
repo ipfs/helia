@@ -363,6 +363,7 @@ class DefaultCar implements Car {
     await writer.put({ cid: dagRoot, bytes })
 
     // Check if we've reached one of our target roots
+    // TODO: We need to handle the case where users might want to process multiple target roots, with different knownDagPaths
     const isTargetRoot = targetRoots.some(r => r.equals(dagRoot))
 
     if (isTargetRoot) {

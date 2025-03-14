@@ -74,7 +74,8 @@
     "blockstore-core": "^5.0.2",
     "datastore-core": "^10.0.2",
     "ipfs-unixfs-importer": "^15.3.1",
-    "it-to-buffer": "^4.0.7"
+    "it-to-buffer": "^4.0.7",
+    "sinon": "^19.0.2"
   },
   "sideEffects": false
 }
