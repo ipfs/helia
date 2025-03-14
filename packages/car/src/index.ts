@@ -84,6 +84,16 @@ export interface ExportCarOptions extends AbortOptions, ProgressOptions<GetBlock
    * If a filter is passed it will be used to deduplicate blocks exported in the car file
    */
   blockFilter?: Filter
+
+  /**
+   * Root CID of the DAG being operated on. If the CAR root provided to `export` or `stream` is not the root of the dag,
+   * we will use this CID as the root of the dag to walk.
+   *
+   * This allows us to include blocks for path parents, but those are "extra", do not belong to the DAG of exported
+   * file, but act as a proof that file DAG belongs to some other parent DAG. This proof can be disregarded if the user
+   * only cares about file, without its provenance.
+   */
+  dagRoot?: CID
 }
 
 /**
@@ -200,11 +210,23 @@ class DefaultCar implements Car {
       deferred.reject(err)
     })
 
-    for (const root of roots) {
+    // If dagRoot is specified, we need to find the path from dagRoot to the roots
+    if (options?.dagRoot != null) {
       void queue.add(async () => {
-        await this.#walkDag(root, queue, writer, options)
+        const dagRoot = options.dagRoot
+        if (dagRoot != null) {
+          await this.#findPathAndWalkDag(dagRoot, roots, queue, writer, options)
+        }
       })
         .catch(() => {})
+    } else {
+      // Regular walk from the roots
+      for (const root of roots) {
+        void queue.add(async () => {
+          await this.#walkDag(root, queue, writer, options)
+        })
+          .catch(() => {})
+      }
     }
 
     // wait for the writer to end
@@ -225,6 +247,57 @@ class DefaultCar implements Car {
 
     for await (const buf of out) {
       yield buf
+    }
+  }
+
+  /**
+   * Find a path from dagRoot to the target roots, then walk the DAG
+   * to export blocks that are in that path
+   */
+  async #findPathAndWalkDag (
+    dagRoot: CID,
+    targetRoots: CID[],
+    queue: PQueue,
+    writer: Pick<CarWriter, 'put'>,
+    options?: ExportCarOptions
+  ): Promise<void> {
+    // Skip if already processed
+    if (options?.blockFilter?.has(dagRoot.multihash.bytes) === true) {
+      return
+    }
+
+    const codec = await this.components.getCodec(dagRoot.code)
+    const bytes = await this.components.blockstore.get(dagRoot, options)
+
+    // Mark as processed
+    options?.blockFilter?.add(dagRoot.multihash.bytes)
+
+    // Add the block
+    await writer.put({ cid: dagRoot, bytes })
+
+    // Check if we've reached one of our target roots
+    const isTargetRoot = targetRoots.some(r => r.equals(dagRoot))
+
+    if (isTargetRoot) {
+      // If we've found a target root, walk its entire DAG
+      const block = createUnsafe({ bytes, cid: dagRoot, codec })
+
+      // Walk all links in the target root's DAG
+      for await (const [, cid] of block.links()) {
+        void queue.add(async () => {
+          await this.#walkDag(cid, queue, writer, options)
+        })
+      }
+    } else {
+      // Still looking for path to target, continue searching
+      const block = createUnsafe({ bytes, cid: dagRoot, codec })
+
+      // Continue search through links
+      for await (const [, cid] of block.links()) {
+        void queue.add(async () => {
+          await this.#findPathAndWalkDag(cid, targetRoots, queue, writer, options)
+        })
+      }
     }
   }
 

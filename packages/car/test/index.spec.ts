@@ -214,7 +214,7 @@ describe('import/export car file', () => {
     // export the subdag: ipfs://bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu/subdir,
     const subdagRoot = CID.parse('bafybeicnmple4ehlz3ostv2sbojz3zhh5q7tz5r2qkfdpqfilgggeen7xm')
     const writer = memoryCarWriter(subdagRoot)
-    await c.export(subdagRoot, writer)
+    await c.export(subdagRoot, writer, { dagRoot: CID.parse('bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu') })
 
     const ourReader = await CarReader.fromBytes(await writer.bytes())
 
