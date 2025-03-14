@@ -60,21 +60,22 @@
  */
 
 import { CarWriter } from '@ipld/car'
-import { defaultLogger, logger } from '@libp2p/logger'
+import { defaultLogger } from '@libp2p/logger'
 import drain from 'it-drain'
 import map from 'it-map'
 import { createUnsafe } from 'multiformats/block'
+import { type CID } from 'multiformats/cid'
 import defer from 'p-defer'
 import PQueue from 'p-queue'
 import { DAG_WALK_QUEUE_CONCURRENCY } from './constants.js'
 import { DagScope } from './dag-scope.js'
+import { KnownPathStrategy } from './strategies/known-path-strategy.js'
 import { PathFindingStrategy } from './strategies/path-finding-strategy.js'
 import { StandardWalkStrategy } from './strategies/standard-walk-strategy.js'
 import type { ExportCarOptions, TraversalStrategy, CarComponents } from './types.js'
 import type { PutManyBlocksProgressEvents } from '@helia/interface/blocks'
 import type { CarReader } from '@ipld/car'
 import type { AbortOptions, Logger } from '@libp2p/interface'
-import type { CID } from 'multiformats/cid'
 import type { ProgressOptions } from 'progress-events'
 
 export { DagScope, type ExportCarOptions, type CarComponents }
@@ -221,26 +222,30 @@ class DefaultCar implements Car {
       }
     }
 
-    // If dagRoot is specified and knownDagPath is provided, use the known path
-    if (options?.dagRoot != null && options?.knownDagPath != null && options.knownDagPath.length > 0) {
-      const knownPath = options.knownDagPath
+    const knownPath = options?.knownDagPath ?? []
+    const dagRoot = options?.dagRoot
+    if (dagRoot != null && knownPath.length > 0) {
+      // If dagRoot is specified and knownDagPath is provided, use the known path
       void queue.add(async () => {
-        await this.#processKnownPathStrategy(knownPath, queue, writer, options)
+        await this.#processBlock(
+          dagRoot,
+          queue,
+          writer,
+          new KnownPathStrategy(knownPath),
+          options
+        )
       })
         .catch(() => {})
-    } else if (options?.dagRoot != null) {
+    } else if (dagRoot != null) {
       void queue.add(async () => {
-        const dagRoot = options.dagRoot
-        if (dagRoot != null) {
-          // Use path finding strategy to navigate from dagRoot to target roots
-          await this.#processBlock(
-            dagRoot,
-            queue,
-            writer,
-            new PathFindingStrategy(roots),
-            options
-          )
-        }
+        // Use path finding strategy to navigate from dagRoot to target roots
+        await this.#processBlock(
+          dagRoot,
+          queue,
+          writer,
+          new PathFindingStrategy(roots),
+          options
+        )
       })
         .catch(() => {})
     } else {
@@ -310,78 +315,20 @@ class DefaultCar implements Car {
 
       // Determine if we should traverse using the provided strategy
       if (strategy.shouldTraverse(cid, options)) {
+        this.log.trace('traversing cid %s with strategy %s', cid.toString(), strategy.constructor.name)
         // Process links according to the strategy
         for await (const result of strategy.getNextCidStrategy(cid, decodedBlock)) {
-          if (typeof result === 'object' && 'cid' in result) {
-            // If strategy returns a new CID with a strategy
-            void queue.add(async () => {
-              await this.#processBlock(result.cid, queue, writer, result.strategy, options)
-            })
-          } else {
-            // If strategy just returns a CID
-            void queue.add(async () => {
-              await this.#processBlock(result, queue, writer, strategy, options)
-            })
-          }
+          const blockCid = (result as { cid: CID }).cid ?? result
+          const newStrategy = (result as { strategy: TraversalStrategy }).strategy ?? strategy
+
+          void queue.add(async () => {
+            await this.#processBlock(blockCid, queue, writer, newStrategy, options)
+          })
         }
       }
     } catch (err) {
       // Handle errors, but don't propagate them to avoid breaking the queue
       this.log.error('Error processing block', err)
-    }
-  }
-
-  /**
-   * Special method for processing known paths, which has different error handling
-   */
-  async #processKnownPathStrategy (
-    cids: CID[],
-    queue: PQueue,
-    writer: Pick<CarWriter, 'put'>,
-    options: ExportCarOptions | undefined
-  ): Promise<void> {
-    if (cids.length === 0) {
-      return
-    }
-
-    // process each CID in the path
-    for (let i = 0; i < cids.length; i++) {
-      const cid = cids[i]
-      const isLastCID = i === cids.length - 1
-
-      try {
-        // Skip this block if it's already been processed
-        if (options?.blockFilter?.has(cid.multihash.bytes) === true) {
-          continue
-        }
-
-        const codec = await this.components.getCodec(cid.code)
-        const bytes = await this.components.blockstore.get(cid, options)
-
-        // Mark as processed
-        options?.blockFilter?.add(cid.multihash.bytes)
-
-        // Write to CAR
-        await writer.put({ cid, bytes })
-
-        const decodedBlock = createUnsafe({ bytes, cid, codec })
-
-        // Only the last CID (the target) needs traversal with dagScope rules
-        if (isLastCID) {
-          const strategy = new StandardWalkStrategy()
-          if (!strategy.shouldTraverse(cid, options)) {
-            return
-          }
-
-          for await (const linkedCid of strategy.getNextCidStrategy(cid, decodedBlock)) {
-            void queue.add(async () => {
-              await this.#processBlock(linkedCid, queue, writer, strategy, options)
-            })
-          }
-        }
-      } catch (err) {
-        this.log.error('Error processing block in knownDagPath', err)
-      }
     }
   }
 }

@@ -17,7 +17,14 @@ export interface CarComponents {
  * Interface for different traversal strategies
  */
 export interface TraversalStrategy {
+  /**
+   * Determine if the strategy should traverse the given CID
+   */
   shouldTraverse(cid: CID, options?: ExportCarOptions): boolean
+
+  /**
+   * Get the next CID, and potentially new strategy to traverse
+   */
   getNextCidStrategy(cid: CID, block: any): AsyncGenerator<CID | { cid: CID, strategy: TraversalStrategy }, void, undefined>
 }
 
