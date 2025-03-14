@@ -165,7 +165,7 @@ export interface Car {
    * }
    * ```
    */
-  stream(root: CID | CID[], options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): AsyncGenerator<Uint8Array>
+  stream(root: CID | CID[], options?: ExportCarOptions): AsyncGenerator<Uint8Array, void, undefined>
 }
 
 const DAG_WALK_QUEUE_CONCURRENCY = 1
@@ -202,15 +202,7 @@ class DefaultCar implements Car {
 
     for (const root of roots) {
       void queue.add(async () => {
-        await this.#walkDag(root, queue, async (cid, bytes) => {
-          // if a filter has been passed, skip blocks that have already been written
-          if (options?.blockFilter?.has(cid.multihash.bytes) === true) {
-            return
-          }
-
-          options?.blockFilter?.add(cid.multihash.bytes)
-          await writer.put({ cid, bytes })
-        }, options)
+        await this.#walkDag(root, queue, writer, options)
       })
         .catch(() => {})
     }
@@ -240,18 +232,31 @@ class DefaultCar implements Car {
    * Walk the DAG behind the passed CID, ensure all blocks are present in the blockstore
    * and update the pin count for them
    */
-  async #walkDag (cid: CID, queue: PQueue, withBlock: (cid: CID, block: Uint8Array) => Promise<void>, options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): Promise<void> {
+  async #walkDag (
+    cid: CID,
+    queue: PQueue,
+    writer: Pick<CarWriter, 'put'>,
+    options?: ExportCarOptions
+  ): Promise<void> {
+    // Skip this block, before fetching from the network, if it's already been processed
+    if (options?.blockFilter?.has(cid.multihash.bytes) === true) {
+      return
+    }
+
     const codec = await this.components.getCodec(cid.code)
     const bytes = await this.components.blockstore.get(cid, options)
 
-    await withBlock(cid, bytes)
+    // Mark the block as processed
+    options?.blockFilter?.add(cid.multihash.bytes)
+
+    await writer.put({ cid, bytes })
 
     const block = createUnsafe({ bytes, cid, codec })
 
     // walk dag, ensure all blocks are present
     for await (const [,cid] of block.links()) {
       void queue.add(async () => {
-        await this.#walkDag(cid, queue, withBlock, options)
+        await this.#walkDag(cid, queue, writer, options)
       })
     }
   }
