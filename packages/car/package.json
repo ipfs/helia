@@ -69,6 +69,7 @@
   "devDependencies": {
     "@helia/mfs": "^4.0.3",
     "@helia/unixfs": "^4.0.3",
+    "@ipld/dag-cbor": "^9.2.2",
     "@ipld/dag-pb": "^4.1.3",
     "aegir": "^45.1.1",
     "blockstore-core": "^5.0.2",

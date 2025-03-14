@@ -1,0 +1,58 @@
+import { expect } from 'aegir/chai'
+import type { CarReader } from '@ipld/car'
+
+export enum CarEqualsSkip {
+  roots = 'roots',
+  blocks = 'blocks',
+  blockOrder = 'blockOrder',
+  version = 'version',
+  header = 'header',
+}
+export interface CarEqualsOptions {
+  skip?: CarEqualsSkip[]
+}
+/**
+ * A helper function to assert that two car files are identical
+ *
+ * Car files are identical if:
+ * 1. They have the same root(s)
+ * 2. They have the same blocks
+ * 3. The blocks are the same
+ * 4. The block order is the same
+ * 5. The codec is the same
+ * 6. The car version is the same
+ * 7. The car header is the same
+ * 8. The car length is the same
+ */
+export async function carEquals (car1: CarReader, car2: CarReader, options?: CarEqualsOptions): Promise<void> {
+  if (options?.skip?.includes(CarEqualsSkip.header) !== true) {
+    expect(car1._header).to.deep.equal(car2._header)
+  }
+  if (options?.skip?.includes(CarEqualsSkip.roots) !== true) {
+    expect(await car1.getRoots()).to.deep.equal(await car2.getRoots())
+  }
+
+  const blocks1 = []
+  for await (const block of car1.blocks()) {
+    blocks1.push(block)
+  }
+  const blocks2 = []
+  for await (const block of car2.blocks()) {
+    blocks2.push(block)
+  }
+  if (options?.skip?.includes(CarEqualsSkip.blocks) !== true) {
+    if (options?.skip?.includes(CarEqualsSkip.blockOrder) !== true) {
+      expect(blocks1).to.deep.equal(blocks2)
+    } else {
+      // check that the blocks are the same, but don't worry about the order
+      expect(blocks1.length).to.equal(blocks2.length)
+      for (const block of blocks1) {
+        expect(blocks2.includes(block)).to.be.true(`Block ${block.cid} not found in the second car`)
+      }
+    }
+  }
+
+  if (options?.skip?.includes(CarEqualsSkip.version) !== true) {
+    expect(car1.version).to.deep.equal(car2.version)
+  }
+}
