@@ -356,41 +356,39 @@ class DefaultCar implements Car {
     const codec = await this.components.getCodec(dagRoot.code)
     const bytes = await this.components.blockstore.get(dagRoot, options)
 
-    // Mark as processed
     options?.blockFilter?.add(dagRoot.multihash.bytes)
 
-    // Add the block
     await writer.put({ cid: dagRoot, bytes })
 
-    // Check if we've reached one of our target roots
+    // check if we've reached one of our target roots
     // TODO: We need to handle the case where users might want to process multiple target roots, with different knownDagPaths
     const isTargetRoot = targetRoots.some(r => r.equals(dagRoot))
 
     if (isTargetRoot) {
-      // If we've found a target root, respect the dag scope
+      // if we've found a target root, respect the dag scope
       const block = createUnsafe({ bytes, cid: dagRoot, codec })
 
-      // If dagScope is BLOCK, don't walk the DAG at all
+      // if dagScope is BLOCK, don't walk the DAG at all
       if (options?.dagScope === DagScope.BLOCK) {
         return
       }
 
-      // If dagScope is ENTITY, only walk the DAG for UnixFS data (dag-pb codec)
+      // if dagScope is ENTITY, only walk the DAG for UnixFS data (dag-pb codec)
       if (options?.dagScope === DagScope.ENTITY && dagRoot.code !== DAG_PB_CODEC_CODE) {
         return
       }
 
-      // Walk all links in the target root's DAG
+      // walk all links in the target root's DAG
       for await (const [, cid] of block.links()) {
         void queue.add(async () => {
           await this.#walkDag(cid, queue, writer, options)
         })
       }
     } else {
-      // Still looking for path to target, continue searching
+      // still looking for path to target, continue searching
       const block = createUnsafe({ bytes, cid: dagRoot, codec })
 
-      // Continue search through links
+      // continue search through links
       for await (const [, cid] of block.links()) {
         void queue.add(async () => {
           await this.#findPathAndWalkDag(cid, targetRoots, queue, writer, options)
@@ -427,12 +425,12 @@ class DefaultCar implements Car {
 
     const block = createUnsafe({ bytes, cid, codec })
 
-    // If dagScope is BLOCK, don't walk the DAG at all
+    // if dagScope is BLOCK, don't walk the DAG at all
     if (options?.dagScope === DagScope.BLOCK) {
       return
     }
 
-    // If dagScope is ENTITY, only walk the DAG for UnixFS data (dag-pb codec)
+    // if dagScope is ENTITY, only walk the DAG for UnixFS data (dag-pb codec)
     if (options?.dagScope === DagScope.ENTITY && cid.code !== DAG_PB_CODEC_CODE) { // 0x70 is the code for dag-pb
       return
     }
@@ -459,11 +457,11 @@ class DefaultCar implements Car {
       return
     }
 
-    // Process each CID in the path
+    // process each CID in the path
     for (let i = 0; i < cids.length; i++) {
       const cid = cids[i]
 
-      // Skip this block if it's already been processed
+      // skip this block if it's already been processed
       if (options?.blockFilter?.has(cid.multihash.bytes) === true) {
         continue
       }
@@ -478,12 +476,12 @@ class DefaultCar implements Car {
         // Add the block
         await writer.put({ cid, bytes })
 
-        // If this is the last CID in the path (the target root),
+        // if this is the last CID in the path (the target root),
         // respect the dag scope
         if (i === cids.length - 1) {
           const block = createUnsafe({ bytes, cid, codec })
 
-          // If dagScope is BLOCK, don't walk the DAG at all
+          // if dagScope is BLOCK, don't walk the DAG at all
           if (options?.dagScope === DagScope.BLOCK) {
             continue
           }
@@ -501,10 +499,10 @@ class DefaultCar implements Car {
           }
         }
       } catch (err) {
-        // If we can't get a block in the known path, fall back to regular dag walking
+        // if we can't get a block in the known path, fall back to regular dag walking
         // from this point forward
         if (i === 0 && options?.dagRoot != null) {
-          // If it's the very first block and we have dagRoot, fall back to findPathAndWalkDag
+          // if it's the very first block and we have dagRoot, fall back to findPathAndWalkDag
           await this.#findPathAndWalkDag(options.dagRoot, [cids[cids.length - 1]], queue, writer, options)
           return
         } else if (i < cids.length - 1) {
