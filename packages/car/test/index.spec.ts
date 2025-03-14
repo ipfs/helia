@@ -5,6 +5,7 @@ import { type UnixFS, unixfs } from '@helia/unixfs'
 import { CarReader } from '@ipld/car'
 import { createScalableCuckooFilter } from '@libp2p/utils/filters'
 import { expect } from 'aegir/chai'
+import loadFixtures from 'aegir/fixtures'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import { fixedSize } from 'ipfs-unixfs-importer/chunker'
@@ -168,5 +169,36 @@ describe('import/export car file', () => {
 
     const carBytes = await writer.bytes()
     expect(carBytes.length).to.equal(401)
+  })
+
+  it('generates a proper car file with dag-scope=all', async () => {
+    const carBytes = loadFixtures('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
+
+    const carBytesAsUint8Array = new Uint8Array(carBytes)
+    const reader = await CarReader.fromBytes(carBytesAsUint8Array)
+
+    const roots = await reader.getRoots()
+
+    await c.import(reader)
+
+    // export a car file, and ensure the car file is the same as the original
+    const writer = memoryCarWriter(roots)
+    await c.export(roots, writer)
+    const ourCarBytes = await writer.bytes()
+
+    const ourReader = await CarReader.fromBytes(ourCarBytes)
+
+    const ourRoots = await ourReader.getRoots()
+    expect(ourRoots).to.deep.equal(roots)
+
+    // check that every single block is the same as the blocks in the reader
+    for await (const block of ourReader.blocks()) {
+      expect(await reader.has(block.cid)).to.be.true(`Block ${block.cid} not found in the original car file`)
+    }
+    for await (const block of reader.blocks()) {
+      expect(await ourReader.has(block.cid)).to.be.true(`Block ${block.cid} not found in the original car file`)
+    }
+
+    expect(ourCarBytes.length).to.equal(carBytes.length)
   })
 })
