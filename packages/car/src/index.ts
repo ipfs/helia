@@ -79,11 +79,46 @@ export interface CarComponents {
   getCodec: CodecLoader
 }
 
+/**
+ * DAG scope for CAR exports as specified in the trustless gateway spec
+ */
+export enum DagScope {
+  /**
+   * Only the root block at the end of the path is returned after blocks required
+   * to verify the specified path segments.
+   */
+  BLOCK = 'block',
+
+  /**
+   * For queries that traverse UnixFS data, 'entity' roughly means return blocks
+   * needed to verify the terminating element of the requested content path.
+   * For UnixFS, all the blocks needed to read an entire UnixFS file, or enumerate
+   * a UnixFS directory. For all queries that reference non-UnixFS data, 'entity'
+   * is equivalent to 'block'
+   */
+  ENTITY = 'entity',
+
+  /**
+   * Transmit the entire contiguous DAG that begins at the end of the path
+   * query, after blocks required to verify path segments
+   *
+   * This is the default behavior.
+   */
+  ALL = 'all'
+}
+
 export interface ExportCarOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents> {
   /**
    * If a filter is passed it will be used to deduplicate blocks exported in the car file
    */
   blockFilter?: Filter
+
+  /**
+   * The DAG scope to use for the export.
+   *
+   * @default DagScope.ALL
+   */
+  dagScope?: DagScope
 
   /**
    * Root CID of the DAG being operated on. If the CAR root provided to `export` or `stream` is not the root of the dag,
@@ -203,6 +238,9 @@ export interface Car {
 
 const DAG_WALK_QUEUE_CONCURRENCY = 1
 
+// DAG-PB codec code (0x70) - used for identifying UnixFS data
+const DAG_PB_CODEC_CODE = 0x70
+
 class DefaultCar implements Car {
   private readonly components: CarComponents
 
@@ -300,7 +338,8 @@ class DefaultCar implements Car {
 
   /**
    * Find a path from dagRoot to the target roots, then walk the DAG
-   * to export blocks that are in that path
+   * to export blocks that are in that path. Respects the dagScope option
+   * when a target root is found.
    */
   async #findPathAndWalkDag (
     dagRoot: CID,
@@ -327,8 +366,18 @@ class DefaultCar implements Car {
     const isTargetRoot = targetRoots.some(r => r.equals(dagRoot))
 
     if (isTargetRoot) {
-      // If we've found a target root, walk its entire DAG
+      // If we've found a target root, respect the dag scope
       const block = createUnsafe({ bytes, cid: dagRoot, codec })
+
+      // If dagScope is BLOCK, don't walk the DAG at all
+      if (options?.dagScope === DagScope.BLOCK) {
+        return
+      }
+
+      // If dagScope is ENTITY, only walk the DAG for UnixFS data (dag-pb codec)
+      if (options?.dagScope === DagScope.ENTITY && dagRoot.code !== DAG_PB_CODEC_CODE) {
+        return
+      }
 
       // Walk all links in the target root's DAG
       for await (const [, cid] of block.links()) {
@@ -351,7 +400,10 @@ class DefaultCar implements Car {
 
   /**
    * Walk the DAG behind the passed CID, ensure all blocks are present in the blockstore
-   * and update the pin count for them
+   * and update the pin count for them. Respects the dagScope option:
+   * - BLOCK: Only include the root block
+   * - ENTITY: For UnixFS data (dag-pb codec), include all blocks; for non-UnixFS, only the root block
+   * - ALL: Include all blocks in the DAG (default)
    */
   async #walkDag (
     cid: CID,
@@ -374,6 +426,16 @@ class DefaultCar implements Car {
 
     const block = createUnsafe({ bytes, cid, codec })
 
+    // If dagScope is BLOCK, don't walk the DAG at all
+    if (options?.dagScope === DagScope.BLOCK) {
+      return
+    }
+
+    // If dagScope is ENTITY, only walk the DAG for UnixFS data (dag-pb codec)
+    if (options?.dagScope === DagScope.ENTITY && cid.code !== DAG_PB_CODEC_CODE) { // 0x70 is the code for dag-pb
+      return
+    }
+
     // walk dag, ensure all blocks are present
     for await (const [,cid] of block.links()) {
       void queue.add(async () => {
@@ -383,7 +445,8 @@ class DefaultCar implements Car {
   }
 
   /**
-   * Process CIDs in the known path
+   * Process CIDs in the known path. For the last CID in the path (the target root),
+   * respect the dagScope option to control how much of the DAG is traversed.
    */
   async #processCIDsInKnownPath (
     cids: CID[],
@@ -415,9 +478,19 @@ class DefaultCar implements Car {
         await writer.put({ cid, bytes })
 
         // If this is the last CID in the path (the target root),
-        // walk its entire DAG
+        // respect the dag scope
         if (i === cids.length - 1) {
           const block = createUnsafe({ bytes, cid, codec })
+
+          // If dagScope is BLOCK, don't walk the DAG at all
+          if (options?.dagScope === DagScope.BLOCK) {
+            continue
+          }
+
+          // If dagScope is ENTITY, only walk the DAG for UnixFS data (dag-pb codec)
+          if (options?.dagScope === DagScope.ENTITY && cid.code !== DAG_PB_CODEC_CODE) { // 0x70 is the code for dag-pb
+            continue
+          }
 
           // Walk all links in the target root's DAG
           for await (const [, linkedCid] of block.links()) {
