@@ -1,13 +1,14 @@
 import { type DagScope } from './dag-scope.js'
 import type { CodecLoader } from '@helia/interface'
 import type { GetBlockProgressEvents } from '@helia/interface/blocks'
-import type { AbortOptions } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger } from '@libp2p/interface'
 import type { Filter } from '@libp2p/utils/filters'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 import type { ProgressOptions } from 'progress-events'
 
 export interface CarComponents {
+  logger?: ComponentLogger
   blockstore: Blockstore
   getCodec: CodecLoader
 }

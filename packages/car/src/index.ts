@@ -368,33 +368,20 @@ class DefaultCar implements Car {
 
         // Only the last CID (the target) needs traversal with dagScope rules
         if (isLastCID) {
-          await this.#processLastCidInPath(cid, decodedBlock, queue, writer, options)
+          const strategy = new StandardWalkStrategy()
+          if (!strategy.shouldTraverse(cid, options)) {
+            return
+          }
+
+          for await (const linkedCid of strategy.getNextCidStrategy(cid, decodedBlock)) {
+            void queue.add(async () => {
+              await this.#processBlock(linkedCid, queue, writer, strategy, options)
+            })
+          }
         }
       } catch (err) {
         this.log.error('Error processing block in knownDagPath', err)
       }
-    }
-  }
-
-  /**
-   * Helper to process the last CID in a known path
-   */
-  async #processLastCidInPath (
-    cid: CID,
-    decodedBlock: any,
-    queue: PQueue,
-    writer: Pick<CarWriter, 'put'>,
-    options: ExportCarOptions | undefined
-  ): Promise<void> {
-    const strategy = new StandardWalkStrategy()
-    if (!strategy.shouldTraverse(cid, options)) {
-      return
-    }
-
-    for await (const linkedCid of strategy.getNextCidStrategy(cid, decodedBlock)) {
-      void queue.add(async () => {
-        await this.#processBlock(linkedCid, queue, writer, strategy, options)
-      })
     }
   }
 }
