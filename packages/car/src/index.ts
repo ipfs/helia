@@ -92,8 +92,31 @@ export interface ExportCarOptions extends AbortOptions, ProgressOptions<GetBlock
    * This allows us to include blocks for path parents, but those are "extra", do not belong to the DAG of exported
    * file, but act as a proof that file DAG belongs to some other parent DAG. This proof can be disregarded if the user
    * only cares about file, without its provenance.
+   *
+   * If you provide `knownDagPath` and no `dagRoot`, the first CID in `knownDagPath` will be used as `dagRoot`.
    */
   dagRoot?: CID
+
+  /**
+   * An ordered array of CIDs representing the known path from dagRoot to the target root.
+   * The array should start with dagRoot (at index 0) and end with the target root CID.
+   *
+   * This allows optimizing the path traversal by skipping the expensive path-finding process
+   * when the path from dagRoot to the target root is already known, reducing network requests
+   * and computation time.
+   *
+   * Example usage:
+   * ```typescript
+   * await c.export(targetCid, writer, {
+   *   dagRoot: rootCid,
+   *   knownDagPath: [rootCid, ...intermediateCids, targetCid]
+   * })
+   * ```
+   *
+   * Note: If any CID in the path cannot be found in the blockstore, the code
+   * will automatically fall back to the regular path-finding algorithm.
+   */
+  knownDagPath?: CID[]
 }
 
 /**
@@ -210,8 +233,33 @@ class DefaultCar implements Car {
       deferred.reject(err)
     })
 
-    // If dagRoot is specified, we need to find the path from dagRoot to the roots
-    if (options?.dagRoot != null) {
+    // Validate knownDagPath if provided
+    if (options?.knownDagPath != null && options.knownDagPath.length > 0) {
+      const knownPath = options.knownDagPath
+
+      // ensure dagRoot is provided and matches the first CID in the path
+      if (options?.dagRoot == null) {
+        options.dagRoot = knownPath[0]
+      } else if (!options.dagRoot.equals(knownPath[0])) {
+        throw new Error('knownDagPath must start with dagRoot')
+      }
+
+      // Ensure the last CID in the path is one of the target roots
+      const lastCid = knownPath[knownPath.length - 1]
+      const isTargetRoot = roots.some(r => r.equals(lastCid))
+      if (!isTargetRoot) {
+        throw new Error('knownDagPath must end with one of the target roots')
+      }
+    }
+
+    // If dagRoot is specified and knownDagPath is provided, use the known path
+    if (options?.dagRoot != null && options?.knownDagPath != null && options.knownDagPath.length > 0) {
+      const knownPath = options.knownDagPath
+      void queue.add(async () => {
+        await this.#processCIDsInKnownPath(knownPath, queue, writer, options)
+      })
+        .catch(() => {})
+    } else if (options?.dagRoot != null) {
       void queue.add(async () => {
         const dagRoot = options.dagRoot
         if (dagRoot != null) {
@@ -331,6 +379,70 @@ class DefaultCar implements Car {
       void queue.add(async () => {
         await this.#walkDag(cid, queue, writer, options)
       })
+    }
+  }
+
+  /**
+   * Process CIDs in the known path
+   */
+  async #processCIDsInKnownPath (
+    cids: CID[],
+    queue: PQueue,
+    writer: Pick<CarWriter, 'put'>,
+    options?: ExportCarOptions
+  ): Promise<void> {
+    if (cids.length === 0) {
+      return
+    }
+
+    // Process each CID in the path
+    for (let i = 0; i < cids.length; i++) {
+      const cid = cids[i]
+
+      // Skip this block if it's already been processed
+      if (options?.blockFilter?.has(cid.multihash.bytes) === true) {
+        continue
+      }
+
+      try {
+        const codec = await this.components.getCodec(cid.code)
+        const bytes = await this.components.blockstore.get(cid, options)
+
+        // Mark the block as processed
+        options?.blockFilter?.add(cid.multihash.bytes)
+
+        // Add the block
+        await writer.put({ cid, bytes })
+
+        // If this is the last CID in the path (the target root),
+        // walk its entire DAG
+        if (i === cids.length - 1) {
+          const block = createUnsafe({ bytes, cid, codec })
+
+          // Walk all links in the target root's DAG
+          for await (const [, linkedCid] of block.links()) {
+            void queue.add(async () => {
+              await this.#walkDag(linkedCid, queue, writer, options)
+            })
+          }
+        }
+      } catch (err) {
+        // If we can't get a block in the known path, fall back to regular dag walking
+        // from this point forward
+        if (i === 0 && options?.dagRoot != null) {
+          // If it's the very first block and we have dagRoot, fall back to findPathAndWalkDag
+          await this.#findPathAndWalkDag(options.dagRoot, [cids[cids.length - 1]], queue, writer, options)
+          return
+        } else if (i < cids.length - 1) {
+          // For intermediate blocks, use the next CID in the path as the target
+          await this.#findPathAndWalkDag(cid, [cids[i + 1]], queue, writer, options)
+          return
+        } else {
+          // For the last block, just walk its DAG
+          await this.#walkDag(cid, queue, writer, options)
+          return
+        }
+      }
     }
   }
 }
