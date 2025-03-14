@@ -20,7 +20,7 @@ describe('dag-scope', () => {
 
   const dagRoot = CID.parse('bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu')
   const intermediateCid = CID.parse('bafybeicnmple4ehlz3ostv2sbojz3zhh5q7tz5r2qkfdpqfilgggeen7xm')
-  const subdagRoot = CID.parse('bafkreifkam6ns4aoolg3wedr4uzrs3kvq66p4pecirz6y2vlrngla62mxm')
+  const subDagRoot = CID.parse('bafkreifkam6ns4aoolg3wedr4uzrs3kvq66p4pecirz6y2vlrngla62mxm')
 
   async function loadCarFixture (path: string): Promise<{ reader: CarReader, bytes: Uint8Array }> {
     const carBytes = loadFixtures(path)
@@ -55,16 +55,17 @@ describe('dag-scope', () => {
 
     expect(ourCarBytes.length).to.equal(carBytes.length)
 
-    expect(blockstoreGetSpy.callCount).to.equal(10) // 10 blocks in the subdag
+    expect(blockstoreGetSpy.callCount).to.equal(10) // 10 blocks in the subDag
   })
 
-  it('can generate a proper dag-scope=all car for a subdag', async () => {
+  it('can generate a proper dag-scope=all car for a subDag', async () => {
+    // cspell:ignore bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu
     const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
 
     // import all the blocks from the car file
     await c.import(reader)
 
-    // export the subdag: ipfs://bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu/subdir,
+    // export the subDag: ipfs://bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu/subdir,
     const writer = memoryCarWriter(intermediateCid)
     await c.export(intermediateCid, writer, { dagRoot })
 
@@ -76,7 +77,7 @@ describe('dag-scope', () => {
 
     await carEquals(ourReader, reader, { skip: [CarEqualsSkip.roots, CarEqualsSkip.header] })
 
-    expect(blockstoreGetSpy.callCount).to.equal(10) // 10 blocks in the subdag
+    expect(blockstoreGetSpy.callCount).to.equal(10) // 10 blocks in the subDag
   })
 
   it('can use knownDagPath to optimize car export', async () => {
@@ -84,10 +85,10 @@ describe('dag-scope', () => {
 
     await c.import(reader)
 
-    const knownDagPath = [dagRoot, intermediateCid, subdagRoot]
+    const knownDagPath = [dagRoot, intermediateCid, subDagRoot]
 
-    const writer = memoryCarWriter(subdagRoot)
-    await c.export(subdagRoot, writer, {
+    const writer = memoryCarWriter(subDagRoot)
+    await c.export(subDagRoot, writer, {
       dagRoot,
       knownDagPath
     })
@@ -96,7 +97,7 @@ describe('dag-scope', () => {
     const exportedReader = await CarReader.fromBytes(carData)
 
     const roots = await exportedReader.getRoots()
-    expect(roots).to.deep.equal([subdagRoot])
+    expect(roots).to.deep.equal([subDagRoot])
 
     expect(blockstoreGetSpy.getCall(0).args[0]).to.equal(knownDagPath[0])
     expect(blockstoreGetSpy.getCall(1).args[0]).to.equal(knownDagPath[1])
@@ -130,6 +131,7 @@ describe('dag-scope', () => {
 
   it('can generate a car file with dag-scope=entity for non-UnixFS data', async () => {
     // dag-cbor only blocks in this car file
+    // cspell:ignore bafyreieurv3eg6sxth6avdr2zel52mdcqw7dghkljzcnaodb4conrzqjei
     const nonUnixFsRoot = CID.parse('bafyreieurv3eg6sxth6avdr2zel52mdcqw7dghkljzcnaodb4conrzqjei')
     const { reader } = await loadCarFixture('test/fixtures/bafyreieurv3eg6sxth6avdr2zel52mdcqw7dghkljzcnaodb4conrzqjei.car')
 
@@ -159,10 +161,10 @@ describe('dag-scope', () => {
 
     await c.import(reader)
 
-    const knownDagPath = [dagRoot, intermediateCid, subdagRoot]
+    const knownDagPath = [dagRoot, intermediateCid, subDagRoot]
 
-    const writer = memoryCarWriter(subdagRoot)
-    await c.export(subdagRoot, writer, {
+    const writer = memoryCarWriter(subDagRoot)
+    await c.export(subDagRoot, writer, {
       dagRoot,
       knownDagPath,
       dagScope: DagScope.BLOCK
@@ -172,7 +174,7 @@ describe('dag-scope', () => {
     const exportedReader = await CarReader.fromBytes(carData)
 
     const roots = await exportedReader.getRoots()
-    expect(roots).to.deep.equal([subdagRoot])
+    expect(roots).to.deep.equal([subDagRoot])
 
     expect(blockstoreGetSpy.getCall(0).args[0]).to.equal(knownDagPath[0])
     expect(blockstoreGetSpy.getCall(1).args[0]).to.equal(knownDagPath[1])
@@ -196,10 +198,10 @@ describe('dag-scope', () => {
     await c.import(reader)
 
     // intermediate cid is not present in the dag nor blockstore.
-    const knownDagPath = [dagRoot, CID.parse('bafyreif3tfdpr5n4jdrbielmcapwvbpcthepfkwq2vwonmlhirbjmotedi'), subdagRoot]
+    const knownDagPath = [dagRoot, CID.parse('bafyreif3tfdpr5n4jdrbielmcapwvbpcthepfkwq2vwonmlhirbjmotedi'), subDagRoot]
 
-    const writer = memoryCarWriter(subdagRoot)
-    await expect(c.export(subdagRoot, writer, {
+    const writer = memoryCarWriter(subDagRoot)
+    await expect(c.export(subDagRoot, writer, {
       dagRoot,
       knownDagPath
     })).to.eventually.be.rejectedWith('CID in knownDagPath at index 1 not found in blockstore')
