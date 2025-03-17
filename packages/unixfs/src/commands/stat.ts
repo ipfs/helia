@@ -38,13 +38,7 @@ export async function stat (cid: CID, blockstore: GetStore & HasStore, options: 
     }
 
     return createRawStats(result)
-  } else if (result.type === 'file') {
-    if (options.extended === true) {
-      return createExtendedStats(result, blockstore, options)
-    }
-
-    return createStats(result)
-  } else if (result.type === 'directory') {
+  } else if (result.type === 'file' || result.type === 'directory') {
     if (options.extended === true) {
       return createExtendedStats(result, blockstore, options)
     }
@@ -55,8 +49,6 @@ export async function stat (cid: CID, blockstore: GetStore & HasStore, options: 
   throw new NotUnixFSError()
 }
 
-function createStats (entry: UnixFSFile): FileStats
-function createStats (entry: UnixFSDirectory): DirectoryStats
 function createStats (entry: UnixFSFile | UnixFSDirectory): FileStats | DirectoryStats {
   return {
     type: entry.type,
@@ -68,8 +60,6 @@ function createStats (entry: UnixFSFile | UnixFSDirectory): FileStats | Director
   }
 }
 
-async function createExtendedStats (entry: UnixFSFile, blockstore: GetStore & HasStore, options: StatOptions): Promise<ExtendedFileStats>
-async function createExtendedStats (entry: UnixFSDirectory, blockstore: GetStore & HasStore, options: StatOptions): Promise<ExtendedDirectoryStats>
 async function createExtendedStats (entry: UnixFSFile | UnixFSDirectory, blockstore: GetStore & HasStore, options: StatOptions): Promise<ExtendedFileStats | ExtendedDirectoryStats> {
   const stats = await inspectDag(entry.cid, blockstore, options)
 
