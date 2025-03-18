@@ -8,7 +8,6 @@ import { InvalidPBNodeError, NotUnixFSError, UnknownError } from '../errors.js'
 import { resolve } from './utils/resolve.js'
 import type { ExtendedStatOptions, ExtendedDirectoryStats, ExtendedFileStats, StatOptions, DirectoryStats, FileStats, RawStats, ExtendedRawStats } from '../index.js'
 import type { GetStore, HasStore } from '../unixfs.js'
-import type { AbortOptions } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 
 // https://github.com/ipfs/specs/blob/main/UNIXFS.md#metadata

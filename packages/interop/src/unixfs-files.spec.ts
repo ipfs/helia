@@ -6,6 +6,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { fixedSize } from 'ipfs-unixfs-importer/chunker'
 import { balanced } from 'ipfs-unixfs-importer/layout'
+import drain from 'it-drain'
 import last from 'it-last'
 import { CID } from 'multiformats/cid'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -16,7 +17,6 @@ import type { HeliaLibp2p } from 'helia'
 import type { ByteStream, ImportCandidateStream } from 'ipfs-unixfs-importer'
 import type { KuboNode } from 'ipfsd-ctl'
 import type { AddOptions as KuboAddOptions } from 'kubo-rpc-client'
-import drain from 'it-drain'
 
 describe('@helia/unixfs - files', () => {
   let helia: HeliaLibp2p
