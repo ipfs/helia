@@ -60,7 +60,8 @@ describe('stat', () => {
 
     // block count and local file/dag sizes should be smaller
     const updatedStats = await fs.stat(filePath, {
-      extended: true
+      extended: true,
+      offline: true
     })
 
     expect(updatedStats.unixfs?.fileSize()).to.equal(5242880n)

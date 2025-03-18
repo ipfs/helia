@@ -1,6 +1,8 @@
 /* eslint-env mocha */
 
 import { unixfs } from '@helia/unixfs'
+import * as dagPb from '@ipld/dag-pb'
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { fixedSize } from 'ipfs-unixfs-importer/chunker'
 import { balanced } from 'ipfs-unixfs-importer/layout'
@@ -14,6 +16,7 @@ import type { HeliaLibp2p } from 'helia'
 import type { ByteStream, ImportCandidateStream } from 'ipfs-unixfs-importer'
 import type { KuboNode } from 'ipfsd-ctl'
 import type { AddOptions as KuboAddOptions } from 'kubo-rpc-client'
+import drain from 'it-drain'
 
 describe('@helia/unixfs - files', () => {
   let helia: HeliaLibp2p
@@ -141,5 +144,69 @@ describe('@helia/unixfs - files', () => {
 
     // +1 because kubo doesn't count the root directory block
     expect(heliaStat.blocks.toString()).to.equal((kuboStat.blocks + 1).toString())
+  })
+
+  it('fetches missing blocks during stat', async () => {
+    const chunkSize = 1024 * 1024
+    const size = chunkSize * 10
+
+    const candidate = (): ByteStream => (async function * () {
+      for (let i = 0; i < size; i += chunkSize) {
+        yield new Uint8Array(new Array(chunkSize).fill(0).map((val, index) => {
+          return Math.floor(Math.random() * 256)
+        }))
+      }
+    }())
+
+    const largeFileCid = await importToKubo(candidate())
+    const info = await kubo.info()
+
+    await helia.libp2p.dial(info.multiaddrs.map(ma => multiaddr(ma)))
+
+    // pull all blocks from kubo
+    await drain(unixFs.cat(largeFileCid))
+
+    // check the root block
+    const block = await helia.blockstore.get(largeFileCid)
+    const node = dagPb.decode(block)
+
+    expect(node.Links).to.have.lengthOf(40)
+
+    const stats = await unixFs.stat(largeFileCid, {
+      extended: true
+    })
+
+    expect(stats.unixfs?.fileSize()).to.equal(10485760n)
+    expect(stats.blocks).to.equal(41n)
+    expect(stats.dagSize).to.equal(10488250n)
+    expect(stats.localSize).to.equal(10485760n)
+
+    // remove one of the blocks so we now have an incomplete DAG
+    await helia.blockstore.delete(node.Links[0].Hash)
+
+    // block count and local file/dag sizes should be smaller
+    const updatedStats = await unixFs.stat(largeFileCid, {
+      extended: true,
+      offline: true
+    })
+
+    expect(updatedStats.unixfs?.fileSize()).to.equal(10485760n)
+    expect(updatedStats.blocks).to.equal(40n)
+    expect(updatedStats.dagSize).to.equal(10226092n)
+    expect(updatedStats.localSize).to.equal(10223616n)
+
+    await new Promise<void>((resolve) => {
+      setTimeout(() => {
+        resolve()
+      }, 1_000)
+    })
+
+    // block count and local file/dag sizes should be smaller
+    const finalStats = await unixFs.stat(largeFileCid, {
+      extended: true
+    })
+
+    // should have fetched missing block from Kubo
+    expect(finalStats).to.deep.equal(stats, 'did not fetch missing block')
   })
 })

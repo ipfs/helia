@@ -105,14 +105,14 @@ interface InspectDagResults {
   blocks: bigint
 }
 
-async function inspectDag (cid: CID, blockstore: GetStore & HasStore, options: AbortOptions): Promise<InspectDagResults> {
+async function inspectDag (cid: CID, blockstore: GetStore & HasStore, options: StatOptions): Promise<InspectDagResults> {
   const results: InspectDagResults = {
     localSize: 0n,
     dagSize: 0n,
     blocks: 0n
   }
 
-  if (await blockstore.has(cid, options)) {
+  try {
     const block = await blockstore.get(cid, options)
     results.blocks++
     results.dagSize += BigInt(block.byteLength)
@@ -145,6 +145,10 @@ async function inspectDag (cid: CID, blockstore: GetStore & HasStore, options: A
       }
     } else {
       throw new UnknownError(`${cid.toString()} was neither DAG_PB nor RAW`)
+    }
+  } catch (err: any) {
+    if (err.name !== 'NotFoundError' || options.offline !== true) {
+      throw err
     }
   }
 
