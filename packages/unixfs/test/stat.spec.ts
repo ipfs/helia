@@ -277,4 +277,40 @@ describe('stat', function () {
     expect(extendedStat.type).to.equal('directory')
     expect(extendedStat.size).to.equal(24n)
   })
+
+  it('stats a directory with content and missing blocks', async () => {
+    const emptyDirCid = await fs.addDirectory()
+    const fileCid = await fs.addBytes(uint8ArrayFromString('Hello World!'))
+    const fileCid2 = await fs.addBytes(uint8ArrayFromString('Hello Universe!'))
+    const updateDirCid = await fs.cp(fileCid, emptyDirCid, 'foo1.txt')
+    const finalDirCid = await fs.cp(fileCid2, updateDirCid, 'foo2.txt')
+    const block = await blockstore.get(finalDirCid)
+    const node = dagPb.decode(block)
+
+    const extendedStat = await fs.stat(finalDirCid, {
+      extended: true,
+    })
+
+    expect(extendedStat.blocks).to.equal(3n)
+    expect(extendedStat.dagSize).to.equal(135n)
+    expect(extendedStat.localSize).to.equal(27n)
+    expect(extendedStat.type).to.equal('directory')
+    expect(extendedStat.size).to.equal(27n)
+
+    expect(node.Links).to.have.lengthOf(2)
+
+    // remove one of the blocks so we now have an incomplete DAG
+    await blockstore.delete(node.Links[0].Hash)
+
+    const extendedStatMissingBlocks = await fs.stat(finalDirCid, {
+      extended: true,
+      offline: true
+    })
+
+    expect(extendedStatMissingBlocks.blocks).to.equal(2n)
+    expect(extendedStatMissingBlocks.dagSize).to.equal(123n)
+    expect(extendedStatMissingBlocks.localSize).to.equal(15n)
+    expect(extendedStatMissingBlocks.type).to.equal('directory')
+    expect(extendedStatMissingBlocks.size).to.equal(15n)
+  })
 })
