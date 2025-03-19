@@ -294,8 +294,8 @@ export interface Stats {
   unixfs?: IPFSUnixFS
 
   /**
-   * The size of the filesystem entry. By default this is accurate for 'file'
-   * and 'raw' entries, for directories please stat with the `extended` option.
+   * The size in bytes of the filesystem entry. By default this is accurate for 'file'
+   * and 'raw' entries. For directories, please stat with the `extended` option, as this will return 0.
    */
   size: bigint
 }
