@@ -93,6 +93,7 @@ describe('stat', function () {
     const stat = await fs.stat(fileCid)
     expect(stat.type).to.equal('file')
     expect(stat.unixfs?.fileSize()).to.equal(13n)
+    expect(stat.size).to.equal(13n)
 
     const extendedStat = await fs.stat(fileCid, {
       extended: true
@@ -103,6 +104,7 @@ describe('stat', function () {
     expect(extendedStat.localSize).to.equal(13n)
     expect(extendedStat.type).to.equal('file')
     expect(extendedStat.unixfs?.fileSize()).to.equal(13n)
+    expect(extendedStat.size).to.equal(13n)
   })
 
   it('stats a large file', async () => {
@@ -111,6 +113,7 @@ describe('stat', function () {
     const stat = await fs.stat(fileCid)
     expect(stat.type).to.equal('file')
     expect(stat.unixfs?.fileSize()).to.equal(BigInt(largeFile.length))
+    expect(stat.size).to.equal(BigInt(largeFile.length))
 
     const extendedStat = await fs.stat(fileCid, {
       extended: true
@@ -121,6 +124,7 @@ describe('stat', function () {
     expect(extendedStat.localSize).to.equal(BigInt(largeFile.length))
     expect(extendedStat.type).to.equal('file')
     expect(extendedStat.unixfs?.fileSize()).to.equal(BigInt(largeFile.length))
+    expect(extendedStat.size).to.equal(BigInt(largeFile.length))
   })
 
   it('should stat file with mode', async () => {
@@ -168,6 +172,7 @@ describe('stat', function () {
     expect(extendedStat.dagSize).to.equal(4n)
     expect(extendedStat.localSize).to.equal(0n)
     expect(extendedStat.type).to.equal('directory')
+    expect(extendedStat.size).to.equal(0n)
   })
 
   it('should stat dir with mode', async function () {
@@ -260,6 +265,7 @@ describe('stat', function () {
 
     const stats = await fs.stat(finalDirCid)
     expect(stats.type).to.equal('directory')
+    expect(stats.size).to.equal(0n)
 
     const extendedStat = await fs.stat(finalDirCid, {
       extended: true
@@ -269,5 +275,6 @@ describe('stat', function () {
     expect(extendedStat.dagSize).to.equal(132n)
     expect(extendedStat.localSize).to.equal(24n)
     expect(extendedStat.type).to.equal('directory')
+    expect(extendedStat.size).to.equal(24n)
   })
 })
