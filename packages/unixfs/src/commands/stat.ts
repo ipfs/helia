@@ -60,16 +60,18 @@ function createStats (entry: UnixFSFile | UnixFSDirectory): FileStats | Director
 }
 
 async function createExtendedStats (entry: UnixFSFile | UnixFSDirectory, blockstore: GetStore & HasStore, options: StatOptions): Promise<ExtendedFileStats | ExtendedDirectoryStats> {
-  const stats = await inspectDag(entry.cid, blockstore, options)
+  const stats = await inspectDag(entry.cid, blockstore, false, options)
 
   return {
     type: entry.type,
     cid: entry.cid,
     unixfs: entry.unixfs,
-    size: entry.unixfs.isDirectory() ? stats.localSize : entry.unixfs.fileSize(),
+    size: entry.unixfs.isDirectory() ? stats.dirSize : entry.unixfs.fileSize(),
     mode: entry.unixfs.mode ?? (entry.unixfs.isDirectory() ? DEFAULT_DIR_MODE : DEFAULT_FILE_MODE),
     mtime: entry.unixfs.mtime,
-    ...stats
+    localSize: stats.localSize,
+    dagSize: stats.dagSize,
+    blocks: stats.blocks
   }
 }
 
@@ -99,13 +101,15 @@ function createExtendedRawStats (entry: RawNode): ExtendedRawStats {
 }
 
 interface InspectDagResults {
+  dirSize: bigint
   localSize: bigint
   dagSize: bigint
   blocks: bigint
 }
 
-async function inspectDag (cid: CID, blockstore: GetStore & HasStore, options: StatOptions): Promise<InspectDagResults> {
+async function inspectDag (cid: CID, blockstore: GetStore & HasStore, isFile: boolean, options: StatOptions): Promise<InspectDagResults> {
   const results: InspectDagResults = {
+    dirSize: 0n,
     localSize: 0n,
     dagSize: 0n,
     blocks: 0n
@@ -118,28 +122,48 @@ async function inspectDag (cid: CID, blockstore: GetStore & HasStore, options: S
 
     if (cid.code === raw.code) {
       results.localSize += BigInt(block.byteLength)
+
+      if (isFile) {
+        results.dirSize += BigInt(block.byteLength)
+      }
     } else if (cid.code === dagPb.code) {
       const pbNode = dagPb.decode(block)
+
+      let unixfs: UnixFS | undefined
+
+      if (pbNode.Data != null) {
+        unixfs = UnixFS.unmarshal(pbNode.Data)
+      }
 
       if (pbNode.Links.length > 0) {
         // intermediate node
         for (const link of pbNode.Links) {
-          const linkResult = await inspectDag(link.Hash, blockstore, options)
+          const linkResult = await inspectDag(link.Hash, blockstore, linkIsFile(link, unixfs), options)
 
           results.localSize += linkResult.localSize
           results.dagSize += linkResult.dagSize
           results.blocks += linkResult.blocks
+
+          results.dirSize += linkResult.dirSize
+        }
+
+        // multi-block file node
+        if (isFile && unixfs != null) {
+          results.dirSize += unixfs.fileSize()
         }
       } else {
-        // leaf node
-        if (pbNode.Data == null) {
+        if (unixfs == null) {
           throw new InvalidPBNodeError(`PBNode ${cid.toString()} had no data`)
         }
 
-        const unixfs = UnixFS.unmarshal(pbNode.Data)
-
+        // multi-block file leaf node
         if (unixfs.data != null) {
           results.localSize += BigInt(unixfs.data.byteLength ?? 0)
+        }
+
+        // single-block file node
+        if (isFile) {
+          results.dirSize += unixfs.fileSize()
         }
       }
     } else {
@@ -152,4 +176,24 @@ async function inspectDag (cid: CID, blockstore: GetStore & HasStore, options: S
   }
 
   return results
+}
+
+function linkIsFile (link: dagPb.PBLink, parent?: UnixFS): boolean {
+  if (parent == null) {
+    return false
+  }
+
+  const name = link.Name
+
+  if (name == null) {
+    return false
+  }
+
+  if (parent.type === 'directory') {
+    return true
+  } else if (parent.type === 'hamt-sharded-directory' && name.length > 2) {
+    return true
+  }
+
+  return false
 }
