@@ -288,7 +288,7 @@ describe('stat', function () {
     const node = dagPb.decode(block)
 
     const extendedStat = await fs.stat(finalDirCid, {
-      extended: true,
+      extended: true
     })
 
     expect(extendedStat.blocks).to.equal(3n)
