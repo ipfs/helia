@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.2.2](https://github.com/ipfs/helia/compare/utils-v1.2.1...utils-v1.2.2) (2025-03-13)
+
+
+### Documentation
+
+* add spell checker to ci ([#743](https://github.com/ipfs/helia/issues/743)) ([45ca6bc](https://github.com/ipfs/helia/commit/45ca6bc70b1644028500101044595fa0e2199b07))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.2.0 to ^5.2.1
+
 ## [1.2.1](https://github.com/ipfs/helia/compare/utils-v1.2.0...utils-v1.2.1) (2025-02-10)
 
 

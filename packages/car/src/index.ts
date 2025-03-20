@@ -120,24 +120,28 @@ export interface Car {
    *
    * ```typescript
    * import fs from 'node:fs'
-   * import { Readable } from 'stream'
+   * import { Readable } from 'node:stream'
+   * import { car } from '@helia/car'
+   * import { CarWriter } from '@ipld/car'
    * import { createHelia } from 'helia'
-   * import { car } from '@helia/car
    * import { CID } from 'multiformats/cid'
-   * import pEvent from 'p-event'
+   * import { pEvent } from 'p-event'
    *
    * const helia = await createHelia()
    * const cid = CID.parse('QmFoo...')
    *
    * const c = car(helia)
-   *
-   * const byteStream = await c.export(cid)
+   * const { writer, out } = CarWriter.create(cid)
    * const output = fs.createWriteStream('example.car')
-   * const eventPromise = pEvent(output, 'end')
-   * Readable.from(byteStream).pipe(output)
+   * const stream = Readable.from(out).pipe(output)
    *
-   * await eventPromise
+   * await Promise.all([
+   *   c.export(cid, writer),
+   *   pEvent(stream, 'close')
+   * ])
    * ```
+   *
+   * @deprecated Use `stream` instead. In a future release `stream` will be renamed `export`.
    */
   export(root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: ExportCarOptions): Promise<void>
 

@@ -294,7 +294,7 @@ import { resolveDNSLink } from './dnslink.js'
 import { InvalidValueError, RecordsFailedValidationError, UnsupportedMultibasePrefixError, UnsupportedMultihashCodecError } from './errors.js'
 import { helia } from './routing/helia.js'
 import { localStore, type LocalStore } from './routing/local-store.js'
-import { isCodec, IDENTITY_CODEC, SHA2_256_CODEC } from './utils.js'
+import { isCodec, IDENTITY_CODEC, SHA2_256_CODEC, IPNS_STRING_PREFIX } from './utils.js'
 import type { IPNSRouting, IPNSRoutingEvents } from './routing/index.js'
 import type { Routing } from '@helia/interface'
 import type { AbortOptions, ComponentLogger, Logger, PrivateKey, PublicKey } from '@libp2p/interface'
@@ -800,6 +800,10 @@ class DefaultIPNS implements IPNS {
       if (mh == null) {
         // if no public key is embedded in the record, use the key that was passed in
         if (typeof key === 'string') {
+          if (key.startsWith(IPNS_STRING_PREFIX)) {
+            // remove the /ipns/ prefix from the key
+            key = key.slice(IPNS_STRING_PREFIX.length)
+          }
           // Convert string key to MultihashDigest
           try {
             mh = peerIdFromString(key).toMultihash()
