@@ -7,7 +7,7 @@ import { mkdir } from './commands/mkdir.js'
 import { rm } from './commands/rm.js'
 import { stat } from './commands/stat.js'
 import { touch } from './commands/touch.js'
-import type { AddOptions, CatOptions, ChmodOptions, CpOptions, FileCandidate, LsOptions, MkdirOptions, RmOptions, StatOptions, TouchOptions, UnixFSComponents, UnixFS as UnixFSInterface, UnixFSStats } from './index.js'
+import type { AddOptions, CatOptions, ChmodOptions, CpOptions, ExtendedStatOptions, ExtendedDirectoryStats, ExtendedFileStats, FileCandidate, LsOptions, MkdirOptions, RmOptions, StatOptions, TouchOptions, UnixFSComponents, DirectoryStats, FileStats, UnixFS as UnixFSInterface, RawStats, ExtendedRawStats } from './index.js'
 import type { Blockstore } from 'interface-blockstore'
 import type { UnixFSEntry } from 'ipfs-unixfs-exporter'
 import type { ByteStream, DirectoryCandidate, ImportCandidateStream, ImportResult } from 'ipfs-unixfs-importer'
@@ -68,7 +68,9 @@ export class UnixFS implements UnixFSInterface {
     return rm(cid, path, this.components.blockstore, options)
   }
 
-  async stat (cid: CID, options: Partial<StatOptions> = {}): Promise<UnixFSStats> {
+  async stat (cid: CID, options?: StatOptions): Promise<FileStats | DirectoryStats | RawStats>
+  async stat (cid: CID, options?: ExtendedStatOptions): Promise<ExtendedFileStats | ExtendedDirectoryStats | ExtendedRawStats>
+  async stat (cid: CID, options: Partial<StatOptions> = {}): Promise<FileStats | DirectoryStats | RawStats> {
     return stat(cid, this.components.blockstore, options)
   }
 
