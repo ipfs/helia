@@ -60,31 +60,25 @@
  */
 
 import { CarWriter } from '@ipld/car'
+import { defaultLogger } from '@libp2p/logger'
 import drain from 'it-drain'
 import map from 'it-map'
 import { createUnsafe } from 'multiformats/block'
+import { type CID } from 'multiformats/cid'
 import defer from 'p-defer'
 import PQueue from 'p-queue'
-import type { CodecLoader } from '@helia/interface'
-import type { GetBlockProgressEvents, PutManyBlocksProgressEvents } from '@helia/interface/blocks'
+import { DAG_WALK_QUEUE_CONCURRENCY } from './constants.js'
+import { DagScope } from './dag-scope.js'
+import { KnownPathStrategy } from './strategies/known-path-strategy.js'
+import { PathFindingStrategy } from './strategies/path-finding-strategy.js'
+import { StandardWalkStrategy } from './strategies/standard-walk-strategy.js'
+import type { ExportCarOptions, TraversalStrategy, CarComponents } from './types.js'
+import type { PutManyBlocksProgressEvents } from '@helia/interface/blocks'
 import type { CarReader } from '@ipld/car'
-import type { AbortOptions } from '@libp2p/interface'
-import type { Filter } from '@libp2p/utils/filters'
-import type { Blockstore } from 'interface-blockstore'
-import type { CID } from 'multiformats/cid'
+import type { AbortOptions, Logger } from '@libp2p/interface'
 import type { ProgressOptions } from 'progress-events'
 
-export interface CarComponents {
-  blockstore: Blockstore
-  getCodec: CodecLoader
-}
-
-export interface ExportCarOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents> {
-  /**
-   * If a filter is passed it will be used to deduplicate blocks exported in the car file
-   */
-  blockFilter?: Filter
-}
+export { DagScope, type ExportCarOptions, type CarComponents }
 
 /**
  * The Car interface provides operations for importing and exporting Car files
@@ -165,16 +159,16 @@ export interface Car {
    * }
    * ```
    */
-  stream(root: CID | CID[], options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): AsyncGenerator<Uint8Array>
+  stream(root: CID | CID[], options?: ExportCarOptions): AsyncGenerator<Uint8Array, void, undefined>
 }
-
-const DAG_WALK_QUEUE_CONCURRENCY = 1
 
 class DefaultCar implements Car {
   private readonly components: CarComponents
+  private readonly log: Logger
 
   constructor (components: CarComponents, init: any) {
     this.components = components
+    this.log = (init.logger ?? defaultLogger()).forComponent('helia:car')
   }
 
   async import (reader: Pick<CarReader, 'blocks'>, options?: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents>): Promise<void> {
@@ -200,20 +194,30 @@ class DefaultCar implements Car {
       deferred.reject(err)
     })
 
-    for (const root of roots) {
-      void queue.add(async () => {
-        await this.#walkDag(root, queue, async (cid, bytes) => {
-          // if a filter has been passed, skip blocks that have already been written
-          if (options?.blockFilter?.has(cid.multihash.bytes) === true) {
-            return
-          }
+    await this.#validateOptions(roots, options)
 
-          options?.blockFilter?.add(cid.multihash.bytes)
-          await writer.put({ cid, bytes })
-        }, options)
-      })
-        .catch(() => {})
+    const knownPath = options?.knownDagPath ?? []
+    let dagRoot = options?.dagRoot
+    let strategy: TraversalStrategy
+    if (dagRoot != null && knownPath.length > 0) {
+      strategy = new KnownPathStrategy(knownPath)
+    } else if (dagRoot != null) {
+      strategy = new PathFindingStrategy(roots)
+    } else {
+      strategy = new StandardWalkStrategy(roots)
+      dagRoot = roots[0]
     }
+
+    void queue.add(async () => {
+      await this.#processBlock(
+        dagRoot,
+        queue,
+        writer,
+        strategy,
+        options
+      )
+    })
+      .catch(() => {})
 
     // wait for the writer to end
     try {
@@ -236,23 +240,79 @@ class DefaultCar implements Car {
     }
   }
 
+  async #validateOptions (roots: CID[], options: ExportCarOptions | undefined): Promise<void> {
+    // Validate knownDagPath if provided
+    if (options?.knownDagPath != null && options.knownDagPath.length > 0) {
+      const knownPath = options.knownDagPath
+
+      // ensure dagRoot is provided and matches the first CID in the path
+      if (options?.dagRoot == null) {
+        options.dagRoot = knownPath[0]
+      } else if (!options.dagRoot.equals(knownPath[0])) {
+        throw new Error('knownDagPath must start with dagRoot')
+      }
+
+      // Ensure the last CID in the path is one of the target roots
+      const lastCid = knownPath[knownPath.length - 1]
+      const isTargetRoot = roots.some(r => r.equals(lastCid))
+      if (!isTargetRoot) {
+        throw new Error('knownDagPath must end with one of the target roots')
+      }
+
+      // knownDagPath is valid, we should double-check that the blockstore has all the blocks
+      const blockstore = this.components.blockstore
+      for (let i = 0; i < knownPath.length; i++) {
+        const cid = knownPath[i]
+        if (!(await blockstore.has(cid))) {
+          throw new Error(`CID in knownDagPath at index ${i} not found in blockstore`)
+        }
+      }
+    }
+  }
+
   /**
-   * Walk the DAG behind the passed CID, ensure all blocks are present in the blockstore
-   * and update the pin count for them
+   * Common method for processing a block with a specific traversal strategy
    */
-  async #walkDag (cid: CID, queue: PQueue, withBlock: (cid: CID, block: Uint8Array) => Promise<void>, options?: AbortOptions & ProgressOptions<GetBlockProgressEvents>): Promise<void> {
-    const codec = await this.components.getCodec(cid.code)
-    const bytes = await this.components.blockstore.get(cid, options)
+  async #processBlock (
+    cid: CID,
+    queue: PQueue,
+    writer: Pick<CarWriter, 'put'>,
+    strategy: TraversalStrategy,
+    options: ExportCarOptions | undefined
+  ): Promise<void> {
+    try {
+      // Skip if already processed
+      if (options?.blockFilter?.has(cid.multihash.bytes) === true) {
+        return
+      }
 
-    await withBlock(cid, bytes)
+      const codec = await this.components.getCodec(cid.code)
+      const bytes = await this.components.blockstore.get(cid, options)
 
-    const block = createUnsafe({ bytes, cid, codec })
+      // Mark as processed
+      options?.blockFilter?.add(cid.multihash.bytes)
 
-    // walk dag, ensure all blocks are present
-    for await (const [,cid] of block.links()) {
-      void queue.add(async () => {
-        await this.#walkDag(cid, queue, withBlock, options)
-      })
+      // Write to CAR
+      await writer.put({ cid, bytes })
+
+      const decodedBlock = createUnsafe({ bytes, cid, codec })
+
+      // Determine if we should traverse using the provided strategy
+      if (strategy.shouldTraverse(cid, options)) {
+        this.log.trace('traversing cid %s with strategy %s', cid.toString(), strategy.constructor.name)
+        // Process links according to the strategy
+        for await (const result of strategy.getNextCidStrategy(cid, decodedBlock)) {
+          const blockCid = (result as { cid: CID }).cid ?? result
+          const newStrategy = (result as { strategy: TraversalStrategy }).strategy ?? strategy
+
+          void queue.add(async () => {
+            await this.#processBlock(blockCid, queue, writer, newStrategy, options)
+          })
+        }
+      }
+    } catch (err) {
+      // Handle errors, but don't propagate them to avoid breaking the queue
+      this.log.error('Error processing block', err)
     }
   }
 }
