@@ -35,8 +35,9 @@ export class Bitswap implements BitswapInterface {
   public readonly stats: Stats
   public network: Network
   public blockstore: Blockstore
-  public peerWantLists: PeerWantLists
+  public peerWantLists?: PeerWantLists
   public wantList: WantList
+  public downloadOnly: boolean
 
   constructor (components: BitswapComponents, init: BitswapOptions = {}) {
     this.logger = components.logger
@@ -49,11 +50,18 @@ export class Bitswap implements BitswapInterface {
     // the network delivers messages
     this.network = new Network(components, init)
 
-    // handle which blocks we send to peers
-    this.peerWantLists = new PeerWantLists({
-      ...components,
-      network: this.network
-    }, init)
+    // only download blocks, don't provide them
+    this.downloadOnly = init.downloadOnly ?? false
+
+    if (this.downloadOnly) {
+      this.peerWantLists = undefined
+    } else {
+      // handle which blocks we send to peers
+      this.peerWantLists = new PeerWantLists({
+        ...components,
+        network: this.network
+      }, init)
+    }
 
     // handle which blocks we ask peers for
     this.wantList = new WantList({
@@ -107,10 +115,15 @@ export class Bitswap implements BitswapInterface {
    * Sends notifications about the arrival of a block
    */
   async notify (cid: CID, block: Uint8Array, options: ProgressOptions<BitswapNotifyProgressEvents> & AbortOptions = {}): Promise<void> {
-    await Promise.all([
-      this.peerWantLists.receivedBlock(cid, options),
-      this.wantList.receivedBlock(cid, options)
-    ])
+    if (this.peerWantLists === undefined) {
+      // download only
+      await this.wantList.receivedBlock(cid, options)
+    } else {
+      await Promise.all([
+        this.peerWantLists.receivedBlock(cid, options),
+        this.wantList.receivedBlock(cid, options)
+      ])
+    }
   }
 
   getWantlist (): WantListEntry[] {
@@ -124,6 +137,10 @@ export class Bitswap implements BitswapInterface {
   }
 
   getPeerWantlist (peer: PeerId): WantListEntry[] | undefined {
+    if (this.peerWantLists === undefined) {
+      return undefined
+    }
+
     return this.peerWantLists.wantListForPeer(peer)
   }
 
