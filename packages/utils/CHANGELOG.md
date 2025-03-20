@@ -1,5 +1,40 @@
 # Changelog
 
+## [1.2.2](https://github.com/ipfs/helia/compare/utils-v1.2.1...utils-v1.2.2) (2025-03-13)
+
+
+### Documentation
+
+* add spell checker to ci ([#743](https://github.com/ipfs/helia/issues/743)) ([45ca6bc](https://github.com/ipfs/helia/commit/45ca6bc70b1644028500101044595fa0e2199b07))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.2.0 to ^5.2.1
+
+## [1.2.1](https://github.com/ipfs/helia/compare/utils-v1.2.0...utils-v1.2.1) (2025-02-10)
+
+
+### Bug Fixes
+
+* update libp2p deps, send user agent with auto-tls ([#736](https://github.com/ipfs/helia/issues/736)) ([c015793](https://github.com/ipfs/helia/commit/c01579393ddd622352d0d0179c67adaf5ccc4c8f))
+
+## [1.2.0](https://github.com/ipfs/helia/compare/utils-v1.1.0...utils-v1.2.0) (2025-01-14)
+
+
+### Features
+
+* add method tracing to routing ([#715](https://github.com/ipfs/helia/issues/715)) ([5784ceb](https://github.com/ipfs/helia/commit/5784cebb3225157d6220668d4f58481f046debf2))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.1.0 to ^5.2.0
+
 ## [1.1.0](https://github.com/ipfs/helia/compare/utils-v1.0.1...utils-v1.1.0) (2024-11-18)
 
 

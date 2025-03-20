@@ -45,18 +45,38 @@ describe('publish', () => {
     const ipnsEntry = await name.publish(key, cid)
 
     expect(ipnsEntry).to.have.property('sequence', 1n)
-    expect(ipnsEntry).to.have.property('ttl', 3_600_000_000_000n) // 1 hour
+    expect(ipnsEntry).to.have.property('ttl', 300_000_000_000n) // 5 minutes
   })
 
-  it('should publish an IPNS record with a custom ttl params', async function () {
+  it('should publish an IPNS record with a custom lifetime params', async function () {
     const key = await generateKeyPair('Ed25519')
     const lifetime = 123000
+    // lifetime is used to calculate the validity timestamp
     const ipnsEntry = await name.publish(key, cid, {
       lifetime
     })
 
     expect(ipnsEntry).to.have.property('sequence', 1n)
-    expect(ipnsEntry).to.have.property('ttl', 3_600_000_000_000n)
+
+    // Ignore the milliseconds after the dot 2025-01-22T12:07:33.650000000Z
+    const expectedValidity = new Date(Date.now() + lifetime).toISOString().split('.')[0]
+
+    expect(ipnsEntry.validity.split('.')[0]).to.equal(expectedValidity)
+
+    expect(heliaRouting.put.called).to.be.true()
+    expect(customRouting.put.called).to.be.true()
+  })
+
+  it('should publish an IPNS record with a custom ttl params', async function () {
+    const key = await generateKeyPair('Ed25519')
+    const ttl = 1000 // override the default ttl
+
+    const ipnsEntry = await name.publish(key, cid, {
+      ttl
+    })
+
+    expect(ipnsEntry).to.have.property('sequence', 1n)
+    expect(ipnsEntry).to.have.property('ttl', BigInt(ttl * 1e+6))
 
     expect(heliaRouting.put.called).to.be.true()
     expect(customRouting.put.called).to.be.true()

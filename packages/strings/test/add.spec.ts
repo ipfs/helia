@@ -19,6 +19,7 @@ describe('put', () => {
   it('adds a string', async () => {
     const cid = await str.add('hello world')
 
+    // spellchecker:disable-next-line
     expect(`${cid}`).to.equal('bafkreifzjut3te2nhyekklss27nh3k72ysco7y32koao5eei66wof36n5e')
   })
 
@@ -27,6 +28,7 @@ describe('put', () => {
       hasher: identity
     })
 
+    // spellchecker:disable-next-line
     expect(`${cid}`).to.equal('bafkqac3imvwgy3zao5xxe3de')
   })
 })

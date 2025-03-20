@@ -97,11 +97,14 @@ describe('stat', function () {
   it('should stat file with mode', async () => {
     const mode = 0o644
     const cid = await fs.addFile({
+      path: '/foo.txt',
       content: smallFile,
       mode
     })
 
-    await expect(fs.stat(cid)).to.eventually.include({
+    await expect(fs.stat(cid, {
+      path: 'foo.txt'
+    })).to.eventually.include({
       mode
     })
   })
@@ -112,11 +115,14 @@ describe('stat', function () {
       nsecs: 0
     }
     const cid = await fs.addFile({
+      path: '/foo.txt',
       content: smallFile,
       mtime
     })
 
-    await expect(fs.stat(cid)).to.eventually.deep.include({
+    await expect(fs.stat(cid, {
+      path: 'foo.txt'
+    })).to.eventually.deep.include({
       mtime
     })
   })
@@ -161,7 +167,7 @@ describe('stat', function () {
     })
   })
 
-  it('sstats a sharded directory', async function () {
+  it('stats a sharded directory', async function () {
     const mtime = {
       secs: 5n,
       nsecs: 0

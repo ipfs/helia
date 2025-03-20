@@ -7,6 +7,7 @@ import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { RecordType } from '@multiformats/dns'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
+import { base36 } from 'multiformats/bases/base36'
 import { CID } from 'multiformats/cid'
 import { stubInterface } from 'sinon-ts'
 import { ipns } from '../src/index.js'
@@ -16,7 +17,7 @@ import type { DNS, Answer, DNSResponse } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
 import type { StubbedInstance } from 'sinon-ts'
 
-function dnsResponse (ansers: Answer[]): DNSResponse {
+function dnsResponse (answers: Answer[]): DNSResponse {
   return {
     Status: 0,
     TC: true,
@@ -25,7 +26,7 @@ function dnsResponse (ansers: Answer[]): DNSResponse {
     AD: true,
     CD: true,
     Question: [],
-    Answer: ansers
+    Answer: answers
   }
 }
 
@@ -128,10 +129,12 @@ describe('resolveDNSLink', () => {
       name: 'foobar.baz.',
       TTL: 60,
       type: RecordType.TXT,
+      // spellchecker:disable-next-line
       data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe/'
     }]))
 
     const result = await name.resolveDNSLink('foobar.baz', { nocache: true })
+    // spellchecker:disable-next-line
     expect(result.cid.toString()).to.equal('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe', 'doesn\'t support trailing slashes')
   })
 
@@ -141,10 +144,12 @@ describe('resolveDNSLink', () => {
       name: 'foobar.baz.',
       TTL: 60,
       type: RecordType.TXT,
+      // spellchecker:disable-next-line
       data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe/foobar/path/123'
     }]))
 
     const result = await name.resolveDNSLink('foobar.baz', { nocache: true })
+    // spellchecker:disable-next-line
     expect(result.cid.toString()).to.equal('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe', 'doesn\'t support trailing slashes')
     expect(result.path).to.equal('foobar/path/123')
   })
@@ -172,6 +177,30 @@ describe('resolveDNSLink', () => {
     expect(result.path).to.equal('foobar/path/123')
   })
 
+  it('should resolve recursive dnslink -> <IPNS_base36_CID>/<path>', async () => {
+    const cid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
+    const key = await generateKeyPair('Ed25519')
+    const peerId = peerIdFromPrivateKey(key)
+    const peerIdBase36CID = peerId.toCID().toString(base36)
+    dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
+      name: 'foobar.baz.',
+      TTL: 60,
+      type: RecordType.TXT,
+      data: `dnslink=/ipns/${peerIdBase36CID}/foobar/path/123`
+    }]))
+
+    await name.publish(key, cid)
+
+    const result = await name.resolveDNSLink('foobar.baz')
+
+    if (result == null) {
+      throw new Error('Did not resolve entry')
+    }
+
+    expect(result.cid.toString()).to.equal(cid.toV1().toString())
+    expect(result.path).to.equal('foobar/path/123')
+  })
+
   it('should follow CNAMES to delegated DNSLink domains', async () => {
     const cid = CID.parse('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe')
     const key = await generateKeyPair('Ed25519')
@@ -185,6 +214,7 @@ describe('resolveDNSLink', () => {
       name: '_dnslink.delegated.foobar.baz.',
       TTL: 60,
       type: RecordType.TXT,
+      // spellchecker:disable-next-line
       data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'
     }]))
 
@@ -212,6 +242,7 @@ describe('resolveDNSLink', () => {
       name: '_dnslink.delegated.foobar.baz.',
       TTL: 60,
       type: RecordType.TXT,
+      // spellchecker:disable-next-line
       data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'
     }]))
 
@@ -233,6 +264,7 @@ describe('resolveDNSLink', () => {
       name: '_dnslink.foobar.baz.',
       TTL: 60,
       type: RecordType.TXT,
+      // spellchecker:disable-next-line
       data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'
     }
     dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([answer]))

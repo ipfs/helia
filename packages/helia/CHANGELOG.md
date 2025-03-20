@@ -1,5 +1,65 @@
 # Changelog
 
+## [5.3.0](https://github.com/ipfs/helia/compare/helia-v5.2.1...helia-v5.3.0) (2025-03-13)
+
+
+### Features
+
+* add WebRTC-Direct listener ([#741](https://github.com/ipfs/helia/issues/741)) ([deb9165](https://github.com/ipfs/helia/commit/deb9165efe92ce9590c400955c073625eb358bb6))
+
+
+### Documentation
+
+* add spell checker to ci ([#743](https://github.com/ipfs/helia/issues/743)) ([45ca6bc](https://github.com/ipfs/helia/commit/45ca6bc70b1644028500101044595fa0e2199b07))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^4.0.4 to ^4.1.0
+    * @helia/interface bumped from ^5.2.0 to ^5.2.1
+    * @helia/routers bumped from ^3.0.0 to ^3.0.1
+    * @helia/utils bumped from ^1.2.1 to ^1.2.2
+
+## [5.2.1](https://github.com/ipfs/helia/compare/helia-v5.2.0...helia-v5.2.1) (2025-02-10)
+
+
+### Bug Fixes
+
+* update libp2p deps, send user agent with auto-tls ([#736](https://github.com/ipfs/helia/issues/736)) ([c015793](https://github.com/ipfs/helia/commit/c01579393ddd622352d0d0179c67adaf5ccc4c8f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^4.0.3 to ^4.0.4
+    * @helia/utils bumped from ^1.2.0 to ^1.2.1
+
+## [5.2.0](https://github.com/ipfs/helia/compare/helia-v5.1.1...helia-v5.2.0) (2025-01-14)
+
+
+### Features
+
+* add auto-tls support ([#716](https://github.com/ipfs/helia/issues/716)) ([e45e1de](https://github.com/ipfs/helia/commit/e45e1dea40120b993f009f8fbb81a9737742196c))
+
+
+### Bug Fixes
+
+* use @libp2p/config to load private key from keystore ([#714](https://github.com/ipfs/helia/issues/714)) ([b4f9d4f](https://github.com/ipfs/helia/commit/b4f9d4fc234cc66e9cdf444900e365b1c63b9920))
+
+
+### Dependencies
+
+* bump the helia-deps group across 2 directories with 1 update ([#717](https://github.com/ipfs/helia/issues/717)) ([1c8583c](https://github.com/ipfs/helia/commit/1c8583c89bbf47bfbe10636a9e226aabb61e20da))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^4.0.2 to ^4.0.3
+    * @helia/interface bumped from ^5.1.0 to ^5.2.0
+    * @helia/routers bumped from ^2.2.0 to ^3.0.0
+    * @helia/utils bumped from ^1.1.0 to ^1.2.0
+
 ## [5.1.1](https://github.com/ipfs/helia/compare/helia-v5.1.0...helia-v5.1.1) (2024-11-18)
 
 

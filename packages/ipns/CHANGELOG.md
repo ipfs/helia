@@ -1,5 +1,51 @@
 # Changelog
 
+## [8.2.0](https://github.com/ipfs/helia/compare/ipns-v8.1.0...ipns-v8.2.0) (2025-03-13)
+
+
+### Features
+
+* add republish signed ipns records ([#745](https://github.com/ipfs/helia/issues/745)) ([91880b0](https://github.com/ipfs/helia/commit/91880b076fbfa24e5354fb6cda8a556a807f17cc))
+
+
+### Bug Fixes
+
+* align implicit default ttl with specs ([#749](https://github.com/ipfs/helia/issues/749)) ([375796a](https://github.com/ipfs/helia/commit/375796aaead36111c4d663b061bf0edfe01c62ca))
+* handle /ipns/ prefixed keys in republishRecord ([#763](https://github.com/ipfs/helia/issues/763)) ([e6339ed](https://github.com/ipfs/helia/commit/e6339ed3cf86f7d56d1aa098de5e091b322e654e))
+
+
+### Documentation
+
+* add spell checker to ci ([#743](https://github.com/ipfs/helia/issues/743)) ([45ca6bc](https://github.com/ipfs/helia/commit/45ca6bc70b1644028500101044595fa0e2199b07))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.2.0 to ^5.2.1
+
+## [8.1.0](https://github.com/ipfs/helia/compare/ipns-v8.0.2...ipns-v8.1.0) (2025-01-24)
+
+
+### Features
+
+* allow passing custom ttl when publishing ipns ([#723](https://github.com/ipfs/helia/issues/723)) ([12df657](https://github.com/ipfs/helia/commit/12df657aa421c86df53bc54becf1d505b1c145ce))
+
+
+### Bug Fixes
+
+* handle dnslink pointing to CID with peer id (ipns name) ([#722](https://github.com/ipfs/helia/issues/722)) ([2666d64](https://github.com/ipfs/helia/commit/2666d643d8bd90db077095f20edb1924c8594185))
+
+## [8.0.2](https://github.com/ipfs/helia/compare/ipns-v8.0.1...ipns-v8.0.2) (2025-01-14)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.1.0 to ^5.2.0
+
 ## [8.0.1](https://github.com/ipfs/helia/compare/ipns-v8.0.0...ipns-v8.0.1) (2024-11-18)
 
 

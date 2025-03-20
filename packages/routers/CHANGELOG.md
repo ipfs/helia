@@ -1,5 +1,37 @@
 # Changelog
 
+## [3.0.1](https://github.com/ipfs/helia/compare/routers-v3.0.0...routers-v3.0.1) (2025-03-13)
+
+
+### Documentation
+
+* add spell checker to ci ([#743](https://github.com/ipfs/helia/issues/743)) ([45ca6bc](https://github.com/ipfs/helia/commit/45ca6bc70b1644028500101044595fa0e2199b07))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.2.0 to ^5.2.1
+
+## [3.0.0](https://github.com/ipfs/helia/compare/routers-v2.2.0...routers-v3.0.0) (2025-01-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* fix typo in HTTPGatewayRouter class/interface name ([#664](https://github.com/ipfs/helia/issues/664))
+
+### Bug Fixes
+
+* fix typo in HTTPGatewayRouter class/interface name ([#664](https://github.com/ipfs/helia/issues/664)) ([87aa9b4](https://github.com/ipfs/helia/commit/87aa9b4b21593870296c9a1c8b11c9123bbc5da1))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.1.0 to ^5.2.0
+
 ## [2.2.0](https://github.com/ipfs/helia/compare/routers-v2.1.0...routers-v2.2.0) (2024-11-18)
 
 

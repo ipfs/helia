@@ -1,6 +1,6 @@
 {
   "name": "@helia/interface",
-  "version": "5.1.0",
+  "version": "5.2.1",
   "description": "The Helia API",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/interface#readme",
@@ -80,7 +80,7 @@
     "progress-events": "^1.0.1"
   },
   "devDependencies": {
-    "aegir": "^45.0.6"
+    "aegir": "^45.1.1"
   },
   "sideEffects": false
 }

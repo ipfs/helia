@@ -1,5 +1,47 @@
 # Changelog
 
+## [4.1.0](https://github.com/ipfs/helia/compare/block-brokers-v4.0.4...block-brokers-v4.1.0) (2025-03-13)
+
+
+### Features
+
+* allow modifying trustless-gateway fetch ([#751](https://github.com/ipfs/helia/issues/751)) ([15de32f](https://github.com/ipfs/helia/commit/15de32fe0e2c6293d166d6ab95fa373fc9630a88))
+
+
+### Documentation
+
+* add spell checker to ci ([#743](https://github.com/ipfs/helia/issues/743)) ([45ca6bc](https://github.com/ipfs/helia/commit/45ca6bc70b1644028500101044595fa0e2199b07))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^2.0.4 to ^2.0.5
+    * @helia/interface bumped from ^5.2.0 to ^5.2.1
+    * @helia/utils bumped from ^1.2.1 to ^1.2.2
+
+## [4.0.4](https://github.com/ipfs/helia/compare/block-brokers-v4.0.3...block-brokers-v4.0.4) (2025-02-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^2.0.3 to ^2.0.4
+    * @helia/utils bumped from ^1.2.0 to ^1.2.1
+
+## [4.0.3](https://github.com/ipfs/helia/compare/block-brokers-v4.0.2...block-brokers-v4.0.3) (2025-01-14)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^2.0.2 to ^2.0.3
+    * @helia/interface bumped from ^5.1.0 to ^5.2.0
+    * @helia/utils bumped from ^1.1.0 to ^1.2.0
+
 ## [4.0.2](https://github.com/ipfs/helia/compare/block-brokers-v4.0.1...block-brokers-v4.0.2) (2024-11-18)
 
 

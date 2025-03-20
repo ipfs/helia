@@ -10,7 +10,7 @@ import { identity } from 'multiformats/hashes/identity'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { type MFS, mfs } from '../src/index.js'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
-import { createSubshardedDirectory } from './fixtures/create-subsharded-directory.js'
+import { createSubShardedDirectory } from './fixtures/create-subsharded-directory.js'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 
@@ -54,7 +54,7 @@ describe('cp', () => {
       .with.property('name', 'NotUnixFSError')
   })
 
-  it('refuses to copy a non-existant file', async () => {
+  it('refuses to copy a non-existent file', async () => {
     await expect(fs.cp('/foo.txt', '/bar.txt')).to.eventually.be.rejected
       .with.property('name', 'DoesNotExistError')
   })
@@ -125,6 +125,7 @@ describe('cp', () => {
 
     const subDirStats = await fs.stat(normalSubDirPath)
     expect(subDirStats).to.have.nested.property('unixfs.type', 'directory')
+    // spellchecker:disable-next-line
     expect(subDirStats.cid.toString()).to.equal('bafybeiczsscdsbs7ffqz55asqdf3smv6klcw3gofszvwlyarci47bgf354')
   })
 
@@ -146,6 +147,7 @@ describe('cp', () => {
 
     const fileInDirStats = await fs.stat(fileInDirectoryPath)
     expect(fileInDirStats).to.have.nested.property('unixfs.type', 'file')
+    // spellchecker:disable-next-line
     expect(fileInDirStats.cid.toString()).to.equal('bafybeibyuhrlz5wvmzhn5twibjtpofeek4v6afw3uvk6jkewrdkgivvcea')
   })
 
@@ -168,12 +170,12 @@ describe('cp', () => {
     })).to.eventually.be.undefined()
   })
 
-  it('copies a file to a sharded directory that creates a subshard', async () => {
+  it('copies a file to a sharded directory that creates a sub-shard', async () => {
     const {
       containingDirCid,
       fileName,
       importerCid
-    } = await createSubshardedDirectory(blockstore)
+    } = await createSubShardedDirectory(blockstore)
 
     const shardedDirPath = '/sharded-dir'
     await fs.cp(importerCid, shardedDirPath)
