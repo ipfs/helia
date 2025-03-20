@@ -80,7 +80,9 @@ describe('stat', function () {
       ...stat,
       blocks: 1n,
       dagSize: BigInt(smallFile.byteLength),
-      localSize: BigInt(smallFile.byteLength)
+      localSize: BigInt(smallFile.byteLength),
+      uniqueBlocks: 1n,
+      deduplicatedDagSize: BigInt(smallFile.byteLength)
     })
   })
 

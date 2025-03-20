@@ -49,6 +49,7 @@
 import { UnixFS as UnixFSClass } from './unixfs.js'
 import type { GetBlockProgressEvents, PutBlockProgressEvents } from '@helia/interface/blocks'
 import type { AbortOptions } from '@libp2p/interface'
+import type { Filter } from '@libp2p/utils/filters'
 import type { Blockstore } from 'interface-blockstore'
 import type { Mtime, UnixFS as IPFSUnixFS } from 'ipfs-unixfs'
 import type { ExporterProgressEvents, UnixFSEntry } from 'ipfs-unixfs-exporter'
@@ -262,6 +263,12 @@ export interface ExtendedStatOptions extends StatOptions {
    * network.
    */
   extended: true
+
+  /**
+   * By default CIDs are deduplicated using a `ScalableCuckooFilter` - if you
+   * wish to use a different filter, pass it here.
+   */
+  filter?: Filter
 }
 
 /**
@@ -294,8 +301,13 @@ export interface Stats {
   unixfs?: IPFSUnixFS
 
   /**
-   * The size in bytes of the filesystem entry. By default this is accurate for 'file'
-   * and 'raw' entries. For directories, please stat with the `extended` option, as this will return 0.
+   * The size in bytes of the file as reported by the UnixFS metadata stored in
+   * the root DAG node, or if the CID resolves to a raw node, the size of the
+   * block that holds it.
+   *
+   * For directories this will return `0` as no size information is available in
+   * the root block - instead please stat with the `extended` option to traverse
+   * the DAG and calculate the size.
    */
   size: bigint
 }
@@ -322,8 +334,27 @@ export interface RawStats extends Stats {
  */
 export interface ExtendedStats extends Stats {
   /**
+   * How many blocks make up the DAG.
+   *
+   * nb. this will only be accurate if either all blocks are present in the
+   * local blockstore or the `offline` option was not `true`
+   */
+  blocks: bigint
+
+  /**
+   * How many unique blocks make up the DAG - this count does not include any
+   * blocks that appear in the DAG more than once.
+   *
+   * nb. this will only be accurate if either all blocks are present in the
+   * local blockstore or the `offline` option was not `true`
+   */
+  uniqueBlocks: bigint
+
+  /**
    * The size of the DAG that holds the file or directory in bytes - this is
    * the sum of all block sizes so includes any protobuf overhead, etc.
+   *
+   * Duplicate blocks are included in this measurement.
    *
    * nb. this will only be accurate if either all blocks are present in the
    * local blockstore or the `offline` option was not `true`
@@ -331,18 +362,26 @@ export interface ExtendedStats extends Stats {
   dagSize: bigint
 
   /**
-   * How much of the file or directory is in the local block store. If this is a
-   * directory it will include the size of all child files and directories.
-   */
-  localSize: bigint
-
-  /**
-   * How many blocks make up the DAG.
+   * Similar to `dagSize` except duplicate blocks are not included in the
+   * reported amount.
    *
    * nb. this will only be accurate if either all blocks are present in the
    * local blockstore or the `offline` option was not `true`
    */
-  blocks: bigint
+  deduplicatedDagSize: bigint
+
+  /**
+   * How much of the file or directory is in the local block store. If this is a
+   * directory it will include the `localSize` of all child files and
+   * directories.
+   *
+   * It does not include protobuf overhead, for that see `dagSize`.
+   *
+   * nb. if the `offline` option is `true`, and not all blocks for the
+   * file/directory are in the blockstore, this number may be smaller than
+   * `size`.
+   */
+  localSize: bigint
 }
 
 export interface ExtendedFileStats extends ExtendedStats {

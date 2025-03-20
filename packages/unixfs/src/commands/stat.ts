@@ -1,5 +1,6 @@
 import * as dagPb from '@ipld/dag-pb'
 import { logger } from '@libp2p/logger'
+import { ScalableCuckooFilter } from '@libp2p/utils/filters'
 import { UnixFS } from 'ipfs-unixfs'
 import { exporter, type RawNode, type UnixFSDirectory, type UnixFSFile } from 'ipfs-unixfs-exporter'
 import mergeOpts from 'merge-options'
@@ -8,6 +9,7 @@ import { InvalidPBNodeError, NotUnixFSError, UnknownError } from '../errors.js'
 import { resolve } from './utils/resolve.js'
 import type { ExtendedStatOptions, ExtendedDirectoryStats, ExtendedFileStats, StatOptions, DirectoryStats, FileStats, RawStats, ExtendedRawStats } from '../index.js'
 import type { GetStore, HasStore } from '../unixfs.js'
+import type { Filter } from '@libp2p/utils/filters'
 import type { CID } from 'multiformats/cid'
 
 // https://github.com/ipfs/specs/blob/main/UNIXFS.md#metadata
@@ -39,7 +41,7 @@ export async function stat (cid: CID, blockstore: GetStore & HasStore, options: 
     return createRawStats(result)
   } else if (result.type === 'file' || result.type === 'directory') {
     if (options.extended === true) {
-      return createExtendedStats(result, blockstore, options)
+      return createExtendedStats(result, blockstore, options.filter ?? new ScalableCuckooFilter({ filterSize: 1024 }), options)
     }
 
     return createStats(result)
@@ -59,8 +61,8 @@ function createStats (entry: UnixFSFile | UnixFSDirectory): FileStats | Director
   }
 }
 
-async function createExtendedStats (entry: UnixFSFile | UnixFSDirectory, blockstore: GetStore & HasStore, options: StatOptions): Promise<ExtendedFileStats | ExtendedDirectoryStats> {
-  const stats = await inspectDag(entry.cid, blockstore, false, options)
+async function createExtendedStats (entry: UnixFSFile | UnixFSDirectory, blockstore: GetStore & HasStore, filter: Filter, options: StatOptions): Promise<ExtendedFileStats | ExtendedDirectoryStats> {
+  const stats = await inspectDag(entry.cid, blockstore, false, filter, options)
 
   return {
     type: entry.type,
@@ -71,7 +73,9 @@ async function createExtendedStats (entry: UnixFSFile | UnixFSDirectory, blockst
     mtime: entry.unixfs.mtime,
     localSize: stats.localSize,
     dagSize: stats.dagSize,
-    blocks: stats.blocks
+    deduplicatedDagSize: stats.deduplicatedDagSize,
+    blocks: stats.blocks,
+    uniqueBlocks: stats.uniqueBlocks
   }
 }
 
@@ -96,7 +100,9 @@ function createExtendedRawStats (entry: RawNode): ExtendedRawStats {
     size: BigInt(entry.node.byteLength),
     localSize: BigInt(entry.node.byteLength),
     dagSize: BigInt(entry.node.byteLength),
-    blocks: 1n
+    deduplicatedDagSize: BigInt(entry.node.byteLength),
+    blocks: 1n,
+    uniqueBlocks: 1n
   }
 }
 
@@ -104,21 +110,33 @@ interface InspectDagResults {
   dirSize: bigint
   localSize: bigint
   dagSize: bigint
+  deduplicatedDagSize: bigint
   blocks: bigint
+  uniqueBlocks: bigint
 }
 
-async function inspectDag (cid: CID, blockstore: GetStore & HasStore, isFile: boolean, options: StatOptions): Promise<InspectDagResults> {
+async function inspectDag (cid: CID, blockstore: GetStore & HasStore, isFile: boolean, filter: Filter, options: StatOptions): Promise<InspectDagResults> {
   const results: InspectDagResults = {
     dirSize: 0n,
     localSize: 0n,
     dagSize: 0n,
-    blocks: 0n
+    deduplicatedDagSize: 0n,
+    blocks: 0n,
+    uniqueBlocks: 0n
   }
 
   try {
+    const alreadyTraversed = filter.has(cid.bytes)
+    filter.add(cid.bytes)
+
     const block = await blockstore.get(cid, options)
     results.blocks++
     results.dagSize += BigInt(block.byteLength)
+
+    if (!alreadyTraversed) {
+      results.uniqueBlocks++
+      results.deduplicatedDagSize += BigInt(block.byteLength)
+    }
 
     if (cid.code === raw.code) {
       results.localSize += BigInt(block.byteLength)
@@ -138,12 +156,13 @@ async function inspectDag (cid: CID, blockstore: GetStore & HasStore, isFile: bo
       if (pbNode.Links.length > 0) {
         // intermediate node
         for (const link of pbNode.Links) {
-          const linkResult = await inspectDag(link.Hash, blockstore, linkIsFile(link, unixfs), options)
+          const linkResult = await inspectDag(link.Hash, blockstore, linkIsFile(link, unixfs), filter, options)
 
           results.localSize += linkResult.localSize
           results.dagSize += linkResult.dagSize
+          results.deduplicatedDagSize += linkResult.deduplicatedDagSize
           results.blocks += linkResult.blocks
-
+          results.uniqueBlocks += linkResult.uniqueBlocks
           results.dirSize += linkResult.dirSize
         }
 
