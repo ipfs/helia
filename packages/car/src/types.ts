@@ -33,6 +33,14 @@ export interface TraversalStrategy {
 }
 
 export interface ExportCarOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents> {
+
+  /**
+   * If true, the blockstore will not do any network requests.
+   *
+   * @default false
+   */
+  offline?: boolean
+
   /**
    * If a filter is passed it will be used to deduplicate blocks exported in the car file
    */
@@ -72,8 +80,6 @@ export interface ExportCarOptions extends AbortOptions, ProgressOptions<GetBlock
   /**
    * An ordered array of CIDs representing the known path from dagRoot to the target root.
    * The array should start with dagRoot (at index 0) and end with the target root CID.
-   *
-   * If you provide `knownDagPath`, you should already have verified that the CIDs in the path are present in the blockstore.
    *
    * This allows optimizing the path traversal by skipping the expensive path-finding process
    * when the path from dagRoot to the target root is already known, reducing network requests

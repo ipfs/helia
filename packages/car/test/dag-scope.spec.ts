@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import { CarReader } from '@ipld/car'
+import { prefixLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import loadFixtures from 'aegir/fixtures'
 import { MemoryBlockstore } from 'blockstore-core'
@@ -11,6 +12,8 @@ import { carEquals, CarEqualsSkip } from './fixtures/car-equals.js'
 import { getCodec } from './fixtures/get-codec.js'
 import { memoryCarWriter } from './fixtures/memory-car.js'
 import type { Blockstore } from 'interface-blockstore'
+
+const logger = prefixLogger('test:dag-scope')
 
 describe('dag-scope', () => {
   let blockstore: Blockstore
@@ -34,7 +37,7 @@ describe('dag-scope', () => {
     blockstore = sinon.spy(new MemoryBlockstore())
     blockstoreGetSpy = blockstore.get as sinon.SinonSpy
 
-    c = car({ blockstore, getCodec })
+    c = car({ blockstore, getCodec, logger })
   })
 
   it('generates a proper car file with dag-scope=all', async () => {
@@ -203,6 +206,6 @@ describe('dag-scope', () => {
     await expect(c.export(subDagRoot, writer, {
       dagRoot,
       knownDagPath
-    })).to.eventually.be.rejectedWith('CID in knownDagPath at index 1 not found in blockstore')
+    })).to.eventually.be.rejectedWith('block bafyreif3tfdpr5n4jdrbielmcapwvbpcthepfkwq2vwonmlhirbjmotedi not found in blockstore')
   })
 })

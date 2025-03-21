@@ -67,6 +67,7 @@ import { type CID } from 'multiformats/cid'
 import defer from 'p-defer'
 import PQueue from 'p-queue'
 import { DAG_WALK_QUEUE_CONCURRENCY } from './constants.js'
+import { BlockNotFoundError } from './errors.js'
 import { KnownPathStrategy } from './strategies/known-path-strategy.js'
 import { PathFindingStrategy } from './strategies/path-finding-strategy.js'
 import { StandardWalkStrategy } from './strategies/standard-walk-strategy.js'
@@ -256,15 +257,6 @@ class DefaultCar implements Car {
       if (!isTargetRoot) {
         throw new Error('knownDagPath must end with one of the target roots')
       }
-
-      // knownDagPath is valid, we should double-check that the blockstore has all the blocks
-      const blockstore = this.components.blockstore
-      for (let i = 0; i < knownPath.length; i++) {
-        const cid = knownPath[i]
-        if (!(await blockstore.has(cid))) {
-          throw new Error(`CID in knownDagPath at index ${i} not found in blockstore`)
-        }
-      }
     }
   }
 
@@ -305,7 +297,12 @@ class DefaultCar implements Car {
           })
         }
       }
-    } catch (err) {
+    } catch (err: any) {
+      if (err.name === 'NotFoundError') {
+        this.log?.error('block %c not found in blockstore', cid)
+        throw new BlockNotFoundError(cid)
+      }
+
       // Handle errors, but don't propagate them to avoid breaking the queue
       this.log?.error('error processing block - %e', err)
     }
