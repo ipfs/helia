@@ -1,6 +1,6 @@
 import { DAG_PB_CODEC_CODE } from '../constants.js'
 import { StandardWalkStrategy } from './standard-walk-strategy.js'
-import type { ExportCarOptions, TraversalStrategy } from '../types.js'
+import type { ExportCarOptions, StrategyResult, TraversalStrategy } from '../types.js'
 import type { CID } from 'multiformats/cid'
 
 /**
@@ -29,7 +29,7 @@ export class PathFindingStrategy implements TraversalStrategy {
     return true
   }
 
-  async * getNextCidStrategy (cid: CID, block: any): AsyncGenerator<{ cid: CID, strategy: TraversalStrategy }, void, undefined> {
+  async * getNextCidStrategy (cid: CID, block: any): AsyncGenerator<StrategyResult, void, undefined> {
     const isTargetRoot = this.targetRoots.some(r => r.equals(cid))
 
     for await (const [, linkedCid] of block.links()) {

@@ -1,6 +1,6 @@
 import { DAG_PB_CODEC_CODE } from '../constants.js'
 import { type ExportCarOptions } from '../index.js'
-import type { TraversalStrategy } from '../types.js'
+import type { StrategyResult, TraversalStrategy } from '../types.js'
 import type { CID } from 'multiformats/cid'
 
 /**
@@ -32,18 +32,18 @@ export class StandardWalkStrategy implements TraversalStrategy {
    *
    * When other strategies return this strategy for use, we likely will not have multiple roots, so we will not emit the roots again
    */
-  async * getNextCidStrategy (cid: CID, block: any): AsyncGenerator<CID, void, undefined> {
+  async * getNextCidStrategy (cid: CID, block: any): AsyncGenerator<StrategyResult, void, undefined> {
     if (!this.emittedRoots) {
       for (const root of this.roots) {
         if (!root.equals(cid)) {
-          yield root
+          yield { cid: root, strategy: this }
         }
       }
       this.emittedRoots = true
     }
 
     for await (const [, linkedCid] of block.links()) {
-      yield linkedCid
+      yield { cid: linkedCid, strategy: this }
     }
   }
 }

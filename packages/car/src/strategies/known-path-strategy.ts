@@ -1,6 +1,6 @@
 import { type ExportCarOptions } from '../index.js'
 import { StandardWalkStrategy } from './standard-walk-strategy.js'
-import type { TraversalStrategy } from '../types.js'
+import type { StrategyResult, TraversalStrategy } from '../types.js'
 import type { CID } from 'multiformats/cid'
 
 /**
@@ -23,7 +23,7 @@ export class KnownPathStrategy implements TraversalStrategy {
    *
    * If the next CID is the last CID in the known path, we need to return a new strategy to traverse the last CID.
    */
-  async * getNextCidStrategy (cid: CID, _block: any): AsyncGenerator<CID | { cid: CID, strategy: TraversalStrategy }, void, undefined> {
+  async * getNextCidStrategy (cid: CID, _block: any): AsyncGenerator<StrategyResult, void, undefined> {
     const givenCidIndex = this.knownPath.indexOf(cid)
     const nextCid = this.knownPath[givenCidIndex + 1]
 
@@ -33,7 +33,7 @@ export class KnownPathStrategy implements TraversalStrategy {
         strategy: new StandardWalkStrategy()
       }
     } else {
-      yield nextCid
+      yield { cid: nextCid, strategy: this }
     }
   }
 }

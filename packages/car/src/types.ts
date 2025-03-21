@@ -12,6 +12,11 @@ export interface CarComponents {
   getCodec: CodecLoader
 }
 
+export interface StrategyResult {
+  cid: CID
+  strategy: TraversalStrategy
+}
+
 /**
  * Interface for different traversal strategies
  */
@@ -24,7 +29,7 @@ export interface TraversalStrategy {
   /**
    * Get the next CID, and potentially new strategy to traverse
    */
-  getNextCidStrategy(cid: CID, block: any): AsyncGenerator<CID | { cid: CID, strategy: TraversalStrategy }, void, undefined>
+  getNextCidStrategy(cid: CID, block: any): AsyncGenerator<StrategyResult, void, undefined>
 }
 
 export interface ExportCarOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents> {

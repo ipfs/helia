@@ -300,17 +300,14 @@ class DefaultCar implements Car {
         this.log?.trace('traversing cid %s with strategy %s', cid.toString(), strategy.constructor.name)
         // Process links according to the strategy
         for await (const result of strategy.getNextCidStrategy(cid, decodedBlock)) {
-          const blockCid = (result as { cid: CID }).cid ?? result
-          const newStrategy = (result as { strategy: TraversalStrategy }).strategy ?? strategy
-
           void queue.add(async () => {
-            await this.#processBlock(blockCid, queue, writer, newStrategy, options)
+            await this.#processBlock(result.cid, queue, writer, result.strategy, options)
           })
         }
       }
     } catch (err) {
       // Handle errors, but don't propagate them to avoid breaking the queue
-      this.log?.error('Error processing block', err)
+      this.log?.error('error processing block - %e', err)
     }
   }
 }
