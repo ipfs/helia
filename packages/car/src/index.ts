@@ -60,7 +60,6 @@
  */
 
 import { CarWriter } from '@ipld/car'
-import { defaultLogger } from '@libp2p/logger'
 import drain from 'it-drain'
 import map from 'it-map'
 import { createUnsafe } from 'multiformats/block'
@@ -163,11 +162,11 @@ export interface Car {
 
 class DefaultCar implements Car {
   private readonly components: CarComponents
-  private readonly log: Logger
+  private readonly log?: Logger
 
   constructor (components: CarComponents, init: any) {
     this.components = components
-    this.log = (init.logger ?? defaultLogger()).forComponent('helia:car')
+    this.log = components.logger?.forComponent('helia:car')
   }
 
   async import (reader: Pick<CarReader, 'blocks'>, options?: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents>): Promise<void> {
@@ -298,7 +297,7 @@ class DefaultCar implements Car {
 
       // Determine if we should traverse using the provided strategy
       if (strategy.shouldTraverse(cid, options)) {
-        this.log.trace('traversing cid %s with strategy %s', cid.toString(), strategy.constructor.name)
+        this.log?.trace('traversing cid %s with strategy %s', cid.toString(), strategy.constructor.name)
         // Process links according to the strategy
         for await (const result of strategy.getNextCidStrategy(cid, decodedBlock)) {
           const blockCid = (result as { cid: CID }).cid ?? result
@@ -311,7 +310,7 @@ class DefaultCar implements Car {
       }
     } catch (err) {
       // Handle errors, but don't propagate them to avoid breaking the queue
-      this.log.error('Error processing block', err)
+      this.log?.error('Error processing block', err)
     }
   }
 }
