@@ -1,5 +1,23 @@
 # Changelog
 
+## [5.0.0](https://github.com/ipfs/helia/compare/mfs-v4.0.3...mfs-v5.0.0) (2025-03-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* Fields that would involve DAG traversal have been removed from the output of `fs.stat` - pass the `extended` option to have them returned
+
+### Bug Fixes
+
+* return simple stats or extended stats ([#760](https://github.com/ipfs/helia/issues/760)) ([325b36f](https://github.com/ipfs/helia/commit/325b36f70624d3dcc25b2723f9e3e2d26e1e5199))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/unixfs bumped from ^4.0.3 to ^5.0.0
+
 ## [4.0.3](https://github.com/ipfs/helia/compare/mfs-v4.0.2...mfs-v4.0.3) (2025-03-13)
 
 
