@@ -63,7 +63,8 @@ export interface ExportCarOptions extends AbortOptions, ProgressOptions<GetBlock
    * when the path from dagRoot to the target root is already known, reducing network requests
    * and computation time.
    *
-   * Example usage:
+   * @example
+   *
    * ```typescript
    * await c.export(targetCid, writer, {
    *   dagRoot: rootCid,
