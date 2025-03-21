@@ -1,5 +1,4 @@
 import { DAG_PB_CODEC_CODE } from '../constants.js'
-import { DagScope } from '../dag-scope.js'
 import { StandardWalkStrategy } from './standard-walk-strategy.js'
 import type { ExportCarOptions, TraversalStrategy } from '../types.js'
 import type { CID } from 'multiformats/cid'
@@ -18,11 +17,11 @@ export class PathFindingStrategy implements TraversalStrategy {
     const isTargetRoot = this.targetRoots.some(r => r.equals(cid))
 
     if (isTargetRoot) {
-      if (options?.dagScope === DagScope.BLOCK) {
+      if (options?.dagScope === 'block') {
         return false
       }
 
-      if (options?.dagScope === DagScope.ENTITY && cid.code !== DAG_PB_CODEC_CODE) {
+      if (options?.dagScope === 'entity' && cid.code !== DAG_PB_CODEC_CODE) {
         return false
       }
     }

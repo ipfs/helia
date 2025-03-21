@@ -1,4 +1,3 @@
-import { type DagScope } from './dag-scope.js'
 import type { CodecLoader } from '@helia/interface'
 import type { GetBlockProgressEvents } from '@helia/interface/blocks'
 import type { AbortOptions, ComponentLogger } from '@libp2p/interface'
@@ -37,9 +36,21 @@ export interface ExportCarOptions extends AbortOptions, ProgressOptions<GetBlock
   /**
    * The DAG scope to use for the export.
    *
-   * @default DagScope.ALL
+   * 'all' - Transmit the entire contiguous DAG that begins at the end of the path
+   * query, after blocks required to verify path segments
+   *
+   * 'block' - Only the root block at the end of the path is returned after blocks required
+   * to verify the specified path segments.
+   *
+   * 'entity' - For queries that traverse UnixFS data, 'entity' roughly means return blocks
+   * needed to verify the terminating element of the requested content path.
+   * For UnixFS, all the blocks needed to read an entire UnixFS file, or enumerate
+   * a UnixFS directory. For all queries that reference non-UnixFS data, 'entity'
+   * is equivalent to 'block'
+   *
+   * @default 'all'
    */
-  dagScope?: DagScope
+  dagScope?: 'block' | 'entity' | 'all'
 
   /**
    * Root CID of the DAG being operated on. If the CAR root provided to `export` or `stream` is not the root of the dag,

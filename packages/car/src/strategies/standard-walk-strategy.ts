@@ -1,5 +1,5 @@
 import { DAG_PB_CODEC_CODE } from '../constants.js'
-import { DagScope, type ExportCarOptions } from '../index.js'
+import { type ExportCarOptions } from '../index.js'
 import type { TraversalStrategy } from '../types.js'
 import type { CID } from 'multiformats/cid'
 
@@ -16,11 +16,11 @@ export class StandardWalkStrategy implements TraversalStrategy {
 
   shouldTraverse (cid: CID, options?: ExportCarOptions): boolean {
     // Apply dagScope rules for traversal
-    if (options?.dagScope === DagScope.BLOCK) {
+    if (options?.dagScope === 'block') {
       return false
     }
 
-    if (options?.dagScope === DagScope.ENTITY && cid.code !== DAG_PB_CODEC_CODE) {
+    if (options?.dagScope === 'entity' && cid.code !== DAG_PB_CODEC_CODE) {
       return false
     }
 

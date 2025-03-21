@@ -68,7 +68,6 @@ import { type CID } from 'multiformats/cid'
 import defer from 'p-defer'
 import PQueue from 'p-queue'
 import { DAG_WALK_QUEUE_CONCURRENCY } from './constants.js'
-import { DagScope } from './dag-scope.js'
 import { KnownPathStrategy } from './strategies/known-path-strategy.js'
 import { PathFindingStrategy } from './strategies/path-finding-strategy.js'
 import { StandardWalkStrategy } from './strategies/standard-walk-strategy.js'
@@ -78,7 +77,7 @@ import type { CarReader } from '@ipld/car'
 import type { AbortOptions, Logger } from '@libp2p/interface'
 import type { ProgressOptions } from 'progress-events'
 
-export { DagScope, type ExportCarOptions, type CarComponents }
+export type { ExportCarOptions, CarComponents }
 
 /**
  * The Car interface provides operations for importing and exporting Car files

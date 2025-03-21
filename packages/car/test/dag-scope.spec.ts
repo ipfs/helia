@@ -7,7 +7,6 @@ import { MemoryBlockstore } from 'blockstore-core'
 import { CID } from 'multiformats/cid'
 import sinon from 'sinon'
 import { car, type Car } from '../src/index.js'
-import { DagScope } from '../src/index.js'
 import { carEquals, CarEqualsSkip } from './fixtures/car-equals.js'
 import { getCodec } from './fixtures/get-codec.js'
 import { memoryCarWriter } from './fixtures/memory-car.js'
@@ -111,7 +110,7 @@ describe('dag-scope', () => {
     await c.import(reader)
 
     const writer = memoryCarWriter(dagRoot)
-    await c.export(dagRoot, writer, { dagScope: DagScope.BLOCK })
+    await c.export(dagRoot, writer, { dagScope: 'block' })
 
     const ourReader = await CarReader.fromBytes(await writer.bytes())
 
@@ -138,7 +137,7 @@ describe('dag-scope', () => {
     await c.import(reader)
 
     const writer = memoryCarWriter(nonUnixFsRoot)
-    await c.export(nonUnixFsRoot, writer, { dagScope: DagScope.ENTITY })
+    await c.export(nonUnixFsRoot, writer, { dagScope: 'entity' })
 
     const ourReader = await CarReader.fromBytes(await writer.bytes())
 
@@ -167,7 +166,7 @@ describe('dag-scope', () => {
     await c.export(subDagRoot, writer, {
       dagRoot,
       knownDagPath,
-      dagScope: DagScope.BLOCK
+      dagScope: 'block'
     })
 
     const carData = await writer.bytes()
