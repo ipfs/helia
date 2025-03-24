@@ -206,6 +206,7 @@ describe('dag-scope', () => {
     await expect(c.export(subDagRoot, writer, {
       dagRoot,
       knownDagPath
+    // cspell:ignore bafyreif3tfdpr5n4jdrbielmcapwvbpcthepfkwq2vwonmlhirbjmotedi
     })).to.eventually.be.rejectedWith('block bafyreif3tfdpr5n4jdrbielmcapwvbpcthepfkwq2vwonmlhirbjmotedi not found in blockstore')
   })
 })
