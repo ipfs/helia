@@ -23,52 +23,72 @@ describe('stat', () => {
   })
 
   it('stats an empty directory', async () => {
-    await expect(fs.stat('/')).to.eventually.include({
-      fileSize: 0n,
-      dagSize: 2n,
-      blocks: 1,
-      type: 'directory'
+    const stat = await fs.stat('/')
+    expect(stat.type).to.equal('directory')
+
+    const extendedStats = await fs.stat('/', {
+      extended: true
     })
+
+    expect(extendedStats.type).to.equal('directory')
+    expect(extendedStats.blocks).to.equal(1n)
+    expect(extendedStats.dagSize).to.equal(4n)
+    expect(extendedStats.localSize).to.equal(0n)
+    expect(extendedStats.unixfs?.type).to.equal('directory')
   })
 
   it('computes how much of the DAG is local', async () => {
     const filePath = '/foo.txt'
     await fs.writeBytes(largeFile, filePath)
 
-    const stats = await fs.stat(filePath)
+    const stats = await fs.stat(filePath, {
+      extended: true
+    })
 
     const block = await blockstore.get(stats.cid)
     const node = dagPb.decode(block)
 
     expect(node.Links).to.have.lengthOf(5)
 
-    expect(stats).to.include({
-      fileSize: 5242880n,
-      blocks: 6,
-      localDagSize: 5243139n
-    })
+    expect(stats.unixfs?.fileSize()).to.equal(5242880n)
+    expect(stats.blocks).to.equal(6n)
+    expect(stats.dagSize).to.equal(5243139n)
+    expect(stats.localSize).to.equal(5242880n)
 
     // remove one of the blocks so we now have an incomplete DAG
     await blockstore.delete(node.Links[0].Hash)
 
     // block count and local file/dag sizes should be smaller
-    await expect(fs.stat(filePath)).to.eventually.include({
-      fileSize: 5242880n,
-      blocks: 5,
-      localFileSize: 4194304n,
-      localDagSize: 4194563n
+    const updatedStats = await fs.stat(filePath, {
+      extended: true,
+      offline: true
     })
+
+    expect(updatedStats.unixfs?.fileSize()).to.equal(5242880n)
+    expect(updatedStats.blocks).to.equal(5n)
+    expect(updatedStats.dagSize).to.equal(4194563n)
+    expect(updatedStats.localSize).to.equal(4194304n)
   })
 
   it('stats a raw node', async () => {
     const filePath = '/foo.txt'
     await fs.writeBytes(smallFile, filePath)
 
-    await expect(fs.stat(filePath)).to.eventually.include({
-      fileSize: BigInt(smallFile.length),
-      dagSize: 13n,
-      blocks: 1,
-      type: 'raw'
+    const stat = await fs.stat(filePath)
+    expect(stat.type).to.equal('raw')
+    expect(stat.size).to.equal(13n)
+
+    const extendedStat = await fs.stat(filePath, {
+      extended: true
+    })
+
+    expect(extendedStat).to.deep.equal({
+      ...stat,
+      blocks: 1n,
+      dagSize: BigInt(smallFile.byteLength),
+      localSize: BigInt(smallFile.byteLength),
+      uniqueBlocks: 1n,
+      deduplicatedDagSize: BigInt(smallFile.byteLength)
     })
   })
 
@@ -79,24 +99,38 @@ describe('stat', () => {
       rawLeaves: false
     })
 
-    await expect(fs.stat(filePath)).to.eventually.include({
-      fileSize: BigInt(smallFile.length),
-      dagSize: 19n,
-      blocks: 1,
-      type: 'file'
+    const stat = await fs.stat(filePath)
+    expect(stat.type).to.equal('file')
+    expect(stat.unixfs?.fileSize()).to.equal(13n)
+
+    const extendedStat = await fs.stat(filePath, {
+      extended: true
     })
+
+    expect(extendedStat.blocks).to.equal(1n)
+    expect(extendedStat.dagSize).to.equal(21n)
+    expect(extendedStat.localSize).to.equal(13n)
+    expect(extendedStat.type).to.equal('file')
+    expect(extendedStat.unixfs?.fileSize()).to.equal(13n)
   })
 
   it('stats a large file', async () => {
     const filePath = '/foo.txt'
     await fs.writeBytes(largeFile, filePath)
 
-    await expect(fs.stat(filePath)).to.eventually.include({
-      fileSize: BigInt(largeFile.length),
-      dagSize: 5242907n,
-      blocks: 6,
-      type: 'file'
+    const stat = await fs.stat(filePath)
+    expect(stat.type).to.equal('file')
+    expect(stat.unixfs?.fileSize()).to.equal(BigInt(largeFile.length))
+
+    const extendedStat = await fs.stat(filePath, {
+      extended: true
     })
+
+    expect(extendedStat.blocks).to.equal(6n)
+    expect(extendedStat.dagSize).to.equal(5243139n)
+    expect(extendedStat.localSize).to.equal(BigInt(largeFile.length))
+    expect(extendedStat.type).to.equal('file')
+    expect(extendedStat.unixfs?.fileSize()).to.equal(BigInt(largeFile.length))
   })
 
   it('should stat file with mode', async () => {
@@ -106,9 +140,8 @@ describe('stat', () => {
       mode
     })
 
-    await expect(fs.stat(filePath)).to.eventually.include({
-      mode
-    })
+    const stat = await fs.stat(filePath)
+    expect(stat.unixfs?.mode).to.equal(mode)
   })
 
   it('should stat file with mtime', async function () {
@@ -121,17 +154,22 @@ describe('stat', () => {
       mtime
     })
 
-    await expect(fs.stat(filePath)).to.eventually.deep.include({
-      mtime
-    })
+    const stat = await fs.stat(filePath)
+    expect(stat.unixfs?.mtime).to.deep.equal(mtime)
   })
 
   it('should stat a directory', async function () {
-    await expect(fs.stat('/')).to.eventually.include({
-      type: 'directory',
-      blocks: 1,
-      fileSize: 0n
+    const stat = await fs.stat('/')
+    expect(stat.type).to.equal('directory')
+
+    const extendedStat = await fs.stat('/', {
+      extended: true
     })
+
+    expect(extendedStat.blocks).to.equal(1n)
+    expect(extendedStat.dagSize).to.equal(4n)
+    expect(extendedStat.localSize).to.equal(0n)
+    expect(extendedStat.type).to.equal('directory')
   })
 
   it('should stat dir with mode', async function () {
@@ -141,9 +179,8 @@ describe('stat', () => {
       mode
     })
 
-    await expect(fs.stat(path)).to.eventually.include({
-      mode
-    })
+    const stat = await fs.stat(path)
+    expect(stat.unixfs?.mode).to.equal(mode)
   })
 
   it('should stat dir with mtime', async function () {
@@ -157,9 +194,8 @@ describe('stat', () => {
       mtime
     })
 
-    await expect(fs.stat(path)).to.eventually.deep.include({
-      mtime
-    })
+    const stat = await fs.stat(path)
+    expect(stat.unixfs?.mtime).to.deep.equal(mtime)
   })
 
   it('stats a sharded directory', async function () {
@@ -176,14 +212,18 @@ describe('stat', () => {
     })
 
     const stat = await fs.stat(shardedDirPath)
-    expect(stat).to.have.property('type', 'directory')
-    expect(stat).to.have.nested.property('unixfs.type', 'hamt-sharded-directory')
-    expect(stat).to.include({
-      mode: 0o755
+    expect(stat.type).to.equal('directory')
+    expect(stat.unixfs?.type).to.equal('hamt-sharded-directory')
+
+    const extendedStat = await fs.stat(shardedDirPath, {
+      extended: true
     })
-    expect(stat).to.deep.include({
-      mtime
-    })
+
+    expect(extendedStat.blocks).to.equal(1243n)
+    expect(extendedStat.dagSize).to.equal(79157n)
+    expect(extendedStat.localSize).to.equal(5005n)
+    expect(extendedStat.type).to.equal('directory')
+    expect(extendedStat.unixfs?.type).to.equal('hamt-sharded-directory')
   })
 
   it('stats a file inside a sharded directory', async () => {
@@ -198,7 +238,6 @@ describe('stat', () => {
     })
 
     const stats = await fs.stat(filePath)
-    expect(stats.type).to.equal('file')
-    expect(stats.fileSize).to.equal(4n)
+    expect(stats.unixfs?.fileSize()).to.equal(4n)
   })
 })
