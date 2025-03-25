@@ -27,45 +27,6 @@ Loading this module through a script tag will make its exports available as `Hel
 <script src="https://unpkg.com/@helia/block-brokers/dist/index.min.js"></script>
 ```
 
-# Example - Customizing trustless gateway requests
-
-```typescript
-import { TrustlessGatewayBlockBroker } from "@helia/block-brokers/trustless-gateway/broker.js";
-import { defaultLogger } from "@libp2p/logger";
-import { CID } from "multiformats/cid";
-
-// Create a trustless gateway block broker with custom request options
-const gatewayBlockBroker = new TrustlessGatewayBlockBroker(
-  {
-    routing, // Your routing implementation
-    logger: defaultLogger(),
-  },
-  {
-    allowInsecure: true,
-    allowLocal: true,
-    // Add a transformRequestInit function to customize the fetch request
-    transformRequestInit: (requestInit) => {
-      // Add authentication headers for your gateway
-      requestInit.headers = {
-        ...requestInit.headers,
-        Authorization: "Bearer your-jwt-token-here",
-      };
-      return requestInit;
-    },
-  }
-);
-
-// Use the block broker to retrieve blocks
-const cid = CID.parse(
-  "bafybeic3q4y65yxu3yckr76q63bcvanhklwf6cwxuacnrot6v3gykrgsvq"
-);
-const block = await gatewayBlockBroker.retrieve?.(cid, {
-  validateFn: async (block) => {
-    // Optional validation function
-    // You can validate the retrieved block here
-  },
-});
-```
 
 # API Docs
 
