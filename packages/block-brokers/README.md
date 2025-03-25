@@ -13,6 +13,63 @@
 
 > Block brokers for Helia
 
+# About
+
+<!--
+
+!IMPORTANT!
+
+Everything in this README between "# About" and "# Install" is automatically
+generated and will be overwritten the next time the doc generator is run.
+
+To make changes to this section, please update the @packageDocumentation section
+of src/index.js or src/index.ts
+
+To experiment with formatting, please run "npm run docs" from the root of this
+repo and examine the changes made.
+
+-->
+
+## Trustless Gateway Block Broker
+
+The TrustlessGatewayBlockBroker allows customizing fetch requests to HTTP gateways.
+
+## Example
+
+```typescript
+import { createHelia } from 'helia'
+import { trustlessGateway } from '@helia/block-brokers'
+import { httpGatewayRouting } from '@helia/routers'
+import { unixfs } from '@helia/unixfs'
+import { CID } from 'multiformats/cid'
+
+const routing = httpGatewayRouting({
+  gateways: ['https://ipfs.io/ipfs/', 'https://dweb.link/ipfs/']
+})
+
+const helia = await createHelia({
+  routers: [routing],
+  blockBrokers: [
+    trustlessGateway({
+      transformRequestInit: (requestInit) => {
+        requestInit.headers = {
+          ...requestInit.headers,
+          'User-Agent': 'Helia Example Script'
+        }
+        return requestInit
+      }
+    })
+  ]
+})
+
+const fs = unixfs(helia)
+const cid = CID.parse('bafybeigdyrzt5sfp7udm7hu76kzwnh2n2p6evoqjbkgdojqagqauik5way')
+
+const content = await fs.cat(cid)
+
+console.log(content)
+```
+
 # Install
 
 ```console
@@ -26,7 +83,6 @@ Loading this module through a script tag will make its exports available as `Hel
 ```html
 <script src="https://unpkg.com/@helia/block-brokers/dist/index.min.js"></script>
 ```
-
 
 # API Docs
 
