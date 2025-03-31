@@ -52,7 +52,7 @@ export interface ExportCarOptions extends AbortOptions, ProgressOptions<GetBlock
    * 'all' - Transmit the entire contiguous DAG that begins at the end of the path
    * query, after blocks required to verify path segments
    *
-   * 'block' - Only the root block at the end of the path is returned after blocks required
+   * 'block' - Only the target block at the end of the path is returned after blocks required
    * to verify the specified path segments.
    *
    * 'entity' - For queries that traverse UnixFS data, 'entity' roughly means return blocks
