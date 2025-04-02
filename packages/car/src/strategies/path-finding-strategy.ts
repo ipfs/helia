@@ -1,6 +1,7 @@
 import { DAG_PB_CODEC_CODE } from '../constants.js'
 import { StandardWalkStrategy } from './standard-walk-strategy.js'
-import type { ExportCarOptions, StrategyResult, TraversalStrategy } from '../types.js'
+import type { ExportCarOptions } from '../index.js'
+import type { StrategyResult, TraversalStrategy } from '../types.js'
 import type { CID } from 'multiformats/cid'
 
 /**
