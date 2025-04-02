@@ -1,17 +1,17 @@
 import { DAG_PB_CODEC_CODE } from '../constants.js'
 import { type ExportCarOptions } from '../index.js'
 import type { StrategyResult, TraversalStrategy } from '../types.js'
+import type { BlockView } from 'multiformats/block/interface'
 import type { CID } from 'multiformats/cid'
-
 /**
  * Strategy for standard DAG walking
  */
 export class StandardWalkStrategy implements TraversalStrategy {
-  private readonly roots: Set<CID>
+  private readonly roots: CID[]
   private emittedRoots: boolean = false
 
   constructor (roots: CID[] = []) {
-    this.roots = new Set(roots)
+    this.roots = roots
   }
 
   shouldTraverse (cid: CID, options?: ExportCarOptions): boolean {
