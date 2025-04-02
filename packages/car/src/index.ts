@@ -67,7 +67,6 @@ import { type CID } from 'multiformats/cid'
 import defer from 'p-defer'
 import PQueue from 'p-queue'
 import { DAG_WALK_QUEUE_CONCURRENCY } from './constants.js'
-import { BlockNotFoundError } from './errors.js'
 import { KnownPathStrategy } from './strategies/known-path-strategy.js'
 import { PathFindingStrategy } from './strategies/path-finding-strategy.js'
 import { StandardWalkStrategy } from './strategies/standard-walk-strategy.js'
@@ -300,7 +299,7 @@ class DefaultCar implements Car {
     } catch (err: any) {
       if (err.name === 'NotFoundError') {
         this.log?.error('block %c not found in blockstore', cid)
-        throw new BlockNotFoundError(cid)
+        throw err
       }
 
       // Handle errors, but don't propagate them to avoid breaking the queue
