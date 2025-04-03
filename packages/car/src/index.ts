@@ -67,16 +67,15 @@ import { type CID } from 'multiformats/cid'
 import defer from 'p-defer'
 import PQueue from 'p-queue'
 import { DAG_WALK_QUEUE_CONCURRENCY } from './constants.js'
-import { KnownPathStrategy } from './strategies/known-path-strategy.js'
-import { PathFindingStrategy } from './strategies/path-finding-strategy.js'
-import { StandardWalkStrategy } from './strategies/standard-walk-strategy.js'
-import type { TraversalStrategy } from './types.js'
+import { SubgraphExporter } from './export-strategies/subgraph-exporter.js'
+import { GraphSearch } from './traversal-strategies/graph-search.js'
 import type { CodecLoader } from '@helia/interface'
 import type { PutManyBlocksProgressEvents, GetBlockProgressEvents } from '@helia/interface/blocks'
 import type { CarReader } from '@ipld/car'
 import type { AbortOptions, Logger, ComponentLogger } from '@libp2p/interface'
 import type { Filter } from '@libp2p/utils/filters'
 import type { Blockstore } from 'interface-blockstore'
+import type { BlockView } from 'multiformats/block/interface'
 import type { ProgressOptions } from 'progress-events'
 
 export interface CarComponents {
@@ -84,6 +83,36 @@ export interface CarComponents {
   blockstore: Blockstore
   getCodec: CodecLoader
 }
+
+export interface Strategy {
+  /**
+   * Traverse the DAG and yield the next CID to traverse
+   */
+  traverse<T extends BlockView<any, any, any, 0 | 1>>(cid: CID, block: T): AsyncGenerator<CID, void, undefined>
+
+}
+
+/**
+ * Interface for different traversal strategies.
+ *
+ * While traversing the DAG, it will yield blocks that it has traversed.
+ *
+ * When done traversing, it should contain the path from the root(s) to the target CID.
+ */
+export interface TraversalStrategy extends Strategy {
+  isTarget(cid: CID): boolean
+}
+
+/**
+ * Interface for different export strategies.
+ * When traversal has ended the export begins starting at the target CID, and the export strategy may do further traversal and writing to the car file.
+ */
+export interface ExportStrategy extends Strategy {
+
+}
+
+export * from './export-strategies/index.js'
+export * from './traversal-strategies/index.js'
 
 export interface ExportCarOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents> {
 
@@ -100,54 +129,22 @@ export interface ExportCarOptions extends AbortOptions, ProgressOptions<GetBlock
   blockFilter?: Filter
 
   /**
-   * The DAG scope to use for the export.
-   *
-   * 'all' - Transmit the entire contiguous DAG that begins at the end of the path
-   * query, after blocks required to verify path segments
-   *
-   * 'block' - Only the target block at the end of the path is returned after blocks required
-   * to verify the specified path segments.
-   *
-   * 'entity' - For queries that traverse UnixFS data, 'entity' roughly means return blocks
-   * needed to verify the terminating element of the requested content path.
-   * For UnixFS, all the blocks needed to read an entire UnixFS file, or enumerate
-   * a UnixFS directory. For all queries that reference non-UnixFS data, 'entity'
-   * is equivalent to 'block'
-   *
-   * @default 'all'
+   * The traversal strategy to use for the export. This determines how the dag is traversed: either depth first, breadth first, or a custom strategy.
    */
-  dagScope?: 'block' | 'entity' | 'all'
+  traversal?: TraversalStrategy
 
   /**
-   * Root CID of the DAG being operated on. If the CAR root provided to `export` or `stream` is not the root of the dag,
-   * we will use this CID as the root of the dag to walk.
-   *
-   * This allows us to include blocks for path parents, but those are "extra", do not belong to the DAG of exported
-   * file, but act as a proof that file DAG belongs to some other parent DAG. This proof can be disregarded if the user
-   * only cares about file, without its provenance.
-   *
-   * If you provide `knownDagPath` and no `dagRoot`, the first CID in `knownDagPath` will be used as `dagRoot`.
+   * Export strategy to use for the export. This should be used to change the `dag-scope` of the exported car file.
    */
-  dagRoot?: CID
+  exporter?: ExportStrategy
+}
 
-  /**
-   * An ordered array of CIDs representing the known path from dagRoot to the target root.
-   * The array should start with dagRoot (at index 0) and end with the target root CID.
-   *
-   * This allows optimizing the path traversal by skipping the expensive path-finding process
-   * when the path from dagRoot to the target root is already known, reducing network requests
-   * and computation time.
-   *
-   * @example
-   *
-   * ```typescript
-   * await c.export(targetCid, writer, {
-   *   dagRoot: rootCid,
-   *   knownDagPath: [rootCid, ...intermediateCids, targetCid]
-   * })
-   * ```
-   */
-  knownDagPath?: CID[]
+/**
+ * Context for the traversal process.
+ */
+interface TraversalContext {
+  currentPath: CID[]
+  pathToTarget: CID[] | null
 }
 
 /**
@@ -252,42 +249,78 @@ class DefaultCar implements Car {
     const deferred = defer<Error | undefined>()
     const roots = Array.isArray(root) ? root : [root]
 
+    // Create traversal-specific context
+    const traversalContext: TraversalContext = {
+      currentPath: [],
+      pathToTarget: null
+    }
+
+    const traversalStrategy = options?.traversal ?? new GraphSearch(roots[0])
+    const exportStrategy = options?.exporter ?? new SubgraphExporter()
+
     // use a queue to walk the DAG instead of recursion so we can traverse very large DAGs
     const queue = new PQueue({
       concurrency: DAG_WALK_QUEUE_CONCURRENCY
     })
+
+    let startedExport = false
     queue.on('idle', () => {
-      deferred.resolve()
+      if (startedExport) {
+        // idle event was called, and started exporting, so we are done.
+        deferred.resolve()
+      } else if (traversalContext.pathToTarget != null) {
+        this.log?.trace('starting export of blocks to the car file')
+        // queue is idle, we haven't started exporting yet, and we have a path to the target, so we can start the export process.
+        const targetIndex = traversalContext.pathToTarget.length - 1
+        const targetCid = traversalContext.pathToTarget[targetIndex]
+        startedExport = true
+        // process the verification blocks
+        if (traversalContext.pathToTarget.length > 1) {
+          traversalContext.pathToTarget.forEach((cid, i) => {
+            // if this is the target, it will be processed by #processBlock
+            if (i === targetIndex) {
+              return
+            }
+            void queue.add(async () => {
+              await this.#processVerificationBlock(
+                cid,
+                writer,
+                options
+              )
+            }).catch(() => {})
+          })
+        }
+        // export the rest of the dag according to the export strategy
+        void queue.add(async () => {
+          await this.#processBlock(
+            targetCid,
+            queue,
+            writer,
+            exportStrategy,
+            options
+          )
+        })
+          .catch(() => {})
+      }
     })
     queue.on('error', (err) => {
       queue.clear()
       deferred.reject(err)
     })
 
-    await this.#validateOptions(roots, options)
-
-    const knownPath = options?.knownDagPath ?? []
-    let dagRoot = options?.dagRoot
-    let strategy: TraversalStrategy
-    if (dagRoot != null && knownPath.length > 0) {
-      strategy = new KnownPathStrategy(knownPath)
-    } else if (dagRoot != null) {
-      strategy = new PathFindingStrategy(roots)
-    } else {
-      strategy = new StandardWalkStrategy(roots)
-      dagRoot = roots[0]
+    for (const root of roots) {
+      void queue.add(async () => {
+        await this.#traverseDag(
+          root,
+          queue,
+          writer,
+          traversalStrategy,
+          traversalContext,
+          options
+        )
+      })
+        .catch(() => {})
     }
-
-    void queue.add(async () => {
-      await this.#processBlock(
-        dagRoot,
-        queue,
-        writer,
-        strategy,
-        options
-      )
-    })
-      .catch(() => {})
 
     // wait for the writer to end
     try {
@@ -310,25 +343,55 @@ class DefaultCar implements Car {
     }
   }
 
-  async #validateOptions (roots: CID[], options: ExportCarOptions | undefined): Promise<void> {
-    // Validate knownDagPath if provided
-    if (options?.knownDagPath != null && options.knownDagPath.length > 0) {
-      const knownPath = options.knownDagPath
+  async #traverseDag (
+    cid: CID,
+    queue: PQueue,
+    writer: Pick<CarWriter, 'put'>,
+    strategy: TraversalStrategy,
+    traversalContext: TraversalContext,
+    options: ExportCarOptions | undefined
+  ): Promise<void> {
+    // Add CID to current path
+    traversalContext.currentPath.push(cid)
 
-      // ensure dagRoot is provided and matches the first CID in the path
-      if (options?.dagRoot == null) {
-        options.dagRoot = knownPath[0]
-      } else if (!options.dagRoot.equals(knownPath[0])) {
-        throw new Error('knownDagPath must start with dagRoot')
-      }
-
-      // Ensure the last CID in the path is one of the target roots
-      const lastCid = knownPath[knownPath.length - 1]
-      const isTargetRoot = roots.some(r => r.equals(lastCid))
-      if (!isTargetRoot) {
-        throw new Error('knownDagPath must end with one of the target roots')
-      }
+    if (strategy.isTarget(cid)) {
+      traversalContext.pathToTarget = [...traversalContext.currentPath]
+      // we have a path to the target, so we can start the export process.
+      this.log?.trace('found path to target %c', cid)
+      return
     }
+
+    const codec = await this.components.getCodec(cid.code)
+    const bytes = await this.components.blockstore.get(cid, options)
+    const decodedBlock = createUnsafe({ bytes, cid, codec })
+
+    for await (const nextCid of strategy.traverse(cid, decodedBlock)) {
+      void queue.add(async () => {
+        await this.#traverseDag(nextCid, queue, writer, strategy, traversalContext, options)
+      })
+    }
+
+    // Remove CID from current path when done with this branch
+    traversalContext.currentPath.pop()
+  }
+
+  async #processVerificationBlock (
+    cid: CID,
+    writer: Pick<CarWriter, 'put'>,
+    options: ExportCarOptions | undefined
+  ): Promise<void> {
+    // Skip if already processed
+    if (options?.blockFilter?.has(cid.multihash.bytes) === true) {
+      return
+    }
+    const bytes = await this.components.blockstore.get(cid, options)
+    // Mark as processed
+    options?.blockFilter?.add(cid.multihash.bytes)
+
+    // Write to CAR
+    await writer.put({ cid, bytes })
+
+    this.log?.trace('processed verification block %c', cid)
   }
 
   /**
@@ -338,7 +401,7 @@ class DefaultCar implements Car {
     cid: CID,
     queue: PQueue,
     writer: Pick<CarWriter, 'put'>,
-    strategy: TraversalStrategy,
+    strategy: Strategy,
     options: ExportCarOptions | undefined
   ): Promise<void> {
     try {
@@ -358,16 +421,13 @@ class DefaultCar implements Car {
 
       const decodedBlock = createUnsafe({ bytes, cid, codec })
 
-      // Determine if we should traverse using the provided strategy
-      if (strategy.shouldTraverse(cid, options)) {
-        this.log?.trace('traversing cid %s with strategy %s', cid.toString(), strategy.constructor.name)
-        // Process links according to the strategy
-        for await (const result of strategy.getNextCidStrategy(cid, decodedBlock)) {
-          void queue.add(async () => {
-            await this.#processBlock(result.cid, queue, writer, result.strategy, options)
-          })
-        }
+      // Process links according to the strategy
+      for await (const nextCid of strategy.traverse(cid, decodedBlock)) {
+        void queue.add(async () => {
+          await this.#processBlock(nextCid, queue, writer, strategy, options)
+        })
       }
+      // }
     } catch (err: any) {
       if (err.name === 'NotFoundError') {
         this.log?.error('block %c not found in blockstore', cid)

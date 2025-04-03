@@ -1,18 +1,20 @@
 /* eslint-env mocha */
 
+import fs from 'node:fs'
 import { CarReader } from '@ipld/car'
 import { prefixLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
-import loadFixtures from 'aegir/fixtures'
 import { MemoryBlockstore } from 'blockstore-core'
 import { CID } from 'multiformats/cid'
 import sinon from 'sinon'
+import { BlockExporter, EntityExporter, SubgraphExporter } from '../src/export-strategies/index.js'
 import { car, type Car } from '../src/index.js'
+import { GraphSearch, PathStrategy } from '../src/traversal-strategies/index.js'
 import { carEquals, CarEqualsSkip } from './fixtures/car-equals.js'
 import { getCodec } from './fixtures/get-codec.js'
+import { loadCarFixture } from './fixtures/load-car-fixture.js'
 import { memoryCarWriter } from './fixtures/memory-car.js'
 import type { Blockstore } from 'interface-blockstore'
-
 const logger = prefixLogger('test:dag-scope')
 
 describe('dag-scope', () => {
@@ -23,15 +25,6 @@ describe('dag-scope', () => {
   const dagRoot = CID.parse('bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu')
   const intermediateCid = CID.parse('bafybeicnmple4ehlz3ostv2sbojz3zhh5q7tz5r2qkfdpqfilgggeen7xm')
   const subDagRoot = CID.parse('bafkreifkam6ns4aoolg3wedr4uzrs3kvq66p4pecirz6y2vlrngla62mxm')
-
-  async function loadCarFixture (path: string): Promise<{ reader: CarReader, bytes: Uint8Array }> {
-    const carBytes = loadFixtures(path)
-    const carBytesAsUint8Array = new Uint8Array(carBytes)
-    return {
-      reader: await CarReader.fromBytes(carBytesAsUint8Array),
-      bytes: carBytesAsUint8Array
-    }
-  }
 
   beforeEach(async () => {
     blockstore = sinon.spy(new MemoryBlockstore())
@@ -69,7 +62,7 @@ describe('dag-scope', () => {
 
     // export the subDag: ipfs://bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu/subdir,
     const writer = memoryCarWriter(intermediateCid)
-    await c.export(intermediateCid, writer, { dagRoot })
+    await c.export(intermediateCid, writer, { traversal: new GraphSearch(intermediateCid), exporter: new SubgraphExporter() })
 
     const ourReader = await CarReader.fromBytes(await writer.bytes())
 
@@ -91,8 +84,8 @@ describe('dag-scope', () => {
 
     const writer = memoryCarWriter(subDagRoot)
     await c.export(subDagRoot, writer, {
-      dagRoot,
-      knownDagPath
+      traversal: new PathStrategy(knownDagPath),
+      exporter: new SubgraphExporter()
     })
 
     const carData = await writer.bytes()
@@ -113,7 +106,7 @@ describe('dag-scope', () => {
     await c.import(reader)
 
     const writer = memoryCarWriter(dagRoot)
-    await c.export(dagRoot, writer, { dagScope: 'block' })
+    await c.export(dagRoot, writer, { traversal: new GraphSearch(dagRoot), exporter: new BlockExporter() })
 
     const ourReader = await CarReader.fromBytes(await writer.bytes())
 
@@ -140,7 +133,7 @@ describe('dag-scope', () => {
     await c.import(reader)
 
     const writer = memoryCarWriter(nonUnixFsRoot)
-    await c.export(nonUnixFsRoot, writer, { dagScope: 'entity' })
+    await c.export(nonUnixFsRoot, writer, { traversal: new GraphSearch(nonUnixFsRoot), exporter: new EntityExporter() })
 
     const ourReader = await CarReader.fromBytes(await writer.bytes())
 
@@ -167,9 +160,8 @@ describe('dag-scope', () => {
 
     const writer = memoryCarWriter(subDagRoot)
     await c.export(subDagRoot, writer, {
-      dagRoot,
-      knownDagPath,
-      dagScope: 'block'
+      traversal: new PathStrategy(knownDagPath),
+      exporter: new BlockExporter()
     })
 
     const carData = await writer.bytes()
@@ -204,8 +196,8 @@ describe('dag-scope', () => {
 
     const writer = memoryCarWriter(subDagRoot)
     await expect(c.export(subDagRoot, writer, {
-      dagRoot,
-      knownDagPath
+      traversal: new PathStrategy(knownDagPath),
+      exporter: new SubgraphExporter()
     // cspell:ignore bafyreif3tfdpr5n4jdrbielmcapwvbpcthepfkwq2vwonmlhirbjmotedi
     })).to.eventually.be.rejectedWith('Not Found')
   })
