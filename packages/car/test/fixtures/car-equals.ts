@@ -1,4 +1,5 @@
 import { expect } from 'aegir/chai'
+import { type CID } from 'multiformats/cid'
 import type { CarReader } from '@ipld/car'
 
 export enum CarEqualsSkip {
@@ -10,6 +11,10 @@ export enum CarEqualsSkip {
 }
 export interface CarEqualsOptions {
   skip?: CarEqualsSkip[]
+  /**
+   * If provided, the blocks with these CIDs will be skipped
+   */
+  skipBlocks?: CID[]
 }
 /**
  * A helper function to assert that two car files are identical
@@ -29,6 +34,10 @@ export async function carEquals (car1: CarReader, car2: CarReader, options?: Car
   }
   const blocks2 = []
   for await (const block of car2.blocks()) {
+    // if we should skip certain blocks, skip them
+    if (options?.skipBlocks?.find((cid) => cid.equals(block.cid)) !== undefined) {
+      continue
+    }
     blocks2.push(block)
   }
   if (options?.skip?.includes(CarEqualsSkip.blocks) !== true) {

@@ -64,18 +64,19 @@ describe('dag-scope', () => {
     const writer = memoryCarWriter(intermediateCid)
     await c.export(intermediateCid, writer, { traversal: new GraphSearch(intermediateCid), exporter: new SubgraphExporter() })
 
-    const ourReader = await CarReader.fromBytes(await writer.bytes())
+    const ourCarBytes = await writer.bytes()
+    const ourReader = await CarReader.fromBytes(ourCarBytes)
 
     const roots = await ourReader.getRoots()
 
     expect(roots).to.deep.equal([intermediateCid])
 
-    await carEquals(ourReader, reader, { skip: [CarEqualsSkip.roots, CarEqualsSkip.header] })
+    await carEquals(ourReader, reader, { skip: [CarEqualsSkip.roots, CarEqualsSkip.header], skipBlocks: [dagRoot] })
 
-    expect(blockstoreGetSpy.callCount).to.equal(10) // 10 blocks in the subDag
+    expect(blockstoreGetSpy.callCount).to.equal(9) // 9 blocks in the subDag (dagRoot is not included because we started from intermediateCid)
   })
 
-  it('can use knownDagPath to optimize car export', async () => {
+  it('can use PathStrategy to optimize car export', async () => {
     const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
 
     await c.import(reader)
