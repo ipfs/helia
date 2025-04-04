@@ -9,6 +9,6 @@ import type { BlockView } from 'multiformats/block/interface'
  */
 export class BlockExporter implements ExportStrategy {
   async * traverse (cid: CID, block: BlockView<any, any, any, 0 | 1>): AsyncGenerator<CID, void, undefined> {
-    yield cid
+    // don't yield the block, index.ts will add it to the car file and then we're done...
   }
 }

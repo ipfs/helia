@@ -269,27 +269,28 @@ class DefaultCar implements Car {
         // idle event was called, and started exporting, so we are done.
         deferred.resolve()
       } else if (traversalContext.pathToTarget != null) {
+        this.log?.trace('pathToTarget %o', traversalContext.pathToTarget)
         this.log?.trace('starting export of blocks to the car file')
         // queue is idle, we haven't started exporting yet, and we have a path to the target, so we can start the export process.
         const targetIndex = traversalContext.pathToTarget.length - 1
         const targetCid = traversalContext.pathToTarget[targetIndex]
         startedExport = true
         // process the verification blocks
-        if (traversalContext.pathToTarget.length > 1) {
-          traversalContext.pathToTarget.forEach((cid, i) => {
-            // if this is the target, it will be processed by #processBlock
-            if (i === targetIndex) {
-              return
-            }
-            void queue.add(async () => {
-              await this.#processVerificationBlock(
-                cid,
-                writer,
-                options
-              )
-            }).catch(() => {})
-          })
-        }
+        this.log?.trace('processing verification blocks')
+        traversalContext.pathToTarget.forEach((cid, i) => {
+          // if this is the target, it will be processed by #processBlock
+          if (i === targetIndex) {
+            return
+          }
+          void queue.add(async () => {
+            await this.#processVerificationBlock(
+              cid,
+              writer,
+              options
+            )
+          }).catch(() => {})
+        })
+        // }
         // export the rest of the dag according to the export strategy
         void queue.add(async () => {
           await this.#processBlock(
@@ -316,6 +317,7 @@ class DefaultCar implements Car {
           writer,
           traversalStrategy,
           traversalContext,
+          [],
           options
         )
       })
@@ -349,16 +351,22 @@ class DefaultCar implements Car {
     writer: Pick<CarWriter, 'put'>,
     strategy: TraversalStrategy,
     traversalContext: TraversalContext,
+    parentPath: CID[] = [], // Track the path
     options: ExportCarOptions | undefined
   ): Promise<void> {
-    // Add CID to current path
-    traversalContext.currentPath.push(cid)
+    this.log?.trace('traversing dag %c', cid)
+
+    // Build the current path based on the parent path plus the current CID
+    const currentPath = [...parentPath, cid]
+    this.log?.trace('currentPath %o', currentPath)
 
     if (strategy.isTarget(cid)) {
-      traversalContext.pathToTarget = [...traversalContext.currentPath]
+      traversalContext.pathToTarget = [...currentPath]
       // we have a path to the target, so we can start the export process.
       this.log?.trace('found path to target %c', cid)
       return
+    } else {
+      this.log?.trace('not the target %c', cid)
     }
 
     const codec = await this.components.getCodec(cid.code)
@@ -367,12 +375,10 @@ class DefaultCar implements Car {
 
     for await (const nextCid of strategy.traverse(cid, decodedBlock)) {
       void queue.add(async () => {
-        await this.#traverseDag(nextCid, queue, writer, strategy, traversalContext, options)
+        // Pass the current path to child traversals
+        await this.#traverseDag(nextCid, queue, writer, strategy, traversalContext, currentPath, options)
       })
     }
-
-    // Remove CID from current path when done with this branch
-    traversalContext.currentPath.pop()
   }
 
   async #processVerificationBlock (
@@ -384,6 +390,7 @@ class DefaultCar implements Car {
     if (options?.blockFilter?.has(cid.multihash.bytes) === true) {
       return
     }
+    this.log?.trace('processing verification block %c', cid)
     const bytes = await this.components.blockstore.get(cid, options)
     // Mark as processed
     options?.blockFilter?.add(cid.multihash.bytes)
@@ -404,39 +411,41 @@ class DefaultCar implements Car {
     strategy: Strategy,
     options: ExportCarOptions | undefined
   ): Promise<void> {
-    try {
-      // Skip if already processed
-      if (options?.blockFilter?.has(cid.multihash.bytes) === true) {
-        return
-      }
-
-      const codec = await this.components.getCodec(cid.code)
-      const bytes = await this.components.blockstore.get(cid, options)
-
-      // Mark as processed
-      options?.blockFilter?.add(cid.multihash.bytes)
-
-      // Write to CAR
-      await writer.put({ cid, bytes })
-
-      const decodedBlock = createUnsafe({ bytes, cid, codec })
-
-      // Process links according to the strategy
-      for await (const nextCid of strategy.traverse(cid, decodedBlock)) {
-        void queue.add(async () => {
-          await this.#processBlock(nextCid, queue, writer, strategy, options)
-        })
-      }
-      // }
-    } catch (err: any) {
-      if (err.name === 'NotFoundError') {
-        this.log?.error('block %c not found in blockstore', cid)
-        throw err
-      }
-
-      // Handle errors, but don't propagate them to avoid breaking the queue
-      this.log?.error('error processing block - %e', err)
+    // try {
+    // Skip if already processed
+    if (options?.blockFilter?.has(cid.multihash.bytes) === true) {
+      return
     }
+    this.log?.trace('processing block %c', cid)
+
+    const codec = await this.components.getCodec(cid.code)
+    const bytes = await this.components.blockstore.get(cid, options)
+
+    // Mark as processed
+    options?.blockFilter?.add(cid.multihash.bytes)
+
+    // Write to CAR
+    await writer.put({ cid, bytes })
+    this.log?.trace('processed  block %c', cid)
+
+    const decodedBlock = createUnsafe({ bytes, cid, codec })
+
+    // Process links according to the strategy
+    for await (const nextCid of strategy.traverse(cid, decodedBlock)) {
+      this.log?.trace('next cid %c', nextCid)
+      void queue.add(async () => {
+        await this.#processBlock(nextCid, queue, writer, strategy, options)
+      })
+    }
+    // } catch (err: any) {
+    //   if (err.name === 'NotFoundError') {
+    //     this.log?.error('block %c not found in blockstore', cid)
+    //     throw err
+    //   }
+
+    //   // Handle errors, but don't propagate them to avoid breaking the queue
+    //   this.log?.error('error processing block - %e', err)
+    // }
   }
 }
 

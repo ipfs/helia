@@ -1,13 +1,12 @@
 /* eslint-env mocha */
 
-import fs from 'node:fs'
 import { CarReader } from '@ipld/car'
 import { prefixLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { CID } from 'multiformats/cid'
 import sinon from 'sinon'
-import { BlockExporter, EntityExporter, SubgraphExporter } from '../src/export-strategies/index.js'
+import { BlockExporter, EntityExporter } from '../src/export-strategies/index.js'
 import { car, type Car } from '../src/index.js'
 import { GraphSearch, PathStrategy } from '../src/traversal-strategies/index.js'
 import { carEquals, CarEqualsSkip } from './fixtures/car-equals.js'
@@ -25,6 +24,7 @@ describe('dag-scope', () => {
   const dagRoot = CID.parse('bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu')
   const intermediateCid = CID.parse('bafybeicnmple4ehlz3ostv2sbojz3zhh5q7tz5r2qkfdpqfilgggeen7xm')
   const subDagRoot = CID.parse('bafkreifkam6ns4aoolg3wedr4uzrs3kvq66p4pecirz6y2vlrngla62mxm')
+  const multiBlockTxt = CID.parse('bafybeigcisqd7m5nf3qmuvjdbakl5bdnh4ocrmacaqkpuh77qjvggmt2sa')
 
   beforeEach(async () => {
     blockstore = sinon.spy(new MemoryBlockstore())
@@ -62,7 +62,7 @@ describe('dag-scope', () => {
 
     // export the subDag: ipfs://bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu/subdir,
     const writer = memoryCarWriter(intermediateCid)
-    await c.export(intermediateCid, writer, { traversal: new GraphSearch(intermediateCid), exporter: new SubgraphExporter() })
+    await c.export(intermediateCid, writer, { traversal: new GraphSearch(intermediateCid) })
 
     const ourCarBytes = await writer.bytes()
     const ourReader = await CarReader.fromBytes(ourCarBytes)
@@ -76,29 +76,40 @@ describe('dag-scope', () => {
     expect(blockstoreGetSpy.callCount).to.equal(9) // 9 blocks in the subDag (dagRoot is not included because we started from intermediateCid)
   })
 
-  it('can use PathStrategy to optimize car export', async () => {
+  it('can use PathStrategy to restrain DAG traversal', async () => {
     const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
 
     await c.import(reader)
 
-    const knownDagPath = [dagRoot, intermediateCid, subDagRoot]
+    const knownDagPath = [dagRoot, intermediateCid, multiBlockTxt]
 
-    const writer = memoryCarWriter(subDagRoot)
-    await c.export(subDagRoot, writer, {
-      traversal: new PathStrategy(knownDagPath),
-      exporter: new SubgraphExporter()
+    const writer = memoryCarWriter(multiBlockTxt)
+    await c.export(dagRoot, writer, {
+      traversal: new PathStrategy(knownDagPath)
     })
 
     const carData = await writer.bytes()
     const exportedReader = await CarReader.fromBytes(carData)
 
     const roots = await exportedReader.getRoots()
-    expect(roots).to.deep.equal([subDagRoot])
+    expect(roots).to.deep.equal([multiBlockTxt])
 
+    // traversal calls:
     expect(blockstoreGetSpy.getCall(0).args[0]).to.equal(knownDagPath[0])
     expect(blockstoreGetSpy.getCall(1).args[0]).to.equal(knownDagPath[1])
-    expect(blockstoreGetSpy.getCall(2).args[0]).to.equal(knownDagPath[2])
-    expect(blockstoreGetSpy.callCount).to.equal(3)
+
+    // exporter calls:
+    expect(blockstoreGetSpy.getCall(2).args[0]).to.equal(knownDagPath[0])
+    expect(blockstoreGetSpy.getCall(3).args[0]).to.equal(knownDagPath[1])
+    expect(blockstoreGetSpy.getCall(4).args[0]).to.equal(knownDagPath[2])
+    expect(blockstoreGetSpy.callCount).to.equal(10) // 2 for traversal, 8 for exporter (3 in path, 5 in multiBlockTxt)
+
+    let blockCount = 0
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    for await (const _ of exportedReader.blocks()) {
+      blockCount++
+    }
+    expect(blockCount).to.equal(8)
   })
 
   it('can generate a car file with dag-scope=block', async () => {
@@ -152,15 +163,15 @@ describe('dag-scope', () => {
     expect(blockstoreGetSpy.callCount).to.equal(1)
   })
 
-  it('can handle dag-scope options with knownDagPath', async () => {
+  it('returns only the path blocks with PathStrategy and BlockExporter', async () => {
     const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
 
     await c.import(reader)
 
-    const knownDagPath = [dagRoot, intermediateCid, subDagRoot]
+    const knownDagPath = [dagRoot, intermediateCid, multiBlockTxt]
 
-    const writer = memoryCarWriter(subDagRoot)
-    await c.export(subDagRoot, writer, {
+    const writer = memoryCarWriter(multiBlockTxt)
+    await c.export(dagRoot, writer, {
       traversal: new PathStrategy(knownDagPath),
       exporter: new BlockExporter()
     })
@@ -169,14 +180,19 @@ describe('dag-scope', () => {
     const exportedReader = await CarReader.fromBytes(carData)
 
     const roots = await exportedReader.getRoots()
-    expect(roots).to.deep.equal([subDagRoot])
+    expect(roots).to.deep.equal([multiBlockTxt])
 
+    // traversal calls:
     expect(blockstoreGetSpy.getCall(0).args[0]).to.equal(knownDagPath[0])
     expect(blockstoreGetSpy.getCall(1).args[0]).to.equal(knownDagPath[1])
-    expect(blockstoreGetSpy.getCall(2).args[0]).to.equal(knownDagPath[2])
+
+    // exporter calls:
+    expect(blockstoreGetSpy.getCall(2).args[0]).to.equal(knownDagPath[0])
+    expect(blockstoreGetSpy.getCall(3).args[0]).to.equal(knownDagPath[1])
+    expect(blockstoreGetSpy.getCall(4).args[0]).to.equal(knownDagPath[2])
 
     // with dag-scope=block, no additional traversal should occur after the path
-    expect(blockstoreGetSpy.callCount).to.equal(3)
+    expect(blockstoreGetSpy.callCount).to.equal(5) // 2 for traversal, 3 (2 dups) for exporter
 
     // only the path blocks should be in the export
     let blockCount = 0
@@ -196,10 +212,8 @@ describe('dag-scope', () => {
     const knownDagPath = [dagRoot, CID.parse('bafyreif3tfdpr5n4jdrbielmcapwvbpcthepfkwq2vwonmlhirbjmotedi'), subDagRoot]
 
     const writer = memoryCarWriter(subDagRoot)
-    await expect(c.export(subDagRoot, writer, {
-      traversal: new PathStrategy(knownDagPath),
-      exporter: new SubgraphExporter()
-    // cspell:ignore bafyreif3tfdpr5n4jdrbielmcapwvbpcthepfkwq2vwonmlhirbjmotedi
+    await expect(c.export(dagRoot, writer, {
+      traversal: new PathStrategy(knownDagPath)
     })).to.eventually.be.rejectedWith('Not Found')
   })
 })

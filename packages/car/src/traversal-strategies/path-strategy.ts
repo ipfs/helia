@@ -13,13 +13,6 @@ export class PathStrategy implements TraversalStrategy {
     this.pathToTarget = pathToTarget
     this.target = pathToTarget[pathToTarget.length - 1]
   }
-  // getNextCidStrategy<T extends BlockView<any, any, any, 0 | 1>>(cid: CID, block: T): AsyncGenerator<StrategyResult, void, undefined> {
-  //   throw new Error('Method not implemented.')
-  // }
-
-  // shouldTraverse (cid: CID, _options?: ExportCarOptions): boolean {
-  //   return this.knownPath.includes(cid) && this.knownPath.indexOf(cid) !== this.knownPath.length - 1
-  // }
 
   isTarget (cid: CID): boolean {
     return this.target.equals(cid)
