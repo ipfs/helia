@@ -4,7 +4,7 @@ import type { BlockView } from 'multiformats/block/interface'
 
 /**
  * Traverses the DAG depth-first starting at the target CID and yields all encountered blocks.
- * Can use parallelism to speed up loading blocks but should yield them in inorder order.
+ * Can use parallelism to speed up loading blocks but should yield them in order.
  *
  * The target CID could be a UnixFS file, in which case the CAR would hold just that file, or it could be a UnixFS directory in which case the CAR would hold the whole directory.
  * It could be a DAG-CBOR block in which case the CAR would hold the root CBOR block and all linked blocks.

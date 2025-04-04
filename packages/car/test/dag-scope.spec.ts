@@ -192,7 +192,7 @@ describe('dag-scope', () => {
     expect(blockstoreGetSpy.getCall(4).args[0]).to.equal(knownDagPath[2])
 
     // with dag-scope=block, no additional traversal should occur after the path
-    expect(blockstoreGetSpy.callCount).to.equal(5) // 2 for traversal, 3 (2 dups) for exporter
+    expect(blockstoreGetSpy.callCount).to.equal(5) // 2 for traversal, 3 (2 from the path, 1 from the multiBlockTxt) for exporter
 
     // only the path blocks should be in the export
     let blockCount = 0
