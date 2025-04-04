@@ -203,7 +203,7 @@ describe('dag-scope', () => {
     expect(blockCount).to.equal(3)
   })
 
-  it('errors when a block in knownDagPath is not in blockstore', async () => {
+  it('will throw an error when an invalid path is provided to PathStrategy', async () => {
     const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
 
     await c.import(reader)

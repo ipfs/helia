@@ -96,8 +96,6 @@ export interface Strategy {
  * Interface for different traversal strategies.
  *
  * While traversing the DAG, it will yield blocks that it has traversed.
- *
- * When done traversing, it should contain the path from the root(s) to the target CID.
  */
 export interface TraversalStrategy extends Strategy {
   isTarget(cid: CID): boolean
@@ -287,6 +285,11 @@ class DefaultCar implements Car {
             await this.#processBlock(targetCid, queue, writer, exportStrategy, options)
           }).catch(() => {})
         }
+      } else {
+        // queue is idle, we haven't started exporting yet, and we don't have path(s) to the target(s), so we can't start the export process.
+        // this should not happen without a separate error during traversal, but we'll handle it here anyway.
+        this.log?.trace('no paths to target, skipping export')
+        throw new Error('Nothing to export')
       }
     })
     queue.on('error', (err) => {
@@ -297,7 +300,7 @@ class DefaultCar implements Car {
     for (const root of roots) {
       void queue.add(async () => {
         this.log?.trace('traversing dag from %c', root)
-        await this.#traverseDag(root, queue, writer, traversalStrategy ?? new GraphSearch(root), traversalContext, [], options)
+        await this.#walkDag(root, queue, writer, traversalStrategy ?? new GraphSearch(root), traversalContext, [], options)
       })
         .catch(() => {})
     }
@@ -323,7 +326,7 @@ class DefaultCar implements Car {
     }
   }
 
-  async #traverseDag (
+  async #walkDag (
     cid: CID,
     queue: PQueue,
     writer: Pick<CarWriter, 'put'>,
@@ -349,7 +352,7 @@ class DefaultCar implements Car {
 
     for await (const nextCid of strategy.traverse(cid, decodedBlock)) {
       void queue.add(async () => {
-        await this.#traverseDag(nextCid, queue, writer, strategy, traversalContext, currentPath, options)
+        await this.#walkDag(nextCid, queue, writer, strategy, traversalContext, currentPath, options)
       })
     }
   }
@@ -384,7 +387,6 @@ class DefaultCar implements Car {
     strategy: Strategy,
     options: ExportCarOptions | undefined
   ): Promise<void> {
-    // try {
     // Skip if already processed
     if (options?.blockFilter?.has(cid.multihash.bytes) === true) {
       return
@@ -410,15 +412,6 @@ class DefaultCar implements Car {
         await this.#processBlock(nextCid, queue, writer, strategy, options)
       })
     }
-    // } catch (err: any) {
-    //   if (err.name === 'NotFoundError') {
-    //     this.log?.error('block %c not found in blockstore', cid)
-    //     throw err
-    //   }
-
-    //   // Handle errors, but don't propagate them to avoid breaking the queue
-    //   this.log?.error('error processing block - %e', err)
-    // }
   }
 }
 
