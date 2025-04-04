@@ -9,17 +9,6 @@ import type { CID } from 'multiformats/cid'
 export class GraphSearch implements TraversalStrategy {
   private readonly target: CID
 
-  // /**
-  //  * Stack-based path tracking array.
-  //  * This is always the path from the root(s) to the currently traversed CID.
-  //  */
-  // private readonly currentPath: CID[] = []
-
-  /**
-   * This is used to determine the blocks necessary for verifying the path from the root(s) to the target CID.
-   */
-  // public pathToTarget: CID[] | null = null
-
   constructor (target: CID) {
     this.target = target
   }
@@ -34,17 +23,8 @@ export class GraphSearch implements TraversalStrategy {
    * When other strategies return this strategy for use, we likely will not have multiple roots, so we will not emit the roots again
    */
   async * traverse <T extends BlockView<any, any, any, 0 | 1>>(cid: CID, block: T): AsyncGenerator<CID, void, undefined> {
-    // this.currentPath.push(cid)
-
-    // if (this.isTarget(cid)) {
-    //   this.pathToTarget = [...this.currentPath]
-    //   // prevent further traversal
-    //   return
-    // }
-
     for await (const [, linkedCid] of block.links()) {
       yield linkedCid
     }
-    // this.currentPath.pop()
   }
 }

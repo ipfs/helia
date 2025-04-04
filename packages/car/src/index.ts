@@ -144,7 +144,7 @@ export interface ExportCarOptions extends AbortOptions, ProgressOptions<GetBlock
  */
 interface TraversalContext {
   currentPath: CID[]
-  pathToTarget: CID[] | null
+  pathsToTarget: CID[][] | null // collect all target paths
 }
 
 /**
@@ -252,10 +252,10 @@ class DefaultCar implements Car {
     // Create traversal-specific context
     const traversalContext: TraversalContext = {
       currentPath: [],
-      pathToTarget: null
+      pathsToTarget: null
     }
 
-    const traversalStrategy = options?.traversal ?? new GraphSearch(roots[0])
+    const traversalStrategy = options?.traversal
     const exportStrategy = options?.exporter ?? new SubgraphExporter()
 
     // use a queue to walk the DAG instead of recursion so we can traverse very large DAGs
@@ -268,40 +268,25 @@ class DefaultCar implements Car {
       if (startedExport) {
         // idle event was called, and started exporting, so we are done.
         deferred.resolve()
-      } else if (traversalContext.pathToTarget != null) {
-        this.log?.trace('pathToTarget %o', traversalContext.pathToTarget)
+      } else if (!startedExport && traversalContext.pathsToTarget?.length === roots.length) {
+        // queue is idle, we haven't started exporting yet, and we have path(s) to the target(s), so we can start the export process.
+        this.log?.trace('pathToTarget %o', traversalContext.pathsToTarget)
         this.log?.trace('starting export of blocks to the car file')
-        // queue is idle, we haven't started exporting yet, and we have a path to the target, so we can start the export process.
-        const targetIndex = traversalContext.pathToTarget.length - 1
-        const targetCid = traversalContext.pathToTarget[targetIndex]
         startedExport = true
-        // process the verification blocks
-        this.log?.trace('processing verification blocks')
-        traversalContext.pathToTarget.forEach((cid, i) => {
-          // if this is the target, it will be processed by #processBlock
-          if (i === targetIndex) {
-            return
-          }
+        for (const path of traversalContext.pathsToTarget) {
+          const targetIndex = path.length - 1
+          const targetCid = path[targetIndex]
+          // Process all verification blocks in the path except the target
+          path.slice(0, -1).forEach(cid => {
+            void queue.add(async () => {
+              await this.#processVerificationBlock(cid, writer, options)
+            }).catch(() => {})
+          })
+          // Process the target block (which will recursively export its DAG)
           void queue.add(async () => {
-            await this.#processVerificationBlock(
-              cid,
-              writer,
-              options
-            )
+            await this.#processBlock(targetCid, queue, writer, exportStrategy, options)
           }).catch(() => {})
-        })
-        // }
-        // export the rest of the dag according to the export strategy
-        void queue.add(async () => {
-          await this.#processBlock(
-            targetCid,
-            queue,
-            writer,
-            exportStrategy,
-            options
-          )
-        })
-          .catch(() => {})
+        }
       }
     })
     queue.on('error', (err) => {
@@ -312,15 +297,7 @@ class DefaultCar implements Car {
     for (const root of roots) {
       void queue.add(async () => {
         this.log?.trace('traversing dag from %c', root)
-        await this.#traverseDag(
-          root,
-          queue,
-          writer,
-          traversalStrategy ?? new GraphSearch(root),
-          traversalContext,
-          [],
-          options
-        )
+        await this.#traverseDag(root, queue, writer, traversalStrategy ?? new GraphSearch(root), traversalContext, [], options)
       })
         .catch(() => {})
     }
@@ -355,19 +332,15 @@ class DefaultCar implements Car {
     parentPath: CID[] = [], // Track the path
     options: ExportCarOptions | undefined
   ): Promise<void> {
-    // this.log?.trace('traversing dag %c', cid)
-
     // Build the current path based on the parent path plus the current CID
     const currentPath = [...parentPath, cid]
     this.log?.trace('currentPath %o', currentPath)
 
     if (strategy.isTarget(cid)) {
-      traversalContext.pathToTarget = [...currentPath]
-      // we have a path to the target, so we can start the export process.
+      traversalContext.pathsToTarget = traversalContext.pathsToTarget ?? []
+      traversalContext.pathsToTarget.push([...currentPath])
       this.log?.trace('found path to target %c', cid)
       return
-    } else {
-      this.log?.trace('not the target %c', cid)
     }
 
     const codec = await this.components.getCodec(cid.code)
@@ -376,7 +349,6 @@ class DefaultCar implements Car {
 
     for await (const nextCid of strategy.traverse(cid, decodedBlock)) {
       void queue.add(async () => {
-        // Pass the current path to child traversals
         await this.#traverseDag(nextCid, queue, writer, strategy, traversalContext, currentPath, options)
       })
     }

@@ -3,7 +3,7 @@ import { type TraversalStrategy } from '../index.js'
 import type { CID } from 'multiformats/cid'
 
 /**
- * Strategy for standard DAG walking
+ * Simple strategy that traverses a known path to a target CID.
  */
 export class PathStrategy implements TraversalStrategy {
   private readonly pathToTarget: CID[]
