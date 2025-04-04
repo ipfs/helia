@@ -3,6 +3,7 @@
 import { mfs } from '@helia/mfs'
 import { type UnixFS, unixfs } from '@helia/unixfs'
 import { CarReader } from '@ipld/car'
+import { prefixLogger } from '@libp2p/logger'
 import { createScalableCuckooFilter } from '@libp2p/utils/filters'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
@@ -15,6 +16,8 @@ import { getCodec } from './fixtures/get-codec.js'
 import { memoryCarWriter } from './fixtures/memory-car.js'
 import type { Blockstore } from 'interface-blockstore'
 
+const logger = prefixLogger('test:index')
+
 describe('import/export car file', () => {
   let blockstore: Blockstore
   let c: Car
@@ -23,7 +26,7 @@ describe('import/export car file', () => {
   beforeEach(async () => {
     blockstore = new MemoryBlockstore()
 
-    c = car({ blockstore, getCodec })
+    c = car({ blockstore, getCodec, logger })
     u = unixfs({ blockstore })
   })
 
@@ -50,7 +53,7 @@ describe('import/export car file', () => {
 
     const otherBlockstore = new MemoryBlockstore()
     const otherUnixFS = unixfs({ blockstore: otherBlockstore })
-    const otherCar = car({ blockstore: otherBlockstore, getCodec })
+    const otherCar = car({ blockstore: otherBlockstore, getCodec, logger: prefixLogger('test:index-other') })
     const cid1 = await otherUnixFS.addBytes(fileData1)
     const cid2 = await otherUnixFS.addBytes(fileData2)
     const cid3 = await otherUnixFS.addBytes(fileData3)
