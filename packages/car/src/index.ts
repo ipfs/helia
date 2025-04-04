@@ -344,7 +344,7 @@ class DefaultCar implements Car {
    *
    * This function may be used while traversing to gather path(s) to the target(s). (when `traversalContext` is not null)
    * It may also be used to write single blocks to the writer. (when `writer` is not null)
-   * It may also be used to recursively traverse a subdag/node (when `recursive` is true, the default).
+   * It may also be used to recursively traverse a sub-DAG/node (when `recursive` is true, the default).
    */
   async #processDagNode ({ cid, queue, writer, strategy, traversalContext, parentPath, options, recursive = true }: WalkDagContext): Promise<void> {
     if (writer != null && options?.blockFilter?.has(cid.multihash.bytes) === true) {
