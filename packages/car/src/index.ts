@@ -281,7 +281,6 @@ class DefaultCar implements Car {
         deferred.resolve()
       } else if (!startedExport && traversalContext.pathsToTarget?.length === roots.length) {
         // queue is idle, we haven't started exporting yet, and we have path(s) to the target(s), so we can start the export process.
-        this.log?.trace('pathToTarget %o', traversalContext.pathsToTarget)
         this.log?.trace('starting export of blocks to the car file')
         startedExport = true
         for (const path of traversalContext.pathsToTarget) {
@@ -355,7 +354,6 @@ class DefaultCar implements Car {
     // if we are traversing, we need to gather path(s) to the target(s)
     if (traversalContext != null && parentPath != null && isTraversalStrategy(strategy)) {
       currentPath = [...parentPath, cid]
-      this.log?.trace('currentPath %o', currentPath)
 
       if (strategy.isTarget(cid)) {
         traversalContext.pathsToTarget = traversalContext.pathsToTarget ?? []
