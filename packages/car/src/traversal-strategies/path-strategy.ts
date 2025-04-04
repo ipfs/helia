@@ -4,6 +4,8 @@ import type { CID } from 'multiformats/cid'
 
 /**
  * Simple strategy that traverses a known path to a target CID.
+ *
+ * All this strategy does is yield the next CID in the known path.
  */
 export class PathStrategy implements TraversalStrategy {
   private readonly pathToTarget: CID[]
@@ -18,12 +20,6 @@ export class PathStrategy implements TraversalStrategy {
     return this.target.equals(cid)
   }
 
-  /**
-   * The CID that we are given here has already been added to the car file, so we don't need to add it again,
-   * we need to return the next CID in the known path.
-   *
-   * If the next CID is the last CID in the known path, we need to return a new strategy to traverse the last CID.
-   */
   async * traverse <T extends BlockView<any, any, any, 0 | 1>>(cid: CID, _block?: T): AsyncGenerator<CID, void, undefined> {
     const givenCidIndex = this.pathToTarget.indexOf(cid)
     const nextCid = this.pathToTarget[givenCidIndex + 1]

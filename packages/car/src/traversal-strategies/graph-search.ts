@@ -17,11 +17,6 @@ export class GraphSearch implements TraversalStrategy {
     return this.target.equals(cid)
   }
 
-  /**
-   * When provided with multiple roots during initialization, we need to emit the roots first so that we are traversing all roots
-   *
-   * When other strategies return this strategy for use, we likely will not have multiple roots, so we will not emit the roots again
-   */
   async * traverse <T extends BlockView<any, any, any, 0 | 1>>(cid: CID, block: T): AsyncGenerator<CID, void, undefined> {
     for await (const [, linkedCid] of block.links()) {
       yield linkedCid

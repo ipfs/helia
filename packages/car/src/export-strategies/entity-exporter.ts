@@ -15,14 +15,12 @@ export class EntityExporter implements ExportStrategy {
     // if the block is a UnixFS file, yield all the blocks needed to read the file
 
     if (cid.code === DAG_PB_CODEC_CODE) {
-      // yield * []
       // we need to yield all blocks in the tree for the node
       for await (const [, linkedCid] of block.links()) {
         yield linkedCid
       }
     } else {
       // dag-scope=block because we want to yield only the block for the non-UnixFS data
-      // yield * []
     }
   }
 }
