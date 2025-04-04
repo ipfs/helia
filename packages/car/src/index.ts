@@ -311,11 +311,12 @@ class DefaultCar implements Car {
 
     for (const root of roots) {
       void queue.add(async () => {
+        this.log?.trace('traversing dag from %c', root)
         await this.#traverseDag(
           root,
           queue,
           writer,
-          traversalStrategy,
+          traversalStrategy ?? new GraphSearch(root),
           traversalContext,
           [],
           options
@@ -354,7 +355,7 @@ class DefaultCar implements Car {
     parentPath: CID[] = [], // Track the path
     options: ExportCarOptions | undefined
   ): Promise<void> {
-    this.log?.trace('traversing dag %c', cid)
+    // this.log?.trace('traversing dag %c', cid)
 
     // Build the current path based on the parent path plus the current CID
     const currentPath = [...parentPath, cid]
