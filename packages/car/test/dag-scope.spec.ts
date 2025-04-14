@@ -1,7 +1,6 @@
 /* eslint-env mocha */
 
 import { CarReader } from '@ipld/car'
-import { prefixLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { CID } from 'multiformats/cid'
@@ -14,7 +13,6 @@ import { getCodec } from './fixtures/get-codec.js'
 import { loadCarFixture } from './fixtures/load-car-fixture.js'
 import { memoryCarWriter } from './fixtures/memory-car.js'
 import type { Blockstore } from 'interface-blockstore'
-const logger = prefixLogger('test:dag-scope')
 
 describe('dag-scope', () => {
   let blockstore: Blockstore
@@ -30,7 +28,7 @@ describe('dag-scope', () => {
     blockstore = sinon.spy(new MemoryBlockstore())
     blockstoreGetSpy = blockstore.get as sinon.SinonSpy
 
-    c = car({ blockstore, getCodec, logger })
+    c = car({ blockstore, getCodec })
   })
 
   it('generates a proper car file with dag-scope=all', async () => {
