@@ -89,14 +89,16 @@ const options = {
         res.end(Uint8Array.from([0, 1, 2, 1]))
       })
       badGateway.all('/ipfs/bafkreig7p6kzwgg4hp3n7wpnnn3kkjmpzxds5rmwhphyueilbzabvyexvq', (req, res) => {
-        // wait for Number.MAX_SAFE_INTEGER seconds to simulate a slow response. Do not query this cid unless you plan to abort the request.
+        // wait for 70 seconds to simulate a slow response. Do not query this cid unless you plan to abort the request.
+        // typical test timeout is 60 seconds, so if you reach 60 seconds, there is a bug in handling your abort signal.
+        // if you don't reach whatever timeout you set (e.g. `AbortSignal.timeout(1000)`), there is likely a bug in your test.
         setTimeout(() => {
           res.writeHead(200, {
             'content-type': 'application/octet-stream',
             'content-length': 4
           })
           res.end(Uint8Array.from([0, 1, 2, 1]))
-        }, Number.MAX_SAFE_INTEGER)
+        }, 70000)
       })
 
       badGateway.all('/ipfs/*', (req, res) => {

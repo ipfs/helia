@@ -128,7 +128,7 @@ describe('trustless-gateway sessions', () => {
       }
     }())
 
-    await expect(session.retrieve(cid, { signal: AbortSignal.timeout(1000) })).to.eventually.be.rejectedWith('Session aborted')
+    await expect(session.retrieve(cid, { signal: AbortSignal.timeout(500) })).to.eventually.be.rejectedWith('Session aborted')
     expect(queryProviderSpy.callCount).to.equal(1)
   })
 })
