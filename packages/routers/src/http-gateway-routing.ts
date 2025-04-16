@@ -17,6 +17,12 @@ export const DEFAULT_TRUSTLESS_GATEWAYS = [
 
 export interface HTTPGatewayRouterInit {
   gateways?: Array<URL | string>
+  /**
+   * Whether to shuffle the list of gateways
+   *
+   * @default true
+   */
+  shuffle?: boolean
 }
 
 // this value is from https://github.com/multiformats/multicodec/blob/master/table.csv
@@ -35,13 +41,18 @@ function toPeerInfo (url: string | URL): PeerInfo {
 
 class HTTPGatewayRouter implements Partial<Routing> {
   private readonly gateways: PeerInfo[]
+  private readonly shuffle: boolean
 
   constructor (init: HTTPGatewayRouterInit = {}) {
     this.gateways = (init.gateways ?? DEFAULT_TRUSTLESS_GATEWAYS).map(url => toPeerInfo(url))
+    this.shuffle = init.shuffle ?? true
   }
 
   async * findProviders (cid: CID<unknown, number, number, Version>, options?: RoutingOptions | undefined): AsyncIterable<Provider> {
-    yield * this.gateways.toSorted(() => Math.random() > 0.5 ? 1 : -1).map(info => ({
+    yield * (this.shuffle
+      ? this.gateways.toSorted(() => Math.random() > 0.5 ? 1 : -1)
+      : this.gateways
+    ).map(info => ({
       ...info,
       protocols: ['transport-ipfs-gateway-http']
     }))
