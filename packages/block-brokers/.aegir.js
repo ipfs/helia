@@ -88,6 +88,17 @@ const options = {
         // fails validation
         res.end(Uint8Array.from([0, 1, 2, 1]))
       })
+      badGateway.all('/ipfs/bafkreig7p6kzwgg4hp3n7wpnnn3kkjmpzxds5rmwhphyueilbzabvyexvq', (req, res) => {
+        // wait for Number.MAX_SAFE_INTEGER seconds to simulate a slow response. Do not query this cid unless you plan to abort the request.
+        setTimeout(() => {
+          res.writeHead(200, {
+            'content-type': 'application/octet-stream',
+            'content-length': 4
+          })
+          res.end(Uint8Array.from([0, 1, 2, 1]))
+        }, Number.MAX_SAFE_INTEGER)
+      })
+
       badGateway.all('/ipfs/*', (req, res) => {
         // fails
         res.writeHead(500)

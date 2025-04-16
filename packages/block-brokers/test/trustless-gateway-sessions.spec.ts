@@ -109,4 +109,26 @@ describe('trustless-gateway sessions', () => {
     await expect(session.retrieve(cid)).to.eventually.deep.equal(block)
     expect(queryProviderSpy.callCount).to.equal(1)
   })
+
+  it('should end session when signal is aborted', async () => {
+    const cid = CID.parse('bafkreig7p6kzwgg4hp3n7wpnnn3kkjmpzxds5rmwhphyueilbzabvyexvq')
+    const session = createTrustlessGatewaySession(components, {
+      allowInsecure: true,
+      allowLocal: true
+    })
+
+    const queryProviderSpy = Sinon.spy(session, 'queryProvider')
+
+    components.routing.findProviders.returns(async function * () {
+      yield {
+        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+        multiaddrs: [
+          uriToMultiaddr(process.env.BAD_TRUSTLESS_GATEWAY ?? '')
+        ]
+      }
+    }())
+
+    await expect(session.retrieve(cid, { signal: AbortSignal.timeout(1000) })).to.eventually.be.rejectedWith('Session aborted')
+    expect(queryProviderSpy.callCount).to.equal(1)
+  })
 })
