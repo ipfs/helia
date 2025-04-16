@@ -35,13 +35,13 @@ describe('http-gateway-routing', () => {
     expect(shuffledOrder).to.not.deep.equal(originalOrder)
   })
 
-  it('should preserve provider order when skipProviderShuffle is true', async () => {
+  it('should preserve provider order when shuffle is false', async () => {
     // long enough to make a false positive very unlikely, 1/(10!)
     const gateways = Array.from({ length: 10 }, (_, i) => `https://example${i + 1}.com`)
 
     const routing = httpGatewayRouting({
       gateways,
-      skipProviderShuffle: true
+      shuffle: false
     })
 
     const cid = CID.parse('bafyreidykglsfhoixmivffc5uwhcgshx4j465xwqntbmu43nb2dzqwfvae')
