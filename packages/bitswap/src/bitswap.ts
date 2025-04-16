@@ -72,34 +72,60 @@ export class Bitswap implements BitswapInterface {
 
   async want (cid: CID, options: WantOptions = {}): Promise<Uint8Array> {
     const controller = new AbortController()
+    // Combine the passed signal with the internal controller's signal
     const signal = anySignal([controller.signal, options.signal])
+    // Ensure listeners don't cause warnings, especially with multiple operations
     setMaxListeners(Infinity, controller.signal, signal)
 
-    // find providers and connect to them
-    this.network.findAndConnect(cid, {
+    // 1. Initiate the request via wantList (checks connected peers and waits for block)
+    // This promise resolves when the block is successfully received by the wantList,
+    // regardless of whether it came from a direct peer or via the network lookup.
+    const blockPromise = this.wantList.wantBlock(cid, {
       ...options,
-      signal
-    })
-      .catch(err => {
-        // if the controller was aborted we found the block already so ignore
-        // the error
-        if (!controller.signal.aborted) {
-          this.log.error('error during finding and connect for cid %c', cid, err)
-        }
-      })
+      signal // Pass the combined signal
+    });
+
+    // 2. Initiate the network search concurrently (DHT lookup etc.)
+    // We don't necessarily need to await this promise directly,
+    // as its purpose is to find *providers* and connect to them.
+    // The wantList should eventually receive the block if this succeeds.
+    // We run it in the background and handle potential errors.
+    // Ensure we don't start findAndConnect if already aborted
+    if (!signal.aborted) {
+        this.network.findAndConnect(cid, {
+            ...options,
+            signal // Use the same combined signal
+        })
+        .catch(err => {
+            // Only log if not aborted externally or by blockPromise succeeding/failing first
+            // If the signal was aborted, it's likely because blockPromise resolved or failed, or the user aborted.
+            if (!signal.aborted) {
+              this.log.error('want %c: error during background findAndConnect: %s', cid, err.message ?? err);
+            }
+            // We don't necessarily need to abort the controller here,
+            // as blockPromise might still succeed from a direct peer.
+            // If blockPromise fails later, the main try/catch will handle it.
+        });
+    }
 
     try {
-      const result = await this.wantList.wantBlock(cid, {
-        ...options,
-        signal
-      })
-
-      return result.block
+      // 3. Await the blockPromise. This will resolve if the block is found
+      // either quickly from a connected peer or after findAndConnect helps locate a provider.
+      const result = await blockPromise;
+      // console.log('want %c: block received successfully', cid);
+      controller.abort(); // Abort controller and signal findAndConnect to stop
+      return result.block;
+    } catch (err: any) {
+      this.log.error('want %c: failed to receive block via wantList: %s', cid, err.message ?? err);
+      controller.abort(); // Ensure controller and findAndConnect signal are aborted on final failure
+      throw err; // Re-throw the error from wantList.wantBlock
     } finally {
-      // since we have the block we can now abort any outstanding attempts to
-      // find providers for it
-      controller.abort()
-      signal.clear()
+        // Cleanup signal listeners associated with anySignal
+        if (typeof signal.clear === 'function') {
+            signal.clear();
+        }
+        // Ensure the internal controller's listeners are removed
+        controller.abort();
     }
   }
 
