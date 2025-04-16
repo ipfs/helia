@@ -128,7 +128,43 @@ describe('trustless-gateway sessions', () => {
       }
     }())
 
-    await expect(session.retrieve(cid, { signal: AbortSignal.timeout(500) })).to.eventually.be.rejectedWith('Session aborted')
+    await expect(session.retrieve(cid, { signal: AbortSignal.timeout(500) })).to.eventually.be.rejectedWith('The operation was aborted due to timeout')
     expect(queryProviderSpy.callCount).to.equal(1)
+  })
+
+  it('should not abort the session when the signal is aborted if the block is found', async () => {
+    const cid = CID.parse('bafkreig7p6kzwgg4hp3n7wpnnn3kkjmpzxds5rmwhphyueilbzabvyexvq')
+    const block = Uint8Array.from([0, 1, 2, 0])
+    const session = createTrustlessGatewaySession(components, {
+      allowInsecure: true,
+      allowLocal: true,
+      transformRequestInit: (requestInit) => {
+        requestInit.headers = {
+          // The difference here on my machine is 25ms.. if the difference between finding the block and the signal being aborted is less than 22ms, then the test will fail.
+          delay: '478'
+        }
+        return requestInit
+      }
+    })
+
+    const queryProviderSpy = Sinon.spy(session, 'queryProvider')
+
+    components.routing.findProviders.returns(async function * () {
+      yield {
+        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+        multiaddrs: [
+          uriToMultiaddr(process.env.BAD_TRUSTLESS_GATEWAY ?? '')
+        ]
+      }
+      yield {
+        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+        multiaddrs: [
+          uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
+        ]
+      }
+    }())
+
+    await expect(session.retrieve(cid, { signal: AbortSignal.timeout(500) })).to.eventually.deep.equal(block)
+    expect(queryProviderSpy.callCount).to.equal(2)
   })
 })
