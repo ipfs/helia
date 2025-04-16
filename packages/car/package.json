@@ -71,7 +71,6 @@
     "@helia/unixfs": "^5.0.0",
     "@ipld/dag-cbor": "^9.2.2",
     "@ipld/dag-pb": "^4.1.3",
-    "@libp2p/logger": "^5.1.13",
     "aegir": "^45.1.1",
     "blockstore-core": "^5.0.2",
     "datastore-core": "^10.0.2",
