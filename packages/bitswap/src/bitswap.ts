@@ -112,7 +112,6 @@ export class Bitswap implements BitswapInterface {
       // 3. Await the blockPromise. This will resolve if the block is found
       // either quickly from a connected peer or after findAndConnect helps locate a provider.
       const result = await blockPromise;
-      // console.log('want %c: block received successfully', cid);
       controller.abort(); // Abort controller and signal findAndConnect to stop
       return result.block;
     } catch (err: any) {
