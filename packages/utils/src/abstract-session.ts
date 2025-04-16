@@ -1,5 +1,5 @@
 import { DEFAULT_SESSION_MIN_PROVIDERS, DEFAULT_SESSION_MAX_PROVIDERS, InsufficientProvidersError } from '@helia/interface'
-import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
+import { AbortError, TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { createScalableCuckooFilter } from '@libp2p/utils/filters'
 import { Queue } from '@libp2p/utils/queue'
 import { base64 } from 'multiformats/bases/base64'
@@ -107,7 +107,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
         // Note that there is a slight race condition here where we find the block and the signal is aborted within ~10s of ms of each other.
         // In that case, the request will be rejected with the signal reason.
         this.log.trace('session idle and signal is aborted')
-        deferred.reject(new Error(options.signal?.reason ?? 'Session aborted'))
+        deferred.reject(new AbortError(options.signal?.reason ?? 'Session aborted'))
         return
       }
 

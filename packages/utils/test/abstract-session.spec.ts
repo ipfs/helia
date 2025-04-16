@@ -255,4 +255,67 @@ describe('abstract-session', () => {
     expect(session.findNewProviders).to.have.property('callCount', 2)
     expect(session.queryProvider).to.have.property('callCount', 1)
   })
+
+  it('should abort retrieve if the signal is aborted before provider returns block', async () => {
+    const session = new Session()
+
+    const cid = CID.parse('bafybeifaymukvfkyw6xgh4th7tsctiifr4ea2btoznf46y6b2fnvikdczi')
+    const block = Uint8Array.from([0, 1, 2, 3])
+
+    session.findNewProviders.onFirstCall().callsFake(async function * () {
+      yield {
+        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      }
+    })
+    session.queryProvider.callsFake(async (cid, provider, options) => {
+      return raceSignal((async () => {
+        await delay(100)
+
+        return block
+      })(), options.signal)
+    })
+
+    await expect(session.retrieve(cid, {
+      signal: AbortSignal.timeout(10)
+    })).to.eventually.be.rejected()
+      .with.property('name', 'AbortError')
+  })
+
+  it('should handle race condition between finding block and abort signal', async () => {
+    const session = new Session()
+
+    const cid = CID.parse('bafybeifaymukvfkyw6xgh4th7tsctiifr4ea2btoznf46y6b2fnvikdczi')
+    const block = Uint8Array.from([0, 1, 2, 3])
+
+    const providers: SessionPeer[] = [{
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    }, {
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    }]
+
+    session.findNewProviders.callsFake(async function * () {
+      yield providers[0]
+      yield providers[1]
+    })
+    const abortDelay = 500
+
+    session.queryProvider.withArgs(cid, providers[0]).callsFake(async (_cid, _provider, options) => {
+      return raceSignal((async () => {
+        await delay(abortDelay * 2) // always takes longer than abortDelay
+
+        return Uint8Array.from([0, 1, 2, 3, 4])
+      })(), options.signal)
+    })
+    session.queryProvider.withArgs(cid, providers[1]).callsFake(async (_cid, _provider, options) => {
+      return raceSignal((async () => {
+        await delay(abortDelay - 40)
+
+        return block
+      })(), options.signal)
+    })
+
+    await expect(session.retrieve(cid, {
+      signal: AbortSignal.timeout(abortDelay)
+    })).to.eventually.deep.equal(block)
+  })
 })
