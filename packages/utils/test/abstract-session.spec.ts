@@ -317,5 +317,7 @@ describe('abstract-session', () => {
     await expect(session.retrieve(cid, {
       signal: AbortSignal.timeout(abortDelay)
     })).to.eventually.deep.equal(block)
+
+    expect(session.queryProvider.callCount).to.equal(2)
   })
 })

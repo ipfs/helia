@@ -18,16 +18,6 @@ interface StubbedTrustlessGatewaySessionComponents {
   routing: StubbedInstance<Routing>
 }
 
-/**
- * Normalize the abort signal reason string to be the same across Node.js and browsers.
- */
-const getSignal = (msg: string, delay: number): AbortSignal => {
-  const ctrl = new AbortController()
-  const signal = ctrl.signal
-  setTimeout(() => { ctrl.abort(msg) }, delay)
-  return signal
-}
-
 describe('trustless-gateway sessions', () => {
   let components: StubbedTrustlessGatewaySessionComponents
 
@@ -138,7 +128,8 @@ describe('trustless-gateway sessions', () => {
       }
     }())
 
-    await expect(session.retrieve(cid, { signal: getSignal('abort request', 500) })).to.eventually.be.rejectedWith('abort request')
+    await expect(session.retrieve(cid, { signal: AbortSignal.timeout(500) })).to.eventually.be.rejected()
+      .with.property('name', 'AbortError')
     expect(queryProviderSpy.callCount).to.equal(1)
   })
 
@@ -174,7 +165,7 @@ describe('trustless-gateway sessions', () => {
       }
     }())
 
-    await expect(session.retrieve(cid, { signal: getSignal('abort request', 500) })).to.eventually.deep.equal(block)
+    await expect(session.retrieve(cid, { signal: AbortSignal.timeout(500) })).to.eventually.deep.equal(block)
     expect(queryProviderSpy.callCount).to.equal(2)
   })
 })
