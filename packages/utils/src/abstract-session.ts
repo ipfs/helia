@@ -176,7 +176,6 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
 
     const signalAbortedListener = (): void => {
       deferred.reject(new AbortError(options.signal?.reason ?? 'Session aborted'))
-
       queue.abort()
     }
 
