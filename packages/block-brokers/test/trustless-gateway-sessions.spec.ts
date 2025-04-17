@@ -177,7 +177,7 @@ describe('trustless-gateway sessions', () => {
       Sinon.match((provider: TrustlessGateway) => provider.url.toString().includes(process.env.BAD_TRUSTLESS_GATEWAY ?? ''))
     ).callsFake(async (_cid, _provider, options) => {
       const racedPromise = triggerMoment
-        .then(async () => new Promise(resolve => setTimeout(resolve, 1)))
+        .then(async () => new Promise(resolve => setTimeout(resolve, 0)))
         .then(() => { return new Uint8Array([0, 1, 2, 3]) })
       return raceSignal(racedPromise, options.signal)
     })
@@ -192,7 +192,7 @@ describe('trustless-gateway sessions', () => {
     // abort the signal
     void triggerMoment.then(async () => {
       // slight delay to ensure this resolves after the block returning provider
-      await new Promise(resolve => setTimeout(resolve, 1))
+      await new Promise(resolve => setTimeout(resolve, 0))
       controller.abort()
     })
 
