@@ -96,18 +96,9 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
       deferred.resolve(evt.detail.result)
     })
     queue.addEventListener('idle', () => {
-      if (foundBlock) {
+      if (foundBlock || options.signal?.aborted === true) {
         this.log.trace('session idle, found block')
-        // we found the block, nothing else to do here.
-        return
-      }
-
-      if (options.signal?.aborted === true) {
-        // the session is idle, we haven't found the block, and the signal was aborted, so we can reject the promise.
-        // Note that there is a slight race condition here where we find the block and the signal is aborted within ~10s of ms of each other.
-        // In that case, the request will be rejected with the signal reason.
-        this.log.trace('session idle and signal is aborted')
-        deferred.reject(new AbortError(options.signal?.reason ?? 'Session aborted'))
+        // we either found the block or the user gave up
         return
       }
 
@@ -178,10 +169,18 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
         this.log.error('error retrieving session block for %c', cid, err)
       })
 
+    const signalAbortedListener = (): void => {
+      deferred.reject(new AbortError(options.signal?.reason ?? 'Session aborted'))
+      queue.abort()
+    }
+
+    options.signal?.addEventListener('abort', signalAbortedListener)
+
     try {
       return await deferred.promise
     } finally {
       this.removeEventListener('provider', peerAddedToSessionListener)
+      options.signal?.removeEventListener('abort', signalAbortedListener)
       queue.clear()
       this.requests.delete(cidStr)
     }
