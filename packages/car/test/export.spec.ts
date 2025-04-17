@@ -121,6 +121,7 @@ describe('export', () => {
     await c.import(reader)
 
     const exportedReader = await CarReader.fromIterable(c.stream(dagRoot, {
+      // cspell:ignore multiblock
       traversal: new UnixFSPath('/subdir/multiblock.txt')
     }))
 
