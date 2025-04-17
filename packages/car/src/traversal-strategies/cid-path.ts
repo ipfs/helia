@@ -1,5 +1,5 @@
-import { type BlockView } from 'multiformats/block/interface'
-import { type TraversalStrategy } from '../index.js'
+import type { TraversalStrategy } from '../index.js'
+import type { BlockView } from 'multiformats/block/interface'
 import type { CID } from 'multiformats/cid'
 
 /**
@@ -7,7 +7,7 @@ import type { CID } from 'multiformats/cid'
  *
  * All this strategy does is yield the next CID in the known path.
  */
-export class PathStrategy implements TraversalStrategy {
+export class CIDPath implements TraversalStrategy {
   private readonly pathToTarget: CID[]
   private readonly target: CID
 

@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import { type UnixFS, unixfs } from '@helia/unixfs'
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import toBuffer from 'it-to-buffer'
@@ -18,7 +19,11 @@ describe('stream car file', () => {
   beforeEach(async () => {
     blockstore = new MemoryBlockstore()
 
-    c = car({ blockstore, getCodec })
+    c = car({
+      blockstore,
+      getCodec,
+      logger: defaultLogger()
+    })
     u = unixfs({ blockstore })
   })
 

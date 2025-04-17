@@ -1,2 +1,3 @@
 export * from './graph-search.js'
-export * from './path-strategy.js'
+export * from './cid-path.js'
+export * from './unixfs-path.js'
