@@ -23,7 +23,7 @@ export class UnixFSPath implements TraversalStrategy {
 
   async * traverse <T extends BlockView<any, any, any, 0 | 1>>(cid: CID, block: T): AsyncGenerator<CID, void, undefined> {
     if (cid.code !== DAG_PB_CODEC_CODE) {
-      throw new NotUnixFSError('Target CID was not UnixFS')
+      throw new NotUnixFSError('Target CID is not UnixFS')
     }
 
     const segment = this.path.shift()
@@ -35,7 +35,7 @@ export class UnixFSPath implements TraversalStrategy {
     const pb = decode(block.bytes)
 
     if (pb.Data == null) {
-      throw new NotUnixFSError('Target CID was not a UnixFS directory')
+      throw new NotUnixFSError('Target CID has no UnixFS data in decoded bytes')
     }
 
     const unixfs = UnixFS.unmarshal(pb.Data)
@@ -44,7 +44,7 @@ export class UnixFSPath implements TraversalStrategy {
       const link = pb.Links.filter(link => link.Name === segment).pop()
 
       if (link == null) {
-        throw new NotUnixFSError('Target CID was not a UnixFS directory')
+        throw new NotUnixFSError(`Target CID directory has no link with name ${segment}`)
       }
 
       yield link.Hash
@@ -53,6 +53,6 @@ export class UnixFSPath implements TraversalStrategy {
 
     // TODO: HAMT support
 
-    throw new NotUnixFSError('Target CID was not a UnixFS directory')
+    throw new NotUnixFSError('Target CID is not a UnixFS directory')
   }
 }

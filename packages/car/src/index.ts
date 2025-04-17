@@ -150,7 +150,7 @@ export interface ExportCarOptions extends AbortOptions, ProgressOptions<GetBlock
 
   /**
    * Export strategy to use for the export. This should be used to change the
-   * `dag-scope` of the exported car file.
+   * blocks included in the exported car file. (e.g. https://specs.ipfs.tech/http-gateways/trustless-gateway/#dag-scope-request-query-parameter) 
    */
   exporter?: ExportStrategy
 }

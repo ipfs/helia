@@ -3,7 +3,7 @@ import { type ExportStrategy } from '../index.js'
 import type { BlockView } from 'multiformats/block/interface'
 
 /**
- * Traverses the DAG depth-first starting at the target CID and yields all
+ * Traverses the DAG breadth-first starting at the target CID and yields all
  * encountered blocks.
  *
  * Blocks linked to from the target block are traversed using codecs defined in
