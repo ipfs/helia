@@ -1,5 +1,5 @@
 import { DEFAULT_SESSION_MIN_PROVIDERS, DEFAULT_SESSION_MAX_PROVIDERS, InsufficientProvidersError } from '@helia/interface'
-import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
+import { AbortError, TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { createScalableCuckooFilter } from '@libp2p/utils/filters'
 import { Queue } from '@libp2p/utils/queue'
 import { base64 } from 'multiformats/bases/base64'
@@ -97,6 +97,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     })
     queue.addEventListener('idle', () => {
       if (foundBlock || options.signal?.aborted === true) {
+        this.log.trace('session idle, found block')
         // we either found the block or the user gave up
         return
       }
@@ -168,10 +169,18 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
         this.log.error('error retrieving session block for %c', cid, err)
       })
 
+    const signalAbortedListener = (): void => {
+      deferred.reject(new AbortError(options.signal?.reason ?? 'Session aborted'))
+      queue.abort()
+    }
+
+    options.signal?.addEventListener('abort', signalAbortedListener)
+
     try {
       return await deferred.promise
     } finally {
       this.removeEventListener('provider', peerAddedToSessionListener)
+      options.signal?.removeEventListener('abort', signalAbortedListener)
       queue.clear()
       this.requests.delete(cidStr)
     }
