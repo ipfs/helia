@@ -59,7 +59,7 @@ const options = {
           res.end(Uint8Array.from([0, 1, 2, 0]))
         } else {
           // no reason to use this in tests without the delay configured.
-          res.writeHead(500, {
+          res.writeHead(400, {
             'content-type': 'text/plain',
             'content-length': 13
           })
