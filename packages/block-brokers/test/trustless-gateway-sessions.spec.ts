@@ -191,7 +191,7 @@ describe('trustless-gateway sessions', () => {
 
     // abort the signal
     void triggerMoment.then(async () => {
-      // slight delay to ensure this resolves after the block returning provider
+      // slight delay to ensure this aborts after the block returning provider
       await new Promise(resolve => setTimeout(resolve, 0))
       controller.abort()
     })
