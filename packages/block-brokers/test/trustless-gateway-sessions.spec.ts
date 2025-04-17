@@ -10,6 +10,7 @@ import { CID } from 'multiformats/cid'
 import Sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { createTrustlessGatewaySession } from '../src/trustless-gateway/session.js'
+import type { TrustlessGateway } from '../src/trustless-gateway/trustless-gateway.js'
 import type { Routing } from '@helia/interface'
 import type { ComponentLogger } from '@libp2p/interface'
 
@@ -138,34 +139,50 @@ describe('trustless-gateway sessions', () => {
     const block = Uint8Array.from([0, 1, 2, 0])
     const session = createTrustlessGatewaySession(components, {
       allowInsecure: true,
-      allowLocal: true,
-      transformRequestInit: (requestInit) => {
-        requestInit.headers = {
-          // The difference here on my machine is 25ms.. if the difference between finding the block and the signal being aborted is less than 22ms, then the test will fail.
-          delay: '478'
-        }
-        return requestInit
-      }
+      allowLocal: true
     })
-
-    const queryProviderSpy = Sinon.spy(session, 'queryProvider')
+    const providers = [{
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      multiaddrs: [
+        uriToMultiaddr(process.env.BAD_TRUSTLESS_GATEWAY ?? '')
+      ]
+    },
+    {
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      multiaddrs: [
+        uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
+      ]
+    }]
 
     components.routing.findProviders.returns(async function * () {
-      yield {
-        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
-        multiaddrs: [
-          uriToMultiaddr(process.env.BAD_TRUSTLESS_GATEWAY ?? '')
-        ]
-      }
-      yield {
-        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
-        multiaddrs: [
-          uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
-        ]
-      }
+      yield providers[0]
+      yield providers[1]
     }())
 
-    await expect(session.retrieve(cid, { signal: AbortSignal.timeout(500) })).to.eventually.deep.equal(block)
-    expect(queryProviderSpy.callCount).to.equal(2)
+    // eslint-disable-next-line prefer-const
+    let startTime: number
+    const signalDelay = 500
+    const queryProviderStub = Sinon.stub(session, 'queryProvider')
+    queryProviderStub.withArgs(cid, Sinon.match((provider) => provider.url.toString() === process.env.BAD_TRUSTLESS_GATEWAY))
+      .callsFake(async (_cid, _provider, options) => {
+        const delay = Date.now() - startTime
+        // eslint-disable-next-line no-console
+        console.log('queryProviderStub with bad gateway', delay)
+        await new Promise((resolve) => setTimeout(resolve, delay + 20))
+        options.signal?.throwIfAborted()
+        // throw new Error('Should have thrown')
+        return block
+      })
+    queryProviderStub.withArgs(cid, Sinon.match((provider) => provider.url.toString() === process.env.TRUSTLESS_GATEWAY))
+      .callsFake(async () => {
+        const delay = Date.now() - startTime
+        // eslint-disable-next-line no-console
+        console.log('queryProviderStub with good gateway', delay)
+        await new Promise((resolve) => setTimeout(resolve, delay - 20))
+        return block
+      })
+    startTime = Date.now()
+    await expect(session.retrieve(cid, { signal: AbortSignal.timeout(signalDelay) })).to.eventually.deep.equal(block)
+    expect(queryProviderStub.callCount).to.equal(2)
   })
 })
