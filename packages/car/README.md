@@ -42,7 +42,7 @@ esoteric DAG walkers can be passed as an init option.
 
 ```typescript
 import { createHelia } from 'helia'
-import { car } from '@helia/car
+import { car } from '@helia/car'
 import { CID } from 'multiformats/cid'
 import nodeFs from 'node:fs'
 
@@ -63,7 +63,7 @@ out.end()
 
 ```typescript
 import { createHelia } from 'helia'
-import { car, UnixFSPath } from '@helia/car
+import { car, UnixFSPath } from '@helia/car'
 import { CID } from 'multiformats/cid'
 import nodeFs from 'node:fs'
 
