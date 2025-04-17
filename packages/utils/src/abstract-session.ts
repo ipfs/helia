@@ -175,11 +175,6 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
       })
 
     const signalAbortedListener = (): void => {
-      if (foundBlock) {
-        this.log.trace('signal aborted, but block was found')
-        return
-      }
-
       deferred.reject(new AbortError(options.signal?.reason ?? 'Session aborted'))
 
       queue.abort()

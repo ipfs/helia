@@ -119,7 +119,13 @@ describe('trustless-gateway sessions', () => {
       allowLocal: true
     })
 
-    const queryProviderSpy = Sinon.spy(session, 'queryProvider')
+    const queryProviderStub = Sinon.stub(session, 'queryProvider')
+
+    queryProviderStub.callsFake(async (_cid, _provider, options) => {
+      return raceSignal(new Promise(resolve => {
+        // never resolve
+      }), options.signal)
+    })
 
     components.routing.findProviders.returns(async function * () {
       yield {
@@ -130,9 +136,9 @@ describe('trustless-gateway sessions', () => {
       }
     }())
 
-    await expect(session.retrieve(cid, { signal: AbortSignal.timeout(500) })).to.eventually.be.rejected()
+    await expect(session.retrieve(cid, { signal: AbortSignal.timeout(50) })).to.eventually.be.rejected()
       .with.property('name', 'AbortError')
-    expect(queryProviderSpy.callCount).to.equal(1)
+    expect(queryProviderStub.callCount).to.equal(1)
   })
 
   it('should not abort the session when the signal is aborted if the block is found', async () => {
@@ -156,40 +162,42 @@ describe('trustless-gateway sessions', () => {
     }]
 
     components.routing.findProviders.returns(async function * () {
-      yield providers[0]
       yield providers[1]
+      yield providers[0]
     }())
 
-    // eslint-disable-next-line prefer-const
-    let startTime: number
-    const signalDelay = 500
+    const controller = new AbortController()
     const queryProviderStub = Sinon.stub(session, 'queryProvider')
-    queryProviderStub.withArgs(cid, Sinon.match((provider: TrustlessGateway) => provider.url.toString().includes(process.env.BAD_TRUSTLESS_GATEWAY ?? '')))
-      .callsFake(async (_cid, _provider, options) => {
-        const delay = Date.now() - startTime
-        // throw new Error('test')
 
-        return raceSignal(new Promise((resolve) => setTimeout(() => {
-          resolve(new Uint8Array([0, 1, 2, 3])) // wrong block.. so test will fail if this is the block returned
-        }, delay)), options.signal)
-      })
-    queryProviderStub.withArgs(cid, Sinon.match((provider: TrustlessGateway) => {
-      // eslint-disable-next-line no-console
-      console.log('provider', provider.url.toString())
-      // eslint-disable-next-line no-console
-      console.log('process.env.TRUSTLESS_GATEWAY', process.env.TRUSTLESS_GATEWAY)
-      // eslint-disable-next-line no-console
-      console.log('matches?', provider.url.toString().includes(process.env.TRUSTLESS_GATEWAY ?? ''))
-      return provider.url.toString().includes(process.env.TRUSTLESS_GATEWAY ?? '')
-    }))
-      .callsFake(async () => {
-        const delay = Date.now() - startTime
-        await new Promise((resolve) => setTimeout(resolve, delay))
-        return block
-      })
-    startTime = Date.now()
-    // await expect(session.retrieve(cid, { signal: AbortSignal.timeout(signalDelay) })).to.eventually.deep.equal(block)
-    await expect(session.retrieve(cid)).to.eventually.deep.equal(block)
+    // a promise that will resolve at the exact moment we want both events to occur
+    const triggerMoment = new Promise<void>(resolve => setTimeout(resolve, 50))
+
+    queryProviderStub.withArgs(
+      cid,
+      Sinon.match((provider: TrustlessGateway) => provider.url.toString().includes(process.env.BAD_TRUSTLESS_GATEWAY ?? ''))
+    ).callsFake(async (_cid, _provider, options) => {
+      const racedPromise = triggerMoment
+        .then(async () => new Promise(resolve => setTimeout(resolve, 1)))
+        .then(() => { return new Uint8Array([0, 1, 2, 3]) })
+      return raceSignal(racedPromise, options.signal)
+    })
+
+    queryProviderStub.withArgs(
+      cid,
+      Sinon.match((provider: TrustlessGateway) => provider.url.toString().includes(process.env.TRUSTLESS_GATEWAY ?? ''))
+    ).callsFake(async () => {
+      return triggerMoment.then(() => block)
+    })
+
+    // abort the signal
+    void triggerMoment.then(async () => {
+      // slight delay to ensure this resolves after the block returning provider
+      await new Promise(resolve => setTimeout(resolve, 1))
+      controller.abort()
+    })
+
+    await expect(session.retrieve(cid, { signal: controller.signal }))
+      .to.eventually.deep.equal(block)
     expect(queryProviderStub.callCount).to.equal(2)
   })
 })
