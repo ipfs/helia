@@ -26,11 +26,17 @@ interface WalkDagContext<Strategy> {
   cid: CID
   queue: PQueue
   strategy: Strategy
-  writer?: Pick<CarWriter, 'put'>
   options?: ExportCarOptions
-  traversalContext?: TraversalContext
-  parentPath?: CID[]
+}
+
+interface ExportWalkDagContext extends WalkDagContext<ExportStrategy> {
+  writer: Pick<CarWriter, 'put'>
   recursive?: boolean
+}
+
+interface TraversalWalkDagContext extends WalkDagContext<TraversalStrategy> {
+  traversalContext: TraversalContext
+  parentPath: CID[]
 }
 
 export class Car implements CarInterface {
@@ -151,71 +157,49 @@ export class Car implements CarInterface {
   /**
    * Traverse a DAG and stop when we reach the target node
    */
-  async #traverseDagNode ({ cid, queue, writer, strategy, traversalContext, parentPath, options, recursive = true }: WalkDagContext<TraversalStrategy>): Promise<void> {
-    if (writer != null && options?.blockFilter?.has(cid.multihash.bytes) === true) {
-      return
-    }
-
-    let currentPath: CID[]
-
+  async #traverseDagNode ({ cid, queue, strategy, traversalContext, parentPath, options }: TraversalWalkDagContext): Promise<void> {
     // if we are traversing, we need to gather path(s) to the target(s)
-    if (traversalContext != null && parentPath != null) {
-      currentPath = [...parentPath, cid]
+    const currentPath = [...parentPath, cid]
 
-      if (strategy.isTarget(cid)) {
-        traversalContext.pathsToTarget = traversalContext.pathsToTarget ?? []
-        traversalContext.pathsToTarget.push([...currentPath])
-        this.log.trace('found path to target %c', cid)
-        return
-      }
+    if (strategy.isTarget(cid)) {
+      traversalContext.pathsToTarget = traversalContext.pathsToTarget ?? []
+      traversalContext.pathsToTarget.push([...currentPath])
+      this.log.trace('found path to target %c', cid)
+      return
     }
 
     const codec = await this.components.getCodec(cid.code)
     const bytes = await this.components.blockstore.get(cid, options)
 
-    if (writer != null) {
-      // writer is not null, so we are writing to a car file
-      // Mark as processed
-      options?.blockFilter?.add(cid.multihash.bytes)
+    // we are recursively traversing the dag
+    const decodedBlock = createUnsafe({ bytes, cid, codec })
 
-      // Write to CAR
-      await writer.put({ cid, bytes })
-    }
-
-    if (recursive) {
-      // we are recursively traversing the dag
-      const decodedBlock = createUnsafe({ bytes, cid, codec })
-
-      for await (const nextCid of strategy.traverse(cid, decodedBlock)) {
-        void queue.add(async () => {
-          await this.#traverseDagNode({ cid: nextCid, queue, writer, strategy, traversalContext, parentPath: currentPath ?? [], options })
+    for await (const nextCid of strategy.traverse(cid, decodedBlock)) {
+      void queue.add(async () => {
+        await this.#traverseDagNode({ cid: nextCid, queue, strategy, traversalContext, parentPath: currentPath ?? [], options })
+      })
+        .catch((err) => {
+          this.log.error('error during traversal queue operation - %e', err)
         })
-          .catch((err) => {
-            this.log.error('error during traversal queue operation - %e', err)
-          })
-      }
     }
   }
 
   /**
    * Use an ExportStrategy to export part of all of a DAG
    */
-  async #exportDagNode ({ cid, queue, writer, strategy, traversalContext, options, recursive = true }: WalkDagContext<ExportStrategy>): Promise<void> {
-    if (writer != null && options?.blockFilter?.has(cid.multihash.bytes) === true) {
+  async #exportDagNode ({ cid, queue, writer, strategy, options, recursive = true }: ExportWalkDagContext): Promise<void> {
+    if (options?.blockFilter?.has(cid.multihash.bytes) === true) {
       return
     }
 
     const codec = await this.components.getCodec(cid.code)
     const bytes = await this.components.blockstore.get(cid, options)
 
-    if (writer != null) {
-      // writer is not null, so we are writing to a car file
-      // Mark as processed
-      options?.blockFilter?.add(cid.multihash.bytes)
+    // Mark as processed
+    options?.blockFilter?.add(cid.multihash.bytes)
 
-      // Write to CAR
-      await writer.put({ cid, bytes })
-    }
+    // Write to CAR
+    await writer.put({ cid, bytes })
 
     if (recursive) {
       // we are recursively traversing the dag
@@ -223,7 +207,7 @@ export class Car implements CarInterface {
 
       for await (const nextCid of strategy.export(cid, decodedBlock)) {
         void queue.add(async () => {
-          await this.#exportDagNode({ cid: nextCid, queue, writer, strategy, traversalContext, parentPath: [], options })
+          await this.#exportDagNode({ cid: nextCid, queue, writer, strategy, options })
         })
           .catch((err) => {
             this.log.error('error during export queue operation - %e', err)
