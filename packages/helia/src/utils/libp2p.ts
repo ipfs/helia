@@ -29,11 +29,10 @@ export async function createLibp2p <T extends Record<string, unknown>> (options:
     libp2pOptions.privateKey = await loadOrCreateSelfKey(options.datastore, options.keychain)
   }
 
-  const defaults = libp2pDefaults(libp2pOptions)
+  const defaults: any = libp2pDefaults(libp2pOptions)
   defaults.datastore = defaults.datastore ?? options.datastore
 
-  // @ts-expect-error derived ServiceMap is not compatible with ServiceFactoryMap
-  const node = await create({
+  const node = await create<T>({
     ...defaults,
     ...libp2pOptions,
     start: false
