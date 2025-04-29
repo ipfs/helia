@@ -25,6 +25,7 @@ export interface GetResult {
 }
 
 export interface ListResult {
+  privateKey: Uint8Array
   routingKey: Uint8Array
   record: Uint8Array
   created: Date
@@ -35,7 +36,7 @@ export interface ListOptions extends AbortOptions {
 }
 
 export interface LocalStore {
-  put(routingKey: Uint8Array, marshaledRecord: Uint8Array, options?: PutOptions): Promise<void>
+  put(routingKey: Uint8Array, marshaledRecord: Uint8Array, privateKey: Uint8Array, options?: PutOptions): Promise<void>
   get(routingKey: Uint8Array, options?: GetOptions): Promise<GetResult>
   has(routingKey: Uint8Array, options?: AbortOptions): Promise<boolean>
   delete(routingKey: Uint8Array, options?: AbortOptions): Promise<void>
@@ -52,7 +53,7 @@ export interface LocalStore {
  */
 export function localStore (datastore: Datastore): LocalStore {
   return {
-    async put (routingKey: Uint8Array, marshalledRecord: Uint8Array, options: PutOptions = {}) {
+    async put (routingKey: Uint8Array, marshalledRecord: Uint8Array, privateKey: Uint8Array, options: PutOptions = {}) {
       try {
         const key = dhtRoutingKey(routingKey)
 
@@ -128,7 +129,8 @@ export function localStore (datastore: Datastore): LocalStore {
             yield {
               routingKey,
               record: libp2pRecord.value,
-              created: libp2pRecord.timeReceived
+              created: libp2pRecord.timeReceived,
+              privateKey: libp2pRecord.key
             }
           } catch (err) {
             // Skip invalid records

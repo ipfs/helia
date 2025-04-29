@@ -303,6 +303,7 @@ import type { Datastore } from 'interface-datastore'
 import type { MultibaseDecoder } from 'multiformats/bases/interface'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
+import { privateKeyToProtobuf } from '@libp2p/crypto/keys'
 
 const log = logger('helia:ipns')
 
@@ -525,8 +526,8 @@ class DefaultIPNS implements IPNS {
       const ttlNs = options.ttl != null ? BigInt(options.ttl) * 1_000_000n : DEFAULT_TTL_NS
       const record = await createIPNSRecord(key, value, sequenceNumber, options.lifetime ?? DEFAULT_LIFETIME_MS, { ...options, ttlNs })
       const marshaledRecord = marshalIPNSRecord(record)
-
-      await this.localStore.put(routingKey, marshaledRecord, options)
+      const privateKey = privateKeyToProtobuf(key)
+      await this.localStore.put(routingKey, marshaledRecord, privateKey, options)
 
       if (options.offline !== true) {
         // publish record to routing
@@ -576,17 +577,20 @@ class DefaultIPNS implements IPNS {
 
       try {
         // Use the localStore.list method to get all IPNS records
-        const recordsToRepublish: Array<{ routingKey: Uint8Array, record: IPNSRecord }> = []
+        const recordsToRepublish: Array<{ routingKey: Uint8Array, record: Uint8Array<any> }> = []
 
         // Find all records using the localStore.list method
-        for await (const { routingKey, record } of this.localStore.list({
+        for await (const { routingKey, record, privateKey } of this.localStore.list({
           signal: options.signal,
           onProgress: options.onProgress
         })) {
           try {
             // Unmarshal the IPNS record
             const ipnsRecord = unmarshalIPNSRecord(record)
-            recordsToRepublish.push({ routingKey, record: ipnsRecord })
+            const sequenceNumber = ipnsRecord.sequence + 1n
+            const ttlNs = ipnsRecord.ttl ?? DEFAULT_TTL_NS
+            const updatedRecord = await createIPNSRecord(privateKey, ipnsRecord.value, sequenceNumber, options.lifetime ?? DEFAULT_LIFETIME_MS, { ...options, ttlNs })
+            recordsToRepublish.push({ routingKey, record: updatedRecord })
           } catch (err) {
             this.log.error('error unmarshaling record', err)
           }
