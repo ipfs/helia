@@ -22,6 +22,7 @@ export class HeliaRouting implements IPNSRouting {
       await this.routing.put(routingKey, marshaledRecord, options)
     } catch (err: any) {
       options.onProgress?.(new CustomProgressEvent<Error>('ipns:routing:helia:error', err))
+      throw err
     }
   }
 
@@ -30,9 +31,8 @@ export class HeliaRouting implements IPNSRouting {
       return await this.routing.get(routingKey, options)
     } catch (err: any) {
       options.onProgress?.(new CustomProgressEvent<Error>('ipns:routing:helia:error', err))
+      throw err
     }
-
-    throw new Error('Not found')
   }
 }
 
