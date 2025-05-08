@@ -19,13 +19,9 @@
  * ```
  */
 
-import { bitswap, trustlessGateway } from '@helia/block-brokers'
-import { httpGatewayRouting, libp2pRouting } from '@helia/routers'
-import { MemoryBlockstore } from 'blockstore-core'
-import { MemoryDatastore } from 'datastore-core'
 import { HeliaP2P } from './helia-p2p.js'
+import { heliaDefaults } from './utils/helia-defaults.js'
 import { libp2pDefaults } from './utils/libp2p-defaults.js'
-import { createLibp2p } from './utils/libp2p.js'
 import type { DefaultLibp2pServices } from './utils/libp2p-defaults.js'
 import type { Libp2pDefaultsOptions } from './utils/libp2p.js'
 import type { Helia } from '@helia/interface'
@@ -40,7 +36,10 @@ import type { CID } from 'multiformats/cid'
 export * from '@helia/interface'
 
 export type { DefaultLibp2pServices, Libp2pDefaultsOptions }
+
+// allow amending the default config
 export { libp2pDefaults }
+export { heliaDefaults }
 
 /**
  * DAGWalkers take a block and yield CIDs encoded in that block
@@ -90,59 +89,12 @@ export interface HeliaLibp2p<T extends Libp2p = Libp2p<DefaultLibp2pServices>> e
 export async function createHelia <T extends Libp2p> (init: Partial<HeliaInit<T>>): Promise<HeliaLibp2p<T>>
 export async function createHelia (init?: Partial<HeliaInit<Libp2p<DefaultLibp2pServices>>>): Promise<HeliaLibp2p<Libp2p<DefaultLibp2pServices>>>
 export async function createHelia (init: Partial<HeliaInit> = {}): Promise<HeliaLibp2p> {
-  const datastore = init.datastore ?? new MemoryDatastore()
-  const blockstore = init.blockstore ?? new MemoryBlockstore()
-
-  let libp2p: Libp2p<DefaultLibp2pServices>
-
-  if (isLibp2p(init.libp2p)) {
-    libp2p = init.libp2p as any
-  } else {
-    libp2p = await createLibp2p<DefaultLibp2pServices>({
-      ...init,
-      libp2p: {
-        dns: init.dns,
-        ...init.libp2p,
-
-        // ignore the libp2p start parameter as it should be on the main init
-        // object instead
-        start: undefined
-      },
-      datastore
-    })
-  }
-
-  const helia = new HeliaP2P({
-    ...init,
-    libp2p,
-    datastore,
-    blockstore,
-    blockBrokers: init.blockBrokers ?? [
-      trustlessGateway(),
-      bitswap()
-    ],
-    routers: init.routers ?? [
-      libp2pRouting(libp2p),
-      httpGatewayRouting()
-    ],
-    metrics: libp2p.metrics
-  })
+  const options = await heliaDefaults(init)
+  const helia = new HeliaP2P<any>(options)
 
   if (init.start !== false) {
     await helia.start()
   }
 
   return helia
-}
-
-function isLibp2p (obj: any): obj is Libp2p {
-  if (obj == null) {
-    return false
-  }
-
-  // a non-exhaustive list of methods found on the libp2p object
-  const funcs = ['dial', 'dialProtocol', 'hangUp', 'handle', 'unhandle', 'getMultiaddrs', 'getProtocols']
-
-  // if these are all functions it's probably a libp2p object
-  return funcs.every(m => typeof obj[m] === 'function')
 }

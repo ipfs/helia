@@ -63,6 +63,28 @@ export interface HeliaHTTPInit extends HeliaInit {
 }
 
 /**
+ * Create and return the default options used to create a Helia node that only
+ * uses HTTP services
+ */
+export async function heliaDefaults (init: Partial<HeliaHTTPInit> = {}): Promise<HeliaHTTPInit> {
+  const datastore = init.datastore ?? new MemoryDatastore()
+  const blockstore = init.blockstore ?? new MemoryBlockstore()
+
+  return {
+    ...init,
+    datastore,
+    blockstore,
+    blockBrokers: init.blockBrokers ?? [
+      trustlessGateway()
+    ],
+    routers: init.routers ?? [
+      delegatedHTTPRouting('https://delegated-ipfs.dev'),
+      httpGatewayRouting()
+    ]
+  }
+}
+
+/**
  * Create and return a Helia node
  */
 export async function createHeliaHTTP (init: Partial<HeliaHTTPInit> = {}): Promise<Helia> {
