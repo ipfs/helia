@@ -1,5 +1,21 @@
 # Changelog
 
+## [5.4.0](https://github.com/ipfs/helia/compare/helia-v5.3.0...helia-v5.4.0) (2025-05-09)
+
+
+### Features
+
+* export default helia config ([#783](https://github.com/ipfs/helia/issues/783)) ([ae67092](https://github.com/ipfs/helia/commit/ae670928a7aeb023d7f3d6aa41bcf9f23a413cdf))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^4.1.0 to ^4.1.1
+    * @helia/routers bumped from ^3.0.1 to ^3.1.0
+    * @helia/utils bumped from ^1.2.2 to ^1.2.3
+
 ## [5.3.0](https://github.com/ipfs/helia/compare/helia-v5.2.1...helia-v5.3.0) (2025-03-13)
 
 

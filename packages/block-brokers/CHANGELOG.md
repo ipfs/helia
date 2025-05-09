@@ -1,5 +1,20 @@
 # Changelog
 
+## [4.1.1](https://github.com/ipfs/helia/compare/block-brokers-v4.1.0...block-brokers-v4.1.1) (2025-05-09)
+
+
+### Bug Fixes
+
+* reject blockstore session get promise when signal fires  ([#776](https://github.com/ipfs/helia/issues/776)) ([d883eaf](https://github.com/ipfs/helia/commit/d883eafbdcd981a0cc7c78cf361bb72324a8cbdc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^2.0.5 to ^2.0.6
+    * @helia/utils bumped from ^1.2.2 to ^1.2.3
+
 ## [4.1.0](https://github.com/ipfs/helia/compare/block-brokers-v4.0.4...block-brokers-v4.1.0) (2025-03-13)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.2.1](https://github.com/ipfs/helia/compare/ipns-v8.2.0...ipns-v8.2.1) (2025-05-09)
+
+
+### Bug Fixes
+
+* propagate ipns failures ([#789](https://github.com/ipfs/helia/issues/789)) ([cd1eb58](https://github.com/ipfs/helia/commit/cd1eb588998ddb1eb17894230cde4a68f9455398))
+
 ## [8.2.0](https://github.com/ipfs/helia/compare/ipns-v8.1.0...ipns-v8.2.0) (2025-03-13)
 
 

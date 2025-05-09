@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.1.0](https://github.com/ipfs/helia/compare/car-v4.0.4...car-v4.1.0) (2025-05-09)
+
+
+### Features
+
+* car export supports custom dag traversal and export ([#767](https://github.com/ipfs/helia/issues/767)) ([313e2c1](https://github.com/ipfs/helia/commit/313e2c10a71c4f42533c3f077c6720563dd09ce5))
+
 ## [4.0.4](https://github.com/ipfs/helia/compare/car-v4.0.3...car-v4.0.4) (2025-03-20)
 
 
