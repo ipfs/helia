@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.0](https://github.com/ipfs/helia/compare/routers-v3.0.1...routers-v3.1.0) (2025-05-09)
+
+
+### Features
+
+* add provider shuffle option to HTTPGatewayRouter ([#772](https://github.com/ipfs/helia/issues/772)) ([daaa511](https://github.com/ipfs/helia/commit/daaa511a74583844244e6f51d55a8bc25a9f5f02))
+
 ## [3.0.1](https://github.com/ipfs/helia/compare/routers-v3.0.0...routers-v3.0.1) (2025-03-13)
 
 

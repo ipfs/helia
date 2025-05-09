@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.3](https://github.com/ipfs/helia/compare/utils-v1.2.2...utils-v1.2.3) (2025-05-09)
+
+
+### Bug Fixes
+
+* reject blockstore session get promise when signal fires  ([#776](https://github.com/ipfs/helia/issues/776)) ([d883eaf](https://github.com/ipfs/helia/commit/d883eafbdcd981a0cc7c78cf361bb72324a8cbdc))
+
 ## [1.2.2](https://github.com/ipfs/helia/compare/utils-v1.2.1...utils-v1.2.2) (2025-03-13)
 
 

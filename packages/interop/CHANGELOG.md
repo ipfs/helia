@@ -1,5 +1,19 @@
 # Changelog
 
+## [8.0.1](https://github.com/ipfs/helia/compare/interop-v8.0.0...interop-v8.0.1) (2025-05-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^4.1.0 to ^4.1.1
+    * @helia/car bumped from ^4.0.4 to ^4.1.0
+    * @helia/http bumped from ^2.0.5 to ^2.1.0
+    * @helia/ipns bumped from ^8.2.0 to ^8.2.1
+    * @helia/routers bumped from ^3.0.1 to ^3.1.0
+    * helia bumped from ^5.3.0 to ^5.4.0
+
 ## [8.0.0](https://github.com/ipfs/helia/compare/interop-v7.1.3...interop-v8.0.0) (2025-03-20)
 
 
