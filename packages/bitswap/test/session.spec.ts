@@ -13,12 +13,13 @@ import { stubInterface, type StubbedInstance } from 'sinon-ts'
 import { createBitswapSession } from '../src/session.js'
 import type { Network } from '../src/network.js'
 import type { WantList } from '../src/want-list.js'
-import type { ComponentLogger } from '@libp2p/interface'
+import type { ComponentLogger, Libp2p } from '@libp2p/interface'
 
 interface StubbedBitswapSessionComponents {
   network: StubbedInstance<Network>
   wantList: StubbedInstance<WantList>
   logger: ComponentLogger
+  libp2p: StubbedInstance<Libp2p>
 }
 
 describe('session', () => {
@@ -35,7 +36,8 @@ describe('session', () => {
       wantList: stubInterface<WantList>({
         peers: new PeerMap()
       }),
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      libp2p: stubInterface<Libp2p>()
     }
   })
 

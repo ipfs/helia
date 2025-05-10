@@ -9,7 +9,7 @@
 import { Bitswap as BitswapClass } from './bitswap.js'
 import type { BitswapNetworkNotifyProgressEvents, BitswapNetworkWantProgressEvents, BitswapNetworkProgressEvents } from './network.js'
 import type { WantType } from './pb/message.js'
-import type { BlockBroker, CreateSessionOptions } from '@helia/interface'
+import type { BlockBroker, CreateSessionOptions, ProviderOptions } from '@helia/interface'
 import type { Routing } from '@helia/interface/routing'
 import type { Libp2p, AbortOptions, Startable, ComponentLogger, Metrics, PeerId } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
@@ -59,7 +59,7 @@ export interface Bitswap extends Startable {
   /**
    * Start a session to retrieve a file from the network
    */
-  want(cid: CID, options?: AbortOptions & ProgressOptions<BitswapWantProgressEvents>): Promise<Uint8Array>
+  want(cid: CID, options?: AbortOptions & ProgressOptions<BitswapWantProgressEvents> & ProviderOptions): Promise<Uint8Array>
 
   /**
    * Start a session to retrieve a file from the network
