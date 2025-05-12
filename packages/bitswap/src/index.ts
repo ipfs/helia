@@ -186,6 +186,14 @@ export interface BitswapOptions {
    * @default 2097152
    */
   maxIncomingMessageSize?: number
+
+  /**
+   * Operate in download-only mode. In this mode, the node will only retrieve
+   * blocks from peers and will not serve or advertise any blocks it holds.
+   *
+   * @default to `false`
+   */
+  downloadOnly?: boolean
 }
 
 export const createBitswap = (components: BitswapComponents, options: BitswapOptions = {}): Bitswap => {
