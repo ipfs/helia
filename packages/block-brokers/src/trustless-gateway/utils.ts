@@ -3,7 +3,7 @@ import { DNS, HTTP, HTTPS } from '@multiformats/multiaddr-matcher'
 import { multiaddrToUri } from '@multiformats/multiaddr-to-uri'
 import { TrustlessGateway, type TransformRequestInit } from './trustless-gateway.js'
 import type { Routing } from '@helia/interface'
-import type { ComponentLogger } from '@libp2p/interface'
+import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { AbortOptions, Multiaddr } from '@multiformats/multiaddr'
 import type { CID } from 'multiformats/cid'
 
@@ -54,4 +54,68 @@ export async function * findHttpGatewayProviders (cid: CID, routing: Routing, lo
 
     yield new TrustlessGateway(uri, { logger, transformRequestInit: options.transformRequestInit })
   }
+}
+
+/**
+ * A function that handles ensuring the content-length header and the response body is less than a given byte limit.
+ *
+ * If the response contains a content-length header greater than the limit or the actual bytes returned are greater than
+ * the limit, an error is thrown.
+ */
+export async function limitedResponse (response: Response, { log, byteLimit }: { log?: Logger, byteLimit: number }): Promise<Uint8Array> {
+  const contentLength = response.headers.get('content-length')
+  if (contentLength != null) {
+    const contentLengthNumber = parseInt(contentLength, 10)
+    if (contentLengthNumber > byteLimit) {
+      log?.error('Content-Length header (%d) is greater than the limit (%d)', contentLengthNumber, byteLimit)
+      if (response.body != null) {
+        await response.body.cancel().catch(err => {
+          log?.error('Error cancelling response body after Content-Length check:', err)
+        })
+      }
+      throw new Error(`Content-Length header (${contentLengthNumber}) is greater than the limit (${byteLimit})`)
+    }
+  }
+
+  const reader = response.body?.getReader()
+  if (reader == null) {
+    // no body to consume if reader is null
+    throw new Error('Response body is not readable')
+  }
+
+  const chunks: Uint8Array[] = []
+  let receivedLength = 0
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) {
+        break
+      }
+
+      chunks.push(value)
+      receivedLength += value.byteLength
+
+      if (receivedLength > byteLimit) {
+        // No need to consume body here, as we were streaming and hit the limit
+        throw new Error(`Response body is greater than the limit (${byteLimit}), received ${receivedLength} bytes`)
+      }
+    }
+  } finally {
+    try {
+      await reader.cancel()
+    } catch (err) {
+      log?.error('Error cancelling reader', err)
+    }
+  }
+
+  // Concatenate chunks into a single Uint8Array
+  const result = new Uint8Array(receivedLength)
+  let offset = 0
+  for (const chunk of chunks) {
+    result.set(chunk, offset)
+    offset += chunk.byteLength
+  }
+
+  return result
 }
