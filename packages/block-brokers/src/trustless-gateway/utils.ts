@@ -62,7 +62,7 @@ export async function * findHttpGatewayProviders (cid: CID, routing: Routing, lo
  * If the response contains a content-length header greater than the limit or the actual bytes returned are greater than
  * the limit, an error is thrown.
  */
-export async function limitedResponse (response: Response, { log, byteLimit }: { log?: Logger, byteLimit: number }): Promise<Uint8Array> {
+export async function limitedResponse (response: Response, { log, byteLimit, signal }: { log?: Logger, byteLimit: number, signal?: AbortSignal }): Promise<Uint8Array> {
   const contentLength = response.headers.get('content-length')
   if (contentLength != null) {
     const contentLengthNumber = parseInt(contentLength, 10)
@@ -88,6 +88,10 @@ export async function limitedResponse (response: Response, { log, byteLimit }: {
 
   try {
     while (true) {
+      if (signal?.aborted === true) {
+        throw new Error('Response body read was aborted')
+      }
+
       const { done, value } = await reader.read()
       if (done) {
         break

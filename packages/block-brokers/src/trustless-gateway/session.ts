@@ -39,7 +39,7 @@ class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, Trustles
   async queryProvider (cid: CID, provider: TrustlessGateway, options: BlockRetrievalOptions): Promise<Uint8Array> {
     this.log('fetching BLOCK for %c from %s', cid, provider.url)
 
-    const block = await provider.getRawBlock(cid, options.signal)
+    const block = await provider.getRawBlock(cid, { signal: options.signal, byteLimit: options.byteLimit ?? 2097152 })
     this.log.trace('got block for %c from %s', cid, provider.url)
 
     await options.validateFn?.(block)

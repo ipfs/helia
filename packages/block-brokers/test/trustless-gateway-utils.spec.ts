@@ -53,7 +53,7 @@ describe('trustless-gateway-block-broker-utils', () => {
   })
 
   it('limitedResponse throws an error when the content-length header is greater than the limit', async function () {
-    const response = new Response('x'.repeat(1000000), {
+    const response = new Response('x'.repeat(1_000_000), {
       headers: {
         'content-length': '1000000'
       }
@@ -63,12 +63,39 @@ describe('trustless-gateway-block-broker-utils', () => {
   })
 
   it('limitedResponse throws an error when the response body is greater than the limit', async function () {
-    const response = new Response('x'.repeat(1000000), {
+    const response = new Response('x'.repeat(1_000_000), {
       headers: {
         'content-length': '100'
       }
     })
 
     await expect(limitedResponse(response, { byteLimit: 100 })).to.be.rejectedWith('Response body is greater than the limit (100), received 1000000 bytes')
+  })
+
+  it('limitedResponse handles aborted signals', async function () {
+    const abortController = new AbortController()
+    let pullCount = 0
+
+    const responseBody = new ReadableStream({
+      start (controller) {
+        controller.enqueue('x')
+      },
+      pull (controller) {
+        pullCount++
+        controller.enqueue('x')
+        if (!abortController.signal.aborted && pullCount === 2) {
+          abortController.abort()
+        }
+      },
+      cancel (controller) {
+        controller.close()
+      }
+    })
+
+    await expect(limitedResponse(new Response(responseBody, {
+      headers: {
+        'content-length': '1000000'
+      }
+    }), { signal: abortController.signal, byteLimit: 1_000_000 })).to.be.rejectedWith('Response body read was aborted')
   })
 })
