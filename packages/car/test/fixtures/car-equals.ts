@@ -1,6 +1,6 @@
 import { expect } from 'aegir/chai'
-import { type CID } from 'multiformats/cid'
 import type { CarReader } from '@ipld/car'
+import type { CID } from 'multiformats/cid'
 
 export enum CarEqualsSkip {
   roots = 'roots',

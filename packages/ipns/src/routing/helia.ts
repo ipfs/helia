@@ -1,7 +1,8 @@
-import { CustomProgressEvent, type ProgressEvent } from 'progress-events'
+import { CustomProgressEvent } from 'progress-events'
 import type { GetOptions, PutOptions } from './index.js'
 import type { IPNSRouting } from '../index.js'
 import type { Routing } from '@helia/interface'
+import type { ProgressEvent } from 'progress-events'
 
 export interface HeliaRoutingComponents {
   routing: Routing

@@ -2,7 +2,6 @@ import { CarWriter } from '@ipld/car'
 import drain from 'it-drain'
 import map from 'it-map'
 import { createUnsafe } from 'multiformats/block'
-import { type CID } from 'multiformats/cid'
 import defer from 'p-defer'
 import PQueue from 'p-queue'
 import { DAG_WALK_QUEUE_CONCURRENCY } from './constants.js'
@@ -12,6 +11,7 @@ import type { CarComponents, Car as CarInterface, ExportCarOptions, ExportStrate
 import type { PutManyBlocksProgressEvents } from '@helia/interface/blocks'
 import type { CarReader } from '@ipld/car'
 import type { AbortOptions, Logger } from '@libp2p/interface'
+import type { CID } from 'multiformats/cid'
 import type { ProgressOptions } from 'progress-events'
 
 /**

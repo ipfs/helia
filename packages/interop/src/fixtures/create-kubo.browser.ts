@@ -1,5 +1,6 @@
-import { type KuboNode, createNode } from 'ipfsd-ctl'
+import { createNode } from 'ipfsd-ctl'
 import { create as kuboRpcClient } from 'kubo-rpc-client'
+import type { KuboNode } from 'ipfsd-ctl'
 
 export async function createKuboNode (): Promise<KuboNode> {
   return createNode({

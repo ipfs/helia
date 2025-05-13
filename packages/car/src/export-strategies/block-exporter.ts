@@ -1,6 +1,6 @@
-import { type CID } from 'multiformats/cid'
-import { type ExportStrategy } from '../index.js'
+import type { ExportStrategy } from '../index.js'
 import type { BlockView } from 'multiformats/block/interface'
+import type { CID } from 'multiformats/cid'
 
 /**
  * Yields the first block from the first CID and stops
