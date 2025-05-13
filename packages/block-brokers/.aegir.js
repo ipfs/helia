@@ -47,26 +47,6 @@ const options = {
         res.end(Uint8Array.from([104, 101, 108, 108, 111]))
       })
 
-      goodGateway.all('/ipfs/bafkreig7p6kzwgg4hp3n7wpnnn3kkjmpzxds5rmwhphyueilbzabvyexvq', async (req, res) => {
-        // if 'delay' header is set, delay the response
-        const delay = req.headers['delay']
-        if (delay) {
-          await new Promise((resolve) => setTimeout(resolve, delay))
-          res.writeHead(200, {
-            'content-type': 'application/octet-stream',
-            'content-length': 4
-          })
-          res.end(Uint8Array.from([0, 1, 2, 0]))
-        } else {
-          // no reason to use this in tests without the delay configured.
-          res.writeHead(400, {
-            'content-type': 'text/plain',
-            'content-length': 13
-          })
-          res.end('No delay set')
-        }
-      })
-
       goodGateway.all('/ipfs/*', (req, res) => {
         // succeeds with empty block for any other CID
         res.writeHead(200)
@@ -108,21 +88,6 @@ const options = {
         })
         // fails validation
         res.end(Uint8Array.from([0, 1, 2, 1]))
-      })
-      badGateway.all('/ipfs/bafkreig7p6kzwgg4hp3n7wpnnn3kkjmpzxds5rmwhphyueilbzabvyexvq', (req, res) => {
-        // wait for 70 seconds to simulate a slow response. Do not query this cid unless you plan to abort the request.
-        // typical test timeout is 60 seconds, so if you reach 60 seconds, there is a bug in handling your abort signal.
-        // if you don't reach whatever timeout you set (e.g. `AbortSignal.timeout(1000)`), there is likely a bug in your test.
-        const timeoutId = setTimeout(() => {
-          res.writeHead(200, {
-            'content-type': 'application/octet-stream',
-            'content-length': 4
-          })
-          res.end(Uint8Array.from([0, 1, 2, 1]))
-        }, 70000)
-        req.on('close', () => {
-          clearTimeout(timeoutId)
-        })
       })
 
       badGateway.all('/ipfs/*', (req, res) => {
