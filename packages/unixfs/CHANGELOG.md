@@ -1,5 +1,14 @@
 # Changelog
 
+## [5.0.1](https://github.com/ipfs/helia/compare/unixfs-v5.0.0...unixfs-v5.0.1) (2025-05-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.2.1 to ^5.3.0
+
 ## [5.0.0](https://github.com/ipfs/helia/compare/unixfs-v4.0.3...unixfs-v5.0.0) (2025-03-20)
 
 

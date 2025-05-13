@@ -5,6 +5,13 @@
 
 * expose .dns property on @helia/interface ([#465](https://github.com/ipfs/helia/issues/465)) ([8c9bb7d](https://github.com/ipfs/helia/commit/8c9bb7d224a1b786cba1fba18bffe07001a3b95d))
 
+## [5.3.0](https://github.com/ipfs/helia/compare/interface-v5.2.1...interface-v5.3.0) (2025-05-13)
+
+
+### Features
+
+* pass initial providers to session ([#777](https://github.com/ipfs/helia/issues/777)) ([3d77369](https://github.com/ipfs/helia/commit/3d773698389deb70e1a0181eb81fb8b5992857b8))
+
 ## [5.2.1](https://github.com/ipfs/helia/compare/interface-v5.2.0...interface-v5.2.1) (2025-03-13)
 
 
