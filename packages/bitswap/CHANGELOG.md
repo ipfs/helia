@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.1.0](https://github.com/ipfs/helia/compare/bitswap-v2.0.5...bitswap-v2.1.0) (2025-05-13)
+
+
+### Features
+
+* pass initial providers to session ([#777](https://github.com/ipfs/helia/issues/777)) ([3d77369](https://github.com/ipfs/helia/commit/3d773698389deb70e1a0181eb81fb8b5992857b8))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.2.1 to ^5.3.0
+    * @helia/utils bumped from ^1.2.2 to ^1.3.0
+
 ## [2.0.5](https://github.com/ipfs/helia/compare/bitswap-v2.0.4...bitswap-v2.0.5) (2025-03-13)
 
 

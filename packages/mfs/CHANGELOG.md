@@ -1,5 +1,14 @@
 # Changelog
 
+## [5.0.1](https://github.com/ipfs/helia/compare/mfs-v5.0.0...mfs-v5.0.1) (2025-05-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/unixfs bumped from ^5.0.0 to ^5.0.1
+
 ## [5.0.0](https://github.com/ipfs/helia/compare/mfs-v4.0.3...mfs-v5.0.0) (2025-03-20)
 
 

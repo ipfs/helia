@@ -1,4 +1,5 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
+import { isPeerId } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
@@ -8,6 +9,7 @@ import { raceSignal } from 'race-signal'
 import Sinon from 'sinon'
 import { AbstractSession } from '../src/abstract-session.js'
 import type { PeerId } from '@libp2p/interface'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressEvent } from 'progress-events'
 
 interface SessionPeer {
@@ -32,6 +34,14 @@ class Session extends AbstractSession<SessionPeer, ProgressEvent> {
 
   equals (a: SessionPeer, b: SessionPeer): boolean {
     return a.id.equals(b.id)
+  }
+
+  async convertToProvider (provider: PeerId | Multiaddr | Multiaddr[]): Promise<SessionPeer | undefined> {
+    if (isPeerId(provider)) {
+      return {
+        id: provider
+      }
+    }
   }
 }
 

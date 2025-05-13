@@ -1,5 +1,26 @@
 # Changelog
 
+## [4.2.0](https://github.com/ipfs/helia/compare/block-brokers-v4.1.0...block-brokers-v4.2.0) (2025-05-13)
+
+
+### Features
+
+* pass initial providers to session ([#777](https://github.com/ipfs/helia/issues/777)) ([3d77369](https://github.com/ipfs/helia/commit/3d773698389deb70e1a0181eb81fb8b5992857b8))
+
+
+### Bug Fixes
+
+* reject blockstore session get promise when signal fires  ([#776](https://github.com/ipfs/helia/issues/776)) ([d883eaf](https://github.com/ipfs/helia/commit/d883eafbdcd981a0cc7c78cf361bb72324a8cbdc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^2.0.5 to ^2.1.0
+    * @helia/interface bumped from ^5.2.1 to ^5.3.0
+    * @helia/utils bumped from ^1.2.2 to ^1.3.0
+
 ## [4.1.0](https://github.com/ipfs/helia/compare/block-brokers-v4.0.4...block-brokers-v4.1.0) (2025-03-13)
 
 
