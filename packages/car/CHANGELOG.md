@@ -1,5 +1,22 @@
 # Changelog
 
+## [4.1.0](https://github.com/ipfs/helia/compare/car-v4.0.4...car-v4.1.0) (2025-05-13)
+
+
+### Features
+
+* car export supports custom dag traversal and export ([#767](https://github.com/ipfs/helia/issues/767)) ([313e2c1](https://github.com/ipfs/helia/commit/313e2c10a71c4f42533c3f077c6720563dd09ce5))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.2.1 to ^5.3.0
+  * devDependencies
+    * @helia/mfs bumped from ^5.0.0 to ^5.0.1
+    * @helia/unixfs bumped from ^5.0.0 to ^5.0.1
+
 ## [4.0.4](https://github.com/ipfs/helia/compare/car-v4.0.3...car-v4.0.4) (2025-03-20)
 
 
