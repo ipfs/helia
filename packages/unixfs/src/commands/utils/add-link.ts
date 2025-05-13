@@ -1,7 +1,7 @@
 import * as dagPB from '@ipld/dag-pb'
 import { logger } from '@libp2p/logger'
 import { UnixFS } from 'ipfs-unixfs'
-import { CID, type Version } from 'multiformats/cid'
+import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 // @ts-expect-error no types
 import SparseArray from 'sparse-array'
@@ -21,6 +21,7 @@ import type { GetStore, PutStore } from '../../unixfs.js'
 import type { PBNode, PBLink } from '@ipld/dag-pb/interface'
 import type { AbortOptions } from '@libp2p/interface'
 import type { ImportResult } from 'ipfs-unixfs-importer'
+import type { Version } from 'multiformats/cid'
 
 const log = logger('helia:unixfs:components:utils:add-link')
 

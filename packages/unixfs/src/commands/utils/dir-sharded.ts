@@ -1,13 +1,16 @@
-import { encode, type PBLink, prepare } from '@ipld/dag-pb'
-import { createHAMT, Bucket, type BucketChild } from 'hamt-sharding'
+import { encode, prepare } from '@ipld/dag-pb'
+import { createHAMT, Bucket } from 'hamt-sharding'
 import { UnixFS } from 'ipfs-unixfs'
 import { CID } from 'multiformats/cid'
 import {
   hamtHashCode,
   hamtHashFn
 } from './hamt-constants.js'
-import { persist, type PersistOptions } from './persist.js'
+import { persist } from './persist.js'
+import type { PersistOptions } from './persist.js'
 import type { PutStore } from '../../unixfs.js'
+import type { PBLink } from '@ipld/dag-pb'
+import type { BucketChild } from 'hamt-sharding'
 import type { Mtime } from 'ipfs-unixfs'
 
 interface InProgressImportResult extends ImportResult {

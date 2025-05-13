@@ -46,10 +46,11 @@
 
 import { trustlessGateway } from '@helia/block-brokers'
 import { delegatedHTTPRouting, httpGatewayRouting } from '@helia/routers'
-import { Helia as HeliaClass, type HeliaInit } from '@helia/utils'
+import { Helia as HeliaClass } from '@helia/utils'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import type { Helia } from '@helia/interface'
+import type { HeliaInit } from '@helia/utils'
 
 // re-export interface types so people don't have to depend on @helia/interface
 // if they don't want to

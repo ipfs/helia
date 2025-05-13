@@ -1,10 +1,12 @@
 import { Record } from '@libp2p/kad-dht'
-import { type Datastore, Key } from 'interface-datastore'
-import { CustomProgressEvent, type ProgressEvent } from 'progress-events'
+import { Key } from 'interface-datastore'
+import { CustomProgressEvent } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { GetOptions, PutOptions } from '../routing'
 import type { AbortOptions } from '@libp2p/interface'
+import type { Datastore } from 'interface-datastore'
+import type { ProgressEvent } from 'progress-events'
 
 function dhtRoutingKey (key: Uint8Array): Key {
   return new Key('/dht/record/' + uint8ArrayToString(key, 'base32'), false)

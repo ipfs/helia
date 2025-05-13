@@ -3,7 +3,7 @@ import { anySignal } from 'any-signal'
 import { IdentityBlockstore } from 'blockstore-core/identity'
 import filter from 'it-filter'
 import forEach from 'it-foreach'
-import { CustomProgressEvent, type ProgressOptions } from 'progress-events'
+import { CustomProgressEvent } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { isPromise } from './is-promise.js'
 import type { HasherLoader } from '@helia/interface'
@@ -13,6 +13,7 @@ import type { Blockstore } from 'interface-blockstore'
 import type { AwaitIterable } from 'interface-store'
 import type { CID } from 'multiformats/cid'
 import type { MultihashDigest, MultihashHasher } from 'multiformats/hashes/interface'
+import type { ProgressOptions } from 'progress-events'
 
 export interface GetOptions extends AbortOptions {
   progress?(evt: Event): void

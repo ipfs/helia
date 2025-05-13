@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "@helia/unixfs": "^4.0.1",
-    "aegir": "^45.1.1",
+    "aegir": "^46.0.1",
     "blockstore-core": "^5.0.2",
     "blockstore-fs": "^2.0.1",
     "datastore-core": "^10.0.2",
@@ -24,7 +24,7 @@
     "ipfs-unixfs-importer": "^15.1.5",
     "ipfsd-ctl": "^15.0.0",
     "it-last": "^3.0.6",
-    "kubo": "^0.33.1",
+    "kubo": "^0.34.1",
     "kubo-rpc-client": "^5.0.0",
     "multiformats": "^13.1.0",
     "tinybench": "^3.1.1"

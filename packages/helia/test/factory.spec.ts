@@ -7,7 +7,8 @@ import { MemoryDatastore } from 'datastore-core'
 import { Key } from 'interface-datastore'
 import { createLibp2p } from 'libp2p'
 import { CID } from 'multiformats/cid'
-import { createHelia, type HeliaLibp2p } from '../src/index.js'
+import { createHelia } from '../src/index.js'
+import type { HeliaLibp2p } from '../src/index.js'
 
 describe('helia factory', () => {
   let helia: HeliaLibp2p<any>

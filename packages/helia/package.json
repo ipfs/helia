@@ -70,7 +70,7 @@
     "@libp2p/dcutr": "^2.0.18",
     "@libp2p/identify": "^3.0.18",
     "@libp2p/interface": "^2.5.0",
-    "@libp2p/kad-dht": "^14.2.3",
+    "@libp2p/kad-dht": "^15.0.2",
     "@libp2p/keychain": "^5.0.14",
     "@libp2p/mdns": "^11.0.20",
     "@libp2p/mplex": "^11.0.20",
@@ -92,7 +92,7 @@
   "devDependencies": {
     "@multiformats/mafmt": "^12.1.6",
     "@multiformats/multiaddr": "^12.3.3",
-    "aegir": "^45.1.1",
+    "aegir": "^46.0.1",
     "it-all": "^3.0.6",
     "it-drain": "^3.0.7"
   },
