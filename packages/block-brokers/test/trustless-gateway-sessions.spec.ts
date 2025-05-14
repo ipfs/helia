@@ -8,10 +8,11 @@ import { uriToMultiaddr } from '@multiformats/uri-to-multiaddr'
 import { expect } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
 import Sinon from 'sinon'
-import { type StubbedInstance, stubInterface } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { createTrustlessGatewaySession } from '../src/trustless-gateway/session.js'
 import type { Routing } from '@helia/interface'
 import type { ComponentLogger } from '@libp2p/interface'
+import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedTrustlessGatewaySessionComponents {
   logger: ComponentLogger

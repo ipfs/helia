@@ -1,14 +1,16 @@
 /* eslint-env mocha */
 
-import { type UnixFS, unixfs } from '@helia/unixfs'
+import { unixfs } from '@helia/unixfs'
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import toBuffer from 'it-to-buffer'
-import { car, type Car } from '../src/index.js'
+import { car } from '../src/index.js'
 import { smallFile } from './fixtures/files.js'
 import { getCodec } from './fixtures/get-codec.js'
 import { memoryCarWriter } from './fixtures/memory-car.js'
+import type { Car } from '../src/index.js'
+import type { UnixFS } from '@helia/unixfs'
 import type { Blockstore } from 'interface-blockstore'
 
 describe('stream car file', () => {

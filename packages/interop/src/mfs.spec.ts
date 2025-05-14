@@ -1,9 +1,10 @@
 /* eslint-env mocha */
 
-import { type MFS, mfs } from '@helia/mfs'
+import { mfs } from '@helia/mfs'
 import { expect } from 'aegir/chai'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
+import type { MFS } from '@helia/mfs'
 import type { HeliaLibp2p } from 'helia'
 import type { KuboNode } from 'ipfsd-ctl'
 

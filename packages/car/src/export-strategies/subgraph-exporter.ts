@@ -1,6 +1,6 @@
-import { type CID } from 'multiformats/cid'
-import { type ExportStrategy } from '../index.js'
+import type { ExportStrategy } from '../index.js'
 import type { BlockView } from 'multiformats/block/interface'
+import type { CID } from 'multiformats/cid'
 
 /**
  * Traverses the DAG breadth-first starting at the target CID and yields all

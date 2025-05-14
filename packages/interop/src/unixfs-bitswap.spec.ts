@@ -1,11 +1,12 @@
 /* eslint-env mocha */
 
-import { type UnixFS, unixfs } from '@helia/unixfs'
+import { unixfs } from '@helia/unixfs'
 import { expect } from 'aegir/chai'
 import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
+import type { UnixFS } from '@helia/unixfs'
 import type { HeliaLibp2p } from 'helia'
 import type { ByteStream, FileCandidate } from 'ipfs-unixfs-importer'
 import type { KuboNode } from 'ipfsd-ctl'

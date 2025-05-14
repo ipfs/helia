@@ -1,5 +1,27 @@
 # Changelog
 
+## [8.1.1](https://github.com/ipfs/helia/compare/interop-v8.1.0...interop-v8.1.1) (2025-05-13)
+
+
+### Dependencies
+
+* update all deps ([#792](https://github.com/ipfs/helia/issues/792)) ([d43efc7](https://github.com/ipfs/helia/commit/d43efc7bdfff34071a8e4e22e01f659fbac0b78e))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^4.2.0 to ^4.2.1
+    * @helia/car bumped from ^4.1.0 to ^4.1.1
+    * @helia/dag-cbor bumped from ^4.0.4 to ^4.0.5
+    * @helia/dag-json bumped from ^4.0.4 to ^4.0.5
+    * @helia/http bumped from ^2.1.0 to ^2.1.1
+    * @helia/interface bumped from ^5.3.0 to ^5.3.1
+    * @helia/ipns bumped from ^8.2.1 to ^8.2.2
+    * @helia/json bumped from ^4.0.4 to ^4.0.5
+    * @helia/mfs bumped from ^5.0.1 to ^5.0.2
+    * @helia/routers bumped from ^3.1.0 to ^3.1.1
+    * @helia/strings bumped from ^4.0.4 to ^4.0.5
+    * @helia/unixfs bumped from ^5.0.1 to ^5.0.2
+    * helia bumped from ^5.4.0 to ^5.4.1
+
 ## [8.1.0](https://github.com/ipfs/helia/compare/interop-v8.0.0...interop-v8.1.0) (2025-05-13)
 
 

@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "@ipld/dag-pb": "^4.0.6",
-    "aegir": "^45.1.1",
+    "aegir": "^46.0.1",
     "blockstore-fs": "^2.0.1",
     "datastore-level": "^11.0.1",
     "execa": "^8.0.1",
@@ -21,7 +21,7 @@
     "it-all": "^3.0.4",
     "it-drain": "^3.0.5",
     "it-map": "^3.0.5",
-    "kubo": "^0.33.1",
+    "kubo": "^0.34.1",
     "kubo-rpc-client": "^5.0.0",
     "multiformats": "^13.0.0",
     "tinybench": "^2.5.1"

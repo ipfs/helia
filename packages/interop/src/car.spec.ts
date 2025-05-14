@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import { car } from '@helia/car'
-import { type UnixFS, unixfs } from '@helia/unixfs'
+import { unixfs } from '@helia/unixfs'
 import { CarReader } from '@ipld/car'
 import { expect } from 'aegir/chai'
 import drain from 'it-drain'
@@ -11,6 +11,7 @@ import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import { memoryCarWriter } from './fixtures/memory-car.js'
 import type { Car } from '@helia/car'
+import type { UnixFS } from '@helia/unixfs'
 import type { HeliaLibp2p } from 'helia'
 import type { ByteStream, FileCandidate } from 'ipfs-unixfs-importer'
 import type { KuboNode } from 'ipfsd-ctl'

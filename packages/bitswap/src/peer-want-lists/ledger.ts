@@ -4,9 +4,8 @@ import { BlockPresenceType, WantType } from '../pb/message.js'
 import { QueuedBitswapMessage } from '../utils/bitswap-message.js'
 import { cidToPrefix } from '../utils/cid-prefix.js'
 import type { Network } from '../network.js'
-import type { ComponentLogger, Logger, PeerId } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, Logger, PeerId } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
-import type { AbortOptions } from 'it-length-prefixed-stream'
 import type { CID } from 'multiformats/cid'
 
 export interface LedgerComponents {
