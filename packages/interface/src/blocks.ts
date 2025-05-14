@@ -114,7 +114,7 @@ export interface BlockRetrievalOptions <ProgressEvents extends ProgressEvent<any
   /**
    * The maximum number of bytes to read from the block.
    *
-   * @default 20
+   * @default 2_097_152
    */
   byteLimit?: number
 }
