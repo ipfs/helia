@@ -112,7 +112,9 @@ export interface BlockRetrievalOptions <ProgressEvents extends ProgressEvent<any
   validateFn?(block: Uint8Array): Promise<void>
 
   /**
-   * The maximum number of bytes to read from the block.
+   * The maximum size a block can be in bytes.
+   *
+   * Attempts to retrieve a block larger than this will cause an error to be thrown.
    *
    * @default 2_097_152
    */
