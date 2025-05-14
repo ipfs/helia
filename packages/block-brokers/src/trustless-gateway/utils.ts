@@ -1,6 +1,7 @@
 import { isPrivateIp } from '@libp2p/utils/private-ip'
 import { DNS, HTTP, HTTPS } from '@multiformats/multiaddr-matcher'
 import { multiaddrToUri } from '@multiformats/multiaddr-to-uri'
+import { Uint8ArrayList } from 'uint8arraylist'
 import { TrustlessGateway, type TransformRequestInit } from './trustless-gateway.js'
 import type { Routing } from '@helia/interface'
 import type { ComponentLogger, Logger } from '@libp2p/interface'
@@ -56,13 +57,19 @@ export async function * findHttpGatewayProviders (cid: CID, routing: Routing, lo
   }
 }
 
+interface LimitedResponseOptions {
+  signal?: AbortSignal
+  log?: Logger
+}
+
 /**
  * A function that handles ensuring the content-length header and the response body is less than a given byte limit.
  *
  * If the response contains a content-length header greater than the limit or the actual bytes returned are greater than
  * the limit, an error is thrown.
  */
-export async function limitedResponse (response: Response, { log, byteLimit, signal }: { log?: Logger, byteLimit: number, signal?: AbortSignal }): Promise<Uint8Array> {
+export async function limitedResponse (response: Response, byteLimit: number, options?: LimitedResponseOptions): Promise<Uint8Array> {
+  const { signal, log } = options ?? {}
   const contentLength = response.headers.get('content-length')
   if (contentLength != null) {
     const contentLengthNumber = parseInt(contentLength, 10)
@@ -83,8 +90,7 @@ export async function limitedResponse (response: Response, { log, byteLimit, sig
     throw new Error('Response body is not readable')
   }
 
-  const chunks: Uint8Array[] = []
-  let receivedLength = 0
+  const chunkList = new Uint8ArrayList()
 
   try {
     while (true) {
@@ -97,12 +103,11 @@ export async function limitedResponse (response: Response, { log, byteLimit, sig
         break
       }
 
-      chunks.push(value)
-      receivedLength += value.byteLength
+      chunkList.append(value)
 
-      if (receivedLength > byteLimit) {
+      if (chunkList.byteLength > byteLimit) {
         // No need to consume body here, as we were streaming and hit the limit
-        throw new Error(`Response body is greater than the limit (${byteLimit}), received ${receivedLength} bytes`)
+        throw new Error(`Response body is greater than the limit (${byteLimit}), received ${chunkList.byteLength} bytes`)
       }
     }
   } finally {
@@ -113,13 +118,5 @@ export async function limitedResponse (response: Response, { log, byteLimit, sig
     }
   }
 
-  // Concatenate chunks into a single Uint8Array
-  const result = new Uint8Array(receivedLength)
-  let offset = 0
-  for (const chunk of chunks) {
-    result.set(chunk, offset)
-    offset += chunk.byteLength
-  }
-
-  return result
+  return chunkList.subarray()
 }
