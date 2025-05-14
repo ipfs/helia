@@ -118,7 +118,7 @@ export interface BlockRetrievalOptions <ProgressEvents extends ProgressEvent<any
    *
    * @default 2_097_152
    */
-  byteLimit?: number
+  maxSize?: number
 }
 
 export interface BlockAnnounceOptions <ProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> extends AbortOptions, ProgressOptions<ProgressEvents> {
