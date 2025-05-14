@@ -115,6 +115,8 @@ export async function limitedResponse (response: Response, byteLimit: number, op
       await reader.cancel()
     } catch (err) {
       log?.error('Error cancelling reader', err)
+    } finally {
+      reader.releaseLock()
     }
   }
 
