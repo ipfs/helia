@@ -77,15 +77,14 @@ describe('trustless-gateway-block-broker-utils', () => {
   it('limitedResponse handles aborted signals', async function () {
     const abortController = new AbortController()
     let pullCount = 0
-    const textEncoder = new TextEncoder()
 
     const responseBody = new ReadableStream({
       start (controller) {
-        controller.enqueue(textEncoder.encode('x'))
+        controller.enqueue(Uint8Array.from([0]))
       },
       pull (controller) {
         pullCount++
-        controller.enqueue(textEncoder.encode('x'))
+        controller.enqueue(Uint8Array.from([0]))
         if (!abortController.signal.aborted && pullCount === 2) {
           abortController.abort()
         }
