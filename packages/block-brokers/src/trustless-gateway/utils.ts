@@ -75,13 +75,13 @@ export async function limitedResponse (response: Response, byteLimit: number, op
   if (contentLength != null) {
     const contentLengthNumber = parseInt(contentLength, 10)
     if (contentLengthNumber > byteLimit) {
-      log?.error('Content-Length header (%d) is greater than the limit (%d)', contentLengthNumber, byteLimit)
+      log?.error('content-length header (%d) is greater than the limit (%d)', contentLengthNumber, byteLimit)
       if (response.body != null) {
         await response.body.cancel().catch(err => {
-          log?.error('Error cancelling response body after Content-Length check:', err)
+          log?.error('error cancelling response body after content-length check - %e', err)
         })
       }
-      throw new Error(`Content-Length header (${contentLengthNumber}) is greater than the limit (${byteLimit})`)
+      throw new Error(`Content-Length header (${contentLengthNumber}) is greater than the limit (${byteLimit}).`)
     }
   }
 
@@ -96,7 +96,7 @@ export async function limitedResponse (response: Response, byteLimit: number, op
   try {
     while (true) {
       if (signal?.aborted === true) {
-        throw new Error('Response body read was aborted')
+        throw new Error('Response body read was aborted.')
       }
 
       const { done, value } = await reader.read()
@@ -108,17 +108,17 @@ export async function limitedResponse (response: Response, byteLimit: number, op
 
       if (chunkList.byteLength > byteLimit) {
         // No need to consume body here, as we were streaming and hit the limit
-        throw new Error(`Response body is greater than the limit (${byteLimit}), received ${chunkList.byteLength} bytes`)
+        throw new Error(`Response body is greater than the limit (${byteLimit}), received ${chunkList.byteLength} bytes.`)
       }
     }
   } finally {
-    try {
-      await reader.cancel()
-    } catch (err) {
-      log?.error('Error cancelling reader', err)
-    } finally {
-      reader.releaseLock()
-    }
+    reader.cancel()
+      .catch(err => {
+        log?.error('error cancelling reader - %e', err)
+      })
+      .finally(() => {
+        reader.releaseLock()
+      })
   }
 
   return chunkList.subarray()

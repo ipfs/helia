@@ -59,7 +59,8 @@ describe('trustless-gateway-block-broker-utils', () => {
       }
     })
 
-    await expect(limitedResponse(response, 100)).to.be.rejectedWith('Content-Length header (1000000) is greater than the limit (100)')
+    await expect(limitedResponse(response, 100)).to.eventually.be.rejected
+      .with.property('message', 'Content-Length header (1000000) is greater than the limit (100).')
   })
 
   it('limitedResponse throws an error when the response body is greater than the limit', async function () {
@@ -69,7 +70,8 @@ describe('trustless-gateway-block-broker-utils', () => {
       }
     })
 
-    await expect(limitedResponse(response, 100)).to.be.rejectedWith('Response body is greater than the limit (100), received 1000000 bytes')
+    await expect(limitedResponse(response, 100)).to.eventually.be.rejected
+      .with.property('message', 'Response body is greater than the limit (100), received 1000000 bytes.')
   })
 
   it('limitedResponse handles aborted signals', async function () {
@@ -97,6 +99,7 @@ describe('trustless-gateway-block-broker-utils', () => {
       headers: {
         'content-length': '1000000'
       }
-    }), 1_000_000, { signal: abortController.signal })).to.be.rejectedWith('Response body read was aborted')
+    }), 1_000_000, { signal: abortController.signal })).to.eventually.be.rejected
+      .with.property('message', 'Response body read was aborted.')
   })
 })
