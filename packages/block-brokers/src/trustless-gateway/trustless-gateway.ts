@@ -28,7 +28,7 @@ export interface GetRawBlockOptions {
    *
    * @default 2_097_152 (2MiB)
    */
-  maxLimit?: number
+  maxSize?: number
 }
 
 /**
@@ -101,7 +101,7 @@ export class TrustlessGateway {
    * Fetch a raw block from `this.url` following the specification defined at
    * https://specs.ipfs.tech/http-gateways/trustless-gateway/
    */
-  async getRawBlock (cid: CID, { signal, maxLimit = 2_097_152 }: GetRawBlockOptions = {}): Promise<Uint8Array> {
+  async getRawBlock (cid: CID, { signal, maxSize = 2_097_152 }: GetRawBlockOptions = {}): Promise<Uint8Array> {
     const gwUrl = new URL(this.url.toString())
     gwUrl.pathname = `/ipfs/${cid.toString()}`
 
@@ -142,9 +142,9 @@ export class TrustlessGateway {
             this.#errors++
             throw new Error(`unable to fetch raw block for CID ${cid} from gateway ${this.url}`)
           }
-          // limited Response ensures the body is less than 2MiB (or configurable maxLimit)
+          // limited Response ensures the body is less than 2MiB (or configurable maxSize)
           // see https://github.com/ipfs/helia/issues/790
-          const body = await limitedResponse(res, maxLimit, { signal: innerController.signal, log: this.log })
+          const body = await limitedResponse(res, maxSize, { signal: innerController.signal, log: this.log })
           this.#successes++
           return body
         })
