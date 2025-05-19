@@ -1,5 +1,6 @@
 import { base64 } from 'multiformats/bases/base64'
 import { limitedResponse } from './utils.js'
+import { DEFAULT_MAX_SIZE } from './index.js'
 import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 
@@ -101,7 +102,7 @@ export class TrustlessGateway {
    * Fetch a raw block from `this.url` following the specification defined at
    * https://specs.ipfs.tech/http-gateways/trustless-gateway/
    */
-  async getRawBlock (cid: CID, { signal, maxSize = 2_097_152 }: GetRawBlockOptions = {}): Promise<Uint8Array> {
+  async getRawBlock (cid: CID, { signal, maxSize = DEFAULT_MAX_SIZE }: GetRawBlockOptions = {}): Promise<Uint8Array> {
     const gwUrl = new URL(this.url.toString())
     gwUrl.pathname = `/ipfs/${cid.toString()}`
 

@@ -6,6 +6,12 @@ import type { ProgressEvent } from 'progress-events'
 
 export const DEFAULT_ALLOW_INSECURE = false
 export const DEFAULT_ALLOW_LOCAL = false
+/**
+ * The maximum number of bytes to allow when fetching a raw block.
+ *
+ * @see https://specs.ipfs.tech/bitswap-protocol/#block-sizes
+ */
+export const DEFAULT_MAX_SIZE = 2_097_152
 
 export type TrustlessGatewayGetBlockProgressEvents =
   ProgressEvent<'trustless-gateway:get-block:fetch', URL>
