@@ -13,7 +13,7 @@ export function memoryCarWriter (root: CID | CID[]): MemoryCar {
 
   Promise.resolve()
     .then(async () => {
-      deferred.resolve(await toBuffer(out))
+      deferred.resolve(toBuffer(out))
     })
     .catch(err => {
       deferred.reject(err)

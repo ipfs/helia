@@ -27,6 +27,7 @@ describe('publish', () => {
     customRouting = stubInterface<IPNSRouting>()
     customRouting.get.throws(new Error('Not found'))
     heliaRouting = stubInterface<Routing>()
+    dns = stubInterface<DNS>()
 
     name = ipns({
       datastore,

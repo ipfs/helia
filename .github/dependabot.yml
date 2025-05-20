@@ -1,8 +1,7 @@
 version: 2
 updates:
 - package-ecosystem: npm
-  directories:
-    - "**/*"
+  directory: "/"
   schedule:
     interval: daily
     time: "10:00"
@@ -10,6 +9,18 @@ updates:
   commit-message:
     prefix: "deps"
     prefix-development: "chore"
+  groups:
+    helia-deps: # group all helia/libp2p deps together
+      patterns:
+        - "*helia*"
+        - "*libp2p*"
+        - "*multiformats*"
+        - "*blockstore*"
+        - "*datastore*"
+    kubo-deps: # group kubo, kubo-rpc-client, and ipfsd-ctl updates
+      patterns:
+        - "*kubo*"
+        - "ipfsd-ctl"
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
