@@ -20,7 +20,7 @@
     "@ipld/dag-pb": "^4.0.2",
     "@libp2p/tcp": "^10.0.1",
     "@multiformats/multiaddr": "^12.3.1",
-    "aegir": "^46.0.1",
+    "aegir": "^47.0.7",
     "blockstore-fs": "^2.0.1",
     "datastore-level": "^11.0.1",
     "helia": "^5.1.1",

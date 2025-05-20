@@ -348,7 +348,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
   /**
    * Connects to another peer
    */
-  async connectTo (peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions & ProgressOptions<BitswapNetworkProgressEvents>): Promise<Connection> { // eslint-disable-line require-await
+  async connectTo (peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions & ProgressOptions<BitswapNetworkProgressEvents>): Promise<Connection> {
     if (!this.running) {
       throw new NotStartedError('Network isn\'t running')
     }

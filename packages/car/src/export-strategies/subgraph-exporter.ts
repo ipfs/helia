@@ -11,7 +11,7 @@ import type { CID } from 'multiformats/cid'
  */
 export class SubgraphExporter implements ExportStrategy {
   async * export (_cid: CID, block: BlockView<any, any, any, 0 | 1>): AsyncGenerator<CID, void, undefined> {
-    for await (const [, linkedCid] of block.links()) {
+    for (const [, linkedCid] of block.links()) {
       yield linkedCid
     }
   }

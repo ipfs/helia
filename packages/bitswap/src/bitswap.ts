@@ -1,4 +1,3 @@
-/* eslint-disable no-loop-func */
 import { setMaxListeners } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
 import { Network } from './network.js'

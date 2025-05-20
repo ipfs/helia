@@ -15,7 +15,7 @@ export class UnixFSExporter implements ExportStrategy {
     }
 
     // yield all the blocks that make up the file or directory
-    for await (const [, linkedCid] of block.links()) {
+    for (const [, linkedCid] of block.links()) {
       yield linkedCid
     }
   }

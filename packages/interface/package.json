@@ -54,6 +54,10 @@
     "./pins": {
       "types": "./dist/src/pins.d.ts",
       "import": "./dist/src/pins.js"
+    },
+    "./routing": {
+      "types": "./dist/src/routing.d.ts",
+      "import": "./dist/src/routing.js"
     }
   },
   "eslintConfig": {
@@ -81,7 +85,7 @@
     "progress-events": "^1.0.1"
   },
   "devDependencies": {
-    "aegir": "^46.0.1"
+    "aegir": "^47.0.7"
   },
   "sideEffects": false
 }
