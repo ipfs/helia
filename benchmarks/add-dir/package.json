@@ -13,7 +13,7 @@
     "start": "npm run build && node dist/src/index.js"
   },
   "devDependencies": {
-    "@helia/unixfs": "^4.0.1",
+    "@helia/unixfs": "^5.0.2",
     "aegir": "^47.0.7",
     "blockstore-core": "^5.0.2",
     "blockstore-fs": "^2.0.1",
