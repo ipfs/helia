@@ -1,5 +1,3 @@
-/* eslint-disable complexity */
-
 import { encodingLength } from 'uint8-varint'
 import { BlockTooLargeError } from '../errors.js'
 import { BitswapMessage, Block, BlockPresence, WantlistEntry } from '../pb/message.js'

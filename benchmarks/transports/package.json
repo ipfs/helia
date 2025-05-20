@@ -27,7 +27,7 @@
     "@libp2p/websockets": "^9.0.0",
     "@libp2p/webtransport": "^5.0.0",
     "@multiformats/multiaddr": "^12.2.1",
-    "aegir": "^46.0.1",
+    "aegir": "^47.0.7",
     "blockstore-fs": "^2.0.1",
     "blockstore-idb": "^2.0.1",
     "datastore-idb": "^3.0.0",

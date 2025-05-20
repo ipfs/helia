@@ -1,4 +1,4 @@
-import type { GetBlockProgressEvents } from './blocks'
+import type { GetBlockProgressEvents } from './blocks.js'
 import type { AbortOptions } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
