@@ -130,7 +130,7 @@ export class PinsImpl implements Pins {
     yield cid
 
     // walk dag, ensure all blocks are present
-    for await (const [,cid] of block.links()) {
+    for (const [,cid] of block.links()) {
       yield * await queue.add(async () => {
         return this.#walkDag(cid, queue, {
           ...options,

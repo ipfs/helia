@@ -90,14 +90,13 @@
     "it-glob": "^3.0.1",
     "it-last": "^3.0.6",
     "it-pipe": "^3.0.1",
-    "merge-options": "^3.0.4",
     "multiformats": "^13.3.1",
     "progress-events": "^1.0.1",
     "sparse-array": "^1.3.2",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "aegir": "^46.0.1",
+    "aegir": "^47.0.7",
     "blockstore-core": "^5.0.2",
     "delay": "^6.0.0",
     "iso-url": "^1.2.1",
