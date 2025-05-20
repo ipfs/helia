@@ -19,7 +19,7 @@
     "blockstore-fs": "^2.0.1",
     "datastore-core": "^10.0.2",
     "datastore-level": "^11.0.1",
-    "execa": "^8.0.1",
+    "execa": "^9.5.3",
     "helia": "^5.1.1",
     "ipfs-unixfs-importer": "^15.1.5",
     "ipfsd-ctl": "^15.0.0",
