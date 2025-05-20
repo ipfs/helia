@@ -94,7 +94,7 @@
   "devDependencies": {
     "@libp2p/crypto": "^5.0.7",
     "@types/dns-packet": "^5.6.5",
-    "aegir": "^46.0.1",
+    "aegir": "^47.0.6",
     "datastore-core": "^10.0.2",
     "it-drain": "^3.0.7",
     "sinon": "^20.0.0",

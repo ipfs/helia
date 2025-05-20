@@ -92,7 +92,7 @@
   "devDependencies": {
     "@multiformats/mafmt": "^12.1.6",
     "@multiformats/multiaddr": "^12.3.3",
-    "aegir": "^46.0.1",
+    "aegir": "^47.0.6",
     "it-all": "^3.0.6",
     "it-drain": "^3.0.7"
   },
