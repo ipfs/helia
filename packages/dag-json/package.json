@@ -1,6 +1,6 @@
 {
   "name": "@helia/dag-json",
-  "version": "4.0.5",
+  "version": "4.0.6",
   "description": "Add/get IPLD blocks containing dag-json with your Helia node",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/dag-json#readme",
@@ -54,7 +54,7 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@helia/interface": "^5.3.1",
+    "@helia/interface": "^5.3.2",
     "@ipld/dag-json": "^10.2.3",
     "@libp2p/interface": "^2.2.1",
     "interface-blockstore": "^5.3.1",
