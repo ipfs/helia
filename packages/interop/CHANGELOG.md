@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.1.3](https://github.com/ipfs/helia/compare/interop-v8.1.2...interop-v8.1.3) (2025-05-29)
+
+
+### Dependencies
+
+* bump kubo from 0.34.1 to 0.35.0 in the kubo-deps group ([#806](https://github.com/ipfs/helia/issues/806)) ([50a9766](https://github.com/ipfs/helia/commit/50a9766297d9a55678c4ab785960b9fa9768715b))
+
 ## [8.1.2](https://github.com/ipfs/helia/compare/interop-v8.1.1...interop-v8.1.2) (2025-05-20)
 
 
