@@ -1,6 +1,6 @@
 {
   "name": "@helia/ipns",
-  "version": "8.2.2",
+  "version": "8.2.3",
   "description": "An implementation of IPNS for Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/ipns#readme",
@@ -79,7 +79,7 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@helia/interface": "^5.3.1",
+    "@helia/interface": "^5.3.2",
     "@libp2p/interface": "^2.2.1",
     "@libp2p/kad-dht": "^15.0.2",
     "@libp2p/logger": "^5.1.4",
@@ -94,7 +94,7 @@
   "devDependencies": {
     "@libp2p/crypto": "^5.0.7",
     "@types/dns-packet": "^5.6.5",
-    "aegir": "^46.0.1",
+    "aegir": "^47.0.7",
     "datastore-core": "^10.0.2",
     "it-drain": "^3.0.7",
     "sinon": "^20.0.0",

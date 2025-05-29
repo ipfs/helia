@@ -18,7 +18,7 @@ import {
 import { isOverShardThreshold } from './is-over-shard-threshold.js'
 import type { Directory } from './cid-to-directory.js'
 import type { GetStore, PutStore } from '../../unixfs.js'
-import type { PBNode, PBLink } from '@ipld/dag-pb/interface'
+import type { PBNode, PBLink } from '@ipld/dag-pb'
 import type { AbortOptions } from '@libp2p/interface'
 import type { ImportResult } from 'ipfs-unixfs-importer'
 import type { Version } from 'multiformats/cid'

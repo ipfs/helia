@@ -7,7 +7,7 @@ export enum CarEqualsSkip {
   blocks = 'blocks',
   blockOrder = 'blockOrder',
   version = 'version',
-  header = 'header',
+  header = 'header'
 }
 export interface CarEqualsOptions {
   skip?: CarEqualsSkip[]

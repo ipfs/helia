@@ -1,5 +1,5 @@
+import { mergeOptions as mergeOpts } from '@libp2p/utils/merge-options'
 import { exporter } from 'ipfs-unixfs-exporter'
-import mergeOpts from 'merge-options'
 import { NoContentError, NotADirectoryError } from '../errors.js'
 import { resolve } from './utils/resolve.js'
 import type { LsOptions } from '../index.js'

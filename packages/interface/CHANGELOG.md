@@ -5,6 +5,13 @@
 
 * expose .dns property on @helia/interface ([#465](https://github.com/ipfs/helia/issues/465)) ([8c9bb7d](https://github.com/ipfs/helia/commit/8c9bb7d224a1b786cba1fba18bffe07001a3b95d))
 
+## [5.3.2](https://github.com/ipfs/helia/compare/interface-v5.3.1...interface-v5.3.2) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir to 47.x.x ([#804](https://github.com/ipfs/helia/issues/804)) ([60fbbc2](https://github.com/ipfs/helia/commit/60fbbc2eb08e023e2eac02ae0e89ed143d715084))
+
 ## [5.3.1](https://github.com/ipfs/helia/compare/interface-v5.3.0...interface-v5.3.1) (2025-05-13)
 
 

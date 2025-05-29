@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import mergeOpts from 'merge-options'
+import { mergeOptions as mergeOpts } from '@libp2p/utils/merge-options'
 import { InvalidParametersError } from '../errors.js'
 import { cidToDirectory } from './utils/cid-to-directory.js'
 import { SHARD_SPLIT_THRESHOLD_BYTES } from './utils/constants.js'

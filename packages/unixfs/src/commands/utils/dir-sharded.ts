@@ -114,7 +114,7 @@ export class DirSharded extends Dir {
   }
 
   async * eachChildSeries (): AsyncGenerator<{ key: string, child: InProgressImportResult | Dir }> {
-    for await (const { key, value } of this._bucket.eachLeafSeries()) {
+    for (const { key, value } of this._bucket.eachLeafSeries()) {
       yield {
         key,
         child: value

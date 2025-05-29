@@ -1,5 +1,27 @@
 # Changelog
 
+## [8.1.2](https://github.com/ipfs/helia/compare/interop-v8.1.1...interop-v8.1.2) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir to 47.x.x ([#804](https://github.com/ipfs/helia/issues/804)) ([60fbbc2](https://github.com/ipfs/helia/commit/60fbbc2eb08e023e2eac02ae0e89ed143d715084))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^4.2.1 to ^4.2.2
+    * @helia/car bumped from ^4.1.1 to ^4.1.2
+    * @helia/dag-cbor bumped from ^4.0.5 to ^4.0.6
+    * @helia/dag-json bumped from ^4.0.5 to ^4.0.6
+    * @helia/http bumped from ^2.1.1 to ^2.1.2
+    * @helia/interface bumped from ^5.3.1 to ^5.3.2
+    * @helia/ipns bumped from ^8.2.2 to ^8.2.3
+    * @helia/json bumped from ^4.0.5 to ^4.0.6
+    * @helia/mfs bumped from ^5.0.2 to ^5.0.3
+    * @helia/routers bumped from ^3.1.1 to ^3.1.2
+    * @helia/strings bumped from ^4.0.5 to ^4.0.6
+    * @helia/unixfs bumped from ^5.0.2 to ^5.0.3
+    * helia bumped from ^5.4.1 to ^5.4.2
+
 ## [8.1.1](https://github.com/ipfs/helia/compare/interop-v8.1.0...interop-v8.1.1) (2025-05-13)
 
 
