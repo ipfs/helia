@@ -1,4 +1,6 @@
 import { base64 } from 'multiformats/bases/base64'
+import { limitedResponse } from './utils.js'
+import { DEFAULT_MAX_SIZE } from './index.js'
 import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 
@@ -17,6 +19,17 @@ export interface TransformRequestInit {
 export interface TrustlessGatewayComponents {
   logger: ComponentLogger
   transformRequestInit?: TransformRequestInit
+}
+
+export interface GetRawBlockOptions {
+  signal?: AbortSignal
+
+  /**
+   * The maximum number of bytes to allow when fetching a raw block.
+   *
+   * @default 2_097_152 (2MiB)
+   */
+  maxSize?: number
 }
 
 /**
@@ -89,7 +102,7 @@ export class TrustlessGateway {
    * Fetch a raw block from `this.url` following the specification defined at
    * https://specs.ipfs.tech/http-gateways/trustless-gateway/
    */
-  async getRawBlock (cid: CID, signal?: AbortSignal): Promise<Uint8Array> {
+  async getRawBlock (cid: CID, { signal, maxSize = DEFAULT_MAX_SIZE }: GetRawBlockOptions = {}): Promise<Uint8Array> {
     const gwUrl = new URL(this.url.toString())
     gwUrl.pathname = `/ipfs/${cid.toString()}`
 
@@ -130,8 +143,11 @@ export class TrustlessGateway {
             this.#errors++
             throw new Error(`unable to fetch raw block for CID ${cid} from gateway ${this.url}`)
           }
+          // limited Response ensures the body is less than 2MiB (or configurable maxSize)
+          // see https://github.com/ipfs/helia/issues/790
+          const body = await limitedResponse(res, maxSize, { signal: innerController.signal, log: this.log })
           this.#successes++
-          return new Uint8Array(await res.arrayBuffer())
+          return body
         })
         this.#pendingResponses.set(blockId, pendingResponse)
       }
