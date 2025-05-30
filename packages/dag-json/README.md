@@ -69,7 +69,7 @@ Loading this module through a script tag will make its exports available as `Hel
 
 # API Docs
 
-- <https://ipfs.github.io/helia/modules/_helia_dag_json.html>
+- <https://ipfs.github.io/helia/modules/_helia_dag-json.html>
 
 # License
 
