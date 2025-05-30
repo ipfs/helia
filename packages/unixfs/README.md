@@ -30,7 +30,7 @@ repo and examine the changes made.
 
 -->
 
-`@helia/unixfs` is an implementation of a filesystem compatible with Helia.
+`@helia/unixfs` is an implementation of a UnixFS filesystem compatible with Helia.
 
 See the [API docs](https://ipfs.github.io/helia/modules/_helia_unixfs.html) for all available operations.
 
