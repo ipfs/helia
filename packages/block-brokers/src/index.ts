@@ -38,7 +38,6 @@
  *
  * const content = await fs.cat(cid)
  *
- * console.log(content)
  * ```
  */
 
