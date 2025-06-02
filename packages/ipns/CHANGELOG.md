@@ -1,5 +1,14 @@
 # Changelog
 
+## [8.2.4](https://github.com/ipfs/helia/compare/ipns-v8.2.3...ipns-v8.2.4) (2025-06-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.3.2 to ^5.3.3
+
 ## [8.2.3](https://github.com/ipfs/helia/compare/ipns-v8.2.2...ipns-v8.2.3) (2025-05-20)
 
 
