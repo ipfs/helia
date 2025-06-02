@@ -15,7 +15,7 @@
  * import { CID } from 'multiformats/cid'
  *
  * const routing = httpGatewayRouting({
- *   gateways: ['https://ipfs.io/ipfs/', 'https://dweb.link/ipfs/']
+ *   gateways: ['https://ipfs.io', 'https://dweb.link']
  * })
  *
  * const helia = await createHelia({
