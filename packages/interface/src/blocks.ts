@@ -110,6 +110,15 @@ export interface BlockRetrievalOptions <ProgressEvents extends ProgressEvent<any
    * and WILL consider the gateway that returned the invalid blocks completely unreliable.
    */
   validateFn?(block: Uint8Array): Promise<void>
+
+  /**
+   * The maximum size a block can be in bytes.
+   *
+   * Attempts to retrieve a block larger than this will cause an error to be thrown.
+   *
+   * @default 2_097_152
+   */
+  maxSize?: number
 }
 
 export interface BlockAnnounceOptions <ProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> extends AbortOptions, ProgressOptions<ProgressEvents> {
