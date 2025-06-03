@@ -75,7 +75,7 @@
     "@multiformats/uri-to-multiaddr": "^9.0.1",
     "@types/polka": "^0.5.7",
     "@types/sinon": "^17.0.3",
-    "aegir": "^47.0.7",
+    "aegir": "^30.3.0",
     "cors": "^2.8.5",
     "polka": "^0.5.2",
     "sinon": "^20.0.0",

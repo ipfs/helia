@@ -58,11 +58,17 @@ describe('publish', () => {
     })
 
     expect(ipnsEntry).to.have.property('sequence', 1n)
+    
+    // Calculate expected validity as a Date object
+    const expectedValidity = new Date(Date.now() + lifetime)
 
-    // Ignore the milliseconds after the dot 2025-01-22T12:07:33.650000000Z
-    const expectedValidity = new Date(Date.now() + lifetime).toISOString().split('.')[0]
+    const actualValidity = new Date(ipnsEntry.validity)
+    
+    const timeDifference = Math.abs(actualValidity.getTime() - expectedValidity.getTime())
 
-    expect(ipnsEntry.validity.split('.')[0]).to.equal(expectedValidity)
+    // Allow a tolerance of 1 second (1000 milliseconds)
+    expect(timeDifference).to.be.lessThan(1000)
+    
 
     expect(heliaRouting.put.called).to.be.true()
     expect(customRouting.put.called).to.be.true()
