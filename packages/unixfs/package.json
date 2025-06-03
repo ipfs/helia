@@ -96,7 +96,7 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "aegir": "^30.3.0",
+    "aegir": "^47.0.7",
     "blockstore-core": "^5.0.2",
     "delay": "^6.0.0",
     "iso-url": "^1.2.1",
