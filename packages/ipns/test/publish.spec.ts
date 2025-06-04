@@ -58,17 +58,16 @@ describe('publish', () => {
     })
 
     expect(ipnsEntry).to.have.property('sequence', 1n)
-    
+
     // Calculate expected validity as a Date object
     const expectedValidity = new Date(Date.now() + lifetime)
 
     const actualValidity = new Date(ipnsEntry.validity)
-    
+
     const timeDifference = Math.abs(actualValidity.getTime() - expectedValidity.getTime())
 
     // Allow a tolerance of 1 second (1000 milliseconds)
     expect(timeDifference).to.be.lessThan(1000)
-    
 
     expect(heliaRouting.put.called).to.be.true()
     expect(customRouting.put.called).to.be.true()
