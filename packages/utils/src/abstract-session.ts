@@ -64,6 +64,14 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     const deferred: DeferredPromise<Uint8Array> = pDefer()
     this.requests.set(cidStr, deferred.promise)
 
+    // if we have specific providers for this session, convert them to the
+    // format required by this session implementation
+    if (options.providers && options.providers.length > 0) {
+      this.log('using specific providers for %c', cid)
+      // @ts-ignore
+      this.providers = await Promise.all(options.providers.map(provider => this.convertToProvider(provider)))
+    }
+
     if (this.providers.length === 0) {
       let first = false
 
