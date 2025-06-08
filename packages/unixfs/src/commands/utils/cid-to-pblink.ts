@@ -1,8 +1,9 @@
 import * as dagPb from '@ipld/dag-pb'
-import { exporter, type ExporterOptions } from 'ipfs-unixfs-exporter'
+import { exporter } from 'ipfs-unixfs-exporter'
 import { NotUnixFSError } from '../../errors.js'
 import type { GetStore } from '../../unixfs.js'
 import type { PBNode, PBLink } from '@ipld/dag-pb'
+import type { ExporterOptions } from 'ipfs-unixfs-exporter'
 import type { CID } from 'multiformats/cid'
 
 export async function cidToPBLink (cid: CID, name: string, blockstore: GetStore, options?: ExporterOptions): Promise<Required<PBLink>> {

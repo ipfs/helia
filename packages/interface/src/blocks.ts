@@ -1,3 +1,5 @@
+import type { PeerId } from '@libp2p/interface'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Blockstore } from 'interface-blockstore'
 import type { AbortOptions } from 'interface-store'
 import type { CID } from 'multiformats/cid'
@@ -6,6 +8,18 @@ import type { ProgressEvent, ProgressOptions } from 'progress-events'
 export interface Pair {
   cid: CID
   block: Uint8Array
+}
+
+export interface ProviderOptions {
+  /**
+   * An optional list of peers known to host at least the root block of the DAG
+   * that will be fetched.
+   *
+   * If this list is omitted, or if the peers cannot supply the root or any
+   * child blocks, a `findProviders` routing query will be run to find peers
+   * that can supply the blocks.
+   */
+  providers?: Array<PeerId | Multiaddr | Multiaddr[]>
 }
 
 export type HasBlockProgressEvents =
@@ -53,11 +67,19 @@ export interface GetOfflineOptions {
 
 export interface Blocks extends Blockstore<ProgressOptions<HasBlockProgressEvents>,
 ProgressOptions<PutBlockProgressEvents>, ProgressOptions<PutManyBlocksProgressEvents>,
-GetOfflineOptions & ProgressOptions<GetBlockProgressEvents>, GetOfflineOptions & ProgressOptions<GetManyBlocksProgressEvents>, ProgressOptions<GetAllBlocksProgressEvents>,
+GetOfflineOptions & ProviderOptions & ProgressOptions<GetBlockProgressEvents>,
+GetOfflineOptions & ProviderOptions & ProgressOptions<GetManyBlocksProgressEvents>,
+ProgressOptions<GetAllBlocksProgressEvents>,
 ProgressOptions<DeleteBlockProgressEvents>, ProgressOptions<DeleteManyBlocksProgressEvents>
 > {
-
-  createSession(root: CID, options?: CreateSessionOptions<GetBlockProgressEvents>): SessionBlockstore
+  /**
+   * A blockstore session only fetches blocks from a subset of network peers to
+   * reduce network traffic and improve performance.
+   *
+   * The initial set of peers can be specified, alternatively a `findProviders`
+   * routing query will occur to populate the set instead.
+   */
+  createSession(root: CID, options?: CreateSessionOptions<GetOfflineOptions & ProviderOptions & GetBlockProgressEvents>): SessionBlockstore
 }
 
 /**
@@ -80,7 +102,7 @@ ProgressOptions<DeleteBlockProgressEvents>, ProgressOptions<DeleteManyBlocksProg
   close(): void
 }
 
-export interface BlockRetrievalOptions <ProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> extends AbortOptions, ProgressOptions<ProgressEvents> {
+export interface BlockRetrievalOptions <ProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> extends AbortOptions, ProgressOptions<ProgressEvents>, ProviderOptions {
   /**
    * A function that blockBrokers should call prior to returning a block to ensure it can maintain control
    * of the block request flow. e.g. TrustedGatewayBlockBroker will use this to ensure that the block
@@ -88,13 +110,22 @@ export interface BlockRetrievalOptions <ProgressEvents extends ProgressEvent<any
    * and WILL consider the gateway that returned the invalid blocks completely unreliable.
    */
   validateFn?(block: Uint8Array): Promise<void>
+
+  /**
+   * The maximum size a block can be in bytes.
+   *
+   * Attempts to retrieve a block larger than this will cause an error to be thrown.
+   *
+   * @default 2_097_152
+   */
+  maxSize?: number
 }
 
 export interface BlockAnnounceOptions <ProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> extends AbortOptions, ProgressOptions<ProgressEvents> {
 
 }
 
-export interface CreateSessionOptions <ProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> extends AbortOptions, ProgressOptions<ProgressEvents> {
+export interface CreateSessionOptions <ProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> extends AbortOptions, ProgressOptions<ProgressEvents>, ProviderOptions {
   /**
    * The minimum number of providers for the root CID that are required for
    * successful session creation.

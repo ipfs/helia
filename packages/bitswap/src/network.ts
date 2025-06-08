@@ -1,5 +1,5 @@
 import { InvalidParametersError, NotStartedError, TimeoutError, TypedEventEmitter, UnsupportedProtocolError, setMaxListeners } from '@libp2p/interface'
-import { PeerQueue, type PeerQueueJobOptions } from '@libp2p/utils/peer-queue'
+import { PeerQueue } from '@libp2p/utils/peer-queue'
 import drain from 'it-drain'
 import * as lp from 'it-length-prefixed'
 import map from 'it-map'
@@ -18,11 +18,13 @@ import type { QueuedBitswapMessage } from './utils/bitswap-message.js'
 import type { Provider, Routing } from '@helia/interface/routing'
 import type { Libp2p, AbortOptions, Connection, PeerId, IncomingStreamData, Topology, ComponentLogger, IdentifyResult, Counter, Metrics } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
+import type { PeerQueueJobOptions } from '@libp2p/utils/peer-queue'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
 export type BitswapNetworkProgressEvents =
-  ProgressEvent<'bitswap:network:dial', PeerId>
+  ProgressEvent<'bitswap:network:dial', PeerId | Multiaddr | Multiaddr[]>
 
 export type BitswapNetworkWantProgressEvents =
   ProgressEvent<'bitswap:network:send-wantlist', PeerId> |
@@ -262,6 +264,17 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
    * Find the providers of a given `cid` and connect to them.
    */
   async findAndConnect (cid: CID, options?: WantOptions): Promise<void> {
+    // connect to initial session providers if supplied
+    if (options?.providers != null) {
+      await Promise.all(
+        options.providers.map(async prov => this.connectTo(prov)
+          .catch(err => {
+            this.log.error('could not connect to supplied provider - %e', err)
+          }))
+      )
+    }
+
+    // make a routing query to find additional providers
     await drain(
       map(
         take(this.findProviders(cid, options), options?.maxProviders ?? DEFAULT_MAX_PROVIDERS_PER_REQUEST),
@@ -335,12 +348,12 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
   /**
    * Connects to another peer
    */
-  async connectTo (peer: PeerId, options?: AbortOptions & ProgressOptions<BitswapNetworkProgressEvents>): Promise<Connection> { // eslint-disable-line require-await
+  async connectTo (peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions & ProgressOptions<BitswapNetworkProgressEvents>): Promise<Connection> {
     if (!this.running) {
       throw new NotStartedError('Network isn\'t running')
     }
 
-    options?.onProgress?.(new CustomProgressEvent<PeerId>('bitswap:network:dial', peer))
+    options?.onProgress?.(new CustomProgressEvent<PeerId | Multiaddr | Multiaddr[]>('bitswap:network:dial', peer))
 
     // dial and wait for identify - this is to avoid opening a protocol stream
     // that we are not going to use but depends on the remote node running the

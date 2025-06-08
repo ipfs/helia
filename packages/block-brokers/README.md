@@ -86,7 +86,7 @@ Loading this module through a script tag will make its exports available as `Hel
 
 # API Docs
 
-- <https://ipfs.github.io/helia/modules/_helia_block_brokers.html>
+- <https://ipfs.github.io/helia/modules/_helia_block-brokers.html>
 
 # License
 

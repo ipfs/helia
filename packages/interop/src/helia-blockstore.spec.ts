@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
@@ -8,18 +9,20 @@ import { sha256 } from 'multiformats/hashes/sha2'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import type { HeliaLibp2p } from 'helia'
-import type { KuboNode } from 'ipfsd-ctl'
+import type { KuboInfo, KuboNode } from 'ipfsd-ctl'
 
 describe('helia - blockstore', () => {
   let helia: HeliaLibp2p
   let kubo: KuboNode
+  let kuboInfo: KuboInfo
 
   beforeEach(async () => {
     helia = await createHeliaNode()
     kubo = await createKuboNode()
+    kuboInfo = await kubo.info()
 
     // connect the two nodes
-    await helia.libp2p.dial((await (kubo.api.id())).addresses)
+    await helia.libp2p.dial(kuboInfo.multiaddrs.map(str => multiaddr(str)))
   })
 
   afterEach(async () => {
