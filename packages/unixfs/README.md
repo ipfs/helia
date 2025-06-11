@@ -74,6 +74,29 @@ for await (const entry of fs.addAll(globSource('path/to/containing/dir', 'glob-p
 }
 ```
 
+## Example - Adding files and directories in the browser
+
+[FileSystemEntry](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemEntry) and [FileSystemHandle](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemHandle) files and directories.
+
+```typescript
+import { createHelia } from 'helia'
+import { unixfs } from '@helia/unixfs'
+import { fsEntrySource, fsHandleSource } from '@cypsela/browser-source'
+
+const helia = await createHelia()
+const fs = unixfs(helia)
+
+// get FileSystemEntry from drag and drop events
+for await (const entry of fs.addAll(fsEntrySource(<FileSystemEntry>))) {
+  console.info(entry)
+}
+
+// get FileSystemHandle from drag and drop events and window methods
+for await (const entry of fs.addAll(fsHandleSource(<FileSystemHandle>))) {
+  console.info(entry)
+}
+```
+
 # Install
 
 ```console
