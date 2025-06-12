@@ -76,7 +76,7 @@ for await (const entry of fs.addAll(globSource('path/to/containing/dir', 'glob-p
 
 ## Example - Adding files and directories in the browser
 
-[FileSystemEntry](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemEntry) and [FileSystemHandle](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemHandle) files and directories.
+Uses [@cypsela/browser-source](https://github.com/cypsela/browser-source) to read [FileSystemEntry](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemEntry) and [FileSystemHandle](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemHandle) files and directories.
 
 ```typescript
 import { createHelia } from 'helia'
