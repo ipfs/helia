@@ -25,6 +25,11 @@ export async function createKuboNode (): Promise<KuboNode> {
             'Access-Control-Allow-Origin': ['*'],
             'Access-Control-Allow-Methods': ['GET', 'POST', 'PUT', 'OPTIONS']
           }
+        },
+        Internal: {
+          Bitswap: {
+            BroadcastReductionEnabled: false
+          }
         }
       }
     },
