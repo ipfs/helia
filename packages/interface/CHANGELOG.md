@@ -5,6 +5,13 @@
 
 * expose .dns property on @helia/interface ([#465](https://github.com/ipfs/helia/issues/465)) ([8c9bb7d](https://github.com/ipfs/helia/commit/8c9bb7d224a1b786cba1fba18bffe07001a3b95d))
 
+## [5.3.3](https://github.com/ipfs/helia/compare/interface-v5.3.2...interface-v5.3.3) (2025-06-12)
+
+
+### Bug Fixes
+
+* trustless gateway returned blocks can be limited ([#791](https://github.com/ipfs/helia/issues/791)) ([7a52e95](https://github.com/ipfs/helia/commit/7a52e95165f4a16a1fb2f62cfc6e936cb6f78b69))
+
 ## [5.3.2](https://github.com/ipfs/helia/compare/interface-v5.3.1...interface-v5.3.2) (2025-05-20)
 
 
