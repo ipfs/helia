@@ -1,15 +1,16 @@
 import * as dagPb from '@ipld/dag-pb'
 import { logger } from '@libp2p/logger'
 import { ScalableCuckooFilter } from '@libp2p/utils/filters'
+import { mergeOptions as mergeOpts } from '@libp2p/utils/merge-options'
 import { UnixFS } from 'ipfs-unixfs'
-import { exporter, type RawNode, type UnixFSDirectory, type UnixFSFile } from 'ipfs-unixfs-exporter'
-import mergeOpts from 'merge-options'
+import { exporter } from 'ipfs-unixfs-exporter'
 import * as raw from 'multiformats/codecs/raw'
 import { InvalidPBNodeError, NotUnixFSError, UnknownError } from '../errors.js'
 import { resolve } from './utils/resolve.js'
 import type { ExtendedStatOptions, ExtendedDirectoryStats, ExtendedFileStats, StatOptions, DirectoryStats, FileStats, RawStats, ExtendedRawStats } from '../index.js'
 import type { GetStore, HasStore } from '../unixfs.js'
 import type { Filter } from '@libp2p/utils/filters'
+import type { RawNode, UnixFSDirectory, UnixFSFile } from 'ipfs-unixfs-exporter'
 import type { CID } from 'multiformats/cid'
 
 // https://github.com/ipfs/specs/blob/main/UNIXFS.md#metadata

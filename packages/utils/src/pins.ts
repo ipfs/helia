@@ -1,16 +1,19 @@
 import { Queue } from '@libp2p/utils/queue'
 import * as cborg from 'cborg'
-import { type Datastore, Key } from 'interface-datastore'
+import { Key } from 'interface-datastore'
 import { base36 } from 'multiformats/bases/base36'
 import { createUnsafe } from 'multiformats/block'
-import { CID, type Version } from 'multiformats/cid'
-import { CustomProgressEvent, type ProgressOptions } from 'progress-events'
+import { CID } from 'multiformats/cid'
+import { CustomProgressEvent } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import type { CodecLoader } from '@helia/interface'
 import type { GetBlockProgressEvents } from '@helia/interface/blocks'
 import type { AddOptions, AddPinEvents, IsPinnedOptions, LsOptions, Pin, Pins, RmOptions } from '@helia/interface/pins'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
+import type { Datastore } from 'interface-datastore'
+import type { Version } from 'multiformats/cid'
+import type { ProgressOptions } from 'progress-events'
 
 interface DatastorePin {
   /**
@@ -127,7 +130,7 @@ export class PinsImpl implements Pins {
     yield cid
 
     // walk dag, ensure all blocks are present
-    for await (const [,cid] of block.links()) {
+    for (const [,cid] of block.links()) {
       yield * await queue.add(async () => {
         return this.#walkDag(cid, queue, {
           ...options,

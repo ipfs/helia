@@ -6,10 +6,9 @@ import { Ledger } from './ledger.js'
 import type { BitswapNotifyProgressEvents, WantListEntry } from '../index.js'
 import type { Network } from '../network.js'
 import type { BitswapMessage } from '../pb/message.js'
-import type { ComponentLogger, Libp2p, Logger, Metrics, PeerId } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, Libp2p, Logger, Metrics, PeerId } from '@libp2p/interface'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { Blockstore } from 'interface-blockstore'
-import type { AbortOptions } from 'it-length-prefixed-stream'
 import type { ProgressOptions } from 'progress-events'
 
 export interface PeerWantListsInit {

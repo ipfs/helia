@@ -1,6 +1,6 @@
 {
   "name": "@helia/interface",
-  "version": "5.2.1",
+  "version": "5.3.2",
   "description": "The Helia API",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/interface#readme",
@@ -54,6 +54,10 @@
     "./pins": {
       "types": "./dist/src/pins.d.ts",
       "import": "./dist/src/pins.js"
+    },
+    "./routing": {
+      "types": "./dist/src/routing.d.ts",
+      "import": "./dist/src/routing.js"
     }
   },
   "eslintConfig": {
@@ -73,6 +77,7 @@
   "dependencies": {
     "@libp2p/interface": "^2.2.1",
     "@multiformats/dns": "^1.0.6",
+    "@multiformats/multiaddr": "^12.4.0",
     "interface-blockstore": "^5.3.1",
     "interface-datastore": "^8.3.1",
     "interface-store": "^6.0.2",
@@ -80,7 +85,7 @@
     "progress-events": "^1.0.1"
   },
   "devDependencies": {
-    "aegir": "^45.1.1"
+    "aegir": "^47.0.7"
   },
   "sideEffects": false
 }

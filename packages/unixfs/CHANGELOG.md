@@ -1,5 +1,34 @@
 # Changelog
 
+## [5.0.3](https://github.com/ipfs/helia/compare/unixfs-v5.0.2...unixfs-v5.0.3) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir to 47.x.x ([#804](https://github.com/ipfs/helia/issues/804)) ([60fbbc2](https://github.com/ipfs/helia/commit/60fbbc2eb08e023e2eac02ae0e89ed143d715084))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.3.1 to ^5.3.2
+
+## [5.0.2](https://github.com/ipfs/helia/compare/unixfs-v5.0.1...unixfs-v5.0.2) (2025-05-13)
+
+
+### Dependencies
+
+* update all deps ([#792](https://github.com/ipfs/helia/issues/792)) ([d43efc7](https://github.com/ipfs/helia/commit/d43efc7bdfff34071a8e4e22e01f659fbac0b78e))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.3.0 to ^5.3.1
+
+## [5.0.1](https://github.com/ipfs/helia/compare/unixfs-v5.0.0...unixfs-v5.0.1) (2025-05-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.2.1 to ^5.3.0
+
 ## [5.0.0](https://github.com/ipfs/helia/compare/unixfs-v4.0.3...unixfs-v5.0.0) (2025-03-20)
 
 

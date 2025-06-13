@@ -5,12 +5,13 @@ import { exporter } from 'ipfs-unixfs-exporter'
 import { InvalidParametersError, InvalidPBNodeError } from '../../errors.js'
 import {
   recreateShardedDirectory,
-  type UpdateHamtDirectoryOptions,
+
   updateShardedDirectory
 } from './hamt-utils.js'
 import { isOverShardThreshold } from './is-over-shard-threshold.js'
 import { persist } from './persist.js'
 import type { Directory } from './cid-to-directory.js'
+import type { UpdateHamtDirectoryOptions } from './hamt-utils.js'
 import type { GetStore, PutStore } from '../../unixfs.js'
 import type { PBNode } from '@ipld/dag-pb'
 import type { AbortOptions } from '@libp2p/interface'

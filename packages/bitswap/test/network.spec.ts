@@ -15,7 +15,7 @@ import { CID } from 'multiformats/cid'
 import { pEvent } from 'p-event'
 import pRetry from 'p-retry'
 import Sinon from 'sinon'
-import { stubInterface, type StubbedInstance } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { BITSWAP_120 } from '../src/constants.js'
 import { Network } from '../src/network.js'
 import { BitswapMessage, BlockPresenceType } from '../src/pb/message.js'
@@ -23,6 +23,7 @@ import { QueuedBitswapMessage } from '../src/utils/bitswap-message.js'
 import { cidToPrefix } from '../src/utils/cid-prefix.js'
 import type { Routing } from '@helia/interface/routing'
 import type { Connection, Libp2p, PeerId, IdentifyResult, Stream } from '@libp2p/interface'
+import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedNetworkComponents {
   routing: StubbedInstance<Routing>

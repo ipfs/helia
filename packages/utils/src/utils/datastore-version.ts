@@ -1,6 +1,7 @@
-import { type Datastore, Key } from 'interface-datastore'
+import { Key } from 'interface-datastore'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import type { Datastore } from 'interface-datastore'
 
 const DS_VERSION_KEY = new Key('/version')
 const CURRENT_VERSION = 1

@@ -3,9 +3,10 @@
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
-import { type MFS, mfs } from '../src/index.js'
+import { mfs } from '../src/index.js'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 import { smallFile } from './fixtures/files.js'
+import type { MFS } from '../src/index.js'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 

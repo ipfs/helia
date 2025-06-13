@@ -3,7 +3,8 @@
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { identity } from 'multiformats/hashes/identity'
-import { strings, type Strings } from '../src/index.js'
+import { strings } from '../src/index.js'
+import type { Strings } from '../src/index.js'
 import type { Blockstore } from 'interface-blockstore'
 
 describe('put', () => {

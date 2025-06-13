@@ -1,11 +1,12 @@
 /* eslint-env mocha */
 
-import { json, type JSON, type AddOptions } from '@helia/json'
+import { json } from '@helia/json'
 import { expect } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
 import * as jsonCodec from 'multiformats/codecs/json'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
+import type { JSON, AddOptions } from '@helia/json'
 import type { HeliaLibp2p } from 'helia'
 import type { KuboNode } from 'ipfsd-ctl'
 import type { BlockPutOptions as KuboAddOptions } from 'kubo-rpc-client'
