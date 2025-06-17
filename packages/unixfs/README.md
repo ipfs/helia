@@ -78,7 +78,7 @@ for await (const entry of fs.addAll(globSource('path/to/containing/dir', 'glob-p
 
 Uses [@cypsela/browser-source](https://github.com/cypsela/browser-source) to read [FileSystemEntry](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemEntry) and [FileSystemHandle](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemHandle) files and directories.
 
-Instances of these data types are available from drag and drop events and window methods like (showOpenFilePicker)\[<https://developer.mozilla.org/en-US/docs/Web/API/Window/showOpenFilePicker>].
+Instances of these data types are available from drag and drop events and window methods like [showOpenFilePicker](https://developer.mozilla.org/en-US/docs/Web/API/Window/showOpenFilePicker).
 
 ```typescript
 import { createHelia } from 'helia'
