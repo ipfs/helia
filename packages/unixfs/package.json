@@ -96,7 +96,6 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@cypsela/browser-source": "^1.0.1",
     "aegir": "^47.0.7",
     "blockstore-core": "^5.0.2",
     "delay": "^6.0.0",
