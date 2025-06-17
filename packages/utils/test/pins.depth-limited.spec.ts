@@ -2,8 +2,9 @@
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import drain from 'it-drain'
-import { createDag, type DAGNode } from './fixtures/create-dag.js'
+import { createDag } from './fixtures/create-dag.js'
 import { createHelia } from './fixtures/create-helia.js'
+import type { DAGNode } from './fixtures/create-dag.js'
 import type { Helia } from '@helia/interface'
 
 const MAX_DEPTH = 3

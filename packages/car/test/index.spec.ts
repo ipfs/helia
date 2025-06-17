@@ -1,18 +1,21 @@
 /* eslint-env mocha */
 
 import { mfs } from '@helia/mfs'
-import { type UnixFS, unixfs } from '@helia/unixfs'
+import { unixfs } from '@helia/unixfs'
 import { CarReader } from '@ipld/car'
+import { defaultLogger } from '@libp2p/logger'
 import { createScalableCuckooFilter } from '@libp2p/utils/filters'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import { fixedSize } from 'ipfs-unixfs-importer/chunker'
 import toBuffer from 'it-to-buffer'
-import { car, type Car } from '../src/index.js'
+import { car } from '../src/index.js'
 import { largeFile, smallFile } from './fixtures/files.js'
 import { getCodec } from './fixtures/get-codec.js'
 import { memoryCarWriter } from './fixtures/memory-car.js'
+import type { Car } from '../src/index.js'
+import type { UnixFS } from '@helia/unixfs'
 import type { Blockstore } from 'interface-blockstore'
 
 describe('import/export car file', () => {
@@ -23,14 +26,18 @@ describe('import/export car file', () => {
   beforeEach(async () => {
     blockstore = new MemoryBlockstore()
 
-    c = car({ blockstore, getCodec })
+    c = car({
+      blockstore,
+      getCodec,
+      logger: defaultLogger()
+    })
     u = unixfs({ blockstore })
   })
 
   it('exports and imports a car file', async () => {
     const otherBlockstore = new MemoryBlockstore()
     const otherUnixFS = unixfs({ blockstore: otherBlockstore })
-    const otherCar = car({ blockstore: otherBlockstore, getCodec })
+    const otherCar = car({ blockstore: otherBlockstore, getCodec, logger: defaultLogger() })
     const cid = await otherUnixFS.addBytes(smallFile)
 
     const writer = memoryCarWriter(cid)
@@ -50,7 +57,7 @@ describe('import/export car file', () => {
 
     const otherBlockstore = new MemoryBlockstore()
     const otherUnixFS = unixfs({ blockstore: otherBlockstore })
-    const otherCar = car({ blockstore: otherBlockstore, getCodec })
+    const otherCar = car({ blockstore: otherBlockstore, getCodec, logger: defaultLogger() })
     const cid1 = await otherUnixFS.addBytes(fileData1)
     const cid2 = await otherUnixFS.addBytes(fileData2)
     const cid3 = await otherUnixFS.addBytes(fileData3)
@@ -70,7 +77,7 @@ describe('import/export car file', () => {
   it('exports and imports a multiple block car file', async () => {
     const otherBlockstore = new MemoryBlockstore()
     const otherUnixFS = unixfs({ blockstore: otherBlockstore })
-    const otherCar = car({ blockstore: otherBlockstore, getCodec })
+    const otherCar = car({ blockstore: otherBlockstore, getCodec, logger: defaultLogger() })
     const cid = await otherUnixFS.addBytes(largeFile)
 
     const writer = memoryCarWriter(cid)
@@ -90,7 +97,7 @@ describe('import/export car file', () => {
 
     const otherBlockstore = new MemoryBlockstore()
     const otherUnixFS = unixfs({ blockstore: otherBlockstore })
-    const otherCar = car({ blockstore: otherBlockstore, getCodec })
+    const otherCar = car({ blockstore: otherBlockstore, getCodec, logger: defaultLogger() })
     const cid1 = await otherUnixFS.addBytes(fileData1, {
       chunker: fixedSize({
         chunkSize: 2
@@ -124,7 +131,7 @@ describe('import/export car file', () => {
     const otherUnixFS = unixfs({ blockstore: otherBlockstore })
     const otherDatastore = new MemoryDatastore()
     const otherMFS = mfs({ blockstore: otherBlockstore, datastore: otherDatastore })
-    const otherCar = car({ blockstore: otherBlockstore, getCodec })
+    const otherCar = car({ blockstore: otherBlockstore, getCodec, logger: defaultLogger() })
 
     await otherMFS.mkdir('/testDuplicates')
     await otherMFS.mkdir('/testDuplicates/sub')
@@ -151,7 +158,7 @@ describe('import/export car file', () => {
     const otherUnixFS = unixfs({ blockstore: otherBlockstore })
     const otherDatastore = new MemoryDatastore()
     const otherMFS = mfs({ blockstore: otherBlockstore, datastore: otherDatastore })
-    const otherCar = car({ blockstore: otherBlockstore, getCodec })
+    const otherCar = car({ blockstore: otherBlockstore, getCodec, logger: defaultLogger() })
 
     await otherMFS.mkdir('/testDuplicates')
     await otherMFS.mkdir('/testDuplicates/sub')

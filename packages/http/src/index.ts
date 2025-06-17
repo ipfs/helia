@@ -46,10 +46,11 @@
 
 import { trustlessGateway } from '@helia/block-brokers'
 import { delegatedHTTPRouting, httpGatewayRouting } from '@helia/routers'
-import { Helia as HeliaClass, type HeliaInit } from '@helia/utils'
+import { Helia as HeliaClass } from '@helia/utils'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import type { Helia } from '@helia/interface'
+import type { HeliaInit } from '@helia/utils'
 
 // re-export interface types so people don't have to depend on @helia/interface
 // if they don't want to
@@ -60,6 +61,28 @@ export interface HeliaHTTPInit extends HeliaInit {
    * Whether to start the Helia node
    */
   start?: boolean
+}
+
+/**
+ * Create and return the default options used to create a Helia node that only
+ * uses HTTP services
+ */
+export async function heliaDefaults (init: Partial<HeliaHTTPInit> = {}): Promise<HeliaHTTPInit> {
+  const datastore = init.datastore ?? new MemoryDatastore()
+  const blockstore = init.blockstore ?? new MemoryBlockstore()
+
+  return {
+    ...init,
+    datastore,
+    blockstore,
+    blockBrokers: init.blockBrokers ?? [
+      trustlessGateway()
+    ],
+    routers: init.routers ?? [
+      delegatedHTTPRouting('https://delegated-ipfs.dev'),
+      httpGatewayRouting()
+    ]
+  }
 }
 
 /**

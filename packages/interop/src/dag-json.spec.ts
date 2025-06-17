@@ -1,11 +1,12 @@
 /* eslint-env mocha */
 
-import { dagJson, type DAGJSON, type AddOptions } from '@helia/dag-json'
+import { dagJson } from '@helia/dag-json'
 import { expect } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
 import * as codec from 'multiformats/codecs/json'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
+import type { DAGJSON, AddOptions } from '@helia/dag-json'
 import type { HeliaLibp2p } from 'helia'
 import type { KuboNode } from 'ipfsd-ctl'
 import type { BlockPutOptions as KuboAddOptions } from 'kubo-rpc-client'

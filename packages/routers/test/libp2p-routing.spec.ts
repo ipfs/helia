@@ -2,10 +2,11 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import drain from 'it-drain'
 import { CID } from 'multiformats'
-import { stubInterface, type StubbedInstance } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { libp2pRouting } from '../src/index.js'
 import type { Routing } from '@helia/interface'
 import type { ContentRouting, Libp2p, PeerRouting } from '@libp2p/interface'
+import type { StubbedInstance } from 'sinon-ts'
 
 describe('libp2p-routing', () => {
   let libp2p: StubbedInstance<Libp2p>

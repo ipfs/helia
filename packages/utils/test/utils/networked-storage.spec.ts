@@ -10,7 +10,7 @@ import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
 import { identity } from 'multiformats/hashes/identity'
 import Sinon from 'sinon'
-import { type StubbedInstance, stubInterface } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { getHasher } from '../../src/utils/get-hasher.js'
@@ -19,6 +19,7 @@ import { createBlock } from '../fixtures/create-block.js'
 import type { NetworkedStorageComponents } from '../../src/utils/networked-storage.js'
 import type { BlockBroker } from '@helia/interface/blocks'
 import type { Blockstore } from 'interface-blockstore'
+import type { StubbedInstance } from 'sinon-ts'
 
 describe('networked-storage', () => {
   let storage: NetworkedStorage

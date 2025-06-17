@@ -1,5 +1,47 @@
 # Changelog
 
+## [5.0.3](https://github.com/ipfs/helia/compare/unixfs-v5.0.2...unixfs-v5.0.3) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir to 47.x.x ([#804](https://github.com/ipfs/helia/issues/804)) ([60fbbc2](https://github.com/ipfs/helia/commit/60fbbc2eb08e023e2eac02ae0e89ed143d715084))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.3.1 to ^5.3.2
+
+## [5.0.2](https://github.com/ipfs/helia/compare/unixfs-v5.0.1...unixfs-v5.0.2) (2025-05-13)
+
+
+### Dependencies
+
+* update all deps ([#792](https://github.com/ipfs/helia/issues/792)) ([d43efc7](https://github.com/ipfs/helia/commit/d43efc7bdfff34071a8e4e22e01f659fbac0b78e))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.3.0 to ^5.3.1
+
+## [5.0.1](https://github.com/ipfs/helia/compare/unixfs-v5.0.0...unixfs-v5.0.1) (2025-05-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.2.1 to ^5.3.0
+
+## [5.0.0](https://github.com/ipfs/helia/compare/unixfs-v4.0.3...unixfs-v5.0.0) (2025-03-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* Fields that would involve DAG traversal have been removed from the output of `fs.stat` - pass the `extended` option to have them returned
+* addFile requires the import candidate to have `path` and `content` properties and the returned CID will always resolve to a directory
+
+### Bug Fixes
+
+* require path in addFile call ([#754](https://github.com/ipfs/helia/issues/754)) ([c0bf36e](https://github.com/ipfs/helia/commit/c0bf36eb45ae0551a1c406e5b806d01425abb1f9))
+* return simple stats or extended stats ([#760](https://github.com/ipfs/helia/issues/760)) ([325b36f](https://github.com/ipfs/helia/commit/325b36f70624d3dcc25b2723f9e3e2d26e1e5199))
+
 ## [4.0.3](https://github.com/ipfs/helia/compare/unixfs-v4.0.2...unixfs-v4.0.3) (2025-03-13)
 
 

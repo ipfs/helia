@@ -5,7 +5,7 @@ import last from 'it-last'
 // @ts-expect-error no types
 import SparseArray from 'sparse-array'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { type InfiniteHash, wrapHash } from './consumable-hash.js'
+import { wrapHash } from './consumable-hash.js'
 import { DirSharded } from './dir-sharded.js'
 import {
   hamtHashCode,
@@ -13,6 +13,7 @@ import {
   hamtBucketBits
 } from './hamt-constants.js'
 import { persist } from './persist.js'
+import type { InfiniteHash } from './consumable-hash.js'
 import type { PersistOptions } from './persist.js'
 import type { GetStore, PutStore } from '../../unixfs.js'
 import type { AbortOptions } from '@libp2p/interface'
