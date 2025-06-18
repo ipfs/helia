@@ -299,13 +299,14 @@ import type { IPNSRouting, IPNSRoutingEvents } from './routing/index.js'
 import type { LocalStore } from './routing/local-store.js'
 import type { Routing } from '@helia/interface'
 import type { AbortOptions, ComponentLogger, Logger, PrivateKey, PublicKey } from '@libp2p/interface'
+import type { Keychain } from '@libp2p/keychain'
 import type { Answer, DNS, ResolveDnsProgressEvents } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
 import type { IPNSRecord } from 'ipns'
 import type { MultibaseDecoder } from 'multiformats/bases/interface'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
-import { privateKeyToProtobuf } from '@libp2p/crypto/keys'
+import { generateKeyPair, privateKeyToProtobuf } from '@libp2p/crypto/keys'
 
 const log = logger('helia:ipns')
 
@@ -358,6 +359,12 @@ export interface PublishOptions extends AbortOptions, ProgressOptions<PublishPro
    * The TTL of the record in ms (default: 5 minutes)
    */
   ttl?: number
+}
+
+
+export interface IPNSRecordMetadata {
+  keyName: string
+  lifetime: number
 }
 
 export interface ResolveOptions extends AbortOptions, ProgressOptions<ResolveProgressEvents | IPNSRoutingEvents> {
@@ -437,6 +444,18 @@ export interface IPNSResolveResult extends ResolveResult {
   record: IPNSRecord
 }
 
+export interface IPNSPublishResult {
+  /**
+   * The published record
+   */
+  record: IPNSRecord
+
+  /**
+   * The public key that was used to publish the record
+   */
+  publicKey: PublicKey
+}
+
 export interface DNSLinkResolveResult extends ResolveResult {
   /**
    * The resolved record
@@ -450,7 +469,7 @@ export interface IPNS {
    *
    * If the value is a PeerId, a recursive IPNS record will be created.
    */
-  publish(key: PrivateKey, value: CID | PublicKey | MultihashDigest<0x00 | 0x12> | string, options?: PublishOptions): Promise<IPNSRecord>
+  publish(keyName: string, value: CID | PublicKey | MultihashDigest<0x00 | 0x12> | string, options?: PublishOptions): Promise<IPNSPublishResult>
 
   /**
    * Accepts a public key formatted as a libp2p PeerID and resolves the IPNS record
@@ -467,6 +486,13 @@ export interface IPNS {
    * Periodically republish all IPNS records found in the datastore
    */
   republish(options?: RepublishOptions): void
+
+  /**
+   * Stop republishing of an IPNS record
+   *
+   * This will delete the local record, but the key will remain in the keychain.
+   */
+  unpublish(key: PublicKey | MultihashDigest<0x00 | 0x12>, options?: AbortOptions): Promise<void>
 
   /**
    * Republish an existing IPNS record without the private key.
@@ -486,6 +512,7 @@ export interface IPNSComponents {
   routing: Routing
   dns: DNS
   logger: ComponentLogger
+  keychain: Keychain
 }
 
 const bases: Record<string, MultibaseDecoder<string>> = {
@@ -499,7 +526,7 @@ class DefaultIPNS implements IPNS {
   private timeout?: ReturnType<typeof setTimeout>
   private readonly dns: DNS
   private readonly log: Logger
-  private readonly components: IPNSComponents
+  private readonly keychain: Keychain
 
   constructor (components: IPNSComponents, routers: IPNSRouting[] = []) {
     this.routers = [
@@ -509,13 +536,22 @@ class DefaultIPNS implements IPNS {
     this.localStore = localStore(components.datastore)
     this.dns = components.dns
     this.log = components.logger.forComponent('helia:ipns')
-    this.components = components
+    this.keychain = components.keychain
   }
 
-  async publish (key: PrivateKey, value: CID | PublicKey | MultihashDigest<0x00 | 0x12> | string, options: PublishOptions = {}): Promise<IPNSRecord> {
+  async publish (keyName: string, value: CID | PublicKey | MultihashDigest<0x00 | 0x12> | string, options: PublishOptions = {}): Promise<IPNSPublishResult> {
+    let privKey: PrivateKey
     try {
+      try {
+        privKey = await this.keychain.exportKey(keyName)
+      } catch (err: any) {
+        // If no named key found in keychain, generate and import
+        privKey = await generateKeyPair('Ed25519')
+        await this.keychain.importKey(keyName, privKey)
+      }
+
       let sequenceNumber = 1n
-      const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+      const routingKey = multihashToIPNSRoutingKey(privKey.publicKey.toMultihash())
 
       if (await this.localStore.has(routingKey, options)) {
         // if we have published under this key before, increment the sequence number
@@ -526,17 +562,16 @@ class DefaultIPNS implements IPNS {
 
       // convert ttl from milliseconds to nanoseconds as createIPNSRecord expects
       const ttlNs = options.ttl != null ? BigInt(options.ttl) * 1_000_000n : DEFAULT_TTL_NS
-      const record = await createIPNSRecord(key, value, sequenceNumber, options.lifetime ?? DEFAULT_LIFETIME_MS, { ...options, ttlNs })
+      const record = await createIPNSRecord(privKey, value, sequenceNumber, options.lifetime ?? DEFAULT_LIFETIME_MS, { ...options, ttlNs })
       const marshaledRecord = marshalIPNSRecord(record)
-      const privateKey = privateKeyToProtobuf(key)
-      await this.localStore.put(routingKey, marshaledRecord, privateKey, options)
+      await this.localStore.put(routingKey, marshaledRecord, keyName, options)
 
       if (options.offline !== true) {
         // publish record to routing
         await Promise.all(this.routers.map(async r => { await r.put(routingKey, marshaledRecord, options) }))
       }
 
-      return record
+      return { record, publicKey: privKey.publicKey }
     } catch (err: any) {
       options.onProgress?.(new CustomProgressEvent<Error>('ipns:publish:error', err))
       throw err
@@ -572,26 +607,38 @@ class DefaultIPNS implements IPNS {
       clearTimeout(this.timeout)
     })
 
-    const republishAllRecords = async (): Promise<void> => {
+    const republishRecords = async (): Promise<void> => {
       const startTime = Date.now()
 
       options.onProgress?.(new CustomProgressEvent('ipns:republish:start'))
 
       try {
         // Use the localStore.list method to get all IPNS records
-        const recordsToRepublish: Array<{ routingKey: Uint8Array, record: Uint8Array<any> }> = []
+        const recordsToRepublish: Array<{ routingKey: Uint8Array, record: IPNSRecord }> = []
 
         // Find all records using the localStore.list method
-        for await (const { routingKey, record, privateKey } of this.localStore.list({
+        for await (const { routingKey, record, keyName } of this.localStore.list({
           signal: options.signal,
           onProgress: options.onProgress
         })) {
           try {
+            if (keyName == null) {
+              // if no key name is found, it's either from before we started
+              // storing the private key
+              // or the record was published with republishRecord without a key
+              this.log(`no key name found for record ${routingKey.toString()}, skipping`)
+              continue
+            }
             // Unmarshal the IPNS record
             const ipnsRecord = unmarshalIPNSRecord(record)
+
+            // TODO: only update sequence number if the record is updated
+            // and only update the record if it's no longer valid (based on the validity field)
             const sequenceNumber = ipnsRecord.sequence + 1n
             const ttlNs = ipnsRecord.ttl ?? DEFAULT_TTL_NS
-            const updatedRecord = await createIPNSRecord(privateKey, ipnsRecord.value, sequenceNumber, options.lifetime ?? DEFAULT_LIFETIME_MS, { ...options, ttlNs })
+
+            const privKey = await this.keychain.exportKey(keyName)
+            const updatedRecord = await createIPNSRecord(privKey, ipnsRecord.value, sequenceNumber, DEFAULT_LIFETIME_MS, { ...options, ttlNs })
             recordsToRepublish.push({ routingKey, record: updatedRecord })
           } catch (err) {
             this.log.error('error unmarshaling record', err)
@@ -630,17 +677,23 @@ class DefaultIPNS implements IPNS {
       }
 
       this.timeout = setTimeout(() => {
-        republishAllRecords().catch(err => {
+        republishRecords().catch(err => {
           this.log.error('error republishing', err)
         })
       }, nextInterval)
     }
 
     this.timeout = setTimeout(() => {
-      republishAllRecords().catch(err => {
+      republishRecords().catch(err => {
         this.log.error('error republishing', err)
       })
     }, options.interval ?? DEFAULT_REPUBLISH_INTERVAL_MS)
+  }
+
+  async unpublish (key: PublicKey | MultihashDigest<0x00 | 0x12>, options?: AbortOptions): Promise<void> {
+    const digest = isPublicKey(key) ? key.toMultihash() : key
+    const routingKey = multihashToIPNSRoutingKey(digest)
+    await this.localStore.delete(routingKey, options)
   }
 
   async #resolve (ipfsPath: string, options: ResolveOptions = {}): Promise<{ cid: CID, path: string }> {
@@ -830,7 +883,9 @@ class DefaultIPNS implements IPNS {
 
       await ipnsValidator(routingKey, marshaledRecord) // validate that they key corresponds to the record
 
-      await this.localStore.put(routingKey, marshaledRecord, options) // add to local store
+      // TODO: If we are republishing a signed record without access to the key
+      // we can probably skip storing it in the local store
+      // await this.localStore.put(routingKey, marshaledRecord, undefined, options) // add to local store
 
       if (options.offline !== true) {
         // publish record to routing
