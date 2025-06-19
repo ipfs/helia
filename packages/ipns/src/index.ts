@@ -283,7 +283,7 @@ import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { createIPNSRecord, extractPublicKeyFromIPNSRecord, marshalIPNSRecord, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from 'ipns'
 import { ipnsSelector } from 'ipns/selector'
-import { ipnsValidator } from 'ipns/validator'
+import { ipnsValidator, validate } from 'ipns/validator'
 import { base36 } from 'multiformats/bases/base36'
 import { base58btc } from 'multiformats/bases/base58'
 import { CID } from 'multiformats/cid'
@@ -298,7 +298,8 @@ import { isCodec, IDENTITY_CODEC, SHA2_256_CODEC, IPNS_STRING_PREFIX } from './u
 import type { IPNSRouting, IPNSRoutingEvents } from './routing/index.js'
 import type { LocalStore } from './routing/local-store.js'
 import type { Routing } from '@helia/interface'
-import type { AbortOptions, ComponentLogger, Logger, PrivateKey, PublicKey } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, Libp2p, Logger, PrivateKey, PublicKey } from '@libp2p/interface'
+import type { DefaultLibp2pServices } from 'helia'
 import type { Keychain } from '@libp2p/keychain'
 import type { Answer, DNS, ResolveDnsProgressEvents } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
@@ -306,7 +307,7 @@ import type { IPNSRecord } from 'ipns'
 import type { MultibaseDecoder } from 'multiformats/bases/interface'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
-import { generateKeyPair, privateKeyToProtobuf } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto/keys'
 
 const log = logger('helia:ipns')
 
@@ -512,7 +513,7 @@ export interface IPNSComponents {
   routing: Routing
   dns: DNS
   logger: ComponentLogger
-  keychain: Keychain
+  libp2p: Libp2p<DefaultLibp2pServices>
 }
 
 const bases: Record<string, MultibaseDecoder<string>> = {
@@ -536,20 +537,12 @@ class DefaultIPNS implements IPNS {
     this.localStore = localStore(components.datastore)
     this.dns = components.dns
     this.log = components.logger.forComponent('helia:ipns')
-    this.keychain = components.keychain
+    this.keychain = components.libp2p.services.keychain
   }
 
   async publish (keyName: string, value: CID | PublicKey | MultihashDigest<0x00 | 0x12> | string, options: PublishOptions = {}): Promise<IPNSPublishResult> {
-    let privKey: PrivateKey
     try {
-      try {
-        privKey = await this.keychain.exportKey(keyName)
-      } catch (err: any) {
-        // If no named key found in keychain, generate and import
-        privKey = await generateKeyPair('Ed25519')
-        await this.keychain.importKey(keyName, privKey)
-      }
-
+      const privKey = await this.#loadOrCreateKey(keyName)
       let sequenceNumber = 1n
       const routingKey = multihashToIPNSRoutingKey(privKey.publicKey.toMultihash())
 
@@ -562,9 +555,10 @@ class DefaultIPNS implements IPNS {
 
       // convert ttl from milliseconds to nanoseconds as createIPNSRecord expects
       const ttlNs = options.ttl != null ? BigInt(options.ttl) * 1_000_000n : DEFAULT_TTL_NS
-      const record = await createIPNSRecord(privKey, value, sequenceNumber, options.lifetime ?? DEFAULT_LIFETIME_MS, { ...options, ttlNs })
+      const lifetime = options.lifetime ?? DEFAULT_LIFETIME_MS
+      const record = await createIPNSRecord(privKey, value, sequenceNumber, lifetime, { ...options, ttlNs })
       const marshaledRecord = marshalIPNSRecord(record)
-      await this.localStore.put(routingKey, marshaledRecord, keyName, options)
+      await this.localStore.put(routingKey, marshaledRecord, { keyName, lifetime }, options)
 
       if (options.offline !== true) {
         // publish record to routing
@@ -598,6 +592,17 @@ class DefaultIPNS implements IPNS {
     }
   }
 
+  async #loadOrCreateKey (keyName: string): Promise<PrivateKey> {
+    try {
+      return await this.keychain.exportKey(keyName)
+    } catch (err: any) {
+      // If no named key found in keychain, generate and import
+      const privKey = await generateKeyPair('Ed25519')
+      await this.keychain.importKey(keyName, privKey)
+      return privKey
+    }
+  }
+
   republish (options: RepublishOptions = {}): void {
     if (this.timeout != null) {
       throw new Error('Republish is already running')
@@ -613,32 +618,29 @@ class DefaultIPNS implements IPNS {
       options.onProgress?.(new CustomProgressEvent('ipns:republish:start'))
 
       try {
-        // Use the localStore.list method to get all IPNS records
         const recordsToRepublish: Array<{ routingKey: Uint8Array, record: IPNSRecord }> = []
 
         // Find all records using the localStore.list method
-        for await (const { routingKey, record, keyName } of this.localStore.list({
+        for await (const { routingKey, record, metadata } of this.localStore.list({
           signal: options.signal,
           onProgress: options.onProgress
         })) {
           try {
-            if (keyName == null) {
-              // if no key name is found, it's either from before we started
-              // storing the private key
-              // or the record was published with republishRecord without a key
-              this.log(`no key name found for record ${routingKey.toString()}, skipping`)
+            if (metadata == null) {
+              // Skip if no metadata is found from before we started
+              // storing metadata or for records republished without a key
+              this.log(`no metadata found for record ${routingKey.toString()}, skipping`)
               continue
             }
-            // Unmarshal the IPNS record
+
             const ipnsRecord = unmarshalIPNSRecord(record)
 
-            // TODO: only update sequence number if the record is updated
-            // and only update the record if it's no longer valid (based on the validity field)
+            // TODO: only update the record if the record expires within the next 48 hours
             const sequenceNumber = ipnsRecord.sequence + 1n
             const ttlNs = ipnsRecord.ttl ?? DEFAULT_TTL_NS
 
-            const privKey = await this.keychain.exportKey(keyName)
-            const updatedRecord = await createIPNSRecord(privKey, ipnsRecord.value, sequenceNumber, DEFAULT_LIFETIME_MS, { ...options, ttlNs })
+            const privKey = await this.#loadOrCreateKey(metadata.keyName)
+            const updatedRecord = await createIPNSRecord(privKey, ipnsRecord.value, sequenceNumber, metadata.lifetime, { ...options, ttlNs })
             recordsToRepublish.push({ routingKey, record: updatedRecord })
           } catch (err) {
             this.log.error('error unmarshaling record', err)

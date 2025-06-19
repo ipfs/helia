@@ -12,17 +12,26 @@ export function isCodec <T extends number> (digest: MultihashDigest, codec: T): 
 }
 
 export const DHT_RECORD_PREFIX = '/dht/record/'
-export const KEYCHAIN_NAME_PREFIX = '/ipns/keyname/'
+export const IPNS_METADATA_PREFIX = '/ipns/metadata/'
 
 export function dhtRoutingKey (key: Uint8Array): Key {
   return new Key(DHT_RECORD_PREFIX + uint8ArrayToString(key, 'base32'), false)
 }
 
-
-export function keychainNameKey (key: Uint8Array): Key {
-  return new Key(KEYCHAIN_NAME_PREFIX + uint8ArrayToString(key, 'base32'), false)
-}
-
-export function keyNameToKeyId (keyName: string): string {
-  return keyName.split('/').pop() ?? keyName
+/**
+ * Calculate the datastore key for IPNS record metadata
+ *
+ * @param key - The DHT routing key for the IPNS record as defined in
+ * https://specs.ipfs.tech/ipns/ipns-record/#routing-record
+ *
+ * @example
+ *
+ * ```ts
+ * const key = multihashToIPNSRoutingKey(privKey.publicKey.toMultihash())
+ * const metadataKey = ipnsMetadataKey(key)
+ * ```
+ * @returns The local storage key for IPNS record metadata
+ */
+export function ipnsMetadataKey (key: Uint8Array): Key {
+  return new Key(IPNS_METADATA_PREFIX + uint8ArrayToString(key, 'base32'), false)
 }

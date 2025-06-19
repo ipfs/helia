@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+message IPNSMetadata {
+  // The name of the key that was used to publish the record
+  string keyName = 1;
+
+  // Lifetime is the duration of the signature validity in milliseconds
+  uint32 lifetime = 2;
+}

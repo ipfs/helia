@@ -3,13 +3,12 @@ import { Record } from '@libp2p/kad-dht'
 import { CustomProgressEvent } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { GetOptions, PutOptions } from '../routing/index.js'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 import type { ProgressEvent } from 'progress-events'
-import { dhtRoutingKey, DHT_RECORD_PREFIX, keychainNameKey } from '../utils.js'
-
+import { dhtRoutingKey, DHT_RECORD_PREFIX, ipnsMetadataKey } from '../utils.js'
+import { IPNSMetadata } from '../pb/metadata.js'
 
 
 
@@ -25,11 +24,10 @@ export interface GetResult {
 }
 
 export interface ListResult {
-  // The keyName that was used for storing the key in the keychain
-  keyName: string
   routingKey: Uint8Array
   record: Uint8Array
   created: Date
+  metadata: IPNSMetadata
 }
 
 export interface ListOptions extends AbortOptions {
@@ -45,7 +43,7 @@ export interface LocalStore {
    * @param keyName - The keyName that was used for storng the key in the keychain
    * @param options - The options for the put operation
    */
-  put(routingKey: Uint8Array, marshaledRecord: Uint8Array, keyName?: string, options?: PutOptions): Promise<void>
+  put(routingKey: Uint8Array, marshaledRecord: Uint8Array, metadata: IPNSMetadata, options?: PutOptions): Promise<void>
   get(routingKey: Uint8Array, options?: GetOptions): Promise<GetResult>
   has(routingKey: Uint8Array, options?: AbortOptions): Promise<boolean>
   delete(routingKey: Uint8Array, options?: AbortOptions): Promise<void>
@@ -62,7 +60,7 @@ export interface LocalStore {
  */
 export function localStore (datastore: Datastore): LocalStore {
   return {
-    async put (routingKey: Uint8Array, marshalledRecord: Uint8Array, keyName: string, options: PutOptions = {}) {
+    async put (routingKey: Uint8Array, marshalledRecord: Uint8Array, metadata: IPNSMetadata, options: PutOptions = {}) {
       try {
         const key = dhtRoutingKey(routingKey)
 
@@ -87,8 +85,8 @@ export function localStore (datastore: Datastore): LocalStore {
         options.onProgress?.(new CustomProgressEvent('ipns:routing:datastore:put'))
         const batch = datastore.batch()
         batch.put(key, record.serialize())
-        // derive the datastore key for the keychain key name from the same routing key
-        batch.put(keychainNameKey(routingKey), uint8ArrayFromString(keyName))
+        // derive the datastore key for the IPNS metadata from the same routing key
+        batch.put(ipnsMetadataKey(routingKey), IPNSMetadata.encode(metadata))
         await batch.commit(options)
       } catch (err: any) {
         options.onProgress?.(new CustomProgressEvent<Error>('ipns:routing:datastore:error', err))
@@ -139,12 +137,12 @@ export function localStore (datastore: Datastore): LocalStore {
             const routingKeyBase32 = keyString.substring(DHT_RECORD_PREFIX.length)
             const routingKey = uint8ArrayFromString(routingKeyBase32, 'base32')
 
-            const keyNameKey = keychainNameKey(routingKey)
-            const keyName = uint8ArrayToString(await datastore.get(keyNameKey, options))
+            const metadataKey = ipnsMetadataKey(routingKey)
+            const metadata = IPNSMetadata.decode(await datastore.get(metadataKey, options))
 
             yield {
               routingKey,
-              keyName,
+              metadata,
               record: libp2pRecord.value,
               created: libp2pRecord.timeReceived,
             }
