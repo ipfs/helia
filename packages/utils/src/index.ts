@@ -215,7 +215,7 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
     this.getCodec = getCodec(init.codecs, init.loadCodec)
     this.dns = init.dns ?? dns()
     this.metrics = init.metrics
-    this.libp2p = init.libp2p //as T // TODO: fix this type assertion.
+    this.libp2p = init.libp2p as T // TODO: fix this type assertion.
 
     // @ts-expect-error routing is not set
     const components: Components = {

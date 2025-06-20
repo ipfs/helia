@@ -45,7 +45,7 @@
  */
 
 import { trustlessGateway } from '@helia/block-brokers'
-import { delegatedHTTPRouting, httpGatewayRouting, libp2pRouting } from '@helia/routers'
+import { httpGatewayRouting, libp2pRouting } from '@helia/routers'
 import { Helia as HeliaClass } from '@helia/utils'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
