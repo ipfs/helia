@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 import { expect } from 'aegir/chai'
 import { createHelia } from '../src/index.js'
-import type { HeliaLibp2p } from '../src/index.js'
+import type { Helia } from '@helia/utils'
 
 describe('helia', () => {
   let helia: HeliaLibp2p<any>

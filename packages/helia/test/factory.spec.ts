@@ -8,10 +8,10 @@ import { Key } from 'interface-datastore'
 import { createLibp2p } from 'libp2p'
 import { CID } from 'multiformats/cid'
 import { createHelia } from '../src/index.js'
-import type { HeliaLibp2p } from '../src/index.js'
+import type { Helia } from '@helia/utils'
 
 describe('helia factory', () => {
-  let helia: HeliaLibp2p<any>
+  let helia: Helia<any>
 
   afterEach(async () => {
     if (helia != null) {
