@@ -3,7 +3,7 @@
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
 import { createHelia } from '../src/index.js'
-import type { HeliaLibp2p } from '../src/index.js'
+import type { Helia } from '@helia/utils'
 
 describe('libp2p', () => {
   let helia: HeliaLibp2p<any>

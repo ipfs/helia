@@ -4,13 +4,13 @@ import { bitswap } from '@helia/block-brokers'
 import { libp2pRouting } from '@helia/routers'
 import { identify } from '@libp2p/identify'
 import { prefixLogger } from '@libp2p/logger'
-import { createHelia, type HeliaLibp2p } from 'helia'
+import { createHelia, type Helia } from 'helia'
 import { createLibp2p } from 'libp2p'
 import { getStores } from './stores.js'
 import { getTransports } from './transports.js'
 import type { Libp2p } from '@libp2p/interface'
 
-export async function getHelia (): Promise<HeliaLibp2p<Libp2p<any>>> {
+export async function getHelia (): Promise<Helia<Libp2p<any>>> {
   const listen = `${process.env.HELIA_LISTEN ?? ''}`.split(',').filter(Boolean)
   const { datastore, blockstore } = await getStores()
   const logger = prefixLogger(`${process.env.HELIA_TYPE}`)

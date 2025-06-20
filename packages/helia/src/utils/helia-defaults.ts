@@ -24,7 +24,7 @@ import { httpGatewayRouting, libp2pRouting } from '@helia/routers'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import { createLibp2p } from '../utils/libp2p.js'
-import type { HeliaInit } from '../index.js'
+import type { HeliaInit } from '@helia/utils'
 import type { DefaultLibp2pServices } from '../utils/libp2p-defaults.js'
 import type { Libp2p } from '@libp2p/interface'
 

@@ -8,7 +8,7 @@ import all from 'it-all'
 import drain from 'it-drain'
 import { CID } from 'multiformats/cid'
 import { createHelia } from '../src/index.js'
-import type { HeliaLibp2p } from '../src/index.js'
+import type { Helia } from '@helia/utils'
 import type { Libp2p } from '@libp2p/interface'
 
 describe('pins', () => {
