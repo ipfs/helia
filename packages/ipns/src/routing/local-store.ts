@@ -40,10 +40,10 @@ export interface LocalStore {
    *
    * @param routingKey - The routing key for the IPNS record
    * @param marshaledRecord - The marshaled IPNS record
-   * @param keyName - The keyName that was used for storng the key in the keychain
-   * @param options - The options for the put operation
+   * @param metadata - local publishing metadata for the IPNS record (optional)
+   * @param options - options for the put operation (optional)
    */
-  put(routingKey: Uint8Array, marshaledRecord: Uint8Array, metadata: IPNSMetadata, options?: PutOptions): Promise<void>
+  put(routingKey: Uint8Array, marshaledRecord: Uint8Array, metadata?: IPNSMetadata, options?: PutOptions): Promise<void>
   get(routingKey: Uint8Array, options?: GetOptions): Promise<GetResult>
   has(routingKey: Uint8Array, options?: AbortOptions): Promise<boolean>
   delete(routingKey: Uint8Array, options?: AbortOptions): Promise<void>
@@ -60,7 +60,7 @@ export interface LocalStore {
  */
 export function localStore (datastore: Datastore): LocalStore {
   return {
-    async put (routingKey: Uint8Array, marshalledRecord: Uint8Array, metadata: IPNSMetadata, options: PutOptions = {}) {
+    async put (routingKey: Uint8Array, marshalledRecord: Uint8Array, metadata?: IPNSMetadata, options: PutOptions = {}) {
       try {
         const key = dhtRoutingKey(routingKey)
 
@@ -85,8 +85,11 @@ export function localStore (datastore: Datastore): LocalStore {
         options.onProgress?.(new CustomProgressEvent('ipns:routing:datastore:put'))
         const batch = datastore.batch()
         batch.put(key, record.serialize())
-        // derive the datastore key for the IPNS metadata from the same routing key
-        batch.put(ipnsMetadataKey(routingKey), IPNSMetadata.encode(metadata))
+
+        if (metadata != null) {
+          // derive the datastore key for the IPNS metadata from the same routing key
+          batch.put(ipnsMetadataKey(routingKey), IPNSMetadata.encode(metadata))
+        }
         await batch.commit(options)
       } catch (err: any) {
         options.onProgress?.(new CustomProgressEvent<Error>('ipns:routing:datastore:error', err))

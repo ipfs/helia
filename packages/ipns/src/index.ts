@@ -849,7 +849,7 @@ class DefaultIPNS implements IPNS {
 
     const record = records[ipnsSelector(routingKey, records)]
 
-    await this.localStore.put(routingKey, record, options)
+    await this.localStore.put(routingKey, record, undefined, options)
 
     return unmarshalIPNSRecord(record)
   }
