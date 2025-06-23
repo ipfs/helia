@@ -9,12 +9,14 @@ import { base32 } from 'multiformats/bases/base32'
 import { base36 } from 'multiformats/bases/base36'
 import { CID } from 'multiformats/cid'
 import { stubInterface } from 'sinon-ts'
+import { keychain } from '@libp2p/keychain'
 import { ipns } from '../src/index.js'
 import { IPNS_STRING_PREFIX } from '../src/utils.js'
 import type { IPNS, IPNSRouting } from '../src/index.js'
 import type { Routing } from '@helia/interface'
 import type { DNS } from '@multiformats/dns'
 import type { StubbedInstance } from 'sinon-ts'
+import type { Keychain, KeychainInit } from '@libp2p/keychain'
 
 describe('republishRecord', () => {
   const testCid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
@@ -22,6 +24,7 @@ describe('republishRecord', () => {
   let customRouting: StubbedInstance<IPNSRouting>
   let heliaRouting: StubbedInstance<Routing>
   let dns: StubbedInstance<DNS>
+  let ipnsKeychain: Keychain
 
   beforeEach(async () => {
     const datastore = new MemoryDatastore()
@@ -30,11 +33,24 @@ describe('republishRecord', () => {
     heliaRouting = stubInterface<Routing>()
     dns = stubInterface<DNS>()
 
+    const keychainInit: KeychainInit = {
+      pass: 'very-strong-password'
+    }
+    ipnsKeychain = keychain(keychainInit)({
+      datastore: new MemoryDatastore(),
+      logger: defaultLogger()
+    })
+
     name = ipns(
       {
         datastore,
         routing: heliaRouting,
         dns,
+        libp2p: {
+          services: {
+            keychain: ipnsKeychain
+          }
+        } as any, // eslint-disable-line @typescript-eslint/no-explicit-any
         logger: defaultLogger()
       },
       {

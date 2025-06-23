@@ -1,6 +1,5 @@
 /* eslint-env mocha */
 
-import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
@@ -8,13 +7,13 @@ import { base36 } from 'multiformats/bases/base36'
 import { CID } from 'multiformats/cid'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
+import { keychain } from '@libp2p/keychain'
 import { ipns } from '../src/index.js'
 import type { IPNS, IPNSRouting } from '../src/index.js'
 import type { Routing } from '@helia/interface'
 import type { DNS } from '@multiformats/dns'
 import type { StubbedInstance } from 'sinon-ts'
-import type { Libp2p } from '@libp2p/interface'
-import type { DefaultLibp2pServices } from 'helia'
+import type { Keychain, KeychainInit } from '@libp2p/keychain'
 
 const cid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
 
@@ -23,7 +22,7 @@ describe('publish', () => {
   let customRouting: StubbedInstance<IPNSRouting>
   let heliaRouting: StubbedInstance<Routing>
   let dns: StubbedInstance<DNS>
-  let libp2p: StubbedInstance<Libp2p<DefaultLibp2pServices>>
+  let ipnsKeychain: Keychain
 
   beforeEach(async () => {
     const datastore = new MemoryDatastore()
@@ -31,13 +30,24 @@ describe('publish', () => {
     customRouting.get.throws(new Error('Not found'))
     heliaRouting = stubInterface<Routing>()
     dns = stubInterface<DNS>()
-    libp2p = stubInterface<Libp2p<DefaultLibp2pServices>>()
+
+    const keychainInit: KeychainInit = {
+      pass: 'very-strong-password'
+    }
+    ipnsKeychain = keychain(keychainInit)({
+      datastore: new MemoryDatastore(),
+      logger: defaultLogger()
+    })
 
     name = ipns({
       datastore,
       routing: heliaRouting,
       dns,
-      libp2p,
+      libp2p: {
+        services: {
+          keychain: ipnsKeychain
+        }
+      } as any, // eslint-disable-line @typescript-eslint/no-explicit-any
       logger: defaultLogger()
     }, {
       routers: [
@@ -47,31 +57,26 @@ describe('publish', () => {
   })
 
   it('should publish an IPNS record with the default params', async function () {
-    const key = await generateKeyPair('Ed25519')
-    const ipnsEntry = await name.publish(key, cid)
+    const keyName = 'test-key-1'
+    const ipnsEntry = await name.publish(keyName, cid)
 
-    expect(ipnsEntry).to.have.property('sequence', 1n)
-    expect(ipnsEntry).to.have.property('ttl', 300_000_000_000n) // 5 minutes
+    expect(ipnsEntry.record).to.have.property('sequence', 1n)
+    expect(ipnsEntry.record).to.have.property('ttl', 300_000_000_000n) // 5 minutes
   })
 
   it('should publish an IPNS record with a custom lifetime params', async function () {
-    const key = await generateKeyPair('Ed25519')
+    const keyName = 'test-key-2'
     const lifetime = 123000
-    // lifetime is used to calculate the validity timestamp
-    const ipnsEntry = await name.publish(key, cid, {
+    const ipnsEntry = await name.publish(keyName, cid, {
       lifetime
     })
 
-    expect(ipnsEntry).to.have.property('sequence', 1n)
+    expect(ipnsEntry.record).to.have.property('sequence', 1n)
 
     // Calculate expected validity as a Date object
     const expectedValidity = new Date(Date.now() + lifetime)
-
-    const actualValidity = new Date(ipnsEntry.validity)
-
+    const actualValidity = new Date(ipnsEntry.record.validity)
     const timeDifference = Math.abs(actualValidity.getTime() - expectedValidity.getTime())
-
-    // Allow a tolerance of 1 second (1000 milliseconds)
     expect(timeDifference).to.be.lessThan(1000)
 
     expect(heliaRouting.put.called).to.be.true()
@@ -79,23 +84,23 @@ describe('publish', () => {
   })
 
   it('should publish an IPNS record with a custom ttl params', async function () {
-    const key = await generateKeyPair('Ed25519')
+    const keyName = 'test-key-3'
     const ttl = 1000 // override the default ttl
 
-    const ipnsEntry = await name.publish(key, cid, {
+    const ipnsEntry = await name.publish(keyName, cid, {
       ttl
     })
 
-    expect(ipnsEntry).to.have.property('sequence', 1n)
-    expect(ipnsEntry).to.have.property('ttl', BigInt(ttl * 1e+6))
+    expect(ipnsEntry.record).to.have.property('sequence', 1n)
+    expect(ipnsEntry.record).to.have.property('ttl', BigInt(ttl * 1e+6))
 
     expect(heliaRouting.put.called).to.be.true()
     expect(customRouting.put.called).to.be.true()
   })
 
   it('should publish a record offline', async () => {
-    const key = await generateKeyPair('Ed25519')
-    await name.publish(key, cid, {
+    const keyName = 'test-key-4'
+    await name.publish(keyName, cid, {
       offline: true
     })
 
@@ -104,9 +109,9 @@ describe('publish', () => {
   })
 
   it('should emit progress events', async function () {
-    const key = await generateKeyPair('Ed25519')
+    const keyName = 'test-key-5'
     const onProgress = Sinon.stub()
-    await name.publish(key, cid, {
+    await name.publish(keyName, cid, {
       onProgress
     })
 
@@ -114,21 +119,21 @@ describe('publish', () => {
   })
 
   it('should publish recursively', async () => {
-    const key = await generateKeyPair('Ed25519')
-    const record = await name.publish(key, cid, {
+    const keyName1 = 'test-key-6'
+    const record = await name.publish(keyName1, cid, {
       offline: true
     })
 
-    expect(record.value).to.equal(`/ipfs/${cid.toV1().toString()}`)
+    expect(record.record.value).to.equal(`/ipfs/${cid.toV1().toString()}`)
 
-    const recursiveKey = await generateKeyPair('Ed25519')
-    const recursiveRecord = await name.publish(recursiveKey, key.publicKey, {
+    const keyName2 = 'test-key-7'
+    const recursiveRecord = await name.publish(keyName2, record.publicKey, {
       offline: true
     })
 
-    expect(recursiveRecord.value).to.equal(`/ipns/${key.publicKey.toCID().toString(base36)}`)
+    expect(recursiveRecord.record.value).to.equal(`/ipns/${record.publicKey.toCID().toString(base36)}`)
 
-    const recursiveResult = await name.resolve(recursiveKey.publicKey)
+    const recursiveResult = await name.resolve(record.publicKey)
     expect(recursiveResult.cid.toString()).to.equal(cid.toV1().toString())
   })
 
@@ -136,14 +141,14 @@ describe('publish', () => {
     const path = '/foo/bar/baz'
     const fullPath = `/ipfs/${cid}/${path}`
 
-    const key = await generateKeyPair('Ed25519')
-    const record = await name.publish(key, fullPath, {
+    const keyName = 'test-key-8'
+    const record = await name.publish(keyName, fullPath, {
       offline: true
     })
 
-    expect(record.value).to.equal(fullPath)
+    expect(record.record.value).to.equal(fullPath)
 
-    const result = await name.resolve(key.publicKey)
+    const result = await name.resolve(record.publicKey)
 
     expect(result.cid.toString()).to.equal(cid.toString())
     expect(result.path).to.equal(path)
