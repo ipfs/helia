@@ -65,7 +65,7 @@ export async function createHelia <T extends Libp2p> (init: Partial<HeliaInit<T>
 export async function createHelia (init?: Partial<HeliaInit<Libp2p<DefaultLibp2pServices>>>): Promise<Helia<Libp2p<DefaultLibp2pServices>>>
 export async function createHelia (init: Partial<HeliaInit> = {}): Promise<Helia> {
   const options = await heliaDefaults(init)
-  const helia = new HeliaClass<any>(options)
+  const helia = new HeliaClass(options)
 
   if (init.start !== false) {
     await helia.start()
