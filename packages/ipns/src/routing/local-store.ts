@@ -88,7 +88,7 @@ export function localStore (datastore: Datastore): LocalStore {
 
         if (metadata != null) {
           // derive the datastore key for the IPNS metadata from the same routing key
-          batch.put(ipnsMetadataKey(routingKey), IPNSMetadata.encode(metadata))
+          batch.put(ipnsMetadataKey(routingKey), IPNSPublishMetadata.encode(metadata))
         }
         await batch.commit(options)
       } catch (err: any) {
@@ -141,7 +141,7 @@ export function localStore (datastore: Datastore): LocalStore {
             const routingKey = uint8ArrayFromString(routingKeyBase32, 'base32')
 
             const metadataKey = ipnsMetadataKey(routingKey)
-            const metadata = IPNSMetadata.decode(await datastore.get(metadataKey, options))
+            const metadata = IPNSPublishMetadata.decode(await datastore.get(metadataKey, options))
 
             yield {
               routingKey,
