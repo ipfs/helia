@@ -13,6 +13,8 @@ import type { IPNS, IPNSRouting } from '../src/index.js'
 import type { Routing } from '@helia/interface'
 import type { DNS } from '@multiformats/dns'
 import type { StubbedInstance } from 'sinon-ts'
+import type { Libp2p } from '@libp2p/interface'
+import type { DefaultLibp2pServices } from 'helia'
 
 const cid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
 
@@ -21,6 +23,7 @@ describe('publish', () => {
   let customRouting: StubbedInstance<IPNSRouting>
   let heliaRouting: StubbedInstance<Routing>
   let dns: StubbedInstance<DNS>
+  let libp2p: StubbedInstance<Libp2p<DefaultLibp2pServices>>
 
   beforeEach(async () => {
     const datastore = new MemoryDatastore()
@@ -28,11 +31,13 @@ describe('publish', () => {
     customRouting.get.throws(new Error('Not found'))
     heliaRouting = stubInterface<Routing>()
     dns = stubInterface<DNS>()
+    libp2p = stubInterface<Libp2p<DefaultLibp2pServices>>()
 
     name = ipns({
       datastore,
       routing: heliaRouting,
       dns,
+      libp2p,
       logger: defaultLogger()
     }, {
       routers: [
