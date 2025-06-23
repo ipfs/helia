@@ -10,17 +10,17 @@ import { decodeMessage, encodeMessage, message } from 'protons-runtime'
 import type { Codec, DecodeOptions } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
-export interface IPNSMetadata {
+export interface IPNSPublishMetadata {
   keyName: string
   lifetime: number
 }
 
-export namespace IPNSMetadata {
-  let _codec: Codec<IPNSMetadata>
+export namespace IPNSPublishMetadata {
+  let _codec: Codec<IPNSPublishMetadata>
 
-  export const codec = (): Codec<IPNSMetadata> => {
+  export const codec = (): Codec<IPNSPublishMetadata> => {
     if (_codec == null) {
-      _codec = message<IPNSMetadata>((obj, w, opts = {}) => {
+      _codec = message<IPNSPublishMetadata>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
           w.fork()
         }
@@ -72,11 +72,11 @@ export namespace IPNSMetadata {
     return _codec
   }
 
-  export const encode = (obj: Partial<IPNSMetadata>): Uint8Array => {
-    return encodeMessage(obj, IPNSMetadata.codec())
+  export const encode = (obj: Partial<IPNSPublishMetadata>): Uint8Array => {
+    return encodeMessage(obj, IPNSPublishMetadata.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<IPNSMetadata>): IPNSMetadata => {
-    return decodeMessage(buf, IPNSMetadata.codec(), opts)
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<IPNSPublishMetadata>): IPNSPublishMetadata => {
+    return decodeMessage(buf, IPNSPublishMetadata.codec(), opts)
   }
 }

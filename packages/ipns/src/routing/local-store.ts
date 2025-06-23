@@ -8,7 +8,7 @@ import type { AbortOptions } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 import type { ProgressEvent } from 'progress-events'
 import { dhtRoutingKey, DHT_RECORD_PREFIX, ipnsMetadataKey } from '../utils.js'
-import { IPNSMetadata } from '../pb/metadata.js'
+import { IPNSPublishMetadata } from '../pb/metadata.js'
 
 
 
@@ -27,7 +27,7 @@ export interface ListResult {
   routingKey: Uint8Array
   record: Uint8Array
   created: Date
-  metadata: IPNSMetadata
+  metadata: IPNSPublishMetadata
 }
 
 export interface ListOptions extends AbortOptions {
@@ -43,7 +43,7 @@ export interface LocalStore {
    * @param metadata - local publishing metadata for the IPNS record (optional)
    * @param options - options for the put operation (optional)
    */
-  put(routingKey: Uint8Array, marshaledRecord: Uint8Array, metadata?: IPNSMetadata, options?: PutOptions): Promise<void>
+  put(routingKey: Uint8Array, marshaledRecord: Uint8Array, metadata?: IPNSPublishMetadata, options?: PutOptions): Promise<void>
   get(routingKey: Uint8Array, options?: GetOptions): Promise<GetResult>
   has(routingKey: Uint8Array, options?: AbortOptions): Promise<boolean>
   delete(routingKey: Uint8Array, options?: AbortOptions): Promise<void>
@@ -60,7 +60,7 @@ export interface LocalStore {
  */
 export function localStore (datastore: Datastore): LocalStore {
   return {
-    async put (routingKey: Uint8Array, marshalledRecord: Uint8Array, metadata?: IPNSMetadata, options: PutOptions = {}) {
+    async put (routingKey: Uint8Array, marshalledRecord: Uint8Array, metadata?: IPNSPublishMetadata, options: PutOptions = {}) {
       try {
         const key = dhtRoutingKey(routingKey)
 

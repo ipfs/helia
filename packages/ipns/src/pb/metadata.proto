@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-message IPNSMetadata {
+message IPNSPublishMetadata {
   // The name of the key that was used to publish the record
   string keyName = 1;
 
