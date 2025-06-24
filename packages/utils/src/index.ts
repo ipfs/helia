@@ -65,7 +65,7 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
    * The libp2p `start` option is not supported, instead please pass `start` in
    * the root of the HeliaInit object.
    */
-  libp2p?: T | Omit<Libp2pOptions<any>, 'start'>
+  libp2p: T | Omit<Libp2pOptions<any>, 'start'>
 
   /**
    * Pass `false` to not start the Helia node
