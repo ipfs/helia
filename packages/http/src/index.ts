@@ -53,8 +53,8 @@ import { createLibp2p, isLibp2p } from './utils/libp2p.ts'
 import type { DefaultLibp2pServices } from './utils/libp2p-defaults.ts'
 import type { Libp2pDefaultsOptions } from './utils/libp2p.js'
 import type { Helia } from '@helia/interface'
-import type { Libp2p } from '@libp2p/interface'
 import type { HeliaInit } from '@helia/utils'
+import type { Libp2p } from '@libp2p/interface'
 
 // re-export interface types so people don't have to depend on @helia/interface
 // if they don't want to
@@ -106,8 +106,6 @@ export async function heliaDefaults <T extends Libp2p> (init: Partial<HeliaInit<
     start: init.start ?? true
   }
 }
-
-
 
 /**
  * Create and return a Helia node

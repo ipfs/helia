@@ -41,7 +41,6 @@ export async function createLibp2p <T extends Record<string, unknown>> (options:
   return node
 }
 
-
 export function isLibp2p (obj: any): obj is Libp2p {
   if (obj == null) {
     return false

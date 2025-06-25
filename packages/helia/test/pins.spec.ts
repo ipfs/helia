@@ -9,7 +9,6 @@ import drain from 'it-drain'
 import { CID } from 'multiformats/cid'
 import { createHelia } from '../src/index.js'
 import type { Helia } from '@helia/interface'
-import type { Libp2p } from '@libp2p/interface'
 
 describe('pins', () => {
   let helia: Helia

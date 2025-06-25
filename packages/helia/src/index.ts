@@ -19,13 +19,13 @@
  * ```
  */
 
+import { Helia as HeliaClass } from '@helia/utils'
 import { heliaDefaults } from './utils/helia-defaults.js'
 import { libp2pDefaults } from './utils/libp2p-defaults.js'
 import type { DefaultLibp2pServices } from './utils/libp2p-defaults.js'
 import type { Libp2pDefaultsOptions } from './utils/libp2p.js'
 import type { Helia } from '@helia/interface'
 import type { HeliaInit } from '@helia/utils'
-import { Helia as HeliaClass } from '@helia/utils'
 import type { Libp2p } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 
@@ -46,7 +46,6 @@ export interface DAGWalker {
   codec: number
   walk(block: Uint8Array): Generator<CID, void, undefined>
 }
-
 
 /**
  * Create and return a Helia node
