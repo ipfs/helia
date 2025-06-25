@@ -512,7 +512,7 @@ export interface IPNSComponents {
   routing: Routing
   dns: DNS
   logger: ComponentLogger
-  libp2p: Libp2p<DefaultLibp2pServices>
+  libp2p: Libp2p<Pick<DefaultLibp2pServices, 'keychain'>>
 }
 
 const bases: Record<string, MultibaseDecoder<string>> = {

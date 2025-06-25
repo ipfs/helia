@@ -112,7 +112,7 @@ export async function heliaDefaults <T extends Libp2p> (init: Partial<HeliaInit<
 /**
  * Create and return a Helia node
  */
-export async function createHeliaHTTP (init: Partial<HeliaHTTPInit> = {}): Promise<Helia> {
+export async function createHeliaHTTP (init: Partial<HeliaHTTPInit> = {}): Promise<Helia<Libp2p<DefaultLibp2pServices>>> {
   const options = await heliaDefaults(init)
 
   const helia = new HeliaClass<Libp2p<DefaultLibp2pServices>>({
