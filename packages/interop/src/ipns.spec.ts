@@ -17,13 +17,13 @@ import { sortClosestPeers } from './fixtures/create-peer-ids.js'
 import { keyTypes } from './fixtures/key-types.js'
 import { waitFor } from './fixtures/wait-for.js'
 import type { IPNS } from '@helia/ipns'
-import type { PrivateKey } from '@libp2p/interface'
-import type { HeliaLibp2p } from 'helia'
+import type { Libp2p, PrivateKey } from '@libp2p/interface'
+import type { DefaultLibp2pServices, Helia } from 'helia'
 import type { KuboNode } from 'ipfsd-ctl'
 
 keyTypes.forEach(type => {
   describe(`@helia/ipns - default routing with ${type} keys`, () => {
-    let helia: HeliaLibp2p
+    let helia: Helia<Libp2p<DefaultLibp2pServices>>
     let kubo: KuboNode
     let name: IPNS
 

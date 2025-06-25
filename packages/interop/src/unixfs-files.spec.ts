@@ -13,13 +13,13 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import type { AddOptions, UnixFS } from '@helia/unixfs'
-import type { HeliaLibp2p } from 'helia'
+import type { Helia } from 'helia'
 import type { ByteStream, ImportCandidateStream } from 'ipfs-unixfs-importer'
 import type { KuboNode } from 'ipfsd-ctl'
 import type { AddOptions as KuboAddOptions } from 'kubo-rpc-client'
 
 describe('@helia/unixfs - files', () => {
-  let helia: HeliaLibp2p
+  let helia: Helia
   let unixFs: UnixFS
   let kubo: KuboNode
 
