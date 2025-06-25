@@ -125,8 +125,9 @@ keyTypes.forEach(type => {
       await createNodes('kubo')
 
       const privateKey = await generateKeyPair('Ed25519')
-
-      await name.publish(privateKey, value)
+      const keyName = 'my-ipns-key'
+      await helia.libp2p.services.keychain.importKey(keyName, privateKey)
+      await name.publish(keyName, value)
 
       const resolved = await last(kubo.api.name.resolve(privateKey.publicKey.toString()))
 
