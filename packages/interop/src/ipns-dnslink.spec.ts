@@ -4,7 +4,8 @@ import { ipns } from '@helia/ipns'
 import { expect } from 'aegir/chai'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import type { IPNS } from '@helia/ipns'
-import type { HeliaLibp2p } from 'helia'
+import type { DefaultLibp2pServices, Helia } from 'helia'
+import type { Libp2p } from 'libp2p'
 
 const TEST_DOMAINS: string[] = [
   'ipfs.tech',
@@ -13,7 +14,7 @@ const TEST_DOMAINS: string[] = [
 ]
 
 describe('@helia/ipns - dnslink', () => {
-  let helia: HeliaLibp2p
+  let helia: Helia<Libp2p<DefaultLibp2pServices>>
   let name: IPNS
 
   beforeEach(async () => {
