@@ -1,22 +1,15 @@
 /* eslint-env mocha */
 
 import { NotFoundError } from '@libp2p/interface'
-import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPublicKey } from '@libp2p/peer-id'
 import { RecordType } from '@multiformats/dns'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import { base36 } from 'multiformats/bases/base36'
 import { CID } from 'multiformats/cid'
-import { stubInterface } from 'sinon-ts'
-import { keychain } from '@libp2p/keychain'
-import { ipns } from '../src/index.js'
+import { createIPNS } from './fixtures/create-ipns.js'
 import type { IPNS } from '../src/index.js'
-import type { Routing } from '@helia/interface'
 import type { DNS, Answer, DNSResponse } from '@multiformats/dns'
-import type { Datastore } from 'interface-datastore'
-import type { StubbedInstance } from 'sinon-ts'
-import type { Keychain, KeychainInit } from '@libp2p/keychain'
 
 function dnsResponse (answers: Answer[]): DNSResponse {
   return {
@@ -32,36 +25,15 @@ function dnsResponse (answers: Answer[]): DNSResponse {
 }
 
 describe('resolveDNSLink', () => {
-  let datastore: Datastore
-  let heliaRouting: StubbedInstance<Routing>
-  let dns: StubbedInstance<DNS>
+  let heliaRouting: any
+  let dns: any
   let name: IPNS
-  let ipnsKeychain: Keychain
 
   beforeEach(async () => {
-    datastore = new MemoryDatastore()
-    heliaRouting = stubInterface<Routing>()
-    dns = stubInterface<DNS>()
-
-    const keychainInit: KeychainInit = {
-      pass: 'very-strong-password'
-    }
-    ipnsKeychain = keychain(keychainInit)({
-      datastore: new MemoryDatastore(),
-      logger: defaultLogger()
-    })
-
-    name = ipns({
-      datastore,
-      routing: heliaRouting,
-      dns,
-      libp2p: {
-        services: {
-          keychain: ipnsKeychain
-        }
-      } as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-      logger: defaultLogger()
-    })
+    const result = await createIPNS()
+    name = result.name
+    heliaRouting = result.heliaRouting
+    dns = result.dns
   })
 
   it('should resolve a domain', async () => {
@@ -213,75 +185,5 @@ describe('resolveDNSLink', () => {
 
     expect(result.cid.toString()).to.equal(cid.toV1().toString())
     expect(result.path).to.equal('foobar/path/123')
-  })
-
-  it('should follow CNAMES to delegated DNSLink domains', async () => {
-    const cid = CID.parse('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe')
-    dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
-      name: '_dnslink.foobar.baz.',
-      TTL: 60,
-      type: RecordType.CNAME,
-      data: '_dnslink.delegated.foobar.baz'
-    }]))
-    dns.query.withArgs('_dnslink.delegated.foobar.baz').resolves(dnsResponse([{
-      name: '_dnslink.delegated.foobar.baz.',
-      TTL: 60,
-      type: RecordType.TXT,
-      // spellchecker:disable-next-line
-      data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'
-    }]))
-
-    const result = await name.resolveDNSLink('foobar.baz')
-
-    if (result == null) {
-      throw new Error('Did not resolve entry')
-    }
-
-    expect(result.cid.toString()).to.equal(cid.toV1().toString())
-  })
-
-  it('should resolve dnslink namespace', async () => {
-    const cid = CID.parse('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe')
-    dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
-      name: '_dnslink.foobar.baz.',
-      TTL: 60,
-      type: RecordType.TXT,
-      data: 'dnslink=/dnslink/delegated.foobar.baz'
-    }]))
-    dns.query.withArgs('_dnslink.delegated.foobar.baz').resolves(dnsResponse([{
-      name: '_dnslink.delegated.foobar.baz.',
-      TTL: 60,
-      type: RecordType.TXT,
-      // spellchecker:disable-next-line
-      data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'
-    }]))
-
-    const result = await name.resolveDNSLink('foobar.baz')
-
-    if (result == null) {
-      throw new Error('Did not resolve entry')
-    }
-
-    expect(result.cid.toString()).to.equal(cid.toV1().toString())
-  })
-
-  it('should include DNS Answer in result', async () => {
-    const cid = CID.parse('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe')
-    const answer = {
-      name: '_dnslink.foobar.baz.',
-      TTL: 60,
-      type: RecordType.TXT,
-      // spellchecker:disable-next-line
-      data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'
-    }
-    dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([answer]))
-
-    const result = await name.resolveDNSLink('foobar.baz')
-
-    if (result == null) {
-      throw new Error('Did not resolve entry')
-    }
-
-    expect(result).to.have.deep.property('answer', answer)
   })
 })

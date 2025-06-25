@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { Record } from '@libp2p/kad-dht'
-import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import { Key } from 'interface-datastore'
@@ -9,58 +9,27 @@ import { createIPNSRecord, createIPNSRecordWithExpiration, marshalIPNSRecord, mu
 import drain from 'it-drain'
 import { CID } from 'multiformats/cid'
 import Sinon from 'sinon'
-import { stubInterface } from 'sinon-ts'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { keychain } from '@libp2p/keychain'
-import { ipns } from '../src/index.js'
-import type { IPNS, IPNSRouting } from '../src/index.js'
+import { createIPNS } from './fixtures/create-ipns.js'
+import type { IPNS } from '../src/index.js'
 import type { Routing } from '@helia/interface'
-import type { DNS } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
 import type { StubbedInstance } from 'sinon-ts'
-import type { Keychain, KeychainInit } from '@libp2p/keychain'
-import { generateKeyPair } from '@libp2p/crypto/keys'
 
 const cid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
 
 describe('resolve', () => {
   let name: IPNS
-  let customRouting: StubbedInstance<IPNSRouting>
+  let customRouting: any
   let datastore: Datastore
   let heliaRouting: StubbedInstance<Routing>
-  let dns: StubbedInstance<DNS>
-  let ipnsKeychain: Keychain
 
   beforeEach(async () => {
-    datastore = new MemoryDatastore()
-    customRouting = stubInterface<IPNSRouting>()
-    customRouting.get.throws(new Error('Not found'))
-    heliaRouting = stubInterface<Routing>()
-    dns = stubInterface<DNS>()
-
-    const keychainInit: KeychainInit = {
-      pass: 'very-strong-password'
-    }
-    ipnsKeychain = keychain(keychainInit)({
-      datastore: new MemoryDatastore(),
-      logger: defaultLogger()
-    })
-
-    name = ipns({
-      datastore,
-      routing: heliaRouting,
-      dns,
-      libp2p: {
-        services: {
-          keychain: ipnsKeychain
-        }
-      } as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-      logger: defaultLogger()
-    }, {
-      routers: [
-        customRouting
-      ]
-    })
+    const result = await createIPNS()
+    name = result.name
+    customRouting = result.customRouting
+    heliaRouting = result.heliaRouting
+    datastore = result.datastore
   })
 
   it('should resolve a record', async () => {

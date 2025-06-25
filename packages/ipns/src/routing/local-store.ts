@@ -24,7 +24,7 @@ export interface ListResult {
   routingKey: Uint8Array
   record: Uint8Array
   created: Date
-  metadata: IPNSPublishMetadata
+  metadata?: IPNSPublishMetadata
 }
 
 export interface ListOptions extends AbortOptions {
@@ -138,7 +138,13 @@ export function localStore (datastore: Datastore): LocalStore {
             const routingKey = uint8ArrayFromString(routingKeyBase32, 'base32')
 
             const metadataKey = ipnsMetadataKey(routingKey)
-            const metadata = IPNSPublishMetadata.decode(await datastore.get(metadataKey, options))
+            let metadata: IPNSPublishMetadata | undefined
+            try {
+              const metadataBuf = await datastore.get(metadataKey, options)
+              metadata = IPNSPublishMetadata.decode(metadataBuf)
+            } catch (err: any) {
+              console.error('Error deserializing metadata for', routingKeyBase32, err)
+            }
 
             yield {
               routingKey,
