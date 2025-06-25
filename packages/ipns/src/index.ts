@@ -278,6 +278,7 @@
  * ```
  */
 
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { NotFoundError, isPublicKey } from '@libp2p/interface'
 import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
@@ -298,16 +299,15 @@ import { isCodec, IDENTITY_CODEC, SHA2_256_CODEC, IPNS_STRING_PREFIX } from './u
 import type { IPNSRouting, IPNSRoutingEvents } from './routing/index.js'
 import type { LocalStore } from './routing/local-store.js'
 import type { Routing } from '@helia/interface'
-import type { DefaultLibp2pServices } from 'helia'
 import type { AbortOptions, ComponentLogger, Libp2p, Logger, PrivateKey, PublicKey } from '@libp2p/interface'
 import type { Keychain } from '@libp2p/keychain'
 import type { Answer, DNS, ResolveDnsProgressEvents } from '@multiformats/dns'
+import type { DefaultLibp2pServices } from 'helia'
 import type { Datastore } from 'interface-datastore'
 import type { IPNSRecord } from 'ipns'
 import type { MultibaseDecoder } from 'multiformats/bases/interface'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
-import { generateKeyPair } from '@libp2p/crypto/keys'
 
 const log = logger('helia:ipns')
 
@@ -361,7 +361,6 @@ export interface PublishOptions extends AbortOptions, ProgressOptions<PublishPro
    */
   ttl?: number
 }
-
 
 export interface IPNSRecordMetadata {
   keyName: string

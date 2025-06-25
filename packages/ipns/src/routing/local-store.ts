@@ -1,16 +1,13 @@
 import { Record } from '@libp2p/kad-dht'
-
 import { CustomProgressEvent } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { IPNSPublishMetadata } from '../pb/metadata.js'
+import { dhtRoutingKey, DHT_RECORD_PREFIX, ipnsMetadataKey } from '../utils.js'
 import type { GetOptions, PutOptions } from '../routing/index.js'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 import type { ProgressEvent } from 'progress-events'
-import { dhtRoutingKey, DHT_RECORD_PREFIX, ipnsMetadataKey } from '../utils.js'
-import { IPNSPublishMetadata } from '../pb/metadata.js'
-
-
 
 export type DatastoreProgressEvents =
   ProgressEvent<'ipns:routing:datastore:put'> |
@@ -31,7 +28,7 @@ export interface ListResult {
 }
 
 export interface ListOptions extends AbortOptions {
-  onProgress?: (evt: DatastoreProgressEvents) => void
+  onProgress?(evt: DatastoreProgressEvents): void
 }
 
 export interface LocalStore {
@@ -147,7 +144,7 @@ export function localStore (datastore: Datastore): LocalStore {
               routingKey,
               metadata,
               record: libp2pRecord.value,
-              created: libp2pRecord.timeReceived,
+              created: libp2pRecord.timeReceived
             }
           } catch (err) {
             // Skip invalid records

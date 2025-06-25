@@ -1,6 +1,6 @@
-import type { MultihashDigest } from 'multiformats/hashes/interface'
 import { Key } from 'interface-datastore'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import type { MultihashDigest } from 'multiformats/hashes/interface'
 
 export const IDENTITY_CODEC = 0x0
 export const SHA2_256_CODEC = 0x12
