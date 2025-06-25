@@ -118,7 +118,10 @@ export function localStore (datastore: Datastore): LocalStore {
     },
     async delete (routingKey, options): Promise<void> {
       const key = dhtRoutingKey(routingKey)
-      return datastore.delete(key, options)
+      const batch = datastore.batch()
+      batch.delete(key)
+      batch.delete(ipnsMetadataKey(routingKey))
+      await batch.commit(options)
     },
     async * list (options: ListOptions = {}): AsyncIterable<ListResult> {
       try {
