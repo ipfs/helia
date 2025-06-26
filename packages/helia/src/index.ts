@@ -52,9 +52,9 @@ export interface DAGWalker {
  */
 export async function createHelia <T extends Libp2p> (init: Partial<HeliaInit<T>>): Promise<Helia<T>>
 export async function createHelia (init?: Partial<HeliaInit<Libp2p<DefaultLibp2pServices>>>): Promise<Helia<Libp2p<DefaultLibp2pServices>>>
-export async function createHelia (init: Partial<HeliaInit> = {}): Promise<Helia> {
+export async function createHelia (init: Partial<HeliaInit> = {}): Promise<Helia<Libp2p<DefaultLibp2pServices>>> {
   const options = await heliaDefaults(init)
-  const helia = new HeliaClass(options)
+  const helia = new HeliaClass<Libp2p<DefaultLibp2pServices>>(options)
 
   if (init.start !== false) {
     await helia.start()
