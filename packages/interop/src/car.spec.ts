@@ -12,12 +12,12 @@ import { createKuboNode } from './fixtures/create-kubo.js'
 import { memoryCarWriter } from './fixtures/memory-car.js'
 import type { Car } from '@helia/car'
 import type { UnixFS } from '@helia/unixfs'
-import type { HeliaLibp2p } from 'helia'
+import type { Helia } from 'helia'
 import type { ByteStream, FileCandidate } from 'ipfs-unixfs-importer'
 import type { KuboNode } from 'ipfsd-ctl'
 
 describe('@helia/car', () => {
-  let helia: HeliaLibp2p
+  let helia: Helia
   let c: Car
   let u: UnixFS
   let kubo: KuboNode

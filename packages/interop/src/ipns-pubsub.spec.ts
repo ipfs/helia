@@ -25,7 +25,7 @@ import { waitFor } from './fixtures/wait-for.js'
 import type { IPNS, ResolveResult } from '@helia/ipns'
 import type { Libp2p, PubSub } from '@libp2p/interface'
 import type { Keychain } from '@libp2p/keychain'
-import type { HeliaLibp2p } from 'helia'
+import type { Helia } from 'helia'
 import type { KuboNode } from 'ipfsd-ctl'
 
 // skip RSA tests because we need the DHT enabled to find the public key
@@ -33,7 +33,7 @@ import type { KuboNode } from 'ipfsd-ctl'
 // resolution because Kubo will use the DHT as well
 keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
   describe(`@helia/ipns - pubsub routing with ${keyType} keys`, () => {
-    let helia: HeliaLibp2p<Libp2p<{ pubsub: PubSub, keychain: Keychain }>>
+    let helia: Helia<Libp2p<{ pubsub: PubSub, keychain: Keychain }>>
     let kubo: KuboNode
     let name: IPNS
 
@@ -71,6 +71,8 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
       const cid = CID.createV1(raw.code, digest)
 
       const privateKey = await generateKeyPair('Ed25519')
+      const keyName = 'my-ipns-key'
+      await helia.libp2p.services.keychain.importKey(keyName, privateKey)
 
       // first call to pubsub resolver will fail but we should trigger
       // subscribing pubsub for updates
@@ -103,7 +105,7 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
       })
 
       // publish should now succeed
-      await name.publish(privateKey, cid)
+      await name.publish(keyName, cid)
 
       // kubo should now be able to resolve IPNS name instantly
       const resolved = await last(kubo.api.name.resolve(privateKey.publicKey.toString(), {

@@ -40,23 +40,19 @@ With IPNSRouting routers:
 import { createHelia } from 'helia'
 import { ipns } from '@helia/ipns'
 import { unixfs } from '@helia/unixfs'
-import { generateKeyPair } from '@libp2p/crypto/keys'
 
 const helia = await createHelia()
 const name = ipns(helia)
-
-// create a keypair to publish an IPNS name
-const privateKey = await generateKeyPair('Ed25519')
 
 // store some data to publish
 const fs = unixfs(helia)
 const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
 
 // publish the name
-await name.publish(privateKey, cid)
+const { publicKey } = await name.publish('key-1', cid)
 
 // resolve the name
-const result = await name.resolve(privateKey.publicKey)
+const result = await name.resolve(publicKey)
 
 console.info(result.cid, result.path)
 ```
@@ -75,24 +71,18 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
 const helia = await createHelia()
 const name = ipns(helia)
 
-// create a keypair to publish an IPNS name
-const privateKey = await generateKeyPair('Ed25519')
-
 // store some data to publish
 const fs = unixfs(helia)
 const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
 
 // publish the name
-await name.publish(privateKey, cid)
-
-// create another keypair to re-publish the original record
-const recursivePrivateKey = await generateKeyPair('Ed25519')
+const { publicKey } = await name.publish('key-1', cid)
 
 // publish the recursive name
-await name.publish(recursivePrivateKey, privateKey.publicKey)
+const { publicKey: recursivePublicKey } = await name.publish('key-2', publicKey)
 
 // resolve the name recursively - it resolves until a CID is found
-const result = await name.resolve(recursivePrivateKey.publicKey)
+const result = await name.resolve(recursivePublicKey)
 console.info(result.cid.toString() === cid.toString()) // true
 ```
 
@@ -109,9 +99,6 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
 const helia = await createHelia()
 const name = ipns(helia)
 
-// create a keypair to publish an IPNS name
-const privateKey = await generateKeyPair('Ed25519')
-
 // store some data to publish
 const fs = unixfs(helia)
 const fileCid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
@@ -121,10 +108,10 @@ const dirCid = await fs.addDirectory()
 const finalDirCid = await fs.cp(fileCid, dirCid, '/foo.txt')
 
 // publish the name
-await name.publish(privateKey, `/ipfs/${finalDirCid}/foo.txt`)
+const { publicKey } = await name.publish('key-1', `/ipfs/${finalDirCid}/foo.txt`)
 
 // resolve the name
-const result = await name.resolve(privateKey.publicKey)
+const result = await name.resolve(publicKey)
 
 console.info(result.cid, result.path) // QmFoo.. 'foo.txt'
 ```
@@ -167,18 +154,16 @@ const name = ipns(helia, {
  ]
 })
 
-// create a keypair to publish an IPNS name
-const privateKey = await generateKeyPair('Ed25519')
 
 // store some data to publish
 const fs = unixfs(helia)
 const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
 
 // publish the name
-await name.publish(privateKey, cid)
+const { publicKey } = await name.publish('key-1', cid)
 
 // resolve the name
-const result = await name.resolve(privateKey.publicKey)
+const result = await name.resolve(publicKey)
 ```
 
 ## Example - Using custom DNS over HTTPS resolvers
@@ -190,7 +175,6 @@ import { createHelia } from 'helia'
 import { ipns } from '@helia/ipns'
 import { dns } from '@multiformats/dns'
 import { dnsOverHttps } from '@multiformats/dns/resolvers'
-import { helia } from '@helia/ipns/routing'
 
 const node = await createHelia({
   dns: dns({
@@ -199,11 +183,7 @@ const node = await createHelia({
     }
   })
 })
-const name = ipns(node, {
- routers: [
-   helia(node.routing)
- ]
-})
+const name = ipns(node)
 
 const result = name.resolveDNSLink('some-domain-with-dnslink-entry.com')
 ```
@@ -215,12 +195,10 @@ Calling `resolveDNSLink` with the `@helia/ipns` instance:
 ```TypeScript
 // resolve a CID from a TXT record in a DNS zone file, using the default
 // resolver for the current platform eg:
-// > dig _dnslink.ipfs.io TXT
+// > dig _dnslink.ipfs.tech TXT
 // ;; ANSWER SECTION:
-// _dnslink.ipfs.io.          60     IN      TXT     "dnslink=/ipns/website.ipfs.io"
-// > dig _dnslink.website.ipfs.io TXT
-// ;; ANSWER SECTION:
-// _dnslink.website.ipfs.io.  60     IN      TXT     "dnslink=/ipfs/QmWebsite"
+// _dnslink.ipfs.tech. 60 IN CNAME _dnslink.ipfs-tech.on.fleek.co.
+// _dnslink.ipfs-tech.on.fleek.co. 120 IN TXT "dnslink=/ipfs/bafybe..."
 
 import { createHelia } from 'helia'
 import { ipns } from '@helia/ipns'
@@ -228,10 +206,10 @@ import { ipns } from '@helia/ipns'
 const node = await createHelia()
 const name = ipns(node)
 
-const { answer } = await name.resolveDNSLink('ipfs.io')
+const { answer } = await name.resolveDNSLink('blog.ipfs.tech')
 
 console.info(answer)
-// { data: '/ipfs/QmWebsite' }
+// { data: '/ipfs/bafybe...' }
 ```
 
 ## Example - Using DNS-Over-HTTPS
@@ -257,7 +235,7 @@ const node = await createHelia({
 })
 const name = ipns(node)
 
-const result = await name.resolveDNSLink('ipfs.io')
+const result = await name.resolveDNSLink('blog.ipfs.tech')
 ```
 
 ## Example - Using DNS-JSON-Over-HTTPS
@@ -280,7 +258,7 @@ const node = await createHelia({
 })
 const name = ipns(node)
 
-const result = await name.resolveDNSLink('ipfs.io')
+const result = await name.resolveDNSLink('blog.ipfs.tech')
 ```
 
 ## Example - Republishing an existing IPNS record
