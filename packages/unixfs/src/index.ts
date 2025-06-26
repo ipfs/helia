@@ -44,6 +44,35 @@
  *   console.info(entry)
  * }
  * ```
+ *
+ * @example Adding files and directories in the browser
+ *
+ * Uses [@cypsela/browser-source](https://github.com/cypsela/browser-source) to read [FileSystemEntry](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemEntry) and [FileSystemHandle](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemHandle) files and directories.
+ *
+ * Instances of these data types are available from drag and drop events and window methods like [showOpenFilePicker](https://developer.mozilla.org/en-US/docs/Web/API/Window/showOpenFilePicker).
+ *
+ * ```typescript
+ * import { createHelia } from 'helia'
+ * import { unixfs } from '@helia/unixfs'
+ * import { fsEntrySource, fsHandleSource } from '@cypsela/browser-source'
+ *
+ * const helia = await createHelia()
+ * const fs = unixfs(helia)
+ *
+ * // get FileSystemEntry from drag and drop events
+ * const fileEntry = {} as FileSystemEntry
+ *
+ * for await (const entry of fs.addAll(fsEntrySource(fileEntry))) {
+ *   console.info(entry)
+ * }
+ *
+ * // get FileSystemHandle from drag and drop events or window methods
+ * const fileHandle = {} as FileSystemHandle
+ *
+ * for await (const entry of fs.addAll(fsHandleSource(fileHandle))) {
+ *   console.info(entry)
+ * }
+ * ```
  */
 
 import { UnixFS as UnixFSClass } from './unixfs.js'
