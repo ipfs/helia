@@ -4,12 +4,12 @@ import { NotFoundError } from '@libp2p/interface'
 import { peerIdFromPublicKey } from '@libp2p/peer-id'
 import { RecordType } from '@multiformats/dns'
 import { expect } from 'aegir/chai'
-import { MemoryDatastore } from 'datastore-core'
 import { base36 } from 'multiformats/bases/base36'
 import { CID } from 'multiformats/cid'
 import { createIPNS } from './fixtures/create-ipns.js'
 import type { IPNS } from '../src/index.js'
-import type { DNS, Answer, DNSResponse } from '@multiformats/dns'
+import type { Answer, DNS, DNSResponse } from '@multiformats/dns'
+import type { StubbedInstance } from 'sinon-ts'
 
 function dnsResponse (answers: Answer[]): DNSResponse {
   return {
@@ -25,14 +25,12 @@ function dnsResponse (answers: Answer[]): DNSResponse {
 }
 
 describe('resolveDNSLink', () => {
-  let heliaRouting: any
-  let dns: any
+  let dns: StubbedInstance<DNS>
   let name: IPNS
 
   beforeEach(async () => {
     const result = await createIPNS()
     name = result.name
-    heliaRouting = result.heliaRouting
     dns = result.dns
   })
 
@@ -145,7 +143,7 @@ describe('resolveDNSLink', () => {
     const cid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
     const keyName = 'my-key'
     const { publicKey } = await name.publish(keyName, cid)
-    const peerId = await peerIdFromPublicKey(publicKey)
+    const peerId = peerIdFromPublicKey(publicKey)
 
     dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
       name: 'foobar.baz.',
@@ -168,7 +166,7 @@ describe('resolveDNSLink', () => {
     const cid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
     const keyName = 'my-key'
     const { publicKey } = await name.publish(keyName, cid)
-    const peerId = await peerIdFromPublicKey(publicKey)
+    const peerId = peerIdFromPublicKey(publicKey)
     const peerIdBase36CID = peerId.toCID().toString(base36)
     dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
       name: 'foobar.baz.',

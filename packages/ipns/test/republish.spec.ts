@@ -9,7 +9,6 @@ import { localStore } from '../src/routing/local-store.js'
 import { createIPNS } from './fixtures/create-ipns.js'
 import type { IPNS } from '../src/index.js'
 import type { CreateIPNSResult } from './fixtures/create-ipns.js'
-import { defaultLogger } from '@libp2p/logger'
 
 describe('republish', () => {
   const testCid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
@@ -61,8 +60,8 @@ describe('republish', () => {
       await clock.tickAsync(interval)
 
       // Verify routers were called
-      expect(putStub.called).to.be.true
-      expect(putStub.calledOnce).to.be.true
+      expect(putStub.called).to.be.true()
+      expect(putStub.calledOnce).to.be.true()
     })
 
     it('should throw error when republish is already running', async () => {
@@ -88,14 +87,14 @@ describe('republish', () => {
         lifetime: 24 * 60 * 60 * 1000
       })
 
-      expect(putStub.called).to.be.true
+      expect(putStub.called).to.be.true()
 
       const interval = 23 * 60 * 60 * 1000
       name.republish({ interval })
       await clock.tickAsync(interval)
 
       // Verify the record was republished with incremented sequence
-      expect(putStub.called).to.be.true
+      expect(putStub.called).to.be.true()
       const callArgs = putStub.firstCall.args
       expect(callArgs[0]).to.deep.equal(routingKey)
 
@@ -114,14 +113,14 @@ describe('republish', () => {
       const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record)) // No metadata
 
-      expect(putStub.called).to.be.false
+      expect(putStub.called).to.be.false()
 
       const interval = 23 * 60 * 60 * 1000
       name.republish({ interval })
       await clock.tickAsync(interval)
 
       // Verify no records were republished
-      expect(putStub.called).to.be.false
+      expect(putStub.called).to.be.false()
     })
 
     it('should handle invalid records gracefully', async () => {
@@ -134,14 +133,14 @@ describe('republish', () => {
         lifetime: 24 * 60 * 60 * 1000
       })
 
-      expect(putStub.called).to.be.false
+      expect(putStub.called).to.be.false()
 
       const interval = 23 * 60 * 60 * 1000
       name.republish({ interval })
       await clock.tickAsync(interval)
 
       // Verify no records were republished due to error
-      expect(putStub.called).to.be.false
+      expect(putStub.called).to.be.false()
     })
 
     it('should increment sequence numbers correctly', async () => {
@@ -159,7 +158,7 @@ describe('republish', () => {
         lifetime: 24 * 60 * 60 * 1000
       })
 
-      expect(putStub.called).to.be.true
+      expect(putStub.called).to.be.true()
 
       const interval = 23 * 60 * 60 * 1000
       name.republish({ interval })
@@ -187,7 +186,7 @@ describe('republish', () => {
         lifetime: 24 * 60 * 60 * 1000
       })
 
-      expect(putStub.calledTwice).to.be.true
+      expect(putStub.calledTwice).to.be.true()
     })
 
     it('should handle router errors gracefully', async () => {
@@ -214,7 +213,7 @@ describe('republish', () => {
       await clock.tickAsync(interval)
 
       // Verify the working router was still called
-      expect((result.customRouting.put as any).called).to.be.true
+      expect((result.customRouting.put as any).called).to.be.true()
     })
   })
 
@@ -232,7 +231,7 @@ describe('republish', () => {
 
       await clock.tickAsync(interval)
 
-      expect(progressEvents.some(evt => evt.type === 'ipns:republish:start')).to.be.true
+      expect(progressEvents.some(evt => evt.type === 'ipns:republish:start')).to.be.true()
     })
 
     it('should emit success progress events for each record', async () => {
@@ -262,7 +261,7 @@ describe('republish', () => {
 
       await clock.tickAsync(interval)
 
-      expect(progressEvents.some(evt => evt.type === 'ipns:republish:success')).to.be.true
+      expect(progressEvents.some(evt => evt.type === 'ipns:republish:success')).to.be.true()
     })
 
     it('should emit error progress events for failed records', async () => {
@@ -296,7 +295,7 @@ describe('republish', () => {
 
       await clock.tickAsync(interval)
 
-      expect(progressEvents.some(evt => evt.type === 'ipns:republish:error')).to.be.true
+      expect(progressEvents.some(evt => evt.type === 'ipns:republish:error')).to.be.true()
     })
   })
 
@@ -316,18 +315,18 @@ describe('republish', () => {
         lifetime: 24 * 60 * 60 * 1000
       })
 
-      expect(putStub.called).to.be.false
+      expect(putStub.called).to.be.false()
 
       const interval = 1000 // 1 second
       name.republish({ interval })
 
       // Advance time by less than the interval
       await clock.tickAsync(500)
-      expect(putStub.called).to.be.false
+      expect(putStub.called).to.be.false()
 
       // Advance time to trigger the republish
       await clock.tickAsync(500)
-      expect(putStub.called).to.be.true
+      expect(putStub.called).to.be.true()
     })
 
     it('should handle negative next interval', async () => {
@@ -345,7 +344,7 @@ describe('republish', () => {
         lifetime: 24 * 60 * 60 * 1000
       })
 
-      expect(putStub.called).to.be.false
+      expect(putStub.called).to.be.false()
 
       const customInterval = 1000
       name.republish({ interval: customInterval })
@@ -354,7 +353,7 @@ describe('republish', () => {
       await clock.tickAsync(2000) // Longer than interval
 
       // Should still trigger the next republish
-      expect(putStub.called).to.be.true
+      expect(putStub.called).to.be.true()
     })
 
     it('should use default interval when not specified', async () => {
@@ -372,17 +371,17 @@ describe('republish', () => {
         lifetime: 24 * 60 * 60 * 1000
       })
 
-      expect(putStub.called).to.be.false
+      expect(putStub.called).to.be.false()
 
       name.republish() // No interval specified
 
       // Advance time by less than default interval (23 hours)
       await clock.tickAsync(22 * 60 * 60 * 1000)
-      expect(putStub.called).to.be.false
+      expect(putStub.called).to.be.false()
 
       // Advance time to trigger the republish
       await clock.tickAsync(1 * 60 * 60 * 1000)
-      expect(putStub.called).to.be.true
+      expect(putStub.called).to.be.true()
     })
   })
 
@@ -397,13 +396,13 @@ describe('republish', () => {
       await result.ipnsKeychain.importKey('test-key', key)
 
       // Store the record in the real datastore
-      const store = localStore(result.datastore)
+      const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
         keyName: 'test-key',
         lifetime: 24 * 60 * 60 * 1000
       })
 
-      expect(putStub.called).to.be.false
+      expect(putStub.called).to.be.false()
 
       const interval = 23 * 60 * 60 * 1000
       name.republish({ signal: abortController.signal, interval })
@@ -415,7 +414,7 @@ describe('republish', () => {
       await clock.tickAsync(interval)
 
       // Should not have republished due to abort
-      expect(putStub.called).to.be.false
+      expect(putStub.called).to.be.false()
     })
   })
 
@@ -439,7 +438,7 @@ describe('republish', () => {
       name.republish({ interval })
       await clock.tickAsync(interval)
 
-      expect(putStub.called).to.be.true
+      expect(putStub.called).to.be.true()
     })
 
     describe('TTL and lifetime', () => {
@@ -459,14 +458,14 @@ describe('republish', () => {
           lifetime: 24 * 60 * 60 * 1000
         })
 
-        expect(putStub.called).to.be.true
+        expect(putStub.called).to.be.true()
 
         const interval = 23 * 60 * 60 * 1000
         name.republish({ interval })
         await clock.tickAsync(interval)
 
         // Verify the record was republished with incremented sequence
-        expect(putStub.called).to.be.true
+        expect(putStub.called).to.be.true()
         const callArgs = putStub.firstCall.args
         expect(callArgs[0]).to.deep.equal(routingKey)
 
@@ -491,7 +490,7 @@ describe('republish', () => {
         })
 
         const putStub = result.customRouting.put as sinon.SinonStub
-        expect(putStub.called).to.be.true
+        expect(putStub.called).to.be.true()
 
         const interval = 23 * 60 * 60 * 1000
         name.republish({ interval })
@@ -505,7 +504,7 @@ describe('republish', () => {
         } else {
         // If the record wasn't republished due to the invalid TTL, that's also acceptable
         // as the function should handle invalid records gracefully
-          expect(putStub.called).to.be.false
+          expect(putStub.called).to.be.false()
         }
       })
 
@@ -529,7 +528,7 @@ describe('republish', () => {
         name.republish({ interval: republishInterval })
         await clock.tickAsync(republishInterval)
 
-        expect(putStub.called).to.be.true
+        expect(putStub.called).to.be.true()
 
         const callArgs = putStub.firstCall.args
         const republishedRecord = unmarshalIPNSRecord(callArgs[1])
@@ -554,28 +553,28 @@ describe('republish', () => {
           lifetime: 24 * 60 * 60 * 1000
         })
 
-        expect(putStub.called).to.be.false
+        expect(putStub.called).to.be.false()
 
         const interval = 1000
         name.republish({ interval })
         await clock.tickAsync(interval)
 
         // Should not republish due to keychain error (key not found)
-        expect(putStub.called).to.be.false
+        expect(putStub.called).to.be.false()
       })
 
       it('should handle datastore errors', async () => {
       // This test is harder to implement with real datastore since we can't easily
       // make the datastore fail. Instead, we'll test that the function handles
       // empty datastore gracefully
-        expect(putStub.called).to.be.false
+        expect(putStub.called).to.be.false()
 
         const interval = 1000
         name.republish({ interval })
         await clock.tickAsync(interval)
 
         // Should not republish due to empty datastore
-        expect(putStub.called).to.be.false
+        expect(putStub.called).to.be.false()
       })
     })
   })

@@ -3,7 +3,6 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { Record } from '@libp2p/kad-dht'
 import { expect } from 'aegir/chai'
-import { MemoryDatastore } from 'datastore-core'
 import { Key } from 'interface-datastore'
 import { createIPNSRecord, createIPNSRecordWithExpiration, marshalIPNSRecord, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from 'ipns'
 import drain from 'it-drain'
