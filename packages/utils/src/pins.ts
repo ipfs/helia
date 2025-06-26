@@ -75,7 +75,8 @@ export class PinsImpl implements Pins {
     const pinKey = toDSKey(cid)
 
     if (await this.datastore.has(pinKey)) {
-      throw new Error('Already pinned')
+      yield cid
+      return
     }
 
     const depth = Math.round(options.depth ?? Infinity)
