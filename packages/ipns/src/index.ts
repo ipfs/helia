@@ -284,13 +284,12 @@ import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { createIPNSRecord, extractPublicKeyFromIPNSRecord, marshalIPNSRecord, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from 'ipns'
 import { ipnsSelector } from 'ipns/selector'
-import { ipnsValidator, validate } from 'ipns/validator'
+import { ipnsValidator } from 'ipns/validator'
 import { base36 } from 'multiformats/bases/base36'
 import { base58btc } from 'multiformats/bases/base58'
 import { CID } from 'multiformats/cid'
 import * as Digest from 'multiformats/hashes/digest'
 import { CustomProgressEvent } from 'progress-events'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { resolveDNSLink } from './dnslink.js'
 import { InvalidValueError, RecordsFailedValidationError, UnsupportedMultibasePrefixError, UnsupportedMultihashCodecError } from './errors.js'
 import { helia } from './routing/helia.js'
@@ -533,9 +532,9 @@ class DefaultIPNS implements IPNS {
       helia(components.routing),
       ...routers
     ]
-    this.localStore = localStore(components.datastore)
     this.dns = components.dns
     this.log = components.logger.forComponent('helia:ipns')
+    this.localStore = localStore(components.datastore, components.logger.forComponent('helia:ipns:local-store'))
     this.keychain = components.libp2p.services.keychain
   }
 

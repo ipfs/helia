@@ -9,6 +9,7 @@ import { localStore } from '../src/routing/local-store.js'
 import { createIPNS } from './fixtures/create-ipns.js'
 import type { IPNS } from '../src/index.js'
 import type { CreateIPNSResult } from './fixtures/create-ipns.js'
+import { defaultLogger } from '@libp2p/logger'
 
 describe('republish', () => {
   const testCid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
@@ -46,7 +47,7 @@ describe('republish', () => {
       await result.ipnsKeychain.importKey('test-key', key)
 
       // Store the record in the real datastore using the localStore
-      const store = localStore(result.datastore)
+      const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
         keyName: 'test-key',
         lifetime: 24 * 60 * 60 * 1000
@@ -81,7 +82,7 @@ describe('republish', () => {
       await result.ipnsKeychain.importKey('test-key', key)
 
       // Store the record in the real datastore
-      const store = localStore(result.datastore)
+      const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
         keyName: 'test-key',
         lifetime: 24 * 60 * 60 * 1000
@@ -110,7 +111,7 @@ describe('republish', () => {
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
       // Store the record without metadata (simulate old records)
-      const store = localStore(result.datastore)
+      const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record)) // No metadata
 
       expect(putStub.called).to.be.false
@@ -127,7 +128,7 @@ describe('republish', () => {
       const routingKey = new Uint8Array([1, 2, 3, 4])
 
       // Store an invalid record in the datastore
-      const store = localStore(result.datastore)
+      const store = localStore(result.datastore, result.log)
       await store.put(routingKey, new Uint8Array([255, 255, 255]), {
         keyName: 'test-key',
         lifetime: 24 * 60 * 60 * 1000
@@ -152,7 +153,7 @@ describe('republish', () => {
       await result.ipnsKeychain.importKey('test-key', key)
 
       // Store the record in the real datastore
-      const store = localStore(result.datastore)
+      const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
         keyName: 'test-key',
         lifetime: 24 * 60 * 60 * 1000
@@ -180,7 +181,7 @@ describe('republish', () => {
       await result.ipnsKeychain.importKey('test-key', key)
 
       // Store the record in the real datastore
-      const store = localStore(result.datastore)
+      const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
         keyName: 'test-key',
         lifetime: 24 * 60 * 60 * 1000
@@ -198,7 +199,7 @@ describe('republish', () => {
       await result.ipnsKeychain.importKey('test-key', key)
 
       // Store the record in the real datastore
-      const store = localStore(result.datastore)
+      const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
         keyName: 'test-key',
         lifetime: 24 * 60 * 60 * 1000
@@ -243,7 +244,7 @@ describe('republish', () => {
       await result.ipnsKeychain.importKey('test-key', key)
 
       // Store the record in the real datastore
-      const store = localStore(result.datastore)
+      const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
         keyName: 'test-key',
         lifetime: 24 * 60 * 60 * 1000
@@ -273,7 +274,7 @@ describe('republish', () => {
       await result.ipnsKeychain.importKey('test-key', key)
 
       // Store the record in the real datastore
-      const store = localStore(result.datastore)
+      const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
         keyName: 'test-key',
         lifetime: 24 * 60 * 60 * 1000
@@ -309,7 +310,7 @@ describe('republish', () => {
       await result.ipnsKeychain.importKey('test-key', key)
 
       // Store the record in the real datastore
-      const store = localStore(result.datastore)
+      const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
         keyName: 'test-key',
         lifetime: 24 * 60 * 60 * 1000
@@ -338,7 +339,7 @@ describe('republish', () => {
       await result.ipnsKeychain.importKey('test-key', key)
 
       // Store the record in the real datastore
-      const store = localStore(result.datastore)
+      const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
         keyName: 'test-key',
         lifetime: 24 * 60 * 60 * 1000
@@ -365,7 +366,7 @@ describe('republish', () => {
       await result.ipnsKeychain.importKey('test-key', key)
 
       // Store the record in the real datastore
-      const store = localStore(result.datastore)
+      const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
         keyName: 'test-key',
         lifetime: 24 * 60 * 60 * 1000
@@ -428,7 +429,7 @@ describe('republish', () => {
       await result.ipnsKeychain.importKey('existing-key', key)
 
       // Store the record in the real datastore
-      const store = localStore(result.datastore)
+      const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
         keyName: 'existing-key',
         lifetime: 24 * 60 * 60 * 1000
@@ -452,7 +453,7 @@ describe('republish', () => {
         await result.ipnsKeychain.importKey('test-key', key)
 
         // Store the record in the real datastore
-        const store = localStore(result.datastore)
+        const store = localStore(result.datastore, result.log)
         await store.put(routingKey, marshalIPNSRecord(record), {
           keyName: 'test-key',
           lifetime: 24 * 60 * 60 * 1000
@@ -483,7 +484,7 @@ describe('republish', () => {
         await result.ipnsKeychain.importKey('test-key', key)
 
         // Store the record in the real datastore
-        const store = localStore(result.datastore)
+        const store = localStore(result.datastore, result.log)
         await store.put(routingKey, marshalIPNSRecord(record), {
           keyName: 'test-key',
           lifetime: 24 * 60 * 60 * 1000
@@ -519,7 +520,7 @@ describe('republish', () => {
         await result.ipnsKeychain.importKey('test-key', key)
 
         // Store the record in the real datastore
-        const store = localStore(result.datastore)
+        const store = localStore(result.datastore, result.log)
         await store.put(routingKey, marshalIPNSRecord(record), {
           keyName: 'test-key',
           lifetime: customLifetime
@@ -547,7 +548,7 @@ describe('republish', () => {
         const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
         // Store the record in the real datastore (but don't import the key)
-        const store = localStore(result.datastore)
+        const store = localStore(result.datastore, result.log)
         await store.put(routingKey, marshalIPNSRecord(record), {
           keyName: 'missing-key',
           lifetime: 24 * 60 * 60 * 1000

@@ -5,7 +5,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { IPNSPublishMetadata } from '../pb/metadata.js'
 import { dhtRoutingKey, DHT_RECORD_PREFIX, ipnsMetadataKey } from '../utils.js'
 import type { GetOptions, PutOptions } from '../routing/index.js'
-import type { AbortOptions } from '@libp2p/interface'
+import type { AbortOptions, Logger } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 import type { ProgressEvent } from 'progress-events'
 
@@ -55,7 +55,7 @@ export interface LocalStore {
  * datastore as DHT records. This lets us publish IPNS records offline then
  * serve them to the network later in response to DHT queries.
  */
-export function localStore (datastore: Datastore): LocalStore {
+export function localStore (datastore: Datastore, log: Logger): LocalStore {
   return {
     async put (routingKey: Uint8Array, marshalledRecord: Uint8Array, metadata?: IPNSPublishMetadata, options: PutOptions = {}) {
       try {
@@ -146,7 +146,7 @@ export function localStore (datastore: Datastore): LocalStore {
               const metadataBuf = await datastore.get(metadataKey, options)
               metadata = IPNSPublishMetadata.decode(metadataBuf)
             } catch (err: any) {
-              console.error('Error deserializing metadata for', routingKeyBase32, err)
+              log.error('Error deserializing metadata for', routingKeyBase32, err)
             }
 
             yield {
@@ -157,7 +157,7 @@ export function localStore (datastore: Datastore): LocalStore {
             }
           } catch (err) {
             // Skip invalid records
-            console.error('Error deserializing record:', err)
+            log.error('Error deserializing record:', err)
           }
         }
       } catch (err: any) {

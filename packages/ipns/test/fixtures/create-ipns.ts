@@ -17,7 +17,8 @@ export interface CreateIPNSResult {
   heliaRouting: StubbedInstance<Routing>
   dns: StubbedInstance<DNS>
   ipnsKeychain: Keychain
-  datastore: Datastore
+  datastore: Datastore,
+  log: Logger
 }
 
 export async function createIPNS (): Promise<CreateIPNSResult> {
@@ -30,12 +31,13 @@ export async function createIPNS (): Promise<CreateIPNSResult> {
   const heliaRouting = stubInterface<Routing>()
   const dns = stubInterface<DNS>()
 
+  const logger = defaultLogger()
   const keychainInit: KeychainInit = {
     pass: 'very-strong-password'
   }
   const ipnsKeychain = keychain(keychainInit)({
     datastore,
-    logger: defaultLogger()
+    logger
   })
 
   const name = ipns({
@@ -47,7 +49,7 @@ export async function createIPNS (): Promise<CreateIPNSResult> {
         keychain: ipnsKeychain
       }
     } as any,
-    logger: defaultLogger()
+    logger
   }, {
     routers: [customRouting]
   })
@@ -58,6 +60,7 @@ export async function createIPNS (): Promise<CreateIPNSResult> {
     heliaRouting,
     dns,
     ipnsKeychain,
-    datastore
+    datastore,
+    log: logger.forComponent('helia:ipns:test')
   }
 }
