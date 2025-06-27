@@ -35,14 +35,14 @@ import type { Await, CodecLoader, GCOptions, HasherLoader, Helia as HeliaInterfa
 import type { BlockBroker } from '@helia/interface/blocks'
 import type { Pins } from '@helia/interface/pins'
 import type { ComponentLogger, Libp2p, Logger, Metrics } from '@libp2p/interface'
+import type { KeychainInit } from '@libp2p/keychain'
 import type { DNS } from '@multiformats/dns'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
+import type { Libp2pOptions } from 'libp2p'
 import type { BlockCodec } from 'multiformats'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
-import type { Libp2pOptions } from 'libp2p'
-import type { KeychainInit } from '@libp2p/keychain'
 
 export { AbstractSession } from './abstract-session.js'
 export type { AbstractCreateSessionOptions, BlockstoreSessionEvents, AbstractSessionComponents } from './abstract-session.js'
@@ -270,7 +270,7 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
       this.libp2p,
       this.blockstore,
       this.datastore,
-      this.routing,
+      this.routing
     )
   }
 
@@ -279,7 +279,7 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
       this.libp2p,
       this.blockstore,
       this.datastore,
-      this.routing,
+      this.routing
     )
   }
 
