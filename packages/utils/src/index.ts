@@ -184,6 +184,7 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
 }
 
 interface Components {
+  libp2p: Libp2p
   blockstore: Blockstore
   datastore: Datastore
   logger: ComponentLogger
@@ -222,6 +223,7 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
       blockstore: init.blockstore,
       datastore: init.datastore,
       logger: this.logger,
+      libp2p: this.libp2p,
       blockBrokers: [],
       getHasher: this.getHasher,
       getCodec: this.getCodec,
@@ -267,19 +269,19 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
   async start (): Promise<void> {
     await assertDatastoreVersionIsCurrent(this.datastore)
     await start(
-      this.libp2p,
       this.blockstore,
       this.datastore,
-      this.routing
+      this.routing,
+      this.libp2p
     )
   }
 
   async stop (): Promise<void> {
     await stop(
-      this.libp2p,
       this.blockstore,
       this.datastore,
-      this.routing
+      this.routing,
+      this.libp2p
     )
   }
 
