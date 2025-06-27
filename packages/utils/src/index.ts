@@ -34,13 +34,15 @@ import type { BlockStorageInit } from './storage.js'
 import type { Await, CodecLoader, GCOptions, HasherLoader, Helia as HeliaInterface, Routing } from '@helia/interface'
 import type { BlockBroker } from '@helia/interface/blocks'
 import type { Pins } from '@helia/interface/pins'
-import type { ComponentLogger, Logger, Metrics } from '@libp2p/interface'
+import type { ComponentLogger, Libp2p, Logger, Metrics } from '@libp2p/interface'
 import type { DNS } from '@multiformats/dns'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { BlockCodec } from 'multiformats'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
+import type { Libp2pOptions } from 'libp2p'
+import type { KeychainInit } from '@libp2p/keychain'
 
 export { AbstractSession } from './abstract-session.js'
 export type { AbstractCreateSessionOptions, BlockstoreSessionEvents, AbstractSessionComponents } from './abstract-session.js'
@@ -50,7 +52,32 @@ export type { BlockStorage, BlockStorageInit }
 /**
  * Options used to create a Helia node.
  */
-export interface HeliaInit {
+export interface HeliaInit<T extends Libp2p = Libp2p> {
+  /**
+   * A libp2p node is required to perform network operations. Either a
+   * pre-configured node or options to configure a node can be passed
+   * here.
+   *
+   * If node options are passed, they will be merged with the default
+   * config for the current platform. In this case all passed config
+   * keys will replace those from the default config.
+   *
+   * The libp2p `start` option is not supported, instead please pass `start` in
+   * the root of the HeliaInit object.
+   */
+  libp2p?: T | Omit<Libp2pOptions<any>, 'start'>
+
+  /**
+   * Pass `false` to not start the Helia node
+   */
+  start?: boolean
+
+  /**
+   * By default Helia stores the node's PeerId in an encrypted form in a
+   * libp2p keystore. These options control how that keystore is configured.
+   */
+  keychain?: KeychainInit
+
   /**
    * The blockstore is where blocks are stored
    */
@@ -168,7 +195,8 @@ interface Components {
   getHasher: HasherLoader
 }
 
-export class Helia implements HeliaInterface {
+export class Helia<T extends Libp2p> implements HeliaInterface<T> {
+  public libp2p: T
   public blockstore: BlockStorage
   public datastore: Datastore
   public pins: Pins
@@ -187,6 +215,7 @@ export class Helia implements HeliaInterface {
     this.getCodec = getCodec(init.codecs, init.loadCodec)
     this.dns = init.dns ?? dns()
     this.metrics = init.metrics
+    this.libp2p = init.libp2p as T // TODO: fix this type assertion.
 
     // @ts-expect-error routing is not set
     const components: Components = {
@@ -238,17 +267,19 @@ export class Helia implements HeliaInterface {
   async start (): Promise<void> {
     await assertDatastoreVersionIsCurrent(this.datastore)
     await start(
+      this.libp2p,
       this.blockstore,
       this.datastore,
-      this.routing
+      this.routing,
     )
   }
 
   async stop (): Promise<void> {
     await stop(
+      this.libp2p,
       this.blockstore,
       this.datastore,
-      this.routing
+      this.routing,
     )
   }
 
