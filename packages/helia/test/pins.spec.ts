@@ -8,11 +8,10 @@ import all from 'it-all'
 import drain from 'it-drain'
 import { CID } from 'multiformats/cid'
 import { createHelia } from '../src/index.js'
-import type { HeliaLibp2p } from '../src/index.js'
-import type { Libp2p } from '@libp2p/interface'
+import type { Helia } from '@helia/interface'
 
 describe('pins', () => {
-  let helia: HeliaLibp2p<Libp2p>
+  let helia: Helia
 
   beforeEach(async () => {
     helia = await createHelia({

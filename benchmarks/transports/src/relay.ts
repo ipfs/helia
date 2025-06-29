@@ -4,11 +4,11 @@ import { circuitRelayServer } from '@libp2p/circuit-relay-v2'
 import { identify } from '@libp2p/identify'
 import { prefixLogger } from '@libp2p/logger'
 import { webSockets } from '@libp2p/websockets'
-import { createHelia, type HeliaLibp2p } from 'helia'
+import { createHelia, type Helia } from 'helia'
 import { createLibp2p } from 'libp2p'
 import type { Libp2p } from '@libp2p/interface'
 
-export async function createRelay (): Promise<HeliaLibp2p<Libp2p<any>>> {
+export async function createRelay (): Promise<Helia<Libp2p<any>>> {
   const logger = prefixLogger('relay')
 
   return createHelia({

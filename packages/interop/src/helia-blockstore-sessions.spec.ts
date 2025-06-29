@@ -5,11 +5,11 @@ import { expect } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
-import type { HeliaLibp2p } from 'helia'
+import type { Helia } from 'helia'
 import type { KuboInfo, KuboNode } from 'ipfsd-ctl'
 
 describe('helia - blockstore sessions', () => {
-  let helia: HeliaLibp2p
+  let helia: Helia
   let kubo: KuboNode
   let kuboInfo: KuboInfo
 
