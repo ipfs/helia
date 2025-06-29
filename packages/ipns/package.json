@@ -96,7 +96,6 @@
     "@types/dns-packet": "^5.6.5",
     "aegir": "^47.0.7",
     "datastore-core": "^10.0.2",
-    "helia": "^5.4.2",
     "it-drain": "^3.0.7",
     "sinon": "^20.0.0",
     "sinon-ts": "^2.0.0"

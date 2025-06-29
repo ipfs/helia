@@ -83,7 +83,6 @@
     "@multiformats/dns": "^1.0.6",
     "blockstore-core": "^5.0.2",
     "datastore-core": "^10.0.2",
-    "interface-blockstore": "^5.3.1",
     "interface-datastore": "^8.3.1",
     "ipns": "^10.0.0",
     "libp2p": "^2.3.1",
