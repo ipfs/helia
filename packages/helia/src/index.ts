@@ -54,9 +54,7 @@ export interface DAGWalker {
  *
  * @deprecated Use `Helia` from `@helia/utils` instead which now comes with libp2p. This will be removed in the next major version.
  */
-export interface HeliaLibp2p<T extends Libp2p = Libp2p<DefaultLibp2pServices>> extends Helia {
-  libp2p: T
-}
+export type HeliaLibp2p = Helia
 
 /**
  * Create and return a Helia node
