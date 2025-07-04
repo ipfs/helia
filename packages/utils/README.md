@@ -39,11 +39,11 @@ pre-configure Helia for certain use-cases (p2p or pure-HTTP).
 
 ```typescript
 import { Helia } from '@helia/utils'
-import type { HeliaInit } from '@helia/utils'
+import type { HeliaConstructorInit } from '@helia/utils'
 
 const node = new Helia({
   // ...options
-} as HeliaInit)
+} as HeliaConstructorInit)
 ```
 
 # Install

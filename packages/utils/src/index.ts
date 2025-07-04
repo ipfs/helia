@@ -10,11 +10,11 @@
  *
  * ```typescript
  * import { Helia } from '@helia/utils'
- * import type { HeliaInit } from '@helia/utils'
+ * import type { HeliaConstructorInit } from '@helia/utils'
  *
  * const node = new Helia({
  *   // ...options
- * } as HeliaInit)
+ * } as HeliaConstructorInit)
  * ```
  */
 
@@ -183,6 +183,10 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
   metrics?: Metrics
 }
 
+export interface HeliaConstructorInit<T extends Libp2p = Libp2p> extends HeliaInit {
+  libp2p: T
+}
+
 interface Components {
   libp2p: Libp2p
   blockstore: Blockstore
@@ -209,14 +213,14 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
   public metrics?: Metrics
   private readonly log: Logger
 
-  constructor (init: HeliaInit) {
+  constructor (init: HeliaConstructorInit<T>) {
     this.logger = init.logger ?? defaultLogger()
     this.log = this.logger.forComponent('helia')
     this.getHasher = getHasher(init.hashers, init.loadHasher)
     this.getCodec = getCodec(init.codecs, init.loadCodec)
     this.dns = init.dns ?? dns()
     this.metrics = init.metrics
-    this.libp2p = init.libp2p as T // TODO: fix this type assertion.
+    this.libp2p = init.libp2p
 
     // @ts-expect-error routing is not set
     const components: Components = {

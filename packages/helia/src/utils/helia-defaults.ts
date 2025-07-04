@@ -25,13 +25,13 @@ import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import { createLibp2p } from '../utils/libp2p.js'
 import type { DefaultLibp2pServices } from '../utils/libp2p-defaults.js'
-import type { HeliaInit } from '@helia/utils'
+import type { HeliaConstructorInit, HeliaInit } from '@helia/utils'
 import type { Libp2p } from '@libp2p/interface'
 
 /**
  * Create and return the default options used to create a Helia node
  */
-export async function heliaDefaults <T extends Libp2p> (init: Partial<HeliaInit<T>> = {}): Promise<HeliaInit<T> & Required<Pick<HeliaInit, 'libp2p' | 'blockstore'>>> {
+export async function heliaDefaults <T extends Libp2p> (init: Partial<HeliaInit<T>> = {}): Promise<HeliaConstructorInit<T>> {
   const datastore = init.datastore ?? new MemoryDatastore()
   const blockstore = init.blockstore ?? new MemoryBlockstore()
 

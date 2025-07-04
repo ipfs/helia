@@ -53,7 +53,7 @@ import { createLibp2p, isLibp2p } from './utils/libp2p.ts'
 import type { DefaultLibp2pServices } from './utils/libp2p-defaults.ts'
 import type { Libp2pDefaultsOptions } from './utils/libp2p.js'
 import type { Helia } from '@helia/interface'
-import type { HeliaInit } from '@helia/utils'
+import type { HeliaConstructorInit, HeliaInit } from '@helia/utils'
 import type { Libp2p } from '@libp2p/interface'
 
 // re-export interface types so people don't have to depend on @helia/interface
@@ -67,7 +67,7 @@ export type { DefaultLibp2pServices, Libp2pDefaultsOptions }
 /**
  * Create and return the default options used to create a Helia node
  */
-export async function heliaDefaults <T extends Libp2p> (init: Partial<HeliaInit<T>> = {}): Promise<HeliaInit<T> & Required<Pick<HeliaInit, 'libp2p' | 'blockstore'>>> {
+export async function heliaDefaults <T extends Libp2p> (init: Partial<HeliaInit<T>> = {}): Promise<HeliaConstructorInit<T>> {
   const datastore = init.datastore ?? new MemoryDatastore()
   const blockstore = init.blockstore ?? new MemoryBlockstore()
 
