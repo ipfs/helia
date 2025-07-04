@@ -1,19 +1,20 @@
 /* eslint-env mocha */
 
+import { createHeliaHTTP } from '@helia/http'
 import { ipns } from '@helia/ipns'
 import { delegatedHTTPRouting } from '@helia/routers'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
 import { isNode } from 'wherearewe'
-import { createHeliaHTTP } from './fixtures/create-helia-http.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import type { Helia } from '@helia/interface'
 import type { IPNS } from '@helia/ipns'
 import type { KuboNode } from 'ipfsd-ctl'
+import type { Libp2p } from 'libp2p'
 
 describe('@helia/ipns - http', () => {
-  let helia: Helia
+  let helia: Helia<Libp2p<any>>
   let kubo: KuboNode
   let name: IPNS
 

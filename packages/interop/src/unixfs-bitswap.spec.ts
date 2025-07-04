@@ -7,12 +7,12 @@ import { CID } from 'multiformats/cid'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import type { UnixFS } from '@helia/unixfs'
-import type { HeliaLibp2p } from 'helia'
+import type { Helia } from 'helia'
 import type { ByteStream, FileCandidate } from 'ipfs-unixfs-importer'
 import type { KuboNode } from 'ipfsd-ctl'
 
 describe('@helia/unixfs - bitswap', () => {
-  let helia: HeliaLibp2p
+  let helia: Helia
   let unixFs: UnixFS
   let kubo: KuboNode
 
