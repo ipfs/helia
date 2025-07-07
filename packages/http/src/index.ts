@@ -74,7 +74,7 @@ export async function heliaDefaults <T extends Libp2p> (init: Partial<HeliaInit<
   let libp2p: any
 
   if (isLibp2p(init.libp2p)) {
-    libp2p = init.libp2p as any
+    libp2p = init.libp2p
   } else {
     libp2p = await createLibp2p<DefaultLibp2pServices>({
       ...init,
