@@ -60,7 +60,7 @@
     "@libp2p/interface": "^2.2.1",
     "@libp2p/utils": "^6.2.1",
     "@multiformats/multiaddr": "^12.3.3",
-    "@multiformats/multiaddr-matcher": "^1.6.0",
+    "@multiformats/multiaddr-matcher": "^2.0.1",
     "@multiformats/multiaddr-to-uri": "^11.0.0",
     "interface-blockstore": "^5.3.1",
     "interface-store": "^6.0.2",
