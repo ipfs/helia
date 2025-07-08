@@ -1,21 +1,8 @@
 /**
  * @packageDocumentation
  *
- * Exports a `Helia` class that implements the Helia API.
- *
- * In general you should use the `helia` or `@helia/http` modules instead which
- * pre-configure Helia for certain use-cases (p2p or pure-HTTP).
- *
- * @example
- *
- * ```typescript
- * import { Helia } from '@helia/utils'
- * import type { HeliaConstructorInit } from '@helia/utils'
- *
- * const node = new Helia({
- *   // ...options
- * } as HeliaConstructorInit)
- * ```
+ * This module contains utility code that is shared between various Helia
+ * modules such as `helia`, `@helia/http`, etc.
  */
 
 import { contentRoutingSymbol, peerRoutingSymbol, start, stop } from '@libp2p/interface'
@@ -183,10 +170,6 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
   metrics?: Metrics
 }
 
-export interface HeliaConstructorInit<T extends Libp2p = Libp2p> extends HeliaInit {
-  libp2p: T
-}
-
 interface Components {
   libp2p: Libp2p
   blockstore: Blockstore
@@ -213,7 +196,7 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
   public metrics?: Metrics
   private readonly log: Logger
 
-  constructor (init: HeliaConstructorInit<T>) {
+  constructor (init: Omit<HeliaInit, 'start' | 'libp2p'> & { libp2p: T }) {
     this.logger = init.logger ?? defaultLogger()
     this.log = this.logger.forComponent('helia')
     this.getHasher = getHasher(init.hashers, init.loadHasher)

@@ -33,7 +33,7 @@ import type { CID } from 'multiformats/cid'
 // if they don't want to
 export * from '@helia/interface'
 
-export type { HeliaInit } from '@helia/utils'
+export type { HeliaInit }
 
 export type { DefaultLibp2pServices, Libp2pDefaultsOptions }
 
@@ -52,7 +52,7 @@ export interface DAGWalker {
 /**
  * Helia with a libp2p node
  *
- * @deprecated Use `Helia` from `@helia/utils` instead which now comes with libp2p. This will be removed in the next major version.
+ * @deprecated Use the `Helia` type instead. This will be removed in the next major version.
  */
 export type HeliaLibp2p = Helia
 
@@ -65,7 +65,7 @@ export async function createHelia (init: Partial<HeliaInit> = {}): Promise<Helia
   const options = await heliaDefaults(init)
   const helia = new HeliaClass(options)
 
-  if (init.start !== false) {
+  if (options.start !== false) {
     await helia.start()
   }
 

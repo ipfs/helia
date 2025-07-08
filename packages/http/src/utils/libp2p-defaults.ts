@@ -1,16 +1,16 @@
 import { createDelegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
 import { keychain } from '@libp2p/keychain'
 import { userAgent } from 'libp2p/user-agent'
-import type { Libp2pDefaultsOptions } from './libp2p.js'
+import type { Libp2pHTTPDefaultOptions } from './libp2p.js'
 import type { Keychain } from '@libp2p/keychain'
 import type { Libp2pOptions } from 'libp2p'
 
-export interface DefaultLibp2pServices extends Record<string, unknown> {
+export interface DefaultLibp2pHTTPServices extends Record<string, unknown> {
   delegatedRouting: unknown
   keychain: Keychain
 }
 
-export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOptions<DefaultLibp2pServices> & Required<Pick<Libp2pOptions<DefaultLibp2pServices>, 'services'>> {
+export function libp2pDefaults (options: Libp2pHTTPDefaultOptions = {}): Libp2pOptions<DefaultLibp2pHTTPServices> & Required<Pick<Libp2pOptions<DefaultLibp2pHTTPServices>, 'services'>> {
   const agentVersion = `@helia/http ${userAgent()}`
 
   return {

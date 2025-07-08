@@ -49,25 +49,26 @@ import { httpGatewayRouting, libp2pRouting } from '@helia/routers'
 import { Helia as HeliaClass } from '@helia/utils'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
-import { createLibp2p, isLibp2p } from './utils/libp2p.ts'
-import type { DefaultLibp2pServices } from './utils/libp2p-defaults.ts'
-import type { Libp2pDefaultsOptions } from './utils/libp2p.js'
+import { isLibp2p } from 'libp2p'
+import { createLibp2p } from './utils/libp2p.ts'
+import type { DefaultLibp2pHTTPServices } from './utils/libp2p-defaults.ts'
+import type { Libp2pHTTPDefaultOptions } from './utils/libp2p.js'
 import type { Helia } from '@helia/interface'
-import type { HeliaConstructorInit, HeliaInit } from '@helia/utils'
+import type { HeliaInit } from '@helia/utils'
 import type { Libp2p } from '@libp2p/interface'
 
 // re-export interface types so people don't have to depend on @helia/interface
 // if they don't want to
 export * from '@helia/interface'
 
-export type HeliaHTTPInit = HeliaInit<Libp2p<DefaultLibp2pServices>>
+export type HeliaHTTPInit = HeliaInit<Libp2p<DefaultLibp2pHTTPServices>>
 
-export type { DefaultLibp2pServices, Libp2pDefaultsOptions }
+export type { DefaultLibp2pHTTPServices, Libp2pHTTPDefaultOptions }
 
 /**
  * Create and return the default options used to create a Helia node
  */
-export async function heliaDefaults <T extends Libp2p> (init: Partial<HeliaInit<T>> = {}): Promise<HeliaConstructorInit<T>> {
+export async function heliaDefaults <T extends Libp2p> (init: Partial<HeliaInit<T>> = {}): Promise<Omit<HeliaInit<T>, 'libp2p'> & { libp2p: T }> {
   const datastore = init.datastore ?? new MemoryDatastore()
   const blockstore = init.blockstore ?? new MemoryBlockstore()
 
@@ -76,7 +77,7 @@ export async function heliaDefaults <T extends Libp2p> (init: Partial<HeliaInit<
   if (isLibp2p(init.libp2p)) {
     libp2p = init.libp2p
   } else {
-    libp2p = await createLibp2p<DefaultLibp2pServices>({
+    libp2p = await createLibp2p<DefaultLibp2pHTTPServices>({
       ...init,
       libp2p: {
         dns: init.dns,
@@ -102,22 +103,18 @@ export async function heliaDefaults <T extends Libp2p> (init: Partial<HeliaInit<
       libp2pRouting(libp2p),
       httpGatewayRouting()
     ],
-    metrics: libp2p.metrics,
-    start: init.start ?? true
+    metrics: libp2p.metrics
   }
 }
 
 /**
  * Create and return a Helia node
  */
-export async function createHeliaHTTP (init: Partial<HeliaHTTPInit> = {}): Promise<Helia<Libp2p<DefaultLibp2pServices>>> {
+export async function createHeliaHTTP (init: Partial<HeliaHTTPInit> = {}): Promise<Helia<Libp2p<DefaultLibp2pHTTPServices>>> {
   const options = await heliaDefaults(init)
+  const helia = new HeliaClass(options)
 
-  const helia = new HeliaClass<Libp2p<DefaultLibp2pServices>>({
-    ...options
-  })
-
-  if (init.start !== false) {
+  if (options.start !== false) {
     await helia.start()
   }
 
