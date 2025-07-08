@@ -25,7 +25,7 @@ import { waitFor } from './fixtures/wait-for.js'
 import type { IPNS, ResolveResult } from '@helia/ipns'
 import type { Libp2p, PubSub } from '@libp2p/interface'
 import type { Keychain } from '@libp2p/keychain'
-import type { HeliaLibp2p } from 'helia'
+import type { Helia } from 'helia'
 import type { KuboNode } from 'ipfsd-ctl'
 
 // skip RSA tests because we need the DHT enabled to find the public key
@@ -33,7 +33,7 @@ import type { KuboNode } from 'ipfsd-ctl'
 // resolution because Kubo will use the DHT as well
 keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
   describe(`@helia/ipns - pubsub routing with ${keyType} keys`, () => {
-    let helia: HeliaLibp2p<Libp2p<{ pubsub: PubSub, keychain: Keychain }>>
+    let helia: Helia<Libp2p<{ pubsub: PubSub, keychain: Keychain }>>
     let kubo: KuboNode
     let name: IPNS
 

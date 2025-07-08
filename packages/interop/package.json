@@ -94,7 +94,7 @@
     "it-to-buffer": "^4.0.7",
     "kubo": "^0.35.0",
     "kubo-rpc-client": "^5.0.2",
-    "libp2p": "^2.3.1",
+    "libp2p": "^2.9.0",
     "multiformats": "^13.3.1",
     "p-defer": "^4.0.1",
     "uint8arrays": "^5.1.0",

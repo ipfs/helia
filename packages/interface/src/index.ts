@@ -17,7 +17,7 @@
 import type { Blocks } from './blocks.js'
 import type { Pins } from './pins.js'
 import type { Routing } from './routing.js'
-import type { AbortOptions, ComponentLogger, Metrics } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, Libp2p, Metrics } from '@libp2p/interface'
 import type { DNS } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
 import type { Await } from 'interface-store'
@@ -38,7 +38,12 @@ export interface HasherLoader {
 /**
  * The API presented by a Helia node
  */
-export interface Helia {
+export interface Helia<T extends Libp2p = Libp2p> {
+  /**
+   * The libp2p instance
+   */
+  libp2p: T
+
   /**
    * Where the blocks are stored
    */

@@ -30,7 +30,7 @@
     "it-drain": "^3.0.1",
     "kubo": "^0.34.1",
     "kubo-rpc-client": "^5.0.0",
-    "libp2p": "^2.0.0",
+    "libp2p": "^2.9.0",
     "multiformats": "^13.1.0",
     "pretty-bytes": "^6.1.0",
     "uint8arrays": "^5.1.0"
