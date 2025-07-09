@@ -1,21 +1,8 @@
 /**
  * @packageDocumentation
  *
- * Exports a `Helia` class that implements the Helia API.
- *
- * In general you should use the `helia` or `@helia/http` modules instead which
- * pre-configure Helia for certain use-cases (p2p or pure-HTTP).
- *
- * @example
- *
- * ```typescript
- * import { Helia } from '@helia/utils'
- * import type { HeliaInit } from '@helia/utils'
- *
- * const node = new Helia({
- *   // ...options
- * } as HeliaInit)
- * ```
+ * This module contains utility code that is shared between various Helia
+ * modules such as `helia`, `@helia/http`, etc.
  */
 
 import { contentRoutingSymbol, peerRoutingSymbol, start, stop } from '@libp2p/interface'
@@ -184,6 +171,7 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
 }
 
 interface Components {
+  libp2p: Libp2p
   blockstore: Blockstore
   datastore: Datastore
   logger: ComponentLogger
@@ -208,20 +196,21 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
   public metrics?: Metrics
   private readonly log: Logger
 
-  constructor (init: HeliaInit) {
+  constructor (init: Omit<HeliaInit, 'start' | 'libp2p'> & { libp2p: T }) {
     this.logger = init.logger ?? defaultLogger()
     this.log = this.logger.forComponent('helia')
     this.getHasher = getHasher(init.hashers, init.loadHasher)
     this.getCodec = getCodec(init.codecs, init.loadCodec)
     this.dns = init.dns ?? dns()
     this.metrics = init.metrics
-    this.libp2p = init.libp2p as T // TODO: fix this type assertion.
+    this.libp2p = init.libp2p
 
     // @ts-expect-error routing is not set
     const components: Components = {
       blockstore: init.blockstore,
       datastore: init.datastore,
       logger: this.logger,
+      libp2p: this.libp2p,
       blockBrokers: [],
       getHasher: this.getHasher,
       getCodec: this.getCodec,
@@ -269,18 +258,18 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
     await start(
       this.blockstore,
       this.datastore,
-      this.routing
+      this.routing,
+      this.libp2p
     )
-    await this.libp2p.start()
   }
 
   async stop (): Promise<void> {
     await stop(
       this.blockstore,
       this.datastore,
-      this.routing
+      this.routing,
+      this.libp2p
     )
-    await this.libp2p.stop()
   }
 
   async gc (options: GCOptions = {}): Promise<void> {

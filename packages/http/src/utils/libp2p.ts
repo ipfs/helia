@@ -7,7 +7,7 @@ import type { DNS } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
 import type { Libp2pOptions } from 'libp2p'
 
-export interface CreateLibp2pOptions<T extends Record<string, unknown>> {
+export interface CreateLibp2pHTTPOptions<T extends Record<string, unknown>> {
   datastore: Datastore
   libp2p?: Libp2pOptions<T>
   logger?: ComponentLogger
@@ -15,13 +15,13 @@ export interface CreateLibp2pOptions<T extends Record<string, unknown>> {
   start?: boolean
 }
 
-export interface Libp2pDefaultsOptions {
+export interface Libp2pHTTPDefaultOptions {
   privateKey?: PrivateKey
   keychain?: KeychainInit
   dns?: DNS
 }
 
-export async function createLibp2p <T extends Record<string, unknown>> (options: CreateLibp2pOptions<T>): Promise<Libp2p<T>> {
+export async function createLibp2p <T extends Record<string, unknown>> (options: CreateLibp2pHTTPOptions<T>): Promise<Libp2p<T>> {
   const libp2pOptions = options.libp2p ?? {}
 
   // if no peer id was passed, try to load it from the keychain
@@ -39,16 +39,4 @@ export async function createLibp2p <T extends Record<string, unknown>> (options:
   })
 
   return node
-}
-
-export function isLibp2p (obj: any): obj is Libp2p {
-  if (obj == null) {
-    return false
-  }
-
-  // a non-exhaustive list of methods found on the libp2p object
-  const funcs = ['dial', 'dialProtocol', 'hangUp', 'handle', 'unhandle', 'getMultiaddrs', 'getProtocols']
-
-  // if these are all functions it's probably a libp2p object
-  return funcs.every(m => typeof obj[m] === 'function')
 }
