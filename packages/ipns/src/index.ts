@@ -534,7 +534,7 @@ class DefaultIPNS implements IPNS {
       const lifetime = options.lifetime ?? DEFAULT_LIFETIME_MS
       const record = await createIPNSRecord(privKey, value, sequenceNumber, lifetime, { ...options, ttlNs })
       const marshaledRecord = marshalIPNSRecord(record)
-      await this.localStore.put(routingKey, marshaledRecord, { keyName, lifetime }, options)
+      await this.localStore.put(routingKey, marshaledRecord, { ...options, metadata: { keyName, lifetime } })
 
       if (options.offline !== true) {
         // publish record to routing
@@ -825,7 +825,7 @@ class DefaultIPNS implements IPNS {
 
     const record = records[ipnsSelector(routingKey, records)]
 
-    await this.localStore.put(routingKey, record, undefined, options)
+    await this.localStore.put(routingKey, record, options)
 
     return unmarshalIPNSRecord(record)
   }

@@ -40,7 +40,7 @@ export interface LocalStore {
    * @param metadata - local publishing metadata for the IPNS record (optional)
    * @param options - options for the put operation (optional)
    */
-  put(routingKey: Uint8Array, marshaledRecord: Uint8Array, metadata?: IPNSPublishMetadata, options?: PutOptions): Promise<void>
+  put(routingKey: Uint8Array, marshaledRecord: Uint8Array, options?: PutOptions): Promise<void>
   get(routingKey: Uint8Array, options?: GetOptions): Promise<GetResult>
   has(routingKey: Uint8Array, options?: AbortOptions): Promise<boolean>
   delete(routingKey: Uint8Array, options?: AbortOptions): Promise<void>
@@ -57,7 +57,7 @@ export interface LocalStore {
  */
 export function localStore (datastore: Datastore, log: Logger): LocalStore {
   return {
-    async put (routingKey: Uint8Array, marshalledRecord: Uint8Array, metadata?: IPNSPublishMetadata, options: PutOptions = {}) {
+    async put (routingKey: Uint8Array, marshalledRecord: Uint8Array, options: PutOptions = {}) {
       try {
         const key = dhtRoutingKey(routingKey)
 
@@ -83,9 +83,9 @@ export function localStore (datastore: Datastore, log: Logger): LocalStore {
         const batch = datastore.batch()
         batch.put(key, record.serialize())
 
-        if (metadata != null) {
+        if (options.metadata != null) {
           // derive the datastore key for the IPNS metadata from the same routing key
-          batch.put(ipnsMetadataKey(routingKey), IPNSPublishMetadata.encode(metadata))
+          batch.put(ipnsMetadataKey(routingKey), IPNSPublishMetadata.encode(options.metadata))
         }
         await batch.commit(options)
       } catch (err: any) {

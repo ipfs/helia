@@ -48,8 +48,10 @@ describe('republish', () => {
       // Store the record in the real datastore using the localStore
       const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
-        keyName: 'test-key',
-        lifetime: 24 * 60 * 60 * 1000
+        metadata: {
+          keyName: 'test-key',
+          lifetime: 24 * 60 * 60 * 1000
+        }
       })
 
       const interval = 1000 // 1 second
@@ -61,7 +63,7 @@ describe('republish', () => {
 
       // Verify routers were called
       expect(putStub.called).to.be.true()
-      expect(putStub.calledOnce).to.be.true()
+      expect(putStub.callCount).to.equal(2)
     })
 
     it('should throw error when republish is already running', async () => {
@@ -83,8 +85,10 @@ describe('republish', () => {
       // Store the record in the real datastore
       const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
-        keyName: 'test-key',
-        lifetime: 24 * 60 * 60 * 1000
+        metadata: {
+          keyName: 'test-key',
+          lifetime: 24 * 60 * 60 * 1000
+        }
       })
 
       expect(putStub.called).to.be.true()
@@ -129,8 +133,10 @@ describe('republish', () => {
       // Store an invalid record in the datastore
       const store = localStore(result.datastore, result.log)
       await store.put(routingKey, new Uint8Array([255, 255, 255]), {
-        keyName: 'test-key',
-        lifetime: 24 * 60 * 60 * 1000
+        metadata: {
+          keyName: 'test-key',
+          lifetime: 24 * 60 * 60 * 1000
+        }
       })
 
       expect(putStub.called).to.be.false()
@@ -154,8 +160,10 @@ describe('republish', () => {
       // Store the record in the real datastore
       const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
-        keyName: 'test-key',
-        lifetime: 24 * 60 * 60 * 1000
+        metadata: {
+          keyName: 'test-key',
+          lifetime: 24 * 60 * 60 * 1000
+        }
       })
 
       expect(putStub.called).to.be.true()
@@ -182,8 +190,10 @@ describe('republish', () => {
       // Store the record in the real datastore
       const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
-        keyName: 'test-key',
-        lifetime: 24 * 60 * 60 * 1000
+        metadata: {
+          keyName: 'test-key',
+          lifetime: 24 * 60 * 60 * 1000
+        }
       })
 
       expect(putStub.calledTwice).to.be.true()
@@ -200,8 +210,10 @@ describe('republish', () => {
       // Store the record in the real datastore
       const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
-        keyName: 'test-key',
-        lifetime: 24 * 60 * 60 * 1000
+        metadata: {
+          keyName: 'test-key',
+          lifetime: 24 * 60 * 60 * 1000
+        }
       })
 
       // Make one router fail
@@ -245,8 +257,10 @@ describe('republish', () => {
       // Store the record in the real datastore
       const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
-        keyName: 'test-key',
-        lifetime: 24 * 60 * 60 * 1000
+        metadata: {
+          keyName: 'test-key',
+          lifetime: 24 * 60 * 60 * 1000
+        }
       })
 
       const progressEvents: any[] = []
@@ -275,8 +289,10 @@ describe('republish', () => {
       // Store the record in the real datastore
       const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
-        keyName: 'test-key',
-        lifetime: 24 * 60 * 60 * 1000
+        metadata: {
+          keyName: 'test-key',
+          lifetime: 24 * 60 * 60 * 1000
+        }
       })
 
       // Make all routers fail
@@ -311,8 +327,10 @@ describe('republish', () => {
       // Store the record in the real datastore
       const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
-        keyName: 'test-key',
-        lifetime: 24 * 60 * 60 * 1000
+        metadata: {
+          keyName: 'test-key',
+          lifetime: 24 * 60 * 60 * 1000
+        }
       })
 
       expect(putStub.called).to.be.false()
@@ -340,8 +358,10 @@ describe('republish', () => {
       // Store the record in the real datastore
       const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
-        keyName: 'test-key',
-        lifetime: 24 * 60 * 60 * 1000
+        metadata: {
+          keyName: 'test-key',
+          lifetime: 24 * 60 * 60 * 1000
+        }
       })
 
       expect(putStub.called).to.be.false()
@@ -367,8 +387,10 @@ describe('republish', () => {
       // Store the record in the real datastore
       const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
-        keyName: 'test-key',
-        lifetime: 24 * 60 * 60 * 1000
+        metadata: {
+          keyName: 'test-key',
+          lifetime: 24 * 60 * 60 * 1000
+        }
       })
 
       expect(putStub.called).to.be.false()
@@ -398,8 +420,10 @@ describe('republish', () => {
       // Store the record in the real datastore
       const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
-        keyName: 'test-key',
-        lifetime: 24 * 60 * 60 * 1000
+        metadata: {
+          keyName: 'test-key',
+          lifetime: 24 * 60 * 60 * 1000
+        }
       })
 
       expect(putStub.called).to.be.false()
@@ -430,8 +454,10 @@ describe('republish', () => {
       // Store the record in the real datastore
       const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
-        keyName: 'existing-key',
-        lifetime: 24 * 60 * 60 * 1000
+        metadata: {
+          keyName: 'existing-key',
+          lifetime: 24 * 60 * 60 * 1000
+        }
       })
 
       const interval = 23 * 60 * 60 * 1000
@@ -454,8 +480,10 @@ describe('republish', () => {
         // Store the record in the real datastore
         const store = localStore(result.datastore, result.log)
         await store.put(routingKey, marshalIPNSRecord(record), {
-          keyName: 'test-key',
-          lifetime: 24 * 60 * 60 * 1000
+          metadata: {
+            keyName: 'test-key',
+            lifetime: 24 * 60 * 60 * 1000
+          }
         })
 
         expect(putStub.called).to.be.true()
@@ -485,8 +513,10 @@ describe('republish', () => {
         // Store the record in the real datastore
         const store = localStore(result.datastore, result.log)
         await store.put(routingKey, marshalIPNSRecord(record), {
-          keyName: 'test-key',
-          lifetime: 24 * 60 * 60 * 1000
+          metadata: {
+            keyName: 'test-key',
+            lifetime: 24 * 60 * 60 * 1000
+          }
         })
 
         const putStub = result.customRouting.put as sinon.SinonStub
@@ -521,8 +551,10 @@ describe('republish', () => {
         // Store the record in the real datastore
         const store = localStore(result.datastore, result.log)
         await store.put(routingKey, marshalIPNSRecord(record), {
-          keyName: 'test-key',
-          lifetime: customLifetime
+          metadata: {
+            keyName: 'test-key',
+            lifetime: customLifetime
+          }
         })
 
         name.republish({ interval: republishInterval })
@@ -549,8 +581,10 @@ describe('republish', () => {
         // Store the record in the real datastore (but don't import the key)
         const store = localStore(result.datastore, result.log)
         await store.put(routingKey, marshalIPNSRecord(record), {
-          keyName: 'missing-key',
-          lifetime: 24 * 60 * 60 * 1000
+          metadata: {
+            keyName: 'missing-key',
+            lifetime: 24 * 60 * 60 * 1000
+          }
         })
 
         expect(putStub.called).to.be.false()
