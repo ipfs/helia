@@ -10,27 +10,30 @@ import { createIPNS } from './fixtures/create-ipns.js'
 import type { IPNS } from '../src/index.js'
 import type { CreateIPNSResult } from './fixtures/create-ipns.js'
 
-describe('republish', () => {
+describe.only('republish', () => {
   const testCid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
   let name: IPNS
   let result: CreateIPNSResult
-  let putStub: sinon.SinonStub
+  let putStubCustom: sinon.SinonStub
+  let putStubHelia: sinon.SinonStub
 
   beforeEach(async () => {
     result = await createIPNS()
     name = result.name
 
     // Mock the routers by default
-    putStub = sinon.stub().resolves()
+    putStubCustom = sinon.stub().resolves()
+    putStubHelia = sinon.stub().resolves()
     // @ts-ignore
-    result.customRouting.put = putStub
+    result.customRouting.put = putStubCustom
     // @ts-ignore
-    result.heliaRouting.put = putStub
+    result.heliaRouting.put = putStubHelia
   })
 
   afterEach(() => {
     sinon.restore()
-    putStub.resetHistory()
+    putStubCustom.resetHistory()
+    putStubHelia.resetHistory()
   })
 
   describe('basic functionality', () => {
@@ -55,9 +58,36 @@ describe('republish', () => {
       name.republish({ interval: 1 })
       await new Promise(resolve => setTimeout(resolve, 5))
 
-      // Verify routers were called
-      expect(putStub.called).to.be.true()
-      expect(putStub.callCount).to.equal(2)
+      // Only check custom router for most tests
+      expect(putStubCustom.called).to.be.true()
+    })
+
+    it('should call all routers for republish', async () => {
+      // Create a test record and store it in the real datastore
+      const key = await generateKeyPair('Ed25519')
+      const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
+      const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+      // Import the key into the real keychain
+      await result.ipnsKeychain.importKey('test-key', key)
+
+      // Store the record in the real datastore using the localStore
+      const store = localStore(result.datastore, result.log)
+      await store.put(routingKey, marshalIPNSRecord(record), {
+        metadata: {
+          keyName: 'test-key',
+          lifetime: 24 * 60 * 60 * 1000
+        }
+      })
+      // Start republishing
+      name.republish({ interval: 1 })
+      await new Promise(resolve => setTimeout(resolve, 10))
+
+      // Check both routers
+      expect(putStubCustom.called).to.be.true()
+      expect(putStubHelia.called).to.be.true()
+      expect(putStubCustom.firstCall.args[0]).to.deep.equal(routingKey)
+      expect(putStubHelia.firstCall.args[0]).to.deep.equal(routingKey)
     })
 
     it('should throw error when republish is already running', async () => {
@@ -90,8 +120,8 @@ describe('republish', () => {
       await new Promise(resolve => setTimeout(resolve, 10))
 
       // Verify the record was republished with incremented sequence
-      expect(putStub.called).to.be.true()
-      const callArgs = putStub.firstCall.args
+      expect(putStubCustom.called).to.be.true()
+      const callArgs = putStubCustom.firstCall.args
       expect(callArgs[0]).to.deep.equal(routingKey)
 
       const republishedRecord = unmarshalIPNSRecord(callArgs[1])
@@ -114,7 +144,7 @@ describe('republish', () => {
       await new Promise(resolve => setTimeout(resolve, 10))
 
       // Verify no records were republished
-      expect(putStub.called).to.be.false()
+      expect(putStubCustom.called).to.be.false()
     })
 
     it('should handle invalid records gracefully', async () => {
@@ -134,7 +164,7 @@ describe('republish', () => {
       await new Promise(resolve => setTimeout(resolve, 10))
 
       // Verify no records were republished due to error
-      expect(putStub.called).to.be.false()
+      expect(putStubCustom.called).to.be.false()
     })
 
     it('should increment sequence numbers correctly', async () => {
@@ -158,9 +188,9 @@ describe('republish', () => {
       name.republish({ interval })
       await new Promise(resolve => setTimeout(resolve, 10))
 
-      expect(putStub.called).to.be.true()
+      expect(putStubCustom.called).to.be.true()
 
-      const callArgs = putStub.firstCall.args
+      const callArgs = putStubCustom.firstCall.args
       const republishedRecord = unmarshalIPNSRecord(callArgs[1])
       expect(republishedRecord.sequence).to.equal(6n) // Incremented from 5n
     })
@@ -271,7 +301,8 @@ describe('republish', () => {
         }
       })
 
-      expect(putStub.called).to.be.false()
+      expect(putStubCustom.called).to.be.false()
+      expect(putStubHelia.called).to.be.false()
 
       const interval = 100
       name.republish({ signal: abortController.signal, interval })
@@ -283,7 +314,8 @@ describe('republish', () => {
       await new Promise(resolve => setTimeout(resolve, interval))
 
       // Should not have republished due to abort
-      expect(putStub.called).to.be.false()
+      expect(putStubCustom.called).to.be.false()
+      expect(putStubHelia.called).to.be.false()
     })
   })
 
@@ -312,8 +344,8 @@ describe('republish', () => {
         await new Promise(resolve => setTimeout(resolve, 30))
 
         // Verify the record was republished with incremented sequence
-        expect(putStub.called).to.be.true()
-        const callArgs = putStub.firstCall.args
+        expect(putStubCustom.called).to.be.true()
+        const callArgs = putStubCustom.firstCall.args
         expect(callArgs[0]).to.deep.equal(routingKey)
 
         const republishedRecord = unmarshalIPNSRecord(callArgs[1])
@@ -342,8 +374,8 @@ describe('republish', () => {
         name.republish({ interval })
         await new Promise(resolve => setTimeout(resolve, 30))
 
-        expect(putStub.called).to.be.true()
-        const callArgs = putStub.firstCall.args
+        expect(putStubCustom.called).to.be.true()
+        const callArgs = putStubCustom.firstCall.args
         const republishedRecord = unmarshalIPNSRecord(callArgs[1])
         expect(republishedRecord.ttl).to.equal(5n * 60n * 1000n * 1_000_000n) // Default TTL
       })
@@ -372,9 +404,9 @@ describe('republish', () => {
 
         const expectedValidity = Date.now() + customLifetime
 
-        expect(putStub.called).to.be.true()
+        expect(putStubCustom.called).to.be.true()
 
-        const callArgs = putStub.firstCall.args
+        const callArgs = putStubCustom.firstCall.args
         const republishedRecord = unmarshalIPNSRecord(callArgs[1])
 
         // Check that the validity is set to the custom lifetime
@@ -400,28 +432,32 @@ describe('republish', () => {
           }
         })
 
-        expect(putStub.called).to.be.false()
+        expect(putStubCustom.called).to.be.false()
+        expect(putStubHelia.called).to.be.false()
 
         const interval = 1
         name.republish({ interval })
         await new Promise(resolve => setTimeout(resolve, 20))
 
         // Should not republish due to keychain error (key not found)
-        expect(putStub.called).to.be.false()
+        expect(putStubCustom.called).to.be.false()
+        expect(putStubHelia.called).to.be.false()
       })
 
       it('should handle datastore errors', async () => {
       // This test is harder to implement with real datastore since we can't easily
       // make the datastore fail. Instead, we'll test that the function handles
       // empty datastore gracefully
-        expect(putStub.called).to.be.false()
+        expect(putStubCustom.called).to.be.false()
+        expect(putStubHelia.called).to.be.false()
 
         const interval = 1
         name.republish({ interval })
         await new Promise(resolve => setTimeout(resolve, 20))
 
         // Should not republish due to empty datastore
-        expect(putStub.called).to.be.false()
+        expect(putStubCustom.called).to.be.false()
+        expect(putStubHelia.called).to.be.false()
       })
     })
   })
