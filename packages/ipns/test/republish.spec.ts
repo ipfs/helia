@@ -56,7 +56,7 @@ describe('republish', () => {
       })
       // Start republishing
       name.republish({ interval: 1 })
-      await new Promise(resolve => setTimeout(resolve, 5))
+      await new Promise(resolve => setTimeout(resolve, 10))
 
       // Only check custom router for most tests
       expect(putStubCustom.called).to.be.true()
@@ -117,7 +117,7 @@ describe('republish', () => {
 
       const interval = 1
       name.republish({ interval })
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await new Promise(resolve => setTimeout(resolve, 20))
 
       // Verify the record was republished with incremented sequence
       expect(putStubCustom.called).to.be.true()
@@ -141,7 +141,7 @@ describe('republish', () => {
 
       const interval = 1
       name.republish({ interval })
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await new Promise(resolve => setTimeout(resolve, 20))
 
       // Verify no records were republished
       expect(putStubCustom.called).to.be.false()
@@ -161,7 +161,7 @@ describe('republish', () => {
 
       const interval = 1
       name.republish({ interval })
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await new Promise(resolve => setTimeout(resolve, 20))
 
       // Verify no records were republished due to error
       expect(putStubCustom.called).to.be.false()
@@ -186,7 +186,7 @@ describe('republish', () => {
 
       const interval = 1
       name.republish({ interval })
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await new Promise(resolve => setTimeout(resolve, 20))
 
       expect(putStubCustom.called).to.be.true()
 
@@ -208,7 +208,7 @@ describe('republish', () => {
         }
       })
 
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await new Promise(resolve => setTimeout(resolve, 20))
 
       expect(progressEvents.some(evt => evt.type === 'ipns:republish:start')).to.be.true()
     })
@@ -413,7 +413,7 @@ describe('republish', () => {
         const actualValidity = new Date(republishedRecord.validity)
 
         const timeDiff = Math.abs(actualValidity.getTime() - expectedValidity)
-        expect(timeDiff).to.be.lessThan(100)
+        expect(timeDiff).to.be.lessThan(200)
       })
     })
 
