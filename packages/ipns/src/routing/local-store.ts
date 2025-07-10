@@ -37,8 +37,7 @@ export interface LocalStore {
    *
    * @param routingKey - The routing key for the IPNS record
    * @param marshaledRecord - The marshaled IPNS record
-   * @param metadata - local publishing metadata for the IPNS record (optional)
-   * @param options - options for the put operation (optional)
+   * @param options - options for the put operation including metadata
    */
   put(routingKey: Uint8Array, marshaledRecord: Uint8Array, options?: PutOptions): Promise<void>
   get(routingKey: Uint8Array, options?: GetOptions): Promise<GetResult>
