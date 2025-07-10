@@ -175,8 +175,10 @@ import { createHelia } from 'helia'
 import { ipns } from '@helia/ipns'
 import { dns } from '@multiformats/dns'
 import { dnsOverHttps } from '@multiformats/dns/resolvers'
+import type { DefaultLibp2pServices } from 'helia'
+import type { Libp2p } from '@libp2p/interface'
 
-const node = await createHelia({
+const node = await createHelia<Libp2p<DefaultLibp2pServices>>({
   dns: dns({
     resolvers: {
       '.': dnsOverHttps('https://private-dns-server.me/dns-query')
@@ -225,8 +227,10 @@ import { createHelia } from 'helia'
 import { ipns } from '@helia/ipns'
 import { dns } from '@multiformats/dns'
 import { dnsOverHttps } from '@multiformats/dns/resolvers'
+import type { DefaultLibp2pServices } from 'helia'
+import type { Libp2p } from '@libp2p/interface'
 
-const node = await createHelia({
+const node = await createHelia<Libp2p<DefaultLibp2pServices>>({
   dns: dns({
     resolvers: {
       '.': dnsOverHttps('https://mozilla.cloudflare-dns.com/dns-query')
@@ -248,8 +252,10 @@ import { createHelia } from 'helia'
 import { ipns } from '@helia/ipns'
 import { dns } from '@multiformats/dns'
 import { dnsJsonOverHttps } from '@multiformats/dns/resolvers'
+import type { DefaultLibp2pServices } from 'helia'
+import type { Libp2p } from '@libp2p/interface'
 
-const node = await createHelia({
+const node = await createHelia<Libp2p<DefaultLibp2pServices>>({
   dns: dns({
     resolvers: {
       '.': dnsJsonOverHttps('https://mozilla.cloudflare-dns.com/dns-query')
