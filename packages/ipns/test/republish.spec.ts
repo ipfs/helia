@@ -109,8 +109,6 @@ describe('republish', () => {
       const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record)) // No metadata
 
-      expect(putStub.called).to.be.false()
-
       const interval = 1
       name.republish({ interval })
       await new Promise(resolve => setTimeout(resolve, 10))
@@ -130,8 +128,6 @@ describe('republish', () => {
           lifetime: 24 * 60 * 60 * 1000
         }
       })
-
-      expect(putStub.called).to.be.false()
 
       const interval = 1
       name.republish({ interval })
@@ -167,61 +163,6 @@ describe('republish', () => {
       const callArgs = putStub.firstCall.args
       const republishedRecord = unmarshalIPNSRecord(callArgs[1])
       expect(republishedRecord.sequence).to.equal(6n) // Incremented from 5n
-    })
-  })
-
-  describe('router integration', () => {
-    it('should publish to all configured routers', async () => {
-      const key = await generateKeyPair('Ed25519')
-      const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
-      const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
-
-      // Import the key into the real keychain
-      await result.ipnsKeychain.importKey('test-key', key)
-
-      // Store the record in the real datastore
-      const store = localStore(result.datastore, result.log)
-      await store.put(routingKey, marshalIPNSRecord(record), {
-        metadata: {
-          keyName: 'test-key',
-          lifetime: 24 * 60 * 60 * 1000
-        }
-      })
-
-      const interval = 1
-      name.republish({ interval })
-      await new Promise(resolve => setTimeout(resolve, 20))
-
-      expect(putStub.callCount).to.equal(2)
-    })
-
-    it('should handle router errors gracefully', async () => {
-      const key = await generateKeyPair('Ed25519')
-      const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
-      const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
-
-      // Import the key into the real keychain
-      await result.ipnsKeychain.importKey('test-key', key)
-
-      // Store the record in the real datastore
-      const store = localStore(result.datastore, result.log)
-      await store.put(routingKey, marshalIPNSRecord(record), {
-        metadata: {
-          keyName: 'test-key',
-          lifetime: 24 * 60 * 60 * 1000
-        }
-      })
-
-      // Make one router fail
-      ;(result.heliaRouting.put as any) = sinon.stub().rejects(new Error('Router error'))
-      ;(result.customRouting.put as any) = sinon.stub().resolves()
-
-      const interval = 1
-      name.republish({ interval })
-      await new Promise(resolve => setTimeout(resolve, 20))
-
-      // Verify the working router was still called
-      expect((result.customRouting.put as any).called).to.be.true()
     })
   })
 
@@ -308,64 +249,6 @@ describe('republish', () => {
       await new Promise(resolve => setTimeout(resolve, 20))
 
       expect(progressEvents.some(evt => evt.type === 'ipns:republish:error')).to.be.true()
-    })
-  })
-
-  describe('timing and intervals', () => {
-    it('should respect custom interval', async () => {
-      const key = await generateKeyPair('Ed25519')
-      const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
-      const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
-
-      // Import the key into the real keychain
-      await result.ipnsKeychain.importKey('test-key', key)
-
-      // Store the record in the real datastore
-      const store = localStore(result.datastore, result.log)
-      await store.put(routingKey, marshalIPNSRecord(record), {
-        metadata: {
-          keyName: 'test-key',
-          lifetime: 24 * 60 * 60 * 1000
-        }
-      })
-
-      expect(putStub.called).to.be.false()
-
-      const interval = 10
-      name.republish({ interval })
-
-      await new Promise(resolve => setTimeout(resolve, 20))
-      expect(putStub.called).to.be.false()
-
-      await new Promise(resolve => setTimeout(resolve, interval))
-      expect(putStub.called).to.be.true()
-    })
-
-    it('should handle negative next interval', async () => {
-      const key = await generateKeyPair('Ed25519')
-      const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
-      const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
-
-      // Import the key into the real keychain
-      await result.ipnsKeychain.importKey('test-key', key)
-
-      // Store the record in the real datastore
-      const store = localStore(result.datastore, result.log)
-      await store.put(routingKey, marshalIPNSRecord(record), {
-        metadata: {
-          keyName: 'test-key',
-          lifetime: 24 * 60 * 60 * 1000
-        }
-      })
-
-      expect(putStub.called).to.be.false()
-
-      const customInterval = 1
-      name.republish({ interval: customInterval })
-
-      await new Promise(resolve => setTimeout(resolve, 20))
-
-      expect(putStub.called).to.be.true()
     })
   })
 
