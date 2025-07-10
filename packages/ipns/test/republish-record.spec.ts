@@ -23,7 +23,7 @@ describe('republishRecord', () => {
     const ed25519Key = await generateKeyPair('Ed25519')
     const otherEd25519Key = await generateKeyPair('Ed25519')
     const ed25519Record = await createIPNSRecord(ed25519Key, testCid, 1n, 24 * 60 * 60 * 1000)
-    await expect(name.republishRecord(otherEd25519Key.publicKey.toMultihash(), ed25519Record)).to.be.rejected
+    await expect(name.republishRecord(otherEd25519Key.publicKey.toMultihash(), ed25519Record)).to.be.rejected('SignatureVerificationError')
   })
 
   it('should republish using the embedded public key', async () => {
