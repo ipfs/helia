@@ -10,7 +10,7 @@ import { createIPNS } from './fixtures/create-ipns.js'
 import type { IPNS } from '../src/index.js'
 import type { CreateIPNSResult } from './fixtures/create-ipns.js'
 
-describe.only('republish', () => {
+describe('republish', () => {
   const testCid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
   let name: IPNS
   let result: CreateIPNSResult
