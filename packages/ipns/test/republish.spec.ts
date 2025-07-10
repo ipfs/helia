@@ -91,8 +91,6 @@ describe('republish', () => {
         }
       })
 
-      expect(putStub.called).to.be.true()
-
       const interval = 23 * 60 * 60 * 1000
       name.republish({ interval })
       await clock.tickAsync(interval)
@@ -166,11 +164,11 @@ describe('republish', () => {
         }
       })
 
-      expect(putStub.called).to.be.true()
-
       const interval = 23 * 60 * 60 * 1000
       name.republish({ interval })
       await clock.tickAsync(interval)
+
+      expect(putStub.called).to.be.true()
 
       const callArgs = putStub.firstCall.args
       const republishedRecord = unmarshalIPNSRecord(callArgs[1])
@@ -196,7 +194,11 @@ describe('republish', () => {
         }
       })
 
-      expect(putStub.calledTwice).to.be.true()
+      const interval = 23 * 60 * 60 * 1000
+      name.republish({ interval })
+      await clock.tickAsync(interval + 1000)
+
+      expect(putStub.callCount).to.equal(2)
     })
 
     it('should handle router errors gracefully', async () => {
@@ -486,8 +488,6 @@ describe('republish', () => {
           }
         })
 
-        expect(putStub.called).to.be.true()
-
         const interval = 23 * 60 * 60 * 1000
         name.republish({ interval })
         await clock.tickAsync(interval)
@@ -519,23 +519,14 @@ describe('republish', () => {
           }
         })
 
-        const putStub = result.customRouting.put as sinon.SinonStub
-        expect(putStub.called).to.be.true()
-
         const interval = 23 * 60 * 60 * 1000
         name.republish({ interval })
         await clock.tickAsync(interval)
 
-        // Check if the stub was called before accessing its arguments
-        if (putStub.called) {
-          const callArgs = putStub.firstCall.args
-          const republishedRecord = unmarshalIPNSRecord(callArgs[1])
-          expect(republishedRecord.ttl).to.equal(5n * 60n * 1000n * 1_000_000n) // Default TTL
-        } else {
-        // If the record wasn't republished due to the invalid TTL, that's also acceptable
-        // as the function should handle invalid records gracefully
-          expect(putStub.called).to.be.false()
-        }
+        expect(putStub.called).to.be.true()
+        const callArgs = putStub.firstCall.args
+        const republishedRecord = unmarshalIPNSRecord(callArgs[1])
+        expect(republishedRecord.ttl).to.equal(5n * 60n * 1000n * 1_000_000n) // Default TTL
       })
 
       it('should use metadata lifetime', async () => {
