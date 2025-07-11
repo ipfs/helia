@@ -10,6 +10,21 @@ import { createIPNS } from './fixtures/create-ipns.js'
 import type { IPNS } from '../src/index.js'
 import type { CreateIPNSResult } from './fixtures/create-ipns.js'
 
+// Helper to await until a stub is called
+function waitForStubCall (stub: sinon.SinonStub, callCount = 1): Promise<void> {
+  return new Promise((resolve) => {
+    const check = (): void => {
+      console.log(stub.callCount, callCount)
+      if (stub.callCount >= callCount) {
+        resolve()
+      } else {
+        setTimeout(check, 1)
+      }
+    }
+    check()
+  })
+}
+
 describe('republish', () => {
   const testCid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
   let name: IPNS
@@ -21,7 +36,7 @@ describe('republish', () => {
     result = await createIPNS()
     name = result.name
 
-    // Mock the routers by default
+    // Stub the routers by default
     putStubCustom = sinon.stub().resolves()
     putStubHelia = sinon.stub().resolves()
     // @ts-ignore
@@ -56,7 +71,7 @@ describe('republish', () => {
       })
       // Start republishing
       name.republish({ interval: 1 })
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await waitForStubCall(putStubCustom)
 
       // Only check custom router for most tests
       expect(putStubCustom.called).to.be.true()
@@ -81,7 +96,10 @@ describe('republish', () => {
       })
       // Start republishing
       name.republish({ interval: 1 })
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await Promise.all([
+        waitForStubCall(putStubCustom),
+        waitForStubCall(putStubHelia)
+      ])
 
       // Check both routers
       expect(putStubCustom.called).to.be.true()
@@ -117,7 +135,7 @@ describe('republish', () => {
 
       const interval = 1
       name.republish({ interval })
-      await new Promise(resolve => setTimeout(resolve, 20))
+      await waitForStubCall(putStubCustom)
 
       // Verify the record was republished with incremented sequence
       expect(putStubCustom.called).to.be.true()
@@ -186,7 +204,7 @@ describe('republish', () => {
 
       const interval = 1
       name.republish({ interval })
-      await new Promise(resolve => setTimeout(resolve, 20))
+      await waitForStubCall(putStubCustom)
 
       expect(putStubCustom.called).to.be.true()
 
@@ -240,7 +258,7 @@ describe('republish', () => {
         }
       })
 
-      await new Promise(resolve => setTimeout(resolve, 20))
+      await waitForStubCall(putStubCustom)
 
       expect(progressEvents.some(evt => evt.type === 'ipns:republish:success')).to.be.true()
     })
@@ -263,8 +281,8 @@ describe('republish', () => {
       })
 
       // Make all routers fail
-      result.customRouting.put = sinon.stub().rejects(new Error('Router error')) as any
-      result.heliaRouting.put = sinon.stub().rejects(new Error('Router error')) as any
+      putStubCustom.throws(new Error('Router error'))
+      putStubHelia.throws(new Error('Router error'))
 
       const progressEvents: any[] = []
 
@@ -276,7 +294,9 @@ describe('republish', () => {
         }
       })
 
-      await new Promise(resolve => setTimeout(resolve, 20))
+      while (!putStubCustom.threw() || !putStubHelia.threw()) {
+        await new Promise(resolve => setTimeout(resolve, 1))
+      }
 
       expect(progressEvents.some(evt => evt.type === 'ipns:republish:error')).to.be.true()
     })
@@ -311,7 +331,8 @@ describe('republish', () => {
       abortController.abort()
 
       // Advance time past the interval
-      await new Promise(resolve => setTimeout(resolve, interval))
+      await waitForStubCall(putStubCustom)
+      await waitForStubCall(putStubHelia)
 
       // Should not have republished due to abort
       expect(putStubCustom.called).to.be.false()
@@ -341,7 +362,7 @@ describe('republish', () => {
 
         const interval = 1
         name.republish({ interval })
-        await new Promise(resolve => setTimeout(resolve, 30))
+        await waitForStubCall(putStubCustom)
 
         // Verify the record was republished with incremented sequence
         expect(putStubCustom.called).to.be.true()
@@ -372,7 +393,7 @@ describe('republish', () => {
 
         const interval = 1
         name.republish({ interval })
-        await new Promise(resolve => setTimeout(resolve, 30))
+        await waitForStubCall(putStubCustom)
 
         expect(putStubCustom.called).to.be.true()
         const callArgs = putStubCustom.firstCall.args
@@ -400,7 +421,7 @@ describe('republish', () => {
         })
 
         name.republish({ interval: republishInterval })
-        await new Promise(resolve => setTimeout(resolve, 30))
+        await waitForStubCall(putStubCustom)
 
         const expectedValidity = Date.now() + customLifetime
 
@@ -437,7 +458,8 @@ describe('republish', () => {
 
         const interval = 1
         name.republish({ interval })
-        await new Promise(resolve => setTimeout(resolve, 20))
+        await waitForStubCall(putStubCustom)
+        await waitForStubCall(putStubHelia)
 
         // Should not republish due to keychain error (key not found)
         expect(putStubCustom.called).to.be.false()
@@ -453,7 +475,8 @@ describe('republish', () => {
 
         const interval = 1
         name.republish({ interval })
-        await new Promise(resolve => setTimeout(resolve, 20))
+        await waitForStubCall(putStubCustom)
+        await waitForStubCall(putStubHelia)
 
         // Should not republish due to empty datastore
         expect(putStubCustom.called).to.be.false()
