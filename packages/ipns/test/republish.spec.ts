@@ -30,8 +30,10 @@ describe('republish', () => {
   let result: CreateIPNSResult
   let putStubCustom: sinon.SinonStub
   let putStubHelia: sinon.SinonStub
+  let abortController: AbortController
 
   beforeEach(async () => {
+    abortController = new AbortController()
     result = await createIPNS()
     name = result.name
 
@@ -45,6 +47,7 @@ describe('republish', () => {
   })
 
   afterEach(() => {
+    abortController.abort()
     sinon.restore()
     sinon.reset()
   })
@@ -68,7 +71,7 @@ describe('republish', () => {
         }
       })
       // Start republishing
-      name.republish({ interval: 1 })
+      name.republish({ interval: 1, signal: abortController.signal })
       await waitForStubCall(putStubCustom)
 
       // Only check custom router for most tests
@@ -93,7 +96,7 @@ describe('republish', () => {
         }
       })
       // Start republishing
-      name.republish({ interval: 1 })
+      name.republish({ interval: 1, signal: abortController.signal })
       await Promise.all([
         waitForStubCall(putStubCustom),
         waitForStubCall(putStubHelia)
@@ -132,7 +135,7 @@ describe('republish', () => {
       })
 
       const interval = 1
-      name.republish({ interval })
+      name.republish({ interval, signal: abortController.signal })
       await waitForStubCall(putStubCustom)
 
       // Verify the record was republished with incremented sequence
@@ -156,7 +159,7 @@ describe('republish', () => {
       await store.put(routingKey, marshalIPNSRecord(record)) // No metadata
 
       const interval = 1
-      name.republish({ interval })
+      name.republish({ interval, signal: abortController.signal })
       await new Promise(resolve => setTimeout(resolve, 20))
 
       // Verify no records were republished
@@ -176,7 +179,7 @@ describe('republish', () => {
       })
 
       const interval = 1
-      name.republish({ interval })
+      name.republish({ interval, signal: abortController.signal })
       await new Promise(resolve => setTimeout(resolve, 20))
 
       // Verify no records were republished due to error
@@ -201,7 +204,7 @@ describe('republish', () => {
       })
 
       const interval = 1
-      name.republish({ interval })
+      name.republish({ interval, signal: abortController.signal })
       await waitForStubCall(putStubCustom)
 
       expect(putStubCustom.called).to.be.true()
@@ -219,6 +222,7 @@ describe('republish', () => {
       const interval = 1
       name.republish({
         interval,
+        signal: abortController.signal,
         onProgress: (evt) => {
           progressEvents.push(evt)
         }
@@ -251,6 +255,7 @@ describe('republish', () => {
       const interval = 5
       name.republish({
         interval,
+        signal: abortController.signal,
         onProgress: (evt) => {
           progressEvents.push(evt)
         }
@@ -287,6 +292,7 @@ describe('republish', () => {
       const interval = 5
       name.republish({
         interval,
+        signal: abortController.signal,
         onProgress: (evt) => {
           progressEvents.push(evt)
         }
@@ -323,7 +329,7 @@ describe('republish', () => {
       expect(putStubHelia.called).to.be.false()
 
       const interval = 50
-      name.republish({ signal: abortController.signal, interval })
+      name.republish({ interval, signal: abortController.signal })
 
       // Abort before the interval
       abortController.abort()
@@ -355,7 +361,7 @@ describe('republish', () => {
         })
 
         const interval = 1
-        name.republish({ interval })
+        name.republish({ interval, signal: abortController.signal })
         await waitForStubCall(putStubCustom)
 
         // Verify the record was republished with incremented sequence
@@ -386,7 +392,7 @@ describe('republish', () => {
         })
 
         const interval = 1
-        name.republish({ interval })
+        name.republish({ interval, signal: abortController.signal })
         await waitForStubCall(putStubCustom)
 
         expect(putStubCustom.called).to.be.true()
@@ -414,7 +420,7 @@ describe('republish', () => {
           }
         })
 
-        name.republish({ interval: republishInterval })
+        name.republish({ interval: republishInterval, signal: abortController.signal })
         await waitForStubCall(putStubCustom)
 
         const expectedValidity = Date.now() + customLifetime
@@ -448,7 +454,7 @@ describe('republish', () => {
         })
 
         const interval = 1
-        name.republish({ interval })
+        name.republish({ interval, signal: abortController.signal })
 
         await new Promise(resolve => setTimeout(resolve, 2))
         // Should not republish due to keychain error (key not found)
@@ -462,7 +468,7 @@ describe('republish', () => {
       // empty datastore gracefully
 
         const interval = 1
-        name.republish({ interval })
+        name.republish({ interval, signal: abortController.signal })
 
         await new Promise(resolve => setTimeout(resolve, 2))
 
