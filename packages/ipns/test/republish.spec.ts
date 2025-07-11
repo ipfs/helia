@@ -46,8 +46,7 @@ describe('republish', () => {
 
   afterEach(() => {
     sinon.restore()
-    putStubCustom.resetHistory()
-    putStubHelia.resetHistory()
+    sinon.reset()
   })
 
   describe('basic functionality', () => {
@@ -249,7 +248,7 @@ describe('republish', () => {
 
       const progressEvents: any[] = []
 
-      const interval = 1
+      const interval = 5
       name.republish({
         interval,
         onProgress: (evt) => {
@@ -280,12 +279,12 @@ describe('republish', () => {
       })
 
       // Make all routers fail
-      putStubCustom.throws(new Error('Router error'))
-      putStubHelia.throws(new Error('Router error'))
+      result.customRouting.put.throws(new Error('Router error'))
+      result.heliaRouting.put.throws(new Error('Router error'))
 
       const progressEvents: any[] = []
 
-      const interval = 1
+      const interval = 5
       name.republish({
         interval,
         onProgress: (evt) => {
@@ -293,8 +292,8 @@ describe('republish', () => {
         }
       })
 
-      while (!putStubCustom.threw() || !putStubHelia.threw()) {
-        await new Promise(resolve => setTimeout(resolve, 1))
+      while (!result.customRouting.put.threw() || !result.heliaRouting.put.threw()) {
+        await new Promise(resolve => setTimeout(resolve, 2))
       }
 
       expect(progressEvents.some(evt => evt.type === 'ipns:republish:error')).to.be.true()
