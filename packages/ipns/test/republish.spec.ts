@@ -14,7 +14,6 @@ import type { CreateIPNSResult } from './fixtures/create-ipns.js'
 function waitForStubCall (stub: sinon.SinonStub, callCount = 1): Promise<void> {
   return new Promise((resolve) => {
     const check = (): void => {
-      console.log(stub.callCount, callCount)
       if (stub.callCount >= callCount) {
         resolve()
       } else {
@@ -324,15 +323,11 @@ describe('republish', () => {
       expect(putStubCustom.called).to.be.false()
       expect(putStubHelia.called).to.be.false()
 
-      const interval = 100
+      const interval = 50
       name.republish({ signal: abortController.signal, interval })
 
       // Abort before the interval
       abortController.abort()
-
-      // Advance time past the interval
-      await waitForStubCall(putStubCustom)
-      await waitForStubCall(putStubHelia)
 
       // Should not have republished due to abort
       expect(putStubCustom.called).to.be.false()
@@ -439,7 +434,7 @@ describe('republish', () => {
     })
 
     describe('error handling', () => {
-      it('should handle keychain errors', async () => {
+      it('should skip republishing records with missing key', async () => {
         const key = await generateKeyPair('Ed25519')
         const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
         const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
@@ -453,14 +448,10 @@ describe('republish', () => {
           }
         })
 
-        expect(putStubCustom.called).to.be.false()
-        expect(putStubHelia.called).to.be.false()
-
         const interval = 1
         name.republish({ interval })
-        await waitForStubCall(putStubCustom)
-        await waitForStubCall(putStubHelia)
 
+        await new Promise(resolve => setTimeout(resolve, 2))
         // Should not republish due to keychain error (key not found)
         expect(putStubCustom.called).to.be.false()
         expect(putStubHelia.called).to.be.false()
@@ -470,13 +461,11 @@ describe('republish', () => {
       // This test is harder to implement with real datastore since we can't easily
       // make the datastore fail. Instead, we'll test that the function handles
       // empty datastore gracefully
-        expect(putStubCustom.called).to.be.false()
-        expect(putStubHelia.called).to.be.false()
 
         const interval = 1
         name.republish({ interval })
-        await waitForStubCall(putStubCustom)
-        await waitForStubCall(putStubHelia)
+
+        await new Promise(resolve => setTimeout(resolve, 2))
 
         // Should not republish due to empty datastore
         expect(putStubCustom.called).to.be.false()

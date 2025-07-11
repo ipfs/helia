@@ -266,6 +266,7 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
 import { NotFoundError, isPublicKey } from '@libp2p/interface'
 import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { Queue } from '@libp2p/utils/queue'
 import { createIPNSRecord, extractPublicKeyFromIPNSRecord, marshalIPNSRecord, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from 'ipns'
 import { ipnsSelector } from 'ipns/selector'
 import { ipnsValidator } from 'ipns/validator'
@@ -301,6 +302,8 @@ const DEFAULT_LIFETIME_MS = 48 * HOUR
 const DEFAULT_REPUBLISH_INTERVAL_MS = 23 * HOUR
 
 const DEFAULT_TTL_NS = BigInt(MINUTE) * 5_000_000n // 5 minutes
+
+const DEFAULT_REPUBLISH_CONCURRENCY = 5
 
 export type PublishProgressEvents =
   ProgressEvent<'ipns:publish:start'> |
@@ -395,6 +398,13 @@ export interface RepublishOptions extends AbortOptions, ProgressOptions<Republis
    * The republish interval in ms (default: 23hrs)
    */
   interval?: number
+
+  /**
+   * The maximum number of records to republish at once
+   *
+   * @default 5
+   */
+  concurrency?: number
 }
 
 export interface RepublishRecordOptions extends AbortOptions, ProgressOptions<RepublishProgressEvents | IPNSRoutingEvents> {
@@ -596,8 +606,11 @@ class DefaultIPNS implements IPNS {
 
     const republishRecords = async (): Promise<void> => {
       const startTime = Date.now()
-
       options.onProgress?.(new CustomProgressEvent('ipns:republish:start'))
+
+      const queue = new Queue({
+        concurrency: options.concurrency ?? DEFAULT_REPUBLISH_CONCURRENCY
+      })
 
       try {
         const recordsToRepublish: Array<{ routingKey: Uint8Array, record: IPNSRecord }> = []
@@ -620,8 +633,15 @@ class DefaultIPNS implements IPNS {
             // TODO: only update the record if the record expires within the next 48 hours
             const sequenceNumber = ipnsRecord.sequence + 1n
             const ttlNs = ipnsRecord.ttl ?? DEFAULT_TTL_NS
+            let privKey: PrivateKey
 
-            const privKey = await this.#loadOrCreateKey(metadata.keyName)
+            try {
+              privKey = await this.keychain.exportKey(metadata.keyName)
+            } catch (err: any) {
+              options.onProgress?.(new CustomProgressEvent('ipns:republish:error', { record: ipnsRecord, err }))
+              this.log.error(`missing key ${metadata.keyName}, skipping republishing record`, err)
+              continue
+            }
             const updatedRecord = await createIPNSRecord(privKey, ipnsRecord.value, sequenceNumber, metadata.lifetime, { ...options, ttlNs })
             recordsToRepublish.push({ routingKey, record: updatedRecord })
           } catch (err) {
@@ -633,33 +653,36 @@ class DefaultIPNS implements IPNS {
 
         // Republish each record
         for (const { routingKey, record } of recordsToRepublish) {
-          try {
-            // Republish the record to all routers
-            const marshaledRecord = marshalIPNSRecord(record)
-
-            // Publish to all routers
-            await Promise.all(this.routers.map(async r => {
-              await r.put(routingKey, marshaledRecord, options)
-            }))
-
-            options.onProgress?.(new CustomProgressEvent('ipns:republish:success', record))
-          } catch (err: any) {
-            this.log.error('error republishing record', err)
-            options.onProgress?.(new CustomProgressEvent('ipns:republish:error', { record, err }))
-          }
+          // Add job to queue to republish the record to all routers
+          queue.add(async () => {
+            try {
+              const marshaledRecord = marshalIPNSRecord(record)
+              await Promise.all(
+                this.routers.map(r => r.put(routingKey, marshaledRecord, options))
+              )
+              options.onProgress?.(new CustomProgressEvent('ipns:republish:success', record))
+            } catch (err: any) {
+              this.log.error('error republishing record', err)
+              options.onProgress?.(new CustomProgressEvent('ipns:republish:error', { record, err }))
+            }
+          }, options)
         }
       } catch (err: any) {
         this.log.error('error during republish', err)
       }
+
+      await queue.onIdle(options) // Wait for all jobs to complete
 
       const finishTime = Date.now()
       const timeTaken = finishTime - startTime
       let nextInterval = (options.interval ?? DEFAULT_REPUBLISH_INTERVAL_MS) - timeTaken
 
       if (nextInterval < 0) {
+        // If republishing is slow or interval is too low wait the full interval
         nextInterval = options.interval ?? DEFAULT_REPUBLISH_INTERVAL_MS
       }
 
+      // Queue the next republish
       this.timeout = setTimeout(() => {
         republishRecords().catch(err => {
           this.log.error('error republishing', err)
@@ -667,6 +690,8 @@ class DefaultIPNS implements IPNS {
       }, nextInterval)
     }
 
+    // TODO: Should we kick off the republish immediately when called?
+    // Queue the first republish.
     this.timeout = setTimeout(() => {
       republishRecords().catch(err => {
         this.log.error('error republishing', err)
