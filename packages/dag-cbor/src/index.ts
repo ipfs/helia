@@ -1,7 +1,7 @@
 /**
  * @packageDocumentation
  *
- * `@helia/dag-cbor` makes working with DAG-JSON {@link https://github.com/ipfs/helia Helia} simple & straightforward.
+ * `@helia/dag-cbor` makes working with DAG-CBOR {@link https://ipld.io/docs/codecs/known/dag-cbor/} simple & straightforward.
  *
  * See the {@link DAGCBOR} interface for all available operations.
  *

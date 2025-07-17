@@ -30,7 +30,7 @@ repo and examine the changes made.
 
 -->
 
-`@helia/dag-cbor` makes working with DAG-JSON Helia simple & straightforward.
+`@helia/dag-cbor` makes working with DAG-CBOR Helia simple & straightforward.
 
 See the DAGCBOR interface for all available operations.
 
