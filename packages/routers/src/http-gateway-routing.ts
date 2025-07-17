@@ -72,7 +72,11 @@ class HTTPGatewayRouter implements Partial<Routing> {
         method: 'GET',
         mode: 'cors'
       })
-      return response.ok || response.status === 404
+
+      const corsHeaders = response.headers.get('access-control-allow-origin')
+      const hasCors = corsHeaders === '*' || corsHeaders?.includes(window.location.origin)
+
+      return hasCors && (response.ok || response.status === 404)
     } catch (error) {
       return false
     }
