@@ -411,6 +411,13 @@ export const getCidBlockVerifierFunction = (cid: CID, hasher: MultihashHasher): 
       hash = res
     }
 
+    if (hash.digest.length > cid.multihash.size) {
+      hash = {
+        ...hash,
+        digest: hash.digest.subarray(0, cid.multihash.size)
+      }
+    }
+
     if (!uint8ArrayEquals(hash.digest, cid.multihash.digest)) {
       // if a hash mismatch occurs for a TrustlessGatewayBlockBroker, we should try another gateway
       throw new InvalidMultihashError('Hash of downloaded block did not match multihash from passed CID')

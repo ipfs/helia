@@ -8,13 +8,15 @@ import all from 'it-all'
 import drain from 'it-drain'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
+import { create } from 'multiformats/hashes/digest'
 import { identity } from 'multiformats/hashes/identity'
+import { sha512 } from 'multiformats/hashes/sha2'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { getHasher } from '../../src/utils/get-hasher.js'
-import { NetworkedStorage } from '../../src/utils/networked-storage.js'
+import { NetworkedStorage, getCidBlockVerifierFunction } from '../../src/utils/networked-storage.js'
 import { createBlock } from '../fixtures/create-block.js'
 import type { NetworkedStorageComponents } from '../../src/utils/networked-storage.js'
 import type { BlockBroker } from '@helia/interface/blocks'
@@ -211,5 +213,26 @@ describe('networked-storage', () => {
 
     expect(block).to.equalBytes(blocks[0].block)
     expect(slowBroker.retrieve.getCall(0)).to.have.nested.property('args[1].signal.aborted', true)
+  })
+
+  it('truncates hash digest when longer than multihash size', async () => {
+    const testData = uint8ArrayFromString('hello world test data')
+
+    // Create a full SHA-512 hash
+    const fullHash = await sha512.digest(testData)
+
+    // Create a truncated digest (32 bytes instead of 64)
+    const truncatedDigest = create(sha512.code, fullHash.digest.subarray(0, 32))
+
+    // Create a CID with the truncated hash
+    const cid = CID.createV1(raw.code, truncatedDigest)
+
+    // Get the hasher and create the verifier function
+    const hasher = await getHasher()(sha512.code)
+    const verifyFn = getCidBlockVerifierFunction(cid, hasher)
+
+    // This should not throw - the verifier should truncate the full SHA-512 digest
+    // to match the 32-byte truncated digest in the CID
+    await expect(verifyFn(testData)).to.not.be.rejected()
   })
 })
