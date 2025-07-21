@@ -119,6 +119,7 @@ export interface BlockRetrievalOptions <ProgressEvents extends ProgressEvent<any
    * @default 2_097_152
    */
   maxSize?: number
+  provider?: string
 }
 
 export interface BlockAnnounceOptions <ProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> extends AbortOptions, ProgressOptions<ProgressEvents> {
