@@ -1,5 +1,22 @@
 # Changelog
 
+## [5.5.0](https://github.com/ipfs/helia/compare/helia-v5.4.2...helia-v5.5.0) (2025-07-22)
+
+
+### Features
+
+* add libp2p to @helia/http ([#826](https://github.com/ipfs/helia/issues/826)) ([235e5c4](https://github.com/ipfs/helia/commit/235e5c4093a51bda1e0331f9dd26754f601b582c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^4.2.2 to ^4.2.3
+    * @helia/interface bumped from ^5.3.2 to ^5.4.0
+    * @helia/routers bumped from ^3.1.2 to ^3.1.3
+    * @helia/utils bumped from ^1.3.2 to ^1.4.0
+
 ## [5.4.2](https://github.com/ipfs/helia/compare/helia-v5.4.1...helia-v5.4.2) (2025-05-20)
 
 
