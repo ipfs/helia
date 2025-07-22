@@ -27,7 +27,7 @@ import * as raw from 'multiformats/codecs/raw'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { GetBlockProgressEvents, PutBlockProgressEvents } from '@helia/interface/blocks'
+import type { GetBlockProgressEvents, ProviderOptions, PutBlockProgressEvents } from '@helia/interface/blocks'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { BlockCodec } from 'multiformats/codecs/interface'
@@ -43,7 +43,7 @@ export interface AddOptions extends AbortOptions, ProgressOptions<PutBlockProgre
   codec: BlockCodec<any, unknown>
 }
 
-export interface GetOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents> {
+export interface GetOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents>, ProviderOptions {
   codec: BlockCodec<any, unknown>
 }
 
