@@ -1,5 +1,27 @@
 # Changelog
 
+## [4.2.3](https://github.com/ipfs/helia/compare/block-brokers-v4.2.2...block-brokers-v4.2.3) (2025-07-22)
+
+
+### Bug Fixes
+
+* trustless gateway returned blocks can be limited ([#791](https://github.com/ipfs/helia/issues/791)) ([7a52e95](https://github.com/ipfs/helia/commit/7a52e95165f4a16a1fb2f62cfc6e936cb6f78b69))
+
+
+### Documentation
+
+* fix API docs link ([#809](https://github.com/ipfs/helia/issues/809)) ([41bcc88](https://github.com/ipfs/helia/commit/41bcc88dbc6f516c4ad4ca3740b83eafdcd5e1c9))
+
+
+### Dependencies
+
+* update @multiformats/multiaddr matcher ([#827](https://github.com/ipfs/helia/issues/827)) ([a026690](https://github.com/ipfs/helia/commit/a0266903e981c5e6e2771e7d0d4b60fc659e0eef))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^2.1.2 to ^2.1.3
+    * @helia/interface bumped from ^5.3.2 to ^5.4.0
+    * @helia/utils bumped from ^1.3.2 to ^1.4.0
+
 ## [4.2.2](https://github.com/ipfs/helia/compare/block-brokers-v4.2.1...block-brokers-v4.2.2) (2025-05-20)
 
 

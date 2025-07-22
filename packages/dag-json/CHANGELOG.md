@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.0.7](https://github.com/ipfs/helia/compare/dag-json-v4.0.6...dag-json-v4.0.7) (2025-07-22)
+
+
+### Documentation
+
+* fix API docs link ([#809](https://github.com/ipfs/helia/issues/809)) ([41bcc88](https://github.com/ipfs/helia/commit/41bcc88dbc6f516c4ad4ca3740b83eafdcd5e1c9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.3.2 to ^5.4.0
+
 ## [4.0.6](https://github.com/ipfs/helia/compare/dag-json-v4.0.5...dag-json-v4.0.6) (2025-05-20)
 
 

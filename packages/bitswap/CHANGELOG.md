@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.1.3](https://github.com/ipfs/helia/compare/bitswap-v2.1.2...bitswap-v2.1.3) (2025-07-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.3.2 to ^5.4.0
+    * @helia/utils bumped from ^1.3.2 to ^1.4.0
+
 ## [2.1.2](https://github.com/ipfs/helia/compare/bitswap-v2.1.1...bitswap-v2.1.2) (2025-05-20)
 
 
