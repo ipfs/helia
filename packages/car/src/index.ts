@@ -78,7 +78,7 @@
 
 import { Car as CarClass } from './car.js'
 import type { CodecLoader } from '@helia/interface'
-import type { PutManyBlocksProgressEvents, GetBlockProgressEvents } from '@helia/interface/blocks'
+import type { PutManyBlocksProgressEvents, GetBlockProgressEvents, ProviderOptions } from '@helia/interface/blocks'
 import type { CarWriter, CarReader } from '@ipld/car'
 import type { AbortOptions, ComponentLogger } from '@libp2p/interface'
 import type { Filter } from '@libp2p/utils/filters'
@@ -127,7 +127,7 @@ export interface ExportStrategy {
 export * from './export-strategies/index.js'
 export * from './traversal-strategies/index.js'
 
-export interface ExportCarOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents> {
+export interface ExportCarOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents>, ProviderOptions {
 
   /**
    * If true, the blockstore will not do any network requests.
