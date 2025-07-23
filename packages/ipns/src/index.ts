@@ -926,10 +926,6 @@ class DefaultIPNS implements IPNS {
 
       await ipnsValidator(routingKey, marshaledRecord) // validate that they key corresponds to the record
 
-      // TODO: If we are republishing a signed record without access to the key
-      // we can probably skip storing it in the local store
-      // await this.localStore.put(routingKey, marshaledRecord, undefined, options) // add to local store
-
       // publish record to routing
       await Promise.all(this.routers.map(async r => { await r.put(routingKey, marshaledRecord, options) }))
       options.onProgress?.(new CustomProgressEvent('ipns:republish-record:success', record))
