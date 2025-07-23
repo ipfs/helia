@@ -523,6 +523,7 @@ class DefaultIPNS implements IPNS {
   private readonly dns: DNS
   private readonly log: Logger
   private readonly keychain: Keychain
+  private isStopped: boolean = false
 
   constructor (components: IPNSComponents, routers: IPNSRouting[] = []) {
     this.routers = [
@@ -537,14 +538,23 @@ class DefaultIPNS implements IPNS {
     components.events.addEventListener('stop', this.#onStop.bind(this)) // stop republishing on Helia stop
   }
 
-  async #onStop (): Promise<void> {
+  #onStop (): void {
     if (this.timeout != null) {
       clearTimeout(this.timeout)
       this.timeout = undefined
     }
+    this.isStopped = true
+    this.log('stopped')
+  }
+
+  #throwIfStopped (): void {
+    if (this.isStopped) {
+      throw new Error('Helia is stopped, cannot perform IPNS operations')
+    }
   }
 
   async publish (keyName: string, value: CID | PublicKey | MultihashDigest<0x00 | 0x12> | string, options: PublishOptions = {}): Promise<IPNSPublishResult> {
+    this.#throwIfStopped()
     try {
       const privKey = await this.#loadOrCreateKey(keyName)
       let sequenceNumber = 1n
@@ -577,6 +587,7 @@ class DefaultIPNS implements IPNS {
   }
 
   async resolve (key: PublicKey | MultihashDigest<0x00 | 0x12>, options: ResolveOptions = {}): Promise<IPNSResolveResult> {
+    this.#throwIfStopped()
     const digest = isPublicKey(key) ? key.toMultihash() : key
     const routingKey = multihashToIPNSRoutingKey(digest)
     const record = await this.#findIpnsRecord(routingKey, options)
@@ -608,6 +619,7 @@ class DefaultIPNS implements IPNS {
   }
 
   republish (options: RepublishOptions = {}): void {
+    this.#throwIfStopped()
     if (this.timeout != null) {
       throw new Error('Republish is already running')
     }
