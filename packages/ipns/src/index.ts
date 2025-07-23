@@ -320,6 +320,11 @@ export type RepublishProgressEvents =
   ProgressEvent<'ipns:republish:success', IPNSRecord> |
   ProgressEvent<'ipns:republish:error', { key?: MultihashDigest<0x00 | 0x12>, record: IPNSRecord, err: Error }>
 
+export type RepublishRecordProgressEvents =
+  ProgressEvent<'ipns:republish-record:start', unknown> |
+  ProgressEvent<'ipns:republish-record:success', IPNSRecord> |
+  ProgressEvent<'ipns:republish-record:error', { key?: MultihashDigest<0x00 | 0x12>, record: IPNSRecord, err: Error }>
+
 export type ResolveDNSLinkProgressEvents =
   ResolveProgressEvents |
   IPNSRoutingEvents |
@@ -407,13 +412,8 @@ export interface RepublishOptions extends AbortOptions, ProgressOptions<Republis
   concurrency?: number
 }
 
-export interface RepublishRecordOptions extends AbortOptions, ProgressOptions<RepublishProgressEvents | IPNSRoutingEvents> {
-  /**
-   * Only publish to a local datastore
-   *
-   * @default false
-   */
-  offline?: boolean
+export interface RepublishRecordOptions extends AbortOptions, ProgressOptions<RepublishRecordProgressEvents | IPNSRoutingEvents> {
+
 }
 
 export interface ResolveResult {
@@ -930,12 +930,11 @@ class DefaultIPNS implements IPNS {
       // we can probably skip storing it in the local store
       // await this.localStore.put(routingKey, marshaledRecord, undefined, options) // add to local store
 
-      if (options.offline !== true) {
-        // publish record to routing
-        await Promise.all(this.routers.map(async r => { await r.put(routingKey, marshaledRecord, options) }))
-      }
+      // publish record to routing
+      await Promise.all(this.routers.map(async r => { await r.put(routingKey, marshaledRecord, options) }))
+      options.onProgress?.(new CustomProgressEvent('ipns:republish-record:success', record))
     } catch (err: any) {
-      options.onProgress?.(new CustomProgressEvent('ipns:republish:error', { key: mh, record, err }))
+      options.onProgress?.(new CustomProgressEvent('ipns:republish-record:error', { key: mh, record, err }))
       throw err
     }
   }
