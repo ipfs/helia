@@ -485,9 +485,11 @@ export interface IPNS {
   /**
    * Stop republishing of an IPNS record
    *
-   * This will delete the local record, but the key will remain in the keychain.
+   * This will delete the last signed IPNS record from the datastore, but the key will remain in the keychain.
+   *
+   * Note that the record may still be resolved by other peers until it expires or is no longer valid.
    */
-  unpublish(key: PublicKey | MultihashDigest<0x00 | 0x12>, options?: AbortOptions): Promise<void>
+  unpublish(keyName: string, options?: AbortOptions): Promise<void>
 
   /**
    * Republish an existing IPNS record without the private key.
@@ -730,8 +732,9 @@ class DefaultIPNS implements IPNS {
     }, options.interval ?? DEFAULT_REPUBLISH_INTERVAL_MS)
   }
 
-  async unpublish (key: PublicKey | MultihashDigest<0x00 | 0x12>, options?: AbortOptions): Promise<void> {
-    const digest = isPublicKey(key) ? key.toMultihash() : key
+  async unpublish (keyName: string, options?: AbortOptions): Promise<void> {
+    const { publicKey } = await this.keychain.exportKey(keyName)
+    const digest = publicKey.toMultihash()
     const routingKey = multihashToIPNSRoutingKey(digest)
     await this.localStore.delete(routingKey, options)
   }
