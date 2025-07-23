@@ -476,7 +476,9 @@ export interface IPNS {
   resolveDNSLink(domain: string, options?: ResolveDNSLinkOptions): Promise<DNSLinkResolveResult>
 
   /**
-   * Periodically republish all IPNS records found in the datastore
+   * Periodically republish all IPNS records found in the datastore.
+   *
+   * This will only publish IPNS records that have been explicitly published with the `publish` method using a keyName string.
    */
   republish(options?: RepublishOptions): void
 
