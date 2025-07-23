@@ -338,6 +338,37 @@ describe('republish', () => {
       expect(putStubCustom.called).to.be.false()
       expect(putStubHelia.called).to.be.false()
     })
+
+    it('should clear timeout when the Helia emits a stop event', async () => {
+      const key = await generateKeyPair('Ed25519')
+      const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
+      const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+      // Import the key into the real keychain
+      await result.ipnsKeychain.importKey('test-key', key)
+
+      // Store the record in the real datastore
+      const store = localStore(result.datastore, result.log)
+      await store.put(routingKey, marshalIPNSRecord(record), {
+        metadata: {
+          keyName: 'test-key',
+          lifetime: 24 * 60 * 60 * 1000
+        }
+      })
+
+      const interval = 50
+      name.republish({ interval })
+
+      // Emit stop event immediately
+      result.events.dispatchEvent(new CustomEvent('stop'))
+
+      // Wait for the interval to pass
+      await new Promise(resolve => setTimeout(resolve, interval + 10))
+
+      // Should not have republished after stop event due to cleared timeout
+      expect(putStubCustom.called).to.be.false()
+      expect(putStubHelia.called).to.be.false()
+    })
   })
 
   describe('keychain integration', () => {

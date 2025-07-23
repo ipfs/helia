@@ -508,7 +508,7 @@ export interface IPNSComponents {
   dns: DNS
   logger: ComponentLogger
   libp2p: Libp2p<Pick<DefaultLibp2pServices, 'keychain'>>
-  events: TypedEventEmitter<HeliaEvents>
+  events: TypedEventEmitter<HeliaEvents> // Helia event bus
 }
 
 const bases: Record<string, MultibaseDecoder<string>> = {
@@ -533,12 +533,15 @@ class DefaultIPNS implements IPNS {
     this.log = components.logger.forComponent('helia:ipns')
     this.localStore = localStore(components.datastore, components.logger.forComponent('helia:ipns:local-store'))
     this.keychain = components.libp2p.services.keychain
-    components.events.addEventListener('stop', () => {
-      if (this.timeout != null) {
-        clearTimeout(this.timeout)
-        this.timeout = undefined
-      }
-    })
+
+    components.events.addEventListener('stop', this.#onStop.bind(this)) // stop republishing on Helia stop
+  }
+
+  async #onStop (): Promise<void> {
+    if (this.timeout != null) {
+      clearTimeout(this.timeout)
+      this.timeout = undefined
+    }
   }
 
   async publish (keyName: string, value: CID | PublicKey | MultihashDigest<0x00 | 0x12> | string, options: PublishOptions = {}): Promise<IPNSPublishResult> {

@@ -1,10 +1,11 @@
+import { TypedEventEmitter } from '@libp2p/interface'
 import { keychain } from '@libp2p/keychain'
 import { defaultLogger } from '@libp2p/logger'
 import { MemoryDatastore } from 'datastore-core'
 import { stubInterface } from 'sinon-ts'
 import { ipns } from '../../src/index.js'
 import type { IPNS, IPNSRouting } from '../../src/index.js'
-import type { Routing } from '@helia/interface'
+import type { HeliaEvents, Routing } from '@helia/interface'
 import type { Keychain, KeychainInit } from '@libp2p/keychain'
 import type { Logger } from '@libp2p/logger'
 import type { DNS } from '@multiformats/dns'
@@ -19,6 +20,7 @@ export interface CreateIPNSResult {
   ipnsKeychain: Keychain
   datastore: Datastore,
   log: Logger
+  events: TypedEventEmitter<HeliaEvents>
 }
 
 export async function createIPNS (): Promise<CreateIPNSResult> {
@@ -40,6 +42,8 @@ export async function createIPNS (): Promise<CreateIPNSResult> {
     logger
   })
 
+  const events = new TypedEventEmitter<HeliaEvents>()
+
   const name = ipns({
     datastore,
     routing: heliaRouting,
@@ -49,7 +53,8 @@ export async function createIPNS (): Promise<CreateIPNSResult> {
         keychain: ipnsKeychain
       }
     } as any,
-    logger
+    logger,
+    events
   }, {
     routers: [customRouting]
   })
@@ -61,6 +66,7 @@ export async function createIPNS (): Promise<CreateIPNSResult> {
     dns,
     ipnsKeychain,
     datastore,
-    log: logger.forComponent('helia:ipns:test')
+    log: logger.forComponent('helia:ipns:test'),
+    events
   }
 }
