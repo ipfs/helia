@@ -145,7 +145,7 @@ export function localStore (datastore: Datastore, log: Logger): LocalStore {
               const metadataBuf = await datastore.get(metadataKey, options)
               metadata = IPNSPublishMetadata.decode(metadataBuf)
             } catch (err: any) {
-              log.error('Error deserializing metadata for', routingKeyBase32, err)
+              log.error('Error deserializing metadata for %s - %e', routingKeyBase32, err)
             }
 
             yield {
@@ -156,7 +156,7 @@ export function localStore (datastore: Datastore, log: Logger): LocalStore {
             }
           } catch (err) {
             // Skip invalid records
-            log.error('Error deserializing record:', err)
+            log.error('Error deserializing record - %e', err)
           }
         }
       } catch (err: any) {
