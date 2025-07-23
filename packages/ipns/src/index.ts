@@ -622,32 +622,39 @@ class DefaultIPNS implements IPNS {
           signal: options.signal,
           onProgress: options.onProgress
         })) {
+          if (metadata == null) {
+            // Skip if no metadata is found from before we started
+            // storing metadata or for records republished without a key
+            this.log(`no metadata found for record ${routingKey.toString()}, skipping`)
+            continue
+          }
+          let ipnsRecord: IPNSRecord
           try {
-            if (metadata == null) {
-              // Skip if no metadata is found from before we started
-              // storing metadata or for records republished without a key
-              this.log(`no metadata found for record ${routingKey.toString()}, skipping`)
-              continue
-            }
-
-            const ipnsRecord = unmarshalIPNSRecord(record)
-
-            // TODO: only update the record if the record expires within the next 48 hours
-            const sequenceNumber = ipnsRecord.sequence + 1n
-            const ttlNs = ipnsRecord.ttl ?? DEFAULT_TTL_NS
-            let privKey: PrivateKey
-
-            try {
-              privKey = await this.keychain.exportKey(metadata.keyName)
-            } catch (err: any) {
-              options.onProgress?.(new CustomProgressEvent('ipns:republish:error', { record: ipnsRecord, err }))
-              this.log.error(`missing key ${metadata.keyName}, skipping republishing record`, err)
-              continue
-            }
-            const updatedRecord = await createIPNSRecord(privKey, ipnsRecord.value, sequenceNumber, metadata.lifetime, { ...options, ttlNs })
-            recordsToRepublish.push({ routingKey, record: updatedRecord })
+            ipnsRecord = unmarshalIPNSRecord(record)
           } catch (err) {
             this.log.error('error unmarshaling record', err)
+            continue
+          }
+
+          // TODO: only update the record if the record expires within the next 48 hours
+          const sequenceNumber = ipnsRecord.sequence + 1n
+          const ttlNs = ipnsRecord.ttl ?? DEFAULT_TTL_NS
+          let privKey: PrivateKey
+
+          try {
+            privKey = await this.keychain.exportKey(metadata.keyName)
+          } catch (err: any) {
+            options.onProgress?.(new CustomProgressEvent('ipns:republish:error', { record: ipnsRecord, err }))
+            this.log.error(`missing key ${metadata.keyName}, skipping republishing record`, err)
+            continue
+          }
+          try {
+            const updatedRecord = await createIPNSRecord(privKey, ipnsRecord.value, sequenceNumber, metadata.lifetime, { ...options, ttlNs })
+            recordsToRepublish.push({ routingKey, record: updatedRecord })
+          } catch (err: any) {
+            options.onProgress?.(new CustomProgressEvent('ipns:republish:error', { record: ipnsRecord, err }))
+            this.log.error(`error creating updated IPNS record for ${routingKey.toString()}`, err)
+            continue
           }
         }
 
