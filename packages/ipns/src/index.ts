@@ -282,8 +282,8 @@ import { localStore } from './routing/local-store.js'
 import { isCodec, IDENTITY_CODEC, SHA2_256_CODEC, IPNS_STRING_PREFIX } from './utils.js'
 import type { IPNSRouting, IPNSRoutingEvents } from './routing/index.js'
 import type { LocalStore } from './routing/local-store.js'
-import type { Routing } from '@helia/interface'
-import type { AbortOptions, ComponentLogger, Libp2p, Logger, PrivateKey, PublicKey } from '@libp2p/interface'
+import type { Routing, HeliaEvents } from '@helia/interface'
+import type { AbortOptions, ComponentLogger, Libp2p, Logger, PrivateKey, PublicKey, TypedEventEmitter } from '@libp2p/interface'
 import type { Keychain } from '@libp2p/keychain'
 import type { Answer, DNS, ResolveDnsProgressEvents } from '@multiformats/dns'
 import type { DefaultLibp2pServices } from 'helia'
@@ -508,6 +508,7 @@ export interface IPNSComponents {
   dns: DNS
   logger: ComponentLogger
   libp2p: Libp2p<Pick<DefaultLibp2pServices, 'keychain'>>
+  events: TypedEventEmitter<HeliaEvents>
 }
 
 const bases: Record<string, MultibaseDecoder<string>> = {
@@ -532,6 +533,12 @@ class DefaultIPNS implements IPNS {
     this.log = components.logger.forComponent('helia:ipns')
     this.localStore = localStore(components.datastore, components.logger.forComponent('helia:ipns:local-store'))
     this.keychain = components.libp2p.services.keychain
+    components.events.addEventListener('stop', () => {
+      if (this.timeout != null) {
+        clearTimeout(this.timeout)
+        this.timeout = undefined
+      }
+    })
   }
 
   async publish (keyName: string, value: CID | PublicKey | MultihashDigest<0x00 | 0x12> | string, options: PublishOptions = {}): Promise<IPNSPublishResult> {
