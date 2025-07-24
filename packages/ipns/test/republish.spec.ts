@@ -371,142 +371,255 @@ describe('republish', () => {
     })
   })
 
-  describe('keychain integration', () => {
-    describe('TTL and lifetime', () => {
-      it('should use existing TTL from records', async () => {
-        const key = await generateKeyPair('Ed25519')
-        const customTtl = BigInt(10 * 60 * 1000) * 1_000_000n // 10 minutes in nanoseconds
-        const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000, { ttlNs: customTtl })
-        const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+  describe('TTL and lifetime', () => {
+    it('should use existing TTL from records', async () => {
+      const key = await generateKeyPair('Ed25519')
+      const customTtl = BigInt(10 * 60 * 1000) * 1_000_000n // 10 minutes in nanoseconds
+      const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000, { ttlNs: customTtl })
+      const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
-        // Import the key into the real keychain
-        await result.ipnsKeychain.importKey('test-key', key)
+      // Import the key into the real keychain
+      await result.ipnsKeychain.importKey('test-key', key)
 
-        // Store the record in the real datastore
-        const store = localStore(result.datastore, result.log)
-        await store.put(routingKey, marshalIPNSRecord(record), {
-          metadata: {
-            keyName: 'test-key',
-            lifetime: 24 * 60 * 60 * 1000
-          }
-        })
-
-        const interval = 1
-        name.republish({ interval, signal: abortController.signal })
-        await waitForStubCall(putStubCustom)
-
-        // Verify the record was republished with incremented sequence
-        expect(putStubCustom.called).to.be.true()
-        const callArgs = putStubCustom.firstCall.args
-        expect(callArgs[0]).to.deep.equal(routingKey)
-
-        const republishedRecord = unmarshalIPNSRecord(callArgs[1])
-        expect(republishedRecord.sequence).to.equal(2n) // Incremented from 1n
-        expect(republishedRecord.ttl).to.equal(customTtl)
+      // Store the record in the real datastore
+      const store = localStore(result.datastore, result.log)
+      await store.put(routingKey, marshalIPNSRecord(record), {
+        metadata: {
+          keyName: 'test-key',
+          lifetime: 24 * 60 * 60 * 1000
+        }
       })
 
-      it('should use default TTL when not present', async () => {
-        const key = await generateKeyPair('Ed25519')
-        const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
-        const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+      const interval = 1
+      name.republish({ interval, signal: abortController.signal })
+      await waitForStubCall(putStubCustom)
 
-        // Import the key into the real keychain
-        await result.ipnsKeychain.importKey('test-key', key)
+      // Verify the record was republished with incremented sequence
+      expect(putStubCustom.called).to.be.true()
+      const callArgs = putStubCustom.firstCall.args
+      expect(callArgs[0]).to.deep.equal(routingKey)
 
-        // Store the record in the real datastore
-        const store = localStore(result.datastore, result.log)
-        await store.put(routingKey, marshalIPNSRecord(record), {
-          metadata: {
-            keyName: 'test-key',
-            lifetime: 24 * 60 * 60 * 1000
-          }
-        })
-
-        const interval = 1
-        name.republish({ interval, signal: abortController.signal })
-        await waitForStubCall(putStubCustom)
-
-        expect(putStubCustom.called).to.be.true()
-        const callArgs = putStubCustom.firstCall.args
-        const republishedRecord = unmarshalIPNSRecord(callArgs[1])
-        expect(republishedRecord.ttl).to.equal(5n * 60n * 1000n * 1_000_000n) // Default TTL
-      })
-
-      it('should use metadata lifetime', async () => {
-        const key = await generateKeyPair('Ed25519')
-        const customLifetime = 5 * 1000 // 5 seconds
-        const republishInterval = 1
-        const record = await createIPNSRecord(key, testCid, 1n, customLifetime)
-        const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
-
-        // Import the key into the real keychain
-        await result.ipnsKeychain.importKey('test-key', key)
-
-        // Store the record in the real datastore
-        const store = localStore(result.datastore, result.log)
-        await store.put(routingKey, marshalIPNSRecord(record), {
-          metadata: {
-            keyName: 'test-key',
-            lifetime: customLifetime
-          }
-        })
-
-        name.republish({ interval: republishInterval, signal: abortController.signal })
-        await waitForStubCall(putStubCustom)
-
-        const expectedValidity = Date.now() + customLifetime
-
-        expect(putStubCustom.called).to.be.true()
-
-        const callArgs = putStubCustom.firstCall.args
-        const republishedRecord = unmarshalIPNSRecord(callArgs[1])
-
-        // Check that the validity is set to the custom lifetime
-        const actualValidity = new Date(republishedRecord.validity)
-
-        const timeDiff = Math.abs(actualValidity.getTime() - expectedValidity)
-        expect(timeDiff).to.be.lessThan(200)
-      })
+      const republishedRecord = unmarshalIPNSRecord(callArgs[1])
+      expect(republishedRecord.sequence).to.equal(2n) // Incremented from 1n
+      expect(republishedRecord.ttl).to.equal(customTtl)
     })
 
-    describe('error handling', () => {
-      it('should skip republishing records with missing key', async () => {
-        const key = await generateKeyPair('Ed25519')
-        const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
-        const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+    it('should use default TTL when not present', async () => {
+      const key = await generateKeyPair('Ed25519')
+      const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
+      const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
-        // Store the record in the real datastore (but don't import the key)
-        const store = localStore(result.datastore, result.log)
-        await store.put(routingKey, marshalIPNSRecord(record), {
-          metadata: {
-            keyName: 'missing-key',
-            lifetime: 24 * 60 * 60 * 1000
-          }
+      // Import the key into the real keychain
+      await result.ipnsKeychain.importKey('test-key', key)
+
+      // Store the record in the real datastore
+      const store = localStore(result.datastore, result.log)
+      await store.put(routingKey, marshalIPNSRecord(record), {
+        metadata: {
+          keyName: 'test-key',
+          lifetime: 24 * 60 * 60 * 1000
+        }
+      })
+
+      const interval = 1
+      name.republish({ interval, signal: abortController.signal })
+      await waitForStubCall(putStubCustom)
+
+      expect(putStubCustom.called).to.be.true()
+      const callArgs = putStubCustom.firstCall.args
+      const republishedRecord = unmarshalIPNSRecord(callArgs[1])
+      expect(republishedRecord.ttl).to.equal(5n * 60n * 1000n * 1_000_000n) // Default TTL
+    })
+
+    it('should use metadata lifetime', async () => {
+      const key = await generateKeyPair('Ed25519')
+      const customLifetime = 5 * 1000 // 5 seconds
+      const republishInterval = 1
+      const record = await createIPNSRecord(key, testCid, 1n, customLifetime)
+      const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+      // Import the key into the real keychain
+      await result.ipnsKeychain.importKey('test-key', key)
+
+      // Store the record in the real datastore
+      const store = localStore(result.datastore, result.log)
+      await store.put(routingKey, marshalIPNSRecord(record), {
+        metadata: {
+          keyName: 'test-key',
+          lifetime: customLifetime
+        }
+      })
+
+      name.republish({ interval: republishInterval, signal: abortController.signal })
+      await waitForStubCall(putStubCustom)
+
+      const expectedValidity = Date.now() + customLifetime
+
+      expect(putStubCustom.called).to.be.true()
+
+      const callArgs = putStubCustom.firstCall.args
+      const republishedRecord = unmarshalIPNSRecord(callArgs[1])
+
+      // Check that the validity is set to the custom lifetime
+      const actualValidity = new Date(republishedRecord.validity)
+
+      const timeDiff = Math.abs(actualValidity.getTime() - expectedValidity)
+      expect(timeDiff).to.be.lessThan(200)
+    })
+  })
+
+  describe('error handling', () => {
+    it('should skip republishing records with missing key', async () => {
+      const key = await generateKeyPair('Ed25519')
+      const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
+      const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+      // Store the record in the real datastore (but don't import the key)
+      const store = localStore(result.datastore, result.log)
+      await store.put(routingKey, marshalIPNSRecord(record), {
+        metadata: {
+          keyName: 'missing-key',
+          lifetime: 24 * 60 * 60 * 1000
+        }
+      })
+
+      const interval = 5
+      name.republish({ interval, signal: abortController.signal })
+
+      await new Promise(resolve => setTimeout(resolve, interval + 10))
+      // Should not republish due to keychain error (key not found)
+      expect(putStubCustom.called).to.be.false()
+      expect(putStubHelia.called).to.be.false()
+    })
+
+    it('should handle localStore.list() errors during republish', async () => {
+      // Stub localStore to throw error during list operation
+      const store = localStore(result.datastore, result.log)
+      const listStub = sinon.stub(store, 'list').throws(new Error('Datastore list failed'))
+
+      // Override the localStore on the IPNS instance
+      // @ts-ignore
+      name.localStore = store
+
+      const progressEvents: any[] = []
+      const interval = 20
+      name.republish({
+        interval,
+        signal: abortController.signal,
+        onProgress: (evt) => progressEvents.push(evt)
+      })
+
+      await new Promise(resolve => setTimeout(resolve, 20))
+
+      expect(listStub.called).to.be.true()
+      // Should not republish due to list error
+      expect(putStubCustom.called).to.be.false()
+      expect(putStubHelia.called).to.be.false()
+
+      // Check if error progress event was emitted
+      const errorEvent = progressEvents.find(evt => evt.type === 'ipns:republish:error')
+      expect(errorEvent).to.exist()
+    })
+
+    it('should emit error progress events when localStore.list() fails', async () => {
+      const store = localStore(result.datastore, result.log)
+      const progressEvents: any[] = []
+
+      // Stub list to emit error progress event and then throw
+      // eslint-disable-next-line require-yield
+      const listStub = sinon.stub(store, 'list').callsFake(async function * (options) {
+        // Simulate the error progress event emission
+        options?.onProgress?.({
+          type: 'ipns:routing:datastore:error',
+          detail: new Error('List operation failed')
         })
-
-        const interval = 1
-        name.republish({ interval, signal: abortController.signal })
-
-        await new Promise(resolve => setTimeout(resolve, 2))
-        // Should not republish due to keychain error (key not found)
-        expect(putStubCustom.called).to.be.false()
-        expect(putStubHelia.called).to.be.false()
+        throw new Error('List operation failed')
       })
 
-      it('should handle datastore errors', async () => {
-      // This test is harder to implement with real datastore since we can't easily
-      // make the datastore fail. Instead, we'll test that the function handles
-      // empty datastore gracefully
+      // Override the localStore
+      // @ts-ignore
+      name.localStore = store
 
-        const interval = 1
-        name.republish({ interval, signal: abortController.signal })
-
-        await new Promise(resolve => setTimeout(resolve, 2))
-
-        // Should not republish due to empty datastore
-        expect(putStubCustom.called).to.be.false()
-        expect(putStubHelia.called).to.be.false()
+      const interval = 1
+      name.republish({
+        interval,
+        signal: abortController.signal,
+        onProgress: (evt) => progressEvents.push(evt)
       })
+
+      await new Promise(resolve => setTimeout(resolve, 20))
+
+      expect(listStub.called).to.be.true()
+      expect(putStubCustom.called).to.be.false()
+      expect(putStubHelia.called).to.be.false()
+
+      // Check if datastore error progress event was emitted
+      const datastoreErrorEvent = progressEvents.find(evt => evt.type === 'ipns:routing:datastore:error')
+      expect(datastoreErrorEvent).to.exist()
+      expect(datastoreErrorEvent.detail.message).to.equal('List operation failed')
+    })
+
+    it('should handle corrupt record data during republish iteration', async () => {
+      const key = await generateKeyPair('Ed25519')
+      const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+      // Import the key
+      await result.ipnsKeychain.importKey('test-key', key)
+
+      const store = localStore(result.datastore, result.log)
+
+      // Store corrupt record data that will fail to unmarshal
+      await store.put(routingKey, new Uint8Array([255, 255, 255]), {
+        metadata: {
+          keyName: 'test-key',
+          lifetime: 24 * 60 * 60 * 1000
+        }
+      })
+
+      const interval = 1
+      name.republish({ interval, signal: abortController.signal })
+
+      await new Promise(resolve => setTimeout(resolve, 20))
+
+      // Should not republish due to unmarshal error
+      expect(putStubCustom.called).to.be.false()
+      expect(putStubHelia.called).to.be.false()
+    })
+
+    it('should continue rebpublishing other records when one record fails', async () => {
+      const key1 = await generateKeyPair('Ed25519')
+      const key2 = await generateKeyPair('Ed25519')
+      const record2 = await createIPNSRecord(key2, testCid, 1n, 24 * 60 * 60 * 1000)
+      const routingKey1 = multihashToIPNSRoutingKey(key1.publicKey.toMultihash())
+      const routingKey2 = multihashToIPNSRoutingKey(key2.publicKey.toMultihash())
+
+      // Import both keys
+      await result.ipnsKeychain.importKey('test-key-1', key1)
+      await result.ipnsKeychain.importKey('test-key-2', key2)
+
+      const store = localStore(result.datastore, result.log)
+
+      // Store one valid record and one corrupt record
+      await store.put(routingKey1, new Uint8Array([255, 255, 255]), {
+        metadata: {
+          keyName: 'test-key-1',
+          lifetime: 24 * 60 * 60 * 1000
+        }
+      })
+      await store.put(routingKey2, marshalIPNSRecord(record2), {
+        metadata: {
+          keyName: 'test-key-2',
+          lifetime: 24 * 60 * 60 * 1000
+        }
+      })
+
+      const interval = 1
+      name.republish({ interval, signal: abortController.signal })
+      await waitForStubCall(putStubCustom)
+
+      // Should republish the valid record despite the corrupt one
+      expect(putStubCustom.called).to.be.true()
+      expect(putStubHelia.called).to.be.true()
     })
   })
 })

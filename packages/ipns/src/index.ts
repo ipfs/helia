@@ -655,7 +655,8 @@ class DefaultIPNS implements IPNS {
           let ipnsRecord: IPNSRecord
           try {
             ipnsRecord = unmarshalIPNSRecord(record)
-          } catch (err) {
+          } catch (err: any) {
+            options.onProgress?.(new CustomProgressEvent('ipns:republish:error', { err }))
             this.log.error('error unmarshaling record', err)
             continue
           }
