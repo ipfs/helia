@@ -4,6 +4,7 @@ import { expect } from 'aegir/chai'
 import { base36 } from 'multiformats/bases/base36'
 import { CID } from 'multiformats/cid'
 import Sinon from 'sinon'
+import { localStore } from '../src/routing/local-store.js'
 import { createIPNS } from './fixtures/create-ipns.js'
 import type { IPNS } from '../src/index.js'
 
@@ -117,5 +118,105 @@ describe('publish', () => {
 
     expect(result.cid.toString()).to.equal(cid.toString())
     expect(result.path).to.equal(path)
+  })
+
+  describe('localStore error handling', () => {
+    it('should handle datastore errors during publish', async () => {
+      const result = await createIPNS()
+      const testName = result.name
+
+      // Stub localStore.get to throw an error
+      const store = localStore(result.datastore, result.log)
+      const getStub = Sinon.stub(store, 'get').rejects(new Error('Datastore get failed'))
+      const hasStub = Sinon.stub(store, 'has').resolves(true)
+
+      // Override the localStore on the IPNS instance
+      // @ts-ignore
+      testName.localStore = store
+
+      const keyName = 'test-key-error'
+      await expect(testName.publish(keyName, cid)).to.be.rejectedWith('Datastore get failed')
+
+      expect(hasStub.called).to.be.true()
+      expect(getStub.called).to.be.true()
+    })
+
+    it('should handle datastore put errors during publish', async () => {
+      const result = await createIPNS()
+      const testName = result.name
+
+      // Stub localStore.put to throw an error
+      const store = localStore(result.datastore, result.log)
+      const putStub = Sinon.stub(store, 'put').rejects(new Error('Datastore put failed'))
+      const hasStub = Sinon.stub(store, 'has').resolves(false)
+
+      // Override the localStore on the IPNS instance
+      // @ts-ignore
+      testName.localStore = store
+
+      const keyName = 'test-key-put-error'
+      await expect(testName.publish(keyName, cid)).to.be.rejectedWith('Datastore put failed')
+
+      expect(hasStub.called).to.be.true()
+      expect(putStub.called).to.be.true()
+    })
+
+    it('should emit error progress events when localStore fails', async () => {
+      const result = await createIPNS()
+      const testName = result.name
+
+      // Stub localStore.put to emit error progress event and then throw
+      const store = localStore(result.datastore, result.log)
+      const progressEvents: any[] = []
+
+      const putStub = Sinon.stub(store, 'put').callsFake(async (_routingKey, _marshaledRecord, options) => {
+        // Simulate the error progress event emission
+        options?.onProgress?.({
+          type: 'ipns:routing:datastore:error',
+          detail: new Error('Storage error')
+        })
+        throw new Error('Storage error')
+      })
+      const hasStub = Sinon.stub(store, 'has').resolves(false)
+
+      // Override the localStore
+      // @ts-ignore
+      testName.localStore = store
+
+      const keyName = 'test-key-progress-error'
+
+      await expect(testName.publish(keyName, cid, {
+        onProgress: (evt) => progressEvents.push(evt)
+      })).to.be.rejectedWith('Storage error')
+
+      expect(hasStub.called).to.be.true()
+      expect(putStub.called).to.be.true()
+
+      // Check if error progress event was emitted by localStore
+      const errorEvent = progressEvents.find(evt => evt.type === 'ipns:routing:datastore:error')
+      expect(errorEvent).to.exist()
+      expect(errorEvent.detail.message).to.equal('Storage error')
+    })
+
+    it('should handle network timeouts in localStore', async () => {
+      const result = await createIPNS()
+      const testName = result.name
+
+      // Create a timeout error
+      const timeoutError = new Error('Network timeout')
+      timeoutError.name = 'TimeoutError'
+
+      const store = localStore(result.datastore, result.log)
+      const hasStub = Sinon.stub(store, 'has').rejects(timeoutError)
+
+      // Override the localStore
+      // @ts-ignore
+      testName.localStore = store
+
+      const keyName = 'test-key-timeout'
+      await expect(testName.publish(keyName, cid)).to.be.rejectedWith('Network timeout')
+
+      expect(hasStub.called).to.be.true()
+    })
   })
 })
