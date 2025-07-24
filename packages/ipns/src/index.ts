@@ -318,7 +318,7 @@ export type ResolveProgressEvents =
 export type RepublishProgressEvents =
   ProgressEvent<'ipns:republish:start', unknown> |
   ProgressEvent<'ipns:republish:success', IPNSRecord> |
-  ProgressEvent<'ipns:republish:error', { key?: MultihashDigest<0x00 | 0x12>, record: IPNSRecord, err: Error }>
+  ProgressEvent<'ipns:republish:error', { key?: MultihashDigest<0x00 | 0x12>, record?: IPNSRecord, err: Error }>
 
 export type RepublishRecordProgressEvents =
   ProgressEvent<'ipns:republish-record:start', unknown> |
@@ -701,6 +701,7 @@ class DefaultIPNS implements IPNS {
           }, options)
         }
       } catch (err: any) {
+        options.onProgress?.(new CustomProgressEvent('ipns:republish:error', { err }))
         this.log.error('error during republish', err)
       }
 
