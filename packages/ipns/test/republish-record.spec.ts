@@ -75,7 +75,7 @@ describe('republishRecord', () => {
     await expect(
       name.republishRecord(otherEd25519Key.publicKey.toMultihash(), ed25519Record, {
         onProgress: (evt) => {
-          expect(evt.type).to.equal('ipns:republish:error')
+          expect(evt.type).to.equal('ipns:republish-record:error')
         }
       })
     ).to.eventually.be.rejected.with.property('name', 'SignatureVerificationError')
