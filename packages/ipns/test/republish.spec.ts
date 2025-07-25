@@ -586,7 +586,7 @@ describe('republish', () => {
       expect(putStubHelia.called).to.be.false()
     })
 
-    it('should continue rebpublishing other records when one record fails', async () => {
+    it('should continue republishing other records when one record fails', async () => {
       const key1 = await generateKeyPair('Ed25519')
       const key2 = await generateKeyPair('Ed25519')
       const record2 = await createIPNSRecord(key2, testCid, 1n, 24 * 60 * 60 * 1000)
