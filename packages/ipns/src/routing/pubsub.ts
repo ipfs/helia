@@ -11,7 +11,7 @@ import { InvalidTopicError } from '../errors.js'
 import { localStore } from './local-store.js'
 import type { GetOptions, IPNSRouting, PutOptions } from './index.js'
 import type { LocalStore } from './local-store.js'
-import type { PeerId, Message, PublishResult, PubSub, PublicKey } from '@libp2p/interface'
+import type { PeerId, Message, PublishResult, PubSub, PublicKey, ComponentLogger } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 import type { ProgressEvent } from 'progress-events'
@@ -20,6 +20,7 @@ const log = logger('helia:ipns:routing:pubsub')
 
 export interface PubsubRoutingComponents {
   datastore: Datastore
+  logger: ComponentLogger
   libp2p: {
     peerId: PeerId
     services: {
@@ -41,7 +42,7 @@ class PubSubRouting implements IPNSRouting {
 
   constructor (components: PubsubRoutingComponents) {
     this.subscriptions = []
-    this.localStore = localStore(components.datastore)
+    this.localStore = localStore(components.datastore, components.logger.forComponent('helia:ipns:local-store'))
     this.peerId = components.libp2p.peerId
     this.pubsub = components.libp2p.services.pubsub
 

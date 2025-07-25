@@ -17,7 +17,7 @@
 import type { Blocks } from './blocks.js'
 import type { Pins } from './pins.js'
 import type { Routing } from './routing.js'
-import type { AbortOptions, ComponentLogger, Libp2p, Metrics } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, Libp2p, Metrics, TypedEventEmitter } from '@libp2p/interface'
 import type { DNS } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
 import type { Await } from 'interface-store'
@@ -53,6 +53,11 @@ export interface Helia<T extends Libp2p = Libp2p> {
    * A key/value store
    */
   datastore: Datastore
+
+  /**
+   * Event emitter for Helia start and stop events
+   */
+  events: TypedEventEmitter<HeliaEvents<T>>
 
   /**
    * Pinning operations for blocks in the blockstore
@@ -117,6 +122,30 @@ export type GcEvents =
 
 export interface GCOptions extends AbortOptions, ProgressOptions<GcEvents> {
 
+}
+
+export interface HeliaEvents<T extends Libp2p = Libp2p> {
+  /**
+   * This event notifies listeners that the node has started
+   *
+   * ```TypeScript
+   * helia.addEventListener('start', (event) => {
+   *   console.info(event.detail.libp2p.isStarted()) // true
+   * })
+   * ```
+   */
+  start: CustomEvent<Helia<T>>
+
+  /**
+   * This event notifies listeners that the node has stopped
+   *
+   * ```TypeScript
+   * helia.addEventListener('stop', (event) => {
+   *   console.info(event.detail.libp2p.isStarted()) // false
+   * })
+   * ```
+   */
+  stop: CustomEvent<Helia<T>>
 }
 
 export * from './blocks.js'
