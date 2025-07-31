@@ -26,6 +26,7 @@ export type BitswapNotifyProgressEvents =
 export type BitswapWantBlockProgressEvents =
   ProgressEvent<'bitswap:want-block:unwant', CID> |
   ProgressEvent<'bitswap:want-block:block', CID> |
+  ProgressEvent<'bitswap:want-block:received', { cid: CID, sender: PeerId }> |
   BitswapNetworkWantProgressEvents
 
 export type { BitswapNetworkNotifyProgressEvents }

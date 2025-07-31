@@ -12,7 +12,7 @@ import type { Logger } from '@libp2p/logger'
 import type { AbortOptions } from '@multiformats/multiaddr'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
-import type { ProgressOptions } from 'progress-events'
+import { CustomProgressEvent, type ProgressOptions } from 'progress-events'
 
 export interface WantOptions extends AbortOptions, ProgressOptions<BitswapWantProgressEvents>, ProviderOptions {
   /**
@@ -95,6 +95,8 @@ export class Bitswap implements BitswapInterface {
         ...options,
         signal
       })
+
+      options.onProgress?.(new CustomProgressEvent<{ cid: CID, sender: PeerId }>('bitswap:want-block:received', { cid, sender: result.sender }))
 
       return result.block
     } finally {
