@@ -1,5 +1,6 @@
 import { setMaxListeners } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
+import { CustomProgressEvent } from 'progress-events'
 import { Network } from './network.js'
 import { PeerWantLists } from './peer-want-lists/index.js'
 import { createBitswapSession } from './session.js'
@@ -12,7 +13,7 @@ import type { Logger } from '@libp2p/logger'
 import type { AbortOptions } from '@multiformats/multiaddr'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
-import { CustomProgressEvent, type ProgressOptions } from 'progress-events'
+import type { ProgressOptions } from 'progress-events'
 
 export interface WantOptions extends AbortOptions, ProgressOptions<BitswapWantProgressEvents>, ProviderOptions {
   /**
