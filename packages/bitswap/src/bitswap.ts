@@ -1,5 +1,6 @@
 import { setMaxListeners } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
+import { CustomProgressEvent } from 'progress-events'
 import { Network } from './network.js'
 import { PeerWantLists } from './peer-want-lists/index.js'
 import { createBitswapSession } from './session.js'
@@ -95,6 +96,8 @@ export class Bitswap implements BitswapInterface {
         ...options,
         signal
       })
+
+      options.onProgress?.(new CustomProgressEvent<{ cid: CID, sender: PeerId }>('bitswap:want-block:received', { cid, sender: result.sender }))
 
       return result.block
     } finally {
