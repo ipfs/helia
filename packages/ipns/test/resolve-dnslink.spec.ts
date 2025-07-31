@@ -1,20 +1,14 @@
 /* eslint-env mocha */
 
-import { generateKeyPair } from '@libp2p/crypto/keys'
 import { NotFoundError } from '@libp2p/interface'
-import { defaultLogger } from '@libp2p/logger'
-import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { peerIdFromPublicKey } from '@libp2p/peer-id'
 import { RecordType } from '@multiformats/dns'
 import { expect } from 'aegir/chai'
-import { MemoryDatastore } from 'datastore-core'
 import { base36 } from 'multiformats/bases/base36'
 import { CID } from 'multiformats/cid'
-import { stubInterface } from 'sinon-ts'
-import { ipns } from '../src/index.js'
+import { createIPNS } from './fixtures/create-ipns.js'
 import type { IPNS } from '../src/index.js'
-import type { Routing } from '@helia/interface'
-import type { DNS, Answer, DNSResponse } from '@multiformats/dns'
-import type { Datastore } from 'interface-datastore'
+import type { Answer, DNS, DNSResponse } from '@multiformats/dns'
 import type { StubbedInstance } from 'sinon-ts'
 
 function dnsResponse (answers: Answer[]): DNSResponse {
@@ -31,22 +25,13 @@ function dnsResponse (answers: Answer[]): DNSResponse {
 }
 
 describe('resolveDNSLink', () => {
-  let datastore: Datastore
-  let heliaRouting: StubbedInstance<Routing>
   let dns: StubbedInstance<DNS>
   let name: IPNS
 
   beforeEach(async () => {
-    datastore = new MemoryDatastore()
-    heliaRouting = stubInterface<Routing>()
-    dns = stubInterface<DNS>()
-
-    name = ipns({
-      datastore,
-      routing: heliaRouting,
-      dns,
-      logger: defaultLogger()
-    })
+    const result = await createIPNS()
+    name = result.name
+    dns = result.dns
   })
 
   it('should resolve a domain', async () => {
@@ -156,16 +141,16 @@ describe('resolveDNSLink', () => {
 
   it('should resolve recursive dnslink -> <peerId>/<path>', async () => {
     const cid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
-    const key = await generateKeyPair('Ed25519')
-    const peerId = peerIdFromPrivateKey(key)
+    const keyName = 'my-key'
+    const { publicKey } = await name.publish(keyName, cid)
+    const peerId = peerIdFromPublicKey(publicKey)
+
     dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
       name: 'foobar.baz.',
       TTL: 60,
       type: RecordType.TXT,
-      data: `dnslink=/ipns/${peerId}/foobar/path/123`
+      data: `dnslink=/ipns/${peerId.toString()}/foobar/path/123`
     }]))
-
-    await name.publish(key, cid)
 
     const result = await name.resolveDNSLink('foobar.baz')
 
@@ -179,8 +164,9 @@ describe('resolveDNSLink', () => {
 
   it('should resolve recursive dnslink -> <IPNS_base36_CID>/<path>', async () => {
     const cid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
-    const key = await generateKeyPair('Ed25519')
-    const peerId = peerIdFromPrivateKey(key)
+    const keyName = 'my-key'
+    const { publicKey } = await name.publish(keyName, cid)
+    const peerId = peerIdFromPublicKey(publicKey)
     const peerIdBase36CID = peerId.toCID().toString(base36)
     dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
       name: 'foobar.baz.',
@@ -188,8 +174,6 @@ describe('resolveDNSLink', () => {
       type: RecordType.TXT,
       data: `dnslink=/ipns/${peerIdBase36CID}/foobar/path/123`
     }]))
-
-    await name.publish(key, cid)
 
     const result = await name.resolveDNSLink('foobar.baz')
 
@@ -203,7 +187,6 @@ describe('resolveDNSLink', () => {
 
   it('should follow CNAMES to delegated DNSLink domains', async () => {
     const cid = CID.parse('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe')
-    const key = await generateKeyPair('Ed25519')
     dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
       name: '_dnslink.foobar.baz.',
       TTL: 60,
@@ -217,9 +200,6 @@ describe('resolveDNSLink', () => {
       // spellchecker:disable-next-line
       data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'
     }]))
-
-    await name.publish(key, cid)
-
     const result = await name.resolveDNSLink('foobar.baz')
 
     if (result == null) {
@@ -231,7 +211,6 @@ describe('resolveDNSLink', () => {
 
   it('should resolve dnslink namespace', async () => {
     const cid = CID.parse('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe')
-    const key = await generateKeyPair('Ed25519')
     dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
       name: '_dnslink.foobar.baz.',
       TTL: 60,
@@ -246,8 +225,6 @@ describe('resolveDNSLink', () => {
       data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'
     }]))
 
-    await name.publish(key, cid)
-
     const result = await name.resolveDNSLink('foobar.baz')
 
     if (result == null) {
@@ -258,8 +235,6 @@ describe('resolveDNSLink', () => {
   })
 
   it('should include DNS Answer in result', async () => {
-    const cid = CID.parse('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe')
-    const key = await generateKeyPair('Ed25519')
     const answer = {
       name: '_dnslink.foobar.baz.',
       TTL: 60,
@@ -268,8 +243,6 @@ describe('resolveDNSLink', () => {
       data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'
     }
     dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([answer]))
-
-    await name.publish(key, cid)
 
     const result = await name.resolveDNSLink('foobar.baz')
 
