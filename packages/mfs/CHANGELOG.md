@@ -1,5 +1,19 @@
 # Changelog
 
+## [5.1.0](https://github.com/ipfs/helia/compare/mfs-v5.0.4...mfs-v5.1.0) (2025-07-31)
+
+
+### Features
+
+* expose extended option for ls in mfs and unixfs ([#836](https://github.com/ipfs/helia/issues/836)) ([9f51b17](https://github.com/ipfs/helia/commit/9f51b175c003a8e052231f4b85c1119165b590c6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/unixfs bumped from ^5.0.4 to ^5.1.0
+
 ## [5.0.4](https://github.com/ipfs/helia/compare/mfs-v5.0.3...mfs-v5.0.4) (2025-07-22)
 
 
