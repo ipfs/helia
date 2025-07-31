@@ -79,6 +79,7 @@
     "@libp2p/kad-dht": "^15.0.2",
     "@libp2p/keychain": "^5.0.10",
     "@libp2p/peer-id": "^5.0.8",
+    "@libp2p/utils": "^6.7.1",
     "@libp2p/websockets": "^9.0.13",
     "@multiformats/multiaddr": "^12.4.0",
     "@multiformats/sha3": "^3.0.2",
