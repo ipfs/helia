@@ -81,7 +81,7 @@ import type { AbortOptions } from '@libp2p/interface'
 import type { Filter } from '@libp2p/utils/filters'
 import type { Blockstore } from 'interface-blockstore'
 import type { Mtime, UnixFS as IPFSUnixFS } from 'ipfs-unixfs'
-import type { ExporterProgressEvents, UnixFSEntry } from 'ipfs-unixfs-exporter'
+import type { ExporterProgressEvents, UnixFSEntry, UnixFSBasicEntry } from 'ipfs-unixfs-exporter'
 import type { ByteStream, DirectoryCandidate, ImportCandidateStream, ImporterOptions, ImporterProgressEvents, ImportResult, ImportContent } from 'ipfs-unixfs-importer'
 import type { CID, Version } from 'multiformats/cid'
 import type { ProgressOptions } from 'progress-events'
@@ -210,6 +210,14 @@ export interface LsOptions extends AbortOptions, ProgressOptions<GetEvents> {
    * missing from the local store. (default: false)
    */
   offline?: boolean
+
+  /**
+   * If true, including UnixFS metadata in the output - nb. this will resolve
+   * the root node of every encountered filesystem entry
+   *
+   * @default true
+   */
+  extended?: boolean
 }
 
 /**
@@ -644,6 +652,7 @@ export interface UnixFS {
    * ```
    */
   ls(cid: CID, options?: Partial<LsOptions>): AsyncIterable<UnixFSEntry>
+  ls(cid: CID, options: Partial<LsOptions> & { extended: false }): AsyncIterable<UnixFSBasicEntry>
 
   /**
    * Make a new directory under an existing directory.
