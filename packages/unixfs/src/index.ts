@@ -76,7 +76,7 @@
  */
 
 import { UnixFS as UnixFSClass } from './unixfs.js'
-import type { GetBlockProgressEvents, PutBlockProgressEvents } from '@helia/interface/blocks'
+import type { GetBlockProgressEvents, ProviderOptions, PutBlockProgressEvents } from '@helia/interface/blocks'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Filter } from '@libp2p/utils/filters'
 import type { Blockstore } from 'interface-blockstore'
@@ -112,7 +112,7 @@ export type GetEvents = GetBlockProgressEvents
 /**
  * Options to pass to the cat command
  */
-export interface CatOptions extends AbortOptions, ProgressOptions<GetEvents> {
+export interface CatOptions extends AbortOptions, ProgressOptions<GetEvents>, ProviderOptions {
   /**
    * Start reading the file at this offset
    */
@@ -138,7 +138,7 @@ export interface CatOptions extends AbortOptions, ProgressOptions<GetEvents> {
 /**
  * Options to pass to the chmod command
  */
-export interface ChmodOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents> {
+export interface ChmodOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents>, ProviderOptions {
   /**
    * If the target of the operation is a directory and this is true,
    * apply the new mode to all directory contents
@@ -166,7 +166,7 @@ export interface ChmodOptions extends AbortOptions, ProgressOptions<GetEvents | 
 /**
  * Options to pass to the cp command
  */
-export interface CpOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents> {
+export interface CpOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents>, ProviderOptions {
   /**
    * If true, allow overwriting existing directory entries (default: false)
    */
@@ -223,7 +223,7 @@ export interface LsOptions extends AbortOptions, ProgressOptions<GetEvents> {
 /**
  * Options to pass to the mkdir command
  */
-export interface MkdirOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents> {
+export interface MkdirOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents>, ProviderOptions {
   /**
    * The CID version to create the new directory with - defaults to the same
    * version as the containing directory
@@ -261,7 +261,7 @@ export interface MkdirOptions extends AbortOptions, ProgressOptions<GetEvents | 
 /**
  * Options to pass to the rm command
  */
-export interface RmOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents> {
+export interface RmOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents>, ProviderOptions {
   /**
    * DAGs with a root block larger than this value will be sharded. Blocks
    * smaller than this value will be regular UnixFS directories.
@@ -278,7 +278,7 @@ export interface RmOptions extends AbortOptions, ProgressOptions<GetEvents | Put
 /**
  * Options to pass to the stat command
  */
-export interface StatOptions extends AbortOptions, ProgressOptions<GetEvents> {
+export interface StatOptions extends AbortOptions, ProgressOptions<GetEvents>, ProviderOptions {
   /**
    * An optional path to allow getting stats of paths inside directories
    */
