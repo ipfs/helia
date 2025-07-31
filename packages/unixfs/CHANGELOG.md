@@ -1,5 +1,13 @@
 # Changelog
 
+## [5.1.0](https://github.com/ipfs/helia/compare/unixfs-v5.0.4...unixfs-v5.1.0) (2025-07-31)
+
+
+### Features
+
+* expose extended option for ls in mfs and unixfs ([#836](https://github.com/ipfs/helia/issues/836)) ([9f51b17](https://github.com/ipfs/helia/commit/9f51b175c003a8e052231f4b85c1119165b590c6))
+* expose providers option ([#834](https://github.com/ipfs/helia/issues/834)) ([5a911c6](https://github.com/ipfs/helia/commit/5a911c6977ec47d1906ccc69b5f57667f22d9ccf))
+
 ## [5.0.4](https://github.com/ipfs/helia/compare/unixfs-v5.0.3...unixfs-v5.0.4) (2025-07-22)
 
 

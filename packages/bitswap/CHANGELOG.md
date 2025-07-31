@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0](https://github.com/ipfs/helia/compare/bitswap-v2.1.3...bitswap-v2.2.0) (2025-07-31)
+
+
+### Features
+
+* add block received event ([#837](https://github.com/ipfs/helia/issues/837)) ([7d471a0](https://github.com/ipfs/helia/commit/7d471a027606254f4fb4e1b73d62b8646426237d))
+
 ## [2.1.3](https://github.com/ipfs/helia/compare/bitswap-v2.1.2...bitswap-v2.1.3) (2025-07-22)
 
 

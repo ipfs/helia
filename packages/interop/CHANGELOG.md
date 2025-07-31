@@ -1,5 +1,27 @@
 # Changelog
 
+## [8.3.0](https://github.com/ipfs/helia/compare/interop-v8.2.0...interop-v8.3.0) (2025-07-31)
+
+
+### Features
+
+* expose providers option ([#834](https://github.com/ipfs/helia/issues/834)) ([5a911c6](https://github.com/ipfs/helia/commit/5a911c6977ec47d1906ccc69b5f57667f22d9ccf))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^4.2.3 to ^4.2.4
+    * @helia/car bumped from ^4.1.3 to ^4.2.0
+    * @helia/dag-cbor bumped from ^4.0.7 to ^4.1.0
+    * @helia/dag-json bumped from ^4.0.7 to ^4.1.0
+    * @helia/http bumped from ^2.2.0 to ^2.2.1
+    * @helia/mfs bumped from ^5.0.4 to ^5.1.0
+    * @helia/strings bumped from ^4.0.7 to ^4.1.0
+    * @helia/unixfs bumped from ^5.0.4 to ^5.1.0
+    * helia bumped from ^5.5.0 to ^5.5.1
+
 ## [8.2.0](https://github.com/ipfs/helia/compare/interop-v8.1.2...interop-v8.2.0) (2025-07-22)
 
 
