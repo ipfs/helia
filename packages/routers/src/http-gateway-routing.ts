@@ -7,6 +7,12 @@ import type { Provider, Routing, RoutingOptions } from '@helia/interface'
 import type { PeerInfo } from '@libp2p/interface'
 import type { Version } from 'multiformats'
 
+interface GatewayStatus {
+  peerInfo: PeerInfo
+  corsSupported: boolean | null
+  lastChecked: number
+}
+
 export const DEFAULT_TRUSTLESS_GATEWAYS = [
   // 2023-10-03: IPNS, Origin, and Block/CAR support from https://ipfs.github.io/public-gateway-checker/
   'https://trustless-gateway.link',
@@ -23,6 +29,12 @@ export interface HTTPGatewayRouterInit {
    * @default true
    */
   shuffle?: boolean
+  /**
+   * How long to cache CORS probe results in milliseconds
+   *
+   * @default 300000 (5 minutes)
+   */
+  corsCheckCacheMs?: number
 }
 
 // this value is from https://github.com/multiformats/multicodec/blob/master/table.csv
@@ -40,22 +52,65 @@ function toPeerInfo (url: string | URL): PeerInfo {
 }
 
 class HTTPGatewayRouter implements Partial<Routing> {
-  private readonly gateways: PeerInfo[]
+  private readonly gatewayStatuses: GatewayStatus[]
   private readonly shuffle: boolean
+  private readonly corsCheckCacheMs: number
 
   constructor (init: HTTPGatewayRouterInit = {}) {
-    this.gateways = (init.gateways ?? DEFAULT_TRUSTLESS_GATEWAYS).map(url => toPeerInfo(url))
+    this.gatewayStatuses = (init.gateways ?? DEFAULT_TRUSTLESS_GATEWAYS).map(url => ({
+      peerInfo: toPeerInfo(url),
+      corsSupported: null,
+      lastChecked: 0
+    }))
     this.shuffle = init.shuffle ?? true
+    this.corsCheckCacheMs = init.corsCheckCacheMs ?? 300000
+  }
+
+  private async checkCorsSupport (gatewayUrl: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${gatewayUrl}/ipfs/bafkqaaa`, {
+        method: 'GET',
+        mode: 'cors'
+      })
+
+      const corsHeaders = response.headers.get('access-control-allow-origin')
+      const hasCors = corsHeaders === '*' || corsHeaders?.includes(window.location.origin)
+
+      return hasCors && (response.ok || response.status === 404)
+    } catch (error) {
+      return false
+    }
+  }
+
+  private async ensureCorsStatus (gateway: GatewayStatus): Promise<boolean> {
+    const now = Date.now()
+    if (gateway.corsSupported !== null && (now - gateway.lastChecked) < this.corsCheckCacheMs) {
+      return gateway.corsSupported
+    }
+
+    const gatewayUrl = gateway.peerInfo.multiaddrs[0]?.toString().replace('/http', 'http').replace('/https', 'https')
+    if (!gatewayUrl) {
+      return false
+    }
+
+    gateway.corsSupported = await this.checkCorsSupport(gatewayUrl)
+    gateway.lastChecked = now
+    return gateway.corsSupported
   }
 
   async * findProviders (cid: CID<unknown, number, number, Version>, options?: RoutingOptions | undefined): AsyncIterable<Provider> {
-    yield * (this.shuffle
-      ? this.gateways.toSorted(() => Math.random() > 0.5 ? 1 : -1)
-      : this.gateways
-    ).map(info => ({
-      ...info,
-      protocols: ['transport-ipfs-gateway-http']
-    }))
+    const gatewaysToCheck = this.shuffle
+      ? this.gatewayStatuses.toSorted(() => Math.random() > 0.5 ? 1 : -1)
+      : this.gatewayStatuses
+
+    for (const gateway of gatewaysToCheck) {
+      if (await this.ensureCorsStatus(gateway)) {
+        yield {
+          ...gateway.peerInfo,
+          protocols: ['transport-ipfs-gateway-http']
+        }
+      }
+    }
   }
 }
 
