@@ -1,5 +1,20 @@
 # Changelog
 
+## [4.2.0](https://github.com/ipfs/helia/compare/car-v4.1.3...car-v4.2.0) (2025-07-31)
+
+
+### Features
+
+* expose providers option ([#834](https://github.com/ipfs/helia/issues/834)) ([5a911c6](https://github.com/ipfs/helia/commit/5a911c6977ec47d1906ccc69b5f57667f22d9ccf))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @helia/mfs bumped from ^5.0.4 to ^5.1.0
+    * @helia/unixfs bumped from ^5.0.4 to ^5.1.0
+
 ## [4.1.3](https://github.com/ipfs/helia/compare/car-v4.1.2...car-v4.1.3) (2025-07-22)
 
 
