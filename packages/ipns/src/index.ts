@@ -47,7 +47,7 @@
  * // publish the name
  * const { publicKey } = await name.publish('key-1', cid)
  *
- * // start republishing
+ * // Kick off republishing loop in the background
  * name.republish()
  *
  *
@@ -330,7 +330,7 @@ const DHT_EXPIRY_MS = 48 * HOUR
 // How often to run the republish loop
 const DEFAULT_REPUBLISH_INTERVAL_MS = HOUR
 
-// Republish IPNS records when the expiry of our provider records is within this treshhold
+// Republish IPNS records when the expiry of our provider records is within this threshold
 const REPUBLISH_THRESHOLD = 24 * HOUR
 
 const DEFAULT_TTL_NS = BigInt(MINUTE) * 5_000_000n // 5 minutes
@@ -508,7 +508,7 @@ export interface IPNS {
   resolveDNSLink(domain: string, options?: ResolveDNSLinkOptions): Promise<DNSLinkResolveResult>
 
   /**
-   * Periodically republish all IPNS records found in the datastore.
+   * Periodically republish all IPNS records found in the datastore that will expire within the republish threshold (24 hours).
    *
    * This will only publish IPNS records that have been explicitly published with the `publish` method using a keyName string.
    */
