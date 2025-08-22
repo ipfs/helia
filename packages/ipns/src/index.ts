@@ -28,6 +28,30 @@
  * console.info(result.cid, result.path)
  * ```
  *
+ * @example Starting republishing
+ *
+ * To start republishing IPNS records, call the `republish` method:
+ *
+ * ```TypeScript
+ * import { createHelia } from 'helia'
+ * import { ipns } from '@helia/ipns'
+ * import { unixfs } from '@helia/unixfs'
+ *
+ * const helia = await createHelia()
+ * const name = ipns(helia)
+ *
+ * // store some data to publish
+ * const fs = unixfs(helia)
+ * const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
+ *
+ * // publish the name
+ * const { publicKey } = await name.publish('key-1', cid)
+ *
+ * // start republishing
+ * name.republish()
+ *
+ *
+ *
  * @example Publishing a recursive record
  *
  * A recursive record is a one that points to another record rather than to a
@@ -299,7 +323,15 @@ const MINUTE = 60 * 1000
 const HOUR = 60 * MINUTE
 
 const DEFAULT_LIFETIME_MS = 48 * HOUR
-const DEFAULT_REPUBLISH_INTERVAL_MS = 23 * HOUR
+
+// The default DHT record expiry
+const DHT_EXPIRY_MS = 48 * HOUR
+
+// How often to run the republish loop
+const DEFAULT_REPUBLISH_INTERVAL_MS = HOUR
+
+// Republish IPNS records when the expiry of our provider records is within this treshhold
+const REPUBLISH_THRESHOLD = 24 * HOUR
 
 const DEFAULT_TTL_NS = BigInt(MINUTE) * 5_000_000n // 5 minutes
 
@@ -631,6 +663,7 @@ class DefaultIPNS implements IPNS {
     })
 
     const republishRecords = async (): Promise<void> => {
+      this.log('starting ipns republish records loop')
       const startTime = Date.now()
       options.onProgress?.(new CustomProgressEvent('ipns:republish:start'))
 
@@ -642,7 +675,7 @@ class DefaultIPNS implements IPNS {
         const recordsToRepublish: Array<{ routingKey: Uint8Array, record: IPNSRecord }> = []
 
         // Find all records using the localStore.list method
-        for await (const { routingKey, record, metadata } of this.localStore.list({
+        for await (const { routingKey, record, metadata, created } of this.localStore.list({
           signal: options.signal,
           onProgress: options.onProgress
         })) {
@@ -661,7 +694,11 @@ class DefaultIPNS implements IPNS {
             continue
           }
 
-          // TODO: only update the record if the record expires within the next 48 hours
+          // Only republish records that are within the DHT or record expiry threshold
+          if (!this.shouldRepublish(ipnsRecord, created)) {
+            this.log.trace(`skipping record ${routingKey.toString()}within republish threshold`)
+            continue
+          }
           const sequenceNumber = ipnsRecord.sequence + 1n
           const ttlNs = ipnsRecord.ttl ?? DEFAULT_TTL_NS
           let privKey: PrivateKey
@@ -725,13 +762,28 @@ class DefaultIPNS implements IPNS {
       }, nextInterval)
     }
 
-    // TODO: Should we kick off the republish immediately when called?
-    // Queue the first republish.
-    this.timeout = setTimeout(() => {
-      republishRecords().catch(err => {
-        this.log.error('error republishing', err)
-      })
-    }, options.interval ?? DEFAULT_REPUBLISH_INTERVAL_MS)
+    // Queue the first republish immediately
+    republishRecords().catch(err => {
+      this.log.error('error republishing', err)
+    })
+  }
+
+  private shouldRepublish (ipnsRecord: IPNSRecord, created: Date): boolean {
+    const now = Date.now()
+    const dhtExpiry = created.getTime() + DHT_EXPIRY_MS
+    const recordExpiry = new Date(ipnsRecord.validity).getTime()
+
+    // If the DHT expiry is within the threshold, republish it
+    if (dhtExpiry - now < REPUBLISH_THRESHOLD) {
+      return true
+    }
+
+    // If the record expiry (based on validity/lifetime) is within the threshold, republish it
+    if (recordExpiry - now < REPUBLISH_THRESHOLD) {
+      return true
+    }
+
+    return false
   }
 
   async unpublish (keyName: string, options?: AbortOptions): Promise<void> {
