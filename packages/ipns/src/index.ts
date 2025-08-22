@@ -763,9 +763,11 @@ class DefaultIPNS implements IPNS {
     }
 
     // Queue the first republish immediately
-    republishRecords().catch(err => {
-      this.log.error('error republishing', err)
-    })
+    this.timeout = setTimeout(() => {
+      republishRecords().catch(err => {
+        this.log.error('error republishing', err)
+      })
+    }, 0)
   }
 
   private shouldRepublish (ipnsRecord: IPNSRecord, created: Date): boolean {
