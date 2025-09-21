@@ -309,6 +309,7 @@ const log = logger('helia:ipns')
 
 const MINUTE = 60 * 1000
 const HOUR = 60 * MINUTE
+const LIBP2P_KEY_CODEC = 0x72
 
 const DEFAULT_LIFETIME_MS = 48 * HOUR
 const DEFAULT_REPUBLISH_INTERVAL_MS = 23 * HOUR
@@ -539,8 +540,18 @@ class DefaultIPNS implements IPNS {
     }
   }
 
-  async resolve (key: PublicKey | MultihashDigest<0x00 | 0x12>, options: ResolveOptions = {}): Promise<IPNSResolveResult> {
-    const digest = isPublicKey(key) ? key.toMultihash() : key
+  async resolve(key: CID | PublicKey | MultihashDigest<0x00 | 0x12>, options: ResolveOptions = {}): Promise<IPNSResolveResult> {
+    let digest: MultihashDigest<0x00 | 0x12>
+    
+    if (CID.asCID(key)) {
+      const cid = key as CID
+      digest = cid.multihash as MultihashDigest<0x00 | 0x12>
+    } else if (isPublicKey(key)) {
+      digest = key.toMultihash() as MultihashDigest<0x00 | 0x12>
+    } else {
+      digest = key as MultihashDigest<0x00 | 0x12> // Explicit type assertion
+    }
+    
     const routingKey = multihashToIPNSRoutingKey(digest)
     const record = await this.#findIpnsRecord(routingKey, options)
 
@@ -751,25 +762,35 @@ class DefaultIPNS implements IPNS {
     return unmarshalIPNSRecord(record)
   }
 
-  async republishRecord (key: MultihashDigest<0x00 | 0x12> | string, record: IPNSRecord, options: RepublishRecordOptions = {}): Promise<void> {
+  async republishRecord(key: CID | MultihashDigest<0x00 | 0x12> | string, record: IPNSRecord, options: RepublishRecordOptions = {}): Promise<void> {
     let mh: MultihashDigest<0x00 | 0x12> | undefined
     try {
       mh = extractPublicKeyFromIPNSRecord(record)?.toMultihash() // embedded public key take precedence, if present
       if (mh == null) {
         // if no public key is embedded in the record, use the key that was passed in
-        if (typeof key === 'string') {
+        if (CID.asCID(key)) {
+          const cid = key as CID
+          mh = cid.multihash as MultihashDigest<0x00 | 0x12>
+        } else if (typeof key === 'string') {
+          let parsedKey = key
           if (key.startsWith(IPNS_STRING_PREFIX)) {
             // remove the /ipns/ prefix from the key
-            key = key.slice(IPNS_STRING_PREFIX.length)
+            parsedKey = key.slice(IPNS_STRING_PREFIX.length)
           }
-          // Convert string key to MultihashDigest
+          // Preferentially try to parse as CID
           try {
-            mh = peerIdFromString(key).toMultihash()
-          } catch (err: any) {
-            throw new Error(`Invalid string key: ${err.message}`)
+            const cid = CID.parse(parsedKey)
+            mh = cid.multihash as MultihashDigest<0x00 | 0x12>
+          } catch (err) {
+            // Fall back to legacy peerId string parsing
+            try {
+              mh = peerIdFromString(parsedKey).toMultihash() as MultihashDigest<0x00 | 0x12>
+            } catch (e: any) {
+              throw new Error(`Invalid string key: ${e.message}`)
+            }
           }
         } else {
-          mh = key
+          mh = key as MultihashDigest<0x00 | 0x12>
         }
       }
 
