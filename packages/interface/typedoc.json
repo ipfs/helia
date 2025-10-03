@@ -1,7 +1,9 @@
 {
+  "readme": "none",
   "entryPoints": [
     "./src/index.ts",
     "./src/blocks.ts",
-    "./src/pins.ts"
+    "./src/pins.ts",
+    "./src/routing.ts"
   ]
 }

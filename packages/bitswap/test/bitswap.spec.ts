@@ -119,7 +119,7 @@ describe('bitswap', () => {
     it('should notify peers we have a block', async () => {
       const receivedBlockSpy = Sinon.spy(bitswap.peerWantLists, 'receivedBlock')
 
-      await bitswap.notify(cid, block)
+      await bitswap.notify(cid)
 
       expect(receivedBlockSpy.called).to.be.true()
     })

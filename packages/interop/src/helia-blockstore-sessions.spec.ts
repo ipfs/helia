@@ -2,6 +2,7 @@
 
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
@@ -38,7 +39,7 @@ describe('helia - blockstore sessions', () => {
 
     await helia.libp2p.dial(kuboInfo.multiaddrs.map(str => multiaddr(str)))
 
-    const output = await helia.blockstore.get(CID.parse(cid.toString()))
+    const output = await toBuffer(helia.blockstore.get(CID.parse(cid.toString())))
 
     expect(output).to.equalBytes(input)
   })
@@ -57,7 +58,7 @@ describe('helia - blockstore sessions', () => {
       ]
     })
 
-    const output = await session.get(root)
+    const output = await toBuffer(session.get(root))
 
     expect(output).to.equalBytes(input)
   })

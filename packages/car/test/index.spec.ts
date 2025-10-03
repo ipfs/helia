@@ -4,7 +4,7 @@ import { mfs } from '@helia/mfs'
 import { unixfs } from '@helia/unixfs'
 import { CarReader } from '@ipld/car'
 import { defaultLogger } from '@libp2p/logger'
-import { createScalableCuckooFilter } from '@libp2p/utils/filters'
+import { createScalableCuckooFilter } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
@@ -47,7 +47,7 @@ describe('import/export car file', () => {
 
     await c.import(reader)
 
-    expect(await blockstore.get(cid)).to.equalBytes(smallFile)
+    expect(await toBuffer(blockstore.get(cid))).to.equalBytes(smallFile)
   })
 
   it('exports and imports a multiple root car file', async () => {

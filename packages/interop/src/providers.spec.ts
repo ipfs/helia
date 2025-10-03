@@ -7,8 +7,9 @@ import { mfs } from '@helia/mfs'
 import { strings } from '@helia/strings'
 import { unixfs } from '@helia/unixfs'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { createScalableCuckooFilter } from '@libp2p/utils/filters'
+import { createScalableCuckooFilter } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
+import drain from 'it-drain'
 import toBuffer from 'it-to-buffer'
 import { multiaddr } from 'kubo-rpc-client'
 import { CID } from 'multiformats/cid'
@@ -62,16 +63,16 @@ describe('providers', () => {
   })
 
   it('should fail to fetch without using a provider', async () => {
-    await expect(helia.blockstore.get(cid, {
+    await expect(drain(helia.blockstore.get(cid, {
       signal: AbortSignal.timeout(100)
-    })).to.eventually.be.rejected()
+    }))).to.eventually.be.rejected()
       .with.nested.property('errors[0].name', 'AbortError')
   })
 
   it('should fetch raw using a provider', async () => {
     let sender: PeerId | undefined
 
-    const buf = await helia.blockstore.get(cid, {
+    const buf = await toBuffer(helia.blockstore.get(cid, {
       providers: [
         kuboInfo.multiaddrs.map(ma => multiaddr(ma))
       ],
@@ -82,7 +83,7 @@ describe('providers', () => {
           sender = evt.detail.sender
         }
       }
-    })
+    }))
 
     expect(buf).to.have.lengthOf(1930)
     expect(sender).to.deep.equal(peerIdFromString(kuboInfo.peerId?.toString() ?? ''))

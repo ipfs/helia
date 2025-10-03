@@ -9,7 +9,7 @@ import { isPromise } from './is-promise.js'
 import type { HasherLoader } from '@helia/interface'
 import type { BlockBroker, Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions, BlockRetrievalOptions, CreateSessionOptions, SessionBlockstore } from '@helia/interface/blocks'
 import type { AbortOptions, ComponentLogger, Logger, LoggerOptions, Startable } from '@libp2p/interface'
-import type { Blockstore } from 'interface-blockstore'
+import type { Blockstore, InputPair } from 'interface-blockstore'
 import type { AwaitIterable } from 'interface-store'
 import type { CID } from 'multiformats/cid'
 import type { MultihashDigest, MultihashHasher } from 'multiformats/hashes/interface'
@@ -56,7 +56,7 @@ class Storage implements Blockstore {
     options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:providers:notify', cid))
 
     await Promise.all(
-      this.components.blockBrokers.map(async broker => broker.announce?.(cid, block, options))
+      this.components.blockBrokers.map(async broker => broker.announce?.(cid, options))
     )
 
     options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:blockstore:put', cid))
@@ -67,7 +67,7 @@ class Storage implements Blockstore {
   /**
    * Put a multiple blocks to the underlying datastore
    */
-  async * putMany (blocks: AwaitIterable<{ cid: CID, block: Uint8Array }>, options: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents> = {}): AsyncIterable<CID> {
+  async * putMany (blocks: AwaitIterable<InputPair>, options: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents> = {}): AsyncGenerator<CID> {
     const missingBlocks = filter(blocks, async ({ cid }): Promise<boolean> => {
       const has = await this.child.has(cid, options)
 
@@ -78,10 +78,10 @@ class Storage implements Blockstore {
       return !has
     })
 
-    const notifyEach = forEach(missingBlocks, async ({ cid, block }): Promise<void> => {
+    const notifyEach = forEach(missingBlocks, async ({ cid }): Promise<void> => {
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:put-many:providers:notify', cid))
       await Promise.all(
-        this.components.blockBrokers.map(async broker => broker.announce?.(cid, block, options))
+        this.components.blockBrokers.map(async broker => broker.announce?.(cid, options))
       )
     })
 
@@ -92,7 +92,7 @@ class Storage implements Blockstore {
   /**
    * Get a block by cid
    */
-  async get (cid: CID, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetBlockProgressEvents> = {}): Promise<Uint8Array> {
+  async * get (cid: CID, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetBlockProgressEvents> = {}): AsyncGenerator<Uint8Array> {
     if (options.offline !== true && !(await this.child.has(cid, options))) {
       const hasher = await this.getHasher(cid.multihash.code)
 
@@ -108,21 +108,22 @@ class Storage implements Blockstore {
       // notify other block providers of the new block
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:providers:notify', cid))
       await Promise.all(
-        this.components.blockBrokers.map(async broker => broker.announce?.(cid, block, options))
+        this.components.blockBrokers.map(async broker => broker.announce?.(cid, options))
       )
 
-      return block
+      yield block
+      return
     }
 
     options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:blockstore:get', cid))
 
-    return this.child.get(cid, options)
+    yield * this.child.get(cid, options)
   }
 
   /**
    * Get multiple blocks back from an (async) iterable of cids
    */
-  async * getMany (cids: AwaitIterable<CID>, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetManyBlocksProgressEvents> = {}): AsyncIterable<Pair> {
+  async * getMany (cids: AwaitIterable<CID>, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetManyBlocksProgressEvents> = {}): AsyncGenerator<Pair> {
     options.onProgress?.(new CustomProgressEvent('blocks:get-many:blockstore:get-many'))
 
     yield * this.child.getMany(forEach(cids, async (cid): Promise<void> => {
@@ -141,7 +142,7 @@ class Storage implements Blockstore {
         // notify other block providers of the new block
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:providers:notify', cid))
         await Promise.all(
-          this.components.blockBrokers.map(async broker => broker.announce?.(cid, block, options))
+          this.components.blockBrokers.map(async broker => broker.announce?.(cid, options))
         )
       }
     }))
@@ -159,7 +160,7 @@ class Storage implements Blockstore {
   /**
    * Delete multiple blocks from the blockstore
    */
-  async * deleteMany (cids: AwaitIterable<CID>, options: AbortOptions & ProgressOptions<DeleteManyBlocksProgressEvents> = {}): AsyncIterable<CID> {
+  async * deleteMany (cids: AwaitIterable<CID>, options: AbortOptions & ProgressOptions<DeleteManyBlocksProgressEvents> = {}): AsyncGenerator<CID> {
     options.onProgress?.(new CustomProgressEvent('blocks:delete-many:blockstore:delete-many'))
     yield * this.child.deleteMany((async function * (): AsyncGenerator<CID> {
       for await (const cid of cids) {
@@ -172,7 +173,7 @@ class Storage implements Blockstore {
     return this.child.has(cid, options)
   }
 
-  async * getAll (options: AbortOptions & ProgressOptions<GetAllBlocksProgressEvents> = {}): AwaitIterable<Pair> {
+  async * getAll (options: AbortOptions & ProgressOptions<GetAllBlocksProgressEvents> = {}): AsyncGenerator<Pair> {
     options.onProgress?.(new CustomProgressEvent('blocks:get-all:blockstore:get-many'))
     yield * this.child.getAll(options)
   }
@@ -280,7 +281,7 @@ class SessionStorage extends Storage implements SessionBlockstore {
   /**
    * Put a multiple blocks to the underlying datastore
    */
-  async * putMany (blocks: AwaitIterable<{ cid: CID, block: Uint8Array }>, options: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents> = {}): AsyncIterable<CID> {
+  async * putMany (blocks: AwaitIterable<InputPair>, options: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents> = {}): AsyncGenerator<CID> {
     const signal = anySignal([this.closeController.signal, options.signal])
     setMaxListeners(Infinity, signal)
 
@@ -297,12 +298,12 @@ class SessionStorage extends Storage implements SessionBlockstore {
   /**
    * Get a block by cid
    */
-  async get (cid: CID, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetBlockProgressEvents> = {}): Promise<Uint8Array> {
+  async * get (cid: CID, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetBlockProgressEvents> = {}): AsyncGenerator<Uint8Array> {
     const signal = anySignal([this.closeController.signal, options.signal])
     setMaxListeners(Infinity, signal)
 
     try {
-      return await super.get(cid, {
+      yield * super.get(cid, {
         ...options,
         signal
       })
@@ -314,7 +315,7 @@ class SessionStorage extends Storage implements SessionBlockstore {
   /**
    * Get multiple blocks back from an (async) iterable of cids
    */
-  async * getMany (cids: AwaitIterable<CID>, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetManyBlocksProgressEvents> = {}): AsyncIterable<Pair> {
+  async * getMany (cids: AwaitIterable<CID>, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetManyBlocksProgressEvents> = {}): AsyncGenerator<Pair> {
     const signal = anySignal([this.closeController.signal, options.signal])
     setMaxListeners(Infinity, signal)
 
@@ -348,7 +349,7 @@ class SessionStorage extends Storage implements SessionBlockstore {
   /**
    * Delete multiple blocks from the blockstore
    */
-  async * deleteMany (cids: AwaitIterable<CID>, options: AbortOptions & ProgressOptions<DeleteManyBlocksProgressEvents> = {}): AsyncIterable<CID> {
+  async * deleteMany (cids: AwaitIterable<CID>, options: AbortOptions & ProgressOptions<DeleteManyBlocksProgressEvents> = {}): AsyncGenerator<CID> {
     const signal = anySignal([this.closeController.signal, options.signal])
     setMaxListeners(Infinity, signal)
 
@@ -376,7 +377,7 @@ class SessionStorage extends Storage implements SessionBlockstore {
     }
   }
 
-  async * getAll (options: AbortOptions & ProgressOptions<GetAllBlocksProgressEvents> = {}): AwaitIterable<Pair> {
+  async * getAll (options: AbortOptions & ProgressOptions<GetAllBlocksProgressEvents> = {}): AsyncGenerator<Pair> {
     const signal = anySignal([this.closeController.signal, options.signal])
     setMaxListeners(Infinity, signal)
 

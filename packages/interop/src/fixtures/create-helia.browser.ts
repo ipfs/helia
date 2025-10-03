@@ -2,7 +2,6 @@ import { bitswap } from '@helia/block-brokers'
 import { ipnsValidator, ipnsSelector } from '@helia/ipns'
 import { kadDHT, removePublicAddressesMapper } from '@libp2p/kad-dht'
 import { webSockets } from '@libp2p/websockets'
-import { all } from '@libp2p/websockets/filters'
 import { sha3512 } from '@multiformats/sha3'
 import { createHelia, libp2pDefaults } from 'helia'
 import type { Libp2p } from '@libp2p/interface'
@@ -18,9 +17,7 @@ export async function createHeliaNode (libp2pOptions?: Libp2pOptions): Promise<H
   defaults.transports?.pop()
   defaults.transports = [
     ...(defaults.transports ?? []),
-    webSockets({
-      filter: all
-    })
+    webSockets()
   ]
 
   // allow dialing loopback

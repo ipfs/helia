@@ -8,9 +8,8 @@ import { Stats } from './stats.js'
 import { WantList } from './want-list.js'
 import type { BitswapOptions, Bitswap as BitswapInterface, BitswapWantProgressEvents, BitswapNotifyProgressEvents, WantListEntry, BitswapComponents } from './index.js'
 import type { BlockBroker, CreateSessionOptions, ProviderOptions } from '@helia/interface'
-import type { ComponentLogger, Libp2p, PeerId } from '@libp2p/interface'
+import type { ComponentLogger, Libp2p, PeerId, AbortOptions } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
-import type { AbortOptions } from '@multiformats/multiaddr'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 import type { ProgressOptions } from 'progress-events'
@@ -111,7 +110,7 @@ export class Bitswap implements BitswapInterface {
   /**
    * Sends notifications about the arrival of a block
    */
-  async notify (cid: CID, block: Uint8Array, options: ProgressOptions<BitswapNotifyProgressEvents> & AbortOptions = {}): Promise<void> {
+  async notify (cid: CID, options: ProgressOptions<BitswapNotifyProgressEvents> & AbortOptions = {}): Promise<void> {
     await Promise.all([
       this.peerWantLists.receivedBlock(cid, options),
       this.wantList.receivedBlock(cid, options)

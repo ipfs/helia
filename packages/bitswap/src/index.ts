@@ -55,7 +55,7 @@ export interface Bitswap extends Startable {
   /**
    * Notify bitswap that a new block is available
    */
-  notify(cid: CID, block: Uint8Array, options?: ProgressOptions<BitswapNotifyProgressEvents>): Promise<void>
+  notify(cid: CID, options?: ProgressOptions<BitswapNotifyProgressEvents>): Promise<void>
 
   /**
    * Start a session to retrieve a file from the network

@@ -1,37 +1,29 @@
 import * as dagPB from '@ipld/dag-pb'
 import { logger } from '@libp2p/logger'
-import { mergeOptions as mergeOpts } from '@libp2p/utils/merge-options'
 import { UnixFS } from 'ipfs-unixfs'
 import { recursive } from 'ipfs-unixfs-exporter'
 import { importer } from 'ipfs-unixfs-importer'
 import last from 'it-last'
 import { pipe } from 'it-pipe'
+import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { InvalidPBNodeError, NotUnixFSError, UnknownError } from '../errors.js'
-import { SHARD_SPLIT_THRESHOLD_BYTES } from './utils/constants.js'
 import { persist } from './utils/persist.js'
 import { resolve, updatePathCids } from './utils/resolve.js'
 import type { ChmodOptions } from '../index.js'
 import type { GetStore, PutStore } from '../unixfs.js'
 import type { PBNode, PBLink } from '@ipld/dag-pb'
 
-const mergeOptions = mergeOpts.bind({ ignoreUndefined: true })
 const log = logger('helia:unixfs:chmod')
 
-const defaultOptions: ChmodOptions = {
-  recursive: false,
-  shardSplitThresholdBytes: SHARD_SPLIT_THRESHOLD_BYTES
-}
-
 export async function chmod (cid: CID, mode: number, blockstore: PutStore & GetStore, options: Partial<ChmodOptions> = {}): Promise<CID> {
-  const opts: ChmodOptions = mergeOptions(defaultOptions, options)
-  const resolved = await resolve(cid, opts.path, blockstore, options)
+  const resolved = await resolve(cid, options.path, blockstore, options)
 
   log('chmod %c %d', resolved.cid, mode)
 
-  if (opts.recursive) {
+  if (options.recursive === true) {
     // recursively export from root CID, change perms of each entry then reimport
     // but do not reimport files, only manipulate dag-pb nodes
     const root = await pipe(
@@ -65,7 +57,7 @@ export async function chmod (cid: CID, mode: number, blockstore: PutStore & GetS
       },
       // @ts-expect-error cannot combine progress types
       (source) => importer(source, blockstore, {
-        ...opts,
+        ...options,
         dagBuilder: async function * (source, block) {
           for await (const entry of source) {
             yield async function () {
@@ -74,7 +66,7 @@ export async function chmod (cid: CID, mode: number, blockstore: PutStore & GetS
 
               const buf = dagPB.encode(node)
               const updatedCid = await persist(buf, block, {
-                ...opts,
+                ...options,
                 cidVersion: cid.version
               })
 
@@ -101,10 +93,10 @@ export async function chmod (cid: CID, mode: number, blockstore: PutStore & GetS
       throw new UnknownError(`Could not chmod ${resolved.cid.toString()}`)
     }
 
-    return updatePathCids(root.cid, resolved, blockstore, opts)
+    return updatePathCids(root.cid, resolved, blockstore, options)
   }
 
-  const block = await blockstore.get(resolved.cid, options)
+  const block = await toBuffer(blockstore.get(resolved.cid, options))
   let metadata: UnixFS
   let links: PBLink[] = []
 
@@ -133,5 +125,5 @@ export async function chmod (cid: CID, mode: number, blockstore: PutStore & GetS
 
   await blockstore.put(updatedCid, updatedBlock)
 
-  return updatePathCids(updatedCid, resolved, blockstore, opts)
+  return updatePathCids(updatedCid, resolved, blockstore, options)
 }

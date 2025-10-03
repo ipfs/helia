@@ -78,7 +78,7 @@
 import { UnixFS as UnixFSClass } from './unixfs.js'
 import type { GetBlockProgressEvents, ProviderOptions, PutBlockProgressEvents } from '@helia/interface/blocks'
 import type { AbortOptions } from '@libp2p/interface'
-import type { Filter } from '@libp2p/utils/filters'
+import type { Filter } from '@libp2p/utils'
 import type { Blockstore } from 'interface-blockstore'
 import type { Mtime, UnixFS as IPFSUnixFS } from 'ipfs-unixfs'
 import type { ExporterProgressEvents, UnixFSEntry, UnixFSBasicEntry } from 'ipfs-unixfs-exporter'

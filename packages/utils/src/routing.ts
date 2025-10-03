@@ -1,6 +1,6 @@
 import { NoRoutersAvailableError } from '@helia/interface'
 import { NotFoundError, start, stop } from '@libp2p/interface'
-import { PeerQueue } from '@libp2p/utils/peer-queue'
+import { PeerQueue } from '@libp2p/utils'
 import merge from 'it-merge'
 import type { Routing as RoutingInterface, Provider, RoutingOptions } from '@helia/interface'
 import type { AbortOptions, ComponentLogger, Logger, Metrics, PeerId, PeerInfo, Startable } from '@libp2p/interface'
@@ -75,7 +75,6 @@ export class Routing implements RoutingInterface, Startable {
     const queue = new PeerQueue<Provider | null>({
       concurrency: this.providerLookupConcurrency
     })
-    queue.addEventListener('error', () => {})
 
     for await (const peer of merge(
       queue.toGenerator(),

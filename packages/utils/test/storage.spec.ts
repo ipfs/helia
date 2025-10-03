@@ -6,6 +6,8 @@ import { MemoryDatastore } from 'datastore-core'
 import delay from 'delay'
 import all from 'it-all'
 import drain from 'it-drain'
+import map from 'it-map'
+import toBuffer from 'it-to-buffer'
 import * as raw from 'multiformats/codecs/raw'
 import { PinsImpl } from '../src/pins.js'
 import { BlockStorage } from '../src/storage.js'
@@ -47,7 +49,7 @@ describe('storage', () => {
     const { cid, block } = blocks[0]
     await blockstore.put(cid, block)
 
-    const retrieved = await storage.get(cid)
+    const retrieved = await toBuffer(storage.get(cid))
     expect(retrieved).to.equalBytes(block)
   })
 
@@ -56,9 +58,9 @@ describe('storage', () => {
     const controller = new AbortController()
     controller.abort()
 
-    await expect(storage.get(cid, {
+    await expect(drain(storage.get(cid, {
       signal: controller.signal
-    })).to.eventually.be.rejected
+    }))).to.eventually.be.rejected
       .with.property('name', 'AbortError')
   })
 
@@ -70,12 +72,17 @@ describe('storage', () => {
       await blockstore.put(cid, block)
     }
 
-    const retrieved = await all(storage.getMany(async function * () {
+    const retrieved = await all(map(storage.getMany(async function * () {
       for (let i = 0; i < count; i++) {
         yield blocks[i].cid
         await delay(10)
       }
-    }()))
+    }()), ({ cid, bytes }) => {
+      return {
+        cid,
+        block: toBuffer(bytes)
+      }
+    }))
 
     expect(retrieved).to.deep.equal(new Array(count).fill(0).map((_, i) => blocks[i]))
   })
@@ -95,7 +102,7 @@ describe('storage', () => {
     const { cid, block } = blocks[0]
     await storage.put(cid, block)
 
-    const retrieved = await blockstore.get(cid)
+    const retrieved = await toBuffer(blockstore.get(cid))
     expect(retrieved).to.equalBytes(block)
   })
 
@@ -115,7 +122,7 @@ describe('storage', () => {
 
     await drain(storage.putMany(async function * () {
       for (let i = 0; i < count; i++) {
-        yield { cid: blocks[i].cid, block: blocks[i].block }
+        yield { cid: blocks[i].cid, bytes: blocks[i].block }
         await delay(10)
       }
     }()))
@@ -129,7 +136,7 @@ describe('storage', () => {
     const controller = new AbortController()
     controller.abort()
 
-    await expect(all(storage.putMany([{ cid, block }], {
+    await expect(all(storage.putMany([{ cid, bytes: block }], {
       signal: controller.signal
     }))).to.eventually.be.rejected
       .with.property('name', 'AbortError')

@@ -175,7 +175,7 @@ describe('abstract-session', () => {
     await expect(session.retrieve(cid, {
       signal
     })).to.eventually.be.rejected
-      .with.property('name', 'AbortError')
+      .with.property('name', 'TimeoutError')
   })
 
   it('should search for more session providers if the current ones cannot provide the block', async () => {

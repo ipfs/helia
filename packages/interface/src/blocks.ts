@@ -5,10 +5,7 @@ import type { AbortOptions } from 'interface-store'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
-export interface Pair {
-  cid: CID
-  block: Uint8Array
-}
+export type { Pair, InputPair } from 'interface-blockstore'
 
 export interface ProviderOptions {
   /**
@@ -154,7 +151,7 @@ export interface BlockBroker<RetrieveProgressEvents extends ProgressEvent<any, a
   /**
    * Make a new block available to peers
    */
-  announce?(cid: CID, block: Uint8Array, options?: BlockAnnounceOptions<AnnounceProgressEvents>): Promise<void>
+  announce?(cid: CID, options?: BlockAnnounceOptions<AnnounceProgressEvents>): Promise<void>
 
   /**
    * Create a new session

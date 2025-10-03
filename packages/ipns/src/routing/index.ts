@@ -33,4 +33,4 @@ export type IPNSRoutingEvents =
 
 export { helia } from './helia.js'
 export { pubsub } from './pubsub.js'
-export type { PubsubRoutingComponents } from './pubsub.js'
+export type { PubsubRoutingComponents, PubSub, Message, PublishResult, PubSubEvents } from './pubsub.js'

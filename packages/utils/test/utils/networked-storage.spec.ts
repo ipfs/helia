@@ -6,6 +6,8 @@ import { MemoryBlockstore } from 'blockstore-core'
 import delay from 'delay'
 import all from 'it-all'
 import drain from 'it-drain'
+import map from 'it-map'
+import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
 import { identity } from 'multiformats/hashes/identity'
@@ -52,16 +54,16 @@ describe('networked-storage', () => {
     const { cid, block } = blocks[0]
     await blockstore.put(cid, block)
 
-    const retrieved = await storage.get(cid)
+    const retrieved = await toBuffer(storage.get(cid))
     expect(retrieved).to.equalBytes(block)
   })
 
   it('gets a block from the blockstore offline', async () => {
     const { cid } = blocks[0]
 
-    await expect(storage.get(cid, {
+    await expect(drain(storage.get(cid, {
       offline: true
-    })).to.eventually.be.rejected.with.property('name', 'NotFoundError')
+    }))).to.eventually.be.rejected.with.property('name', 'NotFoundError')
   })
 
   it('gets a block from the blockstore with progress', async () => {
@@ -70,9 +72,9 @@ describe('networked-storage', () => {
 
     const onProgress = Sinon.stub()
 
-    await storage.get(cid, {
+    await drain(storage.get(cid, {
       onProgress
-    })
+    }))
     expect(onProgress.called).to.be.true()
   })
 
@@ -84,12 +86,17 @@ describe('networked-storage', () => {
       await blockstore.put(cid, block)
     }
 
-    const retrieved = await all(storage.getMany(async function * () {
+    const retrieved = await all(map(storage.getMany(async function * () {
       for (let i = 0; i < count; i++) {
         yield blocks[i].cid
         await delay(10)
       }
-    }()))
+    }()), ({ cid, bytes }) => {
+      return {
+        cid,
+        block: toBuffer(bytes)
+      }
+    }))
 
     expect(retrieved).to.deep.equal(new Array(count).fill(0).map((_, i) => blocks[i]))
   })
@@ -97,8 +104,13 @@ describe('networked-storage', () => {
   it('gets many blocks from the blockstore offline', async () => {
     const { cid } = blocks[0]
 
-    await expect(drain(storage.getMany([cid], {
+    await expect(drain(map(storage.getMany([cid], {
       offline: true
+    }), ({ cid, bytes }) => {
+      return {
+        cid,
+        block: toBuffer(bytes)
+      }
     }))).to.eventually.be.rejected.with.property('name', 'NotFoundError')
   })
 
@@ -106,7 +118,7 @@ describe('networked-storage', () => {
     const { cid, block } = blocks[0]
     await storage.put(cid, block)
 
-    const retrieved = await blockstore.get(cid)
+    const retrieved = await toBuffer(blockstore.get(cid))
     expect(retrieved).to.equalBytes(block)
   })
 
@@ -115,7 +127,7 @@ describe('networked-storage', () => {
 
     await drain(storage.putMany(async function * () {
       for (let i = 0; i < count; i++) {
-        yield { cid: blocks[i].cid, block: blocks[i].block }
+        yield { cid: blocks[i].cid, bytes: blocks[i].block }
         await delay(10)
       }
     }()))
@@ -131,7 +143,7 @@ describe('networked-storage', () => {
 
     expect(await blockstore.has(cid)).to.be.false()
 
-    const returned = await storage.get(cid)
+    const returned = await toBuffer(storage.get(cid))
 
     expect(await blockstore.has(cid)).to.be.true()
     expect(returned).to.equalBytes(block)
@@ -148,12 +160,17 @@ describe('networked-storage', () => {
       expect(await blockstore.has(cid)).to.be.false()
     }
 
-    const retrieved = await all(storage.getMany(async function * () {
+    const retrieved = await all(map(storage.getMany(async function * () {
       for (let i = 0; i < count; i++) {
         yield blocks[i].cid
         await delay(10)
       }
-    }()))
+    }()), ({ cid, bytes }) => {
+      return {
+        cid,
+        block: toBuffer(bytes)
+      }
+    }))
 
     expect(retrieved).to.deep.equal(new Array(count).fill(0).map((_, i) => blocks[i]))
 
@@ -179,12 +196,17 @@ describe('networked-storage', () => {
       return blocks[2].block
     })
 
-    const retrieved = await all(storage.getMany(async function * () {
+    const retrieved = await all(map(storage.getMany(async function * () {
       for (let i = 0; i < count; i++) {
         yield blocks[i].cid
         await delay(10)
       }
-    }()))
+    }()), ({ cid, bytes }) => {
+      return {
+        cid,
+        block: toBuffer(bytes)
+      }
+    }))
 
     expect(retrieved).to.deep.equal(new Array(count).fill(0).map((_, i) => blocks[i]))
 
@@ -197,7 +219,7 @@ describe('networked-storage', () => {
     const data = uint8ArrayFromString('hello world')
     const cid = CID.createV1(identity.code, identity.digest(data))
 
-    const block = await storage.get(cid)
+    const block = await toBuffer(storage.get(cid))
     expect(uint8ArrayToString(block)).to.equal('hello world')
   })
 
@@ -207,7 +229,7 @@ describe('networked-storage', () => {
 
     bitswap.retrieve.withArgs(blocks[0].cid).resolves(blocks[0].block)
 
-    const block = await storage.get(blocks[0].cid)
+    const block = await toBuffer(storage.get(blocks[0].cid))
 
     expect(block).to.equalBytes(blocks[0].block)
     expect(slowBroker.retrieve.getCall(0)).to.have.nested.property('args[1].signal.aborted', true)

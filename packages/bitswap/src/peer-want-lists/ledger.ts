@@ -1,3 +1,4 @@
+import toBuffer from 'it-to-buffer'
 import { DEFAULT_MAX_SIZE_REPLACE_HAS_WITH_BLOCK } from '../constants.js'
 import { BlockPresenceType, WantType } from '../pb/message.js'
 import { QueuedBitswapMessage } from '../utils/bitswap-message.js'
@@ -93,7 +94,7 @@ export class Ledger {
 
     for (const [key, entry] of this.wants.entries()) {
       try {
-        const block = await this.blockstore.get(entry.cid, options)
+        const block = await toBuffer(this.blockstore.get(entry.cid, options))
 
         // do they want the block or just us to tell them we have the block
         if (entry.wantType === WantType.WantHave) {
