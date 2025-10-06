@@ -1,12 +1,12 @@
-import { isPrivateIp } from '@libp2p/utils/private-ip'
+import { getNetConfig, isPrivate } from '@libp2p/utils'
 import { DNS, HTTP, HTTPS } from '@multiformats/multiaddr-matcher'
 import { multiaddrToUri } from '@multiformats/multiaddr-to-uri'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { TrustlessGateway } from './trustless-gateway.js'
 import type { TransformRequestInit } from './trustless-gateway.js'
 import type { Routing } from '@helia/interface'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { AbortOptions, Multiaddr } from '@multiformats/multiaddr'
+import type { ComponentLogger, Logger, AbortOptions } from '@libp2p/interface'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import type { CID } from 'multiformats/cid'
 
 export function filterNonHTTPMultiaddrs (multiaddrs: Multiaddr[], allowInsecure: boolean, allowLocal: boolean): Multiaddr[] {
@@ -20,12 +20,13 @@ export function filterNonHTTPMultiaddrs (multiaddrs: Multiaddr[], allowInsecure:
         return true
       }
 
-      return isPrivateIp(ma.toOptions().host) === false
+      return isPrivate(ma) === false
     }
 
     // When allowInsecure is false and allowLocal is true, allow multiaddrs with "127.0.0.1", "localhost", or any subdomain ending with ".localhost"
     if (!allowInsecure && allowLocal) {
-      const { host } = ma.toOptions()
+      const { host } = getNetConfig(ma)
+
       if (host === '127.0.0.1' || host === 'localhost' || host.endsWith('.localhost')) {
         return true
       }

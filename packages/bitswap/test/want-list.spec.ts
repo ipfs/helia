@@ -1,5 +1,4 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { matchPeerId } from '@libp2p/interface-compliance-tests/matchers'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
@@ -68,7 +67,7 @@ describe('wantlist', () => {
 
     await wantList.peerConnected(peerId)
 
-    components.network.sendMessage.withArgs(matchPeerId(peerId))
+    components.network.sendMessage.withArgs(peerId)
 
     await expect(wantList.wantBlock(cid, {
       signal: AbortSignal.timeout(500)

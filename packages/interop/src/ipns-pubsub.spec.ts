@@ -1,10 +1,10 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 5] */
 
-import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 import { ipns } from '@helia/ipns'
 import { pubsub } from '@helia/ipns/routing'
 import { generateKeyPair } from '@libp2p/crypto/keys'
+import { floodsub } from '@libp2p/floodsub'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import last from 'it-last'
@@ -23,7 +23,8 @@ import { createKuboNode } from './fixtures/create-kubo.js'
 import { keyTypes } from './fixtures/key-types.js'
 import { waitFor } from './fixtures/wait-for.js'
 import type { IPNS, ResolveResult } from '@helia/ipns'
-import type { Libp2p, PubSub } from '@libp2p/interface'
+import type { PubSub } from '@helia/ipns/routing'
+import type { Libp2p } from '@libp2p/interface'
 import type { Keychain } from '@libp2p/keychain'
 import type { Helia } from 'helia'
 import type { KuboNode } from 'ipfsd-ctl'
@@ -40,7 +41,7 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
     beforeEach(async () => {
       helia = await createHeliaNode({
         services: {
-          pubsub: gossipsub()
+          pubsub: floodsub()
         }
       })
       kubo = await createKuboNode()

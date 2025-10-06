@@ -26,6 +26,7 @@
  */
 
 import * as codec from '@ipld/dag-cbor'
+import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import type { GetBlockProgressEvents, ProviderOptions, PutBlockProgressEvents } from '@helia/interface/blocks'
@@ -112,7 +113,7 @@ class DefaultDAGCBOR implements DAGCBOR {
   }
 
   async get <T> (cid: CID, options: Partial<GetOptions> = {}): Promise<T> {
-    const buf = await this.components.blockstore.get(cid, options)
+    const buf = await toBuffer(this.components.blockstore.get(cid, options))
 
     return codec.decode(buf)
   }

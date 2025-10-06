@@ -50,7 +50,7 @@ describe('helia - hashes', () => {
       hashAlg: 'sha3-512'
     })
     expect(cid.multihash.code).to.equal(sha3512.code)
-    const output = await helia.blockstore.get(CID.parse(cid.toString()))
+    const output = await toBuffer(helia.blockstore.get(CID.parse(cid.toString())))
 
     expect(output).to.equalBytes(input)
   })

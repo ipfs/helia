@@ -10,14 +10,14 @@ updates:
     prefix: "deps"
     prefix-development: "chore"
   groups:
-    helia-deps: # group all helia/libp2p deps together
+    interplanetary-deps: # Helia/libp2p deps
       patterns:
         - "*helia*"
         - "*libp2p*"
         - "*multiformats*"
         - "*blockstore*"
         - "*datastore*"
-    kubo-deps: # group kubo, kubo-rpc-client, and ipfsd-ctl updates
+    kubo-deps: # kubo deps
       patterns:
         - "*kubo*"
         - "ipfsd-ctl"

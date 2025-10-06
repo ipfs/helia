@@ -32,13 +32,6 @@
       "import": "./dist/src/index.js"
     }
   },
-  "eslintConfig": {
-    "extends": "ipfs",
-    "parserOptions": {
-      "project": true,
-      "sourceType": "module"
-    }
-  },
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
@@ -56,15 +49,16 @@
   },
   "dependencies": {
     "@helia/interface": "^5.4.0",
-    "@ipld/dag-cbor": "^9.2.2",
-    "@libp2p/interface": "^2.2.1",
-    "interface-blockstore": "^5.3.1",
-    "multiformats": "^13.3.1",
+    "@ipld/dag-cbor": "^9.2.5",
+    "@libp2p/interface": "^3.0.2",
+    "interface-blockstore": "^6.0.1",
+    "it-to-buffer": "^4.0.10",
+    "multiformats": "^13.4.1",
     "progress-events": "^1.0.1"
   },
   "devDependencies": {
-    "aegir": "^47.0.7",
-    "blockstore-core": "^5.0.2"
+    "aegir": "^47.0.22",
+    "blockstore-core": "^6.0.2"
   },
   "sideEffects": false
 }

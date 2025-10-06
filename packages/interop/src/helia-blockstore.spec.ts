@@ -51,7 +51,7 @@ describe('helia - blockstore', () => {
       cidVersion: 1,
       rawLeaves: true
     })
-    const output = await helia.blockstore.get(CID.parse(cid.toString()))
+    const output = await toBuffer(helia.blockstore.get(CID.parse(cid.toString())))
 
     expect(output).to.equalBytes(input)
   })

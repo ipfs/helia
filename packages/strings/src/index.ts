@@ -22,6 +22,7 @@
  * ```
  */
 
+import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
 import { sha256 } from 'multiformats/hashes/sha2'
@@ -114,7 +115,7 @@ class DefaultStrings implements Strings {
   }
 
   async get (cid: CID, options: Partial<GetOptions> = {}): Promise<string> {
-    const buf = await this.components.blockstore.get(cid, options)
+    const buf = await toBuffer(this.components.blockstore.get(cid, options))
 
     return uint8ArrayToString(buf)
   }

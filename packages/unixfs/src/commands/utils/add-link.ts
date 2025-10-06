@@ -1,11 +1,13 @@
 import * as dagPB from '@ipld/dag-pb'
 import { logger } from '@libp2p/logger'
 import { UnixFS } from 'ipfs-unixfs'
+import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 // @ts-expect-error no types
 import SparseArray from 'sparse-array'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { DEFAULT_SHARD_SPLIT_THRESHOLD_BYTES } from '../../constants.ts'
 import { AlreadyExistsError, InvalidParametersError, InvalidPBNodeError } from '../../errors.js'
 import { wrapHash } from './consumable-hash.js'
 import { hamtBucketBits, hamtHashFn } from './hamt-constants.js'
@@ -31,9 +33,9 @@ export interface AddLinkResult {
 }
 
 export interface AddLinkOptions extends AbortOptions {
-  allowOverwriting: boolean
-  shardSplitThresholdBytes: number
-  cidVersion: Version
+  allowOverwriting?: boolean
+  shardSplitThresholdBytes?: number
+  cidVersion?: Version
 }
 
 export async function addLink (parent: Directory, child: Required<PBLink>, blockstore: GetStore & PutStore, options: AddLinkOptions): Promise<AddLinkResult> {
@@ -53,12 +55,12 @@ export async function addLink (parent: Directory, child: Required<PBLink>, block
 
   const result = await addToDirectory(parent, child, blockstore, options)
 
-  if (await isOverShardThreshold(result.node, blockstore, options.shardSplitThresholdBytes, options)) {
+  if (await isOverShardThreshold(result.node, blockstore, options.shardSplitThresholdBytes ?? DEFAULT_SHARD_SPLIT_THRESHOLD_BYTES, options)) {
     log('converting directory to sharded directory')
 
     const converted = await convertToShardedDirectory(result, blockstore)
     result.cid = converted.cid
-    result.node = dagPB.decode(await blockstore.get(converted.cid, options))
+    result.node = dagPB.decode(await toBuffer(blockstore.get(converted.cid, options)))
   }
 
   return result

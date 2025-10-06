@@ -121,13 +121,14 @@
  * import { ipns } from '@helia/ipns'
  * import { pubsub } from '@helia/ipns/routing'
  * import { unixfs } from '@helia/unixfs'
- * import { gossipsub } from '@chainsafe/libp2p-gossipsub'
+ * import { floodsub } from '@libp2p/floodsub'
  * import { generateKeyPair } from '@libp2p/crypto/keys'
- * import type { Libp2p, PubSub } from '@libp2p/interface'
+ * import type { PubSub } from '@helia/ipns/routing'
+ * import type { Libp2p } from '@libp2p/interface'
  * import type { DefaultLibp2pServices } from 'helia'
  *
  * const libp2pOptions = libp2pDefaults()
- * libp2pOptions.services.pubsub = gossipsub()
+ * libp2pOptions.services.pubsub = floodsub()
  *
  * const helia = await createHelia<Libp2p<DefaultLibp2pServices & { pubsub: PubSub }>>({
  *   libp2p: libp2pOptions

@@ -52,13 +52,6 @@
       "import": "./dist/src/errors.js"
     }
   },
-  "eslintConfig": {
-    "extends": "ipfs",
-    "parserOptions": {
-      "project": true,
-      "sourceType": "module"
-    }
-  },
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
@@ -75,33 +68,33 @@
   },
   "dependencies": {
     "@helia/interface": "^5.4.0",
-    "@ipld/dag-pb": "^4.1.3",
-    "@libp2p/interface": "^2.2.1",
-    "@libp2p/logger": "^5.1.4",
-    "@libp2p/utils": "^6.6.0",
+    "@ipld/dag-pb": "^4.1.5",
+    "@libp2p/interface": "^3.0.2",
+    "@libp2p/logger": "^6.0.5",
+    "@libp2p/utils": "^7.0.5",
     "@multiformats/murmur3": "^2.1.8",
     "hamt-sharding": "^3.0.6",
-    "interface-blockstore": "^5.3.1",
-    "ipfs-unixfs": "^11.2.5",
-    "ipfs-unixfs-exporter": "^13.7.2",
-    "ipfs-unixfs-importer": "^15.4.0",
-    "it-all": "^3.0.6",
-    "it-first": "^3.0.6",
-    "it-glob": "^3.0.1",
-    "it-last": "^3.0.6",
+    "interface-blockstore": "^6.0.1",
+    "ipfs-unixfs": "^12.0.0",
+    "ipfs-unixfs-exporter": "^14.0.1",
+    "ipfs-unixfs-importer": "^16.0.1",
+    "it-all": "^3.0.9",
+    "it-first": "^3.0.9",
+    "it-glob": "^3.0.4",
+    "it-last": "^3.0.9",
     "it-pipe": "^3.0.1",
-    "multiformats": "^13.3.1",
+    "it-to-buffer": "^4.0.10",
+    "multiformats": "^13.4.1",
     "progress-events": "^1.0.1",
     "sparse-array": "^1.3.2",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "aegir": "^47.0.7",
-    "blockstore-core": "^5.0.2",
+    "aegir": "^47.0.22",
+    "blockstore-core": "^6.0.2",
     "delay": "^6.0.0",
     "iso-url": "^1.2.1",
-    "it-drain": "^3.0.7",
-    "it-to-buffer": "^4.0.7",
+    "it-drain": "^3.0.10",
     "wherearewe": "^2.0.1"
   },
   "browser": {
