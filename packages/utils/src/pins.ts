@@ -1,6 +1,7 @@
-import { Queue } from '@libp2p/utils/queue'
+import { Queue } from '@libp2p/utils'
 import * as cborg from 'cborg'
 import { Key } from 'interface-datastore'
+import toBuffer from 'it-to-buffer'
 import { base36 } from 'multiformats/bases/base36'
 import { createUnsafe } from 'multiformats/block'
 import { CID } from 'multiformats/cid'
@@ -124,7 +125,7 @@ export class PinsImpl implements Pins {
     }
 
     const codec = await this.getCodec(cid.code)
-    const bytes = await this.blockstore.get(cid, options)
+    const bytes = await toBuffer(this.blockstore.get(cid, options))
     const block = createUnsafe({ bytes, cid, codec })
 
     yield cid

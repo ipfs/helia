@@ -1,6 +1,7 @@
 import { CarWriter } from '@ipld/car'
 import drain from 'it-drain'
 import map from 'it-map'
+import toBuffer from 'it-to-buffer'
 import { createUnsafe } from 'multiformats/block'
 import defer from 'p-defer'
 import PQueue from 'p-queue'
@@ -50,7 +51,7 @@ export class Car implements CarInterface {
 
   async import (reader: Pick<CarReader, 'blocks'>, options?: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents>): Promise<void> {
     await drain(this.components.blockstore.putMany(
-      map(reader.blocks(), ({ cid, bytes }) => ({ cid, block: bytes })),
+      map(reader.blocks(), ({ cid, bytes }) => ({ cid, bytes })),
       options
     ))
   }
@@ -169,7 +170,7 @@ export class Car implements CarInterface {
     }
 
     const codec = await this.components.getCodec(cid.code)
-    const bytes = await this.components.blockstore.get(cid, options)
+    const bytes = await toBuffer(this.components.blockstore.get(cid, options))
 
     // we are recursively traversing the dag
     const decodedBlock = createUnsafe({ bytes, cid, codec })
@@ -193,7 +194,7 @@ export class Car implements CarInterface {
     }
 
     const codec = await this.components.getCodec(cid.code)
-    const bytes = await this.components.blockstore.get(cid, options)
+    const bytes = await toBuffer(this.components.blockstore.get(cid, options))
 
     // Mark as processed
     options?.blockFilter?.add(cid.multihash.bytes)

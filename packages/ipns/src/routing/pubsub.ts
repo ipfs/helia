@@ -11,12 +11,35 @@ import { InvalidTopicError } from '../errors.js'
 import { localStore } from './local-store.js'
 import type { GetOptions, IPNSRouting, PutOptions } from './index.js'
 import type { LocalStore } from './local-store.js'
-import type { PeerId, Message, PublishResult, PubSub, PublicKey, ComponentLogger } from '@libp2p/interface'
+import type { PeerId, PublicKey, TypedEventTarget, ComponentLogger } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 import type { ProgressEvent } from 'progress-events'
 
 const log = logger('helia:ipns:routing:pubsub')
+
+export interface Message {
+  type: 'signed' | 'unsigned'
+  from: PeerId
+  topic: string
+  data: Uint8Array
+}
+
+export interface PubSubEvents {
+  message: CustomEvent<Message>
+}
+
+export interface PublishResult {
+  recipients: PeerId[]
+}
+
+export interface PubSub extends TypedEventTarget<PubSubEvents> {
+  subscribe(topic: string): void
+  unsubscribe(topic: string): void
+  publish(topic: string, message: Uint8Array): Promise<PublishResult>
+  getTopics(): string[]
+  getSubscribers(topic: string): PeerId[]
+}
 
 export interface PubsubRoutingComponents {
   datastore: Datastore

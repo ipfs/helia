@@ -132,13 +132,14 @@
  * import { ipns } from '@helia/ipns'
  * import { pubsub } from '@helia/ipns/routing'
  * import { unixfs } from '@helia/unixfs'
- * import { gossipsub } from '@chainsafe/libp2p-gossipsub'
+ * import { floodsub } from '@libp2p/floodsub'
  * import { generateKeyPair } from '@libp2p/crypto/keys'
- * import type { Libp2p, PubSub } from '@libp2p/interface'
+ * import type { PubSub } from '@helia/ipns/routing'
+ * import type { Libp2p } from '@libp2p/interface'
  * import type { DefaultLibp2pServices } from 'helia'
  *
  * const libp2pOptions = libp2pDefaults()
- * libp2pOptions.services.pubsub = gossipsub()
+ * libp2pOptions.services.pubsub = floodsub()
  *
  * const helia = await createHelia<Libp2p<DefaultLibp2pServices & { pubsub: PubSub }>>({
  *   libp2p: libp2pOptions
@@ -290,7 +291,7 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
 import { NotFoundError, isPublicKey } from '@libp2p/interface'
 import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { Queue } from '@libp2p/utils/queue'
+import { Queue } from '@libp2p/utils'
 import { createIPNSRecord, extractPublicKeyFromIPNSRecord, marshalIPNSRecord, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from 'ipns'
 import { ipnsSelector } from 'ipns/selector'
 import { ipnsValidator } from 'ipns/validator'
@@ -310,7 +311,6 @@ import type { Routing, HeliaEvents } from '@helia/interface'
 import type { AbortOptions, ComponentLogger, Libp2p, Logger, PrivateKey, PublicKey, TypedEventEmitter } from '@libp2p/interface'
 import type { Keychain } from '@libp2p/keychain'
 import type { Answer, DNS, ResolveDnsProgressEvents } from '@multiformats/dns'
-import type { DefaultLibp2pServices } from 'helia'
 import type { Datastore } from 'interface-datastore'
 import type { IPNSRecord } from 'ipns'
 import type { MultibaseDecoder } from 'multiformats/bases/interface'
@@ -541,7 +541,7 @@ export interface IPNSComponents {
   routing: Routing
   dns: DNS
   logger: ComponentLogger
-  libp2p: Libp2p<Pick<DefaultLibp2pServices, 'keychain'>>
+  libp2p: Libp2p<{ keychain: Keychain }>
   events: TypedEventEmitter<HeliaEvents> // Helia event bus
 }
 

@@ -50,13 +50,14 @@ describe('helia factory', () => {
   it('does not add helia details to the AgentVersion when it has been overridden', async () => {
     helia = await createHelia({
       libp2p: await createLibp2p({
+        nodeInfo: {
+          userAgent: 'my custom user agent'
+        },
         transports: [
           webSockets()
         ],
         services: {
-          identify: identify({
-            agentVersion: 'my custom agent version'
-          })
+          identify: identify()
         }
       })
     })

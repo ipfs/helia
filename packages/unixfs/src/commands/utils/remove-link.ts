@@ -2,6 +2,7 @@ import * as dagPB from '@ipld/dag-pb'
 import { logger } from '@libp2p/logger'
 import { UnixFS } from 'ipfs-unixfs'
 import { exporter } from 'ipfs-unixfs-exporter'
+import { DEFAULT_SHARD_SPLIT_THRESHOLD_BYTES } from '../../constants.ts'
 import { InvalidParametersError, InvalidPBNodeError } from '../../errors.js'
 import {
   recreateShardedDirectory,
@@ -20,8 +21,8 @@ import type { CID, Version } from 'multiformats/cid'
 const log = logger('helia:unixfs:utils:remove-link')
 
 export interface RmLinkOptions extends AbortOptions {
-  shardSplitThresholdBytes: number
-  cidVersion: Version
+  shardSplitThresholdBytes?: number
+  cidVersion?: Version
 }
 
 export interface RemoveLinkResult {
@@ -41,7 +42,7 @@ export async function removeLink (parent: Directory, name: string, blockstore: P
 
     const result = await removeFromShardedDirectory(parent, name, blockstore, options)
 
-    if (!(await isOverShardThreshold(result.node, blockstore, options.shardSplitThresholdBytes, options))) {
+    if (!(await isOverShardThreshold(result.node, blockstore, options.shardSplitThresholdBytes ?? DEFAULT_SHARD_SPLIT_THRESHOLD_BYTES, options))) {
       log('converting shard to flat directory %c', parent.cid)
 
       return convertToFlatDirectory(result, blockstore, options)

@@ -1,15 +1,15 @@
 import * as dagPb from '@ipld/dag-pb'
 import { logger } from '@libp2p/logger'
-import { ScalableCuckooFilter } from '@libp2p/utils/filters'
-import { mergeOptions as mergeOpts } from '@libp2p/utils/merge-options'
+import { ScalableCuckooFilter } from '@libp2p/utils'
 import { UnixFS } from 'ipfs-unixfs'
 import { exporter } from 'ipfs-unixfs-exporter'
+import toBuffer from 'it-to-buffer'
 import * as raw from 'multiformats/codecs/raw'
 import { InvalidPBNodeError, NotUnixFSError, UnknownError } from '../errors.js'
 import { resolve } from './utils/resolve.js'
 import type { ExtendedStatOptions, ExtendedDirectoryStats, ExtendedFileStats, StatOptions, DirectoryStats, FileStats, RawStats, ExtendedRawStats } from '../index.js'
 import type { GetStore, HasStore } from '../unixfs.js'
-import type { Filter } from '@libp2p/utils/filters'
+import type { Filter } from '@libp2p/utils'
 import type { RawNode, UnixFSDirectory, UnixFSFile } from 'ipfs-unixfs-exporter'
 import type { CID } from 'multiformats/cid'
 
@@ -17,22 +17,16 @@ import type { CID } from 'multiformats/cid'
 const DEFAULT_DIR_MODE = 0x755
 const DEFAULT_FILE_MODE = 0x644
 
-const mergeOptions = mergeOpts.bind({ ignoreUndefined: true })
 const log = logger('helia:unixfs:stat')
-
-const defaultOptions: StatOptions = {
-
-}
 
 export async function stat (cid: CID, blockstore: GetStore & HasStore, options?: StatOptions): Promise<FileStats | DirectoryStats | RawStats>
 export async function stat (cid: CID, blockstore: GetStore & HasStore, options?: ExtendedStatOptions): Promise<ExtendedFileStats | ExtendedDirectoryStats | ExtendedRawStats>
 export async function stat (cid: CID, blockstore: GetStore & HasStore, options: Partial<ExtendedStatOptions> = {}): Promise<any> {
-  const opts: StatOptions = mergeOptions(defaultOptions, options)
-  const resolved = await resolve(cid, options.path, blockstore, opts)
+  const resolved = await resolve(cid, options.path, blockstore, options)
 
   log('stat %c', resolved.cid)
 
-  const result = await exporter(resolved.cid, blockstore, opts)
+  const result = await exporter(resolved.cid, blockstore, options)
 
   if (result.type === 'raw') {
     if (options.extended === true) {
@@ -130,7 +124,7 @@ async function inspectDag (cid: CID, blockstore: GetStore & HasStore, isFile: bo
     const alreadyTraversed = filter.has(cid.bytes)
     filter.add(cid.bytes)
 
-    const block = await blockstore.get(cid, options)
+    const block = await toBuffer(blockstore.get(cid, options))
     results.blocks++
     results.dagSize += BigInt(block.byteLength)
 

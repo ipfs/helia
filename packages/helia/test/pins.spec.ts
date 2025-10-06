@@ -1,7 +1,6 @@
 /* eslint-env mocha */
 
 import { webSockets } from '@libp2p/websockets'
-import * as Filters from '@libp2p/websockets/filters'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
@@ -23,9 +22,7 @@ describe('pins', () => {
           denyDialMultiaddr: () => false
         },
         transports: [
-          webSockets({
-            filter: Filters.all
-          })
+          webSockets()
         ]
       }
     })
