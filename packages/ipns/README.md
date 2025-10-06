@@ -30,7 +30,7 @@ repo and examine the changes made.
 
 -->
 
-IPNS operations using a Helia node
+[IPNS](https://docs.ipfs.tech/concepts/ipns/) operations using a Helia node
 
 ## Example - Getting started
 
@@ -155,7 +155,6 @@ const name = ipns(helia, {
  ]
 })
 
-
 // store some data to publish
 const fs = unixfs(helia)
 const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
@@ -167,116 +166,15 @@ const { publicKey } = await name.publish('key-1', cid)
 const result = await name.resolve(publicKey)
 ```
 
-## Example - Using custom DNS over HTTPS resolvers
-
-To use custom resolvers, configure Helia's `dns` option:
-
-```TypeScript
-import { createHelia } from 'helia'
-import { ipns } from '@helia/ipns'
-import { dns } from '@multiformats/dns'
-import { dnsOverHttps } from '@multiformats/dns/resolvers'
-import type { DefaultLibp2pServices } from 'helia'
-import type { Libp2p } from '@libp2p/interface'
-
-const node = await createHelia<Libp2p<DefaultLibp2pServices>>({
-  dns: dns({
-    resolvers: {
-      '.': dnsOverHttps('https://private-dns-server.me/dns-query')
-    }
-  })
-})
-const name = ipns(node)
-
-const result = name.resolveDNSLink('some-domain-with-dnslink-entry.com')
-```
-
-## Example - Resolving a domain with a dnslink entry
-
-Calling `resolveDNSLink` with the `@helia/ipns` instance:
-
-```TypeScript
-// resolve a CID from a TXT record in a DNS zone file, using the default
-// resolver for the current platform eg:
-// > dig _dnslink.ipfs.tech TXT
-// ;; ANSWER SECTION:
-// _dnslink.ipfs.tech. 60 IN CNAME _dnslink.ipfs-tech.on.fleek.co.
-// _dnslink.ipfs-tech.on.fleek.co. 120 IN TXT "dnslink=/ipfs/bafybe..."
-
-import { createHelia } from 'helia'
-import { ipns } from '@helia/ipns'
-
-const node = await createHelia()
-const name = ipns(node)
-
-const { answer } = await name.resolveDNSLink('blog.ipfs.tech')
-
-console.info(answer)
-// { data: '/ipfs/bafybe...' }
-```
-
-## Example - Using DNS-Over-HTTPS
-
-This example uses the Mozilla provided RFC 1035 DNS over HTTPS service. This
-uses binary DNS records so requires extra dependencies to process the
-response which can increase browser bundle sizes.
-
-If this is a concern, use the DNS-JSON-Over-HTTPS resolver instead.
-
-```TypeScript
-import { createHelia } from 'helia'
-import { ipns } from '@helia/ipns'
-import { dns } from '@multiformats/dns'
-import { dnsOverHttps } from '@multiformats/dns/resolvers'
-import type { DefaultLibp2pServices } from 'helia'
-import type { Libp2p } from '@libp2p/interface'
-
-const node = await createHelia<Libp2p<DefaultLibp2pServices>>({
-  dns: dns({
-    resolvers: {
-      '.': dnsOverHttps('https://mozilla.cloudflare-dns.com/dns-query')
-    }
-  })
-})
-const name = ipns(node)
-
-const result = await name.resolveDNSLink('blog.ipfs.tech')
-```
-
-## Example - Using DNS-JSON-Over-HTTPS
-
-DNS-JSON-Over-HTTPS resolvers use the RFC 8427 `application/dns-json` and can
-result in a smaller browser bundle due to the response being plain JSON.
-
-```TypeScript
-import { createHelia } from 'helia'
-import { ipns } from '@helia/ipns'
-import { dns } from '@multiformats/dns'
-import { dnsJsonOverHttps } from '@multiformats/dns/resolvers'
-import type { DefaultLibp2pServices } from 'helia'
-import type { Libp2p } from '@libp2p/interface'
-
-const node = await createHelia<Libp2p<DefaultLibp2pServices>>({
-  dns: dns({
-    resolvers: {
-      '.': dnsJsonOverHttps('https://mozilla.cloudflare-dns.com/dns-query')
-    }
-  })
-})
-const name = ipns(node)
-
-const result = await name.resolveDNSLink('blog.ipfs.tech')
-```
-
 ## Example - Republishing an existing IPNS record
 
-The `republishRecord` method allows you to republish an existing IPNS record without
-needing the private key. This is useful for relay nodes or when you want to extend
-the availability of a record that was created elsewhere.
+It is sometimes useful to be able to republish an existing IPNS record
+without needing the private key. This allows you to extend the availability
+of a record that was created elsewhere.
 
 ```TypeScript
 import { createHelia } from 'helia'
-import { ipns } from '@helia/ipns'
+import { ipns, ipnsValidator } from '@helia/ipns'
 import { createDelegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
 import { CID } from 'multiformats/cid'
 
@@ -288,7 +186,18 @@ const parsedCid: CID<unknown, 114, 0 | 18, 1> = CID.parse(ipnsName)
 const delegatedClient = createDelegatedRoutingV1HttpApiClient('https://delegated-ipfs.dev')
 const record = await delegatedClient.getIPNS(parsedCid)
 
-await name.republishRecord(ipnsName, record)
+const routingKey = multihashToIPNSRoutingKey(mh)
+const marshaledRecord = marshalIPNSRecord(record)
+
+await ipnsValidator(routingKey, marshaledRecord) // validate that they key corresponds to the record
+await ipns.localStore.put(routingKey, marshaledRecord, options) // add to local store
+
+// publish record to routing
+await Promise.all(
+  ipns.routers.map(async r => {
+    await r.put(routingKey, marshaledRecord, options)
+  })
+)
 ```
 
 # Install

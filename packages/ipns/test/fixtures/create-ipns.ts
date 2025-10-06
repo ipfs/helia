@@ -3,12 +3,11 @@ import { keychain } from '@libp2p/keychain'
 import { defaultLogger } from '@libp2p/logger'
 import { MemoryDatastore } from 'datastore-core'
 import { stubInterface } from 'sinon-ts'
-import { ipns } from '../../src/index.js'
-import type { IPNS, IPNSRouting } from '../../src/index.js'
+import { IPNS } from '../../src/ipns.ts'
+import type { IPNSRouting } from '../../src/index.js'
 import type { HeliaEvents, Routing } from '@helia/interface'
 import type { Keychain, KeychainInit } from '@libp2p/keychain'
 import type { Logger } from '@libp2p/logger'
-import type { DNS } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
 import type { StubbedInstance } from 'sinon-ts'
 
@@ -16,7 +15,6 @@ export interface CreateIPNSResult {
   name: IPNS
   customRouting: StubbedInstance<IPNSRouting>
   heliaRouting: StubbedInstance<Routing>
-  dns: StubbedInstance<DNS>
   ipnsKeychain: Keychain
   datastore: Datastore,
   log: Logger
@@ -31,7 +29,6 @@ export async function createIPNS (): Promise<CreateIPNSResult> {
   customRouting.get.throws(new Error('Not found'))
 
   const heliaRouting = stubInterface<Routing>()
-  const dns = stubInterface<DNS>()
 
   const logger = defaultLogger()
   const keychainInit: KeychainInit = {
@@ -44,11 +41,11 @@ export async function createIPNS (): Promise<CreateIPNSResult> {
 
   const events = new TypedEventEmitter<HeliaEvents>()
 
-  const name = ipns({
+  const name = new IPNS({
     datastore,
     routing: heliaRouting,
-    dns,
     libp2p: {
+      status: 'stopped',
       services: {
         keychain: ipnsKeychain
       }
@@ -63,7 +60,6 @@ export async function createIPNS (): Promise<CreateIPNSResult> {
     name,
     customRouting,
     heliaRouting,
-    dns,
     ipnsKeychain,
     datastore,
     log: logger.forComponent('helia:ipns:test'),

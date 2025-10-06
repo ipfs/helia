@@ -1,12 +1,14 @@
 /* eslint-env mocha */
 
+import { start, stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import { base36 } from 'multiformats/bases/base36'
 import { CID } from 'multiformats/cid'
 import Sinon from 'sinon'
-import { localStore } from '../src/routing/local-store.js'
+import { localStore } from '../src/local-store.js'
 import { createIPNS } from './fixtures/create-ipns.js'
-import type { IPNS } from '../src/index.js'
+import type { CreateIPNSResult } from './fixtures/create-ipns.js'
+import type { IPNS } from '../src/ipns.js'
 
 const cid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
 
@@ -14,12 +16,19 @@ describe('publish', () => {
   let name: IPNS
   let customRouting: any
   let heliaRouting: any
+  let result: CreateIPNSResult
 
   beforeEach(async () => {
-    const result = await createIPNS()
+    result = await createIPNS()
     name = result.name
     customRouting = result.customRouting
     heliaRouting = result.heliaRouting
+
+    await start(name)
+  })
+
+  afterEach(async () => {
+    await stop(name)
   })
 
   it('should publish an IPNS record with the default params', async function () {
@@ -122,8 +131,7 @@ describe('publish', () => {
 
   describe('localStore error handling', () => {
     it('should handle datastore errors during publish', async () => {
-      const result = await createIPNS()
-      const testName = result.name
+      await start(name)
 
       // Stub localStore.get to throw an error
       const store = localStore(result.datastore, result.log)
@@ -132,60 +140,40 @@ describe('publish', () => {
 
       // Override the localStore on the IPNS instance
       // @ts-ignore
-      testName.localStore = store
+      name.localStore = store
 
       const keyName = 'test-key-error'
-      await expect(testName.publish(keyName, cid)).to.be.rejectedWith('Datastore get failed')
+      await expect(name.publish(keyName, cid)).to.be.rejectedWith('Datastore get failed')
 
       expect(hasStub.called).to.be.true()
       expect(getStub.called).to.be.true()
     })
 
     it('should handle datastore put errors during publish', async () => {
-      const result = await createIPNS()
-      const testName = result.name
+      await start(name)
 
-      // Stub localStore.put to throw an error
-      const store = localStore(result.datastore, result.log)
-      const putStub = Sinon.stub(store, 'put').rejects(new Error('Datastore put failed'))
-      const hasStub = Sinon.stub(store, 'has').resolves(false)
-
-      // Override the localStore on the IPNS instance
-      // @ts-ignore
-      testName.localStore = store
+      // Stub datastore.put to throw an error
+      const putStub = Sinon.stub(result.datastore, 'put').rejects(new Error('Datastore put failed'))
+      const hasStub = Sinon.stub(result.datastore, 'has').resolves(false)
 
       const keyName = 'test-key-put-error'
-      await expect(testName.publish(keyName, cid)).to.be.rejectedWith('Datastore put failed')
+      await expect(name.publish(keyName, cid)).to.be.rejectedWith('Datastore put failed')
 
       expect(hasStub.called).to.be.true()
       expect(putStub.called).to.be.true()
     })
 
     it('should emit error progress events when localStore fails', async () => {
-      const result = await createIPNS()
-      const testName = result.name
+      await start(name)
 
-      // Stub localStore.put to emit error progress event and then throw
-      const store = localStore(result.datastore, result.log)
       const progressEvents: any[] = []
 
-      const putStub = Sinon.stub(store, 'put').callsFake(async (_routingKey, _marshaledRecord, options) => {
-        // Simulate the error progress event emission
-        options?.onProgress?.({
-          type: 'ipns:routing:datastore:error',
-          detail: new Error('Storage error')
-        })
-        throw new Error('Storage error')
-      })
-      const hasStub = Sinon.stub(store, 'has').resolves(false)
-
-      // Override the localStore
-      // @ts-ignore
-      testName.localStore = store
+      const putStub = Sinon.stub(result.datastore, 'get').rejects(new Error('Storage error'))
+      const hasStub = Sinon.stub(result.datastore, 'has').resolves(false)
 
       const keyName = 'test-key-progress-error'
 
-      await expect(testName.publish(keyName, cid, {
+      await expect(name.publish(keyName, cid, {
         onProgress: (evt) => progressEvents.push(evt)
       })).to.be.rejectedWith('Storage error')
 
@@ -199,22 +187,16 @@ describe('publish', () => {
     })
 
     it('should handle network timeouts in localStore', async () => {
-      const result = await createIPNS()
-      const testName = result.name
+      await start(name)
 
       // Create a timeout error
       const timeoutError = new Error('Network timeout')
       timeoutError.name = 'TimeoutError'
 
-      const store = localStore(result.datastore, result.log)
-      const hasStub = Sinon.stub(store, 'has').rejects(timeoutError)
-
-      // Override the localStore
-      // @ts-ignore
-      testName.localStore = store
+      const hasStub = Sinon.stub(result.datastore, 'has').rejects(timeoutError)
 
       const keyName = 'test-key-timeout'
-      await expect(testName.publish(keyName, cid)).to.be.rejectedWith('Network timeout')
+      await expect(name.publish(keyName, cid)).to.be.rejectedWith('Network timeout')
 
       expect(hasStub.called).to.be.true()
     })

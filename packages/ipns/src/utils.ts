@@ -1,5 +1,7 @@
 import { Key } from 'interface-datastore'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { DHT_EXPIRY_MS, REPUBLISH_THRESHOLD } from './constants.ts'
+import type { IPNSRecord } from 'ipns'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 
 export const IDENTITY_CODEC = 0x0
@@ -34,4 +36,22 @@ export function dhtRoutingKey (key: Uint8Array): Key {
  */
 export function ipnsMetadataKey (key: Uint8Array): Key {
   return new Key(IPNS_METADATA_PREFIX + uint8ArrayToString(key, 'base32'), false)
+}
+
+export function shouldRepublish (ipnsRecord: IPNSRecord, created: Date): boolean {
+  const now = Date.now()
+  const dhtExpiry = created.getTime() + DHT_EXPIRY_MS
+  const recordExpiry = new Date(ipnsRecord.validity).getTime()
+
+  // If the DHT expiry is within the threshold, republish it
+  if (dhtExpiry - now < REPUBLISH_THRESHOLD) {
+    return true
+  }
+
+  // If the record expiry (based on validity/lifetime) is within the threshold, republish it
+  if (recordExpiry - now < REPUBLISH_THRESHOLD) {
+    return true
+  }
+
+  return false
 }

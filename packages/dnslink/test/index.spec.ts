@@ -1,13 +1,15 @@
 /* eslint-env mocha */
 
 import { NotFoundError } from '@libp2p/interface'
-import { peerIdFromPublicKey } from '@libp2p/peer-id'
+import { defaultLogger } from '@libp2p/logger'
+import { peerIdFromString } from '@libp2p/peer-id'
 import { RecordType } from '@multiformats/dns'
 import { expect } from 'aegir/chai'
 import { base36 } from 'multiformats/bases/base36'
 import { CID } from 'multiformats/cid'
-import { createIPNS } from './fixtures/create-ipns.js'
-import type { IPNS } from '../src/index.js'
+import { stubInterface } from 'sinon-ts'
+import { dnsLink } from '../src/index.js'
+import type { DNSLink } from '../src/index.js'
 import type { Answer, DNS, DNSResponse } from '@multiformats/dns'
 import type { StubbedInstance } from 'sinon-ts'
 
@@ -24,14 +26,16 @@ function dnsResponse (answers: Answer[]): DNSResponse {
   }
 }
 
-describe('resolveDNSLink', () => {
+describe('dnslink', () => {
   let dns: StubbedInstance<DNS>
-  let name: IPNS
+  let name: DNSLink
 
   beforeEach(async () => {
-    const result = await createIPNS()
-    name = result.name
-    dns = result.dns
+    dns = stubInterface()
+    name = dnsLink({
+      dns,
+      logger: defaultLogger()
+    })
   })
 
   it('should resolve a domain', async () => {
@@ -42,8 +46,9 @@ describe('resolveDNSLink', () => {
       data: 'dnslink=/ipfs/QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'
     }]))
 
-    const result = await name.resolveDNSLink('foobar.baz', { nocache: true, offline: true })
-    expect(result.cid.toString()).to.equal('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
+    const result = await name.resolve('foobar.baz', { nocache: true, offline: true })
+    expect(result).to.have.deep.property('cid', CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'))
+    expect(result).to.have.property('path', '')
   })
 
   it('should retry without `_dnslink.` on a domain', async () => {
@@ -55,8 +60,9 @@ describe('resolveDNSLink', () => {
       data: 'dnslink=/ipfs/QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'
     }]))
 
-    const result = await name.resolveDNSLink('foobar.baz', { nocache: true, offline: true })
-    expect(result.cid.toString()).to.equal('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
+    const result = await name.resolve('foobar.baz', { nocache: true, offline: true })
+    expect(result).to.have.deep.property('cid', CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'))
+    expect(result).to.have.property('path', '')
   })
 
   it('should handle bad records', async () => {
@@ -92,8 +98,8 @@ describe('resolveDNSLink', () => {
       data: 'dnslink=/ipfs/QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'
     }]))
 
-    const result = await name.resolveDNSLink('foobar.baz', { nocache: true, offline: true })
-    expect(result.cid.toString()).to.equal('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
+    const result = await name.resolve('foobar.baz', { nocache: true, offline: true })
+    expect(result).to.have.deep.property('cid', CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'))
   })
 
   it('should handle records wrapped in quotation marks', async () => {
@@ -104,8 +110,8 @@ describe('resolveDNSLink', () => {
       data: '"dnslink=/ipfs/QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn"'
     }]))
 
-    const result = await name.resolveDNSLink('foobar.baz', { nocache: true, offline: true })
-    expect(result.cid.toString()).to.equal('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
+    const result = await name.resolve('foobar.baz', { nocache: true, offline: true })
+    expect(result).to.have.deep.property('cid', CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'))
   })
 
   it('should support trailing slash in returned dnslink value', async () => {
@@ -118,9 +124,9 @@ describe('resolveDNSLink', () => {
       data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe/'
     }]))
 
-    const result = await name.resolveDNSLink('foobar.baz', { nocache: true })
+    const result = await name.resolve('foobar.baz', { nocache: true })
     // spellchecker:disable-next-line
-    expect(result.cid.toString()).to.equal('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe', 'doesn\'t support trailing slashes')
+    expect(result).to.have.deep.property('cid', CID.parse('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'), 'doesn\'t support trailing slashes')
   })
 
   it('should support paths in returned dnslink value', async () => {
@@ -133,17 +139,14 @@ describe('resolveDNSLink', () => {
       data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe/foobar/path/123'
     }]))
 
-    const result = await name.resolveDNSLink('foobar.baz', { nocache: true })
+    const result = await name.resolve('foobar.baz', { nocache: true })
     // spellchecker:disable-next-line
-    expect(result.cid.toString()).to.equal('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe', 'doesn\'t support trailing slashes')
-    expect(result.path).to.equal('foobar/path/123')
+    expect(result).to.have.deep.property('cid', CID.parse('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'), 'doesn\'t support trailing paths')
+    expect(result).to.have.property('path', '/foobar/path/123')
   })
 
   it('should resolve recursive dnslink -> <peerId>/<path>', async () => {
-    const cid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
-    const keyName = 'my-key'
-    const { publicKey } = await name.publish(keyName, cid)
-    const peerId = peerIdFromPublicKey(publicKey)
+    const peerId = peerIdFromString('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
 
     dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
       name: 'foobar.baz.',
@@ -152,21 +155,18 @@ describe('resolveDNSLink', () => {
       data: `dnslink=/ipns/${peerId.toString()}/foobar/path/123`
     }]))
 
-    const result = await name.resolveDNSLink('foobar.baz')
+    const result = await name.resolve('foobar.baz')
 
     if (result == null) {
       throw new Error('Did not resolve entry')
     }
 
-    expect(result.cid.toString()).to.equal(cid.toV1().toString())
-    expect(result.path).to.equal('foobar/path/123')
+    expect(result).to.have.deep.property('peerId', peerId)
+    expect(result).to.have.property('path', '/foobar/path/123')
   })
 
   it('should resolve recursive dnslink -> <IPNS_base36_CID>/<path>', async () => {
-    const cid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
-    const keyName = 'my-key'
-    const { publicKey } = await name.publish(keyName, cid)
-    const peerId = peerIdFromPublicKey(publicKey)
+    const peerId = peerIdFromString('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
     const peerIdBase36CID = peerId.toCID().toString(base36)
     dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
       name: 'foobar.baz.',
@@ -175,18 +175,17 @@ describe('resolveDNSLink', () => {
       data: `dnslink=/ipns/${peerIdBase36CID}/foobar/path/123`
     }]))
 
-    const result = await name.resolveDNSLink('foobar.baz')
+    const result = await name.resolve('foobar.baz')
 
     if (result == null) {
       throw new Error('Did not resolve entry')
     }
 
-    expect(result.cid.toString()).to.equal(cid.toV1().toString())
-    expect(result.path).to.equal('foobar/path/123')
+    expect(result).to.have.deep.property('peerId', peerId)
+    expect(result).to.have.property('path', '/foobar/path/123')
   })
 
   it('should follow CNAMES to delegated DNSLink domains', async () => {
-    const cid = CID.parse('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe')
     dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
       name: '_dnslink.foobar.baz.',
       TTL: 60,
@@ -200,13 +199,13 @@ describe('resolveDNSLink', () => {
       // spellchecker:disable-next-line
       data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'
     }]))
-    const result = await name.resolveDNSLink('foobar.baz')
+    const result = await name.resolve('foobar.baz')
 
     if (result == null) {
       throw new Error('Did not resolve entry')
     }
 
-    expect(result.cid.toString()).to.equal(cid.toV1().toString())
+    expect(result).to.have.deep.property('cid', CID.parse('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'))
   })
 
   it('should resolve dnslink namespace', async () => {
@@ -225,13 +224,13 @@ describe('resolveDNSLink', () => {
       data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'
     }]))
 
-    const result = await name.resolveDNSLink('foobar.baz')
+    const result = await name.resolve('foobar.baz')
 
     if (result == null) {
       throw new Error('Did not resolve entry')
     }
 
-    expect(result.cid.toString()).to.equal(cid.toV1().toString())
+    expect(result).to.have.deep.property('cid', cid)
   })
 
   it('should include DNS Answer in result', async () => {
@@ -244,12 +243,45 @@ describe('resolveDNSLink', () => {
     }
     dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([answer]))
 
-    const result = await name.resolveDNSLink('foobar.baz')
+    const result = await name.resolve('foobar.baz')
 
     if (result == null) {
       throw new Error('Did not resolve entry')
     }
 
     expect(result).to.have.deep.property('answer', answer)
+  })
+
+  it('should support custom parsers', async () => {
+    const answer = {
+      name: '_dnslink.foobar.baz.',
+      TTL: 60,
+      type: RecordType.TXT,
+      // spellchecker:disable-next-line
+      data: 'dnslink=/hello/world'
+    }
+    dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([answer]))
+
+    name = dnsLink({
+      dns,
+      logger: defaultLogger()
+    }, {
+      namespaces: {
+        hello: {
+          parse: (value, answer) => {
+            return {
+              namespace: 'hello',
+              value: value.split('/hello/').pop(),
+              answer
+            }
+          }
+        }
+      }
+    })
+
+    const result = await name.resolve('foobar.baz')
+
+    expect(result).to.have.property('namespace', 'hello')
+    expect(result).to.have.property('value', 'world')
   })
 })

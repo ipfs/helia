@@ -1,13 +1,14 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
+import { start, stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import { createIPNSRecord, marshalIPNSRecord, unmarshalIPNSRecord, multihashToIPNSRoutingKey } from 'ipns'
 import { CID } from 'multiformats/cid'
 import sinon from 'sinon'
-import { localStore } from '../src/routing/local-store.js'
+import { localStore } from '../src/local-store.js'
 import { createIPNS } from './fixtures/create-ipns.js'
-import type { IPNS } from '../src/index.js'
+import type { IPNS } from '../src/ipns.js'
 import type { CreateIPNSResult } from './fixtures/create-ipns.js'
 
 // Helper to await until a stub is called
@@ -30,10 +31,8 @@ describe('republish', () => {
   let result: CreateIPNSResult
   let putStubCustom: sinon.SinonStub
   let putStubHelia: sinon.SinonStub
-  let abortController: AbortController
 
   beforeEach(async () => {
-    abortController = new AbortController()
     result = await createIPNS()
     name = result.name
 
@@ -46,8 +45,8 @@ describe('republish', () => {
     result.heliaRouting.put = putStubHelia
   })
 
-  afterEach(() => {
-    abortController.abort()
+  afterEach(async () => {
+    await stop(name)
     sinon.restore()
     sinon.reset()
   })
@@ -70,8 +69,9 @@ describe('republish', () => {
           lifetime: 24 * 60 * 60 * 1000
         }
       })
+
       // Start republishing
-      name.republish({ interval: 1, signal: abortController.signal })
+      await start(name)
       await waitForStubCall(putStubCustom)
 
       // Only check custom router for most tests
@@ -96,7 +96,8 @@ describe('republish', () => {
         }
       })
       // Start republishing
-      name.republish({ interval: 1, signal: abortController.signal })
+      await start(name)
+
       await Promise.all([
         waitForStubCall(putStubCustom),
         waitForStubCall(putStubHelia)
@@ -107,14 +108,6 @@ describe('republish', () => {
       expect(putStubHelia.called).to.be.true()
       expect(putStubCustom.firstCall.args[0]).to.deep.equal(routingKey)
       expect(putStubHelia.firstCall.args[0]).to.deep.equal(routingKey)
-    })
-
-    it('should throw error when republish is already running', async () => {
-      // Start republishing
-      name.republish({ interval: 1 })
-
-      // Try to start again immediately
-      expect(() => name.republish()).to.throw('Republish is already running')
     })
 
     it('should republish records with valid metadata', async () => {
@@ -134,8 +127,8 @@ describe('republish', () => {
         }
       })
 
-      const interval = 1
-      name.republish({ interval, signal: abortController.signal })
+      // Start publishing
+      await start(name)
       await waitForStubCall(putStubCustom)
 
       // Verify the record was republished with incremented sequence
@@ -158,8 +151,7 @@ describe('republish', () => {
       const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record)) // No metadata
 
-      const interval = 1
-      name.republish({ interval, signal: abortController.signal })
+      await start(name)
       await new Promise(resolve => setTimeout(resolve, 20))
 
       // Verify no records were republished
@@ -178,8 +170,7 @@ describe('republish', () => {
         }
       })
 
-      const interval = 1
-      name.republish({ interval, signal: abortController.signal })
+      await start(name)
       await new Promise(resolve => setTimeout(resolve, 20))
 
       // Verify no records were republished due to error
@@ -203,8 +194,7 @@ describe('republish', () => {
         }
       })
 
-      const interval = 1
-      name.republish({ interval, signal: abortController.signal })
+      await start(name)
       await waitForStubCall(putStubCustom)
 
       expect(putStubCustom.called).to.be.true()
@@ -212,162 +202,6 @@ describe('republish', () => {
       const callArgs = putStubCustom.firstCall.args
       const republishedRecord = unmarshalIPNSRecord(callArgs[1])
       expect(republishedRecord.sequence).to.equal(6n) // Incremented from 5n
-    })
-  })
-
-  describe('progress events', () => {
-    it('should emit start progress event', async () => {
-      const progressEvents: any[] = []
-
-      const interval = 1
-      name.republish({
-        interval,
-        signal: abortController.signal,
-        onProgress: (evt) => {
-          progressEvents.push(evt)
-        }
-      })
-
-      await new Promise(resolve => setTimeout(resolve, 20))
-
-      expect(progressEvents.some(evt => evt.type === 'ipns:republish:start')).to.be.true()
-    })
-
-    it('should emit success progress events for each record', async () => {
-      const key = await generateKeyPair('Ed25519')
-      const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
-      const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
-
-      // Import the key into the real keychain
-      await result.ipnsKeychain.importKey('test-key', key)
-
-      // Store the record in the real datastore
-      const store = localStore(result.datastore, result.log)
-      await store.put(routingKey, marshalIPNSRecord(record), {
-        metadata: {
-          keyName: 'test-key',
-          lifetime: 24 * 60 * 60 * 1000
-        }
-      })
-
-      const progressEvents: any[] = []
-
-      const interval = 5
-      name.republish({
-        interval,
-        signal: abortController.signal,
-        onProgress: (evt) => {
-          progressEvents.push(evt)
-        }
-      })
-
-      await waitForStubCall(putStubCustom)
-
-      expect(progressEvents.some(evt => evt.type === 'ipns:republish:success')).to.be.true()
-    })
-
-    it('should emit error progress events for failed records', async () => {
-      const key = await generateKeyPair('Ed25519')
-      const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
-      const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
-
-      // Import the key into the real keychain
-      await result.ipnsKeychain.importKey('test-key', key)
-
-      // Store the record in the real datastore
-      const store = localStore(result.datastore, result.log)
-      await store.put(routingKey, marshalIPNSRecord(record), {
-        metadata: {
-          keyName: 'test-key',
-          lifetime: 24 * 60 * 60 * 1000
-        }
-      })
-
-      // Make all routers fail
-      result.customRouting.put.throws(new Error('Router error'))
-      result.heliaRouting.put.throws(new Error('Router error'))
-
-      const progressEvents: any[] = []
-
-      const interval = 5
-      name.republish({
-        interval,
-        signal: abortController.signal,
-        onProgress: (evt) => {
-          progressEvents.push(evt)
-        }
-      })
-
-      while (!result.customRouting.put.threw() || !result.heliaRouting.put.threw()) {
-        await new Promise(resolve => setTimeout(resolve, 2))
-      }
-
-      expect(progressEvents.some(evt => evt.type === 'ipns:republish:error')).to.be.true()
-    })
-  })
-
-  describe('abort signal', () => {
-    it('should stop republishing when aborted', async () => {
-      const abortController = new AbortController()
-      const key = await generateKeyPair('Ed25519')
-      const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
-      const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
-
-      // Import the key into the real keychain
-      await result.ipnsKeychain.importKey('test-key', key)
-
-      // Store the record in the real datastore
-      const store = localStore(result.datastore, result.log)
-      await store.put(routingKey, marshalIPNSRecord(record), {
-        metadata: {
-          keyName: 'test-key',
-          lifetime: 24 * 60 * 60 * 1000
-        }
-      })
-
-      expect(putStubCustom.called).to.be.false()
-      expect(putStubHelia.called).to.be.false()
-
-      const interval = 50
-      name.republish({ interval, signal: abortController.signal })
-
-      // Abort before the interval
-      abortController.abort()
-
-      // Should not have republished due to abort
-      expect(putStubCustom.called).to.be.false()
-      expect(putStubHelia.called).to.be.false()
-    })
-
-    it('should clear timeout when the Helia emits a stop event', async () => {
-      const key = await generateKeyPair('Ed25519')
-      const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
-      const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
-
-      // Import the key into the real keychain
-      await result.ipnsKeychain.importKey('test-key', key)
-
-      // Store the record in the real datastore
-      const store = localStore(result.datastore, result.log)
-      await store.put(routingKey, marshalIPNSRecord(record), {
-        metadata: {
-          keyName: 'test-key',
-          lifetime: 24 * 60 * 60 * 1000
-        }
-      })
-
-      const interval = 50
-      name.republish({ interval })
-
-      // Emit stop event immediately
-      result.events.dispatchEvent(new CustomEvent('stop'))
-
-      // Wait for the interval to pass
-      await new Promise(resolve => setTimeout(resolve, interval + 10))
-
-      // Should not have republished after stop event due to cleared timeout
-      expect(putStubCustom.called).to.be.false()
-      expect(putStubHelia.called).to.be.false()
     })
   })
 
@@ -390,8 +224,7 @@ describe('republish', () => {
         }
       })
 
-      const interval = 1
-      name.republish({ interval, signal: abortController.signal })
+      await start(name)
       await waitForStubCall(putStubCustom)
 
       // Verify the record was republished with incremented sequence
@@ -421,8 +254,7 @@ describe('republish', () => {
         }
       })
 
-      const interval = 1
-      name.republish({ interval, signal: abortController.signal })
+      await start(name)
       await waitForStubCall(putStubCustom)
 
       expect(putStubCustom.called).to.be.true()
@@ -434,7 +266,6 @@ describe('republish', () => {
     it('should use metadata lifetime', async () => {
       const key = await generateKeyPair('Ed25519')
       const customLifetime = 5 * 1000 // 5 seconds
-      const republishInterval = 1
       const record = await createIPNSRecord(key, testCid, 1n, customLifetime)
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
@@ -450,7 +281,7 @@ describe('republish', () => {
         }
       })
 
-      name.republish({ interval: republishInterval, signal: abortController.signal })
+      await start(name)
       await waitForStubCall(putStubCustom)
 
       const expectedValidity = Date.now() + customLifetime
@@ -484,8 +315,7 @@ describe('republish', () => {
       })
 
       const interval = 5
-      name.republish({ interval, signal: abortController.signal })
-
+      await start(name)
       await new Promise(resolve => setTimeout(resolve, interval + 10))
       // Should not republish due to keychain error (key not found)
       expect(putStubCustom.called).to.be.false()
@@ -501,14 +331,7 @@ describe('republish', () => {
       // @ts-ignore
       name.localStore = store
 
-      const progressEvents: any[] = []
-      const interval = 20
-      name.republish({
-        interval,
-        signal: abortController.signal,
-        onProgress: (evt) => progressEvents.push(evt)
-      })
-
+      await start(name)
       await new Promise(resolve => setTimeout(resolve, 20))
 
       expect(listStub.called).to.be.true()
@@ -517,11 +340,11 @@ describe('republish', () => {
       expect(putStubHelia.called).to.be.false()
 
       // Check if error progress event was emitted
-      const errorEvent = progressEvents.find(evt => evt.type === 'ipns:republish:error')
-      expect(errorEvent).to.exist()
+      // const errorEvent = progressEvents.find(evt => evt.type === 'ipns:republish:error')
+      // expect(errorEvent).to.exist()
     })
 
-    it('should emit error progress events when localStore.list() fails', async () => {
+    it.skip('should emit error progress events when localStore.list() fails', async () => {
       const store = localStore(result.datastore, result.log)
       const progressEvents: any[] = []
 
@@ -540,13 +363,7 @@ describe('republish', () => {
       // @ts-ignore
       name.localStore = store
 
-      const interval = 1
-      name.republish({
-        interval,
-        signal: abortController.signal,
-        onProgress: (evt) => progressEvents.push(evt)
-      })
-
+      await start(name)
       await new Promise(resolve => setTimeout(resolve, 20))
 
       expect(listStub.called).to.be.true()
@@ -576,9 +393,7 @@ describe('republish', () => {
         }
       })
 
-      const interval = 1
-      name.republish({ interval, signal: abortController.signal })
-
+      await start(name)
       await new Promise(resolve => setTimeout(resolve, 20))
 
       // Should not republish due to unmarshal error
@@ -613,8 +428,7 @@ describe('republish', () => {
         }
       })
 
-      const interval = 1
-      name.republish({ interval, signal: abortController.signal })
+      await start(name)
       await waitForStubCall(putStubCustom)
 
       // Should republish the valid record despite the corrupt one

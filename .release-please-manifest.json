@@ -4,6 +4,7 @@
   "packages/car": "4.2.0",
   "packages/dag-cbor": "4.1.0",
   "packages/dag-json": "4.1.0",
+  "packages/dnslink": "0.0.0",
   "packages/helia": "5.5.1",
   "packages/interface": "5.4.0",
   "packages/interop": "8.3.0",

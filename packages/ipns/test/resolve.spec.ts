@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
+import { start, stop } from '@libp2p/interface'
 import { Record } from '@libp2p/kad-dht'
 import { expect } from 'aegir/chai'
 import { Key } from 'interface-datastore'
@@ -29,6 +30,12 @@ describe('resolve', () => {
     customRouting = result.customRouting
     heliaRouting = result.heliaRouting
     datastore = result.datastore
+
+    await start(name)
+  })
+
+  afterEach(async () => {
+    await stop(name)
   })
 
   it('should resolve a record', async () => {
