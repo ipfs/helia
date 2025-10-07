@@ -16,9 +16,9 @@
     "@helia/unixfs": "^5.0.2",
     "aegir": "^47.0.7",
     "blockstore-core": "^6.0.2",
-    "blockstore-fs": "^2.0.1",
+    "blockstore-fs": "^3.0.2",
     "datastore-core": "^11.0.2",
-    "datastore-level": "^11.0.1",
+    "datastore-level": "^12.0.2",
     "execa": "^9.5.3",
     "helia": "^5.1.1",
     "ipfs-unixfs-importer": "^16.0.1",
@@ -27,6 +27,6 @@
     "kubo": "^0.38.0",
     "kubo-rpc-client": "^5.0.0",
     "multiformats": "^13.1.0",
-    "tinybench": "^4.0.1"
+    "tinybench": "^5.0.1"
   }
 }
