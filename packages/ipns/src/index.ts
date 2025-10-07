@@ -149,6 +149,7 @@
  * import { ipns, ipnsValidator } from '@helia/ipns'
  * import { createDelegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
  * import { CID } from 'multiformats/cid'
+ * import { multihashToIPNSRoutingKey, marshalIPNSRecord } from 'ipns'
  *
  * const helia = await createHelia()
  * const name = ipns(helia)
@@ -158,16 +159,16 @@
  * const delegatedClient = createDelegatedRoutingV1HttpApiClient('https://delegated-ipfs.dev')
  * const record = await delegatedClient.getIPNS(parsedCid)
  *
- * const routingKey = multihashToIPNSRoutingKey(mh)
+ * const routingKey = multihashToIPNSRoutingKey(parsedCid.multihash)
  * const marshaledRecord = marshalIPNSRecord(record)
  *
- * await ipnsValidator(routingKey, marshaledRecord) // validate that they key corresponds to the record
- * await ipns.localStore.put(routingKey, marshaledRecord, options) // add to local store
+ * // validate that they key corresponds to the record
+ * await ipnsValidator(routingKey, marshaledRecord)
  *
  * // publish record to routing
  * await Promise.all(
- *   ipns.routers.map(async r => {
- *     await r.put(routingKey, marshaledRecord, options)
+ *   name.routers.map(async r => {
+ *     await r.put(routingKey, marshaledRecord)
  *   })
  * )
  * ```
