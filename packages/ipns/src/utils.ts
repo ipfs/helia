@@ -1,9 +1,12 @@
+import { InvalidParametersError } from '@libp2p/interface'
 import { Key } from 'interface-datastore'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { DHT_EXPIRY_MS, REPUBLISH_THRESHOLD } from './constants.ts'
 import type { IPNSRecord } from 'ipns'
+import type { CID } from 'multiformats/cid'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 
+export const LIBP2P_KEY_CODEC = 0x72
 export const IDENTITY_CODEC = 0x0
 export const SHA2_256_CODEC = 0x12
 
@@ -54,4 +57,24 @@ export function shouldRepublish (ipnsRecord: IPNSRecord, created: Date): boolean
   }
 
   return false
+}
+
+function isCID (obj?: any): obj is CID {
+  return obj?.asCID === obj
+}
+
+export function isLibp2pCID (obj?: any): obj is CID<unknown, 0x72, 0x00 | 0x12, 1> {
+  if (!isCID(obj)) {
+    return false
+  }
+
+  if (obj.code !== LIBP2P_KEY_CODEC) {
+    throw new InvalidParametersError(`CID codec ${obj.code} was not libp2p-key`)
+  }
+
+  if (obj.multihash.code !== IDENTITY_CODEC && obj.multihash.code !== SHA2_256_CODEC) {
+    throw new InvalidParametersError(`Multihash algorithm codec ${obj.multihash.code} was not Identity or SHA256 hash`)
+  }
+
+  return true
 }

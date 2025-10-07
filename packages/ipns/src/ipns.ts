@@ -1,5 +1,5 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { NotFoundError, NotStartedError, isPublicKey } from '@libp2p/interface'
+import { NotFoundError, NotStartedError, isPeerId, isPublicKey } from '@libp2p/interface'
 import { Queue, repeatingTask } from '@libp2p/utils'
 import { createIPNSRecord, marshalIPNSRecord, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from 'ipns'
 import { ipnsSelector } from 'ipns/selector'
@@ -14,11 +14,11 @@ import { InvalidValueError, RecordsFailedValidationError, UnsupportedMultibasePr
 import { localStore } from './local-store.js'
 import { helia } from './routing/helia.js'
 import { localStoreRouting } from './routing/local-store.ts'
-import { isCodec, IDENTITY_CODEC, SHA2_256_CODEC, shouldRepublish } from './utils.js'
+import { isCodec, IDENTITY_CODEC, SHA2_256_CODEC, shouldRepublish, isLibp2pCID } from './utils.js'
 import type { IPNSComponents, IPNS as IPNSInterface, IPNSOptions, IPNSPublishResult, IPNSResolveResult, PublishOptions, ResolveOptions } from './index.js'
 import type { LocalStore } from './local-store.js'
 import type { IPNSRouting } from './routing/index.js'
-import type { AbortOptions, Logger, PrivateKey, PublicKey, Startable } from '@libp2p/interface'
+import type { AbortOptions, Logger, PeerId, PrivateKey, PublicKey, Startable } from '@libp2p/interface'
 import type { Keychain } from '@libp2p/keychain'
 import type { RepeatingTask } from '@libp2p/utils'
 import type { IPNSRecord } from 'ipns'
@@ -90,7 +90,7 @@ export class IPNS implements IPNSInterface, Startable {
     }
   }
 
-  async publish (keyName: string, value: CID | PublicKey | MultihashDigest<0x00 | 0x12> | string, options: PublishOptions = {}): Promise<IPNSPublishResult> {
+  async publish (keyName: string, value: CID | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId | string, options: PublishOptions = {}): Promise<IPNSPublishResult> {
     this.#throwIfStopped()
 
     try {
@@ -103,6 +103,10 @@ export class IPNS implements IPNSInterface, Startable {
         const { record } = await this.localStore.get(routingKey, options)
         const existingRecord = unmarshalIPNSRecord(record)
         sequenceNumber = existingRecord.sequence + 1n
+      }
+
+      if (isPeerId(value)) {
+        value = value.toCID()
       }
 
       // convert ttl from milliseconds to nanoseconds as createIPNSRecord expects
@@ -131,9 +135,9 @@ export class IPNS implements IPNSInterface, Startable {
     }
   }
 
-  async resolve (key: PublicKey | MultihashDigest<0x00 | 0x12>, options: ResolveOptions = {}): Promise<IPNSResolveResult> {
+  async resolve (key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options: ResolveOptions = {}): Promise<IPNSResolveResult> {
     this.#throwIfStopped()
-    const digest = isPublicKey(key) ? key.toMultihash() : key
+    const digest = isPublicKey(key) || isPeerId(key) ? key.toMultihash() : isLibp2pCID(key) ? key.multihash : key
     const routingKey = multihashToIPNSRoutingKey(digest)
     const record = await this.#findIpnsRecord(routingKey, options)
 

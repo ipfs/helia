@@ -179,7 +179,7 @@ import { CID } from 'multiformats/cid'
 import { IPNS as IPNSClass } from './ipns.js'
 import type { IPNSRouting, IPNSRoutingEvents } from './routing/index.js'
 import type { Routing, HeliaEvents } from '@helia/interface'
-import type { AbortOptions, ComponentLogger, Libp2p, PublicKey, TypedEventEmitter } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, Libp2p, PeerId, PublicKey, TypedEventEmitter } from '@libp2p/interface'
 import type { Keychain } from '@libp2p/keychain'
 import type { Datastore } from 'interface-datastore'
 import type { IPNSRecord } from 'ipns'
@@ -286,10 +286,16 @@ export interface IPNS {
   routers: IPNSRouting[]
 
   /**
-   * Creates an IPNS record signed by the passed PeerId that will resolve to the
-   * passed value
+   * Creates and publishes an IPNS record that will resolve the passed value
+   * signed by a key stored in the libp2p keychain under the passed key name.
    *
-   * If the value is a PeerId, a recursive IPNS record will be created.
+   * It is possible to create a recursive IPNS record by passing:
+   *
+   * - A PeerId,
+   * - A PublicKey
+   * - A CID with the libp2p-key codec and Identity or SHA256 hash algorithms
+   * - A Multihash with the Identity or SHA256 hash algorithms
+   * - A string IPNS key (e.g. `/ipns/Qmfoo`)
    *
    * @example
    *
@@ -307,13 +313,16 @@ export interface IPNS {
    * console.info(result) // { answer: ... }
    * ```
    */
-  publish(keyName: string, value: CID | PublicKey | MultihashDigest<0x00 | 0x12> | string, options?: PublishOptions): Promise<IPNSPublishResult>
+  publish(keyName: string, value: CID | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId | string, options?: PublishOptions): Promise<IPNSPublishResult>
 
   /**
-   * Accepts a public key formatted as a libp2p PeerID and resolves the IPNS
-   * record corresponding to that public key until a value is found
+   * Accepts a libp2p public key, a CID with the libp2p-key codec and either the
+   * identity hash (for Ed25519 and secp256k1 public keys) or a SHA256 hash (for
+   * RSA public keys), or the multihash of a libp2p-key encoded CID, or a
+   * Ed25519, secp256k1 or RSA PeerId and recursively resolves the IPNS record
+   * corresponding to that key until a value is found.
    */
-  resolve(key: PublicKey | MultihashDigest<0x00 | 0x12>, options?: ResolveOptions): Promise<IPNSResolveResult>
+  resolve(key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options?: ResolveOptions): Promise<IPNSResolveResult>
 
   /**
    * Stop republishing of an IPNS record
