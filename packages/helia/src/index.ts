@@ -50,13 +50,6 @@ export interface DAGWalker {
 }
 
 /**
- * Helia with a libp2p node
- *
- * @deprecated Use the `Helia` type instead. This will be removed in the next major version.
- */
-export type HeliaLibp2p = Helia
-
-/**
  * Create and return a Helia node
  */
 export async function createHelia <T extends Libp2p> (init: Partial<HeliaInit<T>>): Promise<Helia<T>>
