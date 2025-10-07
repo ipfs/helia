@@ -23,7 +23,7 @@
  * const c = car(helia)
  * const out = nodeFs.createWriteStream('example.car')
  *
- * for await (const buf of c.stream(cid)) {
+ * for await (const buf of c.export(cid)) {
  *   out.write(buf)
  * }
  *
@@ -44,7 +44,7 @@
  * const c = car(helia)
  * const out = nodeFs.createWriteStream('example.car')
  *
- * for await (const buf of c.stream(cid, {
+ * for await (const buf of c.export(cid, {
  *   traversal: new UnixFSPath('/foo/bar/baz.txt')
  * })) {
  *   out.write(buf)
@@ -79,7 +79,7 @@
 import { Car as CarClass } from './car.js'
 import type { CodecLoader } from '@helia/interface'
 import type { PutManyBlocksProgressEvents, GetBlockProgressEvents, ProviderOptions } from '@helia/interface/blocks'
-import type { CarWriter, CarReader } from '@ipld/car'
+import type { CarReader } from '@ipld/car'
 import type { AbortOptions, ComponentLogger } from '@libp2p/interface'
 import type { Filter } from '@libp2p/utils'
 import type { Blockstore } from 'interface-blockstore'
@@ -183,38 +183,6 @@ export interface Car {
   import(reader: Pick<CarReader, 'blocks'>, options?: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents>): Promise<void>
 
   /**
-   * Store all blocks that make up one or more DAGs in a car file.
-   *
-   * @example
-   *
-   * ```typescript
-   * import fs from 'node:fs'
-   * import { Readable } from 'node:stream'
-   * import { car } from '@helia/car'
-   * import { CarWriter } from '@ipld/car'
-   * import { createHelia } from 'helia'
-   * import { CID } from 'multiformats/cid'
-   * import { pEvent } from 'p-event'
-   *
-   * const helia = await createHelia()
-   * const cid = CID.parse('QmFoo...')
-   *
-   * const c = car(helia)
-   * const { writer, out } = CarWriter.create(cid)
-   * const output = fs.createWriteStream('example.car')
-   * const stream = Readable.from(out).pipe(output)
-   *
-   * await Promise.all([
-   *   c.export(cid, writer),
-   *   pEvent(stream, 'close')
-   * ])
-   * ```
-   *
-   * @deprecated Use `stream` instead. In a future release `stream` will be renamed `export`.
-   */
-  export(root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: ExportCarOptions): Promise<void>
-
-  /**
    * Returns an AsyncGenerator that yields CAR file bytes.
    *
    * @example
@@ -229,12 +197,12 @@ export interface Car {
    *
    * const c = car(helia)
    *
-   * for (const buf of c.stream(cid)) {
+   * for (const buf of c.export(cid)) {
    *   // store or send `buf` somewhere
    * }
    * ```
    */
-  stream(root: CID | CID[], options?: ExportCarOptions): AsyncGenerator<Uint8Array, void, undefined>
+  export(root: CID | CID[], options?: ExportCarOptions): AsyncGenerator<Uint8Array, void, undefined>
 }
 
 /**

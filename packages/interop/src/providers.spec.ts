@@ -210,7 +210,7 @@ describe('providers', () => {
     const c = car(helia)
 
     expect(await toBuffer(
-      c.stream(cid, {
+      c.export(cid, {
         providers: [
           kuboInfo.multiaddrs.map(ma => multiaddr(ma))
         ],

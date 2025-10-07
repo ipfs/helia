@@ -9,7 +9,6 @@ import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
-import { memoryCarWriter } from './fixtures/memory-car.js'
 import type { Car } from '@helia/car'
 import type { UnixFS } from '@helia/unixfs'
 import type { Helia } from 'helia'
@@ -57,10 +56,7 @@ describe('@helia/car', () => {
     }())
 
     const cid = await u.addByteStream(bytes)
-    const writer = memoryCarWriter(cid)
-    await c.export(cid, writer)
-
-    const buf = await writer.bytes()
+    const buf = await toBuffer(c.export(cid))
 
     await drain(kubo.api.dag.import([buf]))
 

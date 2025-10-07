@@ -52,7 +52,7 @@ const cid = CID.parse('QmFoo...')
 const c = car(helia)
 const out = nodeFs.createWriteStream('example.car')
 
-for await (const buf of c.stream(cid)) {
+for await (const buf of c.export(cid)) {
   out.write(buf)
 }
 
@@ -73,7 +73,7 @@ const cid = CID.parse('QmFoo...')
 const c = car(helia)
 const out = nodeFs.createWriteStream('example.car')
 
-for await (const buf of c.stream(cid, {
+for await (const buf of c.export(cid, {
   traversal: new UnixFSPath('/foo/bar/baz.txt')
 })) {
   out.write(buf)
