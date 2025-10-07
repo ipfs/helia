@@ -182,7 +182,9 @@ jobs:
       id-token: write
       pull-requests: write
     steps:
-      - uses: google-github-actions/release-please-action@v4
+      # use fork to work around https://github.com/googleapis/release-please/issues/2265
+      - uses: gvillo/release-please-action@93642002875a0df65de8abeeeabcaeacb7c735f4 # v4.2.1-gvillo
+      # - uses: google-github-actions/release-please-action@v4
         id: release
         with:
           token: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}
