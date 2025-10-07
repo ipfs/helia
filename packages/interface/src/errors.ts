@@ -33,3 +33,12 @@ export class UnknownCodecError extends Error {
     this.name = 'UnknownCodecError'
   }
 }
+
+export class InvalidCodecError extends Error {
+  static name = 'InvalidCodecError'
+
+  constructor (message = 'Invalid codec') {
+    super(message)
+    this.name = 'InvalidCodecError'
+  }
+}
