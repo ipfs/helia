@@ -4,7 +4,6 @@ import drain from 'it-drain'
 import map from 'it-map'
 import toBuffer from 'it-to-buffer'
 import { createUnsafe } from 'multiformats/block'
-import defer from 'p-defer'
 import { raceSignal } from 'race-signal'
 import { DAG_WALK_QUEUE_CONCURRENCY } from './constants.js'
 import { SubgraphExporter } from './export-strategies/subgraph-exporter.js'
@@ -92,7 +91,7 @@ export class Car implements CarInterface {
   }
 
   private async _export (root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: ExportCarOptions): Promise<void> {
-    const deferred = defer<Error | undefined>()
+    const deferred = Promise.withResolvers<Error | void>()
     const roots = Array.isArray(root) ? root : [root]
 
     // Create traversal-specific context

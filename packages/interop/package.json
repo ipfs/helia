@@ -90,7 +90,6 @@
     "kubo-rpc-client": "^5.4.0",
     "libp2p": "^3.0.6",
     "multiformats": "^13.4.1",
-    "p-defer": "^4.0.1",
     "uint8arrays": "^5.1.0",
     "wherearewe": "^2.0.1"
   },

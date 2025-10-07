@@ -58,7 +58,6 @@
     "it-map": "^3.1.4",
     "it-to-buffer": "^4.0.10",
     "multiformats": "^13.4.1",
-    "p-defer": "^4.0.1",
     "progress-events": "^1.0.1",
     "race-signal": "^2.0.0"
   },
