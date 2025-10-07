@@ -13,6 +13,10 @@ class Libp2pRouter implements Routing {
     await this.libp2p.contentRouting.provide(cid, options)
   }
 
+  async cancelReprovide (key: CID, options?: RoutingOptions): Promise<void> {
+    await this.libp2p.contentRouting.cancelReprovide(key, options)
+  }
+
   async * findProviders (cid: CID, options?: RoutingOptions): AsyncIterable<Provider> {
     yield * this.libp2p.contentRouting.findProviders(cid, options)
   }

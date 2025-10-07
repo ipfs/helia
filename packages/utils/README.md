@@ -30,21 +30,7 @@ repo and examine the changes made.
 
 -->
 
-Exports a `Helia` class that implements the Helia API.
-
-In general you should use the `helia` or `@helia/http` modules instead which
-pre-configure Helia for certain use-cases (p2p or pure-HTTP).
-
-## Example
-
-```typescript
-import { Helia } from '@helia/utils'
-import type { HeliaInit } from '@helia/utils'
-
-const node = new Helia({
-  // ...options
-} as HeliaInit)
-```
+This module contains utility code that is shared between various Helia modules such as `helia`, `@helia/http`, etc.
 
 # Install
 
@@ -68,8 +54,8 @@ Loading this module through a script tag will make its exports available as `Hel
 
 Licensed under either of
 
-- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+- Apache 2.0, ([LICENSE-APACHE](https://github.com/ipfs/helia/blob/main/packages/utils/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](https://github.com/ipfs/helia/blob/main/packages/utils/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
 # Contribute
 

@@ -9,7 +9,7 @@
 import { Bitswap as BitswapClass } from './bitswap.js'
 import type { BitswapNetworkNotifyProgressEvents, BitswapNetworkWantProgressEvents, BitswapNetworkProgressEvents } from './network.js'
 import type { WantType } from './pb/message.js'
-import type { BlockBroker, CreateSessionOptions } from '@helia/interface'
+import type { BlockBroker, CreateSessionOptions, ProviderOptions } from '@helia/interface'
 import type { Routing } from '@helia/interface/routing'
 import type { Libp2p, AbortOptions, Startable, ComponentLogger, Metrics, PeerId } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
@@ -26,6 +26,7 @@ export type BitswapNotifyProgressEvents =
 export type BitswapWantBlockProgressEvents =
   ProgressEvent<'bitswap:want-block:unwant', CID> |
   ProgressEvent<'bitswap:want-block:block', CID> |
+  ProgressEvent<'bitswap:want-block:received', { cid: CID, sender: PeerId }> |
   BitswapNetworkWantProgressEvents
 
 export type { BitswapNetworkNotifyProgressEvents }
@@ -54,12 +55,12 @@ export interface Bitswap extends Startable {
   /**
    * Notify bitswap that a new block is available
    */
-  notify(cid: CID, block: Uint8Array, options?: ProgressOptions<BitswapNotifyProgressEvents>): Promise<void>
+  notify(cid: CID, options?: ProgressOptions<BitswapNotifyProgressEvents>): Promise<void>
 
   /**
    * Start a session to retrieve a file from the network
    */
-  want(cid: CID, options?: AbortOptions & ProgressOptions<BitswapWantProgressEvents>): Promise<Uint8Array>
+  want(cid: CID, options?: AbortOptions & ProgressOptions<BitswapWantProgressEvents> & ProviderOptions): Promise<Uint8Array>
 
   /**
    * Start a session to retrieve a file from the network

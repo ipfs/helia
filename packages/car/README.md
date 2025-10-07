@@ -30,39 +30,56 @@ repo and examine the changes made.
 
 -->
 
-`@helia/car` provides `import` and `export` methods to read/write Car files to Helia's blockstore.
+`@helia/car` provides `import` and `export` methods to read/write Car files
+to Helia's blockstore.
 
 See the Car interface for all available operations.
 
-By default it supports `dag-pb`, `dag-cbor`, `dag-json` and `raw` CIDs, more esoteric DAG walkers can be passed as an init option.
+By default it supports `dag-pb`, `dag-cbor`, `dag-json` and `raw` CIDs, more
+esoteric DAG walkers can be passed as an init option.
 
 ## Example - Exporting a DAG as a CAR file
 
 ```typescript
 import { createHelia } from 'helia'
-import { unixfs } from '@helia/unixfs'
 import { car } from '@helia/car'
-import { CarWriter } from '@ipld/car'
-import { Readable } from 'node:stream'
+import { CID } from 'multiformats/cid'
 import nodeFs from 'node:fs'
 
-const helia = await createHelia({
-  // ... helia config
-})
-const fs = unixfs(helia)
+const helia = await createHelia()
+const cid = CID.parse('QmFoo...')
 
-// add some UnixFS data
-const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
-
-// export it as a Car
 const c = car(helia)
-const { writer, out } = await CarWriter.create(cid)
+const out = nodeFs.createWriteStream('example.car')
 
-// `out` needs to be directed somewhere, see the @ipld/car docs for more information
-Readable.from(out).pipe(nodeFs.createWriteStream('example.car'))
+for await (const buf of c.export(cid)) {
+  out.write(buf)
+}
 
-// write the DAG behind `cid` into the writer
-await c.export(cid, writer)
+out.end()
+```
+
+## Example - Exporting a part of a UnixFS DAG as a CAR file
+
+```typescript
+import { createHelia } from 'helia'
+import { car, UnixFSPath } from '@helia/car'
+import { CID } from 'multiformats/cid'
+import nodeFs from 'node:fs'
+
+const helia = await createHelia()
+const cid = CID.parse('QmFoo...')
+
+const c = car(helia)
+const out = nodeFs.createWriteStream('example.car')
+
+for await (const buf of c.export(cid, {
+  traversal: new UnixFSPath('/foo/bar/baz.txt')
+})) {
+  out.write(buf)
+}
+
+out.end()
 ```
 
 ## Example - Importing all blocks from a CAR file
@@ -109,8 +126,8 @@ Loading this module through a script tag will make its exports available as `Hel
 
 Licensed under either of
 
-- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+- Apache 2.0, ([LICENSE-APACHE](https://github.com/ipfs/helia/blob/main/packages/car/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](https://github.com/ipfs/helia/blob/main/packages/car/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
 # Contribute
 

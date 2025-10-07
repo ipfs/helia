@@ -4,10 +4,11 @@ import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { importer } from 'ipfs-unixfs-importer'
 import last from 'it-last'
-import { unixfs, type UnixFS } from '../src/index.js'
+import { unixfs } from '../src/index.js'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
-import { createSubshardedDirectory } from './fixtures/create-subsharded-directory.js'
+import { createSubShardedDirectory } from './fixtures/create-subsharded-directory.js'
 import { smallFile } from './fixtures/files.js'
+import type { UnixFS } from '../src/index.js'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 
@@ -175,17 +176,17 @@ describe('rm', () => {
     expect(containingDirCid).to.eql(importerCid)
   })
 
-  it('results in the same hash as a sharded directory created by the importer when removing a subshard', async function () {
+  it('results in the same hash as a sharded directory created by the importer when removing a sub-shard', async function () {
     const {
       containingDirCid,
       fileName,
       importerCid
-    } = await createSubshardedDirectory(blockstore)
+    } = await createSubShardedDirectory(blockstore)
 
     await expect(fs.stat(importerCid))
       .to.eventually.have.nested.property('unixfs.type', 'hamt-sharded-directory')
 
-    // remove the file that caused the subshard to be created and the CID should be the same as the importer
+    // remove the file that caused the sub-shard to be created and the CID should be the same as the importer
     const finalDirCid = await fs.rm(containingDirCid, fileName, {
       shardSplitThresholdBytes: 1
     })
@@ -197,17 +198,17 @@ describe('rm', () => {
     expect(finalDirCid).to.eql(importerCid, 'removing a file from the imported dir not result in the same CID')
   })
 
-  it('results in the same hash as a sharded directory created by the importer when removing a subshard of a subshard', async function () {
+  it('results in the same hash as a sharded directory created by the importer when removing a sub-shard of a sub-shard', async function () {
     let {
       containingDirCid,
       fileName,
       importerCid
-    } = await createSubshardedDirectory(blockstore, 2)
+    } = await createSubShardedDirectory(blockstore, 2)
 
     await expect(fs.stat(importerCid))
       .to.eventually.have.nested.property('unixfs.type', 'hamt-sharded-directory')
 
-    // remove the file that caused the subshard to be created and the CID should be the same as the importer
+    // remove the file that caused the sub-shard to be created and the CID should be the same as the importer
     containingDirCid = await fs.rm(containingDirCid, fileName, {
       shardSplitThresholdBytes: 1
     })

@@ -1,5 +1,152 @@
 # Changelog
 
+## [4.2.0](https://github.com/ipfs/helia/compare/car-v4.1.3...car-v4.2.0) (2025-07-31)
+
+
+### Features
+
+* expose providers option ([#834](https://github.com/ipfs/helia/issues/834)) ([5a911c6](https://github.com/ipfs/helia/commit/5a911c6977ec47d1906ccc69b5f57667f22d9ccf))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @helia/mfs bumped from ^5.0.4 to ^5.1.0
+    * @helia/unixfs bumped from ^5.0.4 to ^5.1.0
+
+## [4.1.3](https://github.com/ipfs/helia/compare/car-v4.1.2...car-v4.1.3) (2025-07-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.3.2 to ^5.4.0
+  * devDependencies
+    * @helia/mfs bumped from ^5.0.3 to ^5.0.4
+    * @helia/unixfs bumped from ^5.0.3 to ^5.0.4
+
+## [4.1.2](https://github.com/ipfs/helia/compare/car-v4.1.1...car-v4.1.2) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir to 47.x.x ([#804](https://github.com/ipfs/helia/issues/804)) ([60fbbc2](https://github.com/ipfs/helia/commit/60fbbc2eb08e023e2eac02ae0e89ed143d715084))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.3.1 to ^5.3.2
+  * devDependencies
+    * @helia/mfs bumped from ^5.0.2 to ^5.0.3
+    * @helia/unixfs bumped from ^5.0.2 to ^5.0.3
+
+## [4.1.1](https://github.com/ipfs/helia/compare/car-v4.1.0...car-v4.1.1) (2025-05-13)
+
+
+### Dependencies
+
+* update all deps ([#792](https://github.com/ipfs/helia/issues/792)) ([d43efc7](https://github.com/ipfs/helia/commit/d43efc7bdfff34071a8e4e22e01f659fbac0b78e))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.3.0 to ^5.3.1
+  * devDependencies
+    * @helia/mfs bumped from ^5.0.1 to ^5.0.2
+    * @helia/unixfs bumped from ^5.0.1 to ^5.0.2
+
+## [4.1.0](https://github.com/ipfs/helia/compare/car-v4.0.4...car-v4.1.0) (2025-05-13)
+
+
+### Features
+
+* car export supports custom dag traversal and export ([#767](https://github.com/ipfs/helia/issues/767)) ([313e2c1](https://github.com/ipfs/helia/commit/313e2c10a71c4f42533c3f077c6720563dd09ce5))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.2.1 to ^5.3.0
+  * devDependencies
+    * @helia/mfs bumped from ^5.0.0 to ^5.0.1
+    * @helia/unixfs bumped from ^5.0.0 to ^5.0.1
+
+## [4.0.4](https://github.com/ipfs/helia/compare/car-v4.0.3...car-v4.0.4) (2025-03-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @helia/mfs bumped from ^4.0.3 to ^5.0.0
+    * @helia/unixfs bumped from ^4.0.3 to ^5.0.0
+
+## [4.0.3](https://github.com/ipfs/helia/compare/car-v4.0.2...car-v4.0.3) (2025-03-13)
+
+
+### Documentation
+
+* add spell checker to ci ([#743](https://github.com/ipfs/helia/issues/743)) ([45ca6bc](https://github.com/ipfs/helia/commit/45ca6bc70b1644028500101044595fa0e2199b07))
+* update @helia/car export method example ([#761](https://github.com/ipfs/helia/issues/761)) ([73cb631](https://github.com/ipfs/helia/commit/73cb631e7347688012f429cd69b1046db249e694))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.2.0 to ^5.2.1
+  * devDependencies
+    * @helia/mfs bumped from ^4.0.2 to ^4.0.3
+    * @helia/unixfs bumped from ^4.0.2 to ^4.0.3
+
+## [4.0.2](https://github.com/ipfs/helia/compare/car-v4.0.1...car-v4.0.2) (2025-01-14)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.1.0 to ^5.2.0
+  * devDependencies
+    * @helia/mfs bumped from ^4.0.1 to ^4.0.2
+    * @helia/unixfs bumped from ^4.0.1 to ^4.0.2
+
+## [4.0.1](https://github.com/ipfs/helia/compare/car-v4.0.0...car-v4.0.1) (2024-11-18)
+
+
+### Dependencies
+
+* bump aegir from 44.1.4 to 45.0.1 ([#669](https://github.com/ipfs/helia/issues/669)) ([e58e49c](https://github.com/ipfs/helia/commit/e58e49c6aed8ea9d1e9851435a25e33fdbee3781))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.0.0 to ^5.1.0
+  * devDependencies
+    * @helia/mfs bumped from ^4.0.0 to ^4.0.1
+    * @helia/unixfs bumped from ^4.0.0 to ^4.0.1
+
+## [4.0.0](https://github.com/ipfs/helia/compare/car-v3.2.1...car-v4.0.0) (2024-10-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `.dagWalkers` property has been removed
+* helia now uses libp2p@2.x.x
+
+### Bug Fixes
+
+* add doc-check script and export types used by functions ([#637](https://github.com/ipfs/helia/issues/637)) ([4f14996](https://github.com/ipfs/helia/commit/4f14996a9b976f2b60f4c8fe52a4fd1632420749))
+* replace dag walkers with generic CID extraction from blocks ([#447](https://github.com/ipfs/helia/issues/447)) ([5ff6998](https://github.com/ipfs/helia/commit/5ff6998e6bc8b04e3407bc98c1924c55f632d9b7))
+* update to libp2p@2.x.x ([#630](https://github.com/ipfs/helia/issues/630)) ([ec8bf66](https://github.com/ipfs/helia/commit/ec8bf66dd870b42d6e5ef2b41706102397e0d39a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^4.3.1 to ^5.0.0
+  * devDependencies
+    * @helia/mfs bumped from ^3.0.8 to ^4.0.0
+    * @helia/unixfs bumped from ^3.0.7 to ^4.0.0
+
 ## [3.2.1](https://github.com/ipfs/helia/compare/car-v3.2.0...car-v3.2.1) (2024-09-13)
 
 

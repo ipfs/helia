@@ -2,10 +2,11 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import drain from 'it-drain'
 import { CID } from 'multiformats'
-import { stubInterface, type StubbedInstance } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { libp2pRouting } from '../src/index.js'
 import type { Routing } from '@helia/interface'
 import type { ContentRouting, Libp2p, PeerRouting } from '@libp2p/interface'
+import type { StubbedInstance } from 'sinon-ts'
 
 describe('libp2p-routing', () => {
   let libp2p: StubbedInstance<Libp2p>
@@ -31,6 +32,15 @@ describe('libp2p-routing', () => {
     await router.provide(cid, options)
 
     expect(contentRouting.provide.calledWith(cid, options)).to.be.true()
+  })
+
+  it('should call through to contentRouting.cancelReprovide', async () => {
+    const cid = CID.parse('bafyreidykglsfhoixmivffc5uwhcgshx4j465xwqntbmu43nb2dzqwfvae')
+    const options = {}
+
+    await router.cancelReprovide(cid, options)
+
+    expect(contentRouting.cancelReprovide.calledWith(cid, options)).to.be.true()
   })
 
   it('should call through to contentRouting.findProviders', async () => {

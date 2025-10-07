@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import { car } from '@helia/car'
-import { type UnixFS, unixfs } from '@helia/unixfs'
+import { unixfs } from '@helia/unixfs'
 import { CarReader } from '@ipld/car'
 import { expect } from 'aegir/chai'
 import drain from 'it-drain'
@@ -9,14 +9,14 @@ import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
-import { memoryCarWriter } from './fixtures/memory-car.js'
 import type { Car } from '@helia/car'
-import type { HeliaLibp2p } from 'helia'
-import type { FileCandidate } from 'ipfs-unixfs-importer'
+import type { UnixFS } from '@helia/unixfs'
+import type { Helia } from 'helia'
+import type { ByteStream, FileCandidate } from 'ipfs-unixfs-importer'
 import type { KuboNode } from 'ipfsd-ctl'
 
 describe('@helia/car', () => {
-  let helia: HeliaLibp2p
+  let helia: Helia
   let c: Car
   let u: UnixFS
   let kubo: KuboNode
@@ -46,22 +46,17 @@ describe('@helia/car', () => {
     const size = chunkSize * 10
     const input: Uint8Array[] = []
 
-    const candidate: FileCandidate = {
-      content: (async function * () {
-        for (let i = 0; i < size; i += chunkSize) {
-          const buf = new Uint8Array(chunkSize)
-          input.push(buf)
+    const bytes: ByteStream = (async function * () {
+      for (let i = 0; i < size; i += chunkSize) {
+        const buf = new Uint8Array(chunkSize)
+        input.push(buf)
 
-          yield buf
-        }
-      }())
-    }
+        yield buf
+      }
+    }())
 
-    const cid = await u.addFile(candidate)
-    const writer = memoryCarWriter(cid)
-    await c.export(cid, writer)
-
-    const buf = await writer.bytes()
+    const cid = await u.addByteStream(bytes)
+    const buf = await toBuffer(c.export(cid))
 
     await drain(kubo.api.dag.import([buf]))
 

@@ -1,5 +1,143 @@
 # Changelog
 
+## [1.4.0](https://github.com/ipfs/helia/compare/utils-v1.3.2...utils-v1.4.0) (2025-07-22)
+
+
+### Features
+
+* add libp2p to @helia/http ([#826](https://github.com/ipfs/helia/issues/826)) ([235e5c4](https://github.com/ipfs/helia/commit/235e5c4093a51bda1e0331f9dd26754f601b582c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.3.2 to ^5.4.0
+
+## [1.3.2](https://github.com/ipfs/helia/compare/utils-v1.3.1...utils-v1.3.2) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir to 47.x.x ([#804](https://github.com/ipfs/helia/issues/804)) ([60fbbc2](https://github.com/ipfs/helia/commit/60fbbc2eb08e023e2eac02ae0e89ed143d715084))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.3.1 to ^5.3.2
+
+## [1.3.1](https://github.com/ipfs/helia/compare/utils-v1.3.0...utils-v1.3.1) (2025-05-13)
+
+
+### Dependencies
+
+* update all deps ([#792](https://github.com/ipfs/helia/issues/792)) ([d43efc7](https://github.com/ipfs/helia/commit/d43efc7bdfff34071a8e4e22e01f659fbac0b78e))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.3.0 to ^5.3.1
+
+## [1.3.0](https://github.com/ipfs/helia/compare/utils-v1.2.2...utils-v1.3.0) (2025-05-13)
+
+
+### Features
+
+* pass initial providers to session ([#777](https://github.com/ipfs/helia/issues/777)) ([3d77369](https://github.com/ipfs/helia/commit/3d773698389deb70e1a0181eb81fb8b5992857b8))
+
+
+### Bug Fixes
+
+* reject blockstore session get promise when signal fires  ([#776](https://github.com/ipfs/helia/issues/776)) ([d883eaf](https://github.com/ipfs/helia/commit/d883eafbdcd981a0cc7c78cf361bb72324a8cbdc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.2.1 to ^5.3.0
+
+## [1.2.2](https://github.com/ipfs/helia/compare/utils-v1.2.1...utils-v1.2.2) (2025-03-13)
+
+
+### Documentation
+
+* add spell checker to ci ([#743](https://github.com/ipfs/helia/issues/743)) ([45ca6bc](https://github.com/ipfs/helia/commit/45ca6bc70b1644028500101044595fa0e2199b07))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.2.0 to ^5.2.1
+
+## [1.2.1](https://github.com/ipfs/helia/compare/utils-v1.2.0...utils-v1.2.1) (2025-02-10)
+
+
+### Bug Fixes
+
+* update libp2p deps, send user agent with auto-tls ([#736](https://github.com/ipfs/helia/issues/736)) ([c015793](https://github.com/ipfs/helia/commit/c01579393ddd622352d0d0179c67adaf5ccc4c8f))
+
+## [1.2.0](https://github.com/ipfs/helia/compare/utils-v1.1.0...utils-v1.2.0) (2025-01-14)
+
+
+### Features
+
+* add method tracing to routing ([#715](https://github.com/ipfs/helia/issues/715)) ([5784ceb](https://github.com/ipfs/helia/commit/5784cebb3225157d6220668d4f58481f046debf2))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.1.0 to ^5.2.0
+
+## [1.1.0](https://github.com/ipfs/helia/compare/utils-v1.0.1...utils-v1.1.0) (2024-11-18)
+
+
+### Features
+
+* add cancelReprovide function to routing ([#672](https://github.com/ipfs/helia/issues/672)) ([dc13525](https://github.com/ipfs/helia/commit/dc1352563ab5ed7b204ae702c1e48035d196a470))
+
+
+### Dependencies
+
+* bump aegir from 44.1.4 to 45.0.1 ([#669](https://github.com/ipfs/helia/issues/669)) ([e58e49c](https://github.com/ipfs/helia/commit/e58e49c6aed8ea9d1e9851435a25e33fdbee3781))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.0.0 to ^5.1.0
+
+## [1.0.1](https://github.com/ipfs/helia/compare/utils-v1.0.0...utils-v1.0.1) (2024-10-23)
+
+
+### Bug Fixes
+
+* remove redundant filter ([#663](https://github.com/ipfs/helia/issues/663)) ([efc47fa](https://github.com/ipfs/helia/commit/efc47fa081107d31a8985ed72b36a244385b55ca))
+
+## [1.0.0](https://github.com/ipfs/helia/compare/utils-v0.3.3...utils-v1.0.0) (2024-10-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `.dagWalkers` property has been removed
+* helia now uses libp2p@2.x.x
+
+### Features
+
+* allow updating pin metadata ([#647](https://github.com/ipfs/helia/issues/647)) ([bc64f47](https://github.com/ipfs/helia/commit/bc64f47897691295435568beee61383116b0032b))
+
+
+### Bug Fixes
+
+* add doc-check script and export types used by functions ([#637](https://github.com/ipfs/helia/issues/637)) ([4f14996](https://github.com/ipfs/helia/commit/4f14996a9b976f2b60f4c8fe52a4fd1632420749))
+* replace dag walkers with generic CID extraction from blocks ([#447](https://github.com/ipfs/helia/issues/447)) ([5ff6998](https://github.com/ipfs/helia/commit/5ff6998e6bc8b04e3407bc98c1924c55f632d9b7))
+* update to libp2p@2.x.x ([#630](https://github.com/ipfs/helia/issues/630)) ([ec8bf66](https://github.com/ipfs/helia/commit/ec8bf66dd870b42d6e5ef2b41706102397e0d39a))
+* use hasCode from multiformats ([#635](https://github.com/ipfs/helia/issues/635)) ([f5a03fc](https://github.com/ipfs/helia/commit/f5a03fc28d0cd59841b842306f912c092aeabd5f))
+
+
+### Dependencies
+
+* **dev:** bump sinon from 18.0.1 to 19.0.2 ([#634](https://github.com/ipfs/helia/issues/634)) ([23e62e1](https://github.com/ipfs/helia/commit/23e62e16b8962bfe982a1bbb157a144382ca7099))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^4.3.1 to ^5.0.0
+
 ## [0.3.3](https://github.com/ipfs/helia/compare/utils-v0.3.2...utils-v0.3.3) (2024-07-31)
 
 

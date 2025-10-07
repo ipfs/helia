@@ -1,11 +1,6 @@
-/* eslint-disable import/export */
-/* eslint-disable complexity */
-/* eslint-disable @typescript-eslint/no-namespace */
-/* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
-/* eslint-disable @typescript-eslint/no-empty-interface */
-
-import { type Codec, decodeMessage, type DecodeOptions, encodeMessage, enumeration, MaxLengthError, message } from 'protons-runtime'
+import { decodeMessage, encodeMessage, enumeration, MaxLengthError, message } from 'protons-runtime'
 import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
+import type { Codec, DecodeOptions } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export enum WantType {
@@ -275,12 +270,12 @@ export namespace Block {
 
 export enum BlockPresenceType {
   HaveBlock = 'HaveBlock',
-  DontHaveBlock = 'DontHaveBlock'
+  DoNotHaveBlock = 'DoNotHaveBlock'
 }
 
 enum __BlockPresenceTypeValues {
   HaveBlock = 0,
-  DontHaveBlock = 1
+  DoNotHaveBlock = 1
 }
 
 export namespace BlockPresenceType {

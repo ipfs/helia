@@ -12,21 +12,21 @@
     "doc-check": "aegir doc-check",
     "start": "npm run build && node dist/src/index.js"
   },
-  "dependencies": {
-    "@helia/unixfs": "^3.0.4",
-    "aegir": "^44.0.1",
-    "blockstore-core": "^5.0.2",
-    "blockstore-fs": "^2.0.1",
-    "datastore-core": "^10.0.2",
-    "datastore-level": "^11.0.1",
-    "execa": "^8.0.1",
-    "helia": "^4.1.1",
-    "ipfs-unixfs-importer": "^15.1.5",
+  "devDependencies": {
+    "@helia/unixfs": "^5.0.2",
+    "aegir": "^47.0.7",
+    "blockstore-core": "^6.0.2",
+    "blockstore-fs": "^3.0.2",
+    "datastore-core": "^11.0.2",
+    "datastore-level": "^12.0.2",
+    "execa": "^9.5.3",
+    "helia": "^5.1.1",
+    "ipfs-unixfs-importer": "^16.0.1",
     "ipfsd-ctl": "^15.0.0",
     "it-last": "^3.0.6",
-    "kubo": "^0.30.0",
+    "kubo": "^0.38.0",
     "kubo-rpc-client": "^5.0.0",
     "multiformats": "^13.1.0",
-    "tinybench": "^2.4.0"
+    "tinybench": "^5.0.1"
   }
 }

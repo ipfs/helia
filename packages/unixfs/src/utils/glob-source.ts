@@ -50,6 +50,25 @@ export interface GlobSourceResult {
 
 /**
  * Create an async iterator that yields paths that match requested glob pattern
+ *
+ * @example
+ *
+ * ```ts
+ * import { unixfs, globSource } from '@helia/unixfs'
+ * import { createHelia } from 'helia'
+ *
+ * const helia = await createHelia()
+ * const fs = unixfs(helia)
+ *
+ * for await (const entry of fs.addAll(globSource(
+ *  '/path/to/dir',
+ *  '**\/*'
+ * ), {
+ *   wrapWithDirectory: true
+ * })) {
+ *   console.info(entry)
+ * }
+ * ```
  */
 export async function * globSource (cwd: string, pattern: string, options: GlobSourceOptions = {}): AsyncGenerator<ImportCandidate & GlobSourceResult> {
   if (typeof pattern !== 'string') {

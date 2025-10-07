@@ -26,9 +26,10 @@
  */
 
 import * as codec from '@ipld/dag-json'
+import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
-import type { GetBlockProgressEvents, PutBlockProgressEvents } from '@helia/interface/blocks'
+import type { GetBlockProgressEvents, ProviderOptions, PutBlockProgressEvents } from '@helia/interface/blocks'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { BlockCodec } from 'multiformats/codecs/interface'
@@ -43,7 +44,7 @@ export interface AddOptions extends AbortOptions, ProgressOptions<PutBlockProgre
   hasher: MultihashHasher
 }
 
-export interface GetOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents> {
+export interface GetOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents>, ProviderOptions {
   codec: BlockCodec<any, unknown>
 }
 
@@ -115,7 +116,7 @@ class DefaultDAGJSON implements DAGJSON {
   }
 
   async get <T> (cid: CID, options: Partial<GetOptions> = {}): Promise<T> {
-    const buf = await this.components.blockstore.get(cid, options)
+    const buf = await toBuffer(this.components.blockstore.get(cid, options))
 
     return codec.decode(buf)
   }

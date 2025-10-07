@@ -1,14 +1,14 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { matchPeerId } from '@libp2p/interface-compliance-tests/matchers'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
-import { stubInterface, type StubbedInstance } from 'sinon-ts'
-import { type Network } from '../src/network.js'
+import { stubInterface } from 'sinon-ts'
 import { WantType } from '../src/pb/message.js'
 import { WantList } from '../src/want-list.js'
+import type { Network } from '../src/network.js'
 import type { Libp2p } from '@libp2p/interface'
+import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedWantListComponents {
   network: StubbedInstance<Network>
@@ -67,7 +67,7 @@ describe('wantlist', () => {
 
     await wantList.peerConnected(peerId)
 
-    components.network.sendMessage.withArgs(matchPeerId(peerId))
+    components.network.sendMessage.withArgs(peerId)
 
     await expect(wantList.wantBlock(cid, {
       signal: AbortSignal.timeout(500)

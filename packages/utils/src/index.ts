@@ -1,24 +1,11 @@
 /**
  * @packageDocumentation
  *
- * Exports a `Helia` class that implements the Helia API.
- *
- * In general you should use the `helia` or `@helia/http` modules instead which
- * pre-configure Helia for certain use-cases (p2p or pure-HTTP).
- *
- * @example
- *
- * ```typescript
- * import { Helia } from '@helia/utils'
- * import type { HeliaInit } from '@helia/utils'
- *
- * const node = new Helia({
- *   // ...options
- * } as HeliaInit)
- * ```
+ * This module contains utility code that is shared between various Helia
+ * modules such as `helia`, `@helia/http`, etc.
  */
 
-import { contentRoutingSymbol, peerRoutingSymbol, start, stop } from '@libp2p/interface'
+import { contentRoutingSymbol, peerRoutingSymbol, start, stop, TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { dns } from '@multiformats/dns'
 import drain from 'it-drain'
@@ -31,28 +18,53 @@ import { getCodec } from './utils/get-codec.js'
 import { getHasher } from './utils/get-hasher.js'
 import { NetworkedStorage } from './utils/networked-storage.js'
 import type { BlockStorageInit } from './storage.js'
-import type { Await, CodecLoader, GCOptions, HasherLoader, Helia as HeliaInterface, Routing } from '@helia/interface'
+import type { Await, CodecLoader, GCOptions, HasherLoader, Helia as HeliaInterface, HeliaEvents, Routing } from '@helia/interface'
 import type { BlockBroker } from '@helia/interface/blocks'
 import type { Pins } from '@helia/interface/pins'
-import type { ComponentLogger, Logger, Metrics } from '@libp2p/interface'
+import type { ComponentLogger, Libp2p, Logger, Metrics } from '@libp2p/interface'
+import type { KeychainInit } from '@libp2p/keychain'
 import type { DNS } from '@multiformats/dns'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
+import type { Libp2pOptions } from 'libp2p'
 import type { BlockCodec } from 'multiformats'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 
 export { AbstractSession } from './abstract-session.js'
 export type { AbstractCreateSessionOptions, BlockstoreSessionEvents, AbstractSessionComponents } from './abstract-session.js'
-export { BloomFilter } from './bloom-filter.js'
-export type { BloomFilterOptions } from './bloom-filter.js'
 
 export type { BlockStorage, BlockStorageInit }
 
 /**
  * Options used to create a Helia node.
  */
-export interface HeliaInit {
+export interface HeliaInit<T extends Libp2p = Libp2p> {
+  /**
+   * A libp2p node is required to perform network operations. Either a
+   * pre-configured node or options to configure a node can be passed
+   * here.
+   *
+   * If node options are passed, they will be merged with the default
+   * config for the current platform. In this case all passed config
+   * keys will replace those from the default config.
+   *
+   * The libp2p `start` option is not supported, instead please pass `start` in
+   * the root of the HeliaInit object.
+   */
+  libp2p: T | Omit<Libp2pOptions<any>, 'start'>
+
+  /**
+   * Pass `false` to not start the Helia node
+   */
+  start?: boolean
+
+  /**
+   * By default Helia stores the node's PeerId in an encrypted form in a
+   * libp2p keystore. These options control how that keystore is configured.
+   */
+  keychain?: KeychainInit
+
   /**
    * The blockstore is where blocks are stored
    */
@@ -159,6 +171,7 @@ export interface HeliaInit {
 }
 
 interface Components {
+  libp2p: Libp2p
   blockstore: Blockstore
   datastore: Datastore
   logger: ComponentLogger
@@ -170,9 +183,11 @@ interface Components {
   getHasher: HasherLoader
 }
 
-export class Helia implements HeliaInterface {
+export class Helia<T extends Libp2p> implements HeliaInterface<T> {
+  public libp2p: T
   public blockstore: BlockStorage
   public datastore: Datastore
+  public events: TypedEventEmitter<HeliaEvents<T>>
   public pins: Pins
   public logger: ComponentLogger
   public routing: Routing
@@ -182,19 +197,22 @@ export class Helia implements HeliaInterface {
   public metrics?: Metrics
   private readonly log: Logger
 
-  constructor (init: HeliaInit) {
+  constructor (init: Omit<HeliaInit, 'start' | 'libp2p'> & { libp2p: T }) {
     this.logger = init.logger ?? defaultLogger()
     this.log = this.logger.forComponent('helia')
     this.getHasher = getHasher(init.hashers, init.loadHasher)
     this.getCodec = getCodec(init.codecs, init.loadCodec)
     this.dns = init.dns ?? dns()
     this.metrics = init.metrics
+    this.libp2p = init.libp2p
+    this.events = new TypedEventEmitter<HeliaEvents<T>>()
 
     // @ts-expect-error routing is not set
     const components: Components = {
       blockstore: init.blockstore,
       datastore: init.datastore,
       logger: this.logger,
+      libp2p: this.libp2p,
       blockBrokers: [],
       getHasher: this.getHasher,
       getCodec: this.getCodec,
@@ -242,16 +260,20 @@ export class Helia implements HeliaInterface {
     await start(
       this.blockstore,
       this.datastore,
-      this.routing
+      this.routing,
+      this.libp2p
     )
+    this.events.dispatchEvent(new CustomEvent('start', { detail: this }))
   }
 
   async stop (): Promise<void> {
     await stop(
       this.blockstore,
       this.datastore,
-      this.routing
+      this.routing,
+      this.libp2p
     )
+    this.events.dispatchEvent(new CustomEvent('stop', { detail: this }))
   }
 
   async gc (options: GCOptions = {}): Promise<void> {

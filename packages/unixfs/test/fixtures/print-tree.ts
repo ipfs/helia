@@ -1,5 +1,6 @@
 import * as dagPb from '@ipld/dag-pb'
 import { UnixFS } from 'ipfs-unixfs'
+import toBuffer from 'it-to-buffer'
 import * as raw from 'multiformats/codecs/raw'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
@@ -7,7 +8,7 @@ import type { CID } from 'multiformats/cid'
 type GetStore = Pick<Blockstore, 'get'>
 
 export async function printTree (cid: CID, blockstore: GetStore, name: string = '', indent: string = ''): Promise<void> {
-  const block = await blockstore.get(cid)
+  const block = await toBuffer(blockstore.get(cid))
 
   if (cid.code === dagPb.code) {
     const node = dagPb.decode(block)

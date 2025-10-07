@@ -3,9 +3,10 @@
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import delay from 'delay'
-import { unixfs, type UnixFS } from '../src/index.js'
+import { unixfs } from '../src/index.js'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 import { smallFile } from './fixtures/files.js'
+import type { UnixFS } from '../src/index.js'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 
@@ -43,6 +44,7 @@ describe('.files.touch', () => {
     const seconds = BigInt(Math.floor(mtime.getTime() / 1000))
 
     const cid = await fs.addFile({
+      path: '/file.txt',
       content: Uint8Array.from([0, 1, 2, 3, 4]),
       mtime: {
         secs: seconds

@@ -1,142 +1,213 @@
 import * as dagPb from '@ipld/dag-pb'
 import { logger } from '@libp2p/logger'
+import { ScalableCuckooFilter } from '@libp2p/utils'
 import { UnixFS } from 'ipfs-unixfs'
 import { exporter } from 'ipfs-unixfs-exporter'
-import mergeOpts from 'merge-options'
+import toBuffer from 'it-to-buffer'
 import * as raw from 'multiformats/codecs/raw'
 import { InvalidPBNodeError, NotUnixFSError, UnknownError } from '../errors.js'
 import { resolve } from './utils/resolve.js'
-import type { StatOptions, UnixFSStats } from '../index.js'
+import type { ExtendedStatOptions, ExtendedDirectoryStats, ExtendedFileStats, StatOptions, DirectoryStats, FileStats, RawStats, ExtendedRawStats } from '../index.js'
 import type { GetStore, HasStore } from '../unixfs.js'
-import type { AbortOptions } from '@libp2p/interface'
-import type { Mtime } from 'ipfs-unixfs'
+import type { Filter } from '@libp2p/utils'
+import type { RawNode, UnixFSDirectory, UnixFSFile } from 'ipfs-unixfs-exporter'
 import type { CID } from 'multiformats/cid'
 
-const mergeOptions = mergeOpts.bind({ ignoreUndefined: true })
+// https://github.com/ipfs/specs/blob/main/UNIXFS.md#metadata
+const DEFAULT_DIR_MODE = 0x755
+const DEFAULT_FILE_MODE = 0x644
+
 const log = logger('helia:unixfs:stat')
 
-const defaultOptions: StatOptions = {
-
-}
-
-export async function stat (cid: CID, blockstore: GetStore & HasStore, options: Partial<StatOptions> = {}): Promise<UnixFSStats> {
-  const opts: StatOptions = mergeOptions(defaultOptions, options)
-  const resolved = await resolve(cid, options.path, blockstore, opts)
+export async function stat (cid: CID, blockstore: GetStore & HasStore, options?: StatOptions): Promise<FileStats | DirectoryStats | RawStats>
+export async function stat (cid: CID, blockstore: GetStore & HasStore, options?: ExtendedStatOptions): Promise<ExtendedFileStats | ExtendedDirectoryStats | ExtendedRawStats>
+export async function stat (cid: CID, blockstore: GetStore & HasStore, options: Partial<ExtendedStatOptions> = {}): Promise<any> {
+  const resolved = await resolve(cid, options.path, blockstore, options)
 
   log('stat %c', resolved.cid)
 
-  const result = await exporter(resolved.cid, blockstore, opts)
-
-  if (result.type !== 'file' && result.type !== 'directory' && result.type !== 'raw') {
-    throw new NotUnixFSError()
-  }
-
-  let fileSize: bigint = 0n
-  let dagSize: bigint = 0n
-  let localFileSize: bigint = 0n
-  let localDagSize: bigint = 0n
-  let blocks: number = 0
-  let mode: number | undefined
-  let mtime: Mtime | undefined
-  const type = result.type
-  let unixfs: UnixFS | undefined
+  const result = await exporter(resolved.cid, blockstore, options)
 
   if (result.type === 'raw') {
-    fileSize = BigInt(result.node.byteLength)
-    dagSize = BigInt(result.node.byteLength)
-    localFileSize = BigInt(result.node.byteLength)
-    localDagSize = BigInt(result.node.byteLength)
-    blocks = 1
+    if (options.extended === true) {
+      return createExtendedRawStats(result)
+    }
+
+    return createRawStats(result)
+  } else if (result.type === 'file' || result.type === 'directory') {
+    if (options.extended === true) {
+      return createExtendedStats(result, blockstore, options.filter ?? new ScalableCuckooFilter({ filterSize: 1024 }), options)
+    }
+
+    return createStats(result)
   }
 
-  if (result.type === 'directory') {
-    fileSize = 0n
-    dagSize = BigInt(result.unixfs.marshal().byteLength)
-    localFileSize = 0n
-    localDagSize = dagSize
-    blocks = 1
-    mode = result.unixfs.mode
-    mtime = result.unixfs.mtime
-    unixfs = result.unixfs
-  }
+  throw new NotUnixFSError()
+}
 
-  if (result.type === 'file') {
-    const results = await inspectDag(resolved.cid, blockstore, opts)
-
-    fileSize = result.unixfs.fileSize()
-    dagSize = BigInt((result.node.Data?.byteLength ?? 0) + result.node.Links.reduce((acc, curr) => acc + (curr.Tsize ?? 0), 0))
-    localFileSize = BigInt(results.localFileSize)
-    localDagSize = BigInt(results.localDagSize)
-    blocks = results.blocks
-    mode = result.unixfs.mode
-    mtime = result.unixfs.mtime
-    unixfs = result.unixfs
+function createStats (entry: UnixFSFile | UnixFSDirectory): FileStats | DirectoryStats {
+  return {
+    type: entry.type,
+    cid: entry.cid,
+    unixfs: entry.unixfs,
+    mode: entry.unixfs.mode ?? (entry.unixfs.isDirectory() ? DEFAULT_DIR_MODE : DEFAULT_FILE_MODE),
+    mtime: entry.unixfs.mtime,
+    size: entry.unixfs.fileSize()
   }
+}
+
+async function createExtendedStats (entry: UnixFSFile | UnixFSDirectory, blockstore: GetStore & HasStore, filter: Filter, options: StatOptions): Promise<ExtendedFileStats | ExtendedDirectoryStats> {
+  const stats = await inspectDag(entry.cid, blockstore, false, filter, options)
 
   return {
-    cid: resolved.cid,
-    mode,
-    mtime,
-    fileSize,
-    dagSize,
-    localFileSize,
-    localDagSize,
-    blocks,
-    type,
-    unixfs
+    type: entry.type,
+    cid: entry.cid,
+    unixfs: entry.unixfs,
+    size: entry.unixfs.isDirectory() ? stats.dirSize : entry.unixfs.fileSize(),
+    mode: entry.unixfs.mode ?? (entry.unixfs.isDirectory() ? DEFAULT_DIR_MODE : DEFAULT_FILE_MODE),
+    mtime: entry.unixfs.mtime,
+    localSize: stats.localSize,
+    dagSize: stats.dagSize,
+    deduplicatedDagSize: stats.deduplicatedDagSize,
+    blocks: stats.blocks,
+    uniqueBlocks: stats.uniqueBlocks
+  }
+}
+
+function createRawStats (entry: RawNode): RawStats {
+  return {
+    type: entry.type,
+    cid: entry.cid,
+    unixfs: undefined,
+    mode: DEFAULT_FILE_MODE,
+    mtime: undefined,
+    size: BigInt(entry.node.byteLength)
+  }
+}
+
+function createExtendedRawStats (entry: RawNode): ExtendedRawStats {
+  return {
+    type: entry.type,
+    cid: entry.cid,
+    unixfs: undefined,
+    mode: DEFAULT_FILE_MODE,
+    mtime: undefined,
+    size: BigInt(entry.node.byteLength),
+    localSize: BigInt(entry.node.byteLength),
+    dagSize: BigInt(entry.node.byteLength),
+    deduplicatedDagSize: BigInt(entry.node.byteLength),
+    blocks: 1n,
+    uniqueBlocks: 1n
   }
 }
 
 interface InspectDagResults {
-  localFileSize: number
-  localDagSize: number
-  blocks: number
+  dirSize: bigint
+  localSize: bigint
+  dagSize: bigint
+  deduplicatedDagSize: bigint
+  blocks: bigint
+  uniqueBlocks: bigint
 }
 
-async function inspectDag (cid: CID, blockstore: GetStore & HasStore, options: AbortOptions): Promise<InspectDagResults> {
-  const results = {
-    localFileSize: 0,
-    localDagSize: 0,
-    blocks: 0
+async function inspectDag (cid: CID, blockstore: GetStore & HasStore, isFile: boolean, filter: Filter, options: StatOptions): Promise<InspectDagResults> {
+  const results: InspectDagResults = {
+    dirSize: 0n,
+    localSize: 0n,
+    dagSize: 0n,
+    deduplicatedDagSize: 0n,
+    blocks: 0n,
+    uniqueBlocks: 0n
   }
 
-  if (await blockstore.has(cid, options)) {
-    const block = await blockstore.get(cid, options)
+  try {
+    const alreadyTraversed = filter.has(cid.bytes)
+    filter.add(cid.bytes)
+
+    const block = await toBuffer(blockstore.get(cid, options))
     results.blocks++
-    results.localDagSize += block.byteLength
+    results.dagSize += BigInt(block.byteLength)
+
+    if (!alreadyTraversed) {
+      results.uniqueBlocks++
+      results.deduplicatedDagSize += BigInt(block.byteLength)
+    }
 
     if (cid.code === raw.code) {
-      results.localFileSize += block.byteLength
+      results.localSize += BigInt(block.byteLength)
+
+      if (isFile) {
+        results.dirSize += BigInt(block.byteLength)
+      }
     } else if (cid.code === dagPb.code) {
       const pbNode = dagPb.decode(block)
+
+      let unixfs: UnixFS | undefined
+
+      if (pbNode.Data != null) {
+        unixfs = UnixFS.unmarshal(pbNode.Data)
+      }
 
       if (pbNode.Links.length > 0) {
         // intermediate node
         for (const link of pbNode.Links) {
-          const linkResult = await inspectDag(link.Hash, blockstore, options)
+          const linkResult = await inspectDag(link.Hash, blockstore, linkIsFile(link, unixfs), filter, options)
 
-          results.localFileSize += linkResult.localFileSize
-          results.localDagSize += linkResult.localDagSize
+          results.localSize += linkResult.localSize
+          results.dagSize += linkResult.dagSize
+          results.deduplicatedDagSize += linkResult.deduplicatedDagSize
           results.blocks += linkResult.blocks
+          results.uniqueBlocks += linkResult.uniqueBlocks
+          results.dirSize += linkResult.dirSize
+        }
+
+        // multi-block file node
+        if (isFile && unixfs != null) {
+          results.dirSize += unixfs.fileSize()
         }
       } else {
-        // leaf node
-        if (pbNode.Data == null) {
+        if (unixfs == null) {
           throw new InvalidPBNodeError(`PBNode ${cid.toString()} had no data`)
         }
 
-        const unixfs = UnixFS.unmarshal(pbNode.Data)
-
-        if (unixfs.data == null) {
-          throw new InvalidPBNodeError(`UnixFS node ${cid.toString()} had no data`)
+        // multi-block file leaf node
+        if (unixfs.data != null) {
+          results.localSize += BigInt(unixfs.data.byteLength ?? 0)
         }
 
-        results.localFileSize += unixfs.data.byteLength ?? 0
+        // single-block file node
+        if (isFile) {
+          results.dirSize += unixfs.fileSize()
+        }
       }
     } else {
       throw new UnknownError(`${cid.toString()} was neither DAG_PB nor RAW`)
     }
+  } catch (err: any) {
+    if (err.name !== 'NotFoundError' || options.offline !== true) {
+      throw err
+    }
   }
 
   return results
+}
+
+function linkIsFile (link: dagPb.PBLink, parent?: UnixFS): boolean {
+  if (parent == null) {
+    return false
+  }
+
+  const name = link.Name
+
+  if (name == null) {
+    return false
+  }
+
+  if (parent.type === 'directory') {
+    return true
+  } else if (parent.type === 'hamt-sharded-directory' && name.length > 2) {
+    return true
+  }
+
+  return false
 }

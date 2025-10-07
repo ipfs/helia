@@ -2,9 +2,10 @@
 
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
-import { type UnixFS, unixfs } from '../src/index.js'
+import { unixfs } from '../src/index.js'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 import { smallFile } from './fixtures/files.js'
+import type { UnixFS } from '../src/index.js'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 

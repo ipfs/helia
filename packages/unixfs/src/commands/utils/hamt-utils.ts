@@ -2,10 +2,11 @@ import * as dagPB from '@ipld/dag-pb'
 import { logger } from '@libp2p/logger'
 import { UnixFS } from 'ipfs-unixfs'
 import last from 'it-last'
+import toBuffer from 'it-to-buffer'
 // @ts-expect-error no types
 import SparseArray from 'sparse-array'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { type InfiniteHash, wrapHash } from './consumable-hash.js'
+import { wrapHash } from './consumable-hash.js'
 import { DirSharded } from './dir-sharded.js'
 import {
   hamtHashCode,
@@ -13,6 +14,7 @@ import {
   hamtBucketBits
 } from './hamt-constants.js'
 import { persist } from './persist.js'
+import type { InfiniteHash } from './consumable-hash.js'
 import type { PersistOptions } from './persist.js'
 import type { GetStore, PutStore } from '../../unixfs.js'
 import type { AbortOptions } from '@libp2p/interface'
@@ -24,7 +26,7 @@ import type { CID, Version } from 'multiformats/cid'
 const log = logger('helia:unixfs:commands:utils:hamt-utils')
 
 export interface UpdateHamtDirectoryOptions extends AbortOptions {
-  cidVersion: Version
+  cidVersion?: Version
 }
 
 export const toPrefix = (position: number): string => {
@@ -38,7 +40,7 @@ export const toPrefix = (position: number): string => {
 export interface CreateShardOptions {
   mtime?: Mtime
   mode?: number
-  cidVersion: Version
+  cidVersion?: Version
 }
 
 export const createShard = async (blockstore: PutStore, contents: Array<{ name: string, size: bigint, cid: CID }>, options: CreateShardOptions): Promise<ImportResult> => {
@@ -150,7 +152,7 @@ export const recreateShardedDirectory = async (cid: CID, fileName: string, block
 
   // descend the HAMT, loading each layer as we head towards the target child
   while (true) {
-    const block = await blockstore.get(cid, options)
+    const block = await toBuffer(blockstore.get(cid, options))
     const node = dagPB.decode(block)
     const children = new SparseArray()
     const index = await hash.take(hamtBucketBits)

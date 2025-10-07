@@ -1,12 +1,3 @@
-export class DNSLinkNotFoundError extends Error {
-  static name = 'DNSLinkNotFoundError'
-
-  constructor (message = 'DNSLink not found') {
-    super(message)
-    this.name = 'DNSLinkNotFoundError'
-  }
-}
-
 export class RecordsFailedValidationError extends Error {
   static name = 'RecordsFailedValidationError'
 

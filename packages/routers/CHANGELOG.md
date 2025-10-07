@@ -1,5 +1,127 @@
 # Changelog
 
+## [3.1.3](https://github.com/ipfs/helia/compare/routers-v3.1.2...routers-v3.1.3) (2025-07-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.3.2 to ^5.4.0
+
+## [3.1.2](https://github.com/ipfs/helia/compare/routers-v3.1.1...routers-v3.1.2) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir to 47.x.x ([#804](https://github.com/ipfs/helia/issues/804)) ([60fbbc2](https://github.com/ipfs/helia/commit/60fbbc2eb08e023e2eac02ae0e89ed143d715084))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.3.1 to ^5.3.2
+
+## [3.1.1](https://github.com/ipfs/helia/compare/routers-v3.1.0...routers-v3.1.1) (2025-05-13)
+
+
+### Dependencies
+
+* update all deps ([#792](https://github.com/ipfs/helia/issues/792)) ([d43efc7](https://github.com/ipfs/helia/commit/d43efc7bdfff34071a8e4e22e01f659fbac0b78e))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.3.0 to ^5.3.1
+
+## [3.1.0](https://github.com/ipfs/helia/compare/routers-v3.0.1...routers-v3.1.0) (2025-05-13)
+
+
+### Features
+
+* add provider shuffle option to HTTPGatewayRouter ([#772](https://github.com/ipfs/helia/issues/772)) ([daaa511](https://github.com/ipfs/helia/commit/daaa511a74583844244e6f51d55a8bc25a9f5f02))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.2.1 to ^5.3.0
+
+## [3.0.1](https://github.com/ipfs/helia/compare/routers-v3.0.0...routers-v3.0.1) (2025-03-13)
+
+
+### Documentation
+
+* add spell checker to ci ([#743](https://github.com/ipfs/helia/issues/743)) ([45ca6bc](https://github.com/ipfs/helia/commit/45ca6bc70b1644028500101044595fa0e2199b07))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.2.0 to ^5.2.1
+
+## [3.0.0](https://github.com/ipfs/helia/compare/routers-v2.2.0...routers-v3.0.0) (2025-01-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* fix typo in HTTPGatewayRouter class/interface name ([#664](https://github.com/ipfs/helia/issues/664))
+
+### Bug Fixes
+
+* fix typo in HTTPGatewayRouter class/interface name ([#664](https://github.com/ipfs/helia/issues/664)) ([87aa9b4](https://github.com/ipfs/helia/commit/87aa9b4b21593870296c9a1c8b11c9123bbc5da1))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.1.0 to ^5.2.0
+
+## [2.2.0](https://github.com/ipfs/helia/compare/routers-v2.1.0...routers-v2.2.0) (2024-11-18)
+
+
+### Features
+
+* add cancelReprovide function to routing ([#672](https://github.com/ipfs/helia/issues/672)) ([dc13525](https://github.com/ipfs/helia/commit/dc1352563ab5ed7b204ae702c1e48035d196a470))
+
+
+### Bug Fixes
+
+* add tls to default delegated routing filters ([#670](https://github.com/ipfs/helia/issues/670)) ([aecac3d](https://github.com/ipfs/helia/commit/aecac3d92cbd22a7331afee8e6f87ef31a9f7d95))
+
+
+### Dependencies
+
+* bump aegir from 44.1.4 to 45.0.1 ([#669](https://github.com/ipfs/helia/issues/669)) ([e58e49c](https://github.com/ipfs/helia/commit/e58e49c6aed8ea9d1e9851435a25e33fdbee3781))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.0.0 to ^5.1.0
+
+## [2.1.0](https://github.com/ipfs/helia/compare/routers-v2.0.0...routers-v2.1.0) (2024-10-23)
+
+
+### Features
+
+* enable customising delegated http router ([#654](https://github.com/ipfs/helia/issues/654)) ([693c82d](https://github.com/ipfs/helia/commit/693c82d2117536d89b2e82d9c482ad807af2e1be))
+
+## [2.0.0](https://github.com/ipfs/helia/compare/routers-v1.1.1...routers-v2.0.0) (2024-10-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* helia now uses libp2p@2.x.x
+
+### Bug Fixes
+
+* add doc-check script and export types used by functions ([#637](https://github.com/ipfs/helia/issues/637)) ([4f14996](https://github.com/ipfs/helia/commit/4f14996a9b976f2b60f4c8fe52a4fd1632420749))
+* remove delegated routing api client patch ([#632](https://github.com/ipfs/helia/issues/632)) ([9de08ef](https://github.com/ipfs/helia/commit/9de08ef9c1cbdb723f524672f67574bf1dbed937))
+* update to libp2p@2.x.x ([#630](https://github.com/ipfs/helia/issues/630)) ([ec8bf66](https://github.com/ipfs/helia/commit/ec8bf66dd870b42d6e5ef2b41706102397e0d39a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^4.3.1 to ^5.0.0
+
 ## [1.1.1](https://github.com/ipfs/helia/compare/routers-v1.1.0...routers-v1.1.1) (2024-07-31)
 
 

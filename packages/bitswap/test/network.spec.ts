@@ -1,28 +1,25 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { isPeerId } from '@libp2p/interface'
-import { matchMultiaddr } from '@libp2p/interface-compliance-tests/matchers'
-import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { pbStream, lpStream, streamPair } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
-import { lpStream } from 'it-length-prefixed-stream'
-import { duplexPair } from 'it-pair/duplex'
-import { pbStream } from 'it-protobuf-stream'
 import { CID } from 'multiformats/cid'
 import { pEvent } from 'p-event'
 import pRetry from 'p-retry'
 import Sinon from 'sinon'
-import { stubInterface, type StubbedInstance } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { BITSWAP_120 } from '../src/constants.js'
 import { Network } from '../src/network.js'
 import { BitswapMessage, BlockPresenceType } from '../src/pb/message.js'
 import { QueuedBitswapMessage } from '../src/utils/bitswap-message.js'
 import { cidToPrefix } from '../src/utils/cid-prefix.js'
 import type { Routing } from '@helia/interface/routing'
-import type { Connection, Libp2p, PeerId, IdentifyResult, Stream } from '@libp2p/interface'
+import type { Connection, Libp2p, PeerId, IdentifyResult } from '@libp2p/interface'
+import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedNetworkComponents {
   routing: StubbedInstance<Routing>
@@ -92,18 +89,14 @@ describe('network', () => {
     const connection = stubInterface<Connection>({
       remotePeer
     })
-    const [localDuplex, remoteDuplex] = duplexPair<any>()
-    const remoteStream = stubInterface<Stream>(remoteDuplex)
+    const [outboundStream, inboundStream] = await streamPair()
     const handler = components.libp2p.handle.getCall(0).args[1]
 
     const messageEventPromise = pEvent<'bitswap:message', CustomEvent<{ peer: PeerId, message: BitswapMessage }>>(network, 'bitswap:message')
 
-    handler({
-      stream: remoteStream,
-      connection
-    })
+    handler(inboundStream, connection)
 
-    const pbstr = pbStream(localDuplex).pb(BitswapMessage)
+    const pbstr = pbStream(outboundStream).pb(BitswapMessage)
     await pbstr.write({
       blockPresences: [],
       blocks: [],
@@ -125,22 +118,18 @@ describe('network', () => {
     const connection = stubInterface<Connection>({
       remotePeer
     })
-    const [localDuplex, remoteDuplex] = duplexPair<any>()
-    const remoteStream = stubInterface<Stream>(remoteDuplex)
+    const [outboundStream, inboundStream] = await streamPair()
     const handler = components.libp2p.handle.getCall(0).args[1]
 
-    handler({
-      stream: remoteStream,
-      connection
-    })
+    handler(inboundStream, connection)
 
-    const lpstr = lpStream(localDuplex)
+    const lpstr = lpStream(outboundStream)
 
-    // garbage data, cannot be unmarshalled as protobuf
+    // garbage data, cannot be unmarshaled as protobuf
     await lpstr.write(Uint8Array.from([0, 1, 2, 3]))
 
     await pRetry(() => {
-      expect(remoteStream.abort.called).to.be.true()
+      expect(inboundStream.status).to.equal('aborted')
     })
   })
 
@@ -149,16 +138,12 @@ describe('network', () => {
     const connection = stubInterface<Connection>({
       remotePeer
     })
-    const [, remoteDuplex] = duplexPair<any>()
-    const remoteStream = mockStream(remoteDuplex)
+    const [, inboundStream] = await streamPair()
     const handler = components.libp2p.handle.getCall(0).args[1]
 
-    const spy = Sinon.spy(remoteStream, 'abort')
+    const spy = Sinon.spy(inboundStream, 'abort')
 
-    handler({
-      stream: remoteStream,
-      connection
-    })
+    handler(inboundStream, connection)
 
     await pRetry(() => {
       expect(spy.called).to.be.true()
@@ -204,7 +189,7 @@ describe('network', () => {
     })())
 
     components.libp2p.isDialable = Sinon.stub()
-    components.libp2p.isDialable.withArgs(matchMultiaddr(providers[0].multiaddrs[0]), {
+    components.libp2p.isDialable.withArgs(providers[0].multiaddrs[0], {
       runOnLimitedConnection: false
     })
 
@@ -357,14 +342,13 @@ describe('network', () => {
 
   it('should send a message', async () => {
     const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    const [localDuplex, remoteDuplex] = duplexPair<any>()
-    const remoteStream = stubInterface<Stream>(remoteDuplex)
+    const [outboundStream, inboundStream] = await streamPair()
 
-    components.libp2p.dialProtocol.withArgs(peerId, BITSWAP_120).resolves(remoteStream)
+    components.libp2p.dialProtocol.withArgs(peerId, BITSWAP_120).resolves(outboundStream)
 
     void network.sendMessage(peerId, new QueuedBitswapMessage(true))
 
-    const pbstr = pbStream(localDuplex).pb(BitswapMessage)
+    const pbstr = pbStream(inboundStream).pb(BitswapMessage)
     const message = await pbstr.read()
 
     expect(message).to.have.nested.property('wantlist.full').that.is.true()
@@ -381,10 +365,9 @@ describe('network', () => {
     await network.start()
 
     const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    const [localDuplex, remoteDuplex] = duplexPair<any>()
-    const remoteStream = stubInterface<Stream>(remoteDuplex)
+    const [outboundStream, inboundStream] = await streamPair()
 
-    components.libp2p.dialProtocol.withArgs(peerId, BITSWAP_120).resolves(remoteStream)
+    components.libp2p.dialProtocol.withArgs(peerId, BITSWAP_120).resolves(outboundStream)
 
     const cid1 = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3A')
     const cid2 = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3B')
@@ -401,11 +384,11 @@ describe('network', () => {
     })
     messageA.addBlockPresence(cid3, {
       cid: cid3.bytes,
-      type: BlockPresenceType.DontHaveBlock
+      type: BlockPresenceType.DoNotHaveBlock
     })
     messageA.addBlockPresence(cid5, {
       cid: cid5.bytes,
-      type: BlockPresenceType.DontHaveBlock
+      type: BlockPresenceType.DoNotHaveBlock
     })
     messageA.addWantlistEntry(cid5, {
       cid: cid5.bytes,
@@ -424,7 +407,7 @@ describe('network', () => {
     })
     messageB.addBlockPresence(cid4, {
       cid: cid4.bytes,
-      type: BlockPresenceType.DontHaveBlock
+      type: BlockPresenceType.DoNotHaveBlock
     })
     messageB.addBlockPresence(cid5, {
       cid: cid5.bytes,
@@ -466,7 +449,7 @@ describe('network', () => {
     // one dial for slowPeer, one for peerId
     expect(components.libp2p.dialProtocol).to.have.property('callCount', 2, 'made too many dials')
 
-    const pbstr = pbStream(localDuplex).pb(BitswapMessage)
+    const pbstr = pbStream(inboundStream).pb(BitswapMessage)
     const message = await pbstr.read()
 
     expect([...message.blocks.values()]).to.deep.equal([{
@@ -478,13 +461,13 @@ describe('network', () => {
     }])
     expect(message).to.have.deep.property('blockPresences', [{
       cid: cid3.bytes,
-      type: BlockPresenceType.DontHaveBlock
+      type: BlockPresenceType.DoNotHaveBlock
     }, {
       cid: cid5.bytes,
       type: BlockPresenceType.HaveBlock
     }, {
       cid: cid4.bytes,
-      type: BlockPresenceType.DontHaveBlock
+      type: BlockPresenceType.DoNotHaveBlock
     }])
     expect(message).to.have.deep.property('wantlist', {
       full: true,

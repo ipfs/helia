@@ -5,6 +5,86 @@
 
 * expose .dns property on @helia/interface ([#465](https://github.com/ipfs/helia/issues/465)) ([8c9bb7d](https://github.com/ipfs/helia/commit/8c9bb7d224a1b786cba1fba18bffe07001a3b95d))
 
+## [5.4.0](https://github.com/ipfs/helia/compare/interface-v5.3.2...interface-v5.4.0) (2025-07-22)
+
+
+### Features
+
+* add libp2p to @helia/http ([#826](https://github.com/ipfs/helia/issues/826)) ([235e5c4](https://github.com/ipfs/helia/commit/235e5c4093a51bda1e0331f9dd26754f601b582c))
+
+
+### Bug Fixes
+
+* trustless gateway returned blocks can be limited ([#791](https://github.com/ipfs/helia/issues/791)) ([7a52e95](https://github.com/ipfs/helia/commit/7a52e95165f4a16a1fb2f62cfc6e936cb6f78b69))
+
+## [5.3.2](https://github.com/ipfs/helia/compare/interface-v5.3.1...interface-v5.3.2) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir to 47.x.x ([#804](https://github.com/ipfs/helia/issues/804)) ([60fbbc2](https://github.com/ipfs/helia/commit/60fbbc2eb08e023e2eac02ae0e89ed143d715084))
+
+## [5.3.1](https://github.com/ipfs/helia/compare/interface-v5.3.0...interface-v5.3.1) (2025-05-13)
+
+
+### Dependencies
+
+* update all deps ([#792](https://github.com/ipfs/helia/issues/792)) ([d43efc7](https://github.com/ipfs/helia/commit/d43efc7bdfff34071a8e4e22e01f659fbac0b78e))
+
+## [5.3.0](https://github.com/ipfs/helia/compare/interface-v5.2.1...interface-v5.3.0) (2025-05-13)
+
+
+### Features
+
+* pass initial providers to session ([#777](https://github.com/ipfs/helia/issues/777)) ([3d77369](https://github.com/ipfs/helia/commit/3d773698389deb70e1a0181eb81fb8b5992857b8))
+
+## [5.2.1](https://github.com/ipfs/helia/compare/interface-v5.2.0...interface-v5.2.1) (2025-03-13)
+
+
+### Documentation
+
+* add spell checker to ci ([#743](https://github.com/ipfs/helia/issues/743)) ([45ca6bc](https://github.com/ipfs/helia/commit/45ca6bc70b1644028500101044595fa0e2199b07))
+
+## [5.2.0](https://github.com/ipfs/helia/compare/interface-v5.1.0...interface-v5.2.0) (2025-01-14)
+
+
+### Features
+
+* add method tracing to routing ([#715](https://github.com/ipfs/helia/issues/715)) ([5784ceb](https://github.com/ipfs/helia/commit/5784cebb3225157d6220668d4f58481f046debf2))
+
+## [5.1.0](https://github.com/ipfs/helia/compare/interface-v5.0.0...interface-v5.1.0) (2024-11-18)
+
+
+### Features
+
+* add cancelReprovide function to routing ([#672](https://github.com/ipfs/helia/issues/672)) ([dc13525](https://github.com/ipfs/helia/commit/dc1352563ab5ed7b204ae702c1e48035d196a470))
+
+
+### Dependencies
+
+* bump aegir from 44.1.4 to 45.0.1 ([#669](https://github.com/ipfs/helia/issues/669)) ([e58e49c](https://github.com/ipfs/helia/commit/e58e49c6aed8ea9d1e9851435a25e33fdbee3781))
+
+## [5.0.0](https://github.com/ipfs/helia/compare/interface-v4.3.1...interface-v5.0.0) (2024-10-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* the metadata record value field has changed from `any` to `string | number | boolean`
+* the `.dagWalkers` property has been removed
+* helia now uses libp2p@2.x.x
+
+### Features
+
+* allow updating pin metadata ([#647](https://github.com/ipfs/helia/issues/647)) ([bc64f47](https://github.com/ipfs/helia/commit/bc64f47897691295435568beee61383116b0032b))
+
+
+### Bug Fixes
+
+* add doc-check script and export types used by functions ([#637](https://github.com/ipfs/helia/issues/637)) ([4f14996](https://github.com/ipfs/helia/commit/4f14996a9b976f2b60f4c8fe52a4fd1632420749))
+* define string metadata type ([#641](https://github.com/ipfs/helia/issues/641)) ([c04dbf5](https://github.com/ipfs/helia/commit/c04dbf5f6bf5ef37ba9fc854c0c3080f37d5c7c3))
+* replace dag walkers with generic CID extraction from blocks ([#447](https://github.com/ipfs/helia/issues/447)) ([5ff6998](https://github.com/ipfs/helia/commit/5ff6998e6bc8b04e3407bc98c1924c55f632d9b7))
+* update to libp2p@2.x.x ([#630](https://github.com/ipfs/helia/issues/630)) ([ec8bf66](https://github.com/ipfs/helia/commit/ec8bf66dd870b42d6e5ef2b41706102397e0d39a))
+
 ## [4.3.1](https://github.com/ipfs/helia/compare/interface-v4.3.0...interface-v4.3.1) (2024-07-31)
 
 

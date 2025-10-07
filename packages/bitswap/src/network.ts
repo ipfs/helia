@@ -1,9 +1,9 @@
 import { InvalidParametersError, NotStartedError, TimeoutError, TypedEventEmitter, UnsupportedProtocolError, setMaxListeners } from '@libp2p/interface'
-import { PeerQueue, type PeerQueueJobOptions } from '@libp2p/utils/peer-queue'
+import { PeerQueue } from '@libp2p/utils'
 import drain from 'it-drain'
 import * as lp from 'it-length-prefixed'
 import map from 'it-map'
-import { pipe } from 'it-pipe'
+import { pushable } from 'it-pushable'
 import take from 'it-take'
 import { CustomProgressEvent } from 'progress-events'
 import { raceEvent } from 'race-event'
@@ -16,13 +16,16 @@ import type { MultihashHasherLoader } from './index.js'
 import type { Block } from './pb/message.js'
 import type { QueuedBitswapMessage } from './utils/bitswap-message.js'
 import type { Provider, Routing } from '@helia/interface/routing'
-import type { Libp2p, AbortOptions, Connection, PeerId, IncomingStreamData, Topology, ComponentLogger, IdentifyResult, Counter, Metrics } from '@libp2p/interface'
+import type { Libp2p, AbortOptions, Connection, PeerId, Topology, ComponentLogger, IdentifyResult, Counter, Metrics, Stream } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
+import type { PeerQueueJobOptions } from '@libp2p/utils'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export type BitswapNetworkProgressEvents =
-  ProgressEvent<'bitswap:network:dial', PeerId>
+  ProgressEvent<'bitswap:network:dial', PeerId | Multiaddr | Multiaddr[]>
 
 export type BitswapNetworkWantProgressEvents =
   ProgressEvent<'bitswap:network:send-wantlist', PeerId> |
@@ -112,9 +115,6 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
       metrics: components.metrics,
       metricName: 'helia_bitswap_message_send_queue'
     })
-    this.sendQueue.addEventListener('error', (evt) => {
-      this.log.error('error sending wantlist to peer', evt.detail)
-    })
   }
 
   async start (): Promise<void> {
@@ -177,12 +177,10 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
   /**
    * Handles incoming bitswap messages
    */
-  _onStream (info: IncomingStreamData): void {
+  _onStream (stream: Stream, connection: Connection): void {
     if (!this.running) {
       return
     }
-
-    const { stream, connection } = info
 
     Promise.resolve().then(async () => {
       this.log('incoming new bitswap %s stream from %p', stream.protocol, connection.remotePeer)
@@ -198,39 +196,49 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
       setMaxListeners(Infinity, signal)
       signal.addEventListener('abort', abortListener)
 
-      await stream.closeWrite()
+      await stream.close({
+        signal
+      })
 
-      await pipe(
-        stream,
-        (source) => lp.decode(source, {
-          maxDataLength: this.maxIncomingMessageSize
-        }),
-        async (source) => {
-          for await (const data of source) {
-            try {
-              const message = BitswapMessage.decode(data)
-              this.log('incoming new bitswap %s message from %p on stream', stream.protocol, connection.remotePeer, stream.id)
+      const input = pushable<Uint8Array | Uint8ArrayList>()
 
-              this.safeDispatchEvent('bitswap:message', {
-                detail: {
-                  peer: connection.remotePeer,
-                  message
-                }
-              })
-
-              // we have received some data so reset the timeout controller
-              signal.removeEventListener('abort', abortListener)
-              signal = AbortSignal.timeout(this.messageReceiveTimeout)
-              setMaxListeners(Infinity, signal)
-              signal.addEventListener('abort', abortListener)
-            } catch (err: any) {
-              this.log.error('error reading incoming bitswap message from %p on stream', connection.remotePeer, stream.id, err)
-              stream.abort(err)
-              break
-            }
-          }
+      stream.addEventListener('message', (evt) => {
+        input.push(evt.data)
+      })
+      stream.addEventListener('remoteCloseWrite', () => {
+        input.end()
+      })
+      stream.addEventListener('close', (evt) => {
+        if (evt.error != null) {
+          input.end(evt.error)
         }
-      )
+      })
+
+      for await (const data of lp.decode(input, {
+        maxDataLength: this.maxIncomingMessageSize
+      })) {
+        try {
+          const message = BitswapMessage.decode(data)
+          this.log('incoming new bitswap %s message from %p on stream', stream.protocol, connection.remotePeer, stream.id)
+
+          this.safeDispatchEvent('bitswap:message', {
+            detail: {
+              peer: connection.remotePeer,
+              message
+            }
+          })
+
+          // we have received some data so reset the timeout controller
+          signal.removeEventListener('abort', abortListener)
+          signal = AbortSignal.timeout(this.messageReceiveTimeout)
+          setMaxListeners(Infinity, signal)
+          signal.addEventListener('abort', abortListener)
+        } catch (err: any) {
+          this.log.error('error reading incoming bitswap message from %p on stream', connection.remotePeer, stream.id, err)
+          stream.abort(err)
+          break
+        }
+      }
     })
       .catch(err => {
         this.log.error('error handling incoming stream from %p', connection.remotePeer, err)
@@ -262,6 +270,17 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
    * Find the providers of a given `cid` and connect to them.
    */
   async findAndConnect (cid: CID, options?: WantOptions): Promise<void> {
+    // connect to initial session providers if supplied
+    if (options?.providers != null) {
+      await Promise.all(
+        options.providers.map(async prov => this.connectTo(prov)
+          .catch(err => {
+            this.log.error('could not connect to supplied provider - %e', err)
+          }))
+      )
+    }
+
+    // make a routing query to find additional providers
     await drain(
       map(
         take(this.findProviders(cid, options), options?.maxProviders ?? DEFAULT_MAX_PROVIDERS_PER_REQUEST),
@@ -311,11 +330,11 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
       await stream.closeRead()
 
       try {
-        await pipe(
-          splitMessage(message, this.maxOutgoingMessageSize),
-          (source) => lp.encode(source),
-          stream
-        )
+        for (const buf of splitMessage(message, this.maxOutgoingMessageSize)) {
+          if (!stream.send(lp.encode.single(buf))) {
+            await stream.onDrain(options)
+          }
+        }
 
         await stream.close(options)
       } catch (err: any) {
@@ -335,16 +354,16 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
   /**
    * Connects to another peer
    */
-  async connectTo (peer: PeerId, options?: AbortOptions & ProgressOptions<BitswapNetworkProgressEvents>): Promise<Connection> { // eslint-disable-line require-await
+  async connectTo (peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions & ProgressOptions<BitswapNetworkProgressEvents>): Promise<Connection> {
     if (!this.running) {
       throw new NotStartedError('Network isn\'t running')
     }
 
-    options?.onProgress?.(new CustomProgressEvent<PeerId>('bitswap:network:dial', peer))
+    options?.onProgress?.(new CustomProgressEvent<PeerId | Multiaddr | Multiaddr[]>('bitswap:network:dial', peer))
 
     // dial and wait for identify - this is to avoid opening a protocol stream
     // that we are not going to use but depends on the remote node running the
-    // identitfy protocol
+    // identify protocol
     const [
       connection
     ] = await Promise.all([

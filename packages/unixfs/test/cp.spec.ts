@@ -7,10 +7,11 @@ import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import { identity } from 'multiformats/hashes/identity'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { unixfs, type UnixFS } from '../src/index.js'
+import { unixfs } from '../src/index.js'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
-import { createSubshardedDirectory } from './fixtures/create-subsharded-directory.js'
+import { createSubShardedDirectory } from './fixtures/create-subsharded-directory.js'
 import { smallFile } from './fixtures/files.js'
+import type { UnixFS } from '../src/index.js'
 import type { Blockstore } from 'interface-blockstore'
 
 describe('cp', () => {
@@ -167,12 +168,12 @@ describe('cp', () => {
     })).to.eventually.be.ok()
   })
 
-  it('copies a file to a sharded directory that creates a subshard', async () => {
+  it('copies a file to a sharded directory that creates a sub-shard', async () => {
     const {
       containingDirCid,
       fileName,
       importerCid
-    } = await createSubshardedDirectory(blockstore)
+    } = await createSubShardedDirectory(blockstore)
 
     // adding a file to the importer CID should result in the shard with a subshard
     const fileCid = CID.parse('bafkreiaixnpf23vkyecj5xqispjq5ubcwgsntnnurw2bjby7khe4wnjihu')

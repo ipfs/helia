@@ -1,6 +1,6 @@
 {
   "name": "@helia/car",
-  "version": "3.2.1",
+  "version": "4.2.0",
   "description": "Import/export car files from Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/car#readme",
@@ -32,98 +32,6 @@
       "import": "./dist/src/index.js"
     }
   },
-  "eslintConfig": {
-    "extends": "ipfs",
-    "parserOptions": {
-      "project": true,
-      "sourceType": "module"
-    }
-  },
-  "release": {
-    "branches": [
-      "main"
-    ],
-    "plugins": [
-      [
-        "@semantic-release/commit-analyzer",
-        {
-          "preset": "conventionalcommits",
-          "releaseRules": [
-            {
-              "breaking": true,
-              "release": "major"
-            },
-            {
-              "revert": true,
-              "release": "patch"
-            },
-            {
-              "type": "feat",
-              "release": "minor"
-            },
-            {
-              "type": "fix",
-              "release": "patch"
-            },
-            {
-              "type": "docs",
-              "release": "patch"
-            },
-            {
-              "type": "test",
-              "release": "patch"
-            },
-            {
-              "type": "deps",
-              "release": "patch"
-            },
-            {
-              "scope": "no-release",
-              "release": false
-            }
-          ]
-        }
-      ],
-      [
-        "@semantic-release/release-notes-generator",
-        {
-          "preset": "conventionalcommits",
-          "presetConfig": {
-            "types": [
-              {
-                "type": "feat",
-                "section": "Features"
-              },
-              {
-                "type": "fix",
-                "section": "Bug Fixes"
-              },
-              {
-                "type": "chore",
-                "section": "Trivial Changes"
-              },
-              {
-                "type": "docs",
-                "section": "Documentation"
-              },
-              {
-                "type": "deps",
-                "section": "Dependencies"
-              },
-              {
-                "type": "test",
-                "section": "Tests"
-              }
-            ]
-          }
-        }
-      ],
-      "@semantic-release/changelog",
-      "@semantic-release/npm",
-      "@semantic-release/github",
-      "@semantic-release/git"
-    ]
-  },
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
@@ -136,31 +44,35 @@
     "test:firefox": "aegir test -t browser -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
     "test:node": "aegir test -t node --cov",
-    "test:electron-main": "aegir test -t electron-main",
-    "release": "aegir release"
+    "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@helia/interface": "^4.3.1",
-    "@ipld/car": "^5.3.0",
-    "@libp2p/interface": "^2.0.0",
-    "@libp2p/utils": "^6.0.0",
-    "interface-blockstore": "^5.2.10",
-    "it-drain": "^3.0.5",
-    "it-map": "^3.0.5",
-    "multiformats": "^13.1.0",
-    "p-defer": "^4.0.0",
-    "p-queue": "^8.0.1",
-    "progress-events": "^1.0.0"
+    "@helia/interface": "^5.4.0",
+    "@ipld/car": "^5.4.2",
+    "@ipld/dag-pb": "^4.1.5",
+    "@libp2p/interface": "^3.0.2",
+    "@libp2p/utils": "^7.0.5",
+    "interface-blockstore": "^6.0.1",
+    "ipfs-unixfs": "^12.0.0",
+    "it-drain": "^3.0.10",
+    "it-map": "^3.1.4",
+    "it-to-buffer": "^4.0.10",
+    "multiformats": "^13.4.1",
+    "progress-events": "^1.0.1",
+    "race-signal": "^2.0.0"
   },
   "devDependencies": {
-    "@helia/mfs": "^3.0.8",
-    "@helia/unixfs": "^3.0.7",
-    "@ipld/dag-pb": "^4.1.0",
-    "aegir": "^44.0.1",
-    "blockstore-core": "^5.0.0",
-    "datastore-core": "^10.0.0",
-    "ipfs-unixfs-importer": "^15.2.4",
-    "it-to-buffer": "^4.0.5"
+    "@helia/mfs": "^5.1.0",
+    "@helia/unixfs": "^5.1.0",
+    "@ipld/dag-cbor": "^9.2.5",
+    "@libp2p/logger": "^6.0.5",
+    "aegir": "^47.0.22",
+    "blockstore-core": "^6.0.2",
+    "datastore-core": "^11.0.2",
+    "ipfs-unixfs-importer": "^16.0.1",
+    "it-foreach": "^2.1.4",
+    "it-length": "^3.0.9",
+    "sinon": "^21.0.0"
   },
   "sideEffects": false
 }

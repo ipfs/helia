@@ -1,11 +1,13 @@
 import * as dagPB from '@ipld/dag-pb'
 import { logger } from '@libp2p/logger'
 import { UnixFS } from 'ipfs-unixfs'
-import { CID, type Version } from 'multiformats/cid'
+import toBuffer from 'it-to-buffer'
+import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 // @ts-expect-error no types
 import SparseArray from 'sparse-array'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { DEFAULT_SHARD_SPLIT_THRESHOLD_BYTES } from '../../constants.ts'
 import { AlreadyExistsError, InvalidParametersError, InvalidPBNodeError } from '../../errors.js'
 import { wrapHash } from './consumable-hash.js'
 import { hamtBucketBits, hamtHashFn } from './hamt-constants.js'
@@ -18,9 +20,10 @@ import {
 import { isOverShardThreshold } from './is-over-shard-threshold.js'
 import type { Directory } from './cid-to-directory.js'
 import type { GetStore, PutStore } from '../../unixfs.js'
-import type { PBNode, PBLink } from '@ipld/dag-pb/interface'
+import type { PBNode, PBLink } from '@ipld/dag-pb'
 import type { AbortOptions } from '@libp2p/interface'
 import type { ImportResult } from 'ipfs-unixfs-importer'
+import type { Version } from 'multiformats/cid'
 
 const log = logger('helia:unixfs:components:utils:add-link')
 
@@ -30,9 +33,9 @@ export interface AddLinkResult {
 }
 
 export interface AddLinkOptions extends AbortOptions {
-  allowOverwriting: boolean
-  shardSplitThresholdBytes: number
-  cidVersion: Version
+  allowOverwriting?: boolean
+  shardSplitThresholdBytes?: number
+  cidVersion?: Version
 }
 
 export async function addLink (parent: Directory, child: Required<PBLink>, blockstore: GetStore & PutStore, options: AddLinkOptions): Promise<AddLinkResult> {
@@ -52,12 +55,12 @@ export async function addLink (parent: Directory, child: Required<PBLink>, block
 
   const result = await addToDirectory(parent, child, blockstore, options)
 
-  if (await isOverShardThreshold(result.node, blockstore, options.shardSplitThresholdBytes, options)) {
+  if (await isOverShardThreshold(result.node, blockstore, options.shardSplitThresholdBytes ?? DEFAULT_SHARD_SPLIT_THRESHOLD_BYTES, options)) {
     log('converting directory to sharded directory')
 
     const converted = await convertToShardedDirectory(result, blockstore)
     result.cid = converted.cid
-    result.node = dagPB.decode(await blockstore.get(converted.cid, options))
+    result.node = dagPB.decode(await toBuffer(blockstore.get(converted.cid, options)))
   }
 
   return result
@@ -165,7 +168,7 @@ const addToShardedDirectory = async (parent: Directory, child: Required<PBLink>,
         throw new AlreadyExistsError()
       }
 
-      log('overwriting %s in subshard', child.Name)
+      log('overwriting %s in sub-shard', child.Name)
       finalSegment.node.Links = finalSegment.node.Links.filter(l => l.Name !== linkName)
       finalSegment.node.Links.push({
         Name: linkName,
@@ -173,10 +176,10 @@ const addToShardedDirectory = async (parent: Directory, child: Required<PBLink>,
         Tsize: child.Tsize
       })
     } else if (existingLink.Name?.length === 2) {
-      throw new Error('Existing link was subshard?!')
+      throw new Error('Existing link was sub-shard?!')
     } else {
       // conflict, add a new HAMT segment
-      log('prefix %s already exists, creating new subshard', prefix)
+      log('prefix %s already exists, creating new sub-shard', prefix)
       // find the sibling we are going to replace
       const index = finalSegment.node.Links.findIndex(l => l.Name?.startsWith(prefix))
       const sibling = finalSegment.node.Links.splice(index, 1)[0]
@@ -186,7 +189,7 @@ const addToShardedDirectory = async (parent: Directory, child: Required<PBLink>,
       const wrapped = wrapHash(hamtHashFn)
       const siblingHash = wrapped(uint8ArrayFromString(siblingName))
 
-      // discard hash bits until we reach the subshard depth
+      // discard hash bits until we reach the sub-shard depth
       for (let i = 0; i < path.length; i++) {
         await siblingHash.take(hamtBucketBits)
       }

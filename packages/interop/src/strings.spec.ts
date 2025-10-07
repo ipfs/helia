@@ -1,18 +1,19 @@
 /* eslint-env mocha */
 
-import { strings, type Strings, type AddOptions } from '@helia/strings'
+import { strings } from '@helia/strings'
 import { expect } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
-import type { HeliaLibp2p } from 'helia'
+import type { Strings, AddOptions } from '@helia/strings'
+import type { Helia } from 'helia'
 import type { KuboNode } from 'ipfsd-ctl'
 import type { BlockPutOptions as KuboAddOptions } from 'kubo-rpc-client'
 
 describe('@helia/strings', () => {
-  let helia: HeliaLibp2p
+  let helia: Helia
   let str: Strings
   let kubo: KuboNode
 

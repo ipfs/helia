@@ -1,21 +1,20 @@
-/* eslint-disable no-loop-func */
 import { setMaxListeners } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
+import { CustomProgressEvent } from 'progress-events'
 import { Network } from './network.js'
 import { PeerWantLists } from './peer-want-lists/index.js'
 import { createBitswapSession } from './session.js'
 import { Stats } from './stats.js'
 import { WantList } from './want-list.js'
 import type { BitswapOptions, Bitswap as BitswapInterface, BitswapWantProgressEvents, BitswapNotifyProgressEvents, WantListEntry, BitswapComponents } from './index.js'
-import type { BlockBroker, CreateSessionOptions } from '@helia/interface'
-import type { ComponentLogger, PeerId } from '@libp2p/interface'
+import type { BlockBroker, CreateSessionOptions, ProviderOptions } from '@helia/interface'
+import type { ComponentLogger, Libp2p, PeerId, AbortOptions } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
-import type { AbortOptions } from '@multiformats/multiaddr'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 import type { ProgressOptions } from 'progress-events'
 
-export interface WantOptions extends AbortOptions, ProgressOptions<BitswapWantProgressEvents> {
+export interface WantOptions extends AbortOptions, ProgressOptions<BitswapWantProgressEvents>, ProviderOptions {
   /**
    * When searching the routing for providers, stop searching after finding this
    * many providers.
@@ -37,11 +36,13 @@ export class Bitswap implements BitswapInterface {
   public blockstore: Blockstore
   public peerWantLists: PeerWantLists
   public wantList: WantList
+  public libp2p: Libp2p
 
   constructor (components: BitswapComponents, init: BitswapOptions = {}) {
     this.logger = components.logger
     this.log = components.logger.forComponent('helia:bitswap')
     this.blockstore = components.blockstore
+    this.libp2p = components.libp2p
 
     // report stats to libp2p metrics
     this.stats = new Stats(components)
@@ -66,7 +67,8 @@ export class Bitswap implements BitswapInterface {
     return createBitswapSession({
       wantList: this.wantList,
       network: this.network,
-      logger: this.logger
+      logger: this.logger,
+      libp2p: this.libp2p
     }, options)
   }
 
@@ -94,6 +96,8 @@ export class Bitswap implements BitswapInterface {
         signal
       })
 
+      options.onProgress?.(new CustomProgressEvent<{ cid: CID, sender: PeerId }>('bitswap:want-block:received', { cid, sender: result.sender }))
+
       return result.block
     } finally {
       // since we have the block we can now abort any outstanding attempts to
@@ -106,7 +110,7 @@ export class Bitswap implements BitswapInterface {
   /**
    * Sends notifications about the arrival of a block
    */
-  async notify (cid: CID, block: Uint8Array, options: ProgressOptions<BitswapNotifyProgressEvents> & AbortOptions = {}): Promise<void> {
+  async notify (cid: CID, options: ProgressOptions<BitswapNotifyProgressEvents> & AbortOptions = {}): Promise<void> {
     await Promise.all([
       this.peerWantLists.receivedBlock(cid, options),
       this.wantList.receivedBlock(cid, options)

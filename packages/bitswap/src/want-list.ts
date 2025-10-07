@@ -1,6 +1,6 @@
 import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { trackedPeerMap } from '@libp2p/peer-collections'
-import { trackedMap } from '@libp2p/utils/tracked-map'
+import { trackedMap } from '@libp2p/utils'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import pDefer from 'p-defer'
@@ -62,7 +62,7 @@ export interface WantListEntry {
 
 export interface WantOptions extends AbortOptions, ProgressOptions<BitswapNetworkWantProgressEvents> {
   /**
-   * Allow prioritising blocks
+   * Allow prioritizing blocks
    */
   priority?: number
 }
@@ -73,7 +73,7 @@ export interface WantBlockResult {
   block: Uint8Array
 }
 
-export interface WantDontHaveResult {
+export interface WantDoNotHaveResult {
   sender: PeerId
   cid: CID
   has: false
@@ -86,7 +86,7 @@ export interface WantHaveResult {
   block?: Uint8Array
 }
 
-export type WantPresenceResult = WantDontHaveResult | WantHaveResult
+export type WantPresenceResult = WantDoNotHaveResult | WantHaveResult
 
 export interface WantListEvents {
   block: CustomEvent<WantBlockResult>
@@ -294,7 +294,7 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
     await this.network.sendMessage(peerId, message)
 
     // wait for peer response
-    const event = await raceEvent<CustomEvent<WantHaveResult | WantDontHaveResult>>(this, 'presence', options.signal, {
+    const event = await raceEvent<CustomEvent<WantHaveResult | WantDoNotHaveResult>>(this, 'presence', options.signal, {
       filter: (event) => {
         return peerId.equals(event.detail.sender) && uint8ArrayEquals(cid.multihash.digest, event.detail.cid.multihash.digest)
       }
@@ -399,7 +399,7 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
         }
       })
 
-      this.safeDispatchEvent<WantHaveResult | WantDontHaveResult>('presence', {
+      this.safeDispatchEvent<WantHaveResult | WantDoNotHaveResult>('presence', {
         detail: {
           sender,
           cid,
@@ -428,7 +428,7 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
 
       this.log('received %s from %p for %c', type, sender, cid)
 
-      this.safeDispatchEvent<WantHaveResult | WantDontHaveResult>('presence', {
+      this.safeDispatchEvent<WantHaveResult | WantDoNotHaveResult>('presence', {
         detail: {
           sender,
           cid,

@@ -108,6 +108,43 @@ console.log(await d.get(retrievedObject.link))
 // { hello: 'world' }
 ```
 
+## 🔒 Custom Hasher
+
+A [hasher](https://github.com/multiformats/js-multiformats?tab=readme-ov-file#multihash-hashers) is used to determine the immutable address of the content (aka the [**CID**](https://github.com/multiformats/cid?tab=readme-ov-file#what-is-it)) being imported into helia. The default hasher used by the methods above is [sha2-256 multihash](https://github.com/multiformats/js-multiformats?tab=readme-ov-file#multihash-hashers-1), but others can be provided with [AddOptions](https://ipfs.github.io/helia/interfaces/_helia_dag_cbor.AddOptions.html). This is useful for applications that require hashers with specific properties; so in most cases keeping the default is recommended.
+
+> **Changing the hasher will cause a different CID to be returned for the same content! In other words: the same content imported with different hashers is treated like unique content with a unique address.**
+
+```js
+import { createHelia } from 'helia'
+import { dagCbor } from '@helia/dag-cbor'
+import { sha512 } from 'multiformats/hashes/sha2'
+
+const helia = await createHelia()
+const d = dagCbor(helia)
+
+const object1 = { hello: 'world' }
+
+const cidWithSHA256 = await d.add(object1)
+const cidWithSHA512 = await d.add(object1, {
+  hasher: sha512
+})
+
+/** The same objects with different CIDs are treated as different objects */
+
+console.log(cidWithSHA256)
+// CID(bafyreidykglsfhoixmivffc5uwhcgshx4j465xwqntbmu43nb2dzqwfvae)
+console.log(cidWithSHA512)
+// CID(bafyrgqhai26anf3i7pips7q22coa4sz2fr4gk4q4sqdtymvvjyginfzaqewveaeqdh524nsktaq43j65v22xxrybrtertmcfxufdam3da3hbk)
+
+const retrievedObject1 = await d.get(cidWithSHA256)
+const retrievedObject2 = await d.get(cidWithSHA512)
+
+console.log(retrievedObject1)
+// { hello: 'world' }
+console.log(retrievedObject2)
+// { hello: 'world' }
+```
+
 # 🐾 Next steps
 
 Check out the [helia-examples](https://github.com/ipfs-examples/helia-examples)
@@ -123,7 +160,7 @@ Check out the [Helia examples repo](https://github.com/ipfs-examples/helia-examp
 
 # 📒 API Docs
 
-- https://ipfs.github.io/helia
+- <https://ipfs.github.io/helia>
 
 # 📐 System diagram
 
@@ -195,7 +232,7 @@ There are several other modules available outside this repo:
 - [`@helia/delegated-routing-v1-http-api`](https://github.com/ipfs/helia-delegated-routing-v1-http-api) An implementation of the [Delegated Routing v1 HTTP API](https://specs.ipfs.tech/routing/http-routing-v1/) including a server and a client
 - [Helia WNFS](https://github.com/shovelers/helia-wnfs) a [WNFS](https://guide.fission.codes/developers/webnative/file-system-wnfs) implementation built on top of Helia
 - [`@helia/remote-pinning`](https://github.com/ipfs/helia-remote-pinning) A Helia client for communicating with [IPFS Pinning Services](https://ipfs.github.io/pinning-services-api-spec/)
-- [`@helia/http-gateway`](https://github.com/ipfs/helia-http-gateway) An implentation of the [IPFS HTTP Gateway API](https://docs.ipfs.tech/concepts/ipfs-gateway/#gateway-types) built with Helia
+- [`@helia/http-gateway`](https://github.com/ipfs/helia-http-gateway) An implementation of the [IPFS HTTP Gateway API](https://docs.ipfs.tech/concepts/ipfs-gateway/#gateway-types) built with Helia
 
 # 📣 Project status
 
@@ -240,5 +277,5 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 Licensed under either of
 
-- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+- Apache 2.0, ([LICENSE-APACHE](https://github.com/ipfs/helia/blob/main/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](https://github.com/ipfs/helia/blob/main/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)

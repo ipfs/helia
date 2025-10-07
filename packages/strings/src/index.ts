@@ -22,12 +22,13 @@
  * ```
  */
 
+import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { GetBlockProgressEvents, PutBlockProgressEvents } from '@helia/interface/blocks'
+import type { GetBlockProgressEvents, ProviderOptions, PutBlockProgressEvents } from '@helia/interface/blocks'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { BlockCodec } from 'multiformats/codecs/interface'
@@ -40,10 +41,9 @@ export interface StringsComponents {
 
 export interface AddOptions extends AbortOptions, ProgressOptions<PutBlockProgressEvents> {
   hasher: MultihashHasher
-  codec: BlockCodec<any, unknown>
 }
 
-export interface GetOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents> {
+export interface GetOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents>, ProviderOptions {
   codec: BlockCodec<any, unknown>
 }
 
@@ -105,8 +105,7 @@ class DefaultStrings implements Strings {
   async add (string: string, options: Partial<AddOptions> = {}): Promise<CID> {
     const buf = uint8ArrayFromString(string)
     const hash = await (options.hasher ?? sha256).digest(buf)
-    const codec = options.codec ?? raw
-    const cid = CID.createV1(codec.code, hash)
+    const cid = CID.createV1(raw.code, hash)
 
     await this.components.blockstore.put(cid, buf, options)
 
@@ -114,7 +113,7 @@ class DefaultStrings implements Strings {
   }
 
   async get (cid: CID, options: Partial<GetOptions> = {}): Promise<string> {
-    const buf = await this.components.blockstore.get(cid, options)
+    const buf = await toBuffer(this.components.blockstore.get(cid, options))
 
     return uint8ArrayToString(buf)
   }

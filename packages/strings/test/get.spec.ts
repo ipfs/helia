@@ -2,9 +2,9 @@
 
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
-import * as json from 'multiformats/codecs/json'
 import { identity } from 'multiformats/hashes/identity'
-import { strings, type Strings } from '../src/index.js'
+import { strings } from '../src/index.js'
+import type { Strings } from '../src/index.js'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 
@@ -30,15 +30,6 @@ describe('get', () => {
     const input = 'hello world'
     const cid = await str.add(input, {
       hasher: identity
-    })
-
-    await expect(str.get(cid)).to.eventually.equal(input)
-  })
-
-  it('gets a string with a non-default block codec', async () => {
-    const input = 'hello world'
-    const cid = await str.add(input, {
-      codec: json
     })
 
     await expect(str.get(cid)).to.eventually.equal(input)

@@ -8,10 +8,22 @@ updates:
   open-pull-requests-limit: 20
   commit-message:
     prefix: "deps"
-    prefix-development: "deps(dev)"
+    prefix-development: "chore"
+  groups:
+    interplanetary-deps: # Helia/libp2p deps
+      patterns:
+        - "*helia*"
+        - "*libp2p*"
+        - "*multiformats*"
+        - "*blockstore*"
+        - "*datastore*"
+    kubo-deps: # kubo deps
+      patterns:
+        - "*kubo*"
+        - "ipfsd-ctl"
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
     interval: "weekly"
   commit-message:
-    prefix: ci
+    prefix: chore

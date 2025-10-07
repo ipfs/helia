@@ -31,14 +31,15 @@ import { unixfs } from '@helia/unixfs'
 import { AlreadyExistsError, DoesNotExistError, InvalidParametersError, NotADirectoryError } from '@helia/unixfs/errors'
 import { logger } from '@libp2p/logger'
 import { Key } from 'interface-datastore'
-import { UnixFS as IPFSUnixFS, type Mtime } from 'ipfs-unixfs'
+import { UnixFS as IPFSUnixFS } from 'ipfs-unixfs'
 import { CID } from 'multiformats/cid'
 import { basename } from './utils/basename.js'
-import type { AddOptions, CatOptions, ChmodOptions, CpOptions, LsOptions, MkdirOptions as UnixFsMkdirOptions, RmOptions as UnixFsRmOptions, StatOptions, TouchOptions, UnixFS, UnixFSStats } from '@helia/unixfs'
+import type { AddOptions, CatOptions, ChmodOptions, CpOptions, LsOptions, MkdirOptions as UnixFsMkdirOptions, RmOptions as UnixFsRmOptions, StatOptions, TouchOptions, UnixFS, FileStats, DirectoryStats, RawStats, ExtendedStatOptions, ExtendedFileStats, ExtendedDirectoryStats, ExtendedRawStats } from '@helia/unixfs'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
-import type { UnixFSEntry } from 'ipfs-unixfs-exporter'
+import type { Mtime } from 'ipfs-unixfs'
+import type { UnixFSEntry, UnixFSBasicEntry } from 'ipfs-unixfs-exporter'
 import type { ByteStream } from 'ipfs-unixfs-importer'
 
 const log = logger('helia:mfs')
@@ -177,6 +178,7 @@ export interface MFS {
    * ```
    */
   ls(path?: string, options?: Partial<LsOptions>): AsyncIterable<UnixFSEntry>
+  ls(path: string, options: Partial<LsOptions> & { extended: false }): AsyncIterable<UnixFSBasicEntry>
 
   /**
    * Make a new directory in your MFS.
@@ -213,7 +215,8 @@ export interface MFS {
    * console.info(stats)
    * ```
    */
-  stat(path: string, options?: Partial<StatOptions>): Promise<UnixFSStats>
+  stat(path: string, options?: StatOptions): Promise<FileStats | DirectoryStats | RawStats>
+  stat(path: string, options?: ExtendedStatOptions): Promise<ExtendedFileStats | ExtendedDirectoryStats | ExtendedRawStats>
 
   /**
    * Update the mtime of a UnixFS DAG in your MFS.
@@ -254,6 +257,7 @@ class DefaultMFS implements MFS {
   constructor (components: MFSComponents, init: MFSInit = {}) {
     this.components = components
 
+    // spellchecker:disable-next-line
     this.key = new Key(init.key ?? '/locals/filesroot')
     this.unixfs = unixfs(components)
   }
@@ -276,23 +280,31 @@ class DefaultMFS implements MFS {
   }
 
   async writeBytes (bytes: Uint8Array, path: string, options?: Partial<WriteOptions>): Promise<void> {
-    const cid = await this.unixfs.addFile({
-      content: bytes,
-      mode: options?.mode,
-      mtime: options?.mtime
-    }, options)
+    const cid = await this.unixfs.addBytes(bytes, options)
 
     await this.cp(cid, path, options)
+
+    if (options?.mode != null) {
+      await this.chmod(path, options.mode, options)
+    }
+
+    if (options?.mtime != null) {
+      await this.touch(path, options)
+    }
   }
 
   async writeByteStream (bytes: ByteStream, path: string, options?: Partial<WriteOptions>): Promise<void> {
-    const cid = await this.unixfs.addFile({
-      content: bytes,
-      mode: options?.mode,
-      mtime: options?.mtime
-    }, options)
+    const cid = await this.unixfs.addByteStream(bytes, options)
 
     await this.cp(cid, path, options)
+
+    if (options?.mode != null) {
+      await this.chmod(path, options.mode, options)
+    }
+
+    if (options?.mtime != null) {
+      await this.touch(path, options)
+    }
   }
 
   async * cat (path: string, options: Partial<CatOptions> = {}): AsyncIterable<Uint8Array> {
@@ -429,7 +441,9 @@ class DefaultMFS implements MFS {
     this.root = await this.#persistPath(trail, options)
   }
 
-  async stat (path: string, options?: Partial<StatOptions>): Promise<UnixFSStats> {
+  async stat (path: string, options?: StatOptions): Promise<FileStats | DirectoryStats | RawStats>
+  async stat (path: string, options?: ExtendedStatOptions): Promise<ExtendedFileStats | ExtendedDirectoryStats | ExtendedRawStats>
+  async stat (path: string, options?: StatOptions | ExtendedStatOptions): Promise<FileStats | DirectoryStats | RawStats | ExtendedFileStats | ExtendedDirectoryStats | ExtendedRawStats> {
     const root = await this.#getRootCID()
 
     const trail = await this.#walkPath(root, path, {
@@ -444,9 +458,7 @@ class DefaultMFS implements MFS {
       throw new DoesNotExistError()
     }
 
-    return this.unixfs.stat(finalEntry.cid, {
-      ...options
-    })
+    return this.unixfs.stat(finalEntry.cid, options)
   }
 
   async touch (path: string, options?: Partial<TouchOptions>): Promise<void> {

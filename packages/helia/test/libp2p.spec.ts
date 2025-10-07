@@ -2,10 +2,11 @@
 
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
-import { createHelia, type HeliaLibp2p } from '../src/index.js'
+import { createHelia } from '../src/index.js'
+import type { Helia } from '@helia/interface'
 
 describe('libp2p', () => {
-  let helia: HeliaLibp2p<any>
+  let helia: Helia
 
   afterEach(async () => {
     if (helia != null) {

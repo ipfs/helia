@@ -25,6 +25,7 @@
  * ```
  */
 
+import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import * as jsonCodec from 'multiformats/codecs/json'
 import { sha256 } from 'multiformats/hashes/sha2'
@@ -119,7 +120,7 @@ class DefaultJSON implements JSON {
       throw new TypeError('The passed CID had an incorrect codec, it may correspond to a non-JSON block')
     }
 
-    const buf = await this.components.blockstore.get(cid, options)
+    const buf = await toBuffer(this.components.blockstore.get(cid, options))
 
     return jsonCodec.decode(buf)
   }

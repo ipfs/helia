@@ -4,12 +4,12 @@ import { kadDHT, removePublicAddressesMapper } from '@libp2p/kad-dht'
 import { sha3512 } from '@multiformats/sha3'
 import { createHelia, libp2pDefaults } from 'helia'
 import type { Libp2p } from '@libp2p/interface'
-import type { DefaultLibp2pServices, HeliaLibp2p } from 'helia'
+import type { DefaultLibp2pServices, Helia } from 'helia'
 import type { Libp2pOptions } from 'libp2p'
 
-export async function createHeliaNode (): Promise<HeliaLibp2p<Libp2p<DefaultLibp2pServices>>>
-export async function createHeliaNode <Services extends Record<string, unknown>> (libp2pOptions: Libp2pOptions<Services>): Promise<HeliaLibp2p<Libp2p<Services & DefaultLibp2pServices>>>
-export async function createHeliaNode (libp2pOptions?: Libp2pOptions): Promise<HeliaLibp2p<Libp2p<DefaultLibp2pServices>>> {
+export async function createHeliaNode (): Promise<Helia<Libp2p<DefaultLibp2pServices>>>
+export async function createHeliaNode <Services extends Record<string, unknown>> (libp2pOptions: Libp2pOptions<Services>): Promise<Helia<Libp2p<Services & DefaultLibp2pServices>>>
+export async function createHeliaNode (libp2pOptions?: Libp2pOptions): Promise<Helia<Libp2p<DefaultLibp2pServices>>> {
   const defaults = libp2pDefaults()
   defaults.addresses = {
     listen: [
@@ -26,25 +26,26 @@ export async function createHeliaNode (libp2pOptions?: Libp2pOptions): Promise<H
       selectors: {
         ipns: ipnsSelector
       },
-      // skips waiting for the initial self-query to find peers
-      allowQueryWithZeroPeers: true,
-
       protocol: '/ipfs/lan/kad/1.0.0',
       peerInfoMapper: removePublicAddressesMapper,
       clientMode: false
     })
   }
 
-  // remove bootstrappers, mdns, etc
+  // remove bootstrapper(s), mdns, etc
   defaults.peerDiscovery = []
 
   // remove services that are not used in tests
   // @ts-expect-error services.autoNAT is not optional
   delete defaults.services.autoNAT
+  // @ts-expect-error services.upnp is not optional
+  delete defaults.services.upnp
   // @ts-expect-error services.dcutr is not optional
   delete defaults.services.dcutr
   // @ts-expect-error services.delegatedRouting is not optional
   delete defaults.services.delegatedRouting
+  // @ts-expect-error services.autoTLS is not optional
+  delete defaults.services.autoTLS
 
   return createHelia<Libp2p<DefaultLibp2pServices>>({
     blockBrokers: [

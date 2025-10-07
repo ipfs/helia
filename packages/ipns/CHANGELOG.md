@@ -1,5 +1,130 @@
 # Changelog
 
+## [8.2.4](https://github.com/ipfs/helia/compare/ipns-v8.2.3...ipns-v8.2.4) (2025-07-22)
+
+
+### Bug Fixes
+
+* flaky test to publish an IPNS record  ([#810](https://github.com/ipfs/helia/issues/810)) ([28a7091](https://github.com/ipfs/helia/commit/28a7091260fda1f711b93318084a65ff3d2f3f8a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.3.2 to ^5.4.0
+
+## [8.2.3](https://github.com/ipfs/helia/compare/ipns-v8.2.2...ipns-v8.2.3) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir to 47.x.x ([#804](https://github.com/ipfs/helia/issues/804)) ([60fbbc2](https://github.com/ipfs/helia/commit/60fbbc2eb08e023e2eac02ae0e89ed143d715084))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.3.1 to ^5.3.2
+
+## [8.2.2](https://github.com/ipfs/helia/compare/ipns-v8.2.1...ipns-v8.2.2) (2025-05-13)
+
+
+### Dependencies
+
+* update all deps ([#792](https://github.com/ipfs/helia/issues/792)) ([d43efc7](https://github.com/ipfs/helia/commit/d43efc7bdfff34071a8e4e22e01f659fbac0b78e))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.3.0 to ^5.3.1
+
+## [8.2.1](https://github.com/ipfs/helia/compare/ipns-v8.2.0...ipns-v8.2.1) (2025-05-13)
+
+
+### Bug Fixes
+
+* propagate ipns failures ([#789](https://github.com/ipfs/helia/issues/789)) ([cd1eb58](https://github.com/ipfs/helia/commit/cd1eb588998ddb1eb17894230cde4a68f9455398))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.2.1 to ^5.3.0
+
+## [8.2.0](https://github.com/ipfs/helia/compare/ipns-v8.1.0...ipns-v8.2.0) (2025-03-13)
+
+
+### Features
+
+* add republish signed ipns records ([#745](https://github.com/ipfs/helia/issues/745)) ([91880b0](https://github.com/ipfs/helia/commit/91880b076fbfa24e5354fb6cda8a556a807f17cc))
+
+
+### Bug Fixes
+
+* align implicit default ttl with specs ([#749](https://github.com/ipfs/helia/issues/749)) ([375796a](https://github.com/ipfs/helia/commit/375796aaead36111c4d663b061bf0edfe01c62ca))
+* handle /ipns/ prefixed keys in republishRecord ([#763](https://github.com/ipfs/helia/issues/763)) ([e6339ed](https://github.com/ipfs/helia/commit/e6339ed3cf86f7d56d1aa098de5e091b322e654e))
+
+
+### Documentation
+
+* add spell checker to ci ([#743](https://github.com/ipfs/helia/issues/743)) ([45ca6bc](https://github.com/ipfs/helia/commit/45ca6bc70b1644028500101044595fa0e2199b07))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.2.0 to ^5.2.1
+
+## [8.1.0](https://github.com/ipfs/helia/compare/ipns-v8.0.2...ipns-v8.1.0) (2025-01-24)
+
+
+### Features
+
+* allow passing custom ttl when publishing ipns ([#723](https://github.com/ipfs/helia/issues/723)) ([12df657](https://github.com/ipfs/helia/commit/12df657aa421c86df53bc54becf1d505b1c145ce))
+
+
+### Bug Fixes
+
+* handle dnslink pointing to CID with peer id (ipns name) ([#722](https://github.com/ipfs/helia/issues/722)) ([2666d64](https://github.com/ipfs/helia/commit/2666d643d8bd90db077095f20edb1924c8594185))
+
+## [8.0.2](https://github.com/ipfs/helia/compare/ipns-v8.0.1...ipns-v8.0.2) (2025-01-14)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.1.0 to ^5.2.0
+
+## [8.0.1](https://github.com/ipfs/helia/compare/ipns-v8.0.0...ipns-v8.0.1) (2024-11-18)
+
+
+### Dependencies
+
+* bump aegir from 44.1.4 to 45.0.1 ([#669](https://github.com/ipfs/helia/issues/669)) ([e58e49c](https://github.com/ipfs/helia/commit/e58e49c6aed8ea9d1e9851435a25e33fdbee3781))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.0.0 to ^5.1.0
+
+## [8.0.0](https://github.com/ipfs/helia/compare/ipns-v7.2.3...ipns-v8.0.0) (2024-10-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* helia now uses libp2p@2.x.x
+
+### Bug Fixes
+
+* add doc-check script and export types used by functions ([#637](https://github.com/ipfs/helia/issues/637)) ([4f14996](https://github.com/ipfs/helia/commit/4f14996a9b976f2b60f4c8fe52a4fd1632420749))
+* update to libp2p@2.x.x ([#630](https://github.com/ipfs/helia/issues/630)) ([ec8bf66](https://github.com/ipfs/helia/commit/ec8bf66dd870b42d6e5ef2b41706102397e0d39a))
+
+
+### Dependencies
+
+* **dev:** bump sinon from 18.0.1 to 19.0.2 ([#634](https://github.com/ipfs/helia/issues/634)) ([23e62e1](https://github.com/ipfs/helia/commit/23e62e16b8962bfe982a1bbb157a144382ca7099))
+* update kad-dht to 14.0.0 ([#648](https://github.com/ipfs/helia/issues/648)) ([60d8c8a](https://github.com/ipfs/helia/commit/60d8c8a9ff2104302d1c87bcf39258f1da33cd45))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^4.3.1 to ^5.0.0
+
 ## [7.2.3](https://github.com/ipfs/helia/compare/ipns-v7.2.2...ipns-v7.2.3) (2024-07-31)
 
 

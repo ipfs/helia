@@ -3,7 +3,8 @@
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { identity } from 'multiformats/hashes/identity'
-import { dagCbor, type DAGCBOR } from '../src/index.js'
+import { dagCbor } from '../src/index.js'
+import type { DAGCBOR } from '../src/index.js'
 import type { Blockstore } from 'interface-blockstore'
 
 describe('put', () => {
@@ -21,6 +22,7 @@ describe('put', () => {
       hello: 'world'
     })
 
+    // spellchecker:disable-next-line
     expect(`${cid}`).to.equal('bafyreidykglsfhoixmivffc5uwhcgshx4j465xwqntbmu43nb2dzqwfvae')
   })
 
@@ -31,6 +33,7 @@ describe('put', () => {
       hasher: identity
     })
 
+    // spellchecker:disable-next-line
     expect(`${cid}`).to.equal('bafyqadnbmvugk3dmn5sxo33snrsa')
   })
 })

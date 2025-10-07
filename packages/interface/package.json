@@ -1,6 +1,6 @@
 {
   "name": "@helia/interface",
-  "version": "4.3.1",
+  "version": "5.4.0",
   "description": "The Helia API",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/interface#readme",
@@ -54,13 +54,10 @@
     "./pins": {
       "types": "./dist/src/pins.d.ts",
       "import": "./dist/src/pins.js"
-    }
-  },
-  "eslintConfig": {
-    "extends": "ipfs",
-    "parserOptions": {
-      "project": true,
-      "sourceType": "module"
+    },
+    "./routing": {
+      "types": "./dist/src/routing.d.ts",
+      "import": "./dist/src/routing.js"
     }
   },
   "scripts": {
@@ -71,16 +68,17 @@
     "build": "aegir build"
   },
   "dependencies": {
-    "@libp2p/interface": "^2.0.0",
-    "@multiformats/dns": "^1.0.1",
-    "interface-blockstore": "^5.2.10",
-    "interface-datastore": "^8.2.11",
-    "interface-store": "^6.0.0",
-    "multiformats": "^13.1.0",
-    "progress-events": "^1.0.0"
+    "@libp2p/interface": "^3.0.2",
+    "@multiformats/dns": "^1.0.9",
+    "@multiformats/multiaddr": "^13.0.1",
+    "interface-blockstore": "^6.0.1",
+    "interface-datastore": "^9.0.2",
+    "interface-store": "^7.0.0",
+    "multiformats": "^13.4.1",
+    "progress-events": "^1.0.1"
   },
   "devDependencies": {
-    "aegir": "^44.0.1"
+    "aegir": "^47.0.22"
   },
   "sideEffects": false
 }

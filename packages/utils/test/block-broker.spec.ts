@@ -6,15 +6,18 @@ import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import delay from 'delay'
 import all from 'it-all'
+import map from 'it-map'
+import toBuffer from 'it-to-buffer'
 import * as raw from 'multiformats/codecs/raw'
 import Sinon from 'sinon'
-import { type StubbedInstance, stubInterface } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { getHasher } from '../src/utils/get-hasher.js'
 import { NetworkedStorage } from '../src/utils/networked-storage.js'
 import { createBlock } from './fixtures/create-block.js'
 import type { BlockBroker } from '@helia/interface/blocks'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
+import type { StubbedInstance } from 'sinon-ts'
 
 describe('block-broker', () => {
   let storage: NetworkedStorage
@@ -57,7 +60,7 @@ describe('block-broker', () => {
 
     expect(await blockstore.has(cid)).to.be.false()
 
-    const returned = await storage.get(cid)
+    const returned = await toBuffer(storage.get(cid))
 
     expect(await blockstore.has(cid)).to.be.true()
     expect(returned).to.equalBytes(block)
@@ -74,12 +77,17 @@ describe('block-broker', () => {
       expect(await blockstore.has(cid)).to.be.false()
     }
 
-    const retrieved = await all(storage.getMany(async function * () {
+    const retrieved = await all(map(storage.getMany(async function * () {
       for (let i = 0; i < count; i++) {
         yield blocks[i].cid
         await delay(10)
       }
-    }()))
+    }()), ({ cid, bytes }) => {
+      return {
+        cid,
+        block: toBuffer(bytes)
+      }
+    }))
 
     expect(retrieved).to.deep.equal(new Array(count).fill(0).map((_, i) => blocks[i]))
 
@@ -105,12 +113,17 @@ describe('block-broker', () => {
       return blocks[2].block
     })
 
-    const retrieved = await all(storage.getMany(async function * () {
+    const retrieved = await all(map(storage.getMany(async function * () {
       for (let i = 0; i < count; i++) {
         yield blocks[i].cid
         await delay(10)
       }
-    }()))
+    }()), ({ cid, bytes }) => {
+      return {
+        cid,
+        block: toBuffer(bytes)
+      }
+    }))
 
     expect(retrieved).to.deep.equal(new Array(count).fill(0).map((_, i) => blocks[i]))
 
@@ -136,7 +149,7 @@ describe('block-broker', () => {
     expect(await blockstore.has(cid)).to.be.false()
 
     try {
-      await storage.get(cid)
+      await toBuffer(storage.get(cid))
       throw new Error('should have thrown')
     } catch (err) {
       const error = err as AggregateError & { errors: Error & { code: string } }

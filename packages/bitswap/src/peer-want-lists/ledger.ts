@@ -1,12 +1,11 @@
-/* eslint-disable max-depth */
+import toBuffer from 'it-to-buffer'
 import { DEFAULT_MAX_SIZE_REPLACE_HAS_WITH_BLOCK } from '../constants.js'
 import { BlockPresenceType, WantType } from '../pb/message.js'
 import { QueuedBitswapMessage } from '../utils/bitswap-message.js'
 import { cidToPrefix } from '../utils/cid-prefix.js'
 import type { Network } from '../network.js'
-import type { ComponentLogger, Logger, PeerId } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, Logger, PeerId } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
-import type { AbortOptions } from 'it-length-prefixed-stream'
 import type { CID } from 'multiformats/cid'
 
 export interface LedgerComponents {
@@ -45,7 +44,7 @@ export interface PeerWantListEntry {
   /**
    * If we don't have the block and we've told them we don't have the block
    */
-  sentDontHave?: boolean
+  sentDoNotHave?: boolean
 }
 
 export class Ledger {
@@ -95,7 +94,7 @@ export class Ledger {
 
     for (const [key, entry] of this.wants.entries()) {
       try {
-        const block = await this.blockstore.get(entry.cid, options)
+        const block = await toBuffer(this.blockstore.get(entry.cid, options))
 
         // do they want the block or just us to tell them we have the block
         if (entry.wantType === WantType.WantHave) {
@@ -138,14 +137,14 @@ export class Ledger {
         }
 
         // we have already told them we don't have the block
-        if (entry.sentDontHave === true) {
+        if (entry.sentDoNotHave === true) {
           continue
         }
 
-        entry.sentDontHave = true
+        entry.sentDoNotHave = true
         message.addBlockPresence(entry.cid, {
           cid: entry.cid.bytes,
-          type: BlockPresenceType.DontHaveBlock
+          type: BlockPresenceType.DoNotHaveBlock
         })
       }
     }

@@ -1,5 +1,135 @@
 # Changelog
 
+## [2.2.0](https://github.com/ipfs/helia/compare/bitswap-v2.1.3...bitswap-v2.2.0) (2025-07-31)
+
+
+### Features
+
+* add block received event ([#837](https://github.com/ipfs/helia/issues/837)) ([7d471a0](https://github.com/ipfs/helia/commit/7d471a027606254f4fb4e1b73d62b8646426237d))
+
+## [2.1.3](https://github.com/ipfs/helia/compare/bitswap-v2.1.2...bitswap-v2.1.3) (2025-07-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.3.2 to ^5.4.0
+    * @helia/utils bumped from ^1.3.2 to ^1.4.0
+
+## [2.1.2](https://github.com/ipfs/helia/compare/bitswap-v2.1.1...bitswap-v2.1.2) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir to 47.x.x ([#804](https://github.com/ipfs/helia/issues/804)) ([60fbbc2](https://github.com/ipfs/helia/commit/60fbbc2eb08e023e2eac02ae0e89ed143d715084))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.3.1 to ^5.3.2
+    * @helia/utils bumped from ^1.3.1 to ^1.3.2
+
+## [2.1.1](https://github.com/ipfs/helia/compare/bitswap-v2.1.0...bitswap-v2.1.1) (2025-05-13)
+
+
+### Dependencies
+
+* update all deps ([#792](https://github.com/ipfs/helia/issues/792)) ([d43efc7](https://github.com/ipfs/helia/commit/d43efc7bdfff34071a8e4e22e01f659fbac0b78e))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.3.0 to ^5.3.1
+    * @helia/utils bumped from ^1.3.0 to ^1.3.1
+
+## [2.1.0](https://github.com/ipfs/helia/compare/bitswap-v2.0.5...bitswap-v2.1.0) (2025-05-13)
+
+
+### Features
+
+* pass initial providers to session ([#777](https://github.com/ipfs/helia/issues/777)) ([3d77369](https://github.com/ipfs/helia/commit/3d773698389deb70e1a0181eb81fb8b5992857b8))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.2.1 to ^5.3.0
+    * @helia/utils bumped from ^1.2.2 to ^1.3.0
+
+## [2.0.5](https://github.com/ipfs/helia/compare/bitswap-v2.0.4...bitswap-v2.0.5) (2025-03-13)
+
+
+### Documentation
+
+* add spell checker to ci ([#743](https://github.com/ipfs/helia/issues/743)) ([45ca6bc](https://github.com/ipfs/helia/commit/45ca6bc70b1644028500101044595fa0e2199b07))
+
+
+### Dependencies
+
+* bump it-length-prefixed from 9.1.1 to 10.0.1 ([#740](https://github.com/ipfs/helia/issues/740)) ([ac7185a](https://github.com/ipfs/helia/commit/ac7185af8f0da0782f6273fba76ccfe9427d2fa4))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.2.0 to ^5.2.1
+    * @helia/utils bumped from ^1.2.1 to ^1.2.2
+
+## [2.0.4](https://github.com/ipfs/helia/compare/bitswap-v2.0.3...bitswap-v2.0.4) (2025-02-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^1.2.0 to ^1.2.1
+
+## [2.0.3](https://github.com/ipfs/helia/compare/bitswap-v2.0.2...bitswap-v2.0.3) (2025-01-14)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.1.0 to ^5.2.0
+    * @helia/utils bumped from ^1.1.0 to ^1.2.0
+
+## [2.0.2](https://github.com/ipfs/helia/compare/bitswap-v2.0.1...bitswap-v2.0.2) (2024-11-18)
+
+
+### Dependencies
+
+* bump aegir from 44.1.4 to 45.0.1 ([#669](https://github.com/ipfs/helia/issues/669)) ([e58e49c](https://github.com/ipfs/helia/commit/e58e49c6aed8ea9d1e9851435a25e33fdbee3781))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.0.0 to ^5.1.0
+    * @helia/utils bumped from ^1.0.1 to ^1.1.0
+
+## [2.0.1](https://github.com/ipfs/helia/compare/bitswap-v2.0.0...bitswap-v2.0.1) (2024-10-23)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^1.0.0 to ^1.0.1
+
+## [2.0.0](https://github.com/ipfs/helia/compare/bitswap-v1.1.4...bitswap-v2.0.0) (2024-10-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* helia now uses libp2p@2.x.x
+
+### Bug Fixes
+
+* add doc-check script and export types used by functions ([#637](https://github.com/ipfs/helia/issues/637)) ([4f14996](https://github.com/ipfs/helia/commit/4f14996a9b976f2b60f4c8fe52a4fd1632420749))
+* update to libp2p@2.x.x ([#630](https://github.com/ipfs/helia/issues/630)) ([ec8bf66](https://github.com/ipfs/helia/commit/ec8bf66dd870b42d6e5ef2b41706102397e0d39a))
+
+
+### Dependencies
+
+* **dev:** bump sinon from 18.0.1 to 19.0.2 ([#634](https://github.com/ipfs/helia/issues/634)) ([23e62e1](https://github.com/ipfs/helia/commit/23e62e16b8962bfe982a1bbb157a144382ca7099))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^4.3.1 to ^5.0.0
+    * @helia/utils bumped from ^0.3.3 to ^1.0.0
+
 ## [1.1.4](https://github.com/ipfs/helia/compare/bitswap-v1.1.3...bitswap-v1.1.4) (2024-09-13)
 
 
