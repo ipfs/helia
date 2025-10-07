@@ -5,7 +5,7 @@
  * modules such as `helia`, `@helia/http`, etc.
  */
 
-import { contentRoutingSymbol, peerRoutingSymbol, start, stop } from '@libp2p/interface'
+import { contentRoutingSymbol, peerRoutingSymbol, start, stop, TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { dns } from '@multiformats/dns'
 import drain from 'it-drain'
@@ -18,7 +18,7 @@ import { getCodec } from './utils/get-codec.js'
 import { getHasher } from './utils/get-hasher.js'
 import { NetworkedStorage } from './utils/networked-storage.js'
 import type { BlockStorageInit } from './storage.js'
-import type { Await, CodecLoader, GCOptions, HasherLoader, Helia as HeliaInterface, Routing } from '@helia/interface'
+import type { Await, CodecLoader, GCOptions, HasherLoader, Helia as HeliaInterface, HeliaEvents, Routing } from '@helia/interface'
 import type { BlockBroker } from '@helia/interface/blocks'
 import type { Pins } from '@helia/interface/pins'
 import type { ComponentLogger, Libp2p, Logger, Metrics } from '@libp2p/interface'
@@ -187,6 +187,7 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
   public libp2p: T
   public blockstore: BlockStorage
   public datastore: Datastore
+  public events: TypedEventEmitter<HeliaEvents<T>>
   public pins: Pins
   public logger: ComponentLogger
   public routing: Routing
@@ -204,6 +205,7 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
     this.dns = init.dns ?? dns()
     this.metrics = init.metrics
     this.libp2p = init.libp2p
+    this.events = new TypedEventEmitter<HeliaEvents<T>>()
 
     // @ts-expect-error routing is not set
     const components: Components = {
@@ -261,6 +263,7 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
       this.routing,
       this.libp2p
     )
+    this.events.dispatchEvent(new CustomEvent('start', { detail: this }))
   }
 
   async stop (): Promise<void> {
@@ -270,6 +273,7 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
       this.routing,
       this.libp2p
     )
+    this.events.dispatchEvent(new CustomEvent('stop', { detail: this }))
   }
 
   async gc (options: GCOptions = {}): Promise<void> {

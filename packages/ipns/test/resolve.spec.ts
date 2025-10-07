@@ -1,21 +1,18 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
+import { start, stop } from '@libp2p/interface'
 import { Record } from '@libp2p/kad-dht'
-import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
-import { MemoryDatastore } from 'datastore-core'
 import { Key } from 'interface-datastore'
 import { createIPNSRecord, createIPNSRecordWithExpiration, marshalIPNSRecord, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from 'ipns'
 import drain from 'it-drain'
 import { CID } from 'multiformats/cid'
 import Sinon from 'sinon'
-import { stubInterface } from 'sinon-ts'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { ipns } from '../src/index.js'
-import type { IPNS, IPNSRouting } from '../src/index.js'
+import { createIPNS } from './fixtures/create-ipns.js'
+import type { IPNS } from '../src/index.js'
 import type { Routing } from '@helia/interface'
-import type { DNS } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
 import type { StubbedInstance } from 'sinon-ts'
 
@@ -23,40 +20,34 @@ const cid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
 
 describe('resolve', () => {
   let name: IPNS
-  let customRouting: StubbedInstance<IPNSRouting>
+  let customRouting: any
   let datastore: Datastore
   let heliaRouting: StubbedInstance<Routing>
-  let dns: StubbedInstance<DNS>
 
   beforeEach(async () => {
-    datastore = new MemoryDatastore()
-    customRouting = stubInterface<IPNSRouting>()
-    customRouting.get.throws(new Error('Not found'))
-    heliaRouting = stubInterface<Routing>()
-    dns = stubInterface<DNS>()
+    const result = await createIPNS()
+    name = result.name
+    customRouting = result.customRouting
+    heliaRouting = result.heliaRouting
+    datastore = result.datastore
 
-    name = ipns({
-      datastore,
-      routing: heliaRouting,
-      dns,
-      logger: defaultLogger()
-    }, {
-      routers: [
-        customRouting
-      ]
-    })
+    await start(name)
+  })
+
+  afterEach(async () => {
+    await stop(name)
   })
 
   it('should resolve a record', async () => {
-    const key = await generateKeyPair('Ed25519')
-    const record = await name.publish(key, cid)
+    const keyName = 'test-key'
+    const { record, publicKey } = await name.publish(keyName, cid)
 
     // empty the datastore to ensure we resolve using the routing
     await drain(datastore.deleteMany(datastore.queryKeys({})))
 
     heliaRouting.get.resolves(marshalIPNSRecord(record))
 
-    const resolvedValue = await name.resolve(key.publicKey)
+    const resolvedValue = await name.resolve(publicKey)
     expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
 
     expect(heliaRouting.get.called).to.be.true()
@@ -64,13 +55,13 @@ describe('resolve', () => {
   })
 
   it('should resolve a record offline', async () => {
-    const key = await generateKeyPair('Ed25519')
-    await name.publish(key, cid)
+    const keyName = 'test-key'
+    const { publicKey } = await name.publish(keyName, cid)
 
     expect(heliaRouting.put.called).to.be.true()
     expect(customRouting.put.called).to.be.true()
 
-    const resolvedValue = await name.resolve(key.publicKey, {
+    const resolvedValue = await name.resolve(publicKey, {
       offline: true
     })
     expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
@@ -83,12 +74,12 @@ describe('resolve', () => {
     const cachePutSpy = Sinon.spy(datastore, 'put')
     const cacheGetSpy = Sinon.spy(datastore, 'get')
 
-    const key = await generateKeyPair('Ed25519')
-    const record = await name.publish(key, cid)
+    const keyName = 'test-key'
+    const { record, publicKey } = await name.publish(keyName, cid)
 
     heliaRouting.get.resolves(marshalIPNSRecord(record))
 
-    const resolvedValue = await name.resolve(key.publicKey, {
+    const resolvedValue = await name.resolve(publicKey, {
       nocache: true
     })
     expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
@@ -103,10 +94,10 @@ describe('resolve', () => {
   it('should retrieve from local cache when resolving a record', async () => {
     const cacheGetSpy = Sinon.spy(datastore, 'get')
 
-    const key = await generateKeyPair('Ed25519')
-    await name.publish(key, cid)
+    const keyName = 'test-key'
+    const { publicKey } = await name.publish(keyName, cid)
 
-    const resolvedValue = await name.resolve(key.publicKey)
+    const resolvedValue = await name.resolve(publicKey)
     expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
 
     expect(heliaRouting.get.called).to.be.false()
@@ -115,31 +106,33 @@ describe('resolve', () => {
   })
 
   it('should resolve a recursive record', async () => {
-    const key1 = await generateKeyPair('Ed25519')
-    const key2 = await generateKeyPair('Ed25519')
-    await name.publish(key2, cid)
-    await name.publish(key1, key2.publicKey)
+    const keyName1 = 'key1'
+    const keyName2 = 'key2'
 
-    const resolvedValue = await name.resolve(key1.publicKey)
+    const { publicKey: publicKey2 } = await name.publish(keyName2, cid)
+    const { publicKey: publicKey1 } = await name.publish(keyName1, publicKey2)
+
+    const resolvedValue = await name.resolve(publicKey1)
     expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
   })
 
   it('should resolve a recursive record with path', async () => {
-    const key1 = await generateKeyPair('Ed25519')
-    const key2 = await generateKeyPair('Ed25519')
-    await name.publish(key2, cid)
-    await name.publish(key1, key2.publicKey)
+    const keyName1 = 'key1'
+    const keyName2 = 'key2'
 
-    const resolvedValue = await name.resolve(key1.publicKey)
+    const { publicKey: publicKey2 } = await name.publish(keyName2, cid)
+    const { publicKey: publicKey1 } = await name.publish(keyName1, publicKey2)
+
+    const resolvedValue = await name.resolve(publicKey1)
     expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
   })
 
   it('should emit progress events', async function () {
     const onProgress = Sinon.stub()
-    const key = await generateKeyPair('Ed25519')
-    await name.publish(key, cid)
+    const keyName = 'test-key'
+    const { publicKey } = await name.publish(keyName, cid)
 
-    await name.resolve(key.publicKey, {
+    await name.resolve(publicKey, {
       onProgress
     })
 
@@ -190,18 +183,13 @@ describe('resolve', () => {
   })
 
   it('should include IPNS record in result', async () => {
-    const key = await generateKeyPair('Ed25519')
-    await name.publish(key, cid)
+    const keyName = 'test-key'
+    const { record, publicKey } = await name.publish(keyName, cid)
 
-    const customRoutingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
-    const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
-    const buf = await datastore.get(dhtKey)
-    const dhtRecord = Record.deserialize(buf)
-    const record = unmarshalIPNSRecord(dhtRecord.value)
+    const result = await name.resolve(publicKey)
 
-    const result = await name.resolve(key.publicKey)
-
-    expect(result).to.have.deep.property('record', record)
+    expect(result).to.have.deep.property('record')
+    expect(marshalIPNSRecord(result.record)).to.deep.equal(marshalIPNSRecord(record))
   })
 
   it('should not search the routing for updated IPNS records when a locally cached copy is within the TTL', async () => {

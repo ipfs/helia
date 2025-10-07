@@ -72,6 +72,8 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
       const cid = CID.createV1(raw.code, digest)
 
       const privateKey = await generateKeyPair('Ed25519')
+      const keyName = 'my-ipns-key'
+      await helia.libp2p.services.keychain.importKey(keyName, privateKey)
 
       // first call to pubsub resolver will fail but we should trigger
       // subscribing pubsub for updates
@@ -104,7 +106,7 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
       })
 
       // publish should now succeed
-      await name.publish(privateKey, cid)
+      await name.publish(keyName, cid)
 
       // kubo should now be able to resolve IPNS name instantly
       const resolved = await last(kubo.api.name.resolve(privateKey.publicKey.toString(), {

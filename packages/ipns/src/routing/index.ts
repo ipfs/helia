@@ -1,11 +1,12 @@
 import type { HeliaRoutingProgressEvents } from './helia.js'
-import type { DatastoreProgressEvents } from './local-store.js'
+import type { DatastoreProgressEvents } from '../index.js'
 import type { PubSubProgressEvents } from './pubsub.js'
+import type { IPNSPublishMetadata } from '../pb/metadata.ts'
 import type { AbortOptions } from '@libp2p/interface'
 import type { ProgressOptions } from 'progress-events'
 
 export interface PutOptions extends AbortOptions, ProgressOptions {
-
+  metadata?: IPNSPublishMetadata
 }
 
 export interface GetOptions extends AbortOptions, ProgressOptions {
