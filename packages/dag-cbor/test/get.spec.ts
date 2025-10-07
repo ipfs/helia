@@ -2,11 +2,11 @@
 
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
+import { CID } from 'multiformats/cid'
 import { identity } from 'multiformats/hashes/identity'
 import { dagCbor } from '../src/index.js'
 import type { DAGCBOR } from '../src/index.js'
 import type { Blockstore } from 'interface-blockstore'
-import type { CID } from 'multiformats/cid'
 
 describe('get', () => {
   let blockstore: Blockstore
@@ -39,5 +39,11 @@ describe('get', () => {
     })
 
     await expect(d.get(cid)).to.eventually.deep.equal(input)
+  })
+
+  it('rejects if CID codec is not equal to DAG-CBOR codec', async () => {
+    const rawCID = CID.createV1(0x55, cid.multihash)
+    await expect(d.get(rawCID)).to.eventually.be.rejected
+      .with.property('name', 'InvalidCodecError')
   })
 })

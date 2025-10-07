@@ -58,7 +58,9 @@ describe('@helia/dag-json', () => {
 
   it('should add to kubo and fetch from helia', async () => {
     const input = { hello: 'world' }
-    const cid = await kubo.api.block.put(codec.encode(input))
+    const cid = await kubo.api.block.put(codec.encode(input), {
+      format: 'dag-json'
+    })
     const output = await d.get(CID.parse(cid.toString()))
 
     expect(output).to.deep.equal(input)

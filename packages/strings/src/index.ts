@@ -22,6 +22,7 @@
  * ```
  */
 
+import { InvalidCodecError } from '@helia/interface'
 import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
@@ -113,6 +114,12 @@ class DefaultStrings implements Strings {
   }
 
   async get (cid: CID, options: Partial<GetOptions> = {}): Promise<string> {
+    // allow raw, JSON and DAG-JSON - the user can drop down to the blockstore
+    // API if they need anything else
+    if (cid.code !== raw.code && cid.code !== 0x0129 && cid.code !== 0x0200) {
+      throw new InvalidCodecError('The passed CID had an incorrect codec, it may correspond to a block data that cannot be interpreted as a string')
+    }
+
     const buf = await toBuffer(this.components.blockstore.get(cid, options))
 
     return uint8ArrayToString(buf)

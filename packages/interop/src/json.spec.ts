@@ -58,7 +58,9 @@ describe('@helia/json', () => {
 
   it('should add to kubo and fetch from helia', async () => {
     const input = { hello: 'world' }
-    const cid = await kubo.api.block.put(jsonCodec.encode(input))
+    const cid = await kubo.api.block.put(jsonCodec.encode(input), {
+      format: 'json'
+    })
     const output = await j.get(CID.parse(cid.toString()))
 
     expect(output).to.deep.equal(input)

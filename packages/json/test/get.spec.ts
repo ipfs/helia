@@ -44,6 +44,6 @@ describe('get', () => {
   it('rejects if CID codec is not equal to JSON codec', async () => {
     const rawCID = CID.createV1(0x55, cid.multihash)
     await expect(j.get(rawCID)).to.eventually.be.rejected
-      .with.property('message', 'The passed CID had an incorrect codec, it may correspond to a non-JSON block')
+      .with.property('name', 'InvalidCodecError')
   })
 })
