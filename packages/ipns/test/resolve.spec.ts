@@ -3,6 +3,7 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { start, stop } from '@libp2p/interface'
 import { Record } from '@libp2p/kad-dht'
+import { peerIdFromCID } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { Key } from 'interface-datastore'
 import { createIPNSRecord, createIPNSRecordWithExpiration, marshalIPNSRecord, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from 'ipns'
@@ -48,6 +49,39 @@ describe('resolve', () => {
     heliaRouting.get.resolves(marshalIPNSRecord(record))
 
     const resolvedValue = await name.resolve(publicKey)
+    expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
+
+    expect(heliaRouting.get.called).to.be.true()
+    expect(customRouting.get.called).to.be.true()
+  })
+
+  it('should resolve a record using a cid', async () => {
+    const keyName = 'test-key'
+    const { record, publicKey } = await name.publish(keyName, cid)
+
+    // empty the datastore to ensure we resolve using the routing
+    await drain(datastore.deleteMany(datastore.queryKeys({})))
+
+    heliaRouting.get.resolves(marshalIPNSRecord(record))
+
+    const resolvedValue = await name.resolve(publicKey.toCID())
+    expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
+
+    expect(heliaRouting.get.called).to.be.true()
+    expect(customRouting.get.called).to.be.true()
+  })
+
+  it('should resolve a record using a PeerId', async () => {
+    const keyName = 'test-key'
+    const { record, publicKey } = await name.publish(keyName, cid)
+
+    // empty the datastore to ensure we resolve using the routing
+    await drain(datastore.deleteMany(datastore.queryKeys({})))
+
+    heliaRouting.get.resolves(marshalIPNSRecord(record))
+
+    const peerId = peerIdFromCID(publicKey.toCID())
+    const resolvedValue = await name.resolve(peerId)
     expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
 
     expect(heliaRouting.get.called).to.be.true()

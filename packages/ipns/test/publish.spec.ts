@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import { start, stop } from '@libp2p/interface'
+import { peerIdFromCID } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { base36 } from 'multiformats/bases/base36'
 import { CID } from 'multiformats/cid'
@@ -93,7 +94,7 @@ describe('publish', () => {
     expect(onProgress).to.have.property('called', true)
   })
 
-  it('should publish recursively', async () => {
+  it('should publish recursively using a public key', async () => {
     const keyName1 = 'test-key-6'
     const record = await name.publish(keyName1, cid, {
       offline: true
@@ -108,7 +109,83 @@ describe('publish', () => {
 
     expect(recursiveRecord.record.value).to.equal(`/ipns/${record.publicKey.toCID().toString(base36)}`)
 
-    const recursiveResult = await name.resolve(record.publicKey)
+    const recursiveResult = await name.resolve(recursiveRecord.publicKey)
+    expect(recursiveResult.cid.toString()).to.equal(cid.toV1().toString())
+  })
+
+  it('should publish recursively using a libp2p-key CID', async () => {
+    const keyName1 = 'test-key-6'
+    const record = await name.publish(keyName1, cid, {
+      offline: true
+    })
+
+    expect(record.record.value).to.equal(`/ipfs/${cid.toV1().toString()}`)
+
+    const keyName2 = 'test-key-7'
+    const recursiveRecord = await name.publish(keyName2, record.publicKey.toCID(), {
+      offline: true
+    })
+
+    expect(recursiveRecord.record.value).to.equal(`/ipns/${record.publicKey.toCID().toString(base36)}`)
+
+    const recursiveResult = await name.resolve(recursiveRecord.publicKey)
+    expect(recursiveResult.cid.toString()).to.equal(cid.toV1().toString())
+  })
+
+  it('should publish recursively using a multihash', async () => {
+    const keyName1 = 'test-key-8'
+    const record = await name.publish(keyName1, cid, {
+      offline: true
+    })
+
+    expect(record.record.value).to.equal(`/ipfs/${cid.toV1().toString()}`)
+
+    const keyName2 = 'test-key-9'
+    const recursiveRecord = await name.publish(keyName2, record.publicKey.toCID().multihash, {
+      offline: true
+    })
+
+    expect(recursiveRecord.record.value).to.equal(`/ipns/${base36.encode(record.publicKey.toCID().multihash.bytes)}`)
+
+    const recursiveResult = await name.resolve(recursiveRecord.publicKey)
+    expect(recursiveResult.cid.toString()).to.equal(cid.toV1().toString())
+  })
+
+  it('should publish recursively using a PeerId key', async () => {
+    const keyName1 = 'test-key-10'
+    const record = await name.publish(keyName1, cid, {
+      offline: true
+    })
+
+    expect(record.record.value).to.equal(`/ipfs/${cid.toV1().toString()}`)
+
+    const keyName2 = 'test-key-11'
+    const recursiveRecord = await name.publish(keyName2, peerIdFromCID(record.publicKey.toCID()), {
+      offline: true
+    })
+
+    expect(recursiveRecord.record.value).to.equal(`/ipns/${record.publicKey.toCID().toString(base36)}`)
+
+    const recursiveResult = await name.resolve(recursiveRecord.publicKey)
+    expect(recursiveResult.cid.toString()).to.equal(cid.toV1().toString())
+  })
+
+  it('should publish recursively using a string IPNS key', async () => {
+    const keyName1 = 'test-key-10'
+    const record = await name.publish(keyName1, cid, {
+      offline: true
+    })
+
+    expect(record.record.value).to.equal(`/ipfs/${cid.toV1().toString()}`)
+
+    const keyName2 = 'test-key-11'
+    const recursiveRecord = await name.publish(keyName2, `/ipns/${record.publicKey.toCID().toString(base36)}`, {
+      offline: true
+    })
+
+    expect(recursiveRecord.record.value).to.equal(`/ipns/${record.publicKey.toCID().toString(base36)}`)
+
+    const recursiveResult = await name.resolve(recursiveRecord.publicKey)
     expect(recursiveResult.cid.toString()).to.equal(cid.toV1().toString())
   })
 
@@ -116,7 +193,7 @@ describe('publish', () => {
     const path = '/foo/bar/baz'
     const fullPath = `/ipfs/${cid}/${path}`
 
-    const keyName = 'test-key-8'
+    const keyName = 'test-key-12'
     const record = await name.publish(keyName, fullPath, {
       offline: true
     })
