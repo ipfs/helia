@@ -97,9 +97,14 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
       deferred.resolve(evt.detail.result)
     })
     queue.addEventListener('idle', () => {
-      if (foundBlock || options.signal?.aborted === true) {
+      if (foundBlock) {
         this.log.trace('session idle, found block')
         // we either found the block or the user gave up
+        return
+      }
+
+      if (options.signal?.aborted === true) {
+        this.log.trace('session idle, signal aborted')
         return
       }
 
