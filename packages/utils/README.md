@@ -30,7 +30,8 @@ repo and examine the changes made.
 
 -->
 
-This module contains utility code that is shared between various Helia modules such as `helia`, `@helia/http`, etc.
+This module contains utility code that is shared between various Helia
+modules such as `helia`, `@helia/http`, etc.
 
 # Install
 

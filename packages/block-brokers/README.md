@@ -30,30 +30,31 @@ repo and examine the changes made.
 
 -->
 
+This module contains Helia block brokers, currently for [bitswap](https://docs.ipfs.tech/concepts/bitswap/)
+and [Trustless Gateways](https://specs.ipfs.tech/http-gateways/trustless-gateway/).
+
 ## Trustless Gateway Block Broker
 
-The TrustlessGatewayBlockBroker allows customizing fetch requests to HTTP gateways.
+The TrustlessGatewayBlockBroker fetches blocks from HTTP gateways.
 
 ## Example - Customizing fetch requests with custom headers
+
+It is possible to modify outgoing requests to (for example) include
+authentication information (such as a JWT token in a header).
 
 ```typescript
 import { createHelia } from 'helia'
 import { trustlessGateway } from '@helia/block-brokers'
-import { httpGatewayRouting } from '@helia/routers'
 import { unixfs } from '@helia/unixfs'
 import { CID } from 'multiformats/cid'
 import { concat } from 'uint8arrays/concat'
 import all from 'it-all'
 
-const routing = httpGatewayRouting({
-  gateways: ['https://ipfs.io', 'https://dweb.link']
-})
-
 const helia = await createHelia({
-  routers: [routing],
   blockBrokers: [
     trustlessGateway({
       transformRequestInit: (requestInit) => {
+        // modify the request init object as required
         requestInit.headers = {
           ...requestInit.headers,
           'User-Agent': 'Helia Example Script'
@@ -64,12 +65,14 @@ const helia = await createHelia({
   ]
 })
 
-const fs = unixfs(helia)
 const cid = CID.parse('bafkreife2klsil6kaxqhvmhgldpsvk5yutzm4i5bgjoq6fydefwtihnesa')
-const chunks = await all(fs.cat(cid))
-const content = concat(chunks)
+const fs = unixfs(helia)
 
-
+for await (const chunk of fs.cat(cid, {
+  signal: AbortSignal.timeout(10_000)
+})) {
+  console.info(chunk)
+}
 ```
 
 # Install

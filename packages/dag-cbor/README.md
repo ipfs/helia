@@ -30,7 +30,7 @@ repo and examine the changes made.
 
 -->
 
-`@helia/dag-cbor` makes working with DAG-CBOR Helia simple & straightforward.
+`@helia/dag-cbor` makes working with DAG-CBOR <https://ipld.io/docs/codecs/known/dag-cbor/> simple & straightforward.
 
 See the DAGCBOR interface for all available operations.
 

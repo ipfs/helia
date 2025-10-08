@@ -155,6 +155,7 @@ const name = ipns(helia, {
  ]
 })
 
+
 // store some data to publish
 const fs = unixfs(helia)
 const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
