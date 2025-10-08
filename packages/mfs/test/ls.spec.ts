@@ -1,11 +1,13 @@
 /* eslint-env mocha */
 
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import all from 'it-all'
-import { type MFS, mfs } from '../src/index.js'
+import { mfs } from '../src/index.js'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
+import type { MFS } from '../src/index.js'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 
@@ -17,8 +19,9 @@ describe('ls', () => {
   beforeEach(async () => {
     blockstore = new MemoryBlockstore()
     datastore = new MemoryDatastore()
+    const logger = defaultLogger()
 
-    fs = mfs({ blockstore, datastore })
+    fs = mfs({ blockstore, datastore, logger })
   })
 
   it('should list mfs root by default', async () => {
@@ -175,5 +178,68 @@ describe('ls', () => {
 
     expect(files.length).to.equal(1)
     expect(files.filter(file => file.name === fileName)).to.be.ok()
+  })
+
+  it('should list a basic entry', async () => {
+    const filePath = '/foo.txt'
+
+    await fs.writeBytes(Uint8Array.from([0, 1, 2, 3]), filePath, {
+      rawLeaves: false,
+      force: true
+    })
+
+    const files = await all(fs.ls(filePath))
+
+    expect(files).to.have.nested.property('[0].type')
+    expect(files).to.have.nested.property('[0].content')
+
+    const basicFiles = await all(fs.ls(filePath, {
+      extended: false
+    }))
+
+    expect(basicFiles).to.not.have.nested.property('[0].type')
+    expect(basicFiles).to.not.have.nested.property('[0].content')
+  })
+
+  it('lists basic files in a directory', async () => {
+    const dirName = 'bar'
+    const dirPath = `/${dirName}`
+    const fileName = 'foo.txt'
+    const filePath = `${dirPath}/${fileName}`
+
+    await fs.writeBytes(Uint8Array.from([0, 1, 2, 3]), filePath, {
+      rawLeaves: false,
+      force: true
+    })
+
+    const files = await all(fs.ls(dirPath))
+
+    expect(files).to.have.nested.property('[0].type')
+    expect(files).to.have.nested.property('[0].content')
+
+    const basicFiles = await all(fs.ls(dirPath, {
+      extended: false
+    }))
+
+    expect(basicFiles).to.not.have.nested.property('[0].type')
+    expect(basicFiles).to.not.have.nested.property('[0].content')
+  })
+
+  it('lists basic contents of a sharded directory', async () => {
+    const shardedDirPath = '/sharded-dir'
+    const shardedDirCid = await createShardedDirectory(blockstore)
+    await fs.cp(shardedDirCid, shardedDirPath)
+
+    const files = await all(fs.ls(shardedDirPath))
+
+    expect(files).to.have.nested.property('[0].type')
+    expect(files).to.have.nested.property('[0].content')
+
+    const basicFiles = await all(fs.ls(shardedDirPath, {
+      extended: false
+    }))
+
+    expect(basicFiles).to.not.have.nested.property('[0].type')
+    expect(basicFiles).to.not.have.nested.property('[0].content')
   })
 })

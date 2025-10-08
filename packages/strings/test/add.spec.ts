@@ -2,9 +2,9 @@
 
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
-import * as json from 'multiformats/codecs/json'
 import { identity } from 'multiformats/hashes/identity'
-import { strings, type Strings } from '../src/index.js'
+import { strings } from '../src/index.js'
+import type { Strings } from '../src/index.js'
 import type { Blockstore } from 'interface-blockstore'
 
 describe('put', () => {
@@ -31,14 +31,5 @@ describe('put', () => {
 
     // spellchecker:disable-next-line
     expect(`${cid}`).to.equal('bafkqac3imvwgy3zao5xxe3de')
-  })
-
-  it('adds a string with a non-default block codec', async () => {
-    const cid = await str.add('hello world', {
-      codec: json
-    })
-
-    // spellchecker:disable-next-line
-    expect(`${cid}`).to.equal('bagaaieraxfgspomtju7arjjokll5u7nl7lcij37dpjjyb3uqrd32zyxpzxuq')
   })
 })

@@ -23,15 +23,16 @@ import { bitswap, trustlessGateway } from '@helia/block-brokers'
 import { httpGatewayRouting, libp2pRouting } from '@helia/routers'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
+import { isLibp2p } from 'libp2p'
 import { createLibp2p } from '../utils/libp2p.js'
-import type { HeliaInit } from '../index.js'
 import type { DefaultLibp2pServices } from '../utils/libp2p-defaults.js'
+import type { HeliaInit } from '@helia/utils'
 import type { Libp2p } from '@libp2p/interface'
 
 /**
  * Create and return the default options used to create a Helia node
  */
-export async function heliaDefaults <T extends Libp2p> (init: Partial<HeliaInit<T>> = {}): Promise<HeliaInit<T> & Required<Pick<HeliaInit, 'libp2p' | 'blockstore'>>> {
+export async function heliaDefaults <T extends Libp2p> (init: Partial<HeliaInit<T>> = {}): Promise<Omit<HeliaInit<T>, 'libp2p'> & { libp2p: T }> {
   const datastore = init.datastore ?? new MemoryDatastore()
   const blockstore = init.blockstore ?? new MemoryBlockstore()
 
@@ -67,19 +68,6 @@ export async function heliaDefaults <T extends Libp2p> (init: Partial<HeliaInit<
       libp2pRouting(libp2p),
       httpGatewayRouting()
     ],
-    metrics: libp2p.metrics,
-    start: init.start ?? true
+    metrics: libp2p.metrics
   }
-}
-
-function isLibp2p (obj: any): obj is Libp2p {
-  if (obj == null) {
-    return false
-  }
-
-  // a non-exhaustive list of methods found on the libp2p object
-  const funcs = ['dial', 'dialProtocol', 'hangUp', 'handle', 'unhandle', 'getMultiaddrs', 'getProtocols']
-
-  // if these are all functions it's probably a libp2p object
-  return funcs.every(m => typeof obj[m] === 'function')
 }

@@ -18,7 +18,7 @@ export class GraphSearch implements TraversalStrategy {
   }
 
   async * traverse <T extends BlockView<any, any, any, 0 | 1>>(cid: CID, block: T): AsyncGenerator<CID, void, undefined> {
-    for await (const [, linkedCid] of block.links()) {
+    for (const [, linkedCid] of block.links()) {
       yield linkedCid
     }
   }

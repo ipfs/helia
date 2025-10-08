@@ -1,14 +1,16 @@
 /* eslint-env mocha */
 
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import { importer } from 'ipfs-unixfs-importer'
 import last from 'it-last'
-import { type MFS, mfs } from '../src/index.js'
+import { mfs } from '../src/index.js'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 import { createSubShardedDirectory } from './fixtures/create-subsharded-directory.js'
 import { smallFile } from './fixtures/files.js'
+import type { MFS } from '../src/index.js'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 
@@ -20,8 +22,9 @@ describe('rm', () => {
   beforeEach(async () => {
     blockstore = new MemoryBlockstore()
     datastore = new MemoryDatastore()
+    const logger = defaultLogger()
 
-    fs = mfs({ blockstore, datastore })
+    fs = mfs({ blockstore, datastore, logger })
   })
 
   it('refuses to remove files without arguments', async () => {

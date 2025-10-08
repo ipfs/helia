@@ -1,13 +1,15 @@
 /* eslint-env mocha */
 
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import drain from 'it-drain'
 import toBuffer from 'it-to-buffer'
-import { mfs, type MFS } from '../src/index.js'
+import { mfs } from '../src/index.js'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 import { smallFile } from './fixtures/files.js'
+import type { MFS } from '../src/index.js'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 
@@ -19,8 +21,9 @@ describe('cat', () => {
   beforeEach(async () => {
     blockstore = new MemoryBlockstore()
     datastore = new MemoryDatastore()
+    const logger = defaultLogger()
 
-    fs = mfs({ blockstore, datastore })
+    fs = mfs({ blockstore, datastore, logger })
   })
 
   it('reads a small file', async () => {

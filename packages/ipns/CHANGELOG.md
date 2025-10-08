@@ -1,5 +1,39 @@
 # Changelog
 
+## [8.2.4](https://github.com/ipfs/helia/compare/ipns-v8.2.3...ipns-v8.2.4) (2025-07-22)
+
+
+### Bug Fixes
+
+* flaky test to publish an IPNS record  ([#810](https://github.com/ipfs/helia/issues/810)) ([28a7091](https://github.com/ipfs/helia/commit/28a7091260fda1f711b93318084a65ff3d2f3f8a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.3.2 to ^5.4.0
+
+## [8.2.3](https://github.com/ipfs/helia/compare/ipns-v8.2.2...ipns-v8.2.3) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir to 47.x.x ([#804](https://github.com/ipfs/helia/issues/804)) ([60fbbc2](https://github.com/ipfs/helia/commit/60fbbc2eb08e023e2eac02ae0e89ed143d715084))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.3.1 to ^5.3.2
+
+## [8.2.2](https://github.com/ipfs/helia/compare/ipns-v8.2.1...ipns-v8.2.2) (2025-05-13)
+
+
+### Dependencies
+
+* update all deps ([#792](https://github.com/ipfs/helia/issues/792)) ([d43efc7](https://github.com/ipfs/helia/commit/d43efc7bdfff34071a8e4e22e01f659fbac0b78e))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.3.0 to ^5.3.1
+
 ## [8.2.1](https://github.com/ipfs/helia/compare/ipns-v8.2.0...ipns-v8.2.1) (2025-05-13)
 
 

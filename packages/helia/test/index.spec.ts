@@ -1,9 +1,10 @@
 /* eslint-env mocha */
 import { expect } from 'aegir/chai'
-import { createHelia, type HeliaLibp2p } from '../src/index.js'
+import { createHelia } from '../src/index.js'
+import type { Helia } from '@helia/interface'
 
 describe('helia', () => {
-  let helia: HeliaLibp2p<any>
+  let helia: Helia
 
   beforeEach(async () => {
     helia = await createHelia()

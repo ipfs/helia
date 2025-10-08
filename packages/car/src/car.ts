@@ -1,10 +1,10 @@
 import { CarWriter } from '@ipld/car'
+import { Queue } from '@libp2p/utils'
 import drain from 'it-drain'
 import map from 'it-map'
+import toBuffer from 'it-to-buffer'
 import { createUnsafe } from 'multiformats/block'
-import { type CID } from 'multiformats/cid'
-import defer from 'p-defer'
-import PQueue from 'p-queue'
+import { raceSignal } from 'race-signal'
 import { DAG_WALK_QUEUE_CONCURRENCY } from './constants.js'
 import { SubgraphExporter } from './export-strategies/subgraph-exporter.js'
 import { GraphSearch } from './traversal-strategies/graph-search.js'
@@ -12,6 +12,7 @@ import type { CarComponents, Car as CarInterface, ExportCarOptions, ExportStrate
 import type { PutManyBlocksProgressEvents } from '@helia/interface/blocks'
 import type { CarReader } from '@ipld/car'
 import type { AbortOptions, Logger } from '@libp2p/interface'
+import type { CID } from 'multiformats/cid'
 import type { ProgressOptions } from 'progress-events'
 
 /**
@@ -24,7 +25,7 @@ interface TraversalContext {
 
 interface WalkDagContext<Strategy> {
   cid: CID
-  queue: PQueue
+  queue: Queue
   strategy: Strategy
   options?: ExportCarOptions
 }
@@ -50,13 +51,47 @@ export class Car implements CarInterface {
 
   async import (reader: Pick<CarReader, 'blocks'>, options?: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents>): Promise<void> {
     await drain(this.components.blockstore.putMany(
-      map(reader.blocks(), ({ cid, bytes }) => ({ cid, block: bytes })),
+      map(reader.blocks(), ({ cid, bytes }) => ({ cid, bytes })),
       options
     ))
   }
 
-  async export (root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: ExportCarOptions): Promise<void> {
-    const deferred = defer<Error | undefined>()
+  async * export (root: CID | CID[], options?: ExportCarOptions): AsyncGenerator<Uint8Array, void, undefined> {
+    const { writer, out } = CarWriter.create(root)
+    const iter = out[Symbol.asyncIterator]()
+    const controller = new AbortController()
+
+    // has to be done async so we write to `writer` and read from `out` at the
+    // same time
+    this._export(root, writer, options)
+      .catch((err) => {
+        this.log.error('error during streaming export - %e', err)
+        controller.abort(err)
+      })
+
+    while (true) {
+      const { done, value } = await raceSignal(iter.next(), controller.signal)
+
+      // the writer's `out` iterable can yield results synchronously, in which
+      // case the controller may have been aborted but the event may not have
+      // fired yet so check the signal status manually before processing the
+      // next iterable result
+      if (controller.signal.aborted) {
+        throw controller.signal.reason
+      }
+
+      if (value != null) {
+        yield value
+      }
+
+      if (done === true) {
+        break
+      }
+    }
+  }
+
+  private async _export (root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: ExportCarOptions): Promise<void> {
+    const deferred = Promise.withResolvers<Error | void>()
     const roots = Array.isArray(root) ? root : [root]
 
     // Create traversal-specific context
@@ -70,12 +105,12 @@ export class Car implements CarInterface {
 
     // use a queue to walk the DAG instead of recursion so we can traverse very
     // large DAGs
-    const queue = new PQueue({
+    const queue = new Queue({
       concurrency: DAG_WALK_QUEUE_CONCURRENCY
     })
 
     let startedExport = false
-    queue.on('idle', () => {
+    queue.addEventListener('idle', () => {
       if (startedExport) {
         // idle event was called, and started exporting, so we are done.
         deferred.resolve()
@@ -91,7 +126,7 @@ export class Car implements CarInterface {
 
           // Process all verification blocks in the path except the target
           path.slice(0, -1).forEach(cid => {
-            void queue.add(async () => {
+            queue.add(async () => {
               await this.#exportDagNode({ cid, queue, writer, strategy: exportStrategy, options, recursive: false })
             })
               .catch((err) => {
@@ -100,7 +135,7 @@ export class Car implements CarInterface {
           })
 
           // Process the target block (which will recursively export its DAG)
-          void queue.add(async () => {
+          queue.add(async () => {
             await this.#exportDagNode({ cid: targetCid, queue, writer, strategy: exportStrategy, options })
           })
             .catch((err) => {
@@ -116,9 +151,9 @@ export class Car implements CarInterface {
         deferred.reject(new Error('Could not traverse to target CID(s)'))
       }
     })
-    queue.on('error', (err) => {
+    queue.addEventListener('failure', (evt) => {
       queue.clear()
-      deferred.reject(err)
+      deferred.reject(evt.detail.error)
     })
 
     for (const root of roots) {
@@ -139,21 +174,6 @@ export class Car implements CarInterface {
     }
   }
 
-  async * stream (root: CID | CID[], options?: ExportCarOptions): AsyncGenerator<Uint8Array, void, undefined> {
-    const { writer, out } = CarWriter.create(root)
-
-    // has to be done async so we write to `writer` and read from `out` at the
-    // same time
-    this.export(root, writer, options)
-      .catch((err) => {
-        this.log.error('error during streaming export - %e', err)
-      })
-
-    for await (const buf of out) {
-      yield buf
-    }
-  }
-
   /**
    * Traverse a DAG and stop when we reach the target node
    */
@@ -169,7 +189,7 @@ export class Car implements CarInterface {
     }
 
     const codec = await this.components.getCodec(cid.code)
-    const bytes = await this.components.blockstore.get(cid, options)
+    const bytes = await toBuffer(this.components.blockstore.get(cid, options))
 
     // we are recursively traversing the dag
     const decodedBlock = createUnsafe({ bytes, cid, codec })
@@ -193,7 +213,7 @@ export class Car implements CarInterface {
     }
 
     const codec = await this.components.getCodec(cid.code)
-    const bytes = await this.components.blockstore.get(cid, options)
+    const bytes = await toBuffer(this.components.blockstore.get(cid, options))
 
     // Mark as processed
     options?.blockFilter?.add(cid.multihash.bytes)

@@ -5,14 +5,15 @@ import { delegatedHTTPRoutingDefaults } from '@helia/routers'
 import { autoTLS } from '@ipshipyard/libp2p-auto-tls'
 import { autoNAT } from '@libp2p/autonat'
 import { bootstrap } from '@libp2p/bootstrap'
-import { circuitRelayTransport, circuitRelayServer, type CircuitRelayService } from '@libp2p/circuit-relay-v2'
+import { circuitRelayTransport, circuitRelayServer } from '@libp2p/circuit-relay-v2'
 import { dcutr } from '@libp2p/dcutr'
-import { type Identify, identify, identifyPush } from '@libp2p/identify'
-import { type KadDHT, kadDHT } from '@libp2p/kad-dht'
-import { keychain, type Keychain } from '@libp2p/keychain'
+import { http } from '@libp2p/http'
+import { identify, identifyPush } from '@libp2p/identify'
+import { kadDHT } from '@libp2p/kad-dht'
+import { keychain } from '@libp2p/keychain'
 import { mdns } from '@libp2p/mdns'
 import { mplex } from '@libp2p/mplex'
-import { ping, type PingService } from '@libp2p/ping'
+import { ping } from '@libp2p/ping'
 import { tcp } from '@libp2p/tcp'
 import { tls } from '@libp2p/tls'
 import { uPnPNAT } from '@libp2p/upnp-nat'
@@ -25,6 +26,12 @@ import { name, version } from '../version.js'
 import { bootstrapConfig } from './bootstrappers.js'
 import type { Libp2pDefaultsOptions } from './libp2p.js'
 import type { AutoTLS } from '@ipshipyard/libp2p-auto-tls'
+import type { CircuitRelayService } from '@libp2p/circuit-relay-v2'
+import type { HTTP } from '@libp2p/http'
+import type { Identify } from '@libp2p/identify'
+import type { KadDHT } from '@libp2p/kad-dht'
+import type { Keychain } from '@libp2p/keychain'
+import type { Ping } from '@libp2p/ping'
 import type { Libp2pOptions } from 'libp2p'
 
 export interface DefaultLibp2pServices extends Record<string, unknown> {
@@ -35,9 +42,10 @@ export interface DefaultLibp2pServices extends Record<string, unknown> {
   dht: KadDHT
   identify: Identify
   keychain: Keychain
-  ping: PingService
+  ping: Ping
   relay: CircuitRelayService
   upnp: unknown
+  http: HTTP
 }
 
 export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOptions<DefaultLibp2pServices> & Required<Pick<Libp2pOptions<DefaultLibp2pServices>, 'services'>> {
@@ -97,7 +105,8 @@ export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOpti
       keychain: keychain(options.keychain),
       ping: ping(),
       relay: circuitRelayServer(),
-      upnp: uPnPNAT()
+      upnp: uPnPNAT(),
+      http: http()
     }
   }
 }

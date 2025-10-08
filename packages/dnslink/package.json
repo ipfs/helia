@@ -1,0 +1,83 @@
+{
+  "name": "@helia/dnslink",
+  "version": "0.0.0",
+  "description": "DNSLink operations using Helia",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/ipfs/helia/tree/main/packages/dnslink#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ipfs/helia.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ipfs/helia/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "IPFS"
+  ],
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ],
+      "src/*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ]
+    }
+  },
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check",
+    "build": "aegir build",
+    "docs": "aegir docs",
+    "test": "aegir test",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main"
+  },
+  "dependencies": {
+    "@libp2p/interface": "^3.0.2",
+    "@libp2p/peer-id": "^6.0.3",
+    "@multiformats/dns": "^1.0.9",
+    "multiformats": "^13.4.1",
+    "progress-events": "^1.0.1"
+  },
+  "devDependencies": {
+    "@libp2p/logger": "^6.0.5",
+    "@types/dns-packet": "^5.6.5",
+    "aegir": "^47.0.22",
+    "sinon-ts": "^2.0.0"
+  },
+  "browser": {
+    "./dist/src/dns-resolvers/resolver.js": "./dist/src/dns-resolvers/resolver.browser.js"
+  },
+  "sideEffects": false
+}

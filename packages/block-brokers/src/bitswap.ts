@@ -50,8 +50,8 @@ class BitswapBlockBroker implements BlockBroker<BitswapWantBlockProgressEvents, 
     this.started = false
   }
 
-  async announce (cid: CID, block: Uint8Array, options?: BlockAnnounceOptions<BitswapNotifyProgressEvents>): Promise<void> {
-    await this.bitswap.notify(cid, block, options)
+  async announce (cid: CID, options?: BlockAnnounceOptions<BitswapNotifyProgressEvents>): Promise<void> {
+    await this.bitswap.notify(cid, options)
   }
 
   async retrieve (cid: CID, options: BlockRetrievalOptions<BitswapWantBlockProgressEvents> = {}): Promise<Uint8Array> {
@@ -62,8 +62,8 @@ class BitswapBlockBroker implements BlockBroker<BitswapWantBlockProgressEvents, 
     const session = this.bitswap.createSession(options)
 
     return {
-      announce: async (cid, block, options) => {
-        await this.bitswap.notify(cid, block, options)
+      announce: async (cid, options) => {
+        await this.bitswap.notify(cid, options)
       },
 
       retrieve: async (cid, options) => {

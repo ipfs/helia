@@ -1,5 +1,57 @@
 # Changelog
 
+## [5.5.1](https://github.com/ipfs/helia/compare/helia-v5.5.0...helia-v5.5.1) (2025-07-31)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^4.2.3 to ^4.2.4
+
+## [5.5.0](https://github.com/ipfs/helia/compare/helia-v5.4.2...helia-v5.5.0) (2025-07-22)
+
+
+### Features
+
+* add libp2p to @helia/http ([#826](https://github.com/ipfs/helia/issues/826)) ([235e5c4](https://github.com/ipfs/helia/commit/235e5c4093a51bda1e0331f9dd26754f601b582c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^4.2.2 to ^4.2.3
+    * @helia/interface bumped from ^5.3.2 to ^5.4.0
+    * @helia/routers bumped from ^3.1.2 to ^3.1.3
+    * @helia/utils bumped from ^1.3.2 to ^1.4.0
+
+## [5.4.2](https://github.com/ipfs/helia/compare/helia-v5.4.1...helia-v5.4.2) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir to 47.x.x ([#804](https://github.com/ipfs/helia/issues/804)) ([60fbbc2](https://github.com/ipfs/helia/commit/60fbbc2eb08e023e2eac02ae0e89ed143d715084))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^4.2.1 to ^4.2.2
+    * @helia/interface bumped from ^5.3.1 to ^5.3.2
+    * @helia/routers bumped from ^3.1.1 to ^3.1.2
+    * @helia/utils bumped from ^1.3.1 to ^1.3.2
+
+## [5.4.1](https://github.com/ipfs/helia/compare/helia-v5.4.0...helia-v5.4.1) (2025-05-13)
+
+
+### Dependencies
+
+* update all deps ([#792](https://github.com/ipfs/helia/issues/792)) ([d43efc7](https://github.com/ipfs/helia/commit/d43efc7bdfff34071a8e4e22e01f659fbac0b78e))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^4.2.0 to ^4.2.1
+    * @helia/interface bumped from ^5.3.0 to ^5.3.1
+    * @helia/routers bumped from ^3.1.0 to ^3.1.1
+    * @helia/utils bumped from ^1.3.0 to ^1.3.1
+
 ## [5.4.0](https://github.com/ipfs/helia/compare/helia-v5.3.0...helia-v5.4.0) (2025-05-13)
 
 

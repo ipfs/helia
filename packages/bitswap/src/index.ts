@@ -26,6 +26,7 @@ export type BitswapNotifyProgressEvents =
 export type BitswapWantBlockProgressEvents =
   ProgressEvent<'bitswap:want-block:unwant', CID> |
   ProgressEvent<'bitswap:want-block:block', CID> |
+  ProgressEvent<'bitswap:want-block:received', { cid: CID, sender: PeerId }> |
   BitswapNetworkWantProgressEvents
 
 export type { BitswapNetworkNotifyProgressEvents }
@@ -54,7 +55,7 @@ export interface Bitswap extends Startable {
   /**
    * Notify bitswap that a new block is available
    */
-  notify(cid: CID, block: Uint8Array, options?: ProgressOptions<BitswapNotifyProgressEvents>): Promise<void>
+  notify(cid: CID, options?: ProgressOptions<BitswapNotifyProgressEvents>): Promise<void>
 
   /**
    * Start a session to retrieve a file from the network

@@ -1,6 +1,6 @@
 import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { trackedPeerMap } from '@libp2p/peer-collections'
-import { trackedMap } from '@libp2p/utils/tracked-map'
+import { trackedMap } from '@libp2p/utils'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import pDefer from 'p-defer'

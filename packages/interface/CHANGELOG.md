@@ -5,6 +5,32 @@
 
 * expose .dns property on @helia/interface ([#465](https://github.com/ipfs/helia/issues/465)) ([8c9bb7d](https://github.com/ipfs/helia/commit/8c9bb7d224a1b786cba1fba18bffe07001a3b95d))
 
+## [5.4.0](https://github.com/ipfs/helia/compare/interface-v5.3.2...interface-v5.4.0) (2025-07-22)
+
+
+### Features
+
+* add libp2p to @helia/http ([#826](https://github.com/ipfs/helia/issues/826)) ([235e5c4](https://github.com/ipfs/helia/commit/235e5c4093a51bda1e0331f9dd26754f601b582c))
+
+
+### Bug Fixes
+
+* trustless gateway returned blocks can be limited ([#791](https://github.com/ipfs/helia/issues/791)) ([7a52e95](https://github.com/ipfs/helia/commit/7a52e95165f4a16a1fb2f62cfc6e936cb6f78b69))
+
+## [5.3.2](https://github.com/ipfs/helia/compare/interface-v5.3.1...interface-v5.3.2) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir to 47.x.x ([#804](https://github.com/ipfs/helia/issues/804)) ([60fbbc2](https://github.com/ipfs/helia/commit/60fbbc2eb08e023e2eac02ae0e89ed143d715084))
+
+## [5.3.1](https://github.com/ipfs/helia/compare/interface-v5.3.0...interface-v5.3.1) (2025-05-13)
+
+
+### Dependencies
+
+* update all deps ([#792](https://github.com/ipfs/helia/issues/792)) ([d43efc7](https://github.com/ipfs/helia/commit/d43efc7bdfff34071a8e4e22e01f659fbac0b78e))
+
 ## [5.3.0](https://github.com/ipfs/helia/compare/interface-v5.2.1...interface-v5.3.0) (2025-05-13)
 
 

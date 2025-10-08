@@ -5,10 +5,7 @@ import type { AbortOptions } from 'interface-store'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
-export interface Pair {
-  cid: CID
-  block: Uint8Array
-}
+export type { Pair, InputPair } from 'interface-blockstore'
 
 export interface ProviderOptions {
   /**
@@ -110,6 +107,15 @@ export interface BlockRetrievalOptions <ProgressEvents extends ProgressEvent<any
    * and WILL consider the gateway that returned the invalid blocks completely unreliable.
    */
   validateFn?(block: Uint8Array): Promise<void>
+
+  /**
+   * The maximum size a block can be in bytes.
+   *
+   * Attempts to retrieve a block larger than this will cause an error to be thrown.
+   *
+   * @default 2_097_152
+   */
+  maxSize?: number
 }
 
 export interface BlockAnnounceOptions <ProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> extends AbortOptions, ProgressOptions<ProgressEvents> {
@@ -145,7 +151,7 @@ export interface BlockBroker<RetrieveProgressEvents extends ProgressEvent<any, a
   /**
    * Make a new block available to peers
    */
-  announce?(cid: CID, block: Uint8Array, options?: BlockAnnounceOptions<AnnounceProgressEvents>): Promise<void>
+  announce?(cid: CID, options?: BlockAnnounceOptions<AnnounceProgressEvents>): Promise<void>
 
   /**
    * Create a new session

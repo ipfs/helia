@@ -1,6 +1,6 @@
-import { type CID } from 'multiformats/cid'
-import { type ExportStrategy } from '../index.js'
+import type { ExportStrategy } from '../index.js'
 import type { BlockView } from 'multiformats/block/interface'
+import type { CID } from 'multiformats/cid'
 
 /**
  * Traverses the DAG breadth-first starting at the target CID and yields all
@@ -11,7 +11,7 @@ import type { BlockView } from 'multiformats/block/interface'
  */
 export class SubgraphExporter implements ExportStrategy {
   async * export (_cid: CID, block: BlockView<any, any, any, 0 | 1>): AsyncGenerator<CID, void, undefined> {
-    for await (const [, linkedCid] of block.links()) {
+    for (const [, linkedCid] of block.links()) {
       yield linkedCid
     }
   }

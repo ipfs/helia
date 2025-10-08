@@ -7,15 +7,16 @@ import { MemoryBlockstore } from 'blockstore-core'
 import drain from 'it-drain'
 import forEach from 'it-foreach'
 import length from 'it-length'
+import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import sinon from 'sinon'
 import { BlockExporter, SubgraphExporter, UnixFSExporter } from '../src/export-strategies/index.js'
-import { car, type Car } from '../src/index.js'
+import { car } from '../src/index.js'
 import { GraphSearch, CIDPath, UnixFSPath } from '../src/traversal-strategies/index.js'
 import { carEquals, CarEqualsSkip } from './fixtures/car-equals.js'
 import { getCodec } from './fixtures/get-codec.js'
 import { loadCarFixture } from './fixtures/load-car-fixture.js'
-import { memoryCarWriter } from './fixtures/memory-car.js'
+import type { Car } from '../src/index.js'
 import type { Blockstore } from 'interface-blockstore'
 
 describe('export', () => {
@@ -46,9 +47,7 @@ describe('export', () => {
     await c.import(reader)
 
     // export a car file, and ensure the car file is the same as the original
-    const writer = memoryCarWriter(roots)
-    await c.export(roots, writer)
-    const ourCarBytes = await writer.bytes()
+    const ourCarBytes = await toBuffer(c.export(roots))
 
     const ourReader = await CarReader.fromBytes(ourCarBytes)
 
@@ -67,12 +66,9 @@ describe('export', () => {
     await c.import(reader)
 
     // export the subDag: ipfs://bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu/subdir,
-    const writer = memoryCarWriter(intermediateCid)
-    await c.export(intermediateCid, writer, {
+    const ourCarBytes = await toBuffer(c.export(intermediateCid, {
       traversal: new GraphSearch(intermediateCid)
-    })
-
-    const ourCarBytes = await writer.bytes()
+    }))
     const ourReader = await CarReader.fromBytes(ourCarBytes)
 
     const roots = await ourReader.getRoots()
@@ -91,16 +87,13 @@ describe('export', () => {
 
     const knownDagPath = [dagRoot, intermediateCid, multiBlockTxt]
 
-    const writer = memoryCarWriter(multiBlockTxt)
-    await c.export(dagRoot, writer, {
+    const carData = await toBuffer(c.export(dagRoot, {
       traversal: new CIDPath(knownDagPath)
-    })
-
-    const carData = await writer.bytes()
+    }))
     const exportedReader = await CarReader.fromBytes(carData)
 
     const roots = await exportedReader.getRoots()
-    expect(roots).to.deep.equal([multiBlockTxt])
+    expect(roots).to.deep.equal([dagRoot])
 
     // traversal calls:
     expect(blockstoreGetSpy.getCall(0).args[0]).to.deep.equal(knownDagPath[0])
@@ -120,7 +113,7 @@ describe('export', () => {
 
     await c.import(reader)
 
-    const exportedReader = await CarReader.fromIterable(c.stream(dagRoot, {
+    const exportedReader = await CarReader.fromIterable(c.export(dagRoot, {
       // cspell:ignore multiblock
       traversal: new UnixFSPath('/subdir/multiblock.txt')
     }))
@@ -146,13 +139,10 @@ describe('export', () => {
 
     await c.import(reader)
 
-    const writer = memoryCarWriter(dagRoot)
-    await c.export(dagRoot, writer, {
+    const ourReader = await CarReader.fromBytes(await toBuffer(c.export(dagRoot, {
       traversal: new GraphSearch(dagRoot),
       exporter: new BlockExporter()
-    })
-
-    const ourReader = await CarReader.fromBytes(await writer.bytes())
+    })))
 
     const roots = await ourReader.getRoots()
     expect(roots).to.deep.equal([dagRoot])
@@ -177,10 +167,10 @@ describe('export', () => {
 
     await c.import(reader)
 
-    await expect(c.export(nonUnixFsRoot, memoryCarWriter(nonUnixFsRoot), {
+    await expect(toBuffer(c.export(nonUnixFsRoot, {
       traversal: new GraphSearch(nonUnixFsRoot),
       exporter: new UnixFSExporter()
-    })).to.eventually.be.rejected.with.property('name', 'NotUnixFSError')
+    }))).to.eventually.be.rejected.with.property('name', 'NotUnixFSError')
   })
 
   it('can export non-UnixFS data with SubGraphExporter', async () => {
@@ -191,14 +181,11 @@ describe('export', () => {
 
     await c.import(reader)
 
-    const writer = memoryCarWriter(nonUnixFsRoot)
-
-    await c.export(nonUnixFsRoot, writer, {
+    const ourReader = await CarReader.fromBytes(await toBuffer(c.export(nonUnixFsRoot, {
       traversal: new GraphSearch(nonUnixFsRoot),
       exporter: new SubgraphExporter()
     })
-
-    const ourReader = await CarReader.fromBytes(await writer.bytes())
+    ))
 
     const roots = await ourReader.getRoots()
     expect(roots).to.deep.equal([nonUnixFsRoot])
@@ -222,17 +209,14 @@ describe('export', () => {
 
     const knownDagPath = [dagRoot, intermediateCid, multiBlockTxt]
 
-    const writer = memoryCarWriter(multiBlockTxt)
-    await c.export(dagRoot, writer, {
+    const carData = await toBuffer(c.export(dagRoot, {
       traversal: new CIDPath(knownDagPath),
       exporter: new BlockExporter()
-    })
-
-    const carData = await writer.bytes()
+    }))
     const exportedReader = await CarReader.fromBytes(carData)
 
     const roots = await exportedReader.getRoots()
-    expect(roots).to.deep.equal([multiBlockTxt])
+    expect(roots).to.deep.equal([dagRoot])
 
     // traversal calls:
     expect(blockstoreGetSpy.getCall(0).args[0]).to.deep.equal(knownDagPath[0])
@@ -258,9 +242,8 @@ describe('export', () => {
     // intermediate cid is not present in the dag nor blockstore.
     const knownDagPath = [dagRoot, CID.parse('bafyreif3tfdpr5n4jdrbielmcapwvbpcthepfkwq2vwonmlhirbjmotedi'), subDagRoot]
 
-    const writer = memoryCarWriter(subDagRoot)
-    await expect(c.export(dagRoot, writer, {
+    await expect(toBuffer(c.export(dagRoot, {
       traversal: new CIDPath(knownDagPath)
-    })).to.eventually.be.rejectedWith('Not Found')
+    }))).to.eventually.be.rejectedWith('Not Found')
   })
 })

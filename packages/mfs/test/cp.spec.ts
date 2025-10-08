@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
@@ -8,9 +9,10 @@ import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import { identity } from 'multiformats/hashes/identity'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { type MFS, mfs } from '../src/index.js'
+import { mfs } from '../src/index.js'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 import { createSubShardedDirectory } from './fixtures/create-subsharded-directory.js'
+import type { MFS } from '../src/index.js'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 
@@ -22,8 +24,9 @@ describe('cp', () => {
   beforeEach(async () => {
     blockstore = new MemoryBlockstore()
     datastore = new MemoryDatastore()
+    const logger = defaultLogger()
 
-    fs = mfs({ blockstore, datastore })
+    fs = mfs({ blockstore, datastore, logger })
   })
 
   it('refuses to copy files without a source', async () => {

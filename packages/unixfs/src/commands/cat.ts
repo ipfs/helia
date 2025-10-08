@@ -1,21 +1,13 @@
 import { exporter } from 'ipfs-unixfs-exporter'
-import mergeOpts from 'merge-options'
 import { NoContentError, NotAFileError } from '../errors.js'
 import { resolve } from './utils/resolve.js'
 import type { CatOptions } from '../index.js'
 import type { GetStore } from '../unixfs.js'
 import type { CID } from 'multiformats/cid'
 
-const mergeOptions = mergeOpts.bind({ ignoreUndefined: true })
-
-const defaultOptions: CatOptions = {
-
-}
-
 export async function * cat (cid: CID, blockstore: GetStore, options: Partial<CatOptions> = {}): AsyncIterable<Uint8Array> {
-  const opts: CatOptions = mergeOptions(defaultOptions, options)
-  const resolved = await resolve(cid, opts.path, blockstore, opts)
-  const result = await exporter(resolved.cid, blockstore, opts)
+  const resolved = await resolve(cid, options.path, blockstore, options)
+  const result = await exporter(resolved.cid, blockstore, options)
 
   if (result.type !== 'file' && result.type !== 'raw') {
     throw new NotAFileError()
@@ -25,5 +17,5 @@ export async function * cat (cid: CID, blockstore: GetStore, options: Partial<Ca
     throw new NoContentError()
   }
 
-  yield * result.content(opts)
+  yield * result.content(options)
 }

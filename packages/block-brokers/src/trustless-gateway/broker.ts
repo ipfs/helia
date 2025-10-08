@@ -23,8 +23,12 @@ export interface CreateTrustlessGatewaySessionOptions extends CreateSessionOptio
    * @default false
    */
   allowLocal?: boolean
+
   /**
-   * Provide a function that will be called before querying trustless-gateways. This lets you modify the fetch options to pass custom headers or other necessary things.
+   * Provide a function that will be called before querying trustless-gateways.
+   *
+   * This lets you modify the fetch options to pass custom headers or other
+   * necessary things.
    */
   transformRequestInit?: TransformRequestInit
 }
@@ -57,7 +61,7 @@ export class TrustlessGatewayBlockBroker implements BlockBroker<TrustlessGateway
       this.log('getting block for %c from %s', cid, gateway.url)
 
       try {
-        const block = await gateway.getRawBlock(cid, options.signal)
+        const block = await gateway.getRawBlock(cid, options)
         this.log.trace('got block for %c from %s', cid, gateway.url)
 
         try {

@@ -1,5 +1,6 @@
 import * as dagPb from '@ipld/dag-pb'
 import { UnixFS } from 'ipfs-unixfs'
+import toBuffer from 'it-to-buffer'
 import { CID_V0, CID_V1 } from './dir-sharded.js'
 import type { GetStore } from '../../unixfs.js'
 import type { PBNode } from '@ipld/dag-pb'
@@ -68,7 +69,7 @@ async function estimateShardSize (node: PBNode, current: number, max: number, bl
     current += link.Hash.bytes.byteLength
 
     if (link.Hash.code === dagPb.code) {
-      const block = await blockstore.get(link.Hash, options)
+      const block = await toBuffer(blockstore.get(link.Hash, options))
       const node = dagPb.decode(block)
 
       current += await estimateShardSize(node, current, max, blockstore, options)

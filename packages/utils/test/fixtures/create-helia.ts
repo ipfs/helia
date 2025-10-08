@@ -1,18 +1,32 @@
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
-import { Helia as HeliaClass, type HeliaInit } from '../../src/index.js'
+import { isLibp2p, createLibp2p } from 'libp2p'
+import { stubInterface } from 'sinon-ts'
+import { Helia as HeliaClass } from '../../src/index.js'
+import type { HeliaInit } from '../../src/index.js'
 import type { Helia } from '@helia/interface'
+import type { Libp2p } from '@libp2p/interface'
 
-export async function createHelia (opts: Partial<HeliaInit & { start?: boolean }> = {}): Promise<Helia> {
+export async function createHelia (opts: Partial<HeliaInit> = {}): Promise<Helia> {
   const datastore = new MemoryDatastore()
   const blockstore = new MemoryBlockstore()
+  let libp2p: Libp2p
 
-  const init: HeliaInit = {
+  if (isLibp2p(opts.libp2p)) {
+    libp2p = opts.libp2p
+  } else if (opts.libp2p != null) {
+    libp2p = await createLibp2p(opts.libp2p)
+  } else {
+    libp2p = stubInterface<Libp2p<any>>()
+  }
+
+  const init = {
     datastore,
     blockstore,
     blockBrokers: [],
     holdGcLock: true,
-    ...opts
+    ...opts,
+    libp2p
   }
 
   const node = new HeliaClass(init)

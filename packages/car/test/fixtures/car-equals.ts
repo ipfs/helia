@@ -1,13 +1,13 @@
 import { expect } from 'aegir/chai'
-import { type CID } from 'multiformats/cid'
 import type { CarReader } from '@ipld/car'
+import type { CID } from 'multiformats/cid'
 
 export enum CarEqualsSkip {
   roots = 'roots',
   blocks = 'blocks',
   blockOrder = 'blockOrder',
   version = 'version',
-  header = 'header',
+  header = 'header'
 }
 export interface CarEqualsOptions {
   skip?: CarEqualsSkip[]

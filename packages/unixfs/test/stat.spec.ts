@@ -3,10 +3,12 @@
 import * as dagPb from '@ipld/dag-pb'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
+import toBuffer from 'it-to-buffer'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { unixfs, type UnixFS } from '../src/index.js'
+import { unixfs } from '../src/index.js'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 import { largeFile, smallFile } from './fixtures/files.js'
+import type { UnixFS } from '../src/index.js'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 
@@ -36,7 +38,7 @@ describe('stat', function () {
 
   it('computes how much of the DAG is local', async () => {
     const largeFileCid = await fs.addBytes(largeFile)
-    const block = await blockstore.get(largeFileCid)
+    const block = await toBuffer(blockstore.get(largeFileCid))
     const node = dagPb.decode(block)
 
     expect(node.Links).to.have.lengthOf(5)
@@ -286,7 +288,7 @@ describe('stat', function () {
     const fileCid2 = await fs.addBytes(uint8ArrayFromString('Hello Universe!'))
     const updateDirCid = await fs.cp(fileCid, emptyDirCid, 'foo1.txt')
     const finalDirCid = await fs.cp(fileCid2, updateDirCid, 'foo2.txt')
-    const block = await blockstore.get(finalDirCid)
+    const block = await toBuffer(blockstore.get(finalDirCid))
     const node = dagPb.decode(block)
 
     const extendedStat = await fs.stat(finalDirCid, {
@@ -322,7 +324,7 @@ describe('stat', function () {
     const fileCid2 = await fs.addBytes(largeFile)
     const updateDirCid = await fs.cp(fileCid, emptyDirCid, 'foo1.txt')
     const finalDirCid = await fs.cp(fileCid2, updateDirCid, 'foo2.txt')
-    const block = await blockstore.get(finalDirCid)
+    const block = await toBuffer(blockstore.get(finalDirCid))
     const node = dagPb.decode(block)
 
     const extendedStat = await fs.stat(finalDirCid, {
@@ -337,7 +339,7 @@ describe('stat', function () {
 
     expect(node.Links).to.have.lengthOf(2)
 
-    const largeFileBlock = await blockstore.get(fileCid2)
+    const largeFileBlock = await toBuffer(blockstore.get(fileCid2))
     const largeFileNode = dagPb.decode(largeFileBlock)
 
     // remove one of the blocks of the multi-block file so we now have an

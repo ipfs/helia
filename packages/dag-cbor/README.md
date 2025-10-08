@@ -30,7 +30,7 @@ repo and examine the changes made.
 
 -->
 
-`@helia/dag-cbor` makes working with DAG-JSON Helia simple & straightforward.
+`@helia/dag-cbor` makes working with DAG-CBOR Helia simple & straightforward.
 
 See the DAGCBOR interface for all available operations.
 
@@ -69,7 +69,7 @@ Loading this module through a script tag will make its exports available as `Hel
 
 # API Docs
 
-- <https://ipfs.github.io/helia/modules/_helia_dag_cbor.html>
+- <https://ipfs.github.io/helia/modules/_helia_dag-cbor.html>
 
 # License
 

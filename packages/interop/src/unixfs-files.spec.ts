@@ -8,18 +8,19 @@ import { fixedSize } from 'ipfs-unixfs-importer/chunker'
 import { balanced } from 'ipfs-unixfs-importer/layout'
 import drain from 'it-drain'
 import last from 'it-last'
+import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import type { AddOptions, UnixFS } from '@helia/unixfs'
-import type { HeliaLibp2p } from 'helia'
+import type { Helia } from 'helia'
 import type { ByteStream, ImportCandidateStream } from 'ipfs-unixfs-importer'
 import type { KuboNode } from 'ipfsd-ctl'
 import type { AddOptions as KuboAddOptions } from 'kubo-rpc-client'
 
 describe('@helia/unixfs - files', () => {
-  let helia: HeliaLibp2p
+  let helia: Helia
   let unixFs: UnixFS
   let kubo: KuboNode
 
@@ -167,7 +168,7 @@ describe('@helia/unixfs - files', () => {
     await drain(unixFs.cat(largeFileCid))
 
     // check the root block
-    const block = await helia.blockstore.get(largeFileCid)
+    const block = await toBuffer(helia.blockstore.get(largeFileCid))
     const node = dagPb.decode(block)
 
     expect(node.Links).to.have.lengthOf(40)

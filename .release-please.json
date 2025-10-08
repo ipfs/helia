@@ -14,6 +14,7 @@
     "packages/car": {},
     "packages/dag-cbor": {},
     "packages/dag-json": {},
+    "packages/dnslink": {},
     "packages/helia": {},
     "packages/http": {},
     "packages/interface": {},

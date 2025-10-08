@@ -44,15 +44,44 @@
  *   console.info(entry)
  * }
  * ```
+ *
+ * @example Adding files and directories in the browser
+ *
+ * Uses [@cypsela/browser-source](https://github.com/cypsela/browser-source) to read [FileSystemEntry](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemEntry) and [FileSystemHandle](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemHandle) files and directories.
+ *
+ * Instances of these data types are available from drag and drop events and window methods like [showOpenFilePicker](https://developer.mozilla.org/en-US/docs/Web/API/Window/showOpenFilePicker).
+ *
+ * ```typescript
+ * import { createHelia } from 'helia'
+ * import { unixfs } from '@helia/unixfs'
+ * import { fsEntrySource, fsHandleSource } from '@cypsela/browser-source'
+ *
+ * const helia = await createHelia()
+ * const fs = unixfs(helia)
+ *
+ * // get FileSystemEntry from drag and drop events
+ * const fileEntry = {} as FileSystemEntry
+ *
+ * for await (const entry of fs.addAll(fsEntrySource(fileEntry))) {
+ *   console.info(entry)
+ * }
+ *
+ * // get FileSystemHandle from drag and drop events or window methods
+ * const fileHandle = {} as FileSystemHandle
+ *
+ * for await (const entry of fs.addAll(fsHandleSource(fileHandle))) {
+ *   console.info(entry)
+ * }
+ * ```
  */
 
 import { UnixFS as UnixFSClass } from './unixfs.js'
-import type { GetBlockProgressEvents, PutBlockProgressEvents } from '@helia/interface/blocks'
+import type { GetBlockProgressEvents, ProviderOptions, PutBlockProgressEvents } from '@helia/interface/blocks'
 import type { AbortOptions } from '@libp2p/interface'
-import type { Filter } from '@libp2p/utils/filters'
+import type { Filter } from '@libp2p/utils'
 import type { Blockstore } from 'interface-blockstore'
 import type { Mtime, UnixFS as IPFSUnixFS } from 'ipfs-unixfs'
-import type { ExporterProgressEvents, UnixFSEntry } from 'ipfs-unixfs-exporter'
+import type { ExporterProgressEvents, UnixFSEntry, UnixFSBasicEntry } from 'ipfs-unixfs-exporter'
 import type { ByteStream, DirectoryCandidate, ImportCandidateStream, ImporterOptions, ImporterProgressEvents, ImportResult, ImportContent } from 'ipfs-unixfs-importer'
 import type { CID, Version } from 'multiformats/cid'
 import type { ProgressOptions } from 'progress-events'
@@ -83,7 +112,7 @@ export type GetEvents = GetBlockProgressEvents
 /**
  * Options to pass to the cat command
  */
-export interface CatOptions extends AbortOptions, ProgressOptions<GetEvents> {
+export interface CatOptions extends AbortOptions, ProgressOptions<GetEvents>, ProviderOptions {
   /**
    * Start reading the file at this offset
    */
@@ -109,7 +138,7 @@ export interface CatOptions extends AbortOptions, ProgressOptions<GetEvents> {
 /**
  * Options to pass to the chmod command
  */
-export interface ChmodOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents> {
+export interface ChmodOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents>, ProviderOptions {
   /**
    * If the target of the operation is a directory and this is true,
    * apply the new mode to all directory contents
@@ -137,7 +166,7 @@ export interface ChmodOptions extends AbortOptions, ProgressOptions<GetEvents | 
 /**
  * Options to pass to the cp command
  */
-export interface CpOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents> {
+export interface CpOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents>, ProviderOptions {
   /**
    * If true, allow overwriting existing directory entries (default: false)
    */
@@ -181,12 +210,20 @@ export interface LsOptions extends AbortOptions, ProgressOptions<GetEvents> {
    * missing from the local store. (default: false)
    */
   offline?: boolean
+
+  /**
+   * If true, including UnixFS metadata in the output - nb. this will resolve
+   * the root node of every encountered filesystem entry
+   *
+   * @default true
+   */
+  extended?: boolean
 }
 
 /**
  * Options to pass to the mkdir command
  */
-export interface MkdirOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents> {
+export interface MkdirOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents>, ProviderOptions {
   /**
    * The CID version to create the new directory with - defaults to the same
    * version as the containing directory
@@ -224,7 +261,7 @@ export interface MkdirOptions extends AbortOptions, ProgressOptions<GetEvents | 
 /**
  * Options to pass to the rm command
  */
-export interface RmOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents> {
+export interface RmOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents>, ProviderOptions {
   /**
    * DAGs with a root block larger than this value will be sharded. Blocks
    * smaller than this value will be regular UnixFS directories.
@@ -241,7 +278,7 @@ export interface RmOptions extends AbortOptions, ProgressOptions<GetEvents | Put
 /**
  * Options to pass to the stat command
  */
-export interface StatOptions extends AbortOptions, ProgressOptions<GetEvents> {
+export interface StatOptions extends AbortOptions, ProgressOptions<GetEvents>, ProviderOptions {
   /**
    * An optional path to allow getting stats of paths inside directories
    */
@@ -615,6 +652,7 @@ export interface UnixFS {
    * ```
    */
   ls(cid: CID, options?: Partial<LsOptions>): AsyncIterable<UnixFSEntry>
+  ls(cid: CID, options: Partial<LsOptions> & { extended: false }): AsyncIterable<UnixFSBasicEntry>
 
   /**
    * Make a new directory under an existing directory.

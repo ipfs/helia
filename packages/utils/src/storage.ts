@@ -3,7 +3,7 @@ import createMortice from 'mortice'
 import type { Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions, SessionBlockstore } from '@helia/interface/blocks'
 import type { Pins } from '@helia/interface/pins'
 import type { AbortOptions, Startable } from '@libp2p/interface'
-import type { Blockstore } from 'interface-blockstore'
+import type { Blockstore, InputPair } from 'interface-blockstore'
 import type { AwaitIterable } from 'interface-store'
 import type { Mortice } from 'mortice'
 import type { CID } from 'multiformats/cid'
@@ -75,7 +75,7 @@ export class BlockStorage implements Blocks, Startable {
   /**
    * Put a multiple blocks to the underlying datastore
    */
-  async * putMany (blocks: AwaitIterable<{ cid: CID, block: Uint8Array }>, options: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents> = {}): AsyncIterable<CID> {
+  async * putMany (blocks: AwaitIterable<InputPair>, options: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents> = {}): AsyncGenerator<CID> {
     options?.signal?.throwIfAborted()
     const releaseLock = await this.lock.readLock()
 
@@ -89,12 +89,12 @@ export class BlockStorage implements Blocks, Startable {
   /**
    * Get a block by cid
    */
-  async get (cid: CID, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetBlockProgressEvents> = {}): Promise<Uint8Array> {
+  async * get (cid: CID, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetBlockProgressEvents> = {}): AsyncGenerator<Uint8Array> {
     options?.signal?.throwIfAborted()
     const releaseLock = await this.lock.readLock()
 
     try {
-      return await this.child.get(cid, options)
+      yield * this.child.get(cid, options)
     } finally {
       releaseLock()
     }
@@ -103,7 +103,7 @@ export class BlockStorage implements Blocks, Startable {
   /**
    * Get multiple blocks back from an (async) iterable of cids
    */
-  async * getMany (cids: AwaitIterable<CID>, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetManyBlocksProgressEvents> = {}): AsyncIterable<Pair> {
+  async * getMany (cids: AwaitIterable<CID>, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetManyBlocksProgressEvents> = {}): AsyncGenerator<Pair> {
     options?.signal?.throwIfAborted()
     const releaseLock = await this.lock.readLock()
 
@@ -135,7 +135,7 @@ export class BlockStorage implements Blocks, Startable {
   /**
    * Delete multiple blocks from the blockstore
    */
-  async * deleteMany (cids: AwaitIterable<CID>, options: AbortOptions & ProgressOptions<DeleteManyBlocksProgressEvents> = {}): AsyncIterable<CID> {
+  async * deleteMany (cids: AwaitIterable<CID>, options: AbortOptions & ProgressOptions<DeleteManyBlocksProgressEvents> = {}): AsyncGenerator<CID> {
     options?.signal?.throwIfAborted()
     const releaseLock = await this.lock.writeLock()
 
@@ -167,7 +167,7 @@ export class BlockStorage implements Blocks, Startable {
     }
   }
 
-  async * getAll (options: AbortOptions & ProgressOptions<GetAllBlocksProgressEvents> = {}): AsyncIterable<Pair> {
+  async * getAll (options: AbortOptions & ProgressOptions<GetAllBlocksProgressEvents> = {}): AsyncGenerator<Pair> {
     options?.signal?.throwIfAborted()
     const releaseLock = await this.lock.readLock()
 

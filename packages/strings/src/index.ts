@@ -23,14 +23,10 @@
  */
 
 import { CID } from 'multiformats/cid'
-import * as raw from 'multiformats/codecs/raw'
-import { sha256 } from 'multiformats/hashes/sha2'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { GetBlockProgressEvents, PutBlockProgressEvents } from '@helia/interface/blocks'
+import { Strings as StringsClass } from './strings.js'
+import type { GetBlockProgressEvents, ProviderOptions, PutBlockProgressEvents } from '@helia/interface/blocks'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
-import type { BlockCodec } from 'multiformats/codecs/interface'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 import type { ProgressOptions } from 'progress-events'
 
@@ -39,12 +35,11 @@ export interface StringsComponents {
 }
 
 export interface AddOptions extends AbortOptions, ProgressOptions<PutBlockProgressEvents> {
-  hasher: MultihashHasher
-  codec: BlockCodec<any, unknown>
+  hasher?: MultihashHasher
 }
 
-export interface GetOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents> {
-  codec: BlockCodec<any, unknown>
+export interface GetOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents>, ProviderOptions {
+
 }
 
 /**
@@ -95,34 +90,9 @@ export interface Strings {
   get(cid: CID, options?: Partial<GetOptions>): Promise<string>
 }
 
-class DefaultStrings implements Strings {
-  private readonly components: StringsComponents
-
-  constructor (components: StringsComponents) {
-    this.components = components
-  }
-
-  async add (string: string, options: Partial<AddOptions> = {}): Promise<CID> {
-    const buf = uint8ArrayFromString(string)
-    const hash = await (options.hasher ?? sha256).digest(buf)
-    const codec = options.codec ?? raw
-    const cid = CID.createV1(codec.code, hash)
-
-    await this.components.blockstore.put(cid, buf, options)
-
-    return cid
-  }
-
-  async get (cid: CID, options: Partial<GetOptions> = {}): Promise<string> {
-    const buf = await this.components.blockstore.get(cid, options)
-
-    return uint8ArrayToString(buf)
-  }
-}
-
 /**
  * Create a {@link Strings} instance for use with {@link https://github.com/ipfs/helia Helia}
  */
 export function strings (helia: { blockstore: Blockstore }): Strings {
-  return new DefaultStrings(helia)
+  return new StringsClass(helia)
 }
