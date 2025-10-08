@@ -118,7 +118,7 @@ describe('import/export car file', () => {
     const otherBlockstore = new MemoryBlockstore()
     const otherUnixFS = unixfs({ blockstore: otherBlockstore })
     const otherDatastore = new MemoryDatastore()
-    const otherMFS = mfs({ blockstore: otherBlockstore, datastore: otherDatastore })
+    const otherMFS = mfs({ blockstore: otherBlockstore, datastore: otherDatastore, logger: defaultLogger() })
     const otherCar = car({ blockstore: otherBlockstore, getCodec, logger: defaultLogger() })
 
     await otherMFS.mkdir('/testDuplicates')
@@ -144,7 +144,7 @@ describe('import/export car file', () => {
     const otherBlockstore = new MemoryBlockstore()
     const otherUnixFS = unixfs({ blockstore: otherBlockstore })
     const otherDatastore = new MemoryDatastore()
-    const otherMFS = mfs({ blockstore: otherBlockstore, datastore: otherDatastore })
+    const otherMFS = mfs({ blockstore: otherBlockstore, datastore: otherDatastore, logger: defaultLogger() })
     const otherCar = car({ blockstore: otherBlockstore, getCodec, logger: defaultLogger() })
 
     await otherMFS.mkdir('/testDuplicates')

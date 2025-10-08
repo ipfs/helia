@@ -25,14 +25,11 @@
  * ```
  */
 
-import { InvalidCodecError } from '@helia/interface'
-import * as codec from '@ipld/dag-json'
-import toBuffer from 'it-to-buffer'
-import { CID } from 'multiformats/cid'
-import { sha256 } from 'multiformats/hashes/sha2'
+import { DAGJSON as DAGJSONClass } from './dag-json.ts'
 import type { GetBlockProgressEvents, ProviderOptions, PutBlockProgressEvents } from '@helia/interface/blocks'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
+import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 import type { ProgressOptions } from 'progress-events'
 
@@ -98,37 +95,9 @@ export interface DAGJSON {
   get<T>(cid: CID, options?: Partial<GetOptions>): Promise<T>
 }
 
-class DefaultDAGJSON implements DAGJSON {
-  private readonly components: DAGJSONComponents
-
-  constructor (components: DAGJSONComponents) {
-    this.components = components
-  }
-
-  async add (obj: any, options: AddOptions = {}): Promise<CID> {
-    const buf = codec.encode(obj)
-    const hash = await (options.hasher ?? sha256).digest(buf)
-    const cid = CID.createV1(codec.code, hash)
-
-    await this.components.blockstore.put(cid, buf, options)
-
-    return cid
-  }
-
-  async get <T> (cid: CID, options: GetOptions = {}): Promise<T> {
-    if (cid.code !== codec.code) {
-      throw new InvalidCodecError('The passed CID had an incorrect codec, it may correspond to a non-DAG-JSON block')
-    }
-
-    const buf = await toBuffer(this.components.blockstore.get(cid, options))
-
-    return codec.decode(buf)
-  }
-}
-
 /**
  * Create a {@link DAGJSON} instance for use with {@link https://github.com/ipfs/helia Helia}
  */
 export function dagJson (helia: { blockstore: Blockstore }): DAGJSON {
-  return new DefaultDAGJSON(helia)
+  return new DAGJSONClass(helia)
 }

@@ -49,7 +49,6 @@
   "dependencies": {
     "@helia/unixfs": "^5.1.0",
     "@libp2p/interface": "^3.0.2",
-    "@libp2p/logger": "^6.0.5",
     "interface-blockstore": "^6.0.1",
     "interface-datastore": "^9.0.2",
     "ipfs-unixfs": "^12.0.0",
@@ -59,6 +58,7 @@
   },
   "devDependencies": {
     "@ipld/dag-pb": "^4.1.5",
+    "@libp2p/logger": "^6.0.5",
     "aegir": "^47.0.22",
     "blockstore-core": "^6.0.2",
     "datastore-core": "^11.0.2",
