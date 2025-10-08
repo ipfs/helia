@@ -1,9 +1,11 @@
 /* eslint-env mocha */
 
 import * as dagPb from '@ipld/dag-pb'
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
+import toBuffer from 'it-to-buffer'
 import { mfs } from '../src/index.js'
 import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
 import { largeFile, smallFile } from './fixtures/files.js'
@@ -19,8 +21,9 @@ describe('stat', () => {
   beforeEach(async () => {
     blockstore = new MemoryBlockstore()
     datastore = new MemoryDatastore()
+    const logger = defaultLogger()
 
-    fs = mfs({ blockstore, datastore })
+    fs = mfs({ blockstore, datastore, logger })
   })
 
   it('stats an empty directory', async () => {
@@ -46,7 +49,7 @@ describe('stat', () => {
       extended: true
     })
 
-    const block = await blockstore.get(stats.cid)
+    const block = await toBuffer(blockstore.get(stats.cid))
     const node = dagPb.decode(block)
 
     expect(node.Links).to.have.lengthOf(5)

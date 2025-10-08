@@ -1,6 +1,7 @@
 import * as dagPb from '@ipld/dag-pb'
 import { importer } from 'ipfs-unixfs-importer'
 import last from 'it-last'
+import toBuffer from 'it-to-buffer'
 import { unixfs } from '../../src/index.js'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
@@ -60,13 +61,13 @@ export async function createSubShardedDirectory (blockstore: Blockstore, depth: 
 }
 
 async function searchCIDForSubshards (cid: CID, blockstore: Blockstore, depth: number = 1): Promise<boolean> {
-  const block = await blockstore.get(cid)
+  const block = await toBuffer(blockstore.get(cid))
   const node = dagPb.decode(block)
 
   // search links for sub-shard
   for (const link of node.Links) {
     if (link.Name?.length === 2) {
-      const block = await blockstore.get(link.Hash)
+      const block = await toBuffer(blockstore.get(link.Hash))
       const node = dagPb.decode(block)
       const firstLink = node.Links[1]
 

@@ -1,12 +1,11 @@
 import { DEFAULT_SESSION_MIN_PROVIDERS, DEFAULT_SESSION_MAX_PROVIDERS, InsufficientProvidersError } from '@helia/interface'
 import { AbortError, TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
-import { createScalableCuckooFilter } from '@libp2p/utils/filters'
-import { Queue } from '@libp2p/utils/queue'
+import { createScalableCuckooFilter, Queue } from '@libp2p/utils'
 import { base64 } from 'multiformats/bases/base64'
 import pDefer from 'p-defer'
 import type { BlockBroker, BlockRetrievalOptions, CreateSessionOptions } from '@helia/interface'
 import type { AbortOptions, ComponentLogger, Logger, PeerId } from '@libp2p/interface'
-import type { Filter } from '@libp2p/utils/filters'
+import type { Filter } from '@libp2p/utils'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { CID } from 'multiformats/cid'
 import type { DeferredPromise } from 'p-defer'
@@ -88,7 +87,6 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     const queue = new Queue<Uint8Array, { provider: Provider, priority?: number } & AbortOptions>({
       concurrency: this.maxProviders
     })
-    queue.addEventListener('error', () => {})
     queue.addEventListener('failure', (evt) => {
       this.log.error('error querying provider %o, evicting from session', evt.detail.job.options.provider, evt.detail.error)
       this.evict(evt.detail.job.options.provider)
@@ -99,9 +97,14 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
       deferred.resolve(evt.detail.result)
     })
     queue.addEventListener('idle', () => {
-      if (foundBlock || options.signal?.aborted === true) {
+      if (foundBlock) {
         this.log.trace('session idle, found block')
         // we either found the block or the user gave up
+        return
+      }
+
+      if (options.signal?.aborted === true) {
+        this.log.trace('session idle, signal aborted')
         return
       }
 

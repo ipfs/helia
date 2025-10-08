@@ -7,12 +7,12 @@ import * as jsonCodec from 'multiformats/codecs/json'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import type { JSON, AddOptions } from '@helia/json'
-import type { HeliaLibp2p } from 'helia'
+import type { Helia } from 'helia'
 import type { KuboNode } from 'ipfsd-ctl'
 import type { BlockPutOptions as KuboAddOptions } from 'kubo-rpc-client'
 
 describe('@helia/json', () => {
-  let helia: HeliaLibp2p
+  let helia: Helia
   let j: JSON
   let kubo: KuboNode
 
@@ -58,7 +58,9 @@ describe('@helia/json', () => {
 
   it('should add to kubo and fetch from helia', async () => {
     const input = { hello: 'world' }
-    const cid = await kubo.api.block.put(jsonCodec.encode(input))
+    const cid = await kubo.api.block.put(jsonCodec.encode(input), {
+      format: 'json'
+    })
     const output = await j.get(CID.parse(cid.toString()))
 
     expect(output).to.deep.equal(input)

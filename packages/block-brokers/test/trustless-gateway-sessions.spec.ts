@@ -7,9 +7,11 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { uriToMultiaddr } from '@multiformats/uri-to-multiaddr'
 import { expect } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
+import { raceSignal } from 'race-signal'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { createTrustlessGatewaySession } from '../src/trustless-gateway/session.js'
+import type { TrustlessGateway } from '../src/trustless-gateway/trustless-gateway.js'
 import type { Routing } from '@helia/interface'
 import type { ComponentLogger } from '@libp2p/interface'
 import type { StubbedInstance } from 'sinon-ts'
@@ -118,7 +120,13 @@ describe('trustless-gateway sessions', () => {
       allowLocal: true
     })
 
-    const queryProviderSpy = Sinon.spy(session, 'queryProvider')
+    const queryProviderStub = Sinon.stub(session, 'queryProvider')
+
+    queryProviderStub.callsFake(async (_cid, _provider, options) => {
+      return raceSignal(new Promise(resolve => {
+        // never resolve
+      }), options.signal)
+    })
 
     components.routing.findProviders.returns(async function * () {
       yield {
@@ -129,9 +137,9 @@ describe('trustless-gateway sessions', () => {
       }
     }())
 
-    await expect(session.retrieve(cid, { signal: AbortSignal.timeout(500) })).to.eventually.be.rejected()
+    await expect(session.retrieve(cid, { signal: AbortSignal.timeout(50) })).to.eventually.be.rejected()
       .with.property('name', 'AbortError')
-    expect(queryProviderSpy.callCount).to.equal(1)
+    expect(queryProviderStub.callCount).to.equal(1)
   })
 
   it('should not abort the session when the signal is aborted if the block is found', async () => {
@@ -139,34 +147,58 @@ describe('trustless-gateway sessions', () => {
     const block = Uint8Array.from([0, 1, 2, 0])
     const session = createTrustlessGatewaySession(components, {
       allowInsecure: true,
-      allowLocal: true,
-      transformRequestInit: (requestInit) => {
-        requestInit.headers = {
-          // The difference here on my machine is 25ms.. if the difference between finding the block and the signal being aborted is less than 22ms, then the test will fail.
-          delay: '478'
-        }
-        return requestInit
-      }
+      allowLocal: true
     })
-
-    const queryProviderSpy = Sinon.spy(session, 'queryProvider')
+    const providers = [{
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      multiaddrs: [
+        uriToMultiaddr(process.env.BAD_TRUSTLESS_GATEWAY ?? '')
+      ]
+    },
+    {
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      multiaddrs: [
+        uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
+      ]
+    }]
 
     components.routing.findProviders.returns(async function * () {
-      yield {
-        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
-        multiaddrs: [
-          uriToMultiaddr(process.env.BAD_TRUSTLESS_GATEWAY ?? '')
-        ]
-      }
-      yield {
-        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
-        multiaddrs: [
-          uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
-        ]
-      }
+      yield providers[1]
+      yield providers[0]
     }())
 
-    await expect(session.retrieve(cid, { signal: AbortSignal.timeout(500) })).to.eventually.deep.equal(block)
-    expect(queryProviderSpy.callCount).to.equal(2)
+    const controller = new AbortController()
+    const queryProviderStub = Sinon.stub(session, 'queryProvider')
+
+    // a promise that will resolve at the exact moment we want both events to occur
+    const triggerMoment = new Promise<void>(resolve => setTimeout(resolve, 50))
+
+    queryProviderStub.withArgs(
+      cid,
+      Sinon.match((provider: TrustlessGateway) => provider.url.toString().includes(process.env.BAD_TRUSTLESS_GATEWAY ?? ''))
+    ).callsFake(async (_cid, _provider, options) => {
+      const racedPromise = triggerMoment
+        .then(async () => new Promise(resolve => setTimeout(resolve, 0)))
+        .then(() => { return new Uint8Array([0, 1, 2, 3]) })
+      return raceSignal(racedPromise, options.signal)
+    })
+
+    queryProviderStub.withArgs(
+      cid,
+      Sinon.match((provider: TrustlessGateway) => provider.url.toString().includes(process.env.TRUSTLESS_GATEWAY ?? ''))
+    ).callsFake(async () => {
+      return triggerMoment.then(() => block)
+    })
+
+    // abort the signal
+    void triggerMoment.then(async () => {
+      // slight delay to ensure this aborts after the block returning provider
+      await new Promise(resolve => setTimeout(resolve, 0))
+      controller.abort()
+    })
+
+    await expect(session.retrieve(cid, { signal: controller.signal }))
+      .to.eventually.deep.equal(block)
+    expect(queryProviderStub.callCount).to.equal(2)
   })
 })

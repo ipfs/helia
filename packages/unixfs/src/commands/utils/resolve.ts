@@ -55,7 +55,7 @@ export async function resolve (cid: CID, path: string | undefined, blockstore: G
 }
 
 export interface UpdatePathCidsOptions extends AbortOptions {
-  shardSplitThresholdBytes: number
+  shardSplitThresholdBytes?: number
 }
 
 /**

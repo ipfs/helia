@@ -8,10 +8,10 @@ import { Key } from 'interface-datastore'
 import { createLibp2p } from 'libp2p'
 import { CID } from 'multiformats/cid'
 import { createHelia } from '../src/index.js'
-import type { HeliaLibp2p } from '../src/index.js'
+import type { Helia } from '@helia/interface'
 
 describe('helia factory', () => {
-  let helia: HeliaLibp2p<any>
+  let helia: Helia
 
   afterEach(async () => {
     if (helia != null) {
@@ -50,13 +50,14 @@ describe('helia factory', () => {
   it('does not add helia details to the AgentVersion when it has been overridden', async () => {
     helia = await createHelia({
       libp2p: await createLibp2p({
+        nodeInfo: {
+          userAgent: 'my custom user agent'
+        },
         transports: [
           webSockets()
         ],
         services: {
-          identify: identify({
-            agentVersion: 'my custom agent version'
-          })
+          identify: identify()
         }
       })
     })

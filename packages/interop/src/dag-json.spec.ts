@@ -7,12 +7,12 @@ import * as codec from 'multiformats/codecs/json'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import type { DAGJSON, AddOptions } from '@helia/dag-json'
-import type { HeliaLibp2p } from 'helia'
+import type { Helia } from 'helia'
 import type { KuboNode } from 'ipfsd-ctl'
 import type { BlockPutOptions as KuboAddOptions } from 'kubo-rpc-client'
 
 describe('@helia/dag-json', () => {
-  let helia: HeliaLibp2p
+  let helia: Helia
   let d: DAGJSON
   let kubo: KuboNode
 
@@ -58,7 +58,9 @@ describe('@helia/dag-json', () => {
 
   it('should add to kubo and fetch from helia', async () => {
     const input = { hello: 'world' }
-    const cid = await kubo.api.block.put(codec.encode(input))
+    const cid = await kubo.api.block.put(codec.encode(input), {
+      format: 'dag-json'
+    })
     const output = await d.get(CID.parse(cid.toString()))
 
     expect(output).to.deep.equal(input)

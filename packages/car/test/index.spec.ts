@@ -4,7 +4,7 @@ import { mfs } from '@helia/mfs'
 import { unixfs } from '@helia/unixfs'
 import { CarReader } from '@ipld/car'
 import { defaultLogger } from '@libp2p/logger'
-import { createScalableCuckooFilter } from '@libp2p/utils/filters'
+import { createScalableCuckooFilter } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
@@ -13,7 +13,6 @@ import toBuffer from 'it-to-buffer'
 import { car } from '../src/index.js'
 import { largeFile, smallFile } from './fixtures/files.js'
 import { getCodec } from './fixtures/get-codec.js'
-import { memoryCarWriter } from './fixtures/memory-car.js'
 import type { Car } from '../src/index.js'
 import type { UnixFS } from '@helia/unixfs'
 import type { Blockstore } from 'interface-blockstore'
@@ -39,15 +38,12 @@ describe('import/export car file', () => {
     const otherUnixFS = unixfs({ blockstore: otherBlockstore })
     const otherCar = car({ blockstore: otherBlockstore, getCodec, logger: defaultLogger() })
     const cid = await otherUnixFS.addBytes(smallFile)
-
-    const writer = memoryCarWriter(cid)
-    await otherCar.export(cid, writer)
-
-    const reader = await CarReader.fromBytes(await writer.bytes())
+    const bytes = await toBuffer(otherCar.export(cid))
+    const reader = await CarReader.fromBytes(bytes)
 
     await c.import(reader)
 
-    expect(await blockstore.get(cid)).to.equalBytes(smallFile)
+    expect(await toBuffer(blockstore.get(cid))).to.equalBytes(smallFile)
   })
 
   it('exports and imports a multiple root car file', async () => {
@@ -61,11 +57,8 @@ describe('import/export car file', () => {
     const cid1 = await otherUnixFS.addBytes(fileData1)
     const cid2 = await otherUnixFS.addBytes(fileData2)
     const cid3 = await otherUnixFS.addBytes(fileData3)
-
-    const writer = memoryCarWriter([cid1, cid2, cid3])
-    await otherCar.export([cid1, cid2, cid3], writer)
-
-    const reader = await CarReader.fromBytes(await writer.bytes())
+    const bytes = await toBuffer(otherCar.export([cid1, cid2, cid3]))
+    const reader = await CarReader.fromBytes(bytes)
 
     await c.import(reader)
 
@@ -79,11 +72,8 @@ describe('import/export car file', () => {
     const otherUnixFS = unixfs({ blockstore: otherBlockstore })
     const otherCar = car({ blockstore: otherBlockstore, getCodec, logger: defaultLogger() })
     const cid = await otherUnixFS.addBytes(largeFile)
-
-    const writer = memoryCarWriter(cid)
-    await otherCar.export(cid, writer)
-
-    const reader = await CarReader.fromBytes(await writer.bytes())
+    const bytes = await toBuffer(otherCar.export(cid))
+    const reader = await CarReader.fromBytes(bytes)
 
     await c.import(reader)
 
@@ -114,10 +104,8 @@ describe('import/export car file', () => {
       })
     })
 
-    const writer = memoryCarWriter([cid1, cid2, cid3])
-    await otherCar.export([cid1, cid2, cid3], writer)
-
-    const reader = await CarReader.fromBytes(await writer.bytes())
+    const bytes = await toBuffer(otherCar.export([cid1, cid2, cid3]))
+    const reader = await CarReader.fromBytes(bytes)
 
     await c.import(reader)
 
@@ -130,7 +118,7 @@ describe('import/export car file', () => {
     const otherBlockstore = new MemoryBlockstore()
     const otherUnixFS = unixfs({ blockstore: otherBlockstore })
     const otherDatastore = new MemoryDatastore()
-    const otherMFS = mfs({ blockstore: otherBlockstore, datastore: otherDatastore })
+    const otherMFS = mfs({ blockstore: otherBlockstore, datastore: otherDatastore, logger: defaultLogger() })
     const otherCar = car({ blockstore: otherBlockstore, getCodec, logger: defaultLogger() })
 
     await otherMFS.mkdir('/testDuplicates')
@@ -143,13 +131,12 @@ describe('import/export car file', () => {
     const rootObject = await otherMFS.stat('/testDuplicates/')
     const rootCid = rootObject.cid
 
-    const writer = memoryCarWriter(rootCid)
     const blockFilter = createScalableCuckooFilter(5)
-    await otherCar.export(rootCid, writer, {
-      blockFilter
-    })
 
-    const carBytes = await writer.bytes()
+    const carBytes = await toBuffer(otherCar.export(rootCid, {
+      blockFilter
+    }))
+
     expect(carBytes.length).to.equal(351)
   })
 
@@ -157,7 +144,7 @@ describe('import/export car file', () => {
     const otherBlockstore = new MemoryBlockstore()
     const otherUnixFS = unixfs({ blockstore: otherBlockstore })
     const otherDatastore = new MemoryDatastore()
-    const otherMFS = mfs({ blockstore: otherBlockstore, datastore: otherDatastore })
+    const otherMFS = mfs({ blockstore: otherBlockstore, datastore: otherDatastore, logger: defaultLogger() })
     const otherCar = car({ blockstore: otherBlockstore, getCodec, logger: defaultLogger() })
 
     await otherMFS.mkdir('/testDuplicates')
@@ -170,10 +157,7 @@ describe('import/export car file', () => {
     const rootObject = await otherMFS.stat('/testDuplicates/')
     const rootCid = rootObject.cid
 
-    const writer = memoryCarWriter(rootCid)
-    await otherCar.export(rootCid, writer)
-
-    const carBytes = await writer.bytes()
+    const carBytes = await toBuffer(otherCar.export(rootCid))
     expect(carBytes.length).to.equal(401)
   })
 })

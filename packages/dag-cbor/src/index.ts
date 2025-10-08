@@ -1,7 +1,7 @@
 /**
  * @packageDocumentation
  *
- * `@helia/dag-cbor` makes working with DAG-JSON {@link https://github.com/ipfs/helia Helia} simple & straightforward.
+ * `@helia/dag-cbor` makes working with DAG-CBOR {@link https://ipld.io/docs/codecs/known/dag-cbor/} simple & straightforward.
  *
  * See the {@link DAGCBOR} interface for all available operations.
  *
@@ -25,13 +25,11 @@
  * ```
  */
 
-import * as codec from '@ipld/dag-cbor'
 import { CID } from 'multiformats/cid'
-import { sha256 } from 'multiformats/hashes/sha2'
-import type { GetBlockProgressEvents, PutBlockProgressEvents } from '@helia/interface/blocks'
+import { DAGCBOR as DAGCBORClass } from './dag-cbor.js'
+import type { GetBlockProgressEvents, ProviderOptions, PutBlockProgressEvents } from '@helia/interface/blocks'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
-import type { BlockCodec } from 'multiformats/codecs/interface'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 import type { ProgressOptions } from 'progress-events'
 
@@ -40,11 +38,11 @@ export interface DAGCBORComponents {
 }
 
 export interface AddOptions extends AbortOptions, ProgressOptions<PutBlockProgressEvents> {
-  hasher: MultihashHasher
+  hasher?: MultihashHasher
 }
 
-export interface GetOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents> {
-  codec: BlockCodec<any, unknown>
+export interface GetOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents>, ProviderOptions {
+
 }
 
 /**
@@ -94,33 +92,9 @@ export interface DAGCBOR {
   get<T>(cid: CID, options?: Partial<GetOptions>): Promise<T>
 }
 
-class DefaultDAGCBOR implements DAGCBOR {
-  private readonly components: DAGCBORComponents
-
-  constructor (components: DAGCBORComponents) {
-    this.components = components
-  }
-
-  async add (obj: any, options: Partial<AddOptions> = {}): Promise<CID> {
-    const buf = codec.encode(obj)
-    const hash = await (options.hasher ?? sha256).digest(buf)
-    const cid = CID.createV1(codec.code, hash)
-
-    await this.components.blockstore.put(cid, buf, options)
-
-    return cid
-  }
-
-  async get <T> (cid: CID, options: Partial<GetOptions> = {}): Promise<T> {
-    const buf = await this.components.blockstore.get(cid, options)
-
-    return codec.decode(buf)
-  }
-}
-
 /**
  * Create a {@link DAGCBOR} instance for use with {@link https://github.com/ipfs/helia Helia}
  */
 export function dagCbor (helia: { blockstore: Blockstore }): DAGCBOR {
-  return new DefaultDAGCBOR(helia)
+  return new DAGCBORClass(helia)
 }

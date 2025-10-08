@@ -1,5 +1,28 @@
 # Changelog
 
+## [5.1.0](https://github.com/ipfs/helia/compare/unixfs-v5.0.4...unixfs-v5.1.0) (2025-07-31)
+
+
+### Features
+
+* expose extended option for ls in mfs and unixfs ([#836](https://github.com/ipfs/helia/issues/836)) ([9f51b17](https://github.com/ipfs/helia/commit/9f51b175c003a8e052231f4b85c1119165b590c6))
+* expose providers option ([#834](https://github.com/ipfs/helia/issues/834)) ([5a911c6](https://github.com/ipfs/helia/commit/5a911c6977ec47d1906ccc69b5f57667f22d9ccf))
+
+## [5.0.4](https://github.com/ipfs/helia/compare/unixfs-v5.0.3...unixfs-v5.0.4) (2025-07-22)
+
+
+### Documentation
+
+* add example of adding browser file/dir to unixfs ([#817](https://github.com/ipfs/helia/issues/817)) ([1e9745c](https://github.com/ipfs/helia/commit/1e9745c0671ced6a1f9142555e5074cbd47d88b3))
+* fix API docs link ([#809](https://github.com/ipfs/helia/issues/809)) ([41bcc88](https://github.com/ipfs/helia/commit/41bcc88dbc6f516c4ad4ca3740b83eafdcd5e1c9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.3.2 to ^5.4.0
+
 ## [5.0.3](https://github.com/ipfs/helia/compare/unixfs-v5.0.2...unixfs-v5.0.3) (2025-05-20)
 
 

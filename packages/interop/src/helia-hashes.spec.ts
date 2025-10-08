@@ -7,11 +7,11 @@ import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
-import type { HeliaLibp2p } from 'helia'
+import type { Helia } from 'helia'
 import type { KuboNode } from 'ipfsd-ctl'
 
 describe('helia - hashes', () => {
-  let helia: HeliaLibp2p
+  let helia: Helia
   let kubo: KuboNode
 
   beforeEach(async () => {
@@ -50,7 +50,7 @@ describe('helia - hashes', () => {
       hashAlg: 'sha3-512'
     })
     expect(cid.multihash.code).to.equal(sha3512.code)
-    const output = await helia.blockstore.get(CID.parse(cid.toString()))
+    const output = await toBuffer(helia.blockstore.get(CID.parse(cid.toString())))
 
     expect(output).to.equalBytes(input)
   })

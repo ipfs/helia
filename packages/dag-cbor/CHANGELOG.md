@@ -1,5 +1,27 @@
 # Changelog
 
+## [4.1.0](https://github.com/ipfs/helia/compare/dag-cbor-v4.0.7...dag-cbor-v4.1.0) (2025-07-31)
+
+
+### Features
+
+* expose providers option ([#834](https://github.com/ipfs/helia/issues/834)) ([5a911c6](https://github.com/ipfs/helia/commit/5a911c6977ec47d1906ccc69b5f57667f22d9ccf))
+
+## [4.0.7](https://github.com/ipfs/helia/compare/dag-cbor-v4.0.6...dag-cbor-v4.0.7) (2025-07-22)
+
+
+### Documentation
+
+* fix API docs link ([#809](https://github.com/ipfs/helia/issues/809)) ([41bcc88](https://github.com/ipfs/helia/commit/41bcc88dbc6f516c4ad4ca3740b83eafdcd5e1c9))
+* fix module name typo in readme ([#829](https://github.com/ipfs/helia/issues/829)) ([8df30db](https://github.com/ipfs/helia/commit/8df30dbe6fda3e5e6ebb4928a118ae3464d8c4e8))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.3.2 to ^5.4.0
+
 ## [4.0.6](https://github.com/ipfs/helia/compare/dag-cbor-v4.0.5...dag-cbor-v4.0.6) (2025-05-20)
 
 
