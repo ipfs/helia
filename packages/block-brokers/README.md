@@ -13,6 +13,65 @@
 
 > Block brokers for Helia
 
+# About
+
+<!--
+
+!IMPORTANT!
+
+Everything in this README between "# About" and "# Install" is automatically
+generated and will be overwritten the next time the doc generator is run.
+
+To make changes to this section, please update the @packageDocumentation section
+of src/index.js or src/index.ts
+
+To experiment with formatting, please run "npm run docs" from the root of this
+repo and examine the changes made.
+
+-->
+
+## Trustless Gateway Block Broker
+
+The TrustlessGatewayBlockBroker allows customizing fetch requests to HTTP gateways.
+
+## Example - Customizing fetch requests with custom headers
+
+```typescript
+import { createHelia } from 'helia'
+import { trustlessGateway } from '@helia/block-brokers'
+import { httpGatewayRouting } from '@helia/routers'
+import { unixfs } from '@helia/unixfs'
+import { CID } from 'multiformats/cid'
+import { concat } from 'uint8arrays/concat'
+import all from 'it-all'
+
+const routing = httpGatewayRouting({
+  gateways: ['https://ipfs.io', 'https://dweb.link']
+})
+
+const helia = await createHelia({
+  routers: [routing],
+  blockBrokers: [
+    trustlessGateway({
+      transformRequestInit: (requestInit) => {
+        requestInit.headers = {
+          ...requestInit.headers,
+          'User-Agent': 'Helia Example Script'
+        }
+        return requestInit
+      }
+    })
+  ]
+})
+
+const fs = unixfs(helia)
+const cid = CID.parse('bafkreife2klsil6kaxqhvmhgldpsvk5yutzm4i5bgjoq6fydefwtihnesa')
+const chunks = await all(fs.cat(cid))
+const content = concat(chunks)
+
+
+```
+
 # Install
 
 ```console
