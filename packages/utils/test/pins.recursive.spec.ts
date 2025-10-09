@@ -61,7 +61,7 @@ describe('pins (recursive)', () => {
     for (const [name, node] of Object.entries(dag)) {
       for (const cid of node.links) {
         await expect(helia.blockstore.delete(cid)).to.eventually.be.rejected
-          .with.property('message', 'CID was pinned', `allowed deleting pinned block ${name}`)
+          .with.property('name', 'BlockPinnedError', `allowed deleting pinned block ${name}`)
       }
     }
   })

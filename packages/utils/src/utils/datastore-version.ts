@@ -1,6 +1,7 @@
 import { Key } from 'interface-datastore'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { InvalidDatastoreVersion } from '../errors.js'
 import type { Datastore } from 'interface-datastore'
 
 const DS_VERSION_KEY = new Key('/version')
@@ -19,6 +20,6 @@ export async function assertDatastoreVersionIsCurrent (datastore: Datastore): Pr
 
   if (version !== CURRENT_VERSION) {
     // TODO: write migrations when we break compatibility - for an example, see https://github.com/ipfs/js-ipfs-repo/tree/master/packages/ipfs-repo-migrations
-    throw new Error('Unknown datastore version, a datastore migration may be required')
+    throw new InvalidDatastoreVersion('Invalid datastore version, a datastore migration may be required')
   }
 }

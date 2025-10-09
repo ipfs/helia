@@ -108,7 +108,7 @@ describe('pins', () => {
     await drain(helia.pins.add(cid))
 
     await expect(helia.blockstore.delete(cid)).to.eventually.be.rejected
-      .with.property('message', 'CID was pinned')
+      .with.property('name', 'BlockPinnedError')
   })
 
   it('lists pins created with default args', async () => {

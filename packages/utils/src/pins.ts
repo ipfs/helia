@@ -1,3 +1,4 @@
+import { InvalidParametersError } from '@libp2p/interface'
 import { Queue } from '@libp2p/utils'
 import * as cborg from 'cborg'
 import { Key } from 'interface-datastore'
@@ -7,6 +8,7 @@ import { createUnsafe } from 'multiformats/block'
 import { CID } from 'multiformats/cid'
 import { CustomProgressEvent } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import { AlreadyPinnedError } from './errors.ts'
 import type { CodecLoader } from '@helia/interface'
 import type { GetBlockProgressEvents } from '@helia/interface/blocks'
 import type { AddOptions, AddPinEvents, IsPinnedOptions, LsOptions, Pin, Pins, RmOptions } from '@helia/interface/pins'
@@ -76,13 +78,13 @@ export class PinsImpl implements Pins {
     const pinKey = toDSKey(cid)
 
     if (await this.datastore.has(pinKey)) {
-      throw new Error('Already pinned')
+      throw new AlreadyPinnedError('Already pinned')
     }
 
     const depth = Math.round(options.depth ?? Infinity)
 
     if (depth < 0) {
-      throw new Error('Depth must be greater than or equal to 0')
+      throw new InvalidParametersError('Depth must be greater than or equal to 0')
     }
 
     // use a queue to walk the DAG instead of recursion so we can traverse very large DAGs

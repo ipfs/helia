@@ -78,7 +78,7 @@ describe('pins (depth limited)', () => {
         for (const [name, node] of Object.entries(dag)) {
           if (node.level <= i) {
             await expect(helia.blockstore.delete(node.cid)).to.eventually.be.rejected
-              .with.property('message', 'CID was pinned', `allowed deleting pinned block ${name}`)
+              .with.property('name', 'BlockPinnedError', `allowed deleting pinned block ${name}`)
           } else {
             await expect(helia.blockstore.delete(node.cid)).to.eventually.be.undefined(`allowed deleting pinned block ${name}`)
           }

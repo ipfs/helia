@@ -1,5 +1,6 @@
 import { start, stop } from '@libp2p/interface'
 import createMortice from 'mortice'
+import { BlockPinnedError } from './errors.js'
 import type { Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions, SessionBlockstore } from '@helia/interface/blocks'
 import type { Pins } from '@helia/interface/pins'
 import type { AbortOptions, Startable } from '@libp2p/interface'
@@ -123,7 +124,7 @@ export class BlockStorage implements Blocks, Startable {
 
     try {
       if (await this.pins.isPinned(cid)) {
-        throw new Error('CID was pinned')
+        throw new BlockPinnedError('Block was pinned - please unpin and try again')
       }
 
       await this.child.delete(cid, options)
@@ -145,7 +146,7 @@ export class BlockStorage implements Blocks, Startable {
       yield * this.child.deleteMany((async function * (): AsyncGenerator<CID> {
         for await (const cid of cids) {
           if (await storage.pins.isPinned(cid)) {
-            throw new Error('CID was pinned')
+            throw new BlockPinnedError('Block was pinned - please unpin and try again')
           }
 
           yield cid
