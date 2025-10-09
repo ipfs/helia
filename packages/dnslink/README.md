@@ -74,7 +74,7 @@ import { dnsLink } from '@helia/dnslink'
 const node = await createHelia()
 const name = dnsLink(node)
 
-const { answer } = await name.resolve('blog.ipfs.tech')
+const [{ answer }] = await name.resolve('blog.ipfs.tech')
 
 console.info(answer)
 // { data: '/ipfs/bafybe...' }

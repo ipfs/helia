@@ -47,8 +47,28 @@ describe('dnslink', () => {
     }]))
 
     const result = await name.resolve('foobar.baz', { nocache: true, offline: true })
-    expect(result).to.have.deep.property('cid', CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'))
-    expect(result).to.have.property('path', '')
+    expect(result).to.have.deep.nested.property('[0].cid', CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'))
+    expect(result).to.have.nested.property('[0].path', '')
+  })
+
+  it('should resolve a domain to multiple values', async () => {
+    dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
+      name: '_dnslink.foobar.baz.',
+      TTL: 60,
+      type: RecordType.TXT,
+      data: 'dnslink=/ipfs/QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'
+    }, {
+      name: '_dnslink.foobar.baz.',
+      TTL: 60,
+      type: RecordType.TXT,
+      data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'
+    }]))
+
+    const result = await name.resolve('foobar.baz', { nocache: true, offline: true })
+    expect(result).to.have.deep.nested.property('[0].cid', CID.parse('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'))
+    expect(result).to.have.nested.property('[0].path', '')
+    expect(result).to.have.deep.nested.property('[1].cid', CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'))
+    expect(result).to.have.nested.property('[1].path', '')
   })
 
   it('should retry without `_dnslink.` on a domain', async () => {
@@ -61,8 +81,8 @@ describe('dnslink', () => {
     }]))
 
     const result = await name.resolve('foobar.baz', { nocache: true, offline: true })
-    expect(result).to.have.deep.property('cid', CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'))
-    expect(result).to.have.property('path', '')
+    expect(result).to.have.deep.nested.property('[0].cid', CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'))
+    expect(result).to.have.nested.property('[0].path', '')
   })
 
   it('should handle bad records', async () => {
@@ -99,7 +119,7 @@ describe('dnslink', () => {
     }]))
 
     const result = await name.resolve('foobar.baz', { nocache: true, offline: true })
-    expect(result).to.have.deep.property('cid', CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'))
+    expect(result).to.have.deep.nested.property('[0].cid', CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'))
   })
 
   it('should handle records wrapped in quotation marks', async () => {
@@ -111,7 +131,7 @@ describe('dnslink', () => {
     }]))
 
     const result = await name.resolve('foobar.baz', { nocache: true, offline: true })
-    expect(result).to.have.deep.property('cid', CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'))
+    expect(result).to.have.deep.nested.property('[0].cid', CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'))
   })
 
   it('should support trailing slash in returned dnslink value', async () => {
@@ -126,7 +146,7 @@ describe('dnslink', () => {
 
     const result = await name.resolve('foobar.baz', { nocache: true })
     // spellchecker:disable-next-line
-    expect(result).to.have.deep.property('cid', CID.parse('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'), 'doesn\'t support trailing slashes')
+    expect(result).to.have.deep.nested.property('[0].cid', CID.parse('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'), 'doesn\'t support trailing slashes')
   })
 
   it('should support paths in returned dnslink value', async () => {
@@ -141,8 +161,8 @@ describe('dnslink', () => {
 
     const result = await name.resolve('foobar.baz', { nocache: true })
     // spellchecker:disable-next-line
-    expect(result).to.have.deep.property('cid', CID.parse('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'), 'doesn\'t support trailing paths')
-    expect(result).to.have.property('path', '/foobar/path/123')
+    expect(result).to.have.deep.nested.property('[0].cid', CID.parse('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'), 'doesn\'t support trailing paths')
+    expect(result).to.have.nested.property('[0].path', '/foobar/path/123')
   })
 
   it('should resolve recursive dnslink -> <peerId>/<path>', async () => {
@@ -161,8 +181,8 @@ describe('dnslink', () => {
       throw new Error('Did not resolve entry')
     }
 
-    expect(result).to.have.deep.property('peerId', peerId)
-    expect(result).to.have.property('path', '/foobar/path/123')
+    expect(result).to.have.deep.nested.property('[0].peerId', peerId)
+    expect(result).to.have.nested.property('[0].path', '/foobar/path/123')
   })
 
   it('should resolve recursive dnslink -> <IPNS_base36_CID>/<path>', async () => {
@@ -181,8 +201,8 @@ describe('dnslink', () => {
       throw new Error('Did not resolve entry')
     }
 
-    expect(result).to.have.deep.property('peerId', peerId)
-    expect(result).to.have.property('path', '/foobar/path/123')
+    expect(result).to.have.deep.nested.property('[0].peerId', peerId)
+    expect(result).to.have.nested.property('[0].path', '/foobar/path/123')
   })
 
   it('should follow CNAMES to delegated DNSLink domains', async () => {
@@ -205,7 +225,7 @@ describe('dnslink', () => {
       throw new Error('Did not resolve entry')
     }
 
-    expect(result).to.have.deep.property('cid', CID.parse('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'))
+    expect(result).to.have.deep.nested.property('[0].cid', CID.parse('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'))
   })
 
   it('should resolve dnslink namespace', async () => {
@@ -230,7 +250,7 @@ describe('dnslink', () => {
       throw new Error('Did not resolve entry')
     }
 
-    expect(result).to.have.deep.property('cid', cid)
+    expect(result).to.have.deep.nested.property('[0].cid', cid)
   })
 
   it('should include DNS Answer in result', async () => {
@@ -249,7 +269,7 @@ describe('dnslink', () => {
       throw new Error('Did not resolve entry')
     }
 
-    expect(result).to.have.deep.property('answer', answer)
+    expect(result).to.have.deep.nested.property('[0].answer', answer)
   })
 
   it('should support custom parsers', async () => {
@@ -281,7 +301,7 @@ describe('dnslink', () => {
 
     const result = await name.resolve('foobar.baz')
 
-    expect(result).to.have.property('namespace', 'hello')
-    expect(result).to.have.property('value', 'world')
+    expect(result).to.have.nested.property('[0].namespace', 'hello')
+    expect(result).to.have.nested.property('[0].value', 'world')
   })
 })

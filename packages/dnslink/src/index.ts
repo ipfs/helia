@@ -45,7 +45,7 @@
  * const node = await createHelia()
  * const name = dnsLink(node)
  *
- * const { answer } = await name.resolve('blog.ipfs.tech')
+ * const [{ answer }] = await name.resolve('blog.ipfs.tech')
  *
  * console.info(answer)
  * // { data: '/ipfs/bafybe...' }
@@ -220,7 +220,7 @@ export interface DNSLink {
    * console.info(result) // { answer: ..., value: ... }
    * ```
    */
-  resolve(domain: string, options?: ResolveDNSLinkOptions): Promise<DNSLinkResult>
+  resolve(domain: string, options?: ResolveDNSLinkOptions): Promise<DNSLinkResult[]>
 }
 
 export interface DNSLinkComponents {
