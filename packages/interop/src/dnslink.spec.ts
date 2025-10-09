@@ -32,7 +32,7 @@ describe('@helia/dnslink', () => {
     it(`should resolve ${domain}`, async () => {
       const result = await name.resolve(domain)
 
-      expect(result).to.have.property('cid')
+      expect(result).to.have.nested.property('[0].cid')
     }).retries(5)
   })
 })
