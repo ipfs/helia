@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/ipfs/helia/compare/dnslink-v1.0.0...dnslink-v1.0.1) (2025-10-09)
+
+
+### Bug Fixes
+
+* support multiple DNSLink entries ([#863](https://github.com/ipfs/helia/issues/863)) ([fe38409](https://github.com/ipfs/helia/commit/fe384098a0930915eff4c41d562606955e0e710d)), closes [#368](https://github.com/ipfs/helia/issues/368)
+
 ## 1.0.0 (2025-10-09)
 
 

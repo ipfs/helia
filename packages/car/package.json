@@ -1,6 +1,6 @@
 {
   "name": "@helia/car",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "Import/export car files from Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/car#readme",
@@ -62,8 +62,8 @@
     "race-signal": "^2.0.0"
   },
   "devDependencies": {
-    "@helia/mfs": "^6.0.0",
-    "@helia/unixfs": "^6.0.0",
+    "@helia/mfs": "^6.0.1",
+    "@helia/unixfs": "^6.0.1",
     "@ipld/dag-cbor": "^9.2.5",
     "@libp2p/logger": "^6.0.5",
     "aegir": "^47.0.22",

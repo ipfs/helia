@@ -1,5 +1,15 @@
 # Changelog
 
+## [5.0.1](https://github.com/ipfs/helia/compare/block-brokers-v5.0.0...block-brokers-v5.0.1) (2025-10-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^3.0.0 to ^3.0.1
+    * @helia/utils bumped from ^2.0.0 to ^2.0.1
+
 ## [5.0.0](https://github.com/ipfs/helia/compare/block-brokers-v4.2.4...block-brokers-v5.0.0) (2025-10-09)
 
 

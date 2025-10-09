@@ -1,5 +1,30 @@
 # Changelog
 
+## [9.0.1](https://github.com/ipfs/helia/compare/interop-v9.0.0...interop-v9.0.1) (2025-10-09)
+
+
+### Bug Fixes
+
+* enforce maximum identity hash size ([#865](https://github.com/ipfs/helia/issues/865)) ([d9051cd](https://github.com/ipfs/helia/commit/d9051cdc2fd19ab7def32d195b5798b27d85a078)), closes [#846](https://github.com/ipfs/helia/issues/846)
+* support multiple DNSLink entries ([#863](https://github.com/ipfs/helia/issues/863)) ([fe38409](https://github.com/ipfs/helia/commit/fe384098a0930915eff4c41d562606955e0e710d)), closes [#368](https://github.com/ipfs/helia/issues/368)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.0.0 to ^5.0.1
+    * @helia/dnslink bumped from ^1.0.0 to ^1.0.1
+    * @helia/car bumped from ^5.0.0 to ^5.0.1
+    * @helia/dag-cbor bumped from ^5.0.0 to ^5.0.1
+    * @helia/dag-json bumped from ^5.0.0 to ^5.0.1
+    * @helia/http bumped from ^3.0.0 to ^3.0.1
+    * @helia/json bumped from ^5.0.0 to ^5.0.1
+    * @helia/mfs bumped from ^6.0.0 to ^6.0.1
+    * @helia/strings bumped from ^5.0.0 to ^5.0.1
+    * @helia/unixfs bumped from ^6.0.0 to ^6.0.1
+    * helia bumped from ^6.0.0 to ^6.0.1
+
 ## [9.0.0](https://github.com/ipfs/helia/compare/interop-v8.3.0...interop-v9.0.0) (2025-10-09)
 
 
