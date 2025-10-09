@@ -51,6 +51,24 @@ export interface DAGWalker {
 
 /**
  * Create and return a Helia node
+ *
+ * @example Creating a Helia node
+ *
+ * ```ts
+ * import { createHelia } from 'helia'
+ * import { unixfs } from '@helia/unixfs'
+ * import { CID } from 'multiformats/cid'
+ *
+ * const helia = await createHelia()
+ * const fs = unixfs(helia)
+ * const cid = CID.parse('QmFoo...')
+ *
+ * for await (const buf of fs.cat(cid, {
+ *   signal: AbortSignal.timeout(5_000)
+ * })) {
+ *   console.info(buf)
+ * }
+ * ```
  */
 export async function createHelia <T extends Libp2p> (init: Partial<HeliaInit<T>>): Promise<Helia<T>>
 export async function createHelia (init?: Partial<HeliaInit<Libp2p<DefaultLibp2pServices>>>): Promise<Helia<Libp2p<DefaultLibp2pServices>>>

@@ -31,6 +31,25 @@ import type { Libp2p } from '@libp2p/interface'
 
 /**
  * Create and return the default options used to create a Helia node
+ *
+ * @example Adding an additional libp2p service
+ *
+ * ```ts
+ * import { myService } from '@example/my-service'
+ * import { createHelia, heliaDefaults } from 'helia'
+ *
+ * // get a copy of the default libp2p config
+ * const init = heliaDefaults()
+ *
+ * // add the custom service to the service map
+ * init.libp2p.services.myService = myService()
+ *
+ * // create a Helia node with the custom config
+ * const helia = await createHelia(init)
+ *
+ * //... use service
+ * helia.libp2p.services.myService.serviceMethod()
+ * ```
  */
 export async function heliaDefaults <T extends Libp2p> (init: Partial<HeliaInit<T>> = {}): Promise<Omit<HeliaInit<T>, 'libp2p'> & { libp2p: T }> {
   const datastore = init.datastore ?? new MemoryDatastore()

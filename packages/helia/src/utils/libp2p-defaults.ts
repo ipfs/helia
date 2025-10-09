@@ -48,6 +48,31 @@ export interface DefaultLibp2pServices extends Record<string, unknown> {
   http: HTTP
 }
 
+/**
+ * Returns the default libp2p config used by Helia which can then be modified or
+ * extended to suit individual applications.
+ *
+ * @example Adding an additional libp2p service
+ *
+ * ```ts
+ * import { myService } from '@example/my-service'
+ * import { createHelia, libp2pDefaults } from 'helia'
+ *
+ * // get a copy of the default libp2p config
+ * const libp2p = libp2pDefaults()
+ *
+ * // add the custom service to the service map
+ * libp2p.services.myService = myService()
+ *
+ * // create a Helia node with the custom libp2p config
+ * const helia = await createHelia({
+ *   libp2p
+ * })
+ *
+ * //... use service
+ * helia.libp2p.services.myService.serviceMethod()
+ * ```
+ */
 export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOptions<DefaultLibp2pServices> & Required<Pick<Libp2pOptions<DefaultLibp2pServices>, 'services'>> {
   const agentVersion = `${name}/${version} ${userAgent()}`
 
