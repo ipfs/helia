@@ -1,5 +1,28 @@
 # Changelog
 
+## [5.0.0](https://github.com/ipfs/helia/compare/dag-json-v4.1.0...dag-json-v5.0.0) (2025-10-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* uses libp2p v3 and updated block/data stores
+
+### Features
+
+* update to libp2p@v3 and latest data/block stores ([#856](https://github.com/ipfs/helia/issues/856)) ([34d3ecd](https://github.com/ipfs/helia/commit/34d3ecd76c8424387c57221000e226f08ccd1d1e))
+
+
+### Bug Fixes
+
+* @helia/* modules validate CID codec ([#643](https://github.com/ipfs/helia/issues/643)) ([93aa464](https://github.com/ipfs/helia/commit/93aa46459dcff81f0e5eef479f76e39ef5f03736))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.4.0 to ^6.0.0
+
 ## [4.1.0](https://github.com/ipfs/helia/compare/dag-json-v4.0.7...dag-json-v4.1.0) (2025-07-31)
 
 

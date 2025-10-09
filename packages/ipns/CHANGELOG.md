@@ -1,5 +1,26 @@
 # Changelog
 
+## [9.0.0](https://github.com/ipfs/helia/compare/ipns-v8.2.4...ipns-v9.0.0) (2025-10-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* `ipns.publish` now accepts key name strings rather than private keys Names previously publishing using an user controlled private key, will need to be explicitly published again by first importing the key into the keychain (`await libp2p.keychain.importKey('my-key', key)` and then published with `ipns.publish('my-key', ...)`.
+* uses libp2p v3 and updated block/data stores
+
+### Features
+
+* add ipns reproviding/republishing ([#764](https://github.com/ipfs/helia/issues/764)) ([008747b](https://github.com/ipfs/helia/commit/008747b59a03682e1b6f648a39635e1b1971e481))
+* resolve IPNS records with PeerId and CID keys ([#861](https://github.com/ipfs/helia/issues/861)) ([b81ec52](https://github.com/ipfs/helia/commit/b81ec52026bee611f859c896da7d4234bac486a2)), closes [#801](https://github.com/ipfs/helia/issues/801)
+* update to libp2p@v3 and latest data/block stores ([#856](https://github.com/ipfs/helia/issues/856)) ([34d3ecd](https://github.com/ipfs/helia/commit/34d3ecd76c8424387c57221000e226f08ccd1d1e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.4.0 to ^6.0.0
+
 ## [8.2.4](https://github.com/ipfs/helia/compare/ipns-v8.2.3...ipns-v8.2.4) (2025-07-22)
 
 

@@ -1,5 +1,28 @@
 # Changelog
 
+## [5.0.0](https://github.com/ipfs/helia/compare/car-v4.2.0...car-v5.0.0) (2025-10-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* car.stream has been renamed car.export
+* uses libp2p v3 and updated block/data stores
+
+### Features
+
+* rename car stream to export ([#859](https://github.com/ipfs/helia/issues/859)) ([63338b9](https://github.com/ipfs/helia/commit/63338b9c261a1120592e5afb256dfa8c8feed16b))
+* update to libp2p@v3 and latest data/block stores ([#856](https://github.com/ipfs/helia/issues/856)) ([34d3ecd](https://github.com/ipfs/helia/commit/34d3ecd76c8424387c57221000e226f08ccd1d1e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.4.0 to ^6.0.0
+  * devDependencies
+    * @helia/mfs bumped from ^5.1.0 to ^6.0.0
+    * @helia/unixfs bumped from ^5.1.0 to ^6.0.0
+
 ## [4.2.0](https://github.com/ipfs/helia/compare/car-v4.1.3...car-v4.2.0) (2025-07-31)
 
 

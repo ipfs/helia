@@ -1,5 +1,37 @@
 # Changelog
 
+## [6.0.0](https://github.com/ipfs/helia/compare/helia-v5.5.1...helia-v6.0.0) (2025-10-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* use `Helia` interface instead of `HeliaLibp2p`
+* uses libp2p v3 and updated block/data stores
+
+### Features
+
+* update to libp2p@v3 and latest data/block stores ([#856](https://github.com/ipfs/helia/issues/856)) ([34d3ecd](https://github.com/ipfs/helia/commit/34d3ecd76c8424387c57221000e226f08ccd1d1e))
+
+
+### Bug Fixes
+
+* remove deprecated HeliaLibp2p interace ([#862](https://github.com/ipfs/helia/issues/862)) ([061f3cd](https://github.com/ipfs/helia/commit/061f3cdb6d47b2962617da2a3f83857000c58f80))
+
+
+### Documentation
+
+* update jsdocs ([e502d45](https://github.com/ipfs/helia/commit/e502d45fe328580c3b4f1033a5893db95088d27c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^4.2.4 to ^5.0.0
+    * @helia/interface bumped from ^5.4.0 to ^6.0.0
+    * @helia/routers bumped from ^3.1.3 to ^4.0.0
+    * @helia/utils bumped from ^1.4.0 to ^2.0.0
+
 ## [5.5.1](https://github.com/ipfs/helia/compare/helia-v5.5.0...helia-v5.5.1) (2025-07-31)
 
 

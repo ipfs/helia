@@ -1,5 +1,30 @@
 # Changelog
 
+## [5.0.0](https://github.com/ipfs/helia/compare/block-brokers-v4.2.4...block-brokers-v5.0.0) (2025-10-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* uses libp2p v3 and updated block/data stores
+
+### Features
+
+* update to libp2p@v3 and latest data/block stores ([#856](https://github.com/ipfs/helia/issues/856)) ([34d3ecd](https://github.com/ipfs/helia/commit/34d3ecd76c8424387c57221000e226f08ccd1d1e))
+
+
+### Documentation
+
+* Example for customizing fetch requests to trustless gateways ([#768](https://github.com/ipfs/helia/issues/768)) ([e605c6f](https://github.com/ipfs/helia/commit/e605c6fce090c23a1554c122ef6600dc35339891))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^2.2.0 to ^3.0.0
+    * @helia/interface bumped from ^5.4.0 to ^6.0.0
+    * @helia/utils bumped from ^1.4.0 to ^2.0.0
+
 ## [4.2.4](https://github.com/ipfs/helia/compare/block-brokers-v4.2.3...block-brokers-v4.2.4) (2025-07-31)
 
 

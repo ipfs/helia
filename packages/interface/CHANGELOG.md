@@ -5,6 +5,24 @@
 
 * expose .dns property on @helia/interface ([#465](https://github.com/ipfs/helia/issues/465)) ([8c9bb7d](https://github.com/ipfs/helia/commit/8c9bb7d224a1b786cba1fba18bffe07001a3b95d))
 
+## [6.0.0](https://github.com/ipfs/helia/compare/interface-v5.4.0...interface-v6.0.0) (2025-10-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* `ipns.publish` now accepts key name strings rather than private keys Names previously publishing using an user controlled private key, will need to be explicitly published again by first importing the key into the keychain (`await libp2p.keychain.importKey('my-key', key)` and then published with `ipns.publish('my-key', ...)`.
+* uses libp2p v3 and updated block/data stores
+
+### Features
+
+* add ipns reproviding/republishing ([#764](https://github.com/ipfs/helia/issues/764)) ([008747b](https://github.com/ipfs/helia/commit/008747b59a03682e1b6f648a39635e1b1971e481))
+* update to libp2p@v3 and latest data/block stores ([#856](https://github.com/ipfs/helia/issues/856)) ([34d3ecd](https://github.com/ipfs/helia/commit/34d3ecd76c8424387c57221000e226f08ccd1d1e))
+
+
+### Bug Fixes
+
+* @helia/* modules validate CID codec ([#643](https://github.com/ipfs/helia/issues/643)) ([93aa464](https://github.com/ipfs/helia/commit/93aa46459dcff81f0e5eef479f76e39ef5f03736))
+
 ## [5.4.0](https://github.com/ipfs/helia/compare/interface-v5.3.2...interface-v5.4.0) (2025-07-22)
 
 

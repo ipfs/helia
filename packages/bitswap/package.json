@@ -1,6 +1,6 @@
 {
   "name": "@helia/bitswap",
-  "version": "2.2.0",
+  "version": "3.0.0",
   "description": "JavaScript implementation of the Bitswap data exchange protocol used by Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/bitswap#readme",
@@ -51,8 +51,8 @@
     "docs": "aegir docs"
   },
   "dependencies": {
-    "@helia/interface": "^5.4.0",
-    "@helia/utils": "^1.4.0",
+    "@helia/interface": "^6.0.0",
+    "@helia/utils": "^2.0.0",
     "@libp2p/interface": "^3.0.2",
     "@libp2p/logger": "^6.0.5",
     "@libp2p/peer-collections": "^7.0.5",
