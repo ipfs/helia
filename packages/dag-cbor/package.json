@@ -1,6 +1,6 @@
 {
   "name": "@helia/dag-cbor",
-  "version": "4.1.0",
+  "version": "5.0.0",
   "description": "Add/get IPLD blocks containing dag-cbor with your Helia node",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/dag-cbor#readme",
@@ -48,7 +48,7 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@helia/interface": "^5.4.0",
+    "@helia/interface": "^6.0.0",
     "@ipld/dag-cbor": "^9.2.5",
     "@libp2p/interface": "^3.0.2",
     "interface-blockstore": "^6.0.1",

@@ -1,5 +1,23 @@
 # Changelog
 
+## [4.0.0](https://github.com/ipfs/helia/compare/routers-v3.1.3...routers-v4.0.0) (2025-10-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* uses libp2p v3 and updated block/data stores
+
+### Features
+
+* update to libp2p@v3 and latest data/block stores ([#856](https://github.com/ipfs/helia/issues/856)) ([34d3ecd](https://github.com/ipfs/helia/commit/34d3ecd76c8424387c57221000e226f08ccd1d1e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^5.4.0 to ^6.0.0
+
 ## [3.1.3](https://github.com/ipfs/helia/compare/routers-v3.1.2...routers-v3.1.3) (2025-07-22)
 
 

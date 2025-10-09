@@ -1,6 +1,6 @@
 {
   "name": "@helia/unixfs",
-  "version": "5.1.0",
+  "version": "6.0.0",
   "description": "A Helia-compatible wrapper for UnixFS",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/unixfs#readme",
@@ -67,7 +67,7 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@helia/interface": "^5.4.0",
+    "@helia/interface": "^6.0.0",
     "@ipld/dag-pb": "^4.1.5",
     "@libp2p/interface": "^3.0.2",
     "@libp2p/logger": "^6.0.5",

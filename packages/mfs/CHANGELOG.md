@@ -1,5 +1,23 @@
 # Changelog
 
+## [6.0.0](https://github.com/ipfs/helia/compare/mfs-v5.1.0...mfs-v6.0.0) (2025-10-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* uses libp2p v3 and updated block/data stores
+
+### Features
+
+* update to libp2p@v3 and latest data/block stores ([#856](https://github.com/ipfs/helia/issues/856)) ([34d3ecd](https://github.com/ipfs/helia/commit/34d3ecd76c8424387c57221000e226f08ccd1d1e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/unixfs bumped from ^5.1.0 to ^6.0.0
+
 ## [5.1.0](https://github.com/ipfs/helia/compare/mfs-v5.0.4...mfs-v5.1.0) (2025-07-31)
 
 
