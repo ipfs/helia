@@ -60,7 +60,7 @@
     "@ipld/dag-pb": "^4.1.5",
     "@libp2p/logger": "^6.0.5",
     "aegir": "^47.0.22",
-    "blockstore-core": "^6.0.2",
+    "blockstore-core": "^6.1.1",
     "datastore-core": "^11.0.2",
     "delay": "^6.0.0",
     "it-all": "^3.0.9",

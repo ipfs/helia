@@ -67,7 +67,7 @@
     "@ipld/dag-cbor": "^9.2.5",
     "@libp2p/logger": "^6.0.5",
     "aegir": "^47.0.22",
-    "blockstore-core": "^6.0.2",
+    "blockstore-core": "^6.1.1",
     "datastore-core": "^11.0.2",
     "ipfs-unixfs-importer": "^16.0.1",
     "it-foreach": "^2.1.4",

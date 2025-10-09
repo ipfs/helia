@@ -26,6 +26,12 @@ export interface StorageComponents {
   getHasher: HasherLoader
 }
 
+export interface StorageInit {
+  maxIdentityHashDigestLength?: number
+}
+
+const DEFAULT_MAX_IDENTITY_HASH_DIGEST_LENGTH = 128
+
 class Storage implements Blockstore {
   protected readonly child: Blockstore
   protected readonly getHasher: HasherLoader
@@ -36,11 +42,13 @@ class Storage implements Blockstore {
   /**
    * Create a new BlockStorage
    */
-  constructor (components: StorageComponents) {
+  constructor (components: StorageComponents, init: StorageInit = {}) {
     this.log = components.logger.forComponent('helia:networked-storage')
     this.logger = components.logger
     this.components = components
-    this.child = new IdentityBlockstore(components.blockstore)
+    this.child = new IdentityBlockstore(components.blockstore, {
+      maxDigestLength: init.maxIdentityHashDigestLength ?? DEFAULT_MAX_IDENTITY_HASH_DIGEST_LENGTH
+    })
     this.getHasher = components.getHasher
   }
 
@@ -191,8 +199,8 @@ export class NetworkedStorage extends Storage implements Blocks, Startable {
   /**
    * Create a new BlockStorage
    */
-  constructor (components: NetworkedStorageComponents) {
-    super(components)
+  constructor (components: NetworkedStorageComponents, init: StorageInit = {}) {
+    super(components, init)
 
     this.started = false
   }
