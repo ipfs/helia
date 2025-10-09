@@ -1,5 +1,20 @@
 # Changelog
 
+## [5.0.1](https://github.com/ipfs/helia/compare/car-v5.0.0...car-v5.0.1) (2025-10-09)
+
+
+### Bug Fixes
+
+* enforce maximum identity hash size ([#865](https://github.com/ipfs/helia/issues/865)) ([d9051cd](https://github.com/ipfs/helia/commit/d9051cdc2fd19ab7def32d195b5798b27d85a078)), closes [#846](https://github.com/ipfs/helia/issues/846)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @helia/mfs bumped from ^6.0.0 to ^6.0.1
+    * @helia/unixfs bumped from ^6.0.0 to ^6.0.1
+
 ## [5.0.0](https://github.com/ipfs/helia/compare/car-v4.2.0...car-v5.0.0) (2025-10-09)
 
 

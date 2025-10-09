@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.0.1](https://github.com/ipfs/helia/compare/unixfs-v6.0.0...unixfs-v6.0.1) (2025-10-09)
+
+
+### Bug Fixes
+
+* enforce maximum identity hash size ([#865](https://github.com/ipfs/helia/issues/865)) ([d9051cd](https://github.com/ipfs/helia/commit/d9051cdc2fd19ab7def32d195b5798b27d85a078)), closes [#846](https://github.com/ipfs/helia/issues/846)
+
 ## [6.0.0](https://github.com/ipfs/helia/compare/unixfs-v5.1.0...unixfs-v6.0.0) (2025-10-09)
 
 
