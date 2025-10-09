@@ -21,11 +21,11 @@ export class DNSLink implements DNSLinkInterface {
     }
   }
 
-  async resolve (domain: string, options: ResolveDNSLinkOptions = {}): Promise<DNSLinkResult> {
+  async resolve (domain: string, options: ResolveDNSLinkOptions = {}): Promise<DNSLinkResult[]> {
     return this.recursiveResolveDomain(domain, options.maxRecursiveDepth ?? MAX_RECURSIVE_DEPTH, options)
   }
 
-  async recursiveResolveDomain (domain: string, depth: number, options: ResolveDNSLinkOptions = {}): Promise<DNSLinkResult> {
+  async recursiveResolveDomain (domain: string, depth: number, options: ResolveDNSLinkOptions = {}): Promise<DNSLinkResult[]> {
     if (depth === 0) {
       throw new Error('recursion limit exceeded')
     }
@@ -59,7 +59,7 @@ export class DNSLink implements DNSLinkInterface {
     }
   }
 
-  async recursiveResolveDnslink (domain: string, depth: number, options: ResolveDNSLinkOptions = {}): Promise<DNSLinkResult> {
+  async recursiveResolveDnslink (domain: string, depth: number, options: ResolveDNSLinkOptions = {}): Promise<DNSLinkResult[]> {
     if (depth === 0) {
       throw new Error('recursion limit exceeded')
     }
@@ -77,6 +77,8 @@ export class DNSLink implements DNSLinkInterface {
       .sort((a, b) => a.data.localeCompare(b.data))
 
     this.log('found %d TXT records for %s', txtRecords.length, domain)
+
+    const output: DNSLinkResult[] = []
 
     for (const answer of txtRecords) {
       try {
@@ -111,10 +113,14 @@ export class DNSLink implements DNSLinkInterface {
           continue
         }
 
-        return parser.parse(result, answer)
+        output.push(parser.parse(result, answer))
       } catch (err: any) {
         this.log.error('could not parse DNS link record for domain %s, %s', domain, answer.data, err)
       }
+    }
+
+    if (output.length > 0) {
+      return output
     }
 
     // no dnslink records found, try CNAMEs
