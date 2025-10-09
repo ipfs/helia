@@ -56,7 +56,7 @@
     "@libp2p/interface": "^3.0.2",
     "@libp2p/keychain": "^6.0.5",
     "@multiformats/dns": "^1.0.9",
-    "blockstore-core": "^6.0.2",
+    "blockstore-core": "^6.1.1",
     "datastore-core": "^11.0.2",
     "interface-datastore": "^9.0.2",
     "libp2p": "^3.0.6"

@@ -168,6 +168,13 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
    * usage.
    */
   metrics?: Metrics
+
+  /**
+   * Limit the maximum supported size of identity hash digests to this value
+   *
+   * @default 128
+   */
+  maxIdentityHashDigestLength?: number
 }
 
 interface Components {
@@ -243,7 +250,7 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
       providerLookupConcurrency: init.providerLookupConcurrency
     })
 
-    const networkedStorage = new NetworkedStorage(components)
+    const networkedStorage = new NetworkedStorage(components, init)
     this.pins = new PinsImpl(init.datastore, networkedStorage, this.getCodec)
     this.blockstore = new BlockStorage(networkedStorage, this.pins, {
       holdGcLock: init.holdGcLock ?? true

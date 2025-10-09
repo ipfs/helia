@@ -57,7 +57,7 @@
   },
   "devDependencies": {
     "aegir": "^47.0.22",
-    "blockstore-core": "^6.0.2"
+    "blockstore-core": "^6.1.1"
   },
   "sideEffects": false
 }

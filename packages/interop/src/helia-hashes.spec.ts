@@ -5,6 +5,7 @@ import { expect } from 'aegir/chai'
 import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
+import { identity } from 'multiformats/hashes/identity'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
 import type { Helia } from 'helia'
@@ -53,5 +54,13 @@ describe('helia - hashes', () => {
     const output = await toBuffer(helia.blockstore.get(CID.parse(cid.toString())))
 
     expect(output).to.equalBytes(input)
+  })
+
+  it('should enforce a maximum size for identity hashes', async () => {
+    const cid = CID.createV1(raw.code, identity.digest(new Uint8Array(129)))
+
+    await expect(toBuffer(helia.blockstore.get(cid)))
+      .to.eventually.be.rejected
+      .with.property('name', 'IdentityHashDigestTooLongError')
   })
 })
