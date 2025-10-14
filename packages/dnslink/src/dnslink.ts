@@ -46,7 +46,7 @@ export class DNSLink <Namespaces extends Record<string, DNSLinkParser<DNSLinkRes
 
     const result = await this.recursiveResolveDomain(domain, options.maxRecursiveDepth ?? MAX_RECURSIVE_DEPTH, options)
 
-    // cache answers according to individual TTLS
+    // cache answers according to individual TTLs
     const cache = new QuickLRU<number, ReturnType<Namespaces[keyof Namespaces]>>({
       maxSize: this.cacheMaxAnswers
     })
