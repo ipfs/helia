@@ -217,7 +217,7 @@ describe('publish', () => {
 
       // Override the localStore on the IPNS instance
       // @ts-ignore
-      name.localStore = store
+      name.localStore = name['publisher']['localStore'] = store
 
       const keyName = 'test-key-error'
       await expect(name.publish(keyName, cid)).to.be.rejectedWith('Datastore get failed')

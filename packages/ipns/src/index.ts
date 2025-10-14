@@ -176,8 +176,13 @@
 
 import { ipnsValidator } from 'ipns/validator'
 import { CID } from 'multiformats/cid'
+import { IPNSResolver as IPNSResolverClass } from './ipns/resolver.js'
 import { IPNS as IPNSClass } from './ipns.js'
-import type { IPNSRouting, IPNSRoutingEvents } from './routing/index.js'
+import { localStore } from './local-store.ts'
+import { helia } from './routing/index.js'
+import { localStoreRouting } from './routing/local-store.ts'
+import type { IPNSResolverComponents } from './ipns/resolver.js'
+import type { IPNSRouting, IPNSRoutingProgressEvents } from './routing/index.js'
 import type { Routing, HeliaEvents } from '@helia/interface'
 import type { AbortOptions, ComponentLogger, Libp2p, PeerId, PublicKey, TypedEventEmitter } from '@libp2p/interface'
 import type { Keychain } from '@libp2p/keychain'
@@ -202,7 +207,7 @@ export type DatastoreProgressEvents =
   ProgressEvent<'ipns:routing:datastore:list'> |
   ProgressEvent<'ipns:routing:datastore:error', Error>
 
-export interface PublishOptions extends AbortOptions, ProgressOptions<PublishProgressEvents | IPNSRoutingEvents> {
+export interface PublishOptions extends AbortOptions, ProgressOptions<PublishProgressEvents | IPNSRoutingProgressEvents> {
   /**
    * Time duration of the signature validity in ms (default: 48hrs)
    */
@@ -230,7 +235,7 @@ export interface IPNSRecordMetadata {
   lifetime: number
 }
 
-export interface ResolveOptions extends AbortOptions, ProgressOptions<ResolveProgressEvents | IPNSRoutingEvents> {
+export interface ResolveOptions extends AbortOptions, ProgressOptions<ResolveProgressEvents | IPNSRoutingProgressEvents> {
   /**
    * Do not query the network for the IPNS record
    *
@@ -254,10 +259,8 @@ export interface ResolveResult {
 
   /**
    * Any path component that was part of the resolved record
-   *
-   * @default ""
    */
-  path: string
+  path?: string
 }
 
 export interface IPNSResolveResult extends ResolveResult {
@@ -277,6 +280,17 @@ export interface IPNSPublishResult {
    * The public key that was used to publish the record
    */
   publicKey: PublicKey
+}
+
+export interface IPNSResolver {
+  /**
+   * Accepts a libp2p public key, a CID with the libp2p-key codec and either the
+   * identity hash (for Ed25519 and secp256k1 public keys) or a SHA256 hash (for
+   * RSA public keys), or the multihash of a libp2p-key encoded CID, or a
+   * Ed25519, secp256k1 or RSA PeerId and recursively resolves the IPNS record
+   * corresponding to that key until a value is found.
+   */
+  resolve(key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options?: ResolveOptions): Promise<IPNSResolveResult>
 }
 
 export interface IPNS {
@@ -370,9 +384,30 @@ export interface IPNSOptions {
   republishConcurrency?: number
 }
 
+export interface IPNSResolverOptions {
+  /**
+   * Different routing systems for IPNS publishing/resolving
+   */
+  routers?: IPNSRouting[]
+}
+
 export function ipns (components: IPNSComponents, options: IPNSOptions = {}): IPNS {
   return new IPNSClass(components, options)
 }
 
-export { ipnsValidator, type IPNSRoutingEvents }
+export function ipnsResolver (components: IPNSResolverComponents, options: IPNSResolverOptions = {}): IPNSResolver {
+  const store = localStore(components.datastore, components.logger.forComponent('helia:ipns:local-store'))
+  const routers = [
+    localStoreRouting(store),
+    helia(components.routing),
+    ...(options.routers ?? [])
+  ]
+
+  return new IPNSResolverClass(components, {
+    routers,
+    localStore: store
+  })
+}
+
+export { ipnsValidator, type IPNSRoutingProgressEvents }
 export { ipnsSelector } from 'ipns/selector'

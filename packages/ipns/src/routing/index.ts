@@ -27,7 +27,7 @@ export type { DatastoreProgressEvents }
 export type { HeliaRoutingProgressEvents }
 export type { PubSubProgressEvents }
 
-export type IPNSRoutingEvents =
+export type IPNSRoutingProgressEvents =
   DatastoreProgressEvents |
   HeliaRoutingProgressEvents |
   PubSubProgressEvents

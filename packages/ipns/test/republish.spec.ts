@@ -329,7 +329,7 @@ describe('republish', () => {
 
       // Override the localStore on the IPNS instance
       // @ts-ignore
-      name.localStore = store
+      name.localStore = name['republisher']['localStore'] = store
 
       await start(name)
       await new Promise(resolve => setTimeout(resolve, 20))
@@ -359,9 +359,9 @@ describe('republish', () => {
         throw new Error('List operation failed')
       })
 
-      // Override the localStore
+      // Override the localStore on the IPNS instance
       // @ts-ignore
-      name.localStore = store
+      name.localStore = name['publisher']['localStore'] = store
 
       await start(name)
       await new Promise(resolve => setTimeout(resolve, 20))
