@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.1](https://github.com/ipfs/helia/compare/routers-v4.0.0...routers-v4.0.1) (2025-10-14)
+
+
+### Dependencies
+
+* bump @helia/delegated-routing-v1-http-api-client to 5.0.0 ([#866](https://github.com/ipfs/helia/issues/866)) ([354db66](https://github.com/ipfs/helia/commit/354db660fe7bd571308b2d3bfe52fc9361ea34b0))
+
 ## [4.0.0](https://github.com/ipfs/helia/compare/routers-v3.1.3...routers-v4.0.0) (2025-10-09)
 
 
