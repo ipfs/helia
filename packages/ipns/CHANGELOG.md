@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.1.0](https://github.com/ipfs/helia/compare/ipns-v9.0.0...ipns-v9.1.0) (2025-10-14)
+
+
+### Features
+
+* add ipns resolver ([#868](https://github.com/ipfs/helia/issues/868)) ([4d51f16](https://github.com/ipfs/helia/commit/4d51f16de47c80df2fbfa4932825153ce5330100))
+
 ## [9.0.0](https://github.com/ipfs/helia/compare/ipns-v8.2.4...ipns-v9.0.0) (2025-10-09)
 
 

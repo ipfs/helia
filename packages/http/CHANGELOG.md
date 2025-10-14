@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.0.2](https://github.com/ipfs/helia/compare/http-v3.0.1...http-v3.0.2) (2025-10-14)
+
+
+### Dependencies
+
+* bump @helia/delegated-routing-v1-http-api-client to 5.0.0 ([#866](https://github.com/ipfs/helia/issues/866)) ([354db66](https://github.com/ipfs/helia/commit/354db660fe7bd571308b2d3bfe52fc9361ea34b0))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/routers bumped from ^4.0.0 to ^4.0.1
+
 ## [3.0.1](https://github.com/ipfs/helia/compare/http-v3.0.0...http-v3.0.1) (2025-10-09)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/ipfs/helia/compare/dnslink-v1.0.1...dnslink-v1.1.0) (2025-10-14)
+
+
+### Features
+
+* add lookup cache ([#869](https://github.com/ipfs/helia/issues/869)) ([bb88944](https://github.com/ipfs/helia/commit/bb889444c85270e891d384f2ca9d2789f5ad37d6))
+
 ## [1.0.1](https://github.com/ipfs/helia/compare/dnslink-v1.0.0...dnslink-v1.0.1) (2025-10-09)
 
 
