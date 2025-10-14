@@ -1,17 +1,21 @@
 import { MAX_RECURSIVE_DEPTH, RecordType } from '@multiformats/dns'
+import QuickLRU from 'quick-lru'
+import { CACHE_MAX_AGE, CACHE_MAX_ANSWERS, CACHE_SIZE } from './constants.ts'
 import { DNSLinkNotFoundError } from './errors.js'
 import { ipfs } from './namespaces/ipfs.ts'
 import { ipns } from './namespaces/ipns.ts'
-import type { DNSLink as DNSLinkInterface, ResolveDNSLinkOptions, DNSLinkOptions, DNSLinkComponents, DNSLinkResult, DNSLinkNamespace } from './index.js'
+import type { DNSLink as DNSLinkInterface, ResolveDNSLinkOptions, DNSLinkOptions, DNSLinkComponents, DNSLinkParser, DNSLinkResolveResult } from './index.js'
 import type { Logger } from '@libp2p/interface'
 import type { DNS } from '@multiformats/dns'
 
-export class DNSLink implements DNSLinkInterface {
+export class DNSLink <Namespaces extends Record<string, DNSLinkParser<DNSLinkResolveResult>>> implements DNSLinkInterface<ReturnType<Namespaces[keyof Namespaces]>> {
   private readonly dns: DNS
   private readonly log: Logger
-  private readonly namespaces: Record<string, DNSLinkNamespace>
+  private readonly namespaces: Record<string, DNSLinkParser<any>>
+  private readonly cache: QuickLRU<string, QuickLRU<number, ReturnType<Namespaces[keyof Namespaces]>>>
+  private readonly cacheMaxAnswers: number
 
-  constructor (components: DNSLinkComponents, init: DNSLinkOptions = {}) {
+  constructor (components: DNSLinkComponents, init: DNSLinkOptions<Namespaces> = {}) {
     this.dns = components.dns
     this.log = components.logger.forComponent('helia:dnslink')
     this.namespaces = {
@@ -19,13 +23,65 @@ export class DNSLink implements DNSLinkInterface {
       ipns,
       ...init.namespaces
     }
+    this.cache = new QuickLRU({
+      maxSize: init.cacheSize ?? CACHE_SIZE,
+      maxAge: init.cacheMaxAge ?? CACHE_MAX_AGE
+    })
+    this.cacheMaxAnswers = init.cacheMaxAnswers ?? CACHE_MAX_ANSWERS
   }
 
-  async resolve (domain: string, options: ResolveDNSLinkOptions = {}): Promise<DNSLinkResult[]> {
-    return this.recursiveResolveDomain(domain, options.maxRecursiveDepth ?? MAX_RECURSIVE_DEPTH, options)
+  async resolve (domain: string, options: ResolveDNSLinkOptions = {}): Promise<Array<ReturnType<Namespaces[keyof Namespaces]>>> {
+    if (options.nocache !== true) {
+      // check the cache if allowed
+      const cached = this.cache.get(domain)
+
+      if (cached != null) {
+        const answers = [...cached.values()]
+
+        if (answers.length > 0) {
+          return answers
+        }
+      }
+    }
+
+    const result = await this.recursiveResolveDomain(domain, options.maxRecursiveDepth ?? MAX_RECURSIVE_DEPTH, options)
+
+    // cache answers according to individual TTLs
+    const cache = new QuickLRU<number, ReturnType<Namespaces[keyof Namespaces]>>({
+      maxSize: this.cacheMaxAnswers
+    })
+
+    result.forEach((result, index) => {
+      cache.set(index, result, {
+        maxAge: (result.answer.TTL * 1000)
+      })
+    })
+
+    // find longest answer TTL
+    let maxTTL = result.reduce((acc, curr) => {
+      const ttl = (curr.answer.TTL * 1000)
+
+      if (ttl > acc) {
+        return ttl
+      }
+
+      return acc
+    }, 0)
+
+    // if the configured max age is less than the longest answer TTL, use that
+    // instead
+    if (this.cache.maxAge < maxTTL) {
+      maxTTL = this.cache.maxAge
+    }
+
+    this.cache.set(domain, cache, {
+      maxAge: maxTTL
+    })
+
+    return result
   }
 
-  async recursiveResolveDomain (domain: string, depth: number, options: ResolveDNSLinkOptions = {}): Promise<DNSLinkResult[]> {
+  async recursiveResolveDomain (domain: string, depth: number, options: ResolveDNSLinkOptions = {}): Promise<Array<ReturnType<Namespaces[keyof Namespaces]>>> {
     if (depth === 0) {
       throw new Error('recursion limit exceeded')
     }
@@ -59,7 +115,7 @@ export class DNSLink implements DNSLinkInterface {
     }
   }
 
-  async recursiveResolveDnslink (domain: string, depth: number, options: ResolveDNSLinkOptions = {}): Promise<DNSLinkResult[]> {
+  async recursiveResolveDnslink (domain: string, depth: number, options: ResolveDNSLinkOptions = {}): Promise<Array<ReturnType<Namespaces[keyof Namespaces]>>> {
     if (depth === 0) {
       throw new Error('recursion limit exceeded')
     }
@@ -78,7 +134,7 @@ export class DNSLink implements DNSLinkInterface {
 
     this.log('found %d TXT records for %s', txtRecords.length, domain)
 
-    const output: DNSLinkResult[] = []
+    const output: Array<ReturnType<Namespaces[keyof Namespaces]>> = []
 
     for (const answer of txtRecords) {
       try {
@@ -113,7 +169,7 @@ export class DNSLink implements DNSLinkInterface {
           continue
         }
 
-        output.push(parser.parse(result, answer))
+        output.push(parser(result, answer))
       } catch (err: any) {
         this.log.error('could not parse DNS link record for domain %s, %s', domain, answer.data, err)
       }

@@ -68,12 +68,14 @@
     "@libp2p/peer-id": "^6.0.3",
     "@multiformats/dns": "^1.0.9",
     "multiformats": "^13.4.1",
-    "progress-events": "^1.0.1"
+    "progress-events": "^1.0.1",
+    "quick-lru": "^7.3.0"
   },
   "devDependencies": {
     "@libp2p/logger": "^6.0.5",
     "@types/dns-packet": "^5.6.5",
     "aegir": "^47.0.22",
+    "delay": "^6.0.0",
     "sinon-ts": "^2.0.0"
   },
   "browser": {

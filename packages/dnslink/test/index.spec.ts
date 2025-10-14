@@ -5,11 +5,12 @@ import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { RecordType } from '@multiformats/dns'
 import { expect } from 'aegir/chai'
+import delay from 'delay'
 import { base36 } from 'multiformats/bases/base36'
 import { CID } from 'multiformats/cid'
 import { stubInterface } from 'sinon-ts'
 import { dnsLink } from '../src/index.js'
-import type { DNSLink } from '../src/index.js'
+import type { DNSLink, DNSLinkResolveResult } from '../src/index.js'
 import type { Answer, DNS, DNSResponse } from '@multiformats/dns'
 import type { StubbedInstance } from 'sinon-ts'
 
@@ -49,6 +50,54 @@ describe('dnslink', () => {
     const result = await name.resolve('foobar.baz', { nocache: true, offline: true })
     expect(result).to.have.deep.nested.property('[0].cid', CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'))
     expect(result).to.have.nested.property('[0].path', '')
+  })
+
+  it('should cache the response', async () => {
+    dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
+      name: '_dnslink.foobar.baz.',
+      TTL: 60,
+      type: RecordType.TXT,
+      data: 'dnslink=/ipfs/QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'
+    }]))
+
+    await name.resolve('foobar.baz')
+    await name.resolve('foobar.baz')
+
+    expect(dns.query).to.have.property('callCount', 1)
+  })
+
+  it('should ignore the cached response', async () => {
+    dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
+      name: '_dnslink.foobar.baz.',
+      TTL: 60,
+      type: RecordType.TXT,
+      data: 'dnslink=/ipfs/QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'
+    }]))
+
+    await name.resolve('foobar.baz')
+    await name.resolve('foobar.baz', { nocache: true })
+
+    expect(dns.query).to.have.property('callCount', 2)
+  })
+
+  it('should return only answers within their TTL', async () => {
+    dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
+      name: '_dnslink.foobar.baz.',
+      TTL: 0.5,
+      type: RecordType.TXT,
+      data: 'dnslink=/ipfs/QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'
+    }, {
+      name: '_dnslink.foobar.baz.',
+      TTL: 10,
+      type: RecordType.TXT,
+      data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'
+    }]))
+
+    await expect(name.resolve('foobar.baz')).to.eventually.have.lengthOf(2)
+
+    await delay(1000)
+
+    await expect(name.resolve('foobar.baz')).to.eventually.have.lengthOf(1)
   })
 
   it('should resolve a domain to multiple values', async () => {
@@ -282,24 +331,33 @@ describe('dnslink', () => {
     }
     dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([answer]))
 
-    name = dnsLink({
+    interface HelloResult extends DNSLinkResolveResult {
+      value?: string
+    }
+
+    const name = dnsLink({
       dns,
       logger: defaultLogger()
     }, {
       namespaces: {
-        hello: {
-          parse: (value, answer) => {
-            return {
-              namespace: 'hello',
-              value: value.split('/hello/').pop(),
-              answer
-            }
+        hello: (value, answer): HelloResult => {
+          return {
+            namespace: 'hello',
+            value: value.split('/hello/').pop(),
+            answer
           }
         }
       }
     })
 
     const result = await name.resolve('foobar.baz')
+
+    if (result[0].namespace === 'hello') {
+      // assert that we can derive the returned type from the parser config
+      // passed to the factory method correctly
+      const res: HelloResult = result[0]
+      expect(res).to.be.ok('dummy assertion')
+    }
 
     expect(result).to.have.nested.property('[0].namespace', 'hello')
     expect(result).to.have.nested.property('[0].value', 'world')

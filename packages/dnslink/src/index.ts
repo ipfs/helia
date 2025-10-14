@@ -107,11 +107,13 @@
 
 import { DNSLink as DNSLinkClass } from './dnslink.js'
 import type { AbortOptions, ComponentLogger, PeerId } from '@libp2p/interface'
-import type { Answer, DNS, ResolveDnsProgressEvents } from '@multiformats/dns'
+import type { Answer, DNS, ResolveDnsProgressEvents as ResolveProgressEvents } from '@multiformats/dns'
 import type { CID } from 'multiformats/cid'
 import type { ProgressOptions } from 'progress-events'
 
-export interface ResolveDNSLinkOptions extends AbortOptions, ProgressOptions<ResolveDnsProgressEvents> {
+export type { ResolveProgressEvents }
+
+export interface ResolveDNSLinkOptions extends AbortOptions, ProgressOptions<ResolveProgressEvents> {
   /**
    * Do not query the network for the IPNS record
    *
@@ -164,7 +166,7 @@ export interface DNSLinkIPNSResult {
   answer: Answer
 
   /**
-   * The IPFS namespace
+   * The IPNS namespace
    */
   namespace: 'ipns'
 
@@ -179,28 +181,26 @@ export interface DNSLinkIPNSResult {
   path: string
 }
 
-export interface DNSLinkOtherResult {
+export interface DNSLinkResolveResult {
   /**
    * The resolved record
    */
   answer: Answer
 
   /**
-   * The IPFS namespace
+   * The namespace
    */
   namespace: string
 }
 
-export type DNSLinkResult = DNSLinkIPFSResult | DNSLinkIPNSResult | DNSLinkOtherResult
-
-export interface DNSLinkNamespace {
+export interface DNSLinkParser<T extends DNSLinkResolveResult> {
   /**
    * Return a result parsed from a DNSLink value
    */
-  parse(value: string, answer: Answer): DNSLinkResult
+  (value: string, answer: Answer): T
 }
 
-export interface DNSLink {
+export interface DNSLink<DNSLinkResolveResults extends DNSLinkResolveResult = DNSLinkIPFSResult | DNSLinkIPNSResult> {
   /**
    * Resolve a CID from a dns-link style IPNS record
    *
@@ -220,7 +220,7 @@ export interface DNSLink {
    * console.info(result) // { answer: ..., value: ... }
    * ```
    */
-  resolve(domain: string, options?: ResolveDNSLinkOptions): Promise<DNSLinkResult[]>
+  resolve(domain: string, options?: ResolveDNSLinkOptions): Promise<Array<DNSLinkResolveResults | DNSLinkIPFSResult | DNSLinkIPNSResult>>
 }
 
 export interface DNSLinkComponents {
@@ -228,14 +228,39 @@ export interface DNSLinkComponents {
   logger: ComponentLogger
 }
 
-export interface DNSLinkOptions {
+export interface DNSLinkOptions<Namespaces extends Record<string, DNSLinkParser<any>> = Record<string, DNSLinkParser<any>>> {
   /**
    * By default `/ipfs/...`, `/ipns/...` and `/dnslink/...` record values are
    * supported - to support other prefixes pass other value parsers here
    */
-  namespaces?: Record<string, DNSLinkNamespace>
+  namespaces?: Namespaces
+
+  /**
+   * How many DNSLink lookups to cache in memory
+   *
+   * @default 1_000
+   */
+  cacheSize?: number
+
+  /**
+   * The maximum number of Answers to cache for each domain
+   *
+   * @default 10
+   */
+  cacheMaxAnswers?: number
+
+  /**
+   * By default the DNS TTL will be used to calculate when a DNSLink lookup
+   * should be evicted from the cache, unless one is not available in which case
+   * this number of ms will be used.
+   *
+   * @default 30_000
+   */
+  cacheMaxAge?: number
 }
 
+export function dnsLink <R extends DNSLinkResolveResult, T extends Record<string, DNSLinkParser<R>>> (components: DNSLinkComponents, options: DNSLinkOptions<T>): DNSLink<ReturnType<T[keyof T]>>
+export function dnsLink (components: DNSLinkComponents, options?: DNSLinkOptions): DNSLink
 export function dnsLink (components: DNSLinkComponents, options: DNSLinkOptions = {}): DNSLink {
   return new DNSLinkClass(components, options)
 }
