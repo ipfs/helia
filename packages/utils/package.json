@@ -1,6 +1,6 @@
 {
   "name": "@helia/utils",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Shared code that implements the Helia API",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/utils#readme",

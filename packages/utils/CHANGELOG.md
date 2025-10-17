@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.1](https://github.com/ipfs/helia/compare/utils-v2.1.0...utils-v2.1.1) (2025-10-17)
+
+
+### Bug Fixes
+
+* listen for signal abort during session creation ([#874](https://github.com/ipfs/helia/issues/874)) ([faac4ad](https://github.com/ipfs/helia/commit/faac4ad3650f7e6e53cba2195067efd4b8c7070a))
+
 ## [2.1.0](https://github.com/ipfs/helia/compare/utils-v2.0.1...utils-v2.1.0) (2025-10-17)
 
 
