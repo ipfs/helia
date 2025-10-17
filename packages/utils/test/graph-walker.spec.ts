@@ -1,13 +1,13 @@
-import { MemoryBlockstore } from "blockstore-core"
 import * as dagCbor from '@ipld/dag-cbor'
-import type { Blockstore } from "interface-blockstore"
-import { CID } from 'multiformats/cid'
-import { sha256 } from "multiformats/hashes/sha2"
-import { breadthFirstWalker, depthFirstWalker } from "../src/graph-walker.ts"
-import type { CodecLoader } from "@helia/interface"
-import map from "it-map"
+import { expect } from 'aegir/chai'
+import { MemoryBlockstore } from 'blockstore-core'
 import all from 'it-all'
-import { expect } from "aegir/chai"
+import map from 'it-map'
+import { CID } from 'multiformats/cid'
+import { sha256 } from 'multiformats/hashes/sha2'
+import { breadthFirstWalker, depthFirstWalker } from '../src/graph-walker.ts'
+import type { CodecLoader } from '@helia/interface'
+import type { Blockstore } from 'interface-blockstore'
 
 interface Node {
   name: string
@@ -104,7 +104,7 @@ describe('graph-walker', () => {
   })
 
   describe('depth-first', () => {
-    it.only('should walk depth-first', async () => {
+    it('should walk depth-first', async () => {
       const walker = depthFirstWalker({
         blockstore,
         getCodec
@@ -123,7 +123,7 @@ describe('graph-walker', () => {
   })
 
   describe('breadth-first', () => {
-    it.only('should walk breadth-first', async () => {
+    it('should walk breadth-first', async () => {
       const walker = breadthFirstWalker({
         blockstore,
         getCodec

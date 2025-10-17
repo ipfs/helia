@@ -1,10 +1,10 @@
-import type { CodecLoader } from "@helia/interface"
-import { Queue } from "@libp2p/utils"
-import type { Blockstore } from "interface-blockstore"
-import type { AbortOptions } from "interface-store"
-import toBuffer from "it-to-buffer"
-import type { BlockView, CID, Version } from "multiformats"
-import { createUnsafe } from "multiformats/block"
+import { Queue } from '@libp2p/utils'
+import toBuffer from 'it-to-buffer'
+import { createUnsafe } from 'multiformats/block'
+import type { CodecLoader } from '@helia/interface'
+import type { Blockstore } from 'interface-blockstore'
+import type { AbortOptions } from 'interface-store'
+import type { BlockView, CID, Version } from 'multiformats'
 
 export interface GraphWalkerComponents {
   blockstore: Blockstore
@@ -46,7 +46,7 @@ class DepthFirstGraphWalker {
     this.components = components
   }
 
-  async * walk <T = any> (cid: CID, options: AbortOptions) {
+  async * walk <T = any> (cid: CID, options: AbortOptions): AsyncGenerator<GraphNode<T>> {
     const queue = new Queue<GraphNode<T>, JobOptions>({
       concurrency: 1,
       sort: (a, b) => {
@@ -115,7 +115,7 @@ class BreadthFirstGraphWalker {
     this.components = components
   }
 
-  async * walk <T = any> (cid: CID, options: AbortOptions) {
+  async * walk <T = any> (cid: CID, options: AbortOptions): AsyncGenerator<GraphNode<T>> {
     const queue = new Queue<GraphNode<T>, JobOptions>({
       concurrency: 1,
       sort: (a, b) => {
