@@ -52,7 +52,9 @@ const cid = CID.parse('QmFoo...')
 const c = car(helia)
 const out = nodeFs.createWriteStream('example.car')
 
-for await (const buf of c.export(cid)) {
+for await (const buf of c.export(cid, {
+  signal: AbortSignal.timeout(5_000)
+})) {
   out.write(buf)
 }
 
@@ -61,6 +63,14 @@ out.end()
 
 ## Example - Exporting a part of a UnixFS DAG as a CAR file
 
+Here the graph traversal will start at `root` and include the blocks for
+`root`, `/foo`, `/bar`, and all the blocks that make up `baz.txt`.
+
+If there are other files/directories in the UnixFS DAG under `root`, they
+will not be included.
+
+`root` will be the only entry in the CAR file roots.
+
 ```typescript
 import { createHelia } from 'helia'
 import { car, UnixFSPath } from '@helia/car'
@@ -68,13 +78,51 @@ import { CID } from 'multiformats/cid'
 import nodeFs from 'node:fs'
 
 const helia = await createHelia()
-const cid = CID.parse('QmFoo...')
+const root = CID.parse('QmFoo...')
 
 const c = car(helia)
 const out = nodeFs.createWriteStream('example.car')
 
-for await (const buf of c.export(cid, {
+for await (const buf of c.export(root, {
+  signal: AbortSignal.timeout(5_000),
   traversal: new UnixFSPath('/foo/bar/baz.txt')
+})) {
+  out.write(buf)
+}
+
+out.end()
+```
+
+## Example - Including traversal path above the root in a CAR
+
+The `includeTraversalBlocks` option will include the traversal blocks in the
+CAR when they would otherwise be excluded (for example when the traversal
+starts in a parent of the export root).
+
+Here `baz` is the CID for `baz.txt`.
+
+The CAR file will include the blocks for `parent`, `/foo`, `/bar`, and
+`/baz.txt`.
+
+`baz` will be the only entry in the CAR file roots.
+
+```typescript
+import { createHelia } from 'helia'
+import { car, UnixFSPath } from '@helia/car'
+import { CID } from 'multiformats/cid'
+import nodeFs from 'node:fs'
+
+const helia = await createHelia()
+const parent = CID.parse('QmFoo...')
+const baz = CID.parse('QmBar...')
+
+const c = car(helia)
+const out = nodeFs.createWriteStream('example.car')
+
+for await (const buf of c.export(baz, {
+  signal: AbortSignal.timeout(5_000),
+  traversal: new UnixFSPath(parent, '/foo/bar/baz.txt'),
+  includeTraversalBlocks: true
 })) {
   out.write(buf)
 }
@@ -101,7 +149,9 @@ const inStream = nodeFs.createReadStream('example.car')
 const reader = await CarReader.fromIterable(inStream)
 
 const c = car(helia)
-await c.import(reader)
+await c.import(reader, {
+  signal: AbortSignal.timeout(5_000)
+})
 ```
 
 # Install

@@ -1,50 +1,22 @@
 import { CarWriter } from '@ipld/car'
-import { Queue } from '@libp2p/utils'
 import drain from 'it-drain'
 import map from 'it-map'
-import toBuffer from 'it-to-buffer'
-import { createUnsafe } from 'multiformats/block'
 import { raceSignal } from 'race-signal'
-import { DAG_WALK_QUEUE_CONCURRENCY } from './constants.js'
+import { DAG_PB_CODEC_CODE } from './constants.ts'
 import { SubgraphExporter } from './export-strategies/subgraph-exporter.js'
-import { GraphSearch } from './traversal-strategies/graph-search.js'
-import type { CarComponents, Car as CarInterface, ExportCarOptions, ExportStrategy, TraversalStrategy } from './index.js'
+import { UnixFSExporter } from './index.js'
+import type { CarComponents, Car as CarInterface, ExportCarOptions } from './index.js'
 import type { PutManyBlocksProgressEvents } from '@helia/interface/blocks'
 import type { CarReader } from '@ipld/car'
 import type { AbortOptions, Logger } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 import type { ProgressOptions } from 'progress-events'
 
-/**
- * Context for the traversal process.
- */
-interface TraversalContext {
-  currentPath: CID[]
-  pathsToTarget: CID[][] | null // collect all target paths
-}
-
-interface WalkDagContext<Strategy> {
-  cid: CID
-  queue: Queue
-  strategy: Strategy
-  options?: ExportCarOptions
-}
-
-interface ExportWalkDagContext extends WalkDagContext<ExportStrategy> {
-  writer: Pick<CarWriter, 'put'>
-  recursive?: boolean
-}
-
-interface TraversalWalkDagContext extends WalkDagContext<TraversalStrategy> {
-  traversalContext: TraversalContext
-  parentPath: CID[]
-}
-
 export class Car implements CarInterface {
   private readonly components: CarComponents
   private readonly log: Logger
 
-  constructor (components: CarComponents, init: any) {
+  constructor (components: CarComponents) {
     this.components = components
     this.log = components.logger.forComponent('helia:car')
   }
@@ -91,148 +63,67 @@ export class Car implements CarInterface {
   }
 
   private async _export (root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: ExportCarOptions): Promise<void> {
-    const deferred = Promise.withResolvers<Error | void>()
     const roots = Array.isArray(root) ? root : [root]
-
-    // Create traversal-specific context
-    const traversalContext: TraversalContext = {
-      currentPath: [],
-      pathsToTarget: null
-    }
-
     const traversalStrategy = options?.traversal
-    const exportStrategy = options?.exporter ?? new SubgraphExporter()
-
-    // use a queue to walk the DAG instead of recursion so we can traverse very
-    // large DAGs
-    const queue = new Queue({
-      concurrency: DAG_WALK_QUEUE_CONCURRENCY
-    })
-
-    let startedExport = false
-    queue.addEventListener('idle', () => {
-      if (startedExport) {
-        // idle event was called, and started exporting, so we are done.
-        deferred.resolve()
-      } else if (!startedExport && traversalContext.pathsToTarget?.length === roots.length) {
-        // queue is idle, we haven't started exporting yet, and we have path(s)
-        // to the target(s), so we can start the export process.
-        this.log.trace('starting export of blocks to the car file')
-        startedExport = true
-
-        for (const path of traversalContext.pathsToTarget) {
-          const targetIndex = path.length - 1
-          const targetCid = path[targetIndex]
-
-          // Process all verification blocks in the path except the target
-          path.slice(0, -1).forEach(cid => {
-            queue.add(async () => {
-              await this.#exportDagNode({ cid, queue, writer, strategy: exportStrategy, options, recursive: false })
-            })
-              .catch((err) => {
-                this.log.error('error during queue operation - %e', err)
-              })
-          })
-
-          // Process the target block (which will recursively export its DAG)
-          queue.add(async () => {
-            await this.#exportDagNode({ cid: targetCid, queue, writer, strategy: exportStrategy, options })
-          })
-            .catch((err) => {
-              this.log.error('error during queue operation - %e', err)
-            })
-        }
-      } else {
-        // queue is idle, we haven't started exporting yet, and we don't have
-        // path(s) to the target(s), so we can't start the export process.
-        // this should not happen without a separate error during traversal, but
-        // we'll handle it here anyway.
-        this.log.trace('no paths to target, skipping export')
-        deferred.reject(new Error('Could not traverse to target CID(s)'))
-      }
-    })
-    queue.addEventListener('failure', (evt) => {
-      queue.clear()
-      deferred.reject(evt.detail.error)
-    })
 
     for (const root of roots) {
-      void queue.add(async () => {
-        this.log.trace('traversing dag from %c', root)
-        await this.#traverseDagNode({ cid: root, queue, strategy: traversalStrategy ?? new GraphSearch(root), traversalContext, parentPath: [], options })
-      })
-        .catch((err) => {
-          this.log.error('error during queue operation - %e', err)
+      const exportStrategy = options?.exporter ?? (root.code === DAG_PB_CODEC_CODE ? new UnixFSExporter() : new SubgraphExporter())
+      let current = root
+      let underRoot = false
+
+      if (traversalStrategy != null) {
+        for await (const { cid, bytes } of traversalStrategy.traverse(current, this.components.blockstore, this.components.getCodec, options)) {
+          this.log.trace('next CID on path to %c is %c', root, cid)
+          current = cid
+
+          // the traversal is under the root we are exporting
+          if (root.equals(cid)) {
+            underRoot = true
+          }
+
+          // include the traversal block if we are under the root CID or it has
+          // been explicitly requested
+          if (underRoot || options?.includeTraversalBlocks === true) {
+            // eslint-disable-next-line max-depth
+            if (options?.blockFilter?.has(cid.multihash.bytes) === true) {
+              continue
+            }
+
+            // mark as processed
+            options?.blockFilter?.add(cid.multihash.bytes)
+
+            // store block on path to target
+            await writer.put({
+              cid,
+              bytes
+            })
+          }
+        }
+      }
+
+      for await (const { cid, bytes } of exportStrategy.export(current, this.components.blockstore, this.components.getCodec, options)) {
+        if (options?.blockFilter?.has(cid.multihash.bytes) === true) {
+          continue
+        }
+
+        // skip the export target block if we have already included it during
+        // traversal
+        if (underRoot && cid.equals(current)) {
+          continue
+        }
+
+        // mark as processed
+        options?.blockFilter?.add(cid.multihash.bytes)
+
+        // write to CAR
+        await writer.put({
+          cid,
+          bytes
         })
+      }
     }
 
     // wait for the writer to end
-    try {
-      await deferred.promise
-    } finally {
-      await writer.close()
-    }
-  }
-
-  /**
-   * Traverse a DAG and stop when we reach the target node
-   */
-  async #traverseDagNode ({ cid, queue, strategy, traversalContext, parentPath, options }: TraversalWalkDagContext): Promise<void> {
-    // if we are traversing, we need to gather path(s) to the target(s)
-    const currentPath = [...parentPath, cid]
-
-    if (strategy.isTarget(cid)) {
-      traversalContext.pathsToTarget = traversalContext.pathsToTarget ?? []
-      traversalContext.pathsToTarget.push([...currentPath])
-      this.log.trace('found path to target %c', cid)
-      return
-    }
-
-    const codec = await this.components.getCodec(cid.code)
-    const bytes = await toBuffer(this.components.blockstore.get(cid, options))
-
-    // we are recursively traversing the dag
-    const decodedBlock = createUnsafe({ bytes, cid, codec })
-
-    for await (const nextCid of strategy.traverse(cid, decodedBlock)) {
-      void queue.add(async () => {
-        await this.#traverseDagNode({ cid: nextCid, queue, strategy, traversalContext, parentPath: currentPath ?? [], options })
-      })
-        .catch((err) => {
-          this.log.error('error during traversal queue operation - %e', err)
-        })
-    }
-  }
-
-  /**
-   * Use an ExportStrategy to export part of all of a DAG
-   */
-  async #exportDagNode ({ cid, queue, writer, strategy, options, recursive = true }: ExportWalkDagContext): Promise<void> {
-    if (options?.blockFilter?.has(cid.multihash.bytes) === true) {
-      return
-    }
-
-    const codec = await this.components.getCodec(cid.code)
-    const bytes = await toBuffer(this.components.blockstore.get(cid, options))
-
-    // Mark as processed
-    options?.blockFilter?.add(cid.multihash.bytes)
-
-    // Write to CAR
-    await writer.put({ cid, bytes })
-
-    if (recursive) {
-      // we are recursively traversing the dag
-      const decodedBlock = createUnsafe({ bytes, cid, codec })
-
-      for await (const nextCid of strategy.export(cid, decodedBlock)) {
-        void queue.add(async () => {
-          await this.#exportDagNode({ cid: nextCid, queue, writer, strategy, options })
-        })
-          .catch((err) => {
-            this.log.error('error during export queue operation - %e', err)
-          })
-      }
-    }
+    await writer.close()
   }
 }

@@ -1,5 +1,9 @@
+import { breadthFirstWalker } from '@helia/utils'
 import type { ExportStrategy } from '../index.js'
-import type { BlockView } from 'multiformats/block/interface'
+import type { CodecLoader } from '@helia/interface'
+import type { AbortOptions } from '@libp2p/interface'
+import type { Blockstore } from 'interface-blockstore'
+import type { BlockView } from 'multiformats'
 import type { CID } from 'multiformats/cid'
 
 /**
@@ -10,9 +14,14 @@ import type { CID } from 'multiformats/cid'
  * the helia config.
  */
 export class SubgraphExporter implements ExportStrategy {
-  async * export (_cid: CID, block: BlockView<any, any, any, 0 | 1>): AsyncGenerator<CID, void, undefined> {
-    for (const [, linkedCid] of block.links()) {
-      yield linkedCid
+  async * export (cid: CID, blockstore: Blockstore, getCodec: CodecLoader, options?: AbortOptions): AsyncGenerator<BlockView<unknown, number, number, 0 | 1>, void, undefined> {
+    const walker = breadthFirstWalker({
+      blockstore,
+      getCodec
+    })
+
+    for await (const node of walker.walk(cid, options)) {
+      yield node.block
     }
   }
 }
