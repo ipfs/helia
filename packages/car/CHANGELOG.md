@@ -1,5 +1,19 @@
 # Changelog
 
+## [5.1.0](https://github.com/ipfs/helia/compare/car-v5.0.1...car-v5.1.0) (2025-10-17)
+
+
+### Features
+
+* add `includeTraversalBlocks` options ([#872](https://github.com/ipfs/helia/issues/872)) ([eb91b81](https://github.com/ipfs/helia/commit/eb91b810af71375cd97677dfaa9247cfa974b12c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^2.0.1 to ^2.1.0
+
 ## [5.0.1](https://github.com/ipfs/helia/compare/car-v5.0.0...car-v5.0.1) (2025-10-09)
 
 

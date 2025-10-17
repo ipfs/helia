@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/ipfs/helia/compare/utils-v2.0.1...utils-v2.1.0) (2025-10-17)
+
+
+### Features
+
+* add depth and breadth-first graph walkers to utils package ([#871](https://github.com/ipfs/helia/issues/871)) ([25eca46](https://github.com/ipfs/helia/commit/25eca4698b353e67fc7e5ea70ade3d247bd71a59))
+
 ## [2.0.1](https://github.com/ipfs/helia/compare/utils-v2.0.0...utils-v2.0.1) (2025-10-09)
 
 
