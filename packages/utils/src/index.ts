@@ -36,6 +36,9 @@ export type { AbstractCreateSessionOptions, BlockstoreSessionEvents, AbstractSes
 
 export type { BlockStorage, BlockStorageInit }
 
+export { breadthFirstWalker, depthFirstWalker} from './graph-walker.ts'
+export type { GraphWalkerComponents, GraphWalkerInit, GraphNode, GraphWalker } from './graph-walker.ts'
+
 /**
  * Options used to create a Helia node.
  */
