@@ -1,5 +1,15 @@
 # Changelog
 
+## [6.0.4](https://github.com/ipfs/helia/compare/helia-v6.0.3...helia-v6.0.4) (2025-10-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.0.2 to ^5.0.3
+    * @helia/utils bumped from ^2.1.0 to ^2.1.1
+
 ## [6.0.3](https://github.com/ipfs/helia/compare/helia-v6.0.2...helia-v6.0.3) (2025-10-17)
 
 
