@@ -23,7 +23,9 @@
  * const c = car(helia)
  * const out = nodeFs.createWriteStream('example.car')
  *
- * for await (const buf of c.export(cid)) {
+ * for await (const buf of c.export(cid, {
+ *   signal: AbortSignal.timeout(5_000)
+ * })) {
  *   out.write(buf)
  * }
  *
@@ -32,6 +34,14 @@
  *
  * @example Exporting a part of a UnixFS DAG as a CAR file
  *
+ * Here the graph traversal will start at `root` and include the blocks for
+ * `root`, `/foo`, `/bar`, and all the blocks that make up `baz.txt`.
+ *
+ * If there are other files/directories in the UnixFS DAG under `root`, they
+ * will not be included.
+ *
+ * `root` will be the only entry in the CAR file roots.
+ *
  * ```typescript
  * import { createHelia } from 'helia'
  * import { car, UnixFSPath } from '@helia/car'
@@ -39,13 +49,51 @@
  * import nodeFs from 'node:fs'
  *
  * const helia = await createHelia()
- * const cid = CID.parse('QmFoo...')
+ * const root = CID.parse('QmFoo...')
  *
  * const c = car(helia)
  * const out = nodeFs.createWriteStream('example.car')
  *
- * for await (const buf of c.export(cid, {
+ * for await (const buf of c.export(root, {
+ *   signal: AbortSignal.timeout(5_000),
  *   traversal: new UnixFSPath('/foo/bar/baz.txt')
+ * })) {
+ *   out.write(buf)
+ * }
+ *
+ * out.end()
+ * ```
+ *
+ * @example Including traversal path above the root in a CAR
+ *
+ * The `includeTraversalBlocks` option will include the traversal blocks in the
+ * CAR when they would otherwise be excluded (for example when the traversal
+ * starts in a parent of the export root).
+ *
+ * Here `baz` is the CID for `baz.txt`.
+ *
+ * The CAR file will include the blocks for `parent`, `/foo`, `/bar`, and
+ * `/baz.txt`.
+ *
+ * `baz` will be the only entry in the CAR file roots.
+ *
+ * ```typescript
+ * import { createHelia } from 'helia'
+ * import { car, UnixFSPath } from '@helia/car'
+ * import { CID } from 'multiformats/cid'
+ * import nodeFs from 'node:fs'
+ *
+ * const helia = await createHelia()
+ * const parent = CID.parse('QmFoo...')
+ * const baz = CID.parse('QmBar...')
+ *
+ * const c = car(helia)
+ * const out = nodeFs.createWriteStream('example.car')
+ *
+ * for await (const buf of c.export(baz, {
+ *   signal: AbortSignal.timeout(5_000),
+ *   traversal: new UnixFSPath(parent, '/foo/bar/baz.txt'),
+ *   includeTraversalBlocks: true
  * })) {
  *   out.write(buf)
  * }
@@ -72,7 +120,9 @@
  * const reader = await CarReader.fromIterable(inStream)
  *
  * const c = car(helia)
- * await c.import(reader)
+ * await c.import(reader, {
+ *   signal: AbortSignal.timeout(5_000)
+ * })
  * ```
  */
 
@@ -102,13 +152,7 @@ export interface TraversalStrategy {
   /**
    * Traverse the DAG and yield the next CID to traverse
    */
-  traverse<T extends BlockView<any, any, any, 0 | 1>>(cid: CID, block: T): AsyncGenerator<CID, void, undefined>
-
-  /**
-   * Returns true if the current CID is the target and we should switch to the
-   * export strategy
-   */
-  isTarget(cid: CID): boolean
+  traverse(root: CID, blockstore: Blockstore, getCodec: CodecLoader, options?: AbortOptions): AsyncGenerator<BlockView<unknown, number, number, 0 | 1>, void, undefined>
 }
 
 /**
@@ -121,14 +165,13 @@ export interface ExportStrategy {
   /**
    * Export the DAG and yield the next CID to traverse
    */
-  export<T extends BlockView<any, any, any, 0 | 1>>(cid: CID, block: T): AsyncGenerator<CID, void, undefined>
+  export(cid: CID, blockstore: Blockstore, getCodec: CodecLoader, options?: AbortOptions): AsyncGenerator<BlockView<unknown, number, number, 0 | 1>, void, undefined>
 }
 
 export * from './export-strategies/index.js'
 export * from './traversal-strategies/index.js'
 
 export interface ExportCarOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents>, ProviderOptions {
-
   /**
    * If true, the blockstore will not do any network requests.
    *
@@ -153,6 +196,14 @@ export interface ExportCarOptions extends AbortOptions, ProgressOptions<GetBlock
    * blocks included in the exported car file. (e.g. https://specs.ipfs.tech/http-gateways/trustless-gateway/#dag-scope-request-query-parameter)
    */
   exporter?: ExportStrategy
+
+  /**
+   * If `true`, and the traversal strategy starts above the root, include the
+   * traversed blocks in the CAR file before the root and subsequent blocks
+   *
+   * @default false
+   */
+  includeTraversalBlocks?: boolean
 }
 
 /**
@@ -208,6 +259,6 @@ export interface Car {
 /**
  * Create a {@link Car} instance for use with {@link https://github.com/ipfs/helia Helia}
  */
-export function car (helia: CarComponents, init: any = {}): Car {
-  return new CarClass(helia, init)
+export function car (helia: CarComponents): Car {
+  return new CarClass(helia)
 }

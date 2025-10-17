@@ -1,58 +1,94 @@
-import { decode } from '@ipld/dag-pb'
-import { UnixFS } from 'ipfs-unixfs'
-import { DAG_PB_CODEC_CODE } from '../constants.js'
-import { NotUnixFSError } from '../errors.js'
+import * as dagPb from '@ipld/dag-pb'
+import { walkPath } from 'ipfs-unixfs-exporter'
+import { createUnsafe } from 'multiformats/block'
 import type { TraversalStrategy } from '../index.js'
-import type { BlockView } from 'multiformats/block/interface'
+import type { CodecLoader } from '@helia/interface'
+import type { AbortOptions } from '@libp2p/interface'
+import type { Blockstore } from 'interface-blockstore'
+import type { BlockView } from 'multiformats'
 import type { CID } from 'multiformats/cid'
 
 /**
  * Traverses a DAG containing UnixFS directories
+ *
+ * A root CID may be specified to begin traversal from, otherwise the root
+ * currently being exported will be used.
+ *
+ * @example Begin traversal from the root being exported
+ *
+ * In this example, the UnixFS path `/foo/bar/baz.txt` path should be resolvable
+ * beneath the `root` CID.
+ *
+ * ```typescript
+ * import { createHelia } from 'helia'
+ * import { car, UnixFSPath } from '@helia/car'
+ * import { CID } from 'multiformats/cid'
+ *
+ * const helia = await createHelia()
+ * const c = car(helia)
+ * const root = CID.parse('QmRoot')
+ *
+ * for await (const buf of c.export(root, {
+ *   traversal: new UnixFSPath('/foo/bar/baz.txt')
+ * })) {
+ *   // do something with `buf`
+ * }
+ * ```
+ *
+ * @example Begin traversal from a parent node
+ *
+ * In this example, the `root` CID should be resolvable at the UnixFS path
+ * beneath `parentCID`.
+ *
+ * ```typescript
+ * import { createHelia } from 'helia'
+ * import { car, UnixFSPath } from '@helia/car'
+ * import { CID } from 'multiformats/cid'
+ *
+ * const helia = await createHelia()
+ * const c = car(helia)
+ * const root = CID.parse('QmRoot')
+ * const parentCID = CID.parse('QmParent')
+ *
+ * for await (const buf of c.export(root, {
+ *   traversal: new UnixFSPath(parentCID, '/foo/bar/baz.txt')
+ * })) {
+ *   // do something with `buf`
+ * }
+ * ```
  */
 export class UnixFSPath implements TraversalStrategy {
-  private readonly path: string[]
+  private readonly root?: CID
+  private readonly path: string
 
-  constructor (path: string) {
-    // "/foo/bar/baz.txt" -> ['foo', 'bar', 'baz.txt']
-    this.path = path.replace(/^\//, '').split('/')
+  constructor (path: string)
+  constructor (root: CID, path: string)
+  constructor (...args: any[]) {
+    let root: CID | string | undefined = args[0]
+    let path: string = args[1]
+
+    if (typeof root === 'string') {
+      path = root
+      root = undefined
+    } else if (args.length < 2) {
+      throw new Error('path or CID and path must be specified')
+    }
+
+    if (!path.startsWith('/')) {
+      path = `/${path}`
+    }
+
+    this.root = root
+    this.path = path
   }
 
-  isTarget (): boolean {
-    return this.path.length === 0
-  }
-
-  async * traverse <T extends BlockView<any, any, any, 0 | 1>>(cid: CID, block: T): AsyncGenerator<CID, void, undefined> {
-    if (cid.code !== DAG_PB_CODEC_CODE) {
-      throw new NotUnixFSError('Target CID is not UnixFS')
+  async * traverse (root: CID, blockstore: Blockstore, getCodec: CodecLoader, options?: AbortOptions): AsyncGenerator<BlockView<unknown, number, number, 0 | 1>, void, undefined> {
+    for await (const entry of walkPath(`${this.root ?? root}${this.path}`, blockstore, options)) {
+      yield createUnsafe({
+        cid: entry.cid,
+        bytes: entry.node instanceof Uint8Array ? entry.node : dagPb.encode(entry.node),
+        codec: await getCodec(entry.cid.code)
+      })
     }
-
-    const segment = this.path.shift()
-
-    if (segment == null) {
-      return
-    }
-
-    const pb = decode(block.bytes)
-
-    if (pb.Data == null) {
-      throw new NotUnixFSError('Target CID has no UnixFS data in decoded bytes')
-    }
-
-    const unixfs = UnixFS.unmarshal(pb.Data)
-
-    if (unixfs.type === 'directory') {
-      const link = pb.Links.filter(link => link.Name === segment).pop()
-
-      if (link == null) {
-        throw new NotUnixFSError(`Target CID directory has no link with name ${segment}`)
-      }
-
-      yield link.Hash
-      return
-    }
-
-    // TODO: HAMT support
-
-    throw new NotUnixFSError('Target CID is not a UnixFS directory')
   }
 }
