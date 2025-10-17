@@ -3,6 +3,7 @@ import { AbortError, TypedEventEmitter, setMaxListeners } from '@libp2p/interfac
 import { createScalableCuckooFilter, Queue } from '@libp2p/utils'
 import { base64 } from 'multiformats/bases/base64'
 import pDefer from 'p-defer'
+import { raceSignal } from 'race-signal'
 import type { BlockBroker, BlockRetrievalOptions, CreateSessionOptions } from '@helia/interface'
 import type { AbortOptions, ComponentLogger, Logger, PeerId } from '@libp2p/interface'
 import type { Filter } from '@libp2p/utils'
@@ -72,7 +73,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
         this.initialPeerSearchComplete = this.findProviders(cid, this.minProviders, options)
       }
 
-      await this.initialPeerSearchComplete
+      await raceSignal(this.initialPeerSearchComplete, options.signal)
 
       if (first) {
         this.log('found initial session peers for %c', cid)
@@ -183,7 +184,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     options.signal?.addEventListener('abort', signalAbortedListener)
 
     try {
-      return await deferred.promise
+      return await raceSignal(deferred.promise, options.signal)
     } finally {
       this.removeEventListener('provider', peerAddedToSessionListener)
       options.signal?.removeEventListener('abort', signalAbortedListener)
