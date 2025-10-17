@@ -457,6 +457,7 @@ async function raceBlockRetrievers (cid: CID, blockBrokers: BlockBroker[], hashe
               signal,
               validateFn: async (block: Uint8Array): Promise<void> => {
                 await validateFn(block)
+                options.signal?.throwIfAborted()
                 blocksWereValidated = true
               }
             })
@@ -465,6 +466,7 @@ async function raceBlockRetrievers (cid: CID, blockBrokers: BlockBroker[], hashe
               // the blockBroker either did not throw an error when attempting to validate the block
               // or did not call the validateFn at all. We should validate the block ourselves
               await validateFn(block)
+              options.signal?.throwIfAborted()
             }
 
             return block
