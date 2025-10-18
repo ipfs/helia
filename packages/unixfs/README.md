@@ -76,17 +76,24 @@ for await (const entry of fs.addAll(globSource('path/to/containing/dir', 'glob-p
 
 ## Example - Adding files and directories in the browser
 
-Uses [@cypsela/browser-source](https://github.com/cypsela/browser-source) to read [FileSystemEntry](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemEntry) and [FileSystemHandle](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemHandle) files and directories.
+Uses [@cypsela/browser-source](https://github.com/cypsela/browser-source) to read [FileList](https://developer.mozilla.org/en-US/docs/Web/API/FileList), [FileSystemEntry](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemEntry), and [FileSystemHandle](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemHandle) files and directories.
 
-Instances of these data types are available from drag and drop events and window methods like [showOpenFilePicker](https://developer.mozilla.org/en-US/docs/Web/API/Window/showOpenFilePicker).
+Instances of these data types are available from [\<input type="file" />](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/file) elements, [drag-and-drop events](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/drop_event), and window methods like [showOpenFilePicker](https://developer.mozilla.org/en-US/docs/Web/API/Window/showOpenFilePicker).
 
 ```typescript
 import { createHelia } from 'helia'
 import { unixfs } from '@helia/unixfs'
-import { fsEntrySource, fsHandleSource } from '@cypsela/browser-source'
+import { fileListSource, fsEntrySource, fsHandleSource } from '@cypsela/browser-source'
 
 const helia = await createHelia()
 const fs = unixfs(helia)
+
+// get FileList from <input type="file" /> elements
+const fileList = {} as FileList
+
+for await (const entry of fs.addAll(fileListSource(fileList))) {
+  console.info(entry)
+}
 
 // get FileSystemEntry from drag and drop events
 const fileEntry = {} as FileSystemEntry
