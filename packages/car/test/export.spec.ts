@@ -158,6 +158,98 @@ describe('export', () => {
     ])
   })
 
+  describe('unixfs-exporter', () => {
+    it('should export the start of a file', async () => {
+      const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
+
+      await c.import(reader)
+
+      const exportedReader = await CarReader.fromIterable(c.export(multiBlockTxtCid, {
+        exporter: new UnixFSExporter({
+          offset: 100,
+          length: 10
+        })
+      }))
+
+      await expect(exportedReader.getRoots()).to.eventually.deep.equal([
+        multiBlockTxtCid
+      ])
+      await expect(all(exportedReader.cids())).to.eventually.deep.equal([
+        multiBlockTxtCid,
+        multiBlockTxtCids[0]
+      ])
+    })
+
+    it('should export a slice of a file', async () => {
+      const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
+
+      await c.import(reader)
+
+      const exportedReader = await CarReader.fromIterable(c.export(multiBlockTxtCid, {
+        exporter: new UnixFSExporter({
+          offset: 600,
+          length: 10
+        })
+      }))
+
+      await expect(exportedReader.getRoots()).to.eventually.deep.equal([
+        multiBlockTxtCid
+      ])
+      await expect(all(exportedReader.cids())).to.eventually.deep.equal([
+        multiBlockTxtCid,
+        multiBlockTxtCids[2]
+      ])
+    })
+
+    it('should export a slice of a file when later blocks are missing', async () => {
+      const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
+
+      await c.import(reader)
+
+      await blockstore.delete(multiBlockTxtCids[3])
+      await blockstore.delete(multiBlockTxtCids[4])
+
+      const exportedReader = await CarReader.fromIterable(c.export(multiBlockTxtCid, {
+        exporter: new UnixFSExporter({
+          offset: 600,
+          length: 10
+        })
+      }))
+
+      await expect(exportedReader.getRoots()).to.eventually.deep.equal([
+        multiBlockTxtCid
+      ])
+      await expect(all(exportedReader.cids())).to.eventually.deep.equal([
+        multiBlockTxtCid,
+        multiBlockTxtCids[2]
+      ])
+    })
+
+    it('should export a slice of a file when early blocks are missing', async () => {
+      const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
+
+      await c.import(reader)
+
+      await blockstore.delete(multiBlockTxtCids[0])
+      await blockstore.delete(multiBlockTxtCids[1])
+
+      const exportedReader = await CarReader.fromIterable(c.export(multiBlockTxtCid, {
+        exporter: new UnixFSExporter({
+          offset: 600,
+          length: 10
+        })
+      }))
+
+      await expect(exportedReader.getRoots()).to.eventually.deep.equal([
+        multiBlockTxtCid
+      ])
+      await expect(all(exportedReader.cids())).to.eventually.deep.equal([
+        multiBlockTxtCid,
+        multiBlockTxtCids[2]
+      ])
+    })
+  })
+
   describe('graph-search', () => {
     it('should find a sub-DAG using a CID and export it', async () => {
       // cspell:ignore bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu
