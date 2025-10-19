@@ -23,7 +23,7 @@ export interface GraphNode <T = unknown, C extends number = number, A extends nu
 }
 
 export interface GraphWalker {
-  walk <T = any> (cid: CID, options?: AbortOptions): AsyncGenerator<GraphNode<T>>
+  walk <T = any> (cid: CID, options?: WalkOptions<T>): AsyncGenerator<GraphNode<T>>
 }
 
 export function depthFirstWalker (components: GraphWalkerComponents, init: GraphWalkerInit = {}): GraphWalker {
@@ -40,6 +40,10 @@ interface JobOptions extends AbortOptions {
   path: CID[]
 }
 
+export interface WalkOptions<T> extends AbortOptions {
+  includeChild?(child: CID, parent: BlockView<T, number, number, 0 | 1>): boolean
+}
+
 abstract class AbstractGraphWalker {
   private readonly components: GraphWalkerComponents
 
@@ -47,14 +51,14 @@ abstract class AbstractGraphWalker {
     this.components = components
   }
 
-  async * walk <T = any> (cid: CID, options?: AbortOptions): AsyncGenerator<GraphNode<T>> {
+  async * walk <T = any> (cid: CID, options?: WalkOptions<T>): AsyncGenerator<GraphNode<T>> {
     const queue = this.getQueue()
     const gen = filter(queue.toGenerator(options), (node) => node != null) as AsyncGenerator<GraphNode<T>>
     let finished = false
 
-    const job = async (options: JobOptions): Promise<GraphNode<T> | undefined> => {
-      const cid = options.cid
-      const bytes = await toBuffer(this.components.blockstore.get(cid, options))
+    const job = async (opts: JobOptions): Promise<GraphNode<T> | undefined> => {
+      const cid = opts.cid
+      const bytes = await toBuffer(this.components.blockstore.get(cid, opts))
       const block = createUnsafe<T, number, number, 0 | 1>({
         cid,
         bytes,
@@ -62,11 +66,15 @@ abstract class AbstractGraphWalker {
       })
 
       for (const [, linkedCid] of block.links()) {
+        if (options?.includeChild?.(linkedCid, block) === false) {
+          continue
+        }
+
         queue.add(job, {
-          ...options,
+          ...opts,
           cid: linkedCid,
-          depth: options.depth + 1,
-          path: [...options.path, linkedCid]
+          depth: opts.depth + 1,
+          path: [...opts.path, linkedCid]
         })
           // eslint-disable-next-line no-loop-func
           .catch(err => {
@@ -80,8 +88,8 @@ abstract class AbstractGraphWalker {
 
       return {
         block,
-        depth: options.depth,
-        path: options.path
+        depth: opts.depth,
+        path: opts.path
       }
     }
 
