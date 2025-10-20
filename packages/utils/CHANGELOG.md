@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.2.0](https://github.com/ipfs/helia/compare/utils-v2.1.1...utils-v2.2.0) (2025-10-20)
+
+
+### Features
+
+* allow filtering children ([#880](https://github.com/ipfs/helia/issues/880)) ([3eb6f3a](https://github.com/ipfs/helia/commit/3eb6f3a78f3dfe151ecc425290a06c92fa1431b7))
+
+
+### Bug Fixes
+
+* consolidate graph walkers ([#878](https://github.com/ipfs/helia/issues/878)) ([760ed27](https://github.com/ipfs/helia/commit/760ed27fea5e873e7b402773652961ab4583e2ac))
+
 ## [2.1.1](https://github.com/ipfs/helia/compare/utils-v2.1.0...utils-v2.1.1) (2025-10-17)
 
 

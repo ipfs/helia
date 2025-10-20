@@ -1,5 +1,20 @@
 # Changelog
 
+## [5.2.0](https://github.com/ipfs/helia/compare/car-v5.1.1...car-v5.2.0) (2025-10-20)
+
+
+### Features
+
+* add offset/length to export slices of DAGs ([#881](https://github.com/ipfs/helia/issues/881)) ([921696f](https://github.com/ipfs/helia/commit/921696f914fbe2af6ba04464fbbcf5072cf8d088))
+* support directory enumeration ([#883](https://github.com/ipfs/helia/issues/883)) ([4e5ff55](https://github.com/ipfs/helia/commit/4e5ff555d61e124c68e041cfab415108f199b8bd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^2.1.1 to ^2.2.0
+
 ## [5.1.1](https://github.com/ipfs/helia/compare/car-v5.1.0...car-v5.1.1) (2025-10-17)
 
 
