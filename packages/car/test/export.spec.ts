@@ -1,15 +1,18 @@
 /* eslint-env mocha */
 
 import { CarReader } from '@ipld/car'
+import * as dagCbor from '@ipld/dag-cbor'
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
+import { IdentityBlockstore } from 'blockstore-core/identity'
 import all from 'it-all'
 import drain from 'it-drain'
 import forEach from 'it-foreach'
 import length from 'it-length'
 import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
+import { sha256 } from 'multiformats/hashes/sha2'
 import sinon from 'sinon'
 import { BlockExporter, SubgraphExporter, UnixFSExporter } from '../src/export-strategies/index.js'
 import { car } from '../src/index.js'
@@ -49,7 +52,7 @@ describe('export', () => {
   ]
 
   beforeEach(async () => {
-    blockstore = sinon.spy(new MemoryBlockstore())
+    blockstore = sinon.spy(new IdentityBlockstore(new MemoryBlockstore()))
     blockstoreGetSpy = blockstore.get as sinon.SinonSpy
 
     c = car({
@@ -158,6 +161,38 @@ describe('export', () => {
     ])
   })
 
+  it('should omit identity CIDs', async () => {
+    const identity = CID.parse('bafkqaf3imvwgy3zaneqgc3janfxgy2lomvscay3jmqfa')
+
+    const exportedReader = await CarReader.fromIterable(c.export(identity))
+
+    await expect(exportedReader.getRoots()).to.eventually.deep.equal([
+      identity
+    ])
+    await expect(all(exportedReader.cids())).to.eventually.deep.equal([])
+  })
+
+  it('should omit identity CIDs from DAGs', async () => {
+    const identity = CID.parse('bafkqaf3imvwgy3zaneqgc3janfxgy2lomvscay3jmqfa')
+    const obj = {
+      hello: 'world',
+      child: identity
+    }
+    const block = dagCbor.encode(obj)
+    const digest = await sha256.digest(block)
+    const cid = CID.createV1(dagCbor.code, digest)
+    await blockstore.put(cid, block)
+
+    const exportedReader = await CarReader.fromIterable(c.export(cid))
+
+    await expect(exportedReader.getRoots()).to.eventually.deep.equal([
+      cid
+    ])
+    await expect(all(exportedReader.cids())).to.eventually.deep.equal([
+      cid
+    ], 'did not omit child identity cid')
+  })
+
   describe('unixfs-exporter', () => {
     it('should export the start of a file', async () => {
       const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
@@ -199,6 +234,34 @@ describe('export', () => {
         multiBlockTxtCid,
         multiBlockTxtCids[2]
       ])
+    })
+
+    it('should require a positive offset', async () => {
+      const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
+
+      await c.import(reader)
+
+      await expect(drain(c.export(multiBlockTxtCid, {
+        exporter: new UnixFSExporter({
+          offset: -100,
+          length: 10
+        })
+      }))).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
+    })
+
+    it('should require a positive length', async () => {
+      const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
+
+      await c.import(reader)
+
+      await expect(drain(c.export(multiBlockTxtCid, {
+        exporter: new UnixFSExporter({
+          offset: 0,
+          length: -10
+        })
+      }))).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
     })
 
     it('should export a slice of a file when later blocks are missing', async () => {
@@ -247,6 +310,31 @@ describe('export', () => {
         multiBlockTxtCid,
         multiBlockTxtCids[2]
       ])
+    })
+
+    it('should export a hamt-sharded directory listing', async () => {
+      // cspell:ignore bafybeidbclfqleg2uojchspzd4bob56dqetqjsj27gy2cq3klkkgxtpn4i
+      const shardRoot = CID.parse('bafybeidbclfqleg2uojchspzd4bob56dqetqjsj27gy2cq3klkkgxtpn4i')
+
+      const { reader, bytes: carFileBytes } = await loadCarFixture(`test/fixtures/${shardRoot}.car`)
+
+      // import all the blocks from the car file
+      await c.import(reader)
+
+      const ourCarBytes = await toBuffer(c.export(shardRoot, {
+        exporter: new UnixFSExporter({
+          listingOnly: true
+        })
+      }))
+
+      expect(ourCarBytes).to.equalBytes(carFileBytes)
+
+      const ourReader = await CarReader.fromBytes(ourCarBytes)
+
+      await expect(ourReader.getRoots()).to.eventually.deep.equal([
+        shardRoot
+      ])
+      await expect(all(ourReader.cids())).to.eventually.have.lengthOf(237, 'did not have all shard CIDs')
     })
   })
 

@@ -2,7 +2,7 @@ import { CarWriter } from '@ipld/car'
 import drain from 'it-drain'
 import map from 'it-map'
 import { raceSignal } from 'race-signal'
-import { DAG_PB_CODEC_CODE } from './constants.ts'
+import { DAG_PB_CODEC_CODE, IDENTITY_CODEC_CODE } from './constants.ts'
 import { SubgraphExporter } from './export-strategies/subgraph-exporter.js'
 import { UnixFSExporter } from './index.js'
 import type { CarComponents, Car as CarInterface, ExportCarOptions } from './index.js'
@@ -29,13 +29,15 @@ export class Car implements CarInterface {
   }
 
   async * export (root: CID | CID[], options?: ExportCarOptions): AsyncGenerator<Uint8Array, void, undefined> {
-    const { writer, out } = CarWriter.create(root)
+    const roots = (Array.isArray(root) ? root : [root])
+
+    const { writer, out } = CarWriter.create(roots)
     const iter = out[Symbol.asyncIterator]()
     const controller = new AbortController()
 
     // has to be done async so we write to `writer` and read from `out` at the
     // same time
-    this._export(root, writer, options)
+    this._export(roots, writer, options)
       .catch((err) => {
         this.log.error('error during streaming export - %e', err)
         controller.abort(err)
@@ -62,11 +64,14 @@ export class Car implements CarInterface {
     }
   }
 
-  private async _export (root: CID | CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: ExportCarOptions): Promise<void> {
-    const roots = Array.isArray(root) ? root : [root]
+  private async _export (roots: CID[], writer: Pick<CarWriter, 'put' | 'close'>, options?: ExportCarOptions): Promise<void> {
     const traversalStrategy = options?.traversal
 
     for (const root of roots) {
+      if (root.multihash.code === IDENTITY_CODEC_CODE) {
+        continue
+      }
+
       const exportStrategy = options?.exporter ?? (root.code === DAG_PB_CODEC_CODE ? new UnixFSExporter() : new SubgraphExporter())
       let current = root
       let underRoot = false
@@ -103,6 +108,10 @@ export class Car implements CarInterface {
 
       for await (const { cid, bytes } of exportStrategy.export(current, this.components.blockstore, this.components.getCodec, options)) {
         if (options?.blockFilter?.has(cid.multihash.bytes) === true) {
+          continue
+        }
+
+        if (cid.multihash.code === IDENTITY_CODEC_CODE) {
           continue
         }
 
