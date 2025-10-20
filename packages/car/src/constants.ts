@@ -9,3 +9,8 @@ export const DAG_PB_CODEC_CODE = 0x70
  * The multicodec code for raw binary data
  */
 export const RAW_PB_CODEC_CODE = 0x55
+
+/**
+ * The multicodec code for identity hashes
+ */
+export const IDENTITY_CODEC_CODE = 0x00

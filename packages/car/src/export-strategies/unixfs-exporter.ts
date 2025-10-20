@@ -1,5 +1,5 @@
 import { depthFirstWalker } from '@helia/utils'
-import { setMaxListeners } from '@libp2p/interface'
+import { setMaxListeners, InvalidParametersError } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
 import { UnixFS } from 'ipfs-unixfs'
 import { DAG_PB_CODEC_CODE, RAW_PB_CODEC_CODE } from '../constants.ts'
@@ -16,7 +16,9 @@ export interface UnixFSExporterOptions {
   /**
    * Include blocks that start with this offset.
    *
-   * Cannot be used with directories.
+   * If the CID being exported is a directory, this option is ignored.
+   *
+   * @default 0
    */
   offset?: number
 
@@ -24,9 +26,22 @@ export interface UnixFSExporterOptions {
    * Only include blocks that would include this many file bytes (exclusive,
    * inclusive of offset).
    *
-   * Cannot be used with directories.
+   * If the CID being exported is a directory, this option is ignored.
+   *
+   * @default Infinity
    */
   length?: number
+
+  /**
+   * By default an exported CAR file will include all blocks that make up a
+   * directory, and the files that are stored there.
+   *
+   * To only include blocks that allow the initial enumeration of the directory,
+   * pass `true` here
+   *
+   * @default false
+   */
+  listingOnly?: boolean
 }
 
 function isRawBlock (block: BlockView<any, number, number, Version>): block is BlockView<Uint8Array, 0x55, number, 1> {
@@ -74,7 +89,16 @@ export class UnixFSExporter implements ExportStrategy {
     })
 
     const offset = this.options?.offset ?? 0
-    const end = offset + (this.options?.length ?? Infinity)
+    const length = this.options?.length ?? Infinity
+    const listingOnly = this.options?.listingOnly ?? false
+
+    if (offset < 0) {
+      throw new InvalidParametersError('Offset cannot be negative')
+    }
+
+    if (length < 0) {
+      throw new InvalidParametersError('Length cannot be negative')
+    }
 
     let exportingFile: boolean
     const abortController = new AbortController()
@@ -91,17 +115,33 @@ export class UnixFSExporter implements ExportStrategy {
 
       // ignore offset/length if not exporting a file
       if (!exportingFile) {
+        const link = parent.value.Links.find(l => l.Hash.equals(child))
+        const u = UnixFS.unmarshal(parent.value.Data ?? new Uint8Array())
+
+        if (u.type === 'directory') {
+          // do not include directory files
+          return !listingOnly
+        }
+
+        if (u.type === 'hamt-sharded-directory' && listingOnly) {
+          // only include sub-shards, not directory files
+          return link?.Name?.length === 2
+        }
+
         return true
       }
 
       const childIndex = parent.value.Links.findIndex(link => link.Hash.equals(child))
       const layout = UnixFS.unmarshal(parent.value.Data ?? new Uint8Array())
 
+      const start = offset
+      const end = start + length
+
       const childStart = Number([...layout.blockSizes].slice(0, childIndex).reduce((curr, acc) => curr + acc, 0n))
       const childEnd = childStart + Number(layout.blockSizes[childIndex])
 
       // slice starts in child
-      if (offset >= childStart && offset < childEnd) {
+      if (start >= childStart && start < childEnd) {
         return true
       }
 
@@ -111,7 +151,7 @@ export class UnixFSExporter implements ExportStrategy {
       }
 
       // slice contains child
-      if (offset <= childStart && end >= childEnd) {
+      if (start <= childStart && end >= childEnd) {
         return true
       }
 
