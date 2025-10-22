@@ -1,5 +1,20 @@
 # Changelog
 
+## [5.0.5](https://github.com/ipfs/helia/compare/block-brokers-v5.0.4...block-brokers-v5.0.5) (2025-10-22)
+
+
+### Bug Fixes
+
+* update log formatting to print errors correctly ([#884](https://github.com/ipfs/helia/issues/884)) ([f35ecd1](https://github.com/ipfs/helia/commit/f35ecd1c8ad3c712d3882d0f0f2abaf0f0296ec1))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^3.0.4 to ^3.0.5
+    * @helia/utils bumped from ^2.2.0 to ^2.2.1
+
 ## [5.0.4](https://github.com/ipfs/helia/compare/block-brokers-v5.0.3...block-brokers-v5.0.4) (2025-10-20)
 
 
