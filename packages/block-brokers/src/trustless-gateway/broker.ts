@@ -67,14 +67,14 @@ export class TrustlessGatewayBlockBroker implements BlockBroker<TrustlessGateway
         try {
           await options.validateFn?.(block)
         } catch (err) {
-          this.log.error('failed to validate block for %c from %s', cid, gateway.url, err)
+          this.log.error('failed to validate block for %c from %s - %e', cid, gateway.url, err)
           // try another gateway
           continue
         }
 
         return block
       } catch (err: unknown) {
-        this.log.error('failed to get block for %c from %s', cid, gateway.url, err)
+        this.log.error('failed to get block for %c from %s - %e', cid, gateway.url, err)
 
         if (err instanceof Error) {
           aggregateErrors.push(err)

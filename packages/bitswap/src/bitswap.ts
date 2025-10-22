@@ -86,7 +86,7 @@ export class Bitswap implements BitswapInterface {
         // if the controller was aborted we found the block already so ignore
         // the error
         if (!controller.signal.aborted) {
-          this.log.error('error during finding and connect for cid %c', cid, err)
+          this.log.error('error during finding and connect for cid %c - %e', cid, err)
         }
       })
 
