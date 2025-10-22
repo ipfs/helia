@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/ipfs/helia/compare/dnslink-v1.1.0...dnslink-v1.1.1) (2025-10-22)
+
+
+### Bug Fixes
+
+* update log formatting to print errors correctly ([#884](https://github.com/ipfs/helia/issues/884)) ([f35ecd1](https://github.com/ipfs/helia/commit/f35ecd1c8ad3c712d3882d0f0f2abaf0f0296ec1))
+
 ## [1.1.0](https://github.com/ipfs/helia/compare/dnslink-v1.0.1...dnslink-v1.1.0) (2025-10-14)
 
 
