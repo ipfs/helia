@@ -234,14 +234,14 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
           setMaxListeners(Infinity, signal)
           signal.addEventListener('abort', abortListener)
         } catch (err: any) {
-          this.log.error('error reading incoming bitswap message from %p on stream', connection.remotePeer, stream.id, err)
+          this.log.error('error reading incoming bitswap message from %p on stream - %e', connection.remotePeer, stream.id, err)
           stream.abort(err)
           break
         }
       }
     })
       .catch(err => {
-        this.log.error('error handling incoming stream from %p', connection.remotePeer, err)
+        this.log.error('error handling incoming stream from %p - %e', connection.remotePeer, err)
         stream.abort(err)
       })
   }
@@ -339,7 +339,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
         await stream.close(options)
       } catch (err: any) {
         options?.onProgress?.(new CustomProgressEvent<{ peer: PeerId, error: Error }>('bitswap:network:send-wantlist:error', { peer: peerId, error: err }))
-        this.log.error('error sending message to %p', peerId, err)
+        this.log.error('error sending message to %p - %e', peerId, err)
         stream.abort(err)
       }
 

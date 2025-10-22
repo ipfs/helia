@@ -306,7 +306,7 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
 
             options.onProgress?.(new CustomProgressEvent<CID>('helia:gc:deleted', cid))
           } catch (err: any) {
-            helia.log.error('Error during gc', err)
+            helia.log.error('error during gc - %e', err)
             options.onProgress?.(new CustomProgressEvent<Error>('helia:gc:error', err))
           }
         }

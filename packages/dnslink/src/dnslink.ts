@@ -171,7 +171,7 @@ export class DNSLink <Namespaces extends Record<string, DNSLinkParser<DNSLinkRes
 
         output.push(parser(result, answer))
       } catch (err: any) {
-        this.log.error('could not parse DNS link record for domain %s, %s', domain, answer.data, err)
+        this.log.error('could not parse DNS link record for domain %s, %s - %e', domain, answer.data, err)
       }
     }
 

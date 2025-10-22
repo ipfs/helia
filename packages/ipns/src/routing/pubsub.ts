@@ -77,7 +77,7 @@ class PubSubRouting implements IPNSRouting {
       }
 
       this.#processPubSubMessage(message).catch(err => {
-        log.error('Error processing message', err)
+        log.error('Error processing message - %e', err)
       })
     })
   }

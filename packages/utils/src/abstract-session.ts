@@ -133,7 +133,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
           deferred.resolve(await this.retrieve(cid, options))
         })
         .catch(err => {
-          this.log.error('could not find new providers for %c', cid, err)
+          this.log.error('could not find new providers for %c - %e', cid, err)
           deferred.reject(err)
         })
     })
@@ -151,7 +151,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
             return
           }
 
-          this.log.error('error retrieving session block for %c', cid, err)
+          this.log.error('error retrieving session block for %c - %e', cid, err)
         })
     }
 
@@ -173,7 +173,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
           return
         }
 
-        this.log.error('error retrieving session block for %c', cid, err)
+        this.log.error('error retrieving session block for %c - %e', cid, err)
       })
 
     const signalAbortedListener = (): void => {
@@ -319,7 +319,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
         }
       })
       .catch(err => {
-        this.log.error('error searching routing for potential session peers for %c', cid, err.errors ?? err)
+        this.log.error('error searching routing for potential session peers for %c - %e', cid, err)
         deferred.reject(err)
       })
 

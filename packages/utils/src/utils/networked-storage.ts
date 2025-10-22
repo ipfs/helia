@@ -476,7 +476,7 @@ async function raceBlockRetrievers (cid: CID, blockBrokers: BlockBroker[], hashe
 
             return block
           } catch (err) {
-            options.log.error('could not retrieve verified block for %c', cid, err)
+            options.log.error('could not retrieve verified block for %c - %e', cid, err)
             throw err
           }
         })
