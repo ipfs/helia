@@ -73,10 +73,21 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
         this.initialPeerSearchComplete = this.findProviders(cid, this.minProviders, options)
       }
 
-      await raceSignal(this.initialPeerSearchComplete, options.signal)
+      try {
+        await raceSignal(this.initialPeerSearchComplete, options.signal)
 
-      if (first) {
-        this.log('found initial session peers for %c', cid)
+        if (first) {
+          this.log('found initial session peers for %c', cid)
+        }
+      } catch (err) {
+        if (first) {
+          this.log('failed to find initial session peers for %c - %e', cid, err)
+        }
+
+        this.requests.delete(cidStr)
+        deferred.reject(err)
+
+        throw err
       }
     }
 
