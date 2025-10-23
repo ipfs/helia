@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.2](https://github.com/ipfs/helia/compare/utils-v2.2.1...utils-v2.2.2) (2025-10-23)
+
+
+### Bug Fixes
+
+* remove block request promise when initial provider search fails ([#886](https://github.com/ipfs/helia/issues/886)) ([bfc8710](https://github.com/ipfs/helia/commit/bfc871013eb2b4b1e9c62a0055002605eccb375b))
+
 ## [2.2.1](https://github.com/ipfs/helia/compare/utils-v2.2.0...utils-v2.2.1) (2025-10-22)
 
 
