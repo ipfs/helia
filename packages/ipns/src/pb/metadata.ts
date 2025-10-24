@@ -5,6 +5,7 @@ import type { Uint8ArrayList } from 'uint8arraylist'
 export interface IPNSPublishMetadata {
   keyName: string
   lifetime: number
+  refresh: boolean
 }
 
 export namespace IPNSPublishMetadata {
@@ -27,13 +28,19 @@ export namespace IPNSPublishMetadata {
           w.uint32(obj.lifetime)
         }
 
+        if ((obj.refresh != null && obj.refresh !== false)) {
+          w.uint32(16)
+          w.bool(obj.refresh)
+        }
+
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
       }, (reader, length, opts = {}) => {
         const obj: any = {
           keyName: '',
-          lifetime: 0
+          lifetime: 0,
+          refresh: false
         }
 
         const end = length == null ? reader.len : reader.pos + length
@@ -48,6 +55,10 @@ export namespace IPNSPublishMetadata {
             }
             case 2: {
               obj.lifetime = reader.uint32()
+              break
+            }
+            case 3: {
+              obj.refresh = reader.bool()
               break
             }
             default: {

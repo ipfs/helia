@@ -6,4 +6,6 @@ message IPNSPublishMetadata {
 
   // Lifetime is the duration of the signature validity in milliseconds
   uint32 lifetime = 2;
+
+  bool refresh = 3;
 }
