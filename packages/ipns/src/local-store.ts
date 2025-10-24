@@ -54,18 +54,20 @@ export function localStore (datastore: Datastore, log: Logger): LocalStore {
       try {
         const key = dhtRoutingKey(routingKey)
 
-        // don't overwrite existing, identical records as this will affect the
-        // TTL
-        try {
-          const existingBuf = await datastore.get(key)
-          const existingRecord = Record.deserialize(existingBuf)
+        if (options.metadata?.refresh !== true) {
+          // don't overwrite existing, identical records as this will affect the
+          // TTL
+          try {
+            const existingBuf = await datastore.get(key)
+            const existingRecord = Record.deserialize(existingBuf)
 
-          if (uint8ArrayEquals(existingRecord.value, marshalledRecord)) {
-            return
-          }
-        } catch (err: any) {
-          if (err.name !== 'NotFoundError') {
-            throw err
+            if (uint8ArrayEquals(existingRecord.value, marshalledRecord)) {
+              return
+            }
+          } catch (err: any) {
+            if (err.name !== 'NotFoundError') {
+              throw err
+            }
           }
         }
 
