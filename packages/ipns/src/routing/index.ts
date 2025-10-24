@@ -6,7 +6,7 @@ import type { AbortOptions } from '@libp2p/interface'
 import type { ProgressOptions } from 'progress-events'
 
 export interface PutOptions extends AbortOptions, ProgressOptions {
-  metadata?: IPNSPublishMetadata
+  metadata?: Partial<IPNSPublishMetadata>
 }
 
 export interface GetOptions extends AbortOptions, ProgressOptions {
