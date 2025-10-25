@@ -79,7 +79,7 @@ export class IPNSRepublisher {
     })
 
     try {
-      const recordsToRepublish: Array<{ routingKey: Uint8Array, record: Uint8Array, refresh?: boolean }> = []
+      const recordsToRepublish: Array<{ routingKey: Uint8Array, record: Uint8Array, overwrite?: boolean }> = []
 
       // Find all records using the localStore.list method
       for await (const { routingKey, record, metadata, created } of this.localStore.list(options)) {
@@ -106,7 +106,7 @@ export class IPNSRepublisher {
             continue
           }
           if (shouldRefresh(created)) {
-            recordsToRepublish.push({ routingKey, record, refresh: true })
+            recordsToRepublish.push({ routingKey, record, overwrite: true })
           } else {
             this.log.trace(`skipping record ${routingKey.toString()} within republish threshold`)
           }
@@ -140,12 +140,12 @@ export class IPNSRepublisher {
       this.log(`found ${recordsToRepublish.length} records to republish`)
 
       // Republish each record
-      for (const { routingKey, record, refresh } of recordsToRepublish) {
+      for (const { routingKey, record, overwrite } of recordsToRepublish) {
         // Add job to queue to republish the record to all routers
         queue.add(async () => {
           try {
             await Promise.all(
-              this.routers.map(r => r.put(routingKey, record, { ...options, metadata: { refresh } }))
+              this.routers.map(r => r.put(routingKey, record, { ...options, overwrite }))
             )
           } catch (err: any) {
             this.log.error('error republishing record - %e', err)

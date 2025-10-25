@@ -54,7 +54,7 @@ export function localStore (datastore: Datastore, log: Logger): LocalStore {
       try {
         const key = dhtRoutingKey(routingKey)
 
-        if (options.metadata?.refresh !== true) {
+        if (options.overwrite !== true) {
           // don't overwrite existing, identical records as this will affect the
           // TTL
           try {

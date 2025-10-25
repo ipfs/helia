@@ -7,6 +7,7 @@ import type { ProgressOptions } from 'progress-events'
 
 export interface PutOptions extends AbortOptions, ProgressOptions {
   metadata?: Partial<IPNSPublishMetadata>
+  overwrite?: boolean
 }
 
 export interface GetOptions extends AbortOptions, ProgressOptions {
