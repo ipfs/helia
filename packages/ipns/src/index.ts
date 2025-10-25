@@ -261,6 +261,13 @@ export interface RefreshOptions {
    * Force the record to be published immediately even if it's already resolvable
    */
   force?: boolean
+
+  /**
+   * Refresh the latest known record for the key on a regularly basis
+   *
+   * @default true
+   */
+  repeat?: boolean
 }
 
 export interface ResolveResult {

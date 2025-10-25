@@ -215,7 +215,11 @@ export class IPNSRepublisher {
     // publish record to routers
     try {
       // overwrite so Record.created is reset for #republish
-      const putOptions = { ...options, metadata: { refresh: true }, overwrite: true }
+      const putOptions = {
+        ...options,
+        metadata: options.repeat ? { refresh: true } : undefined,
+        overwrite: true
+      }
       await Promise.all(
         this.routers.map(r => r.put(routingKey, marshaledRecord, putOptions))
       )
