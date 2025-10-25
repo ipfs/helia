@@ -259,6 +259,8 @@ export interface RefreshOptions {
 
   /**
    * Force the record to be published immediately even if it's already resolvable
+   *
+   * @default false
    */
   force?: boolean
 
