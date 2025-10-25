@@ -251,6 +251,18 @@ export interface ResolveOptions extends AbortOptions, ProgressOptions<ResolvePro
   nocache?: boolean
 }
 
+export interface RefreshOptions {
+  /**
+   * A candidate IPNS record to use if no newer records are found
+   */
+  record?: IPNSRecord
+
+  /**
+   * Force the record to be published immediately even if it's already resolvable
+   */
+  force?: boolean
+}
+
 export interface ResolveResult {
   /**
    * The CID that was resolved
@@ -280,6 +292,13 @@ export interface IPNSPublishResult {
    * The public key that was used to publish the record
    */
   publicKey: PublicKey
+}
+
+export interface IPNSRefreshResult {
+  /**
+   * The published record
+   */
+  record: IPNSRecord
 }
 
 export interface IPNSResolver {
@@ -348,6 +367,24 @@ export interface IPNS {
    * or is no longer valid.
    */
   unpublish(keyName: string, options?: AbortOptions): Promise<void>
+
+  /**
+   * Regularly publish the latest known existing IPNS record for `key`
+   *
+   * Refreshing keep an existing IPNS record resolvable until it expires or
+   * `unrefresh` is called for the same key
+   */
+  refresh(key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options?: RefreshOptions): Promise<IPNSRefreshResult>
+
+  /**
+   * Stop refreshing of an existing IPNS record
+   *
+   * This will delete the IPNS record from the datastore
+   *
+   * Note that the record may still be resolved by other peers until it expires
+   * or is no longer valid.
+   */
+  unrefresh(key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options?: AbortOptions): Promise<void>
 }
 
 export type { IPNSRouting } from './routing/index.js'

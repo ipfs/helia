@@ -1,4 +1,4 @@
-import { InvalidParametersError } from '@libp2p/interface'
+import { InvalidParametersError, isPeerId, isPublicKey, type PeerId, type PublicKey } from '@libp2p/interface'
 import { Key } from 'interface-datastore'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { DHT_EXPIRY_MS, REPUBLISH_THRESHOLD } from './constants.ts'
@@ -87,4 +87,8 @@ export function isLibp2pCID (obj?: any): obj is CID<unknown, 0x72, 0x00 | 0x12, 
   }
 
   return true
+}
+
+export function keyToMultihash (key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId) {
+  return isPublicKey(key) || isPeerId(key) ? key.toMultihash() : isLibp2pCID(key) ? key.multihash : key
 }

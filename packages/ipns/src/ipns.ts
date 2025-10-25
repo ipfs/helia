@@ -5,7 +5,7 @@ import { IPNSResolver } from './ipns/resolver.ts'
 import { localStore } from './local-store.js'
 import { helia } from './routing/helia.js'
 import { localStoreRouting } from './routing/local-store.ts'
-import type { IPNSComponents, IPNS as IPNSInterface, IPNSOptions, IPNSPublishResult, IPNSResolveResult, PublishOptions, ResolveOptions } from './index.js'
+import type { IPNSComponents, IPNS as IPNSInterface, IPNSOptions, IPNSPublishResult, IPNSRefreshResult, IPNSResolveResult, PublishOptions, RefreshOptions, ResolveOptions } from './index.js'
 import type { LocalStore } from './local-store.js'
 import type { IPNSRouting } from './routing/index.js'
 import type { AbortOptions, PeerId, PublicKey, Startable } from '@libp2p/interface'
@@ -34,13 +34,14 @@ export class IPNS implements IPNSInterface, Startable {
       routers: this.routers,
       localStore: this.localStore
     })
-    this.republisher = new IPNSRepublisher(components, {
+    this.resolver = new IPNSResolver(components, {
       ...init,
       routers: this.routers,
       localStore: this.localStore
     })
-    this.resolver = new IPNSResolver(components, {
+    this.republisher = new IPNSRepublisher(components, {
       ...init,
+      resolver: this.resolver,
       routers: this.routers,
       localStore: this.localStore
     })
@@ -83,5 +84,13 @@ export class IPNS implements IPNSInterface, Startable {
 
   async unpublish (keyName: string, options?: AbortOptions): Promise<void> {
     return this.publisher.unpublish(keyName, options)
+  }
+
+  async refresh(key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options: RefreshOptions = {}): Promise<IPNSRefreshResult> {
+    return this.republisher.refresh(key, options)
+  }
+
+  async unrefresh(key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options: AbortOptions = {}): Promise<void> {
+    return this.republisher.unrefresh(key, options)
   }
 }
