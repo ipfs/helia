@@ -1,13 +1,15 @@
 import { Queue, repeatingTask } from '@libp2p/utils'
 import { createIPNSRecord, marshalIPNSRecord, unmarshalIPNSRecord } from 'ipns'
 import { DEFAULT_REPUBLISH_CONCURRENCY, DEFAULT_REPUBLISH_INTERVAL_MS, DEFAULT_TTL_NS } from '../constants.ts'
-import { shouldRepublish } from '../utils.js'
+import { shouldRefresh, shouldRepublish } from '../utils.js'
 import type { LocalStore } from '../local-store.js'
 import type { IPNSRouting } from '../routing/index.js'
 import type { AbortOptions, ComponentLogger, Libp2p, Logger, PrivateKey } from '@libp2p/interface'
 import type { Keychain } from '@libp2p/keychain'
 import type { RepeatingTask } from '@libp2p/utils'
 import type { IPNSRecord } from 'ipns'
+import { ipnsValidator } from 'ipns/validator'
+import type { IPNSRecordMetadata } from '../index.ts'
 
 export interface IPNSRepublisherComponents {
   logger: ComponentLogger
@@ -77,7 +79,7 @@ export class IPNSRepublisher {
     })
 
     try {
-      const recordsToRepublish: Array<{ routingKey: Uint8Array, record: IPNSRecord }> = []
+      const recordsToRepublish: Array<{ routingKey: Uint8Array, record: Uint8Array, refresh?: boolean }> = []
 
       // Find all records using the localStore.list method
       for await (const { routingKey, record, metadata, created } of this.localStore.list(options)) {
@@ -95,6 +97,22 @@ export class IPNSRepublisher {
           continue
         }
 
+        if (metadata.refresh) {
+          try {
+            await ipnsValidator(routingKey, record)
+          } catch (err: any) {
+            this.log('unable to refresh expired record - %e', err)
+            await this.localStore.delete(routingKey, options)
+            continue
+          }
+          if (shouldRefresh(created)) {
+            recordsToRepublish.push({ routingKey, record, refresh: true })
+          } else {
+            this.log.trace(`skipping record ${routingKey.toString()} within republish threshold`)
+          }
+          continue
+        }
+
         // Only republish records that are within the DHT or record expiry threshold
         if (!shouldRepublish(ipnsRecord, created)) {
           this.log.trace(`skipping record ${routingKey.toString()}within republish threshold`)
@@ -107,12 +125,12 @@ export class IPNSRepublisher {
         try {
           privKey = await this.keychain.exportKey(metadata.keyName)
         } catch (err: any) {
-          this.log.error(`missing key ${metadata.keyName}, skipping republishing record`, err)
+          this.log.error(`missing key ${metadata.keyName}, skipping republishing record for ${routingKey.toString()}`, err)
           continue
         }
         try {
           const updatedRecord = await createIPNSRecord(privKey, ipnsRecord.value, sequenceNumber, metadata.lifetime, { ...options, ttlNs })
-          recordsToRepublish.push({ routingKey, record: updatedRecord })
+          recordsToRepublish.push({ routingKey, record: marshalIPNSRecord(updatedRecord) })
         } catch (err: any) {
           this.log.error(`error creating updated IPNS record for ${routingKey.toString()}`, err)
           continue
@@ -122,13 +140,12 @@ export class IPNSRepublisher {
       this.log(`found ${recordsToRepublish.length} records to republish`)
 
       // Republish each record
-      for (const { routingKey, record } of recordsToRepublish) {
+      for (const { routingKey, record, refresh } of recordsToRepublish) {
         // Add job to queue to republish the record to all routers
         queue.add(async () => {
           try {
-            const marshaledRecord = marshalIPNSRecord(record)
             await Promise.all(
-              this.routers.map(r => r.put(routingKey, marshaledRecord, options))
+              this.routers.map(r => r.put(routingKey, record, { ...options, metadata: { refresh } }))
             )
           } catch (err: any) {
             this.log.error('error republishing record - %e', err)

@@ -43,16 +43,26 @@ export function ipnsMetadataKey (key: Uint8Array): Key {
 
 export function shouldRepublish (ipnsRecord: IPNSRecord, created: Date): boolean {
   const now = Date.now()
-  const dhtExpiry = created.getTime() + DHT_EXPIRY_MS
   const recordExpiry = new Date(ipnsRecord.validity).getTime()
 
-  // If the DHT expiry is within the threshold, republish it
-  if (dhtExpiry - now < REPUBLISH_THRESHOLD) {
+  if (shouldRefresh(created)) {
     return true
   }
 
   // If the record expiry (based on validity/lifetime) is within the threshold, republish it
   if (recordExpiry - now < REPUBLISH_THRESHOLD) {
+    return true
+  }
+
+  return false
+}
+
+export function shouldRefresh (created: Date): boolean {
+  const now = Date.now()
+  const dhtExpiry = created.getTime() + DHT_EXPIRY_MS
+
+  // If the DHT expiry is within the threshold, republish it
+  if (dhtExpiry - now < REPUBLISH_THRESHOLD) {
     return true
   }
 
