@@ -29,7 +29,7 @@ export namespace IPNSPublishMetadata {
         }
 
         if ((obj.refresh != null && obj.refresh !== false)) {
-          w.uint32(16)
+          w.uint32(24)
           w.bool(obj.refresh)
         }
 
