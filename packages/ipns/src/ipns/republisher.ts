@@ -2,7 +2,7 @@ import { Queue, repeatingTask } from '@libp2p/utils'
 import { createIPNSRecord, marshalIPNSRecord, multihashFromIPNSRoutingKey, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from 'ipns'
 import { DEFAULT_REPUBLISH_CONCURRENCY, DEFAULT_REPUBLISH_INTERVAL_MS, DEFAULT_TTL_NS } from '../constants.ts'
 import { keyToMultihash, shouldRefresh, shouldRepublish } from '../utils.js'
-import type { LocalStore } from '../local-store.js'
+import type { ListResult, LocalStore } from '../local-store.js'
 import type { IPNSRouting } from '../routing/index.js'
 import { NotFoundError, type AbortOptions, type ComponentLogger, type Libp2p, type Logger, type PeerId, type PrivateKey, type PublicKey } from '@libp2p/interface'
 import type { Keychain } from '@libp2p/keychain'
@@ -85,7 +85,8 @@ export class IPNSRepublisher {
     })
 
     try {
-      const recordsToRepublish: Array<{ routingKey: Uint8Array, record: IPNSRecord, overwrite?: boolean }> = []
+      const recordsToRepublish: Array<{ routingKey: Uint8Array, record: IPNSRecord }> = []
+      const recordsToRefresh: Array<Omit<ListResult, 'record'>> = []
 
       // Find all records using the localStore.list method
       for await (const { routingKey, record, metadata, created } of this.localStore.list(options)) {
@@ -95,31 +96,19 @@ export class IPNSRepublisher {
           this.log(`no metadata found for record ${routingKey.toString()}, skipping`)
           continue
         }
+
+        if (metadata.refresh) {
+          // processing records to refresh may require writing to localStore
+          // so that is done outside of query iterator
+          recordsToRefresh.push({ routingKey, created })
+          continue
+        }
+
         let ipnsRecord: IPNSRecord
         try {
           ipnsRecord = unmarshalIPNSRecord(record)
         } catch (err: any) {
           this.log.error('error unmarshaling record - %e', err)
-          continue
-        }
-
-        if (metadata.refresh) {
-          // resolve the latest record
-          let latestRecord: IPNSRecord
-          try {
-            const { record } = await this.resolver.resolve(multihashFromIPNSRoutingKey(routingKey))
-            latestRecord = record
-          } catch (err: any) {
-            this.log.error('unable to find record to refresh - %e', err)
-            continue
-          }
-
-          if (!shouldRefresh(created)) {
-            this.log.trace(`skipping record ${routingKey.toString()} within republish threshold`)
-            continue
-          }
-
-          recordsToRepublish.push({ routingKey, record: latestRecord, overwrite: true })
           continue
         }
 
@@ -149,16 +138,43 @@ export class IPNSRepublisher {
 
       this.log(`found ${recordsToRepublish.length} records to republish`)
 
-      // Republish each record
-      for (const { routingKey, record, overwrite } of recordsToRepublish) {
+      // Republish or refresh each record
+      for (const { routingKey, record } of recordsToRepublish) {
         // Add job to queue to republish the record to all routers
         queue.add(async () => {
           try {
             await Promise.all(
-              this.routers.map(r => r.put(routingKey, marshalIPNSRecord(record), { ...options, overwrite }))
+              this.routers.map(r => r.put(routingKey, marshalIPNSRecord(record), options))
             )
           } catch (err: any) {
             this.log.error('error republishing record - %e', err)
+          }
+        }, options)
+      }
+      for (const { routingKey, created } of recordsToRefresh) {
+        // resolve the latest record
+        let latestRecord: IPNSRecord
+        try {
+          const { record } = await this.resolver.resolve(multihashFromIPNSRoutingKey(routingKey))
+          latestRecord = record
+        } catch (err: any) {
+          this.log.error('unable to find record to refresh - %e', err)
+          continue
+        }
+
+        if (!shouldRefresh(created)) {
+          this.log.trace(`skipping record ${routingKey.toString()} within republish threshold`)
+          continue
+        }
+
+        // Add job to queue to refresh the record to all routers
+        queue.add(async () => {
+          try {
+            await Promise.all(
+              this.routers.map(r => r.put(routingKey, marshalIPNSRecord(latestRecord), { ...options, overwrite: true }))
+            )
+          } catch (err: any) {
+            this.log.error('error refreshing record - %e', err)
           }
         }, options)
       }
