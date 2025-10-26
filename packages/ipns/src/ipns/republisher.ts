@@ -110,7 +110,7 @@ export class IPNSRepublisher {
             const { record } = await this.resolver.resolve(multihashFromIPNSRoutingKey(routingKey))
             latestRecord = record
           } catch (err: any) {
-            this.log('unable to find record to refresh - %e', err)
+            this.log.error('unable to find record to refresh - %e', err)
             continue
           }
 
