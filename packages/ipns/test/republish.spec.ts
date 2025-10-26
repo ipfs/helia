@@ -10,6 +10,9 @@ import { localStore } from '../src/local-store.js'
 import { createIPNS } from './fixtures/create-ipns.js'
 import type { IPNS } from '../src/ipns.js'
 import type { CreateIPNSResult } from './fixtures/create-ipns.js'
+import { dhtRoutingKey, ipnsMetadataKey } from '../src/utils.ts'
+import { Record } from '@libp2p/kad-dht'
+import { IPNSPublishMetadata } from '../src/pb/metadata.ts'
 
 // Helper to await until a stub is called
 function waitForStubCall (stub: sinon.SinonStub, callCount = 1): Promise<void> {
@@ -139,6 +142,31 @@ describe('republish', () => {
       const republishedRecord = unmarshalIPNSRecord(callArgs[1])
       expect(republishedRecord.sequence).to.equal(2n) // Incremented from 1n
     })
+
+    it('should only refresh some records', async () => {
+      const key = await generateKeyPair('Ed25519')
+      const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
+      const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+      // create a dht record with a created time < now - REPUBLISH_THRESHOLD
+      const dhtRecord = new Record(routingKey, marshalIPNSRecord(record), new Date(Date.now() - 24 * 60 * 60 * 1000))
+
+      // Store the dht record and metadata in the real datastore
+      await result.datastore.put(dhtRoutingKey(routingKey), dhtRecord.serialize())
+      await result.datastore.put(ipnsMetadataKey(routingKey), IPNSPublishMetadata.encode({ refresh: true }))
+
+      // Start publishing
+      await start(name)
+      await waitForStubCall(putStubCustom)
+
+      // Verify the record was republished with incremented sequence
+      expect(putStubCustom.called).to.be.true()
+      const callArgs = putStubCustom.firstCall.args
+      expect(callArgs[0]).to.deep.equal(routingKey)
+
+      const republishedRecord = unmarshalIPNSRecord(callArgs[1])
+      expect(republishedRecord.sequence).to.equal(1n) // Incremented from 1n
+    })
   })
 
   describe('record processing', () => {
@@ -202,6 +230,28 @@ describe('republish', () => {
       const callArgs = putStubCustom.firstCall.args
       const republishedRecord = unmarshalIPNSRecord(callArgs[1])
       expect(republishedRecord.sequence).to.equal(6n) // Incremented from 5n
+    })
+
+    it('should skip refreshing records created within republish threshold', async () => {
+      const key = await generateKeyPair('Ed25519')
+      const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
+      const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+      // Store the record in the real datastore using the localStore
+      const store = localStore(result.datastore, result.log)
+      await store.put(routingKey, marshalIPNSRecord(record), {
+        metadata: {
+          refresh: true
+        }
+      })
+
+      // Start publishing
+      await start(name)
+      await new Promise(resolve => setTimeout(resolve, 20))
+
+      // Should not republish due to unmarshal error
+      expect(putStubCustom.called).to.be.false()
+      expect(putStubHelia.called).to.be.false()
     })
   })
 
@@ -393,6 +443,30 @@ describe('republish', () => {
         }
       })
 
+      await start(name)
+      await new Promise(resolve => setTimeout(resolve, 20))
+
+      // Should not republish due to unmarshal error
+      expect(putStubCustom.called).to.be.false()
+      expect(putStubHelia.called).to.be.false()
+    })
+
+    it('should handle unable to find record to refresh', async () => {
+      const key = await generateKeyPair('Ed25519')
+      const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+      // create an expired record
+      const record = await createIPNSRecord(key, testCid, 1n, 0)
+
+      // Store the record in the real datastore using the localStore
+      const store = localStore(result.datastore, result.log)
+      await store.put(routingKey, marshalIPNSRecord(record), {
+        metadata: {
+          refresh: true
+        }
+      })
+
+      // Start publishing
       await start(name)
       await new Promise(resolve => setTimeout(resolve, 20))
 
