@@ -12,15 +12,14 @@ import { stubInterface } from 'sinon-ts'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { TrustlessGatewayBlockBroker } from '../src/trustless-gateway/broker.js'
 import { TrustlessGateway } from '../src/trustless-gateway/trustless-gateway.js'
-import type { Routing } from '@helia/interface'
-import type { PeerInfo } from '@libp2p/interface'
+import type { Provider, Routing } from '@helia/interface'
 import type { StubbedInstance } from 'sinon-ts'
 
 describe('trustless-gateway-block-broker', () => {
   let gatewayBlockBroker: TrustlessGatewayBlockBroker
-  let routing: StubbedInstance<Routing>
-  let badGatewayPeer: PeerInfo
-  let goodGatewayPeer: PeerInfo
+  let routing: StubbedInstance<Required<Routing>>
+  let badGatewayPeer: Provider
+  let goodGatewayPeer: Provider
   let cid: CID
   let expectedBlock: Uint8Array
 
@@ -29,19 +28,21 @@ describe('trustless-gateway-block-broker', () => {
     cid = CID.parse('bafkreiefnkxuhnq3536qo2i2w3tazvifek4mbbzb6zlq3ouhprjce5c3aq')
     expectedBlock = Uint8Array.from([0, 1, 2, 0])
 
-    routing = stubInterface<Routing>()
+    routing = stubInterface()
 
     badGatewayPeer = {
       id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       multiaddrs: [
         uriToMultiaddr(process.env.BAD_TRUSTLESS_GATEWAY ?? '')
-      ]
+      ],
+      routing: 'test-routing'
     }
     goodGatewayPeer = {
       id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       multiaddrs: [
         uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
-      ]
+      ],
+      routing: 'test-routing'
     }
 
     gatewayBlockBroker = new TrustlessGatewayBlockBroker({
@@ -116,19 +117,22 @@ describe('trustless-gateway-block-broker', () => {
         id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
         multiaddrs: [
           multiaddr('/ip4/132.32.25.6/tcp/1234')
-        ]
+        ],
+        routing: 'test-routing'
       }
       // expired peer info
       yield {
         id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
-        multiaddrs: []
+        multiaddrs: [],
+        routing: 'test-routing'
       }
       // http gateway
       yield {
         id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
         multiaddrs: [
           uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
-        ]
+        ],
+        routing: 'test-routing'
       }
     }())
 

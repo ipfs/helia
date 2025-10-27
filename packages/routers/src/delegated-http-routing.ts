@@ -38,7 +38,8 @@ class DelegatedHTTPRouter implements Routing {
       return {
         id: record.ID,
         multiaddrs: record.Addrs,
-        protocols: record.Protocols
+        protocols: record.Protocols,
+        routing: 'delegated-http-routing'
       }
     })
   }

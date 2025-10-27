@@ -24,15 +24,16 @@ export type BitswapNotifyProgressEvents =
   BitswapNetworkNotifyProgressEvents
 
 export type BitswapWantBlockProgressEvents =
-  ProgressEvent<'bitswap:want-block:unwant', CID> |
-  ProgressEvent<'bitswap:want-block:block', CID> |
-  ProgressEvent<'bitswap:want-block:received', { cid: CID, sender: PeerId }> |
+  ProgressEvent<'bitswap:unwant', CID> |
+  ProgressEvent<'bitswap:want', CID> |
+  ProgressEvent<'bitswap:block', { cid: CID, sender: PeerId }> |
   BitswapNetworkWantProgressEvents
 
 export type { BitswapNetworkNotifyProgressEvents }
 export type { BitswapNetworkWantProgressEvents }
 export type { BitswapNetworkProgressEvents }
 export type { WantType }
+export type { BitswapProvider } from './network.ts'
 
 export interface WantListEntry {
   cid: CID

@@ -2,6 +2,7 @@ import { TrustlessGatewayBlockBroker } from './broker.js'
 import type { TransformRequestInit } from './trustless-gateway.js'
 import type { Routing, BlockBroker } from '@helia/interface'
 import type { ComponentLogger } from '@libp2p/interface'
+import type { CID } from 'multiformats'
 import type { ProgressEvent } from 'progress-events'
 
 export const DEFAULT_ALLOW_INSECURE = false
@@ -13,8 +14,31 @@ export const DEFAULT_ALLOW_LOCAL = false
  */
 export const DEFAULT_MAX_SIZE = 2_097_152
 
+export interface TrustlessGatewayProvider {
+  /**
+   * The type of provider
+   */
+  type: 'trustless-gateway'
+
+  /**
+   * The CID that the provider can provide the block for
+   */
+  cid: CID
+
+  /**
+   * The provider's URL
+   */
+  url: string
+
+  /**
+   * Which routing implementation found the provider
+   */
+  routing: string
+}
+
 export type TrustlessGatewayGetBlockProgressEvents =
-  ProgressEvent<'trustless-gateway:get-block:fetch', URL>
+  ProgressEvent<'trustless-gateway:get-block:fetch', URL> |
+  ProgressEvent<'trustless-gateway:found-provider', TrustlessGatewayProvider>
 
 export interface TrustlessGatewayBlockBrokerInit {
   /**

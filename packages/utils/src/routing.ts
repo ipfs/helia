@@ -102,7 +102,11 @@ export class Routing implements RoutingInterface, Startable {
               return null
             }
 
-            return provider
+            return {
+              ...provider,
+              protocols: peer.protocols,
+              routing: peer.routing
+            }
           } catch (err) {
             this.log.error('could not load multiaddrs for peer %p - %e', peer.id, err)
             return null
@@ -114,6 +118,8 @@ export class Routing implements RoutingInterface, Startable {
           .catch(err => {
             this.log.error('could not load multiaddrs for peer %p - %e', peer.id, err)
           })
+
+        continue
       }
 
       yield peer

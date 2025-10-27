@@ -78,7 +78,7 @@ describe('providers', () => {
       ],
       onProgress (evt) {
         // @ts-expect-error cannot derive config-based progress event types
-        if (evt.type === 'bitswap:want-block:received') {
+        if (evt.type === 'bitswap:block') {
           // @ts-expect-error cannot derive config-based progress event types
           sender = evt.detail.sender
         }
@@ -104,7 +104,7 @@ describe('providers', () => {
       ],
       onProgress (evt) {
         // @ts-expect-error cannot derive config-based progress event types
-        if (evt.type === 'bitswap:want-block:received') {
+        if (evt.type === 'bitswap:block') {
           // @ts-expect-error cannot derive config-based progress event types
           sender = evt.detail.sender
         }
@@ -128,7 +128,7 @@ describe('providers', () => {
       ],
       onProgress (evt) {
         // @ts-expect-error cannot derive config-based progress event types
-        if (evt.type === 'bitswap:want-block:received') {
+        if (evt.type === 'bitswap:block') {
           // @ts-expect-error cannot derive config-based progress event types
           sender = evt.detail.sender
         }
@@ -152,7 +152,7 @@ describe('providers', () => {
       ],
       onProgress (evt) {
         // @ts-expect-error cannot derive config-based progress event types
-        if (evt.type === 'bitswap:want-block:received') {
+        if (evt.type === 'bitswap:block') {
           // @ts-expect-error cannot derive config-based progress event types
           sender = evt.detail.sender
         }
@@ -171,7 +171,7 @@ describe('providers', () => {
       ],
       onProgress (evt) {
         // @ts-expect-error cannot derive config-based progress event types
-        if (evt.type === 'bitswap:want-block:received') {
+        if (evt.type === 'bitswap:block') {
           // @ts-expect-error cannot derive config-based progress event types
           sender = evt.detail.sender
         }
@@ -192,7 +192,7 @@ describe('providers', () => {
       ],
       onProgress (evt) {
         // @ts-expect-error cannot derive config-based progress event types
-        if (evt.type === 'bitswap:want-block:received') {
+        if (evt.type === 'bitswap:block') {
           // @ts-expect-error cannot derive config-based progress event types
           sender = evt.detail.sender
         }
@@ -217,7 +217,7 @@ describe('providers', () => {
         blockFilter: createScalableCuckooFilter(10),
         onProgress (evt) {
           // @ts-expect-error cannot derive config-based progress event types
-          if (evt.type === 'bitswap:want-block:received') {
+          if (evt.type === 'bitswap:block') {
             // @ts-expect-error cannot derive config-based progress event types
             sender = evt.detail.sender
           }
