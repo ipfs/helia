@@ -1,5 +1,21 @@
 # Changelog
 
+## [5.0.6](https://github.com/ipfs/helia/compare/block-brokers-v5.0.5...block-brokers-v5.0.6) (2025-10-27)
+
+
+### Bug Fixes
+
+* add provider events to bitswap and trustless gateways ([#888](https://github.com/ipfs/helia/issues/888)) ([95d95da](https://github.com/ipfs/helia/commit/95d95dad7ff2a1e462b5a8a4f57ac40c4503f4ef))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^3.0.5 to ^3.0.6
+    * @helia/interface bumped from ^6.0.0 to ^6.0.1
+    * @helia/utils bumped from ^2.2.1 to ^2.2.2
+
 ## [5.0.5](https://github.com/ipfs/helia/compare/block-brokers-v5.0.4...block-brokers-v5.0.5) (2025-10-22)
 
 

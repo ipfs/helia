@@ -1,5 +1,19 @@
 # Changelog
 
+## [6.0.2](https://github.com/ipfs/helia/compare/unixfs-v6.0.1...unixfs-v6.0.2) (2025-10-27)
+
+
+### Documentation
+
+* add example adding FileList to unixfs ([#876](https://github.com/ipfs/helia/issues/876)) ([eaa042e](https://github.com/ipfs/helia/commit/eaa042eb019c4e4fcd635b0e1ee19239ef0439dd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.0.0 to ^6.0.1
+
 ## [6.0.1](https://github.com/ipfs/helia/compare/unixfs-v6.0.0...unixfs-v6.0.1) (2025-10-09)
 
 
