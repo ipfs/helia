@@ -1,6 +1,6 @@
 {
   "name": "@helia/json",
-  "version": "5.0.1",
+  "version": "5.0.2",
   "description": "Add/get IPLD blocks containing json with your Helia node",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/json#readme",
@@ -47,7 +47,7 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@helia/interface": "^6.0.0",
+    "@helia/interface": "^6.0.1",
     "@libp2p/interface": "^3.0.2",
     "interface-blockstore": "^6.0.1",
     "it-to-buffer": "^4.0.10",

@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.2.2](https://github.com/ipfs/helia/compare/utils-v2.2.1...utils-v2.2.2) (2025-10-27)
+
+
+### Bug Fixes
+
+* add provider events to bitswap and trustless gateways ([#888](https://github.com/ipfs/helia/issues/888)) ([95d95da](https://github.com/ipfs/helia/commit/95d95dad7ff2a1e462b5a8a4f57ac40c4503f4ef))
+* remove block request promise when initial provider search fails ([#886](https://github.com/ipfs/helia/issues/886)) ([bfc8710](https://github.com/ipfs/helia/commit/bfc871013eb2b4b1e9c62a0055002605eccb375b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.0.0 to ^6.0.1
+
 ## [2.2.1](https://github.com/ipfs/helia/compare/utils-v2.2.0...utils-v2.2.1) (2025-10-22)
 
 

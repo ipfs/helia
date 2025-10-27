@@ -1,5 +1,31 @@
 # Changelog
 
+## [9.0.7](https://github.com/ipfs/helia/compare/interop-v9.0.6...interop-v9.0.7) (2025-10-27)
+
+
+### Bug Fixes
+
+* add provider events to bitswap and trustless gateways ([#888](https://github.com/ipfs/helia/issues/888)) ([95d95da](https://github.com/ipfs/helia/commit/95d95dad7ff2a1e462b5a8a4f57ac40c4503f4ef))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.0.5 to ^5.0.6
+    * @helia/car bumped from ^5.2.1 to ^5.2.2
+    * @helia/dag-cbor bumped from ^5.0.1 to ^5.0.2
+    * @helia/dag-json bumped from ^5.0.1 to ^5.0.2
+    * @helia/http bumped from ^3.0.6 to ^3.0.7
+    * @helia/interface bumped from ^6.0.0 to ^6.0.1
+    * @helia/ipns bumped from ^9.1.1 to ^9.1.2
+    * @helia/json bumped from ^5.0.1 to ^5.0.2
+    * @helia/mfs bumped from ^6.0.1 to ^6.0.2
+    * @helia/routers bumped from ^4.0.1 to ^4.0.2
+    * @helia/strings bumped from ^5.0.1 to ^5.0.2
+    * @helia/unixfs bumped from ^6.0.1 to ^6.0.2
+    * helia bumped from ^6.0.6 to ^6.0.7
+
 ## [9.0.6](https://github.com/ipfs/helia/compare/interop-v9.0.5...interop-v9.0.6) (2025-10-22)
 
 
