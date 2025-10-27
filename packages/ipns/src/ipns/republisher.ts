@@ -13,6 +13,7 @@ import { ipnsSelector, type IPNSRefreshResult, type RefreshOptions } from '../in
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import type { CID, MultihashDigest } from 'multiformats/cid'
 import type { IPNSResolver } from './resolver.ts'
+import { CustomProgressEvent } from 'progress-events'
 
 export interface IPNSRepublisherComponents {
   logger: ComponentLogger
@@ -191,59 +192,59 @@ export class IPNSRepublisher {
     const digest = keyToMultihash(key)
     const routingKey = multihashToIPNSRoutingKey(digest)
 
-    // collect records for key
-    if (options.record != null) {
-      // add user supplied record
-      await ipnsValidator(routingKey, marshalIPNSRecord(options.record))
-      records.push(options.record)
-    }
     try {
-      // add local record
-      const { record } = await this.resolver.resolve(key, { offline: true })
-      records.push(record)
-    } catch (err: any) {
-      if (err.name !== 'NotFoundError') {
-        throw err
+      // collect records for key
+      if (options.record != null) {
+        // add user supplied record
+        await ipnsValidator(routingKey, marshalIPNSRecord(options.record))
+        records.push(options.record)
       }
-    }
-    try {
-      // add published record
-      const { record } = await this.resolver.resolve(key)
-      publishedRecord = record
-      records.push(record)
-    } catch (err: any) {
-      if (err.name !== 'NotFoundError') {
-        throw err
+      try {
+        // add local record
+        const { record } = await this.resolver.resolve(key, { offline: true })
+        records.push(record)
+      } catch (err: any) {
+        if (err.name !== 'NotFoundError') {
+          throw err
+        }
       }
-    }
+      try {
+        // add published record
+        const { record } = await this.resolver.resolve(key)
+        publishedRecord = record
+        records.push(record)
+      } catch (err: any) {
+        if (err.name !== 'NotFoundError') {
+          throw err
+        }
+      }
+      if (records.length === 0) {
+        throw new NotFoundError(`Found no records to refresh for key ${routingKey.toString()}`)
+      }
 
-    if (records.length === 0) {
-      throw new NotFoundError(`Found no records to refresh for key ${routingKey.toString()}`)
-    }
+      // check if record is already published
+      const selectedRecord = records[ipnsSelector(routingKey, records.map(marshalIPNSRecord))]
+      const marshaledRecord = marshalIPNSRecord(selectedRecord)
+      if (options.force !== true && publishedRecord != null && uint8ArrayEquals(marshaledRecord, marshalIPNSRecord(publishedRecord))) {
+        throw new Error('The record is already being published')
+      }
 
-    // check if record is already published
-    const selectedRecord = records[ipnsSelector(routingKey, records.map(marshalIPNSRecord))]
-    const marshaledRecord = marshalIPNSRecord(selectedRecord)
-    if (options.force !== true && publishedRecord != null && uint8ArrayEquals(marshaledRecord, marshalIPNSRecord(publishedRecord))) {
-      throw new Error('The record is already being published')
-    }
-
-    // publish record to routers
-    try {
-      // overwrite so Record.created is reset for #republish
+      // publish record to routers
       const putOptions = {
         ...options,
         metadata: options.repeat ? { refresh: true } : undefined,
+        // overwrite so Record.created is reset for #republish
         overwrite: true
       }
       await Promise.all(
         this.routers.map(r => r.put(routingKey, marshaledRecord, putOptions))
       )
-    } catch (err: any) {
-      this.log.error('error republishing record - %e', err)
-    }
 
-    return { record: selectedRecord }
+      return { record: selectedRecord }
+    } catch (err: any) {
+      options.onProgress?.(new CustomProgressEvent<Error>('ipns:refresh:error', err))
+      throw err
+    }
   }
 
   async unrefresh(key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options: AbortOptions = {}): Promise<void> {

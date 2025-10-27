@@ -201,6 +201,11 @@ export type ResolveProgressEvents =
   ProgressEvent<'ipns:resolve:success', IPNSRecord> |
   ProgressEvent<'ipns:resolve:error', Error>
 
+export type RefreshProgressEvents =
+  ProgressEvent<'ipns:refresh:start'> |
+  ProgressEvent<'ipns:refresh:success', IPNSRecord> |
+  ProgressEvent<'ipns:refresh:error', Error>
+
 export type DatastoreProgressEvents =
   ProgressEvent<'ipns:routing:datastore:put'> |
   ProgressEvent<'ipns:routing:datastore:get'> |
@@ -251,7 +256,7 @@ export interface ResolveOptions extends AbortOptions, ProgressOptions<ResolvePro
   nocache?: boolean
 }
 
-export interface RefreshOptions {
+export interface RefreshOptions extends AbortOptions, ProgressOptions<RefreshProgressEvents | IPNSRoutingProgressEvents> {
   /**
    * A candidate IPNS record to use if no newer records are found
    */
