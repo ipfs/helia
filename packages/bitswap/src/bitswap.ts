@@ -96,7 +96,7 @@ export class Bitswap implements BitswapInterface {
         signal
       })
 
-      options.onProgress?.(new CustomProgressEvent<{ cid: CID, sender: PeerId }>('bitswap:want-block:received', { cid, sender: result.sender }))
+      options.onProgress?.(new CustomProgressEvent<{ cid: CID, sender: PeerId }>('bitswap:block', { cid, sender: result.sender }))
 
       return result.block
     } finally {

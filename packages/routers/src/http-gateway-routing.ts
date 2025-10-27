@@ -52,10 +52,15 @@ class HTTPGatewayRouter implements Partial<Routing> {
     yield * (this.shuffle
       ? this.gateways.toSorted(() => Math.random() > 0.5 ? 1 : -1)
       : this.gateways
-    ).map(info => ({
-      ...info,
-      protocols: ['transport-ipfs-gateway-http']
-    }))
+    ).map(info => {
+      const provider = {
+        ...info,
+        protocols: ['transport-ipfs-gateway-http'],
+        routing: 'http-gateway-routing'
+      }
+
+      return provider
+    })
   }
 }
 

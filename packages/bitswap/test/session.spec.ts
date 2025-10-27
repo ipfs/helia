@@ -52,7 +52,8 @@ describe('session', () => {
           id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
           multiaddrs: [
             multiaddr(`/ip4/4${i}.4${i}.4${i}.4${i}/tcp/${1234 + i}`)
-          ]
+          ],
+          routing: 'test-routing'
         }
       })
     )
@@ -125,7 +126,8 @@ describe('session', () => {
       id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       multiaddrs: [
         multiaddr('/ip4/41.41.41.41/tcp/1234')
-      ]
+      ],
+      routing: 'test-routing'
     }]
 
     components.network.findProviders.withArgs(cid).returns((async function * () {
@@ -150,12 +152,14 @@ describe('session', () => {
       id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       multiaddrs: [
         multiaddr('/ip4/41.41.41.41/tcp/1234')
-      ]
+      ],
+      routing: 'test-routing'
     }, {
       id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       multiaddrs: [
         multiaddr('/ip4/41.41.41.41/tcp/1235')
-      ]
+      ],
+      routing: 'test-routing'
     }]
 
     components.network.findProviders.withArgs(cid).returns((async function * () {
