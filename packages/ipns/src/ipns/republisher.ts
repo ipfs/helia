@@ -195,12 +195,12 @@ export class IPNSRepublisher {
     try {
       // collect records for key
       if (options.record != null) {
-        // add user supplied record
+        // user supplied record
         await ipnsValidator(routingKey, marshalIPNSRecord(options.record))
         records.push(options.record)
       }
       try {
-        // add local record
+        // local record
         const { record } = await this.resolver.resolve(key, { offline: true })
         records.push(record)
       } catch (err: any) {
@@ -209,7 +209,7 @@ export class IPNSRepublisher {
         }
       }
       try {
-        // add published record
+        // published record
         const { record } = await this.resolver.resolve(key)
         publishedRecord = record
         records.push(record)
