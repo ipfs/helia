@@ -210,7 +210,7 @@ export class IPNSRepublisher {
       }
       try {
         // published record
-        const { record } = await this.resolver.resolve(key)
+        const { record } = await this.resolver.resolve(key, { nocache: true })
         publishedRecord = record
         records.push(record)
       } catch (err: any) {
