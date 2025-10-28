@@ -113,10 +113,14 @@ describe('resolve', () => {
 
     heliaRouting.get.resolves(marshalIPNSRecord(record))
 
+    const callCount = cacheGetSpy.callCount
     const resolvedValue = await name.resolve(publicKey, {
       nocache: true
     })
     expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
+
+    // check that get only called once after resolve as result of put
+    expect(cacheGetSpy.callCount).to.equal(callCount + 1)
 
     expect(heliaRouting.get.called).to.be.true()
     expect(customRouting.get.called).to.be.true()

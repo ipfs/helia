@@ -9,6 +9,7 @@ import * as Digest from 'multiformats/hashes/digest'
 import { DEFAULT_TTL_NS } from '../constants.ts'
 import { InvalidValueError, RecordsFailedValidationError, UnsupportedMultibasePrefixError, UnsupportedMultihashCodecError } from '../errors.js'
 import { isCodec, IDENTITY_CODEC, SHA2_256_CODEC, isLibp2pCID } from '../utils.js'
+import { LocalStoreRouting } from '../routing/local-store.ts'
 import type { IPNSResolveResult, ResolveOptions, ResolveResult } from '../index.js'
 import type { LocalStore } from '../local-store.js'
 import type { IPNSRouting } from '../routing/index.js'
@@ -176,6 +177,11 @@ export class IPNSResolver {
     await Promise.all(
       this.routers.map(async (router) => {
         let record: Uint8Array
+
+        // skip checking cache when nocache is true
+        if (router instanceof LocalStoreRouting && options.nocache === true) {
+          return
+        }
 
         try {
           record = await router.get(routingKey, {
