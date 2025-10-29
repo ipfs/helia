@@ -86,11 +86,11 @@ export class IPNS implements IPNSInterface, Startable {
     return this.publisher.unpublish(keyName, options)
   }
 
-  async refresh(key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options: RefreshOptions = {}): Promise<IPNSRefreshResult> {
+  async refresh (key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options: RefreshOptions = {}): Promise<IPNSRefreshResult> {
     return this.republisher.refresh(key, options)
   }
 
-  async unrefresh(key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options: AbortOptions = {}): Promise<void> {
+  async unrefresh (key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options: AbortOptions = {}): Promise<void> {
     return this.republisher.unrefresh(key, options)
   }
 }

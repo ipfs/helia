@@ -1,19 +1,21 @@
+import { NotFoundError } from '@libp2p/interface'
 import { Queue, repeatingTask } from '@libp2p/utils'
 import { createIPNSRecord, marshalIPNSRecord, multihashFromIPNSRoutingKey, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from 'ipns'
+import { ipnsValidator } from 'ipns/validator'
+import { CustomProgressEvent } from 'progress-events'
+import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { DEFAULT_REPUBLISH_CONCURRENCY, DEFAULT_REPUBLISH_INTERVAL_MS, DEFAULT_TTL_NS } from '../constants.ts'
+import { ipnsSelector } from '../index.ts'
 import { keyToMultihash, shouldRefresh, shouldRepublish } from '../utils.js'
+import type {AbortOptions, ComponentLogger, Libp2p, Logger, PeerId, PrivateKey, PublicKey} from '@libp2p/interface';
 import type { ListResult, LocalStore } from '../local-store.js'
 import type { IPNSRouting } from '../routing/index.js'
-import { NotFoundError, type AbortOptions, type ComponentLogger, type Libp2p, type Logger, type PeerId, type PrivateKey, type PublicKey } from '@libp2p/interface'
 import type { Keychain } from '@libp2p/keychain'
 import type { RepeatingTask } from '@libp2p/utils'
 import type { IPNSRecord } from 'ipns'
-import { ipnsValidator } from 'ipns/validator'
-import { ipnsSelector, type IPNSRefreshResult, type RefreshOptions } from '../index.ts'
-import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import type { IPNSRefreshResult, RefreshOptions } from '../index.ts'
 import type { CID, MultihashDigest } from 'multiformats/cid'
 import type { IPNSResolver } from './resolver.ts'
-import { CustomProgressEvent } from 'progress-events'
 
 export interface IPNSRepublisherComponents {
   logger: ComponentLogger
@@ -186,8 +188,8 @@ export class IPNSRepublisher {
     await queue.onIdle(options) // Wait for all jobs to complete
   }
 
-  async refresh(key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options: RefreshOptions = {}): Promise<IPNSRefreshResult> {
-    let records: IPNSRecord[] = []
+  async refresh (key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options: RefreshOptions = {}): Promise<IPNSRefreshResult> {
+    const records: IPNSRecord[] = []
     let publishedRecord: IPNSRecord | null = null
     const digest = keyToMultihash(key)
     const routingKey = multihashToIPNSRoutingKey(digest)
@@ -247,7 +249,7 @@ export class IPNSRepublisher {
     }
   }
 
-  async unrefresh(key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options: AbortOptions = {}): Promise<void> {
+  async unrefresh (key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options: AbortOptions = {}): Promise<void> {
     const routingKey = multihashToIPNSRoutingKey(keyToMultihash(key))
     await this.localStore.delete(routingKey)
   }

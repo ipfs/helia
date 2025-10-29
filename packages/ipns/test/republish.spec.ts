@@ -2,17 +2,17 @@
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { start, stop } from '@libp2p/interface'
+import { Record } from '@libp2p/kad-dht'
 import { expect } from 'aegir/chai'
 import { createIPNSRecord, marshalIPNSRecord, unmarshalIPNSRecord, multihashToIPNSRoutingKey, multihashFromIPNSRoutingKey } from 'ipns'
 import { CID } from 'multiformats/cid'
 import sinon from 'sinon'
 import { localStore } from '../src/local-store.js'
+import { IPNSPublishMetadata } from '../src/pb/metadata.ts'
+import { dhtRoutingKey, ipnsMetadataKey } from '../src/utils.ts'
 import { createIPNS } from './fixtures/create-ipns.js'
 import type { IPNS } from '../src/ipns.js'
 import type { CreateIPNSResult } from './fixtures/create-ipns.js'
-import { dhtRoutingKey, ipnsMetadataKey } from '../src/utils.ts'
-import { Record } from '@libp2p/kad-dht'
-import { IPNSPublishMetadata } from '../src/pb/metadata.ts'
 
 // Helper to await until a stub is called
 function waitForStubCall (stub: sinon.SinonStub, callCount = 1): Promise<void> {
@@ -599,7 +599,7 @@ describe('republish', () => {
 
         await name.refresh(multihashFromIPNSRoutingKey(routingKey))
 
-        const { created: newCreated }= await store.get(routingKey)
+        const { created: newCreated } = await store.get(routingKey)
 
         expect(newCreated).does.not.equal(created)
       })

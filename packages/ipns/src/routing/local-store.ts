@@ -4,7 +4,7 @@ import type { IPNSRouting, PutOptions, GetOptions } from './index.ts'
 export class LocalStoreRouting {
   private localStore: LocalStore
 
-  constructor(localStore: LocalStore) {
+  constructor (localStore: LocalStore) {
     this.localStore = localStore
   }
 
