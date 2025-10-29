@@ -1,4 +1,3 @@
-import map from 'it-map'
 import type { Provider, Routing, RoutingOptions } from '@helia/interface'
 import type { Libp2p, PeerId, PeerInfo } from '@libp2p/interface'
 import type { CID } from 'multiformats'
