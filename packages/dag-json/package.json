@@ -49,7 +49,7 @@
   "dependencies": {
     "@helia/interface": "^6.0.1",
     "@ipld/dag-json": "^10.2.5",
-    "@libp2p/interface": "^3.0.2",
+    "@libp2p/interface": "^3.1.0",
     "interface-blockstore": "^6.0.1",
     "it-to-buffer": "^4.0.10",
     "multiformats": "^13.4.1",

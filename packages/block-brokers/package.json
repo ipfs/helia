@@ -50,7 +50,7 @@
     "@helia/bitswap": "^3.0.6",
     "@helia/interface": "^6.0.1",
     "@helia/utils": "^2.2.2",
-    "@libp2p/interface": "^3.0.2",
+    "@libp2p/interface": "^3.1.0",
     "@libp2p/utils": "^7.0.5",
     "@multiformats/multiaddr": "^13.0.1",
     "@multiformats/multiaddr-matcher": "^3.0.1",
