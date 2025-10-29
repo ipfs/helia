@@ -5,6 +5,20 @@
 
 * expose .dns property on @helia/interface ([#465](https://github.com/ipfs/helia/issues/465)) ([8c9bb7d](https://github.com/ipfs/helia/commit/8c9bb7d224a1b786cba1fba18bffe07001a3b95d))
 
+## [6.0.2](https://github.com/ipfs/helia/compare/interface-v6.0.1...interface-v6.0.2) (2025-10-29)
+
+
+### Bug Fixes
+
+* use libp2p provider routing field ([#889](https://github.com/ipfs/helia/issues/889)) ([d4d97b8](https://github.com/ipfs/helia/commit/d4d97b83f76be7e3b480052467408839f808e230))
+
+## [6.0.1](https://github.com/ipfs/helia/compare/interface-v6.0.0...interface-v6.0.1) (2025-10-27)
+
+
+### Bug Fixes
+
+* add provider events to bitswap and trustless gateways ([#888](https://github.com/ipfs/helia/issues/888)) ([95d95da](https://github.com/ipfs/helia/commit/95d95dad7ff2a1e462b5a8a4f57ac40c4503f4ef))
+
 ## [6.0.0](https://github.com/ipfs/helia/compare/interface-v5.4.0...interface-v6.0.0) (2025-10-09)
 
 

@@ -24,18 +24,41 @@ import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
+export interface BitswapProvider {
+  /**
+   * The type of provider
+   */
+  type: 'bitswap'
+
+  /**
+   * the CID the provider can supply the block for
+   */
+  cid: CID
+
+  /**
+   * The provider info
+   */
+  provider: Provider
+
+  /**
+   * Which routing subsystem found the provider
+   */
+  routing: string
+}
+
 export type BitswapNetworkProgressEvents =
-  ProgressEvent<'bitswap:network:dial', PeerId | Multiaddr | Multiaddr[]>
+  ProgressEvent<'bitswap:dial', PeerId | Multiaddr | Multiaddr[]>
 
 export type BitswapNetworkWantProgressEvents =
-  ProgressEvent<'bitswap:network:send-wantlist', PeerId> |
-  ProgressEvent<'bitswap:network:send-wantlist:error', { peer: PeerId, error: Error }> |
-  ProgressEvent<'bitswap:network:find-providers', CID> |
+  ProgressEvent<'bitswap:send-wantlist', PeerId> |
+  ProgressEvent<'bitswap:send-wantlist:error', { peer: PeerId, error: Error }> |
+  ProgressEvent<'bitswap:find-providers', CID> |
+  ProgressEvent<'bitswap:found-provider', BitswapProvider> |
   BitswapNetworkProgressEvents
 
 export type BitswapNetworkNotifyProgressEvents =
   BitswapNetworkProgressEvents |
-  ProgressEvent<'bitswap:network:send-block', PeerId>
+  ProgressEvent<'bitswap:send-block', PeerId>
 
 export interface NetworkInit {
   hashLoader?: MultihashHasherLoader
@@ -234,14 +257,14 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
           setMaxListeners(Infinity, signal)
           signal.addEventListener('abort', abortListener)
         } catch (err: any) {
-          this.log.error('error reading incoming bitswap message from %p on stream', connection.remotePeer, stream.id, err)
+          this.log.error('error reading incoming bitswap message from %p on stream - %e', connection.remotePeer, stream.id, err)
           stream.abort(err)
           break
         }
       }
     })
       .catch(err => {
-        this.log.error('error handling incoming stream from %p', connection.remotePeer, err)
+        this.log.error('error handling incoming stream from %p - %e', connection.remotePeer, err)
         stream.abort(err)
       })
   }
@@ -250,7 +273,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
    * Find bitswap providers for a given `cid`.
    */
   async * findProviders (cid: CID, options?: AbortOptions & ProgressOptions<BitswapNetworkWantProgressEvents>): AsyncIterable<Provider> {
-    options?.onProgress?.(new CustomProgressEvent<CID>('bitswap:network:find-providers', cid))
+    options?.onProgress?.(new CustomProgressEvent<CID>('bitswap:find-providers', cid))
 
     for await (const provider of this.routing.findProviders(cid, options)) {
       // make sure we can dial the provider
@@ -259,8 +282,16 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
       })
 
       if (!dialable) {
+        this.log('skipping peer %p as they are not dialable - %a[]', provider.id, provider.multiaddrs)
         continue
       }
+
+      options?.onProgress?.(new CustomProgressEvent('bitswap:found-provider', {
+        type: 'bitswap',
+        cid,
+        provider,
+        routing: provider.routing
+      }))
 
       yield provider
     }
@@ -339,7 +370,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
         await stream.close(options)
       } catch (err: any) {
         options?.onProgress?.(new CustomProgressEvent<{ peer: PeerId, error: Error }>('bitswap:network:send-wantlist:error', { peer: peerId, error: err }))
-        this.log.error('error sending message to %p', peerId, err)
+        this.log.error('error sending message to %p - %e', peerId, err)
         stream.abort(err)
       }
 

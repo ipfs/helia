@@ -54,7 +54,7 @@ export class PeerWantLists {
     this.network.addEventListener('bitswap:message', (evt) => {
       this.receiveMessage(evt.detail.peer, evt.detail.message)
         .catch(err => {
-          this.log.error('error receiving bitswap message from %p', evt.detail.peer, err)
+          this.log.error('error receiving bitswap message from %p - %e', evt.detail.peer, err)
         })
     })
     this.network.addEventListener('peer:disconnected', evt => {

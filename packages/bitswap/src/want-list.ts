@@ -126,13 +126,13 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
     this.network.addEventListener('bitswap:message', (evt) => {
       this.receiveMessage(evt.detail.peer, evt.detail.message)
         .catch(err => {
-          this.log.error('error receiving bitswap message from %p', evt.detail.peer, err)
+          this.log.error('error receiving bitswap message from %p - %e', evt.detail.peer, err)
         })
     })
     this.network.addEventListener('peer:connected', evt => {
       this.peerConnected(evt.detail)
         .catch(err => {
-          this.log.error('error processing newly connected bitswap peer %p', evt.detail, err)
+          this.log.error('error processing newly connected bitswap peer %p - %e', evt.detail, err)
         })
     })
     this.network.addEventListener('peer:disconnected', evt => {
@@ -205,7 +205,7 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
     this.sendMessagesTimeout = setTimeout(() => {
       void this.sendMessages()
         .catch(err => {
-          this.log('error sending messages to peers', err)
+          this.log('error sending messages to peers - %e', err)
         })
     }, this.sendMessagesDelay)
   }
@@ -251,11 +251,11 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
             sentWants.add(key)
           }
         } catch (err: any) {
-          this.log.error('error sending full wantlist to new peer', err)
+          this.log.error('error sending full wantlist to new peer - %e', err)
         }
       })
     ).catch(err => {
-      this.log.error('error sending messages', err)
+      this.log.error('error sending messages - %e', err)
     })
 
     // queued all message sends, remove cancelled wants from wantlist and sent
@@ -478,7 +478,7 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
 
       this.peers.set(peerId, sentWants)
     } catch (err) {
-      this.log.error('error sending full wantlist to new peer %p', peerId, err)
+      this.log.error('error sending full wantlist to new peer %p - %e', peerId, err)
     }
   }
 

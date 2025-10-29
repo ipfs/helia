@@ -120,6 +120,27 @@ describe('graph-walker', () => {
         'root', 'a', 'd', 'e', 'f', 'b', 'g', 'h', 'i', 'c', 'j', 'k', 'l'
       ])
     })
+
+    it('should filter children', async () => {
+      const walker = depthFirstWalker({
+        blockstore,
+        getCodec
+      })
+
+      const result = await all(map(walker.walk(nodes.root.cid, {
+        includeChild (child, parent) {
+          return parent.value.name === 'root' || parent.value.name === 'a'
+        }
+      }), (node) => {
+        const obj = dagCbor.decode<Node>(node.block.bytes)
+
+        return obj.name
+      }))
+
+      expect(result).to.deep.equal([
+        'root', 'a', 'd', 'e', 'f', 'b', 'c'
+      ])
+    })
   })
 
   describe('breadth-first', () => {
@@ -137,6 +158,27 @@ describe('graph-walker', () => {
 
       expect(result).to.deep.equal([
         'root', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l'
+      ])
+    })
+
+    it('should filter children', async () => {
+      const walker = breadthFirstWalker({
+        blockstore,
+        getCodec
+      })
+
+      const result = await all(map(walker.walk(nodes.root.cid, {
+        includeChild (child, parent) {
+          return parent.value.name === 'root' || parent.value.name === 'a'
+        }
+      }), (node) => {
+        const obj = dagCbor.decode<Node>(node.block.bytes)
+
+        return obj.name
+      }))
+
+      expect(result).to.deep.equal([
+        'root', 'a', 'b', 'c', 'd', 'e', 'f'
       ])
     })
   })

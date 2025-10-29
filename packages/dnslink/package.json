@@ -1,6 +1,6 @@
 {
   "name": "@helia/dnslink",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "description": "DNSLink operations using Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/dnslink#readme",
@@ -64,7 +64,7 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface": "^3.0.2",
+    "@libp2p/interface": "^3.1.0",
     "@libp2p/peer-id": "^6.0.3",
     "@multiformats/dns": "^1.0.9",
     "multiformats": "^13.4.1",

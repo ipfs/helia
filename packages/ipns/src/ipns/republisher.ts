@@ -125,14 +125,14 @@ export class IPNSRepublisher {
         try {
           privKey = await this.keychain.exportKey(metadata.keyName)
         } catch (err: any) {
-          this.log.error(`missing key ${metadata.keyName}, skipping republishing record for ${routingKey.toString()}`, err)
+          this.log.error('missing key %s, skipping republishing record - %e', metadata.keyName, err)
           continue
         }
         try {
           const updatedRecord = await createIPNSRecord(privKey, ipnsRecord.value, sequenceNumber, metadata.lifetime, { ...options, ttlNs })
           recordsToRepublish.push({ routingKey, record: updatedRecord })
         } catch (err: any) {
-          this.log.error(`error creating updated IPNS record for ${routingKey.toString()}`, err)
+          this.log.error('error creating updated IPNS record for %s - %e', routingKey, err)
           continue
         }
       }

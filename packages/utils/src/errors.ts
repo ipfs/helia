@@ -8,7 +8,12 @@ export class BlockPinnedError extends Error {
   name = 'BlockPinnedError'
 }
 
-export class InvalidDatastoreVersion extends Error {
-  static name = 'InvalidDatastoreVersion'
-  name = 'InvalidDatastoreVersion'
+export class InvalidDatastoreVersionError extends Error {
+  static name = 'InvalidDatastoreVersionError'
+  name = 'InvalidDatastoreVersionError'
+}
+
+export class InvalidConfigurationError extends Error {
+  static name = 'InvalidConfigurationError'
+  name = 'InvalidConfigurationError'
 }

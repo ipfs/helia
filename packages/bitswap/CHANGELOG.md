@@ -1,5 +1,58 @@
 # Changelog
 
+## [3.0.7](https://github.com/ipfs/helia/compare/bitswap-v3.0.6...bitswap-v3.0.7) (2025-10-29)
+
+
+### Bug Fixes
+
+* use libp2p provider routing field ([#889](https://github.com/ipfs/helia/issues/889)) ([d4d97b8](https://github.com/ipfs/helia/commit/d4d97b83f76be7e3b480052467408839f808e230))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.0.1 to ^6.0.2
+    * @helia/utils bumped from ^2.2.2 to ^2.2.3
+
+## [3.0.6](https://github.com/ipfs/helia/compare/bitswap-v3.0.5...bitswap-v3.0.6) (2025-10-27)
+
+
+### Bug Fixes
+
+* add provider events to bitswap and trustless gateways ([#888](https://github.com/ipfs/helia/issues/888)) ([95d95da](https://github.com/ipfs/helia/commit/95d95dad7ff2a1e462b5a8a4f57ac40c4503f4ef))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.0.0 to ^6.0.1
+    * @helia/utils bumped from ^2.2.1 to ^2.2.2
+
+## [3.0.5](https://github.com/ipfs/helia/compare/bitswap-v3.0.4...bitswap-v3.0.5) (2025-10-22)
+
+
+### Bug Fixes
+
+* update log formatting to print errors correctly ([#884](https://github.com/ipfs/helia/issues/884)) ([f35ecd1](https://github.com/ipfs/helia/commit/f35ecd1c8ad3c712d3882d0f0f2abaf0f0296ec1))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^2.2.0 to ^2.2.1
+
+## [3.0.4](https://github.com/ipfs/helia/compare/bitswap-v3.0.3...bitswap-v3.0.4) (2025-10-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^2.1.1 to ^2.2.0
+
 ## [3.0.3](https://github.com/ipfs/helia/compare/bitswap-v3.0.2...bitswap-v3.0.3) (2025-10-17)
 
 

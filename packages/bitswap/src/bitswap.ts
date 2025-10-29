@@ -86,7 +86,7 @@ export class Bitswap implements BitswapInterface {
         // if the controller was aborted we found the block already so ignore
         // the error
         if (!controller.signal.aborted) {
-          this.log.error('error during finding and connect for cid %c', cid, err)
+          this.log.error('error during finding and connect for cid %c - %e', cid, err)
         }
       })
 
@@ -96,7 +96,7 @@ export class Bitswap implements BitswapInterface {
         signal
       })
 
-      options.onProgress?.(new CustomProgressEvent<{ cid: CID, sender: PeerId }>('bitswap:want-block:received', { cid, sender: result.sender }))
+      options.onProgress?.(new CustomProgressEvent<{ cid: CID, sender: PeerId }>('bitswap:block', { cid, sender: result.sender }))
 
       return result.block
     } finally {

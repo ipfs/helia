@@ -5,6 +5,7 @@ import filter from 'it-filter'
 import forEach from 'it-foreach'
 import { CustomProgressEvent } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import { InvalidConfigurationError } from '../errors.ts'
 import { isPromise } from './is-promise.js'
 import type { HasherLoader } from '@helia/interface'
 import type { BlockBroker, Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions, BlockRetrievalOptions, CreateSessionOptions, SessionBlockstore } from '@helia/interface/blocks'
@@ -446,6 +447,10 @@ async function raceBlockRetrievers (cid: CID, blockBrokers: BlockBroker[], hashe
     }
   }
 
+  if (retrievers.length === 0) {
+    throw new InvalidConfigurationError(`No block brokers capable of retrieving blocks are configured, the CID ${cid} cannot be fetched from the network`)
+  }
+
   try {
     return await Promise.any(
       retrievers
@@ -471,7 +476,7 @@ async function raceBlockRetrievers (cid: CID, blockBrokers: BlockBroker[], hashe
 
             return block
           } catch (err) {
-            options.log.error('could not retrieve verified block for %c', cid, err)
+            options.log.error('could not retrieve verified block for %c - %e', cid, err)
             throw err
           }
         })

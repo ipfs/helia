@@ -1,5 +1,60 @@
 # Changelog
 
+## [5.2.3](https://github.com/ipfs/helia/compare/car-v5.2.2...car-v5.2.3) (2025-10-29)
+
+
+### Bug Fixes
+
+* use libp2p provider routing field ([#889](https://github.com/ipfs/helia/issues/889)) ([d4d97b8](https://github.com/ipfs/helia/commit/d4d97b83f76be7e3b480052467408839f808e230))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.0.1 to ^6.0.2
+    * @helia/utils bumped from ^2.2.2 to ^2.2.3
+  * devDependencies
+    * @helia/mfs bumped from ^6.0.2 to ^6.0.3
+    * @helia/unixfs bumped from ^6.0.2 to ^6.0.3
+
+## [5.2.2](https://github.com/ipfs/helia/compare/car-v5.2.1...car-v5.2.2) (2025-10-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.0.0 to ^6.0.1
+    * @helia/utils bumped from ^2.2.1 to ^2.2.2
+  * devDependencies
+    * @helia/mfs bumped from ^6.0.1 to ^6.0.2
+    * @helia/unixfs bumped from ^6.0.1 to ^6.0.2
+
+## [5.2.1](https://github.com/ipfs/helia/compare/car-v5.2.0...car-v5.2.1) (2025-10-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^2.2.0 to ^2.2.1
+
+## [5.2.0](https://github.com/ipfs/helia/compare/car-v5.1.1...car-v5.2.0) (2025-10-20)
+
+
+### Features
+
+* add offset/length to export slices of DAGs ([#881](https://github.com/ipfs/helia/issues/881)) ([921696f](https://github.com/ipfs/helia/commit/921696f914fbe2af6ba04464fbbcf5072cf8d088))
+* support directory enumeration ([#883](https://github.com/ipfs/helia/issues/883)) ([4e5ff55](https://github.com/ipfs/helia/commit/4e5ff555d61e124c68e041cfab415108f199b8bd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^2.1.1 to ^2.2.0
+
 ## [5.1.1](https://github.com/ipfs/helia/compare/car-v5.1.0...car-v5.1.1) (2025-10-17)
 
 

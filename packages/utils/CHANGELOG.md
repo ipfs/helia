@@ -1,5 +1,53 @@
 # Changelog
 
+## [2.2.3](https://github.com/ipfs/helia/compare/utils-v2.2.2...utils-v2.2.3) (2025-10-29)
+
+
+### Bug Fixes
+
+* use libp2p provider routing field ([#889](https://github.com/ipfs/helia/issues/889)) ([d4d97b8](https://github.com/ipfs/helia/commit/d4d97b83f76be7e3b480052467408839f808e230))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.0.1 to ^6.0.2
+
+## [2.2.2](https://github.com/ipfs/helia/compare/utils-v2.2.1...utils-v2.2.2) (2025-10-27)
+
+
+### Bug Fixes
+
+* add provider events to bitswap and trustless gateways ([#888](https://github.com/ipfs/helia/issues/888)) ([95d95da](https://github.com/ipfs/helia/commit/95d95dad7ff2a1e462b5a8a4f57ac40c4503f4ef))
+* remove block request promise when initial provider search fails ([#886](https://github.com/ipfs/helia/issues/886)) ([bfc8710](https://github.com/ipfs/helia/commit/bfc871013eb2b4b1e9c62a0055002605eccb375b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.0.0 to ^6.0.1
+
+## [2.2.1](https://github.com/ipfs/helia/compare/utils-v2.2.0...utils-v2.2.1) (2025-10-22)
+
+
+### Bug Fixes
+
+* update log formatting to print errors correctly ([#884](https://github.com/ipfs/helia/issues/884)) ([f35ecd1](https://github.com/ipfs/helia/commit/f35ecd1c8ad3c712d3882d0f0f2abaf0f0296ec1))
+
+## [2.2.0](https://github.com/ipfs/helia/compare/utils-v2.1.1...utils-v2.2.0) (2025-10-20)
+
+
+### Features
+
+* allow filtering children ([#880](https://github.com/ipfs/helia/issues/880)) ([3eb6f3a](https://github.com/ipfs/helia/commit/3eb6f3a78f3dfe151ecc425290a06c92fa1431b7))
+
+
+### Bug Fixes
+
+* consolidate graph walkers ([#878](https://github.com/ipfs/helia/issues/878)) ([760ed27](https://github.com/ipfs/helia/commit/760ed27fea5e873e7b402773652961ab4583e2ac))
+
 ## [2.1.1](https://github.com/ipfs/helia/compare/utils-v2.1.0...utils-v2.1.1) (2025-10-17)
 
 

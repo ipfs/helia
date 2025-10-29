@@ -1,6 +1,6 @@
 {
   "name": "@helia/interface",
-  "version": "6.0.0",
+  "version": "6.0.2",
   "description": "The Helia API",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/interface#readme",
@@ -68,7 +68,7 @@
     "build": "aegir build"
   },
   "dependencies": {
-    "@libp2p/interface": "^3.0.2",
+    "@libp2p/interface": "^3.1.0",
     "@multiformats/dns": "^1.0.9",
     "@multiformats/multiaddr": "^13.0.1",
     "interface-blockstore": "^6.0.1",

@@ -18,7 +18,7 @@ import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedTrustlessGatewaySessionComponents {
   logger: ComponentLogger
-  routing: StubbedInstance<Routing>
+  routing: StubbedInstance<Required<Routing>>
 }
 
 describe('trustless-gateway sessions', () => {
@@ -27,7 +27,7 @@ describe('trustless-gateway sessions', () => {
   beforeEach(async () => {
     components = {
       logger: defaultLogger(),
-      routing: stubInterface<Routing>()
+      routing: stubInterface()
     }
   })
 
@@ -45,7 +45,8 @@ describe('trustless-gateway sessions', () => {
         id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
         multiaddrs: [
           uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
-        ]
+        ],
+        routing: 'test-routing'
       }
     }())
 
@@ -66,19 +67,22 @@ describe('trustless-gateway sessions', () => {
         id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
         multiaddrs: [
           multiaddr('/ip4/127.0.0.1/tcp/1234')
-        ]
+        ],
+        routing: 'test-routing'
       }
       yield {
         id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
         multiaddrs: [
           multiaddr('/ip4/127.0.0.1/udp/1234/quic-v1')
-        ]
+        ],
+        routing: 'test-routing'
       }
       yield {
         id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
         multiaddrs: [
           uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
-        ]
+        ],
+        routing: 'test-routing'
       }
     }())
 
@@ -100,7 +104,8 @@ describe('trustless-gateway sessions', () => {
       id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       multiaddrs: [
         uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
-      ]
+      ],
+      routing: 'test-routing'
     }
 
     components.routing.findProviders.returns(async function * () {
@@ -133,7 +138,8 @@ describe('trustless-gateway sessions', () => {
         id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
         multiaddrs: [
           uriToMultiaddr(process.env.BAD_TRUSTLESS_GATEWAY ?? '')
-        ]
+        ],
+        routing: 'test-routing'
       }
     }())
 
@@ -153,13 +159,15 @@ describe('trustless-gateway sessions', () => {
       id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       multiaddrs: [
         uriToMultiaddr(process.env.BAD_TRUSTLESS_GATEWAY ?? '')
-      ]
+      ],
+      routing: 'test-routing'
     },
     {
       id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       multiaddrs: [
         uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
-      ]
+      ],
+      routing: 'test-routing'
     }]
 
     components.routing.findProviders.returns(async function * () {

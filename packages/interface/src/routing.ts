@@ -48,6 +48,11 @@ export interface Provider extends PeerInfo {
    * - transport-bitswap
    */
   protocols?: string[]
+
+  /**
+   * The name of the routing implementation that found the provider
+   */
+  routing: string
 }
 
 export interface Routing {

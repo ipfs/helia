@@ -73,10 +73,21 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
         this.initialPeerSearchComplete = this.findProviders(cid, this.minProviders, options)
       }
 
-      await raceSignal(this.initialPeerSearchComplete, options.signal)
+      try {
+        await raceSignal(this.initialPeerSearchComplete, options.signal)
 
-      if (first) {
-        this.log('found initial session peers for %c', cid)
+        if (first) {
+          this.log('found initial session peers for %c', cid)
+        }
+      } catch (err) {
+        if (first) {
+          this.log('failed to find initial session peers for %c - %e', cid, err)
+        }
+
+        this.requests.delete(cidStr)
+        deferred.reject(err)
+
+        throw err
       }
     }
 
@@ -133,7 +144,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
           deferred.resolve(await this.retrieve(cid, options))
         })
         .catch(err => {
-          this.log.error('could not find new providers for %c', cid, err)
+          this.log.error('could not find new providers for %c - %e', cid, err)
           deferred.reject(err)
         })
     })
@@ -151,7 +162,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
             return
           }
 
-          this.log.error('error retrieving session block for %c', cid, err)
+          this.log.error('error retrieving session block for %c - %e', cid, err)
         })
     }
 
@@ -173,7 +184,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
           return
         }
 
-        this.log.error('error retrieving session block for %c', cid, err)
+        this.log.error('error retrieving session block for %c - %e', cid, err)
       })
 
     const signalAbortedListener = (): void => {
@@ -319,7 +330,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
         }
       })
       .catch(err => {
-        this.log.error('error searching routing for potential session peers for %c', cid, err.errors ?? err)
+        this.log.error('error searching routing for potential session peers for %c - %e', cid, err)
         deferred.reject(err)
       })
 
