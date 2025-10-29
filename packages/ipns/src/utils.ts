@@ -90,6 +90,14 @@ export function isLibp2pCID (obj?: any): obj is CID<unknown, 0x72, 0x00 | 0x12, 
   return true
 }
 
-export function keyToMultihash (key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId) {
-  return isPublicKey(key) || isPeerId(key) ? key.toMultihash() : isLibp2pCID(key) ? key.multihash : key
+export function keyToMultihash (key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId): MultihashDigest<0x00 | 0x012> {
+  if (isPublicKey(key) || isPeerId(key)) {
+    return key.toMultihash()
+  }
+
+  if (isLibp2pCID(key)) {
+    return key.multihash
+  }
+
+  return key
 }

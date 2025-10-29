@@ -683,8 +683,8 @@ describe('republish', () => {
         await result.datastore.put(dhtRoutingKey(routingKey), new Uint8Array())
         await result.datastore.put(ipnsMetadataKey(routingKey), new Uint8Array())
 
-        expect(async () => result.datastore.get(dhtRoutingKey(routingKey))).to.be.rejected
-        expect(async () => result.datastore.get(ipnsMetadataKey(routingKey))).to.be.rejected
+        expect(() => result.datastore.get(dhtRoutingKey(routingKey))).to.throw('Not found')
+        expect(() => result.datastore.get(ipnsMetadataKey(routingKey))).to.throw('Not found')
       })
     })
   })

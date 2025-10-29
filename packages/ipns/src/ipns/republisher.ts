@@ -7,15 +7,15 @@ import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { DEFAULT_REPUBLISH_CONCURRENCY, DEFAULT_REPUBLISH_INTERVAL_MS, DEFAULT_TTL_NS } from '../constants.ts'
 import { ipnsSelector } from '../index.ts'
 import { keyToMultihash, shouldRefresh, shouldRepublish } from '../utils.js'
-import type {AbortOptions, ComponentLogger, Libp2p, Logger, PeerId, PrivateKey, PublicKey} from '@libp2p/interface';
+import type { IPNSRefreshResult, RefreshOptions } from '../index.ts'
 import type { ListResult, LocalStore } from '../local-store.js'
+import type { IPNSResolver } from './resolver.ts'
 import type { IPNSRouting } from '../routing/index.js'
+import type { AbortOptions, ComponentLogger, Libp2p, Logger, PeerId, PrivateKey, PublicKey } from '@libp2p/interface'
 import type { Keychain } from '@libp2p/keychain'
 import type { RepeatingTask } from '@libp2p/utils'
 import type { IPNSRecord } from 'ipns'
-import type { IPNSRefreshResult, RefreshOptions } from '../index.ts'
 import type { CID, MultihashDigest } from 'multiformats/cid'
-import type { IPNSResolver } from './resolver.ts'
 
 export interface IPNSRepublisherComponents {
   logger: ComponentLogger
