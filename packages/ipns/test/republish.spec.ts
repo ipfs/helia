@@ -3,7 +3,7 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { start, stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
-import { createIPNSRecord, marshalIPNSRecord, unmarshalIPNSRecord, multihashToIPNSRoutingKey } from 'ipns'
+import { createIPNSRecord, marshalIPNSRecord, unmarshalIPNSRecord, multihashToIPNSRoutingKey, multihashFromIPNSRoutingKey } from 'ipns'
 import { CID } from 'multiformats/cid'
 import sinon from 'sinon'
 import { localStore } from '../src/local-store.js'
@@ -508,6 +508,184 @@ describe('republish', () => {
       // Should republish the valid record despite the corrupt one
       expect(putStubCustom.called).to.be.true()
       expect(putStubHelia.called).to.be.true()
+    })
+  })
+
+  describe('refresh', () => {
+    let getStubCustom: sinon.SinonStub
+    let getStubHelia: sinon.SinonStub
+
+    beforeEach(async () => {
+      result = await createIPNS()
+      name = result.name
+
+      // Stub the routers by default to reject
+      getStubCustom = sinon.stub().rejects()
+      getStubHelia = sinon.stub().rejects()
+      // @ts-ignore
+      result.customRouting.get = getStubCustom
+      // @ts-ignore
+      result.heliaRouting.get = getStubHelia
+    })
+
+    describe('basic functionality', () => {
+      it('should lookup latest record in cache and in routers', async () => {
+        const key = await generateKeyPair('Ed25519')
+        const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
+        const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+        // Store the record in the real datastore
+        const store = localStore(result.datastore, result.log)
+        await store.put(routingKey, marshalIPNSRecord(record))
+
+        // @ts-ignore
+        const storeGetSpy = sinon.spy(name.localStore, 'get')
+
+        await name.refresh(multihashFromIPNSRoutingKey(routingKey))
+
+        expect(storeGetSpy.called).to.be.true()
+        expect(getStubCustom.called).to.be.true()
+        expect(getStubHelia.called).to.be.true()
+      })
+
+      it('should only publish once if repeat is false', async () => {
+        const key = await generateKeyPair('Ed25519')
+        const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
+        const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+        // Store the record in the real datastore
+        const store = localStore(result.datastore, result.log)
+        await store.put(routingKey, marshalIPNSRecord(record))
+
+        await name.refresh(multihashFromIPNSRoutingKey(routingKey), { repeat: false })
+
+        expect(() => result.datastore.get(ipnsMetadataKey(routingKey))).to.throw('Not Found')
+      })
+
+      it('should use options.record if necessary', async () => {
+        const key = await generateKeyPair('Ed25519')
+        const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
+        const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+        const refreshed = await name.refresh(multihashFromIPNSRoutingKey(routingKey), { record })
+
+        expect(refreshed.record).to.equal(record)
+      })
+
+      it('should write to metadata', async () => {
+        const key = await generateKeyPair('Ed25519')
+        const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
+        const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+        // Store the record in the real datastore
+        const store = localStore(result.datastore, result.log)
+        await store.put(routingKey, marshalIPNSRecord(record))
+
+        await name.refresh(multihashFromIPNSRoutingKey(routingKey))
+
+        expect(() => result.datastore.get(ipnsMetadataKey(routingKey))).to.not.throw()
+      })
+
+      it('should overwrite the created date on the dht record', async () => {
+        const key = await generateKeyPair('Ed25519')
+        const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
+        const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+        // Store the record in the real datastore
+        const store = localStore(result.datastore, result.log)
+        await store.put(routingKey, marshalIPNSRecord(record))
+
+        const { created } = await store.get(routingKey)
+
+        await name.refresh(multihashFromIPNSRoutingKey(routingKey))
+
+        const { created: newCreated }= await store.get(routingKey)
+
+        expect(newCreated).does.not.equal(created)
+      })
+
+      it('should publish the latest record record on all routers and return the published record', async () => {
+        const key = await generateKeyPair('Ed25519')
+        const record1 = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
+        const record2 = await createIPNSRecord(key, testCid, 2n, 24 * 60 * 60 * 1000)
+        const record3 = await createIPNSRecord(key, testCid, 3n, 24 * 60 * 60 * 1000)
+        const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+        // Store the record in the real datastore
+        const store = localStore(result.datastore, result.log)
+        await store.put(routingKey, marshalIPNSRecord(record1))
+
+        // Stub the routers by default to reject
+        getStubCustom = sinon.stub().resolves(marshalIPNSRecord(record2))
+        getStubHelia = sinon.stub().resolves(marshalIPNSRecord(record3))
+        // @ts-ignore
+        result.customRouting.get = getStubCustom
+        // @ts-ignore
+        result.heliaRouting.get = getStubHelia
+
+        // @ts-ignore
+        const storePutSpy = sinon.spy(name.localStore, 'put')
+
+        const refreshed = await name.refresh(multihashFromIPNSRoutingKey(routingKey), { force: true })
+
+        expect(storePutSpy.called).to.be.true()
+        expect(result.customRouting.put.called).to.be.true()
+        expect(result.heliaRouting.put.called).to.be.true()
+        expect(refreshed.record.sequence).to.equal(3n)
+      })
+    })
+
+    describe('error handling', () => {
+      it('should call options.onProgress on error', async () => {
+        const key = await generateKeyPair('Ed25519')
+        const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+        const onProgress = sinon.stub().resolves()
+
+        await expect(name.refresh(multihashFromIPNSRoutingKey(routingKey), { onProgress })).to.be.rejected()
+        expect(onProgress.called).to.be.true()
+      })
+
+      it('should throw if options.record is invalid', async () => {
+        const key = await generateKeyPair('Ed25519')
+        const record = await createIPNSRecord(key, testCid, 1n, -1)
+        const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+        await expect(name.refresh(multihashFromIPNSRoutingKey(routingKey), { record })).to.be.rejectedWith('record has expired')
+      })
+
+      it('should throw if no records were found to refresh', async () => {
+        const key = await generateKeyPair('Ed25519')
+        const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+        await expect(name.refresh(multihashFromIPNSRoutingKey(routingKey))).to.be.rejectedWith('Found no records to refresh')
+      })
+
+      it('should throw if the record is already published', async () => {
+        const key = await generateKeyPair('Ed25519')
+        const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
+        const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+        getStubCustom = sinon.stub().resolves(marshalIPNSRecord(record))
+        // @ts-ignore
+        result.customRouting.get = getStubCustom
+
+        await expect(name.refresh(multihashFromIPNSRoutingKey(routingKey))).to.be.rejectedWith('Record already published')
+      })
+    })
+
+    describe('unrefresh', () => {
+      it('removes the local record and metadata', async () => {
+        const key = await generateKeyPair('Ed25519')
+        const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+        // Store empty data in the real datastore
+        await result.datastore.put(dhtRoutingKey(routingKey), new Uint8Array())
+        await result.datastore.put(ipnsMetadataKey(routingKey), new Uint8Array())
+
+        expect(async () => result.datastore.get(dhtRoutingKey(routingKey))).to.be.rejected
+        expect(async () => result.datastore.get(ipnsMetadataKey(routingKey))).to.be.rejected
+      })
     })
   })
 })
