@@ -232,7 +232,7 @@ export class IPNSRepublisher {
       // publish record to routers
       const putOptions = {
         ...options,
-        metadata: options.repeat ? { refresh: true } : undefined,
+        metadata: options.repeat !== false ? { refresh: true } : undefined,
         // overwrite so Record.created is reset for #republish
         overwrite: true
       }
