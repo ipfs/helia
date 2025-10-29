@@ -683,8 +683,10 @@ describe('republish', () => {
         await result.datastore.put(dhtRoutingKey(routingKey), new Uint8Array())
         await result.datastore.put(ipnsMetadataKey(routingKey), new Uint8Array())
 
-        expect(() => result.datastore.get(dhtRoutingKey(routingKey))).to.throw('Not found')
-        expect(() => result.datastore.get(ipnsMetadataKey(routingKey))).to.throw('Not found')
+        await name.unrefresh(multihashFromIPNSRoutingKey(routingKey))
+
+        expect(() => result.datastore.get(dhtRoutingKey(routingKey))).to.throw('Not Found')
+        expect(() => result.datastore.get(ipnsMetadataKey(routingKey))).to.throw('Not Found')
       })
     })
   })
