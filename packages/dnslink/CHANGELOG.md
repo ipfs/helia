@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/ipfs/helia/compare/dnslink-v1.1.1...dnslink-v1.1.2) (2025-10-29)
+
+
+### Bug Fixes
+
+* use libp2p provider routing field ([#889](https://github.com/ipfs/helia/issues/889)) ([d4d97b8](https://github.com/ipfs/helia/commit/d4d97b83f76be7e3b480052467408839f808e230))
+
 ## [1.1.1](https://github.com/ipfs/helia/compare/dnslink-v1.1.0...dnslink-v1.1.1) (2025-10-22)
 
 
