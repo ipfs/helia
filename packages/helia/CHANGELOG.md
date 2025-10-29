@@ -1,5 +1,22 @@
 # Changelog
 
+## [6.0.8](https://github.com/ipfs/helia/compare/helia-v6.0.7...helia-v6.0.8) (2025-10-29)
+
+
+### Bug Fixes
+
+* use libp2p provider routing field ([#889](https://github.com/ipfs/helia/issues/889)) ([d4d97b8](https://github.com/ipfs/helia/commit/d4d97b83f76be7e3b480052467408839f808e230))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.0.6 to ^5.0.7
+    * @helia/interface bumped from ^6.0.1 to ^6.0.2
+    * @helia/routers bumped from ^4.0.2 to ^4.0.3
+    * @helia/utils bumped from ^2.2.2 to ^2.2.3
+
 ## [6.0.7](https://github.com/ipfs/helia/compare/helia-v6.0.6...helia-v6.0.7) (2025-10-27)
 
 

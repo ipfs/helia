@@ -1,5 +1,32 @@
 # Changelog
 
+## [9.0.8](https://github.com/ipfs/helia/compare/interop-v9.0.7...interop-v9.0.8) (2025-10-29)
+
+
+### Bug Fixes
+
+* use libp2p provider routing field ([#889](https://github.com/ipfs/helia/issues/889)) ([d4d97b8](https://github.com/ipfs/helia/commit/d4d97b83f76be7e3b480052467408839f808e230))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.0.6 to ^5.0.7
+    * @helia/dnslink bumped from ^1.1.1 to ^1.1.2
+    * @helia/car bumped from ^5.2.2 to ^5.2.3
+    * @helia/dag-cbor bumped from ^5.0.2 to ^5.0.3
+    * @helia/dag-json bumped from ^5.0.2 to ^5.0.3
+    * @helia/http bumped from ^3.0.7 to ^3.0.8
+    * @helia/interface bumped from ^6.0.1 to ^6.0.2
+    * @helia/ipns bumped from ^9.1.2 to ^9.1.3
+    * @helia/json bumped from ^5.0.2 to ^5.0.3
+    * @helia/mfs bumped from ^6.0.2 to ^6.0.3
+    * @helia/routers bumped from ^4.0.2 to ^4.0.3
+    * @helia/strings bumped from ^5.0.2 to ^5.0.3
+    * @helia/unixfs bumped from ^6.0.2 to ^6.0.3
+    * helia bumped from ^6.0.7 to ^6.0.8
+
 ## [9.0.7](https://github.com/ipfs/helia/compare/interop-v9.0.6...interop-v9.0.7) (2025-10-27)
 
 
