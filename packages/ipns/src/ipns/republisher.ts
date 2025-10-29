@@ -219,14 +219,14 @@ export class IPNSRepublisher {
         }
       }
       if (records.length === 0) {
-        throw new NotFoundError(`Found no records to refresh for key ${routingKey.toString()}`)
+        throw new NotFoundError('Found no records to refresh')
       }
 
       // check if record is already published
       const selectedRecord = records[ipnsSelector(routingKey, records.map(marshalIPNSRecord))]
       const marshaledRecord = marshalIPNSRecord(selectedRecord)
       if (options.force !== true && publishedRecord != null && uint8ArrayEquals(marshaledRecord, marshalIPNSRecord(publishedRecord))) {
-        throw new Error('The record is already being published')
+        throw new Error('Record already published')
       }
 
       // publish record to routers
