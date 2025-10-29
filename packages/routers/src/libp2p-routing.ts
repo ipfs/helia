@@ -1,4 +1,3 @@
-import map from 'it-map'
 import type { Provider, Routing, RoutingOptions } from '@helia/interface'
 import type { Libp2p, PeerId, PeerInfo } from '@libp2p/interface'
 import type { CID } from 'multiformats'
@@ -19,12 +18,7 @@ class Libp2pRouter implements Routing {
   }
 
   async * findProviders (cid: CID, options?: RoutingOptions): AsyncIterable<Provider> {
-    yield * map(this.libp2p.contentRouting.findProviders(cid, options), (info) => {
-      return {
-        ...info,
-        routing: 'libp2p'
-      }
-    })
+    yield * this.libp2p.contentRouting.findProviders(cid, options)
   }
 
   async put (key: Uint8Array, value: Uint8Array, options?: RoutingOptions): Promise<void> {
