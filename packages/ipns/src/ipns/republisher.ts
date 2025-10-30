@@ -146,8 +146,9 @@ export class IPNSRepublisher {
         // Add job to queue to republish the record to all routers
         queue.add(async () => {
           try {
+            const marshaledRecord = marshalIPNSRecord(record)
             await Promise.all(
-              this.routers.map(r => r.put(routingKey, marshalIPNSRecord(record), options))
+              this.routers.map(r => r.put(routingKey, marshaledRecord, options))
             )
           } catch (err: any) {
             this.log.error('error republishing record - %e', err)
