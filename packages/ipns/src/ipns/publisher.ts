@@ -4,6 +4,7 @@ import { createIPNSRecord, marshalIPNSRecord, multihashToIPNSRoutingKey, unmarsh
 import { CID } from 'multiformats/cid'
 import { CustomProgressEvent } from 'progress-events'
 import { DEFAULT_LIFETIME_MS, DEFAULT_TTL_NS } from '../constants.ts'
+import { keyToMultihash } from '../utils.ts'
 import type { IPNSPublishResult, PublishOptions } from '../index.js'
 import type { LocalStore } from '../local-store.js'
 import type { IPNSRouting } from '../routing/index.js'
@@ -88,10 +89,13 @@ export class IPNSPublisher {
     }
   }
 
-  async unpublish (keyName: string, options?: AbortOptions): Promise<void> {
-    const { publicKey } = await this.keychain.exportKey(keyName)
-    const digest = publicKey.toMultihash()
-    const routingKey = multihashToIPNSRoutingKey(digest)
+  async unpublish (keyName: string | CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options?: AbortOptions): Promise<void> {
+    if (typeof keyName === 'string') {
+      const { publicKey } = await this.keychain.exportKey(keyName)
+      keyName = publicKey.toMultihash()
+    }
+
+    const routingKey = multihashToIPNSRoutingKey(keyToMultihash(keyName))
     await this.localStore.delete(routingKey, options)
   }
 }
