@@ -8,7 +8,7 @@ import { DEFAULT_REPUBLISH_CONCURRENCY, DEFAULT_REPUBLISH_INTERVAL_MS, DEFAULT_T
 import { ipnsSelector } from '../index.ts'
 import { keyToMultihash, shouldRefresh, shouldRepublish } from '../utils.js'
 import type { IPNSRepublishResult, RepublishOptions } from '../index.ts'
-import type { ListResult, LocalStore } from '../local-store.js'
+import type { LocalStore } from '../local-store.js'
 import type { IPNSResolver } from './resolver.ts'
 import type { IPNSRouting } from '../routing/index.js'
 import type { AbortOptions, ComponentLogger, Libp2p, Logger, PeerId, PrivateKey, PublicKey } from '@libp2p/interface'
