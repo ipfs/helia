@@ -201,10 +201,10 @@ export type ResolveProgressEvents =
   ProgressEvent<'ipns:resolve:success', IPNSRecord> |
   ProgressEvent<'ipns:resolve:error', Error>
 
-export type RefreshProgressEvents =
-  ProgressEvent<'ipns:refresh:start'> |
-  ProgressEvent<'ipns:refresh:success', IPNSRecord> |
-  ProgressEvent<'ipns:refresh:error', Error>
+export type RepublishProgressEvents =
+  ProgressEvent<'ipns:republish:start'> |
+  ProgressEvent<'ipns:republish:success', IPNSRecord> |
+  ProgressEvent<'ipns:republish:error', Error>
 
 export type DatastoreProgressEvents =
   ProgressEvent<'ipns:routing:datastore:put'> |
@@ -256,7 +256,7 @@ export interface ResolveOptions extends AbortOptions, ProgressOptions<ResolvePro
   nocache?: boolean
 }
 
-export interface RefreshOptions extends AbortOptions, ProgressOptions<RefreshProgressEvents | IPNSRoutingProgressEvents> {
+export interface RepublishOptions extends AbortOptions, ProgressOptions<RepublishProgressEvents | IPNSRoutingProgressEvents> {
   /**
    * A candidate IPNS record to use if no newer records are found
    */
@@ -270,7 +270,7 @@ export interface RefreshOptions extends AbortOptions, ProgressOptions<RefreshPro
   force?: boolean
 
   /**
-   * Refresh the latest known record for the key on a regularly basis
+   * Republish the latest existing record for the key on a regularly basis
    *
    * @default true
    */
@@ -308,7 +308,7 @@ export interface IPNSPublishResult {
   publicKey: PublicKey
 }
 
-export interface IPNSRefreshResult {
+export interface IPNSRepublishResult {
   /**
    * The published record
    */
@@ -380,25 +380,16 @@ export interface IPNS {
    * Note that the record may still be resolved by other peers until it expires
    * or is no longer valid.
    */
-  unpublish(keyName: string, options?: AbortOptions): Promise<void>
+  unpublish(keyName: string | CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options?: AbortOptions): Promise<void>
 
   /**
-   * Regularly publish the latest known existing IPNS record for `key`
+   * Republish the latest known existing record to all routers
    *
-   * Refreshing keep an existing IPNS record resolvable until it expires or
-   * `unrefresh` is called for the same key
+   * This will automatically be done regularly unless `options.repeat` is false
+   *
+   * Use `unpublish` to stop republishing a key
    */
-  refresh(key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options?: RefreshOptions): Promise<IPNSRefreshResult>
-
-  /**
-   * Stop refreshing of an existing IPNS record
-   *
-   * This will delete the IPNS record from the datastore
-   *
-   * Note that the record may still be resolved by other peers until it expires
-   * or is no longer valid.
-   */
-  unrefresh(key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options?: AbortOptions): Promise<void>
+  republish(key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options?: RepublishOptions): Promise<IPNSRepublishResult>
 }
 
 export type { IPNSRouting } from './routing/index.js'

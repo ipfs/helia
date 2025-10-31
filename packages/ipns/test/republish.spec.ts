@@ -143,7 +143,7 @@ describe('republish', () => {
       expect(republishedRecord.sequence).to.equal(2n) // Incremented from 1n
     })
 
-    it('should only refresh some records', async () => {
+    it('should republish existing records', async () => {
       const key = await generateKeyPair('Ed25519')
       const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
@@ -232,7 +232,7 @@ describe('republish', () => {
       expect(republishedRecord.sequence).to.equal(6n) // Incremented from 5n
     })
 
-    it('should skip refreshing records created within republish threshold', async () => {
+    it('should skip republishing existing records created within republish threshold', async () => {
       const key = await generateKeyPair('Ed25519')
       const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
@@ -451,7 +451,7 @@ describe('republish', () => {
       expect(putStubHelia.called).to.be.false()
     })
 
-    it('should handle unable to find record to refresh', async () => {
+    it('should handle unable to find existing record to republish', async () => {
       const key = await generateKeyPair('Ed25519')
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
@@ -511,7 +511,7 @@ describe('republish', () => {
     })
   })
 
-  describe('refresh', () => {
+  describe('republish', () => {
     let getStubCustom: sinon.SinonStub
     let getStubHelia: sinon.SinonStub
 
@@ -541,7 +541,7 @@ describe('republish', () => {
         // @ts-ignore
         const storeGetSpy = sinon.spy(name.localStore, 'get')
 
-        await name.refresh(multihashFromIPNSRoutingKey(routingKey))
+        await name.republish(multihashFromIPNSRoutingKey(routingKey))
 
         expect(storeGetSpy.called).to.be.true()
         expect(getStubCustom.called).to.be.true()
@@ -557,7 +557,7 @@ describe('republish', () => {
         const store = localStore(result.datastore, result.log)
         await store.put(routingKey, marshalIPNSRecord(record))
 
-        await name.refresh(multihashFromIPNSRoutingKey(routingKey), { repeat: false })
+        await name.republish(multihashFromIPNSRoutingKey(routingKey), { repeat: false })
 
         expect(() => result.datastore.get(ipnsMetadataKey(routingKey))).to.throw('Not Found')
       })
@@ -567,9 +567,9 @@ describe('republish', () => {
         const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
         const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
-        const refreshed = await name.refresh(multihashFromIPNSRoutingKey(routingKey), { record })
+        const republished = await name.republish(multihashFromIPNSRoutingKey(routingKey), { record })
 
-        expect(refreshed.record).to.equal(record)
+        expect(republished.record).to.equal(record)
       })
 
       it('should write to metadata', async () => {
@@ -581,7 +581,7 @@ describe('republish', () => {
         const store = localStore(result.datastore, result.log)
         await store.put(routingKey, marshalIPNSRecord(record))
 
-        await name.refresh(multihashFromIPNSRoutingKey(routingKey))
+        await name.republish(multihashFromIPNSRoutingKey(routingKey))
 
         expect(() => result.datastore.get(ipnsMetadataKey(routingKey))).to.not.throw()
       })
@@ -597,7 +597,7 @@ describe('republish', () => {
 
         const { created } = await store.get(routingKey)
 
-        await name.refresh(multihashFromIPNSRoutingKey(routingKey))
+        await name.republish(multihashFromIPNSRoutingKey(routingKey))
 
         const { created: newCreated } = await store.get(routingKey)
 
@@ -626,12 +626,12 @@ describe('republish', () => {
         // @ts-ignore
         const storePutSpy = sinon.spy(name.localStore, 'put')
 
-        const refreshed = await name.refresh(multihashFromIPNSRoutingKey(routingKey), { force: true })
+        const republished = await name.republish(multihashFromIPNSRoutingKey(routingKey), { force: true })
 
         expect(storePutSpy.called).to.be.true()
         expect(result.customRouting.put.called).to.be.true()
         expect(result.heliaRouting.put.called).to.be.true()
-        expect(refreshed.record.sequence).to.equal(3n)
+        expect(republished.record.sequence).to.equal(3n)
       })
     })
 
@@ -642,7 +642,7 @@ describe('republish', () => {
 
         const onProgress = sinon.stub().resolves()
 
-        await expect(name.refresh(multihashFromIPNSRoutingKey(routingKey), { onProgress })).to.be.rejected()
+        await expect(name.republish(multihashFromIPNSRoutingKey(routingKey), { onProgress })).to.be.rejected()
         expect(onProgress.called).to.be.true()
       })
 
@@ -651,14 +651,14 @@ describe('republish', () => {
         const record = await createIPNSRecord(key, testCid, 1n, -1)
         const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
-        await expect(name.refresh(multihashFromIPNSRoutingKey(routingKey), { record })).to.be.rejectedWith('record has expired')
+        await expect(name.republish(multihashFromIPNSRoutingKey(routingKey), { record })).to.be.rejectedWith('record has expired')
       })
 
-      it('should throw if no records were found to refresh', async () => {
+      it('should throw if no existing records were found to republish', async () => {
         const key = await generateKeyPair('Ed25519')
         const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
-        await expect(name.refresh(multihashFromIPNSRoutingKey(routingKey))).to.be.rejectedWith('Found no records to refresh')
+        await expect(name.republish(multihashFromIPNSRoutingKey(routingKey))).to.be.rejectedWith('Found no existing records to republish')
       })
 
       it('should throw if the record is already published', async () => {
@@ -670,23 +670,7 @@ describe('republish', () => {
         // @ts-ignore
         result.customRouting.get = getStubCustom
 
-        await expect(name.refresh(multihashFromIPNSRoutingKey(routingKey))).to.be.rejectedWith('Record already published')
-      })
-    })
-
-    describe('unrefresh', () => {
-      it('removes the local record and metadata', async () => {
-        const key = await generateKeyPair('Ed25519')
-        const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
-
-        // Store empty data in the real datastore
-        await result.datastore.put(dhtRoutingKey(routingKey), new Uint8Array())
-        await result.datastore.put(ipnsMetadataKey(routingKey), new Uint8Array())
-
-        await name.unrefresh(multihashFromIPNSRoutingKey(routingKey))
-
-        expect(() => result.datastore.get(dhtRoutingKey(routingKey))).to.throw('Not Found')
-        expect(() => result.datastore.get(ipnsMetadataKey(routingKey))).to.throw('Not Found')
+        await expect(name.republish(multihashFromIPNSRoutingKey(routingKey))).to.be.rejectedWith('Record already published')
       })
     })
   })
