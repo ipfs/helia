@@ -114,7 +114,7 @@ describe('resolve', () => {
     heliaRouting.get.resolves(marshalIPNSRecord(record))
 
     // @ts-ignore
-    const storePutSpy = sinon.spy(name.localStore, 'put')
+    const storePutSpy = Sinon.spy(name.localStore, 'put')
     const resolvedValue = await name.resolve(publicKey, {
       nocache: true
     })
