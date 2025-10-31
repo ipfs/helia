@@ -101,6 +101,10 @@ export class IPNSRepublisher {
         }
 
         if (metadata.refresh) {
+          if (!shouldRefresh(created)) {
+            this.log.trace(`skipping record ${routingKey.toString()} within republish threshold`)
+            continue
+          }
           recordsToRefresh.push({ routingKey, created })
           continue
         }
@@ -161,11 +165,6 @@ export class IPNSRepublisher {
           latestRecord = record
         } catch (err: any) {
           this.log.error('unable to find existing record to republish - %e', err)
-          continue
-        }
-
-        if (!shouldRefresh(created)) {
-          this.log.trace(`skipping record ${routingKey.toString()} within republish threshold`)
           continue
         }
 
