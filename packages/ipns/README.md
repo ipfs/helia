@@ -190,10 +190,10 @@ const record = await delegatedClient.getIPNS(parsedCid)
 
 // publish the latest existing record to routing
 // use `options.force` if the record is already published
-const { record: latestRecord } = await name.republish(parsedCID, { record })
+const { record: latestRecord } = await name.republish(parsedCid, { record })
 
 // stop republishing a key
-await unpublish(parsedCID)
+await name.unpublish(parsedCid)
 ```
 
 # Install
