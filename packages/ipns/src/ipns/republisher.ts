@@ -89,7 +89,7 @@ export class IPNSRepublisher {
 
     try {
       const recordsToRepublish: Array<{ routingKey: Uint8Array, record: IPNSRecord }> = []
-      const recordsToRefresh: Array<Omit<ListResult, 'record'>> = []
+      const keysToRepublish: Array<Uint8Array> = []
 
       // Find all records using the localStore.list method
       for await (const { routingKey, record, metadata, created } of this.localStore.list(options)) {
@@ -105,7 +105,7 @@ export class IPNSRepublisher {
             this.log.trace(`skipping record ${routingKey.toString()} within republish threshold`)
             continue
           }
-          recordsToRefresh.push({ routingKey, created })
+          keysToRepublish.push(routingKey)
           continue
         }
 
@@ -157,7 +157,7 @@ export class IPNSRepublisher {
           }
         }, options)
       }
-      for (const { routingKey, created } of recordsToRefresh) {
+      for (const routingKey of keysToRepublish) {
         // resolve the latest record
         let latestRecord: IPNSRecord
         try {
