@@ -13,6 +13,7 @@ import { dhtRoutingKey, ipnsMetadataKey } from '../src/utils.ts'
 import { createIPNS } from './fixtures/create-ipns.js'
 import type { IPNS } from '../src/ipns.js'
 import type { CreateIPNSResult } from './fixtures/create-ipns.js'
+import { REPUBLISH_THRESHOLD } from '../src/constants.ts'
 
 // Helper to await until a stub is called
 function waitForStubCall (stub: sinon.SinonStub, callCount = 1): Promise<void> {
@@ -148,8 +149,9 @@ describe('republish', () => {
       const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
-      // create a dht record with a created time < now - REPUBLISH_THRESHOLD
-      const dhtRecord = new Record(routingKey, marshalIPNSRecord(record), new Date(Date.now() - 24 * 60 * 60 * 1000))
+      // create a dht record with a timeReceived < now - REPUBLISH_THRESHOLD
+      const timeReceived = new Date(Date.now() - REPUBLISH_THRESHOLD - 60 * 60 * 1000)
+      const dhtRecord = new Record(routingKey, marshalIPNSRecord(record), timeReceived)
 
       // Store the dht record and metadata in the real datastore
       await result.datastore.put(dhtRoutingKey(routingKey), dhtRecord.serialize())
