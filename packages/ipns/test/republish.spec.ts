@@ -7,13 +7,13 @@ import { expect } from 'aegir/chai'
 import { createIPNSRecord, marshalIPNSRecord, unmarshalIPNSRecord, multihashToIPNSRoutingKey, multihashFromIPNSRoutingKey } from 'ipns'
 import { CID } from 'multiformats/cid'
 import sinon from 'sinon'
+import { REPUBLISH_THRESHOLD } from '../src/constants.ts'
 import { localStore } from '../src/local-store.js'
 import { IPNSPublishMetadata } from '../src/pb/metadata.ts'
 import { dhtRoutingKey, ipnsMetadataKey } from '../src/utils.ts'
 import { createIPNS } from './fixtures/create-ipns.js'
 import type { IPNS } from '../src/ipns.js'
 import type { CreateIPNSResult } from './fixtures/create-ipns.js'
-import { REPUBLISH_THRESHOLD } from '../src/constants.ts'
 
 // Helper to await until a stub is called
 function waitForStubCall (stub: sinon.SinonStub, callCount = 1): Promise<void> {
