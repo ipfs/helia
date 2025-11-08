@@ -141,7 +141,7 @@ export class TrustlessGateway {
           this.log('GET %s %d', gwUrl, res.status)
           if (!res.ok) {
             this.#errors++
-            throw new Error(`unable to fetch raw block for CID ${cid} from gateway ${this.url}`)
+            throw new Error(`Unable to fetch raw block for CID ${cid} from gateway ${this.url}, recieved ${res.status} ${res.statusText}`)
           }
           // limited Response ensures the body is less than 2MiB (or configurable maxSize)
           // see https://github.com/ipfs/helia/issues/790
@@ -152,14 +152,14 @@ export class TrustlessGateway {
         this.#pendingResponses.set(blockId, pendingResponse)
       }
       return await pendingResponse
-    } catch (cause) {
+    } catch (cause: any) {
       // @ts-expect-error - TS thinks signal?.aborted can only be false now
       // because it was checked for true above.
       if (signal?.aborted === true) {
-        throw new Error(`fetching raw block for CID ${cid} from gateway ${this.url} was aborted`)
+        throw new Error(`Fetching raw block for CID ${cid} from gateway ${this.url} was aborted`)
       }
       this.#errors++
-      throw new Error(`unable to fetch raw block for CID ${cid}`)
+      throw new Error(`Unable to fetch raw block for CID ${cid} - ` + cause.message)
     } finally {
       signal?.removeEventListener('abort', abortInnerSignal)
       this.#pendingResponses.delete(blockId)
@@ -214,5 +214,9 @@ export class TrustlessGateway {
       successes: this.#successes,
       pendingResponses: this.#pendingResponses.size
     }
+  }
+
+  toString (): string {
+    return `TrustlessGateway(${this.url})`
   }
 }

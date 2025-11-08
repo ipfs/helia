@@ -100,7 +100,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
       concurrency: this.maxProviders
     })
     queue.addEventListener('failure', (evt) => {
-      this.log.error('error querying provider %o, evicting from session', evt.detail.job.options.provider, evt.detail.error)
+      this.log.error('error querying provider %s, evicting from session - %e', evt.detail.job.options.provider, evt.detail.error)
       this.evict(evt.detail.job.options.provider)
     })
     queue.addEventListener('success', (evt) => {
