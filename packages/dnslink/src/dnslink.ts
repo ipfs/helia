@@ -169,6 +169,13 @@ export class DNSLink <Namespaces extends Record<string, DNSLinkParser<DNSLinkRes
           continue
         }
 
+        const record = parser(result, answer)
+
+        if (record.namespace === 'dnslink') {
+          // if the result was another DNSLink domain, try to follow it
+          return await this.recursiveResolveDomain(record.value, depth - 1, options)
+        }
+
         output.push(parser(result, answer))
       } catch (err: any) {
         this.log.error('could not parse DNS link record for domain %s, %s - %e', domain, answer.data, err)
