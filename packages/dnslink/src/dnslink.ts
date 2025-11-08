@@ -159,7 +159,8 @@ export class DNSLink <Namespaces extends Record<string, DNSLinkParser<DNSLinkRes
 
         if (protocol === 'dnslink') {
           // if the result was another DNSLink domain, try to follow it
-          return await this.recursiveResolveDomain(domainOrCID, depth - 1, options)
+          output.push(...await this.recursiveResolveDomain(domainOrCID, depth - 1, options))
+          continue
         }
 
         const parser = this.namespaces[protocol]
@@ -173,7 +174,8 @@ export class DNSLink <Namespaces extends Record<string, DNSLinkParser<DNSLinkRes
 
         if (record.namespace === 'dnslink') {
           // if the result was another DNSLink domain, try to follow it
-          return await this.recursiveResolveDomain(record.value, depth - 1, options)
+          output.push(...await this.recursiveResolveDomain(record.value, depth - 1, options))
+          continue
         }
 
         output.push(parser(result, answer))
