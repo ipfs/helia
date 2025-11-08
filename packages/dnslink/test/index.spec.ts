@@ -382,4 +382,31 @@ describe('dnslink', () => {
 
     expect(result).to.have.deep.nested.property('[0].cid', CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'))
   })
+
+  it('should resolve multiple recursive DNSLink names', async () => {
+    dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
+      name: '_dnslink.foobar.baz.',
+      TTL: 60,
+      type: RecordType.TXT,
+      data: 'dnslink=/ipns/qux.quux'
+    }, {
+      name: '_dnslink.foobar.baz.',
+      TTL: 60,
+      type: RecordType.TXT,
+      // spellchecker:disable-next-line
+      data: 'dnslink=/ipfs/bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'
+    }]))
+
+    dns.query.withArgs('_dnslink.qux.quux').resolves(dnsResponse([{
+      name: '_dnslink.qux.quux.',
+      TTL: 60,
+      type: RecordType.TXT,
+      data: 'dnslink=/ipfs/QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'
+    }]))
+
+    const result = await name.resolve('foobar.baz')
+
+    expect(result).to.have.deep.nested.property('[0].cid', CID.parse('bafybeifcaqowoyito3qvsmbwbiugsu4umlxn4ehu223hvtubbfvwyuxjoe'))
+    expect(result).to.have.deep.nested.property('[1].cid', CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'))
+  })
 })
