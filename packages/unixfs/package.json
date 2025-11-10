@@ -92,7 +92,7 @@
   "devDependencies": {
     "aegir": "^47.0.22",
     "blockstore-core": "^6.1.1",
-    "delay": "^6.0.0",
+    "delay": "^7.0.0",
     "iso-url": "^1.2.1",
     "it-drain": "^3.0.10",
     "wherearewe": "^2.0.1"
