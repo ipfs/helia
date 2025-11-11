@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.3](https://github.com/ipfs/helia/compare/dnslink-v1.1.2...dnslink-v1.1.3) (2025-11-10)
+
+
+### Bug Fixes
+
+* support recursive DNSLink lookups ([#897](https://github.com/ipfs/helia/issues/897)) ([636e950](https://github.com/ipfs/helia/commit/636e9503ff56e49c2209f6af480df36b7a8c3735))
+
 ## [1.1.2](https://github.com/ipfs/helia/compare/dnslink-v1.1.1...dnslink-v1.1.2) (2025-10-29)
 
 

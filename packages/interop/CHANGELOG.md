@@ -1,5 +1,14 @@
 # Changelog
 
+## [9.0.9](https://github.com/ipfs/helia/compare/interop-v9.0.8...interop-v9.0.9) (2025-11-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/dnslink bumped from ^1.1.2 to ^1.1.3
+
 ## [9.0.8](https://github.com/ipfs/helia/compare/interop-v9.0.7...interop-v9.0.8) (2025-10-29)
 
 
