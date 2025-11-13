@@ -100,7 +100,24 @@ class DelegatedHTTPRouter implements Routing {
 /**
  * Creates a Helia Router that connects to an endpoint that supports the [Delegated Routing V1 HTTP API](https://specs.ipfs.tech/routing/http-routing-v1/) spec.
  */
-export function delegatedHTTPRouting (url: string | URL, init?: DelegatedRoutingV1HttpApiClientInit): Routing {
-  const config = init ?? delegatedHTTPRoutingDefaults()
-  return new DelegatedHTTPRouter(new URL(url), config)
+export function delegatedHTTPRouting (init: DelegatedRoutingV1HttpApiClientInit & { url: string | URL }): (components: any) => Routing
+/**
+ * @deprecated Use `delegatedHTTPRouting(init)` instead
+ */
+export function delegatedHTTPRouting (url: string | URL, init?: DelegatedRoutingV1HttpApiClientInit): Routing
+export function delegatedHTTPRouting (url: string | URL | (DelegatedRoutingV1HttpApiClientInit & { url: string | URL }), init?: DelegatedRoutingV1HttpApiClientInit): Routing | ((components: any) => Routing) {
+  if (typeof url === 'string' || url instanceof URL) {
+    return new DelegatedHTTPRouter({
+      logger: defaultLogger()
+    }, {
+      ...delegatedHTTPRoutingDefaults(),
+      ...init,
+      url: new URL(url)
+    })
+  }
+
+  return (components: any) => new DelegatedHTTPRouter(components, {
+    ...delegatedHTTPRoutingDefaults(),
+    ...url
+  })
 }

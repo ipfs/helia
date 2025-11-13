@@ -136,7 +136,7 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
    * Routers perform operations such as looking up content providers,
    * information about network peers or getting/putting records.
    */
-  routers?: Array<Partial<Routing>>
+  routers?: Array<Partial<Routing> | ((components: any) => Partial<Routing>)>
 
   /**
    * During provider lookups, peers can be returned from routing implementations
@@ -232,20 +232,26 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
     }
 
     this.routing = components.routing = new RoutingClass(components, {
-      routers: (init.routers ?? []).flatMap((router: any) => {
+      routers: (init.routers ?? []).flatMap((router: Partial<Routing> | ((components: any) => Partial<Routing>)) => {
+        if (typeof router === 'function') {
+          router = router(components)
+        }
+
         // if the router itself is a router
         const routers = [
           router
         ]
 
         // if the router provides a libp2p-style ContentRouter
-        if (router[contentRoutingSymbol] != null) {
-          routers.push(router[contentRoutingSymbol])
+        const contentRouting = asContentRouting(router)
+        if (contentRouting != null) {
+          routers.push(contentRouting)
         }
 
         // if the router provides a libp2p-style PeerRouter
-        if (router[peerRoutingSymbol] != null) {
-          routers.push(router[peerRoutingSymbol])
+        const peerRouting = asPeerRouting(router)
+        if (peerRouting != null) {
+          routers.push(peerRouting)
         }
 
         return routers
@@ -317,4 +323,12 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
 
     this.log('gc finished')
   }
+}
+
+function asContentRouting (obj?: any): ContentRouting | undefined {
+  return obj?.[contentRoutingSymbol]
+}
+
+function asPeerRouting (obj?: any): PeerRouting | undefined {
+  return obj?.[peerRoutingSymbol]
 }
