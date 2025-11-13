@@ -1,5 +1,6 @@
-import { createDelegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
+import { delegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
 import { NotFoundError } from '@libp2p/interface'
+import { defaultLogger } from '@libp2p/logger'
 import { marshalIPNSRecord, multihashFromIPNSRoutingKey, unmarshalIPNSRecord } from 'ipns'
 import first from 'it-first'
 import map from 'it-map'
@@ -7,7 +8,7 @@ import { CID } from 'multiformats/cid'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { delegatedHTTPRoutingDefaults } from './utils/delegated-http-routing-defaults.js'
-import type { DelegatedRoutingV1HttpApiClient, DelegatedRoutingV1HttpApiClientInit } from '@helia/delegated-routing-v1-http-api-client'
+import type { DelegatedRoutingV1HttpApiClient, DelegatedRoutingV1HttpApiClientComponents, DelegatedRoutingV1HttpApiClientInit } from '@helia/delegated-routing-v1-http-api-client'
 import type { Provider, Routing, RoutingOptions } from '@helia/interface'
 import type { PeerId, PeerInfo } from '@libp2p/interface'
 import type { Version } from 'multiformats'
@@ -21,8 +22,8 @@ function isIPNSKey (key: Uint8Array): boolean {
 class DelegatedHTTPRouter implements Routing {
   private readonly client: DelegatedRoutingV1HttpApiClient
 
-  constructor (url: URL, init: DelegatedRoutingV1HttpApiClientInit = {}) {
-    this.client = createDelegatedRoutingV1HttpApiClient(url, init)
+  constructor (components: DelegatedRoutingV1HttpApiClientComponents, init: DelegatedRoutingV1HttpApiClientInit & { url: string | URL }) {
+    this.client = delegatedRoutingV1HttpApiClient(init)(components)
   }
 
   async provide (cid: CID, options?: RoutingOptions): Promise<void> {
