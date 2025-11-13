@@ -1,5 +1,21 @@
 # Changelog
 
+## [6.0.9](https://github.com/ipfs/helia/compare/helia-v6.0.8...helia-v6.0.9) (2025-11-13)
+
+
+### Bug Fixes
+
+* allow routings to use helia components ([#900](https://github.com/ipfs/helia/issues/900)) ([cc90a4d](https://github.com/ipfs/helia/commit/cc90a4db91a44c0fedc2cb8a49da9b3349418815))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.0.7 to ^5.0.8
+    * @helia/routers bumped from ^4.0.3 to ^4.0.4
+    * @helia/utils bumped from ^2.2.3 to ^2.2.4
+
 ## [6.0.8](https://github.com/ipfs/helia/compare/helia-v6.0.7...helia-v6.0.8) (2025-10-29)
 
 

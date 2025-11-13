@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.4](https://github.com/ipfs/helia/compare/utils-v2.2.3...utils-v2.2.4) (2025-11-13)
+
+
+### Bug Fixes
+
+* allow routings to use helia components ([#900](https://github.com/ipfs/helia/issues/900)) ([cc90a4d](https://github.com/ipfs/helia/commit/cc90a4db91a44c0fedc2cb8a49da9b3349418815))
+
 ## [2.2.3](https://github.com/ipfs/helia/compare/utils-v2.2.2...utils-v2.2.3) (2025-10-29)
 
 
