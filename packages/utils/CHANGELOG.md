@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.5](https://github.com/ipfs/helia/compare/utils-v2.2.4...utils-v2.2.5) (2025-11-14)
+
+
+### Bug Fixes
+
+* allow truncated hashes ([#903](https://github.com/ipfs/helia/issues/903)) ([c3d41c1](https://github.com/ipfs/helia/commit/c3d41c1f9584c87fbebc88bc6f106e93b8444698))
+
 ## [2.2.4](https://github.com/ipfs/helia/compare/utils-v2.2.3...utils-v2.2.4) (2025-11-13)
 
 
