@@ -30,6 +30,7 @@ export interface GetRawBlockOptions {
    * @default 2_097_152 (2MiB)
    */
   maxSize?: number
+  provider?: string 
 }
 
 /**
@@ -102,13 +103,17 @@ export class TrustlessGateway {
    * Fetch a raw block from `this.url` following the specification defined at
    * https://specs.ipfs.tech/http-gateways/trustless-gateway/
    */
-  async getRawBlock (cid: CID, { signal, maxSize = DEFAULT_MAX_SIZE }: GetRawBlockOptions = {}): Promise<Uint8Array> {
+  async getRawBlock (cid: CID, { signal, maxSize = DEFAULT_MAX_SIZE, provider }: GetRawBlockOptions = {}): Promise<Uint8Array> {
     const gwUrl = new URL(this.url.toString())
     gwUrl.pathname = `/ipfs/${cid.toString()}`
 
-    // necessary as not every gateway supports dag-cbor, but every should support
-    // sending raw block as-is
-    gwUrl.search = '?format=raw'
+    const params  = new URLSearchParams( {format: 'raw'})
+    if (provider != null) {
+      params.set('provider', provider)
+    }
+    gwUrl.search = params.toString()
+    
+    
 
     if (signal?.aborted === true) {
       throw new Error(`Signal to fetch raw block for CID ${cid} from gateway ${this.url} was aborted prior to fetch`)
