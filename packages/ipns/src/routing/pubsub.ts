@@ -25,7 +25,18 @@ export interface Message {
   data: Uint8Array
 }
 
+export interface Subscription {
+  topic: string
+  subscribe: boolean
+}
+
+export interface SubscriptionChangeData {
+  peerId: PeerId
+  subscriptions: Subscription[]
+}
+
 export interface PubSubEvents {
+  'subscription-change': CustomEvent<SubscriptionChangeData>
   message: CustomEvent<Message>
 }
 
