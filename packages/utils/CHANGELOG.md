@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.0](https://github.com/ipfs/helia/compare/utils-v2.2.5...utils-v2.3.0) (2025-11-20)
+
+
+### Features
+
+* allow specifying graph export strategy ([#907](https://github.com/ipfs/helia/issues/907)) ([7676912](https://github.com/ipfs/helia/commit/7676912ec08b7599309e3a6afdd4183f8dc61b27))
+
 ## [2.2.5](https://github.com/ipfs/helia/compare/utils-v2.2.4...utils-v2.2.5) (2025-11-14)
 
 
