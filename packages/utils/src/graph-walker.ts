@@ -26,12 +26,27 @@ export interface GraphWalker {
   walk <T = any> (cid: CID, options?: WalkOptions<T>): AsyncGenerator<GraphNode<T>>
 }
 
+/**
+ * A depth-first walker descends into child blocks before processing successor
+ * sibling blocks
+ */
 export function depthFirstWalker (init?: GraphWalkerInit): (components: GraphWalkerComponents) => GraphWalker {
   return (components) => new DepthFirstGraphWalker(components, init)
 }
 
+/**
+ * A breadth-first walker processes sibling blocks before child blocks
+ */
 export function breadthFirstWalker (init?: GraphWalkerInit): (components: GraphWalkerComponents) => GraphWalker {
   return (components) => new BreadthFirstGraphWalker(components, init)
+}
+
+/**
+ * A natural order walker processes blocks in the order defined by the codec and
+ * does not try to sort them
+ */
+export function naturalOrderWalker (init?: GraphWalkerInit): (components: GraphWalkerComponents) => GraphWalker {
+  return (components) => new NaturalOrderGraphWalker(components, init)
 }
 
 interface JobOptions extends AbortOptions {
@@ -153,6 +168,14 @@ class BreadthFirstGraphWalker extends AbstractGraphWalker {
 
         return 1
       }
+    })
+  }
+}
+
+export class NaturalOrderGraphWalker extends AbstractGraphWalker {
+  getQueue<T>(): Queue<GraphNode<T> | undefined, JobOptions> {
+    return new Queue<GraphNode<T> | undefined, JobOptions>({
+      concurrency: 1
     })
   }
 }
