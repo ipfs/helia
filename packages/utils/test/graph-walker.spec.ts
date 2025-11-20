@@ -105,7 +105,7 @@ describe('graph-walker', () => {
 
   describe('depth-first', () => {
     it('should walk depth-first', async () => {
-      const walker = depthFirstWalker({
+      const walker = depthFirstWalker()({
         blockstore,
         getCodec
       })
@@ -122,7 +122,7 @@ describe('graph-walker', () => {
     })
 
     it('should filter children', async () => {
-      const walker = depthFirstWalker({
+      const walker = depthFirstWalker()({
         blockstore,
         getCodec
       })
@@ -145,7 +145,7 @@ describe('graph-walker', () => {
 
   describe('breadth-first', () => {
     it('should walk breadth-first', async () => {
-      const walker = breadthFirstWalker({
+      const walker = breadthFirstWalker()({
         blockstore,
         getCodec
       })
@@ -162,7 +162,7 @@ describe('graph-walker', () => {
     })
 
     it('should filter children', async () => {
-      const walker = breadthFirstWalker({
+      const walker = breadthFirstWalker()({
         blockstore,
         getCodec
       })

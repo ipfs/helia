@@ -1,21 +1,17 @@
-import { breadthFirstWalker, depthFirstWalker } from '@helia/utils'
+import { breadthFirstWalker } from '@helia/utils'
 import type { ExportStrategy } from '../index.js'
 import type { CodecLoader } from '@helia/interface'
-import type { GraphWalker } from '@helia/utils'
+import type { GraphWalker, GraphWalkerComponents } from '@helia/utils'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { BlockView } from 'multiformats'
 import type { CID } from 'multiformats/cid'
 
-export type SubgraphExporterOrder = 'breadth-first' | 'depth-first'
-
 export interface SubgraphExporterInit {
   /**
-   * Graph traversal strategy
-   *
-   * @default 'breadth-first'
+   * Graph traversal strategy, defaults to breadth-first
    */
-  order?: 'breadth-first' | 'depth-first'
+  walker?: (components: GraphWalkerComponents) => GraphWalker
 }
 
 /**
@@ -26,25 +22,23 @@ export interface SubgraphExporterInit {
  * the helia config.
  */
 export class SubgraphExporter implements ExportStrategy {
-  private order: SubgraphExporterOrder
+  private walker?: (components: GraphWalkerComponents) => GraphWalker
 
   constructor (init?: SubgraphExporterInit) {
-    this.order = init?.order ?? 'breadth-first'
+    this.walker = init?.walker
   }
 
   async * export (cid: CID, blockstore: Blockstore, getCodec: CodecLoader, options?: AbortOptions): AsyncGenerator<BlockView<unknown, number, number, 0 | 1>, void, undefined> {
     let walker: GraphWalker
+    const components = {
+        blockstore,
+        getCodec
+      }
 
-    if (this.order === 'depth-first') {
-      walker = depthFirstWalker({
-        blockstore,
-        getCodec
-      })
+    if (this.walker != null) {
+      walker = this.walker(components)
     } else {
-      walker = breadthFirstWalker({
-        blockstore,
-        getCodec
-      })
+      walker = breadthFirstWalker()(components)
     }
 
     for await (const node of walker.walk(cid, options)) {

@@ -5,13 +5,23 @@ import { createUnsafe } from 'multiformats/block'
 import { InvalidTraversalError } from '../errors.ts'
 import type { TraversalStrategy } from '../index.js'
 import type { CodecLoader } from '@helia/interface'
-import type { GraphWalker } from '@helia/utils'
+import type { GraphWalker, GraphWalkerComponents } from '@helia/utils'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { BlockView } from 'multiformats'
 import type { CID } from 'multiformats/cid'
 
 export interface GraphSearchOptions {
+  /**
+   * Graph traversal strategy, defaults to breadth-first
+   */
+  walker?: (components: GraphWalkerComponents) => GraphWalker
+
+  /**
+   * How to search the graph
+   *
+   * @deprecated use `walker` instead - this will be removed in a future release
+   */
   strategy?: 'depth-first' | 'breadth-first'
 }
 
@@ -27,6 +37,7 @@ export class GraphSearch implements TraversalStrategy {
   private haystack?: CID
   private readonly needle: CID
   private readonly options?: GraphSearchOptions
+  private walker?: (components: GraphWalkerComponents) => GraphWalker
 
   constructor (needle: CID, options?: GraphSearchOptions)
   constructor (haystack: CID, needle: CID, options?: GraphSearchOptions)
@@ -43,22 +54,24 @@ export class GraphSearch implements TraversalStrategy {
     } else {
       throw new InvalidParametersError('needle must be specified')
     }
+
+    this.walker = this.options?.walker
   }
 
   async * traverse (root: CID, blockstore: Blockstore, getCodec: CodecLoader, options?: AbortOptions): AsyncGenerator<BlockView<unknown, number, number, 0 | 1>, void, undefined> {
     const start = this.haystack ?? root
     let walker: GraphWalker
+    const components = {
+      blockstore,
+      getCodec
+    }
 
-    if (this.options?.strategy === 'breadth-first') {
-      walker = breadthFirstWalker({
-        blockstore,
-        getCodec
-      })
+    if (this.walker != null) {
+      walker = this.walker(components)
+    } else if (this.options?.strategy === 'breadth-first') {
+      walker = breadthFirstWalker()(components)
     } else {
-      walker = depthFirstWalker({
-        blockstore,
-        getCodec
-      })
+      walker = depthFirstWalker()(components)
     }
 
     for await (const node of walker.walk(start, options)) {

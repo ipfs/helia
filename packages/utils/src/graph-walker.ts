@@ -26,12 +26,12 @@ export interface GraphWalker {
   walk <T = any> (cid: CID, options?: WalkOptions<T>): AsyncGenerator<GraphNode<T>>
 }
 
-export function depthFirstWalker (components: GraphWalkerComponents, init: GraphWalkerInit = {}): GraphWalker {
-  return new DepthFirstGraphWalker(components, init)
+export function depthFirstWalker (init?: GraphWalkerInit): (components: GraphWalkerComponents) => GraphWalker {
+  return (components) => new DepthFirstGraphWalker(components, init)
 }
 
-export function breadthFirstWalker (components: GraphWalkerComponents, init: GraphWalkerInit = {}): GraphWalker {
-  return new BreadthFirstGraphWalker(components, init)
+export function breadthFirstWalker (init?: GraphWalkerInit): (components: GraphWalkerComponents) => GraphWalker {
+  return (components) => new BreadthFirstGraphWalker(components, init)
 }
 
 interface JobOptions extends AbortOptions {
@@ -47,7 +47,7 @@ export interface WalkOptions<T> extends AbortOptions {
 abstract class AbstractGraphWalker {
   private readonly components: GraphWalkerComponents
 
-  constructor (components: GraphWalkerComponents, init: GraphWalkerInit) {
+  constructor (components: GraphWalkerComponents, init: GraphWalkerInit = {}) {
     this.components = components
   }
 

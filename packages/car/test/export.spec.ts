@@ -23,6 +23,7 @@ import { getCodec } from './fixtures/get-codec.js'
 import { loadCarFixture } from './fixtures/load-car-fixture.js'
 import type { Car } from '../src/index.js'
 import type { Blockstore } from 'interface-blockstore'
+import { breadthFirstWalker, depthFirstWalker } from '@helia/utils'
 
 describe('export', () => {
   let blockstore: Blockstore
@@ -186,7 +187,7 @@ describe('export', () => {
 
     const ourReader = await CarReader.fromBytes(await toBuffer(c.export(dirCid, {
       exporter: new SubgraphExporter({
-        order: 'depth-first'
+        walker: depthFirstWalker()
       })
     })))
 
@@ -216,7 +217,7 @@ describe('export', () => {
 
     const ourReader = await CarReader.fromBytes(await toBuffer(c.export(dirCid, {
       exporter: new SubgraphExporter({
-        order: 'breadth-first'
+        walker: breadthFirstWalker()
       })
     })))
 
