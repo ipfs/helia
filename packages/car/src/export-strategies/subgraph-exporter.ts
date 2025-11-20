@@ -11,7 +11,7 @@ export interface SubgraphExporterInit {
   /**
    * Graph traversal strategy, defaults to breadth-first
    */
-  walker?: (components: GraphWalkerComponents) => GraphWalker
+  walker?(components: GraphWalkerComponents): GraphWalker
 }
 
 /**
@@ -31,9 +31,9 @@ export class SubgraphExporter implements ExportStrategy {
   async * export (cid: CID, blockstore: Blockstore, getCodec: CodecLoader, options?: AbortOptions): AsyncGenerator<BlockView<unknown, number, number, 0 | 1>, void, undefined> {
     let walker: GraphWalker
     const components = {
-        blockstore,
-        getCodec
-      }
+      blockstore,
+      getCodec
+    }
 
     if (this.walker != null) {
       walker = this.walker(components)

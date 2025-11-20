@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import { unixfs } from '@helia/unixfs'
+import { breadthFirstWalker, depthFirstWalker } from '@helia/utils'
 import { CarReader } from '@ipld/car'
 import * as dagCbor from '@ipld/dag-cbor'
 import { defaultLogger } from '@libp2p/logger'
@@ -23,7 +24,6 @@ import { getCodec } from './fixtures/get-codec.js'
 import { loadCarFixture } from './fixtures/load-car-fixture.js'
 import type { Car } from '../src/index.js'
 import type { Blockstore } from 'interface-blockstore'
-import { breadthFirstWalker, depthFirstWalker } from '@helia/utils'
 
 describe('export', () => {
   let blockstore: Blockstore

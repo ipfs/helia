@@ -15,7 +15,7 @@ export interface GraphSearchOptions {
   /**
    * Graph traversal strategy, defaults to breadth-first
    */
-  walker?: (components: GraphWalkerComponents) => GraphWalker
+  walker?(components: GraphWalkerComponents): GraphWalker
 
   /**
    * How to search the graph
