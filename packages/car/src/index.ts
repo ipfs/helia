@@ -171,6 +171,10 @@ export interface ExportStrategy {
 export * from './export-strategies/index.js'
 export * from './traversal-strategies/index.js'
 
+// re-export walkers from @helia/utils so consumers don't need an extra dep
+export type { GraphWalker } from '@helia/utils'
+export { depthFirstWalker, breadthFirstWalker, naturalOrderWalker } from '@helia/utils'
+
 export interface ExportCarOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents>, ProviderOptions {
   /**
    * If true, the blockstore will not do any network requests.
