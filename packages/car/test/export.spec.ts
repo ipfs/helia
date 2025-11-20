@@ -1,7 +1,6 @@
 /* eslint-env mocha */
 
 import { unixfs } from '@helia/unixfs'
-import { breadthFirstWalker, depthFirstWalker } from '@helia/utils'
 import { CarReader } from '@ipld/car'
 import * as dagCbor from '@ipld/dag-cbor'
 import { defaultLogger } from '@libp2p/logger'
@@ -17,7 +16,7 @@ import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import sinon from 'sinon'
 import { BlockExporter, SubgraphExporter, UnixFSExporter } from '../src/export-strategies/index.js'
-import { car } from '../src/index.js'
+import { breadthFirstWalker, depthFirstWalker, car } from '../src/index.js'
 import { CIDPath, GraphSearch, UnixFSPath } from '../src/traversal-strategies/index.js'
 import { carEquals, CarEqualsSkip } from './fixtures/car-equals.js'
 import { getCodec } from './fixtures/get-codec.js'
