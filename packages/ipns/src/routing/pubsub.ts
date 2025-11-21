@@ -12,11 +12,11 @@ import { localStore } from '../local-store.js'
 import { IPNS_STRING_PREFIX } from '../utils.ts'
 import type { GetOptions, IPNSRouting, PutOptions } from './index.js'
 import type { LocalStore } from '../local-store.js'
+import type { Fetch } from '@libp2p/fetch'
 import type { PeerId, PublicKey, TypedEventTarget, ComponentLogger } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 import type { ProgressEvent } from 'progress-events'
-import type { Fetch } from '@libp2p/fetch'
 
 const log = logger('helia:ipns:routing:pubsub')
 
