@@ -1,4 +1,5 @@
-import { isPublicKey } from '@libp2p/interface'
+import { isPublicKey, LimitedConnectionError } from '@libp2p/interface'
+import { Queue } from '@libp2p/utils'
 import { logger } from '@libp2p/logger'
 import { multihashToIPNSRoutingKey } from 'ipns'
 import { ipnsSelector } from 'ipns/selector'
@@ -9,8 +10,10 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { InvalidTopicError } from '../errors.js'
 import { localStore } from '../local-store.js'
+import { IPNS_STRING_PREFIX } from '../utils.ts'
 import type { GetOptions, IPNSRouting, PutOptions } from './index.js'
 import type { LocalStore } from '../local-store.js'
+import type { Fetch } from '@libp2p/fetch'
 import type { PeerId, PublicKey, TypedEventTarget, ComponentLogger } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
@@ -25,7 +28,18 @@ export interface Message {
   data: Uint8Array
 }
 
+export interface Subscription {
+  topic: string
+  subscribe: boolean
+}
+
+export interface SubscriptionChangeData {
+  peerId: PeerId
+  subscriptions: Subscription[]
+}
+
 export interface PubSubEvents {
+  'subscription-change': CustomEvent<SubscriptionChangeData>
   message: CustomEvent<Message>
 }
 
@@ -48,6 +62,7 @@ export interface PubsubRoutingComponents {
     peerId: PeerId
     services: {
       pubsub: PubSub
+      fetch?: Fetch
     }
   }
 }
@@ -62,12 +77,16 @@ class PubSubRouting implements IPNSRouting {
   private readonly localStore: LocalStore
   private readonly peerId: PeerId
   private readonly pubsub: PubSub
+  private readonly fetch: Fetch | undefined
+  private readonly queue: Queue<Uint8Array | undefined>
 
   constructor (components: PubsubRoutingComponents) {
     this.subscriptions = []
     this.localStore = localStore(components.datastore, components.logger.forComponent('helia:ipns:local-store'))
     this.peerId = components.libp2p.peerId
     this.pubsub = components.libp2p.services.pubsub
+    this.fetch = components.libp2p.services.fetch
+    this.queue = new Queue<Uint8Array | undefined>({ concurrency: 32 })
 
     this.pubsub.addEventListener('message', (evt) => {
       const message = evt.detail
@@ -80,6 +99,51 @@ class PubSubRouting implements IPNSRouting {
         log.error('Error processing message - %e', err)
       })
     })
+
+    this.pubsub.addEventListener('subscription-change', (evt) => {
+      if (this.fetch == null) {
+        return
+      }
+
+      const { peerId, subscriptions } = evt.detail
+
+      for (const sub of subscriptions) {
+        if (!this.subscriptions.includes(sub.topic)) {
+          continue
+        }
+
+        if (sub.subscribe === false) {
+          continue
+        }
+
+        this.#handlePeerJoin(peerId, sub.topic).catch(err => {
+          log.error('Error fetching ipns record from peer %p - %e', peerId, err)
+        })
+      }
+    })
+
+    if (this.fetch != null) {
+      try {
+        this.fetch.registerLookupFunction(IPNS_STRING_PREFIX, async (key) => {
+          try {
+            const { record } = await this.localStore.get(key)
+
+            return record
+          } catch (err: any) {
+            if (err.name !== 'NotFoundError') {
+              throw err
+            }
+
+            return undefined
+          }
+        })
+        log('registered ipns lookup function with fetch service')
+      } catch (e) {
+        log('unable to register ipns lookup function with fetch service, may already exist')
+      }
+    } else {
+      log('no fetch service found, skipping ipns lookup function registration')
+    }
   }
 
   async #processPubSubMessage (message: Message): Promise<void> {
@@ -95,19 +159,52 @@ class PubSubRouting implements IPNSRouting {
       return
     }
 
-    const routingKey = topicToKey(message.topic)
+    await this.#handleRecord(topicToKey(message.topic), message.data)
+  }
 
-    await ipnsValidator(routingKey, message.data)
+  async #handlePeerJoin (peerId: PeerId, topic: string): Promise<void> {
+    log('peer %p joined topic %t', peerId, topic)
+
+    if (this.fetch == null) {
+      log('no libp2p fetch found, skipping record fetch')
+      return
+    }
+    const { fetch } = this.fetch
+
+    const routingKey = topicToKey(topic)
+
+    const record = await this.queue.add(async () => {
+      // default timeout is 10 seconds
+      // we should have an existing connection to the peer so this can be shortened
+      const signal = AbortSignal.timeout(2_500)
+      try {
+        log('fetching ipns record for %t from %p', topic, peerId)
+        return await fetch(peerId, routingKey, { signal })
+      } catch (err: any) {
+        log.error('failed to fetch ipns record for %t from %p', topic, peerId)
+      }
+    })
+
+    if (record == null) {
+      log('no record found on peer', peerId)
+      return
+    }
+
+    await this.#handleRecord(routingKey, record)
+  }
+
+  async #handleRecord (routingKey: Uint8Array, record: Uint8Array): Promise<void> {
+    await ipnsValidator(routingKey, record)
 
     if (await this.localStore.has(routingKey)) {
       const { record: currentRecord } = await this.localStore.get(routingKey)
 
-      if (uint8ArrayEquals(currentRecord, message.data)) {
+      if (uint8ArrayEquals(currentRecord, record)) {
         log('not storing record as we already have it')
         return
       }
 
-      const records = [currentRecord, message.data]
+      const records = [currentRecord, record]
       const index = ipnsSelector(routingKey, records)
 
       if (index === 0) {
@@ -116,7 +213,7 @@ class PubSubRouting implements IPNSRouting {
       }
     }
 
-    await this.localStore.put(routingKey, message.data)
+    await this.localStore.put(routingKey, record)
   }
 
   /**

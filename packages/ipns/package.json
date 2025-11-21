@@ -90,6 +90,7 @@
   },
   "devDependencies": {
     "@libp2p/crypto": "^5.1.12",
+    "@libp2p/fetch": "^4.0.9",
     "@libp2p/peer-id": "^6.0.3",
     "aegir": "^47.0.22",
     "datastore-core": "^11.0.2",
