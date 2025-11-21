@@ -1,4 +1,5 @@
-import { isPublicKey } from '@libp2p/interface'
+import { isPublicKey, LimitedConnectionError } from '@libp2p/interface'
+import { Queue } from '@libp2p/utils'
 import { logger } from '@libp2p/logger'
 import { multihashToIPNSRoutingKey } from 'ipns'
 import { ipnsSelector } from 'ipns/selector'
@@ -77,6 +78,7 @@ class PubSubRouting implements IPNSRouting {
   private readonly peerId: PeerId
   private readonly pubsub: PubSub
   private readonly fetch: Fetch | undefined
+  private readonly queue: Queue<Uint8Array | undefined>
 
   constructor (components: PubsubRoutingComponents) {
     this.subscriptions = []
@@ -84,6 +86,7 @@ class PubSubRouting implements IPNSRouting {
     this.peerId = components.libp2p.peerId
     this.pubsub = components.libp2p.services.pubsub
     this.fetch = components.libp2p.services.fetch
+    this.queue = new Queue<Uint8Array | undefined>({ concurrency: 32 })
 
     this.pubsub.addEventListener('message', (evt) => {
       const message = evt.detail
@@ -170,10 +173,17 @@ class PubSubRouting implements IPNSRouting {
 
     const routingKey = topicToKey(topic)
 
-    // default timeout is 10 seconds
-    // we should have an existing connection to the peer so this can be shortened
-    const signal = AbortSignal.timeout(5_000)
-    const record = await fetch(peerId, routingKey, { signal })
+    const record = await this.queue.add(async () => {
+      // default timeout is 10 seconds
+      // we should have an existing connection to the peer so this can be shortened
+      const signal = AbortSignal.timeout(2_500)
+      try {
+        log('fetching ipns record for %t from %p', topic, peerId)
+        return await fetch(peerId, routingKey, { signal })
+      } catch (err: any) {
+        log.error('failed to fetch ipns record for %t from %p', topic, peerId)
+      }
+    })
 
     if (record == null) {
       log('no record found on peer', peerId)
