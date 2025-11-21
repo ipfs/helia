@@ -9,6 +9,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { InvalidTopicError } from '../errors.js'
 import { localStore } from '../local-store.js'
+import { IPNS_STRING_PREFIX } from '../utils.ts'
 import type { GetOptions, IPNSRouting, PutOptions } from './index.js'
 import type { LocalStore } from '../local-store.js'
 import type { PeerId, PublicKey, TypedEventTarget, ComponentLogger } from '@libp2p/interface'
@@ -117,6 +118,29 @@ class PubSubRouting implements IPNSRouting {
         })
       }
     })
+
+    if (this.fetch != null) {
+      try {
+        this.fetch.registerLookupFunction(IPNS_STRING_PREFIX, async (key) => {
+          try {
+            const { record } = await this.localStore.get(key)
+
+            return record
+          } catch (err: any) {
+            if (err.name !== 'NotFoundError') {
+              throw err
+            }
+
+            return undefined
+          }
+        })
+        log('registered ipns lookup function with fetch service')
+      } catch (e) {
+        log('unable to register ipns lookup function with fetch service, may already exist')
+      }
+    } else {
+      log('no fetch service found, skipping ipns lookup function registration')
+    }
   }
 
   async #processPubSubMessage (message: Message): Promise<void> {
