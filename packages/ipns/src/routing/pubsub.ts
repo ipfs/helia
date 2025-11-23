@@ -176,10 +176,10 @@ class PubSubRouting implements IPNSRouting {
     let record: Uint8Array | undefined
     try {
       record = await this.queue.add(async () => {
+        log('fetching ipns record for %t from %p', topic, peerId)
         // default timeout is 10 seconds
         // we should have an existing connection to the peer so this can be shortened
         const signal = AbortSignal.timeout(2_500)
-        log('fetching ipns record for %t from %p', topic, peerId)
         return await fetch(peerId, routingKey, { signal })
       })
     } catch (err: any) {
