@@ -1,6 +1,6 @@
-import { isPublicKey, LimitedConnectionError } from '@libp2p/interface'
-import { Queue } from '@libp2p/utils'
+import { isPublicKey } from '@libp2p/interface'
 import { logger } from '@libp2p/logger'
+import { Queue } from '@libp2p/utils'
 import { multihashToIPNSRoutingKey } from 'ipns'
 import { ipnsSelector } from 'ipns/selector'
 import { ipnsValidator } from 'ipns/validator'
@@ -180,7 +180,7 @@ class PubSubRouting implements IPNSRouting {
         // default timeout is 10 seconds
         // we should have an existing connection to the peer so this can be shortened
         const signal = AbortSignal.timeout(2_500)
-        return await fetch(peerId, routingKey, { signal })
+        return fetch(peerId, routingKey, { signal })
       })
     } catch (err: any) {
       log.error('failed to fetch ipns record for %t from %p', topic, peerId, err)
