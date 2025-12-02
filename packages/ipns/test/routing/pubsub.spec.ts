@@ -28,11 +28,13 @@ describe('pubsub routing', () => {
   let topic: string
   let privateKey: Ed25519PrivateKey
   let record: IPNSRecord
-  const target = new TypedEventEmitter<PubSubEvents>()
+  let target: TypedEventEmitter<PubSubEvents>
 
   beforeEach(async () => {
     const datastore = new MemoryDatastore()
     const logger = defaultLogger()
+
+    target = new TypedEventEmitter()
 
     store = localStore(datastore, logger.forComponent('local-store'))
 
