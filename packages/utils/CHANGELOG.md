@@ -1,5 +1,26 @@
 # Changelog
 
+## [2.3.0](https://github.com/ipfs/helia/compare/utils-v2.2.5...utils-v2.3.0) (2025-11-20)
+
+
+### Features
+
+* allow specifying graph export strategy ([#907](https://github.com/ipfs/helia/issues/907)) ([7676912](https://github.com/ipfs/helia/commit/7676912ec08b7599309e3a6afdd4183f8dc61b27))
+
+## [2.2.5](https://github.com/ipfs/helia/compare/utils-v2.2.4...utils-v2.2.5) (2025-11-14)
+
+
+### Bug Fixes
+
+* allow truncated hashes ([#903](https://github.com/ipfs/helia/issues/903)) ([c3d41c1](https://github.com/ipfs/helia/commit/c3d41c1f9584c87fbebc88bc6f106e93b8444698))
+
+## [2.2.4](https://github.com/ipfs/helia/compare/utils-v2.2.3...utils-v2.2.4) (2025-11-13)
+
+
+### Bug Fixes
+
+* allow routings to use helia components ([#900](https://github.com/ipfs/helia/issues/900)) ([cc90a4d](https://github.com/ipfs/helia/commit/cc90a4db91a44c0fedc2cb8a49da9b3349418815))
+
 ## [2.2.3](https://github.com/ipfs/helia/compare/utils-v2.2.2...utils-v2.2.3) (2025-10-29)
 
 

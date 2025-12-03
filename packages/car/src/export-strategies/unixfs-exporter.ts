@@ -83,7 +83,7 @@ export class UnixFSExporter implements ExportStrategy {
       throw new NotUnixFSError('Target CID was not UnixFS - use the SubGraphExporter to export arbitrary graphs')
     }
 
-    const walker = depthFirstWalker({
+    const walker = depthFirstWalker()({
       blockstore,
       getCodec
     })

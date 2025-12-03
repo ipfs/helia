@@ -413,7 +413,10 @@ export const getCidBlockVerifierFunction = (cid: CID, hasher: MultihashHasher): 
   return async (block: Uint8Array): Promise<void> => {
     // verify block
     let hash: MultihashDigest<number>
-    const res = hasher.digest(block)
+    const res = hasher.digest(block, {
+      // support truncated hashes where they are truncated
+      truncate: cid.multihash.digest.byteLength
+    })
 
     if (isPromise(res)) {
       hash = await res

@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.4](https://github.com/ipfs/helia/compare/routers-v4.0.3...routers-v4.0.4) (2025-11-13)
+
+
+### Bug Fixes
+
+* allow routings to use helia components ([#900](https://github.com/ipfs/helia/issues/900)) ([cc90a4d](https://github.com/ipfs/helia/commit/cc90a4db91a44c0fedc2cb8a49da9b3349418815))
+
 ## [4.0.3](https://github.com/ipfs/helia/compare/routers-v4.0.2...routers-v4.0.3) (2025-10-29)
 
 

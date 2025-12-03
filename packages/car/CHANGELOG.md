@@ -1,5 +1,37 @@
 # Changelog
 
+## [5.3.0](https://github.com/ipfs/helia/compare/car-v5.2.5...car-v5.3.0) (2025-11-20)
+
+
+### Features
+
+* allow specifying graph export strategy ([#907](https://github.com/ipfs/helia/issues/907)) ([7676912](https://github.com/ipfs/helia/commit/7676912ec08b7599309e3a6afdd4183f8dc61b27))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^2.2.5 to ^2.3.0
+
+## [5.2.5](https://github.com/ipfs/helia/compare/car-v5.2.4...car-v5.2.5) (2025-11-14)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^2.2.4 to ^2.2.5
+
+## [5.2.4](https://github.com/ipfs/helia/compare/car-v5.2.3...car-v5.2.4) (2025-11-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^2.2.3 to ^2.2.4
+
 ## [5.2.3](https://github.com/ipfs/helia/compare/car-v5.2.2...car-v5.2.3) (2025-10-29)
 
 

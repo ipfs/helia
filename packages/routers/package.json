@@ -1,6 +1,6 @@
 {
   "name": "@helia/routers",
-  "version": "4.0.3",
+  "version": "4.0.4",
   "description": "Routers for Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/routers#readme",
@@ -47,9 +47,10 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@helia/delegated-routing-v1-http-api-client": "^5.0.0",
+    "@helia/delegated-routing-v1-http-api-client": "^5.1.2",
     "@helia/interface": "^6.0.2",
     "@libp2p/interface": "^3.1.0",
+    "@libp2p/logger": "^6.2.0",
     "@libp2p/peer-id": "^6.0.3",
     "@multiformats/uri-to-multiaddr": "^10.0.0",
     "ipns": "^10.1.2",

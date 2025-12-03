@@ -1,5 +1,37 @@
 # Changelog
 
+## [3.0.10](https://github.com/ipfs/helia/compare/bitswap-v3.0.9...bitswap-v3.0.10) (2025-11-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^2.2.5 to ^2.3.0
+
+## [3.0.9](https://github.com/ipfs/helia/compare/bitswap-v3.0.8...bitswap-v3.0.9) (2025-11-14)
+
+
+### Bug Fixes
+
+* allow truncated hashes ([#903](https://github.com/ipfs/helia/issues/903)) ([c3d41c1](https://github.com/ipfs/helia/commit/c3d41c1f9584c87fbebc88bc6f106e93b8444698))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^2.2.4 to ^2.2.5
+
+## [3.0.8](https://github.com/ipfs/helia/compare/bitswap-v3.0.7...bitswap-v3.0.8) (2025-11-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^2.2.3 to ^2.2.4
+
 ## [3.0.7](https://github.com/ipfs/helia/compare/bitswap-v3.0.6...bitswap-v3.0.7) (2025-10-29)
 
 

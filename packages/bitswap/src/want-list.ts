@@ -372,7 +372,7 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
       const cidVersion = values[0]
       const multicodec = values[1]
       const hashAlg = values[2]
-      // const hashLen = values[3] // We haven't need to use this so far
+      const hashLen = values[3]
 
       const hasher = hashAlg === sha256.code ? sha256 : await this.hashLoader?.getHasher(hashAlg)
 
@@ -381,7 +381,9 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
         continue
       }
 
-      let hash: any = hasher.digest(block.data)
+      let hash: any = hasher.digest(block.data, {
+        truncate: hashLen
+      })
 
       if (hash.then != null) {
         hash = await hash
