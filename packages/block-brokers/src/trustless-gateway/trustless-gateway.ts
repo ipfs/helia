@@ -159,7 +159,7 @@ export class TrustlessGateway {
         throw new Error(`Fetching raw block for CID ${cid} from gateway ${this.url} was aborted`)
       }
       this.#errors++
-      throw new Error(`Unable to fetch raw block for CID ${cid} - ` + cause.message)
+      throw new Error(`Unable to fetch raw block for CID ${cid} - ${cause.message}`)
     } finally {
       signal?.removeEventListener('abort', abortInnerSignal)
       this.#pendingResponses.delete(blockId)
