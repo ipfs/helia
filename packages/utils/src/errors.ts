@@ -18,11 +18,6 @@ export class InvalidConfigurationError extends Error {
   name = 'InvalidConfigurationError'
 }
 
-export class FindProvidersFailedError extends AggregateError {
-  static name = 'FindProvidersFailedError'
-  name = 'FindProvidersFailedError'
-}
-
 export class GetFailedError extends AggregateError {
   static name = 'GetFailedError'
   name = 'GetFailedError'

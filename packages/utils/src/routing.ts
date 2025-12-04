@@ -3,7 +3,7 @@ import { NotFoundError, start, stop } from '@libp2p/interface'
 import { PeerQueue } from '@libp2p/utils'
 import merge from 'it-merge'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { FindProvidersFailedError, GetFailedError } from './errors.ts'
+import { GetFailedError } from './errors.ts'
 import type { Routing as RoutingInterface, Provider, RoutingOptions } from '@helia/interface'
 import type { AbortOptions, ComponentLogger, Logger, Metrics, PeerId, PeerInfo, Startable } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
@@ -159,10 +159,6 @@ export class Routing implements RoutingInterface, Startable {
     }
 
     this.log('findProviders finished, found %d providers for %c', foundProviders, key)
-
-    if (foundProviders === 0) {
-      throw new FindProvidersFailedError(errors, `Failed to find providers for key ${key}`)
-    }
   }
 
   /**
