@@ -31,8 +31,6 @@ describe('routing', () => {
     routerA.findProviders.returns((async function * () {})())
     routerB.findProviders.returns((async function * () {})())
 
-    const results = await all(routing.findProviders(key))
-
-    expect(results).to.be.empty()
+    await expect(all(routing.findProviders(key))).to.eventually.be.empty()
   })
 })
