@@ -1,6 +1,6 @@
 {
   "name": "@helia/interop",
-  "version": "9.0.12",
+  "version": "9.0.13",
   "description": "Interop tests for Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/interop#readme",
