@@ -2,6 +2,8 @@ import { NoRoutersAvailableError } from '@helia/interface'
 import { NotFoundError, start, stop } from '@libp2p/interface'
 import { PeerQueue } from '@libp2p/utils'
 import merge from 'it-merge'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { FindProvidersFailedError, GetFailedError } from './errors.ts'
 import type { Routing as RoutingInterface, Provider, RoutingOptions } from '@helia/interface'
 import type { AbortOptions, ComponentLogger, Logger, Metrics, PeerId, PeerInfo, Startable } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
@@ -75,6 +77,37 @@ export class Routing implements RoutingInterface, Startable {
     const queue = new PeerQueue<Provider | null>({
       concurrency: this.providerLookupConcurrency
     })
+
+    let foundProviders = 0
+    const errors: Error[] = []
+    const self = this
+    let routersFinished = 0
+
+    this.log('findProviders for %c start using routers %s', key, this.routers.map(r => r.toString()).join(', '))
+
+    const routers = supports(this.routers, 'findProviders')
+      .map(async function * (router) {
+        let foundProviders = 0
+
+        try {
+          for await (const prov of router.findProviders(key, options)) {
+            foundProviders++
+            yield prov
+          }
+        } catch (err: any) {
+          errors.push(err)
+        } finally {
+          self.log('router %s found %d providers for %c', router, foundProviders, key)
+
+          routersFinished++
+
+          // if all routers have finished and there are no jobs to find updated
+          // peer multiaddres running or queued, cause the generator to exit
+          if (routersFinished === routers.length && queue.size === 0) {
+            queue.emitIdle()
+          }
+        }
+      })
 
     for await (const peer of merge(
       queue.toGenerator(),
