@@ -159,18 +159,12 @@
  * const delegatedClient = createDelegatedRoutingV1HttpApiClient('https://delegated-ipfs.dev')
  * const record = await delegatedClient.getIPNS(parsedCid)
  *
- * const routingKey = multihashToIPNSRoutingKey(parsedCid.multihash)
- * const marshaledRecord = marshalIPNSRecord(record)
+ * // publish the latest existing record to routing
+ * // use `options.force` if the record is already published
+ * const { record: latestRecord } = await name.republish(parsedCid, { record })
  *
- * // validate that they key corresponds to the record
- * await ipnsValidator(routingKey, marshaledRecord)
- *
- * // publish record to routing
- * await Promise.all(
- *   name.routers.map(async r => {
- *     await r.put(routingKey, marshaledRecord)
- *   })
- * )
+ * // stop republishing a key
+ * await name.unpublish(parsedCid)
  * ```
  */
 
@@ -200,6 +194,11 @@ export type ResolveProgressEvents =
   ProgressEvent<'ipns:resolve:start', unknown> |
   ProgressEvent<'ipns:resolve:success', IPNSRecord> |
   ProgressEvent<'ipns:resolve:error', Error>
+
+export type RepublishProgressEvents =
+  ProgressEvent<'ipns:republish:start'> |
+  ProgressEvent<'ipns:republish:success', IPNSRecord> |
+  ProgressEvent<'ipns:republish:error', Error>
 
 export type DatastoreProgressEvents =
   ProgressEvent<'ipns:routing:datastore:put'> |
@@ -251,6 +250,27 @@ export interface ResolveOptions extends AbortOptions, ProgressOptions<ResolvePro
   nocache?: boolean
 }
 
+export interface RepublishOptions extends AbortOptions, ProgressOptions<RepublishProgressEvents | IPNSRoutingProgressEvents> {
+  /**
+   * A candidate IPNS record to use if no newer records are found
+   */
+  record?: IPNSRecord
+
+  /**
+   * Force the record to be published immediately even if it's already resolvable
+   *
+   * @default false
+   */
+  force?: boolean
+
+  /**
+   * Republish the latest existing record for the key on a regularly basis
+   *
+   * @default true
+   */
+  repeat?: boolean
+}
+
 export interface ResolveResult {
   /**
    * The CID that was resolved
@@ -280,6 +300,13 @@ export interface IPNSPublishResult {
    * The public key that was used to publish the record
    */
   publicKey: PublicKey
+}
+
+export interface IPNSRepublishResult {
+  /**
+   * The published record
+   */
+  record: IPNSRecord
 }
 
 export interface IPNSResolver {
@@ -347,7 +374,16 @@ export interface IPNS {
    * Note that the record may still be resolved by other peers until it expires
    * or is no longer valid.
    */
-  unpublish(keyName: string, options?: AbortOptions): Promise<void>
+  unpublish(keyName: string | CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options?: AbortOptions): Promise<void>
+
+  /**
+   * Republish the latest known existing record to all routers
+   *
+   * This will automatically be done regularly unless `options.repeat` is false
+   *
+   * Use `unpublish` to stop republishing a key
+   */
+  republish(key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options?: RepublishOptions): Promise<IPNSRepublishResult>
 }
 
 export type { IPNSRouting } from './routing/index.js'
