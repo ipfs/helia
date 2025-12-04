@@ -106,7 +106,7 @@ export class Routing implements RoutingInterface, Startable {
     for await (const peer of merge(
       queue.toGenerator(),
       ...routers)
-     ) {
+    ) {
       // the peer was yielded by a content router without multiaddrs and we
       // failed to load them
       if (peer == null) {
