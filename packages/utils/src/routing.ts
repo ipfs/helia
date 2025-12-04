@@ -76,11 +76,37 @@ export class Routing implements RoutingInterface, Startable {
       concurrency: this.providerLookupConcurrency
     })
 
+    const self = this
+    let routersFinished = 0
+
+    this.log('findProviders for %c start using routers %s', key, this.routers.map(r => r.toString()).join(', '))
+
+    const routers = supports(this.routers, 'findProviders')
+      .map(async function * (router) {
+        let foundProviders = 0
+
+        try {
+          for await (const prov of router.findProviders(key, options)) {
+            foundProviders++
+            yield prov
+          }
+        } finally {
+          self.log('router %s found %d providers for %c', router, foundProviders, key)
+
+          routersFinished++
+
+          // if all routers have finished and there are no jobs to find updated
+          // peer multiaddres running or queued, cause the generator to exit
+          if (routersFinished === routers.length && queue.size === 0) {
+            queue.emitIdle()
+          }
+        }
+      })
+
     for await (const peer of merge(
       queue.toGenerator(),
-      ...supports(this.routers, 'findProviders')
-        .map(router => router.findProviders(key, options))
-    )) {
+      ...routers)
+    ) {
       // the peer was yielded by a content router without multiaddrs and we
       // failed to load them
       if (peer == null) {
