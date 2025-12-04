@@ -137,8 +137,18 @@ export class TrustlessGateway {
 
         const reqInit: RequestInit = this.transformRequestInit != null ? await this.transformRequestInit(defaultReqInit) : defaultReqInit
 
+        const headers = new Headers(reqInit.headers)
+        this.log(`sending request
+%s %s HTTP/1.1
+%s
+`, reqInit.method ?? 'GET', gwUrl, [...headers.entries()].map(([key, value]) => `${key}: ${value}`).join('\n'))
+
         pendingResponse = fetch(gwUrl.toString(), reqInit).then(async (res) => {
-          this.log('GET %s %d', gwUrl, res.status)
+          this.log(`received response
+HTTP/1.1 %d %s
+%s
+`, res.status, res.statusText, [...res.headers.entries()].map(([key, value]) => `${key}: ${value}`).join('\n'))
+
           if (!res.ok) {
             this.#errors++
             throw new Error(`Unable to fetch raw block for CID ${cid} from gateway ${this.url}, recieved ${res.status} ${res.statusText}`)
