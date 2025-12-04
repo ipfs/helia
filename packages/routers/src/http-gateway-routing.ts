@@ -3,6 +3,7 @@ import { uriToMultiaddr } from '@multiformats/uri-to-multiaddr'
 import { CID } from 'multiformats/cid'
 import { identity } from 'multiformats/hashes/identity'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { Provider, Routing, RoutingOptions } from '@helia/interface'
 import type { PeerInfo } from '@libp2p/interface'
 import type { Version } from 'multiformats'
@@ -39,6 +40,10 @@ function toPeerInfo (url: string | URL): PeerInfo {
   }
 }
 
+function toUrl (info: PeerInfo): URL {
+  return new URL(uint8ArrayToString(info.id.toMultihash().digest))
+}
+
 class HTTPGatewayRouter implements Partial<Routing> {
   private readonly gateways: PeerInfo[]
   private readonly shuffle: boolean
@@ -61,6 +66,10 @@ class HTTPGatewayRouter implements Partial<Routing> {
 
       return provider
     })
+  }
+
+  toString (): string {
+    return `HTTPGatewayRouter([${this.gateways.map(info => toUrl(info)).join(', ')}])`
   }
 }
 

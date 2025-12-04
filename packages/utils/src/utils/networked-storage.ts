@@ -5,7 +5,7 @@ import filter from 'it-filter'
 import forEach from 'it-foreach'
 import { CustomProgressEvent } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import { InvalidConfigurationError } from '../errors.ts'
+import { InvalidConfigurationError, LoadBlockFailedError } from '../errors.ts'
 import { isPromise } from './is-promise.js'
 import type { HasherLoader } from '@helia/interface'
 import type { BlockBroker, Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions, BlockRetrievalOptions, CreateSessionOptions, SessionBlockstore } from '@helia/interface/blocks'
@@ -484,6 +484,8 @@ async function raceBlockRetrievers (cid: CID, blockBrokers: BlockBroker[], hashe
           }
         })
     )
+  } catch (err: any) {
+    throw new LoadBlockFailedError(err.errors, `Failed to load block for ${cid}`)
   } finally {
     // we have the block from the fastest block retriever, abort any still
     // in-flight retrieve attempts

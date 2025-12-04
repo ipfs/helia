@@ -17,3 +17,13 @@ export class InvalidConfigurationError extends Error {
   static name = 'InvalidConfigurationError'
   name = 'InvalidConfigurationError'
 }
+
+export class GetFailedError extends AggregateError {
+  static name = 'GetFailedError'
+  name = 'GetFailedError'
+}
+
+export class LoadBlockFailedError extends AggregateError {
+  static name = 'LoadBlockFailedError'
+  name = 'LoadBlockFailedError'
+}

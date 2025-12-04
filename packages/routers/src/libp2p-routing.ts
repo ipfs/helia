@@ -36,6 +36,10 @@ class Libp2pRouter implements Routing {
   async * getClosestPeers (key: Uint8Array, options?: RoutingOptions): AsyncIterable<PeerInfo> {
     yield * this.libp2p.peerRouting.getClosestPeers(key, options)
   }
+
+  toString (): string {
+    return 'Libp2pRouter()'
+  }
 }
 
 export function libp2pRouting (libp2p: Libp2p): Routing {
