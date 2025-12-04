@@ -205,18 +205,23 @@ export class Routing implements RoutingInterface, Startable {
    */
   async get (key: Uint8Array, options?: AbortOptions): Promise<Uint8Array> {
     const errors: Error[] = []
+    let result: Uint8Array | undefined
 
-    const result = await Promise.any(
-      supports(this.routers, 'get')
-        .map(async (router) => {
-          try {
-            return await router.get(key, options)
-          } catch (err: any) {
-            this.log('router %s failed with %e', router, err)
-            errors.push(err)
-          }
-        })
-    )
+    try {
+      result = await Promise.any(
+        supports(this.routers, 'get')
+          .map(async (router) => {
+            try {
+              return await router.get(key, options)
+            } catch (err: any) {
+              this.log('router %s failed with %e', router, err)
+              errors.push(err)
+            }
+          })
+      )
+    } catch {
+      // ignore AggregateError as we will throw a better-named one
+    }
 
     if (result == null) {
       throw new GetFailedError(errors, `Failed to get value key ${uint8ArrayToString(key, 'base58btc')}`)
