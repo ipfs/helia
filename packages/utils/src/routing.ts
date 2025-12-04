@@ -122,7 +122,14 @@ export class Routing implements RoutingInterface, Startable {
         continue
       }
 
+      foundProviders++
       yield peer
+    }
+
+    this.log('findProviders finished, found %d providers for %c', foundProviders, key)
+
+    if (foundProviders === 0) {
+      throw new FindProvidersFailedError(errors, `Failed to find providers for key ${key}`)
     }
   }
 
@@ -165,16 +172,29 @@ export class Routing implements RoutingInterface, Startable {
   }
 
   /**
-   * Get the value to the given key.
-   * Times out after 1 minute by default.
+   * Get the value to the given key. The first value offered by any configured
+   * router will be returned.
    */
   async get (key: Uint8Array, options?: AbortOptions): Promise<Uint8Array> {
-    return Promise.any(
+    const errors: Error[] = []
+
+    const result = await Promise.any(
       supports(this.routers, 'get')
         .map(async (router) => {
-          return router.get(key, options)
+          try {
+            return await router.get(key, options)
+          } catch (err: any) {
+            this.log('router %s failed with %e', router, err)
+            errors.push(err)
+          }
         })
     )
+
+    if (result == null) {
+      throw new GetFailedError(errors, `Failed to get value key ${uint8ArrayToString(key, 'base58btc')}`)
+    }
+
+    return result
   }
 
   /**
