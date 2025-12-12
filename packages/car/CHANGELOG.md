@@ -1,5 +1,22 @@
 # Changelog
 
+## [5.3.2](https://github.com/ipfs/helia/compare/car-v5.3.1...car-v5.3.2) (2025-12-12)
+
+
+### Bug Fixes
+
+* throw a specific error when offline and a block is missing ([#917](https://github.com/ipfs/helia/issues/917)) ([e27aa2d](https://github.com/ipfs/helia/commit/e27aa2de96fef39950f4c7d00a517208372aaf4e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^2.3.1 to ^2.3.2
+  * devDependencies
+    * @helia/mfs bumped from ^6.0.3 to ^6.0.4
+    * @helia/unixfs bumped from ^6.0.3 to ^6.0.4
+
 ## [5.3.1](https://github.com/ipfs/helia/compare/car-v5.3.0...car-v5.3.1) (2025-12-12)
 
 
