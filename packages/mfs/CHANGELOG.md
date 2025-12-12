@@ -1,5 +1,14 @@
 # Changelog
 
+## [6.0.4](https://github.com/ipfs/helia/compare/mfs-v6.0.3...mfs-v6.0.4) (2025-12-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/unixfs bumped from ^6.0.3 to ^6.0.4
+
 ## [6.0.3](https://github.com/ipfs/helia/compare/mfs-v6.0.2...mfs-v6.0.3) (2025-10-29)
 
 

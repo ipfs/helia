@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.2](https://github.com/ipfs/helia/compare/utils-v2.3.1...utils-v2.3.2) (2025-12-12)
+
+
+### Bug Fixes
+
+* throw a specific error when offline and a block is missing ([#917](https://github.com/ipfs/helia/issues/917)) ([e27aa2d](https://github.com/ipfs/helia/commit/e27aa2de96fef39950f4c7d00a517208372aaf4e))
+
 ## [2.3.1](https://github.com/ipfs/helia/compare/utils-v2.3.0...utils-v2.3.1) (2025-12-12)
 
 
