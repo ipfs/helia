@@ -35,6 +35,10 @@ export class HeliaRouting implements IPNSRouting {
       throw err
     }
   }
+
+  toString (): string {
+    return 'HeliaRouting()'
+  }
 }
 
 /**

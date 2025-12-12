@@ -172,6 +172,7 @@ export class IPNSResolver {
     this.log('did not have record locally')
 
     let foundInvalid = 0
+    const errors: Error[] = []
 
     await Promise.all(
       this.routers.map(async (router) => {
@@ -183,7 +184,8 @@ export class IPNSResolver {
             validate: false
           })
         } catch (err: any) {
-          this.log.error('error finding IPNS record - %e', err)
+          this.log.error('error finding IPNS record using router %s - %e', router.toString(), err)
+          errors.push(err)
 
           return
         }
@@ -195,7 +197,7 @@ export class IPNSResolver {
         } catch (err) {
           // we found a record, but the validator rejected it
           foundInvalid++
-          this.log.error('error finding IPNS record - %e', err)
+          this.log.error('error validating IPNS record from router %s - %e', router.toString(), err)
         }
       })
     )

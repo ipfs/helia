@@ -96,6 +96,10 @@ class DelegatedHTTPRouter implements Routing {
   async * getClosestPeers (key: Uint8Array, options?: RoutingOptions): AsyncIterable<PeerInfo> {
     // noop
   }
+
+  toString (): string {
+    return `DelegatedHTTPRouter(${this.client.url})`
+  }
 }
 
 /**
