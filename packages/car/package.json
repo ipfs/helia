@@ -74,7 +74,7 @@
     "datastore-core": "^11.0.2",
     "ipfs-unixfs-importer": "^16.0.1",
     "it-all": "^3.0.9",
-    "it-foreach": "^2.1.4",
+    "it-foreach": "^2.1.5",
     "it-length": "^3.0.9",
     "sinon": "^21.0.0"
   },

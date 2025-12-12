@@ -27,3 +27,8 @@ export class LoadBlockFailedError extends AggregateError {
   static name = 'LoadBlockFailedError'
   name = 'LoadBlockFailedError'
 }
+
+export class BlockNotFoundWhileOfflineError extends Error {
+  static name = 'BlockNotFoundWhileOfflineError'
+  name = 'BlockNotFoundWhileOfflineError'
+}
