@@ -75,6 +75,7 @@
   "dependencies": {
     "@helia/interface": "^6.0.2",
     "@libp2p/crypto": "^5.1.7",
+    "@libp2p/fetch": "^4.0.9",
     "@libp2p/interface": "^3.1.0",
     "@libp2p/kad-dht": "^16.1.0",
     "@libp2p/keychain": "^6.0.5",
