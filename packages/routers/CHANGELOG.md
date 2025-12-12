@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.5](https://github.com/ipfs/helia/compare/routers-v4.0.4...routers-v4.0.5) (2025-12-12)
+
+
+### Bug Fixes
+
+* improve error reporting ([#896](https://github.com/ipfs/helia/issues/896)) ([71f9c4e](https://github.com/ipfs/helia/commit/71f9c4ef2c8557d92e5769675a69da2679c8b7d2))
+
 ## [4.0.4](https://github.com/ipfs/helia/compare/routers-v4.0.3...routers-v4.0.4) (2025-11-13)
 
 
