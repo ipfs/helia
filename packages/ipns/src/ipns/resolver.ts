@@ -1,4 +1,4 @@
-import { NotFoundError, isPeerId, isPublicKey } from '@libp2p/interface'
+import { isPeerId, isPublicKey } from '@libp2p/interface'
 import { multihashToIPNSRoutingKey, unmarshalIPNSRecord } from 'ipns'
 import { ipnsSelector } from 'ipns/selector'
 import { ipnsValidator } from 'ipns/validator'
@@ -166,7 +166,7 @@ export class IPNSResolver {
     }
 
     if (options.offline === true) {
-      throw new NotFoundError('Record was not present in the cache or has expired')
+      throw new RecordNotFoundError('Record was not present in the cache or has expired')
     }
 
     this.log('did not have record locally')
