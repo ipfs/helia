@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.1.5](https://github.com/ipfs/helia/compare/ipns-v9.1.4...ipns-v9.1.5) (2025-12-12)
+
+
+### Bug Fixes
+
+* throw specific error when IPNS lookup fails ([#919](https://github.com/ipfs/helia/issues/919)) ([574ac5e](https://github.com/ipfs/helia/commit/574ac5e4405ba904d223c740e07e9ac21394cb9b))
+
 ## [9.1.4](https://github.com/ipfs/helia/compare/ipns-v9.1.3...ipns-v9.1.4) (2025-12-12)
 
 

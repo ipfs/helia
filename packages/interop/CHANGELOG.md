@@ -1,5 +1,14 @@
 # Changelog
 
+## [9.0.15](https://github.com/ipfs/helia/compare/interop-v9.0.14...interop-v9.0.15) (2025-12-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/ipns bumped from ^9.1.4 to ^9.1.5
+
 ## [9.0.14](https://github.com/ipfs/helia/compare/interop-v9.0.13...interop-v9.0.14) (2025-12-12)
 
 
