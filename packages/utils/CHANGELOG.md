@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.3.1](https://github.com/ipfs/helia/compare/utils-v2.3.0...utils-v2.3.1) (2025-12-12)
+
+
+### Bug Fixes
+
+* end peer lookup queue when routers finish ([#915](https://github.com/ipfs/helia/issues/915)) ([b2257d4](https://github.com/ipfs/helia/commit/b2257d4fe6cf6cc524733340b380e3f5c773183f))
+* improve error reporting ([#896](https://github.com/ipfs/helia/issues/896)) ([71f9c4e](https://github.com/ipfs/helia/commit/71f9c4ef2c8557d92e5769675a69da2679c8b7d2))
+
 ## [2.3.0](https://github.com/ipfs/helia/compare/utils-v2.2.5...utils-v2.3.0) (2025-11-20)
 
 
