@@ -7,7 +7,7 @@ import { base58btc } from 'multiformats/bases/base58'
 import { CID } from 'multiformats/cid'
 import * as Digest from 'multiformats/hashes/digest'
 import { DEFAULT_TTL_NS } from '../constants.ts'
-import { InvalidValueError, RecordsFailedValidationError, UnsupportedMultibasePrefixError, UnsupportedMultihashCodecError } from '../errors.js'
+import { InvalidValueError, RecordNotFoundError, RecordsFailedValidationError, UnsupportedMultibasePrefixError, UnsupportedMultihashCodecError } from '../errors.js'
 import { isCodec, IDENTITY_CODEC, SHA2_256_CODEC, isLibp2pCID } from '../utils.js'
 import type { IPNSResolveResult, ResolveOptions, ResolveResult } from '../index.js'
 import type { LocalStore } from '../local-store.js'
@@ -207,7 +207,7 @@ export class IPNSResolver {
         throw new RecordsFailedValidationError(`${foundInvalid > 1 ? `${foundInvalid} records` : 'Record'} found for routing key ${foundInvalid > 1 ? 'were' : 'was'} invalid`)
       }
 
-      throw new NotFoundError('Could not find record for routing key')
+      throw new RecordNotFoundError('Could not find record for routing key')
     }
 
     const record = records[ipnsSelector(routingKey, records)]
