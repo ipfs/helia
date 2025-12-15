@@ -1,5 +1,14 @@
 # Changelog
 
+## [5.3.3](https://github.com/ipfs/helia/compare/car-v5.3.2...car-v5.3.3) (2025-12-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^2.3.2 to ^2.3.3
+
 ## [5.3.2](https://github.com/ipfs/helia/compare/car-v5.3.1...car-v5.3.2) (2025-12-12)
 
 

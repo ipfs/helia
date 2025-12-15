@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.3](https://github.com/ipfs/helia/compare/utils-v2.3.2...utils-v2.3.3) (2025-12-15)
+
+
+### Bug Fixes
+
+* unhandled promise rejection during inital peer search ([#922](https://github.com/ipfs/helia/issues/922)) ([cb05f46](https://github.com/ipfs/helia/commit/cb05f4676a14ee719a8e1ac31ae35f9683d5250b))
+
 ## [2.3.2](https://github.com/ipfs/helia/compare/utils-v2.3.1...utils-v2.3.2) (2025-12-12)
 
 

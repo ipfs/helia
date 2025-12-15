@@ -1,5 +1,17 @@
 # Changelog
 
+## [9.0.16](https://github.com/ipfs/helia/compare/interop-v9.0.15...interop-v9.0.16) (2025-12-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.0.12 to ^5.0.13
+    * @helia/car bumped from ^5.3.2 to ^5.3.3
+    * @helia/http bumped from ^3.0.13 to ^3.0.14
+    * helia bumped from ^6.0.13 to ^6.0.14
+
 ## [9.0.15](https://github.com/ipfs/helia/compare/interop-v9.0.14...interop-v9.0.15) (2025-12-12)
 
 
