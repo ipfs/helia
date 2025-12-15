@@ -24,9 +24,14 @@ export interface BlockstoreSessionEvents<Provider> {
   provider: CustomEvent<Provider>
 }
 
+interface Request {
+  promise: Promise<Uint8Array>
+  observers: number
+}
+
 export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents extends ProgressEvent> extends TypedEventEmitter<BlockstoreSessionEvents<Provider>> implements BlockBroker<RetrieveBlockProgressEvents> {
   private initialPeerSearchComplete?: Promise<void>
-  private readonly requests: Map<string, Promise<Uint8Array>>
+  private readonly requests: Map<string, Request>
   private readonly name: string
   protected log: Logger
   protected logger: ComponentLogger
@@ -58,11 +63,16 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
 
     if (existingJob != null) {
       this.log('join existing request for %c', cid)
-      return existingJob
+      existingJob.observers++
+      return existingJob.promise
     }
 
     const deferred: DeferredPromise<Uint8Array> = pDefer()
-    this.requests.set(cidStr, deferred.promise)
+    const request = {
+      promise: deferred.promise,
+      observers: 1
+    }
+    this.requests.set(cidStr, request)
 
     if (this.providers.length === 0) {
       let first = false
@@ -85,7 +95,13 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
         }
 
         this.requests.delete(cidStr)
-        deferred.reject(err)
+
+        if (request.observers > 1) {
+          // only need to reject request if another context is now also waiting
+          // for the result - otherwise we can end up with an unhandled promise
+          // rejection
+          deferred.reject(err)
+        }
 
         throw err
       }
