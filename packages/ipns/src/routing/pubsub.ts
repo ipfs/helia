@@ -1,7 +1,8 @@
-import { isPublicKey } from '@libp2p/interface'
+import { publicKeyFromMultihash } from '@libp2p/crypto/keys'
+import { isPublicKey, TypedEventEmitter } from '@libp2p/interface'
 import { logger } from '@libp2p/logger'
 import { Queue } from '@libp2p/utils'
-import { multihashToIPNSRoutingKey } from 'ipns'
+import { extractPublicKeyFromIPNSRecord, multihashFromIPNSRoutingKey, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from 'ipns'
 import { ipnsSelector } from 'ipns/selector'
 import { ipnsValidator } from 'ipns/validator'
 import { CustomProgressEvent } from 'progress-events'
@@ -10,8 +11,9 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { InvalidTopicError } from '../errors.js'
 import { localStore } from '../local-store.js'
-import { IPNS_STRING_PREFIX } from '../utils.ts'
+import { IPNS_STRING_PREFIX, isCodec } from '../utils.ts'
 import type { GetOptions, IPNSRouting, PutOptions } from './index.js'
+import type { IPNSPublishResult } from '../index.ts'
 import type { LocalStore } from '../local-store.js'
 import type { Fetch } from '@libp2p/fetch'
 import type { PeerId, PublicKey, TypedEventTarget, ComponentLogger } from '@libp2p/interface'
@@ -72,7 +74,11 @@ export type PubSubProgressEvents =
   ProgressEvent<'ipns:pubsub:subscribe', { topic: string }> |
   ProgressEvent<'ipns:pubsub:error', Error>
 
-class PubSubRouting implements IPNSRouting {
+export interface PubSubRouterEvents {
+  'record-update': CustomEvent<IPNSPublishResult>
+}
+
+class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPNSRouting {
   private subscriptions: string[]
   private readonly localStore: LocalStore
   private readonly peerId: PeerId
@@ -81,6 +87,7 @@ class PubSubRouting implements IPNSRouting {
   private readonly queue: Queue<Uint8Array | undefined>
 
   constructor (components: PubsubRoutingComponents) {
+    super()
     this.subscriptions = []
     this.localStore = localStore(components.datastore, components.logger.forComponent('helia:ipns:local-store'))
     this.peerId = components.libp2p.peerId
@@ -173,9 +180,9 @@ class PubSubRouting implements IPNSRouting {
 
     const routingKey = topicToKey(topic)
 
-    let record: Uint8Array | undefined
+    let marshalledRecord: Uint8Array | undefined
     try {
-      record = await this.queue.add(async () => {
+      marshalledRecord = await this.queue.add(async () => {
         log('fetching ipns record for %t from %p', topic, peerId)
         // default timeout is 10 seconds
         // we should have an existing connection to the peer so this can be shortened
@@ -187,26 +194,26 @@ class PubSubRouting implements IPNSRouting {
       return
     }
 
-    if (record == null) {
+    if (marshalledRecord == null) {
       log('no record found on peer', peerId)
       return
     }
 
-    await this.#handleRecord(routingKey, record)
+    await this.#handleRecord(routingKey, marshalledRecord)
   }
 
-  async #handleRecord (routingKey: Uint8Array, record: Uint8Array): Promise<void> {
-    await ipnsValidator(routingKey, record)
+  async #handleRecord (routingKey: Uint8Array, marshalledRecord: Uint8Array): Promise<void> {
+    await ipnsValidator(routingKey, marshalledRecord)
 
     if (await this.localStore.has(routingKey)) {
       const { record: currentRecord } = await this.localStore.get(routingKey)
 
-      if (uint8ArrayEquals(currentRecord, record)) {
+      if (uint8ArrayEquals(currentRecord, marshalledRecord)) {
         log('not storing record as we already have it')
         return
       }
 
-      const records = [currentRecord, record]
+      const records = [currentRecord, marshalledRecord]
       const index = ipnsSelector(routingKey, records)
 
       if (index === 0) {
@@ -215,7 +222,16 @@ class PubSubRouting implements IPNSRouting {
       }
     }
 
-    await this.localStore.put(routingKey, record)
+    // emit record-updates
+    const routingMultihash = multihashFromIPNSRoutingKey(routingKey)
+    const record = unmarshalIPNSRecord(marshalledRecord)
+    const publicKey: PublicKey = isCodec(routingMultihash, 0x0)
+      ? publicKeyFromMultihash(routingMultihash)
+      : extractPublicKeyFromIPNSRecord(record)!
+    const event = new CustomEvent('record-update', { detail: { publicKey, record } })
+    this.safeDispatchEvent<IPNSPublishResult>('record-update', event)
+
+    await this.localStore.put(routingKey, marshalledRecord)
   }
 
   /**
