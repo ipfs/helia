@@ -1,5 +1,5 @@
 import { publicKeyFromMultihash } from '@libp2p/crypto/keys'
-import { isPublicKey, TypedEventEmitter } from '@libp2p/interface'
+import { isPublicKey, NotFoundError, TypedEventEmitter } from '@libp2p/interface'
 import { logger } from '@libp2p/logger'
 import { Queue } from '@libp2p/utils'
 import { extractPublicKeyFromIPNSRecord, multihashFromIPNSRoutingKey, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from 'ipns'
@@ -9,7 +9,7 @@ import { CustomProgressEvent } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { InvalidTopicError } from '../errors.js'
+import { InvalidTopicError, RecordNotFoundError } from '../errors.js'
 import { localStore } from '../local-store.js'
 import { IPNS_STRING_PREFIX, isCodec } from '../utils.ts'
 import type { GetOptions, IPNSRouting, PutOptions } from './index.js'
@@ -269,15 +269,12 @@ class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPN
 
         options.onProgress?.(new CustomProgressEvent('ipns:pubsub:subscribe', { topic }))
       }
-
-      // chain through to local store
-      const { record } = await this.localStore.get(routingKey, options)
-
-      return record
     } catch (err: any) {
       options.onProgress?.(new CustomProgressEvent<Error>('ipns:pubsub:error', err))
       throw err
     }
+
+    throw new NotFoundError('Pubsub routing does not actively query peers.')
   }
 
   /**
