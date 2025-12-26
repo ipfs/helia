@@ -1,5 +1,46 @@
 # Changelog
 
+## [3.0.14](https://github.com/ipfs/helia/compare/http-v3.0.13...http-v3.0.14) (2025-12-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.0.12 to ^5.0.13
+    * @helia/utils bumped from ^2.3.2 to ^2.3.3
+
+## [3.0.13](https://github.com/ipfs/helia/compare/http-v3.0.12...http-v3.0.13) (2025-12-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.0.11 to ^5.0.12
+    * @helia/utils bumped from ^2.3.1 to ^2.3.2
+
+## [3.0.12](https://github.com/ipfs/helia/compare/http-v3.0.11...http-v3.0.12) (2025-12-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.0.10 to ^5.0.11
+    * @helia/routers bumped from ^4.0.4 to ^4.0.5
+    * @helia/utils bumped from ^2.3.0 to ^2.3.1
+
+## [3.0.11](https://github.com/ipfs/helia/compare/http-v3.0.10...http-v3.0.11) (2025-11-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.0.9 to ^5.0.10
+    * @helia/utils bumped from ^2.2.5 to ^2.3.0
+
 ## [3.0.10](https://github.com/ipfs/helia/compare/http-v3.0.9...http-v3.0.10) (2025-11-14)
 
 

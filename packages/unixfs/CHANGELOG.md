@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.0.4](https://github.com/ipfs/helia/compare/unixfs-v6.0.3...unixfs-v6.0.4) (2025-12-12)
+
+
+### Bug Fixes
+
+* throw a specific error when offline and a block is missing ([#917](https://github.com/ipfs/helia/issues/917)) ([e27aa2d](https://github.com/ipfs/helia/commit/e27aa2de96fef39950f4c7d00a517208372aaf4e))
+
 ## [6.0.3](https://github.com/ipfs/helia/compare/unixfs-v6.0.2...unixfs-v6.0.3) (2025-10-29)
 
 

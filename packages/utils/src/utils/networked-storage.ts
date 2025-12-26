@@ -5,7 +5,7 @@ import filter from 'it-filter'
 import forEach from 'it-foreach'
 import { CustomProgressEvent } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import { InvalidConfigurationError } from '../errors.ts'
+import { BlockNotFoundWhileOfflineError, InvalidConfigurationError, LoadBlockFailedError } from '../errors.ts'
 import { isPromise } from './is-promise.js'
 import type { HasherLoader } from '@helia/interface'
 import type { BlockBroker, Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions, BlockRetrievalOptions, CreateSessionOptions, SessionBlockstore } from '@helia/interface/blocks'
@@ -102,10 +102,19 @@ class Storage implements Blockstore {
    * Get a block by cid
    */
   async * get (cid: CID, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetBlockProgressEvents> = {}): AsyncGenerator<Uint8Array> {
-    if (options.offline !== true && !(await this.child.has(cid, options))) {
+    const has = await this.child.has(cid, options)
+    const offline = options.offline === true
+
+    if (!has) {
+      if (offline) {
+        throw new BlockNotFoundWhileOfflineError('The block was present in the blockstore and the node is running offline so cannot fetch it')
+      }
+
       const hasher = await this.getHasher(cid.multihash.code)
+      options?.signal?.throwIfAborted()
 
       // we do not have the block locally, get it from a block provider
+
       options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:providers:get', cid))
       const block = await raceBlockRetrievers(cid, this.components.blockBrokers, hasher, {
         ...options,
@@ -136,8 +145,16 @@ class Storage implements Blockstore {
     options.onProgress?.(new CustomProgressEvent('blocks:get-many:blockstore:get-many'))
 
     yield * this.child.getMany(forEach(cids, async (cid): Promise<void> => {
-      if (options.offline !== true && !(await this.child.has(cid, options))) {
+      const has = await this.child.has(cid, options)
+      const offline = options.offline === true
+
+      if (!has) {
+        if (offline) {
+          throw new BlockNotFoundWhileOfflineError('The block was present in the blockstore and the node is running offline so cannot fetch it')
+        }
+
         const hasher = await this.getHasher(cid.multihash.code)
+        options?.signal?.throwIfAborted()
 
         // we do not have the block locally, get it from a block provider
         options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:providers:get', cid))
@@ -484,6 +501,8 @@ async function raceBlockRetrievers (cid: CID, blockBrokers: BlockBroker[], hashe
           }
         })
     )
+  } catch (err: any) {
+    throw new LoadBlockFailedError(err.errors, `Failed to load block for ${cid}`)
   } finally {
     // we have the block from the fastest block retriever, abort any still
     // in-flight retrieve attempts

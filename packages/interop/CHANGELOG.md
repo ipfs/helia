@@ -1,5 +1,67 @@
 # Changelog
 
+## [9.0.16](https://github.com/ipfs/helia/compare/interop-v9.0.15...interop-v9.0.16) (2025-12-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.0.12 to ^5.0.13
+    * @helia/car bumped from ^5.3.2 to ^5.3.3
+    * @helia/http bumped from ^3.0.13 to ^3.0.14
+    * helia bumped from ^6.0.13 to ^6.0.14
+
+## [9.0.15](https://github.com/ipfs/helia/compare/interop-v9.0.14...interop-v9.0.15) (2025-12-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/ipns bumped from ^9.1.4 to ^9.1.5
+
+## [9.0.14](https://github.com/ipfs/helia/compare/interop-v9.0.13...interop-v9.0.14) (2025-12-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.0.11 to ^5.0.12
+    * @helia/car bumped from ^5.3.1 to ^5.3.2
+    * @helia/http bumped from ^3.0.12 to ^3.0.13
+    * @helia/mfs bumped from ^6.0.3 to ^6.0.4
+    * @helia/unixfs bumped from ^6.0.3 to ^6.0.4
+    * helia bumped from ^6.0.12 to ^6.0.13
+
+## [9.0.13](https://github.com/ipfs/helia/compare/interop-v9.0.12...interop-v9.0.13) (2025-12-12)
+
+
+### Dependencies
+
+* bump kubo from 0.38.2 to 0.39.0 in the kubo-deps group ([#911](https://github.com/ipfs/helia/issues/911)) ([5e06685](https://github.com/ipfs/helia/commit/5e0668547b3029ce6ab9fd70081bce70aea950fb))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.0.10 to ^5.0.11
+    * @helia/car bumped from ^5.3.0 to ^5.3.1
+    * @helia/http bumped from ^3.0.11 to ^3.0.12
+    * @helia/ipns bumped from ^9.1.3 to ^9.1.4
+    * @helia/routers bumped from ^4.0.4 to ^4.0.5
+    * helia bumped from ^6.0.11 to ^6.0.12
+
+## [9.0.12](https://github.com/ipfs/helia/compare/interop-v9.0.11...interop-v9.0.12) (2025-11-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.0.9 to ^5.0.10
+    * @helia/car bumped from ^5.2.5 to ^5.3.0
+    * @helia/http bumped from ^3.0.10 to ^3.0.11
+    * helia bumped from ^6.0.10 to ^6.0.11
+
 ## [9.0.11](https://github.com/ipfs/helia/compare/interop-v9.0.10...interop-v9.0.11) (2025-11-14)
 
 

@@ -2,6 +2,8 @@ import { NoRoutersAvailableError } from '@helia/interface'
 import { NotFoundError, start, stop } from '@libp2p/interface'
 import { PeerQueue } from '@libp2p/utils'
 import merge from 'it-merge'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { GetFailedError } from './errors.ts'
 import type { Routing as RoutingInterface, Provider, RoutingOptions } from '@helia/interface'
 import type { AbortOptions, ComponentLogger, Logger, Metrics, PeerId, PeerInfo, Startable } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
@@ -76,11 +78,41 @@ export class Routing implements RoutingInterface, Startable {
       concurrency: this.providerLookupConcurrency
     })
 
+    let foundProviders = 0
+    const errors: Error[] = []
+    const self = this
+    let routersFinished = 0
+
+    this.log('findProviders for %c start using routers %s', key, this.routers.map(r => r.toString()).join(', '))
+
+    const routers = supports(this.routers, 'findProviders')
+      .map(async function * (router) {
+        let foundProviders = 0
+
+        try {
+          for await (const prov of router.findProviders(key, options)) {
+            foundProviders++
+            yield prov
+          }
+        } catch (err: any) {
+          errors.push(err)
+        } finally {
+          self.log('router %s found %d providers for %c', router, foundProviders, key)
+
+          routersFinished++
+
+          // if all routers have finished and there are no jobs to find updated
+          // peer multiaddres running or queued, cause the generator to exit
+          if (routersFinished === routers.length && queue.size === 0) {
+            queue.emitIdle()
+          }
+        }
+      })
+
     for await (const peer of merge(
       queue.toGenerator(),
-      ...supports(this.routers, 'findProviders')
-        .map(router => router.findProviders(key, options))
-    )) {
+      ...routers)
+    ) {
       // the peer was yielded by a content router without multiaddrs and we
       // failed to load them
       if (peer == null) {
@@ -122,8 +154,11 @@ export class Routing implements RoutingInterface, Startable {
         continue
       }
 
+      foundProviders++
       yield peer
     }
+
+    this.log('findProviders finished, found %d providers for %c', foundProviders, key)
   }
 
   /**
@@ -165,16 +200,34 @@ export class Routing implements RoutingInterface, Startable {
   }
 
   /**
-   * Get the value to the given key.
-   * Times out after 1 minute by default.
+   * Get the value to the given key. The first value offered by any configured
+   * router will be returned.
    */
   async get (key: Uint8Array, options?: AbortOptions): Promise<Uint8Array> {
-    return Promise.any(
-      supports(this.routers, 'get')
-        .map(async (router) => {
-          return router.get(key, options)
-        })
-    )
+    const errors: Error[] = []
+    let result: Uint8Array | undefined
+
+    try {
+      result = await Promise.any(
+        supports(this.routers, 'get')
+          .map(async (router) => {
+            try {
+              return await router.get(key, options)
+            } catch (err: any) {
+              this.log('router %s failed with %e', router, err)
+              errors.push(err)
+            }
+          })
+      )
+    } catch {
+      // ignore AggregateError as we will throw a better-named one
+    }
+
+    if (result == null) {
+      throw new GetFailedError(errors, `Failed to get value key ${uint8ArrayToString(key, 'base58btc')}`)
+    }
+
+    return result
   }
 
   /**

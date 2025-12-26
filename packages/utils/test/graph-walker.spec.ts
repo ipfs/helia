@@ -5,7 +5,7 @@ import all from 'it-all'
 import map from 'it-map'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
-import { breadthFirstWalker, depthFirstWalker } from '../src/graph-walker.ts'
+import { breadthFirstWalker, depthFirstWalker, naturalOrderWalker } from '../src/graph-walker.ts'
 import type { CodecLoader } from '@helia/interface'
 import type { Blockstore } from 'interface-blockstore'
 
@@ -105,7 +105,7 @@ describe('graph-walker', () => {
 
   describe('depth-first', () => {
     it('should walk depth-first', async () => {
-      const walker = depthFirstWalker({
+      const walker = depthFirstWalker()({
         blockstore,
         getCodec
       })
@@ -122,7 +122,7 @@ describe('graph-walker', () => {
     })
 
     it('should filter children', async () => {
-      const walker = depthFirstWalker({
+      const walker = depthFirstWalker()({
         blockstore,
         getCodec
       })
@@ -145,7 +145,7 @@ describe('graph-walker', () => {
 
   describe('breadth-first', () => {
     it('should walk breadth-first', async () => {
-      const walker = breadthFirstWalker({
+      const walker = breadthFirstWalker()({
         blockstore,
         getCodec
       })
@@ -162,7 +162,47 @@ describe('graph-walker', () => {
     })
 
     it('should filter children', async () => {
-      const walker = breadthFirstWalker({
+      const walker = breadthFirstWalker()({
+        blockstore,
+        getCodec
+      })
+
+      const result = await all(map(walker.walk(nodes.root.cid, {
+        includeChild (child, parent) {
+          return parent.value.name === 'root' || parent.value.name === 'a'
+        }
+      }), (node) => {
+        const obj = dagCbor.decode<Node>(node.block.bytes)
+
+        return obj.name
+      }))
+
+      expect(result).to.deep.equal([
+        'root', 'a', 'b', 'c', 'd', 'e', 'f'
+      ])
+    })
+  })
+
+  describe('natural-order', () => {
+    it('should walk depth-first', async () => {
+      const walker = naturalOrderWalker()({
+        blockstore,
+        getCodec
+      })
+
+      const result = await all(map(walker.walk(nodes.root.cid), (node) => {
+        const obj = dagCbor.decode<Node>(node.block.bytes)
+
+        return obj.name
+      }))
+
+      expect(result).to.deep.equal([
+        'root', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l'
+      ])
+    })
+
+    it('should filter children', async () => {
+      const walker = naturalOrderWalker()({
         blockstore,
         getCodec
       })

@@ -303,6 +303,10 @@ class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPN
     this.pubsub.unsubscribe(topic)
     this.subscriptions = this.subscriptions.filter(t => t !== topic)
   }
+
+  toString (): string {
+    return 'PubSubRouting()'
+  }
 }
 
 const PUBSUB_NAMESPACE = '/record/'

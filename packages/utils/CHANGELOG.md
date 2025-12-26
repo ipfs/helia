@@ -1,5 +1,34 @@
 # Changelog
 
+## [2.3.3](https://github.com/ipfs/helia/compare/utils-v2.3.2...utils-v2.3.3) (2025-12-15)
+
+
+### Bug Fixes
+
+* unhandled promise rejection during inital peer search ([#922](https://github.com/ipfs/helia/issues/922)) ([cb05f46](https://github.com/ipfs/helia/commit/cb05f4676a14ee719a8e1ac31ae35f9683d5250b))
+
+## [2.3.2](https://github.com/ipfs/helia/compare/utils-v2.3.1...utils-v2.3.2) (2025-12-12)
+
+
+### Bug Fixes
+
+* throw a specific error when offline and a block is missing ([#917](https://github.com/ipfs/helia/issues/917)) ([e27aa2d](https://github.com/ipfs/helia/commit/e27aa2de96fef39950f4c7d00a517208372aaf4e))
+
+## [2.3.1](https://github.com/ipfs/helia/compare/utils-v2.3.0...utils-v2.3.1) (2025-12-12)
+
+
+### Bug Fixes
+
+* end peer lookup queue when routers finish ([#915](https://github.com/ipfs/helia/issues/915)) ([b2257d4](https://github.com/ipfs/helia/commit/b2257d4fe6cf6cc524733340b380e3f5c773183f))
+* improve error reporting ([#896](https://github.com/ipfs/helia/issues/896)) ([71f9c4e](https://github.com/ipfs/helia/commit/71f9c4ef2c8557d92e5769675a69da2679c8b7d2))
+
+## [2.3.0](https://github.com/ipfs/helia/compare/utils-v2.2.5...utils-v2.3.0) (2025-11-20)
+
+
+### Features
+
+* allow specifying graph export strategy ([#907](https://github.com/ipfs/helia/issues/907)) ([7676912](https://github.com/ipfs/helia/commit/7676912ec08b7599309e3a6afdd4183f8dc61b27))
+
 ## [2.2.5](https://github.com/ipfs/helia/compare/utils-v2.2.4...utils-v2.2.5) (2025-11-14)
 
 

@@ -184,7 +184,7 @@ async function inspectDag (cid: CID, blockstore: GetStore & HasStore, isFile: bo
       throw new UnknownError(`${cid.toString()} was neither DAG_PB nor RAW`)
     }
   } catch (err: any) {
-    if (err.name !== 'NotFoundError' || options.offline !== true) {
+    if ((err.name !== 'NotFoundError' && err.name !== 'BlockNotFoundWhileOfflineError') || options.offline !== true) {
       throw err
     }
   }
