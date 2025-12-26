@@ -222,6 +222,8 @@ class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPN
       }
     }
 
+    await this.localStore.put(routingKey, marshalledRecord)
+
     // emit record-updates
     const routingMultihash = multihashFromIPNSRoutingKey(routingKey)
     const record = unmarshalIPNSRecord(marshalledRecord)
@@ -230,8 +232,6 @@ class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPN
       : extractPublicKeyFromIPNSRecord(record)!
     const event = new CustomEvent('record-update', { detail: { publicKey, record } })
     this.safeDispatchEvent<IPNSPublishResult>('record-update', event)
-
-    await this.localStore.put(routingKey, marshalledRecord)
   }
 
   /**
