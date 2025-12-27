@@ -95,6 +95,7 @@
     "aegir": "^47.0.22",
     "datastore-core": "^11.0.2",
     "it-drain": "^3.0.10",
+    "p-event": "^7.0.1",
     "protons": "^7.6.1",
     "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0"
