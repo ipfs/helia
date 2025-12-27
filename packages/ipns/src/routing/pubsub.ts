@@ -107,30 +107,27 @@ class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPN
       })
     })
 
-    this.pubsub.addEventListener('subscription-change', (evt) => {
-      if (this.fetch == null) {
-        return
-      }
-
-      const { peerId, subscriptions } = evt.detail
-
-      for (const sub of subscriptions) {
-        if (!this.subscriptions.includes(sub.topic)) {
-          continue
-        }
-
-        if (sub.subscribe === false) {
-          continue
-        }
-
-        this.#handlePeerJoin(peerId, sub.topic).catch(err => {
-          log.error('Error fetching ipns record from peer %p - %e', peerId, err)
-        })
-      }
-    })
-
+    // ipns over libp2p-fetch feature
     if (this.fetch != null) {
       try {
+        this.pubsub.addEventListener('subscription-change', (evt) => {
+          const { peerId, subscriptions } = evt.detail
+
+          for (const sub of subscriptions) {
+            if (!this.subscriptions.includes(sub.topic)) {
+              continue
+            }
+
+            if (sub.subscribe === false) {
+              continue
+            }
+
+            this.#handlePeerJoin(peerId, sub.topic).catch(err => {
+              log.error('Error fetching ipns record from peer %p - %e', peerId, err)
+            })
+          }
+        })
+
         this.fetch.registerLookupFunction(IPNS_STRING_PREFIX, async (key) => {
           try {
             const { record } = await this.localStore.get(key)
