@@ -14,8 +14,9 @@ import type { IPNSRecord, IPNSRouting } from '../../src/index.ts'
 import type { LocalStore } from '../../src/local-store.ts'
 import type { Message, PubSub, PubSubEvents, PubsubRoutingComponents, Subscription } from '../../src/routing/pubsub.ts'
 import type { Fetch } from '@libp2p/fetch'
-import type { Ed25519PrivateKey, PeerId } from '@libp2p/interface'
+import type { Ed25519PrivateKey, PeerId, PublicKey } from '@libp2p/interface'
 import type { StubbedInstance } from 'sinon-ts'
+import { pEvent } from 'p-event'
 
 describe('pubsub routing', () => {
   let store: LocalStore
@@ -23,7 +24,7 @@ describe('pubsub routing', () => {
   let pubsub: StubbedInstance<PubSub>
   let fetch: StubbedInstance<Fetch>
   let components: PubsubRoutingComponents
-  let pubsubRouter: IPNSRouting
+  let pubsubRouter: ReturnType<typeof pubsubRouting>
   let routingKey: Uint8Array
   let topic: string
   let privateKey: Ed25519PrivateKey
@@ -110,10 +111,12 @@ describe('pubsub routing', () => {
 
         const newRecord = await createIPNSRecord(privateKey, '/test2', 2n, DEFAULT_LIFETIME_MS)
 
+        const recordUpdatePromise = pEvent<'record-update', CustomEvent<{ publicKey: PublicKey, record: IPNSRecord }>>(pubsubRouter, 'record-update')
+
         message.data = marshalIPNSRecord(newRecord)
         target.safeDispatchEvent('message', event)
 
-        await new Promise((resolve) => setTimeout(resolve, 100))
+        await recordUpdatePromise
 
         expect(batchSpy.called).to.be.true()
       })
@@ -215,9 +218,10 @@ describe('pubsub routing', () => {
         }
       }
 
+      const recordUpdatePromise = pEvent<'record-update', CustomEvent<{ publicKey: PublicKey, record: IPNSRecord }>>(pubsubRouter, 'record-update')
       target.safeDispatchEvent('subscription-change', event)
 
-      await new Promise((resolve) => setTimeout(resolve, 100))
+      await recordUpdatePromise
 
       expect(fetch.fetch.called).to.be.true()
       await expect(store.has(routingKey)).to.eventually.be.true()
