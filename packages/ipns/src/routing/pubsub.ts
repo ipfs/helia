@@ -338,6 +338,6 @@ function topicToKey (topic: string): Uint8Array {
  * updated records, so the first call to `.get` should be expected
  * to fail!
  */
-export function pubsub (components: PubsubRoutingComponents): IPNSRouting {
+export function pubsub (components: PubsubRoutingComponents): PubSubRouting {
   return new PubSubRouting(components)
 }
