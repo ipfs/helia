@@ -173,7 +173,6 @@ class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPN
       log('no libp2p fetch found, skipping record fetch')
       return
     }
-    const { fetch } = this.fetch
 
     const routingKey = topicToKey(topic)
 
@@ -184,7 +183,7 @@ class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPN
         // default timeout is 10 seconds
         // we should have an existing connection to the peer so this can be shortened
         const signal = AbortSignal.timeout(2_500)
-        return fetch(peerId, routingKey, { signal })
+        return this.fetch?.fetch(peerId, routingKey, { signal })
       })
     } catch (err: any) {
       log.error('failed to fetch ipns record for %t from %p', topic, peerId, err)
