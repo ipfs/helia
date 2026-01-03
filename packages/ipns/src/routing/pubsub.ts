@@ -123,7 +123,7 @@ class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPN
             }
 
             this.#handlePeerJoin(peerId, sub.topic).catch(err => {
-              log.error('Error fetching ipns record from peer %p - %e', peerId, err)
+              log.error('Error fetching IPNS record from peer %s - %e', peerId, err)
             })
           }
         })
@@ -141,12 +141,12 @@ class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPN
             return undefined
           }
         })
-        log('registered ipns lookup function with fetch service')
+        log('Registered lookup function for IPNS with libp2p/fetch service')
       } catch (e) {
-        log('unable to register ipns lookup function with fetch service, may already exist')
+        log('Unable to register lookup function for IPNS with libp2p/fetch service. May already exist')
       }
     } else {
-      log('no fetch service found, skipping ipns lookup function registration')
+      log('No libp2p/fetch service found. Skipping registration of lookup function for IPNS.')
     }
   }
 
@@ -167,7 +167,7 @@ class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPN
   }
 
   async #handlePeerJoin (peerId: PeerId, topic: string): Promise<void> {
-    log('peer %p joined topic %t', peerId, topic)
+    log('peer %s joined topic %s', peerId, topic)
 
     if (this.fetch == null) {
       log('no libp2p fetch found, skipping record fetch')
@@ -179,14 +179,14 @@ class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPN
     let marshalledRecord: Uint8Array | undefined
     try {
       marshalledRecord = await this.queue.add(async () => {
-        log('fetching ipns record for %t from %p', topic, peerId)
+        log('fetching ipns record for %s from peer %s', routingKey, peerId)
         // default timeout is 10 seconds
         // we should have an existing connection to the peer so this can be shortened
         const signal = AbortSignal.timeout(2_500)
         return this.fetch?.fetch(peerId, routingKey, { signal })
       })
     } catch (err: any) {
-      log.error('failed to fetch ipns record for %t from %p', topic, peerId, err)
+      log.error('failed to fetch ipns record for %s from peer %s - %e', routingKey, peerId, err)
       return
     }
 
@@ -205,7 +205,7 @@ class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPN
       const { record: currentRecord } = await this.localStore.get(routingKey)
 
       if (uint8ArrayEquals(currentRecord, marshalledRecord)) {
-        log('not storing record as we already have it')
+        log.trace('found identical record for', routingKey)
         return
       }
 
@@ -213,11 +213,12 @@ class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPN
       const index = ipnsSelector(routingKey, records)
 
       if (index === 0) {
-        log('not storing record as the one we have is better')
+        log.trace('found old record for', routingKey)
         return
       }
     }
 
+    log('found new record for', routingKey)
     await this.localStore.put(routingKey, marshalledRecord)
 
     // emit record-updates
