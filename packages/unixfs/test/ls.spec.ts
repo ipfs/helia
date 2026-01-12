@@ -39,8 +39,7 @@ describe('ls', () => {
     expect(files).to.have.lengthOf(1).and.to.containSubset([{
       cid: fileCid,
       name: path,
-      size: BigInt(data.byteLength),
-      type: 'raw'
+      path: `${dirCid}/${path}`
     }])
   })
 
@@ -85,10 +84,12 @@ describe('ls', () => {
 
     expect(files.length).to.equal(fileCount)
 
-    files.forEach(file => {
+    for (const entry of files) {
+      const file = await fs.stat(entry.cid)
+
       // should be a file
       expect(file.type).to.equal('raw')
-    })
+    }
   })
 
   it('lists a file inside a sharded directory directly', async () => {
@@ -132,60 +133,5 @@ describe('ls', () => {
       offline: true
     }))).to.eventually.be.rejected
       .with.property('name', 'NotFoundError')
-  })
-
-  it('should list a basic entry', async () => {
-    const cid = await fs.addBytes(smallFile, {
-      rawLeaves: false
-    })
-
-    const files = await all(fs.ls(cid))
-
-    expect(files).to.have.nested.property('[0].type')
-    expect(files).to.have.nested.property('[0].content')
-
-    const basicFiles = await all(fs.ls(cid, {
-      extended: false
-    }))
-
-    expect(basicFiles).to.not.have.nested.property('[0].type')
-    expect(basicFiles).to.not.have.nested.property('[0].content')
-  })
-
-  it('lists basic files in a directory', async () => {
-    const path = 'path'
-    const data = Uint8Array.from([0, 1, 2, 3])
-    const fileCid = await fs.addBytes(data, {
-      rawLeaves: false
-    })
-    const dirCid = await fs.cp(fileCid, emptyDirCid, path)
-
-    const files = await all(fs.ls(dirCid))
-
-    expect(files).to.have.nested.property('[0].type')
-    expect(files).to.have.nested.property('[0].content')
-
-    const basicFiles = await all(fs.ls(dirCid, {
-      extended: false
-    }))
-
-    expect(basicFiles).to.not.have.nested.property('[0].type')
-    expect(basicFiles).to.not.have.nested.property('[0].content')
-  })
-
-  it('lists basic contents of a sharded directory', async () => {
-    const shardedDirCid = await createShardedDirectory(blockstore)
-
-    const files = await all(fs.ls(shardedDirCid))
-
-    expect(files).to.have.nested.property('[0].type')
-    expect(files).to.have.nested.property('[0].content')
-
-    const basicFiles = await all(fs.ls(shardedDirCid, {
-      extended: false
-    }))
-
-    expect(basicFiles).to.not.have.nested.property('[0].type')
-    expect(basicFiles).to.not.have.nested.property('[0].content')
   })
 })

@@ -34,7 +34,7 @@ import type { ComponentLogger } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { Mtime } from 'ipfs-unixfs'
-import type { UnixFSEntry, UnixFSBasicEntry } from 'ipfs-unixfs-exporter'
+import type { UnixFSDirectoryEntry } from 'ipfs-unixfs-exporter'
 import type { ByteStream } from 'ipfs-unixfs-importer'
 
 export interface MFSComponents {
@@ -171,8 +171,7 @@ export interface MFS {
    * }
    * ```
    */
-  ls(path?: string, options?: Partial<LsOptions>): AsyncIterable<UnixFSEntry>
-  ls(path: string, options: Partial<LsOptions> & { extended: false }): AsyncIterable<UnixFSBasicEntry>
+  ls(path?: string, options?: Partial<LsOptions>): AsyncIterable<UnixFSDirectoryEntry>
 
   /**
    * Make a new directory in your MFS.
