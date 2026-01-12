@@ -39,8 +39,7 @@ describe('ls', () => {
     expect(files).to.have.lengthOf(1).and.to.containSubset([{
       cid: fileStat.cid,
       name: fileName,
-      size: BigInt(data.byteLength),
-      type: 'raw'
+      path: filePath
     }])
   })
 
@@ -59,8 +58,7 @@ describe('ls', () => {
     expect(files).to.have.lengthOf(1).and.to.containSubset([{
       cid: fileStat.cid,
       name: fileName,
-      size: BigInt(data.byteLength),
-      type: 'raw'
+      path: filePath
     }])
   })
 
@@ -121,8 +119,8 @@ describe('ls', () => {
 
     expect(files).to.have.lengthOf(1).and.to.containSubset([{
       cid: fileStat.cid,
-      size: BigInt(data.byteLength),
-      type: 'raw'
+      name: fileName,
+      path: filePath
     }])
   })
 
@@ -135,10 +133,12 @@ describe('ls', () => {
 
     expect(files.length).to.equal(fileCount)
 
-    files.forEach(file => {
+    for (const entry of files) {
+      const file = await fs.stat(entry.path)
+
       // should be a file
       expect(file.type).to.equal('raw')
-    })
+    }
   })
 
   it('lists a file inside a sharded directory directly', async () => {
@@ -178,68 +178,5 @@ describe('ls', () => {
 
     expect(files.length).to.equal(1)
     expect(files.filter(file => file.name === fileName)).to.be.ok()
-  })
-
-  it('should list a basic entry', async () => {
-    const filePath = '/foo.txt'
-
-    await fs.writeBytes(Uint8Array.from([0, 1, 2, 3]), filePath, {
-      rawLeaves: false,
-      force: true
-    })
-
-    const files = await all(fs.ls(filePath))
-
-    expect(files).to.have.nested.property('[0].type')
-    expect(files).to.have.nested.property('[0].content')
-
-    const basicFiles = await all(fs.ls(filePath, {
-      extended: false
-    }))
-
-    expect(basicFiles).to.not.have.nested.property('[0].type')
-    expect(basicFiles).to.not.have.nested.property('[0].content')
-  })
-
-  it('lists basic files in a directory', async () => {
-    const dirName = 'bar'
-    const dirPath = `/${dirName}`
-    const fileName = 'foo.txt'
-    const filePath = `${dirPath}/${fileName}`
-
-    await fs.writeBytes(Uint8Array.from([0, 1, 2, 3]), filePath, {
-      rawLeaves: false,
-      force: true
-    })
-
-    const files = await all(fs.ls(dirPath))
-
-    expect(files).to.have.nested.property('[0].type')
-    expect(files).to.have.nested.property('[0].content')
-
-    const basicFiles = await all(fs.ls(dirPath, {
-      extended: false
-    }))
-
-    expect(basicFiles).to.not.have.nested.property('[0].type')
-    expect(basicFiles).to.not.have.nested.property('[0].content')
-  })
-
-  it('lists basic contents of a sharded directory', async () => {
-    const shardedDirPath = '/sharded-dir'
-    const shardedDirCid = await createShardedDirectory(blockstore)
-    await fs.cp(shardedDirCid, shardedDirPath)
-
-    const files = await all(fs.ls(shardedDirPath))
-
-    expect(files).to.have.nested.property('[0].type')
-    expect(files).to.have.nested.property('[0].content')
-
-    const basicFiles = await all(fs.ls(shardedDirPath, {
-      extended: false
-    }))
-
-    expect(basicFiles).to.not.have.nested.property('[0].type')
-    expect(basicFiles).to.not.have.nested.property('[0].content')
   })
 })

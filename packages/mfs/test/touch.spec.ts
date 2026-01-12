@@ -142,7 +142,9 @@ describe('touch', () => {
       // no bigint support
       .that.satisfies((s: bigint) => s > seconds)
 
-    for await (const file of fs.ls(shardedDirPath)) {
+    for await (const entry of fs.ls(shardedDirPath)) {
+      const file = await fs.stat(entry.path)
+
       expect(file).to.have.nested.property('unixfs.mtime.secs')
         // no bigint support
         .that.satisfies((s: bigint) => s > seconds)
