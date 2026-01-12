@@ -77,10 +77,10 @@ describe('storage', () => {
         yield blocks[i].cid
         await delay(10)
       }
-    }()), ({ cid, bytes }) => {
+    }()), async ({ cid, bytes }) => {
       return {
         cid,
-        block: toBuffer(bytes)
+        block: await toBuffer(bytes)
       }
     }))
 

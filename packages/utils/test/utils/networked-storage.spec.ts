@@ -100,10 +100,10 @@ describe('networked-storage', () => {
         yield blocks[i].cid
         await delay(10)
       }
-    }()), ({ cid, bytes }) => {
+    }()), async ({ cid, bytes }) => {
       return {
         cid,
-        block: toBuffer(bytes)
+        block: await toBuffer(bytes)
       }
     }))
 
@@ -115,10 +115,10 @@ describe('networked-storage', () => {
 
     await expect(drain(map(storage.getMany([cid], {
       offline: true
-    }), ({ cid, bytes }) => {
+    }), async ({ cid, bytes }) => {
       return {
         cid,
-        block: toBuffer(bytes)
+        block: await toBuffer(bytes)
       }
     }))).to.eventually.be.rejected.with.property('name', 'BlockNotFoundWhileOfflineError')
   })
@@ -174,10 +174,10 @@ describe('networked-storage', () => {
         yield blocks[i].cid
         await delay(10)
       }
-    }()), ({ cid, bytes }) => {
+    }()), async ({ cid, bytes }) => {
       return {
         cid,
-        block: toBuffer(bytes)
+        block: await toBuffer(bytes)
       }
     }))
 
@@ -210,10 +210,10 @@ describe('networked-storage', () => {
         yield blocks[i].cid
         await delay(10)
       }
-    }()), ({ cid, bytes }) => {
+    }()), async ({ cid, bytes }) => {
       return {
         cid,
-        block: toBuffer(bytes)
+        block: await toBuffer(bytes)
       }
     }))
 
