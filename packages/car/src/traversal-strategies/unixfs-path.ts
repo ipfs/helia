@@ -1,5 +1,5 @@
 import * as dagPb from '@ipld/dag-pb'
-import { walkPath } from 'ipfs-unixfs-exporter'
+import { exporter, walkPath } from 'ipfs-unixfs-exporter'
 import { createUnsafe } from 'multiformats/block'
 import type { TraversalStrategy } from '../index.js'
 import type { CodecLoader } from '@helia/interface'
@@ -84,9 +84,11 @@ export class UnixFSPath implements TraversalStrategy {
 
   async * traverse (root: CID, blockstore: Blockstore, getCodec: CodecLoader, options?: AbortOptions): AsyncGenerator<BlockView<unknown, number, number, 0 | 1>, void, undefined> {
     for await (const entry of walkPath(`${this.root ?? root}${this.path}`, blockstore, options)) {
+      const file = await exporter(entry.cid, blockstore, options)
+
       yield createUnsafe({
-        cid: entry.cid,
-        bytes: entry.node instanceof Uint8Array ? entry.node : dagPb.encode(entry.node),
+        cid: file.cid,
+        bytes: file.node instanceof Uint8Array ? file.node : dagPb.encode(file.node),
         codec: await getCodec(entry.cid.code)
       })
     }
