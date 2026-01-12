@@ -1,5 +1,23 @@
 # Changelog
 
+## [7.0.0](https://github.com/ipfs/helia/compare/mfs-v6.0.4...mfs-v7.0.0) (2026-01-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* metadata is no longer returned from fs.ls - use fs.stat or similar to obtain it
+
+### Features
+
+* return cid/name/path from ls ([#929](https://github.com/ipfs/helia/issues/929)) ([b0033ca](https://github.com/ipfs/helia/commit/b0033ca2e1591981d2c9ecb6105911e41e7b786b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/unixfs bumped from ^6.0.4 to ^7.0.0
+
 ## [6.0.4](https://github.com/ipfs/helia/compare/mfs-v6.0.3...mfs-v6.0.4) (2025-12-12)
 
 
