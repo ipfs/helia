@@ -1,5 +1,16 @@
 # Changelog
 
+## [7.0.0](https://github.com/ipfs/helia/compare/unixfs-v6.0.4...unixfs-v7.0.0) (2026-01-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* metadata is no longer returned from fs.ls - use fs.stat or similar to obtain it
+
+### Features
+
+* return cid/name/path from ls ([#929](https://github.com/ipfs/helia/issues/929)) ([b0033ca](https://github.com/ipfs/helia/commit/b0033ca2e1591981d2c9ecb6105911e41e7b786b))
+
 ## [6.0.4](https://github.com/ipfs/helia/compare/unixfs-v6.0.3...unixfs-v6.0.4) (2025-12-12)
 
 

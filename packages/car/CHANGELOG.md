@@ -1,5 +1,16 @@
 # Changelog
 
+## [5.3.4](https://github.com/ipfs/helia/compare/car-v5.3.3...car-v5.3.4) (2026-01-12)
+
+
+### Dependencies
+
+* update ipfs-unixfs-exporter in @helia/car ([#933](https://github.com/ipfs/helia/issues/933)) ([4e19769](https://github.com/ipfs/helia/commit/4e19769aaa0f5b1fe6c9471275cb28f850d4ab56))
+* The following workspace dependencies were updated
+  * devDependencies
+    * @helia/mfs bumped from ^6.0.4 to ^7.0.0
+    * @helia/unixfs bumped from ^6.0.4 to ^7.0.0
+
 ## [5.3.3](https://github.com/ipfs/helia/compare/car-v5.3.2...car-v5.3.3) (2025-12-15)
 
 

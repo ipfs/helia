@@ -1,5 +1,16 @@
 # Changelog
 
+## [9.0.17](https://github.com/ipfs/helia/compare/interop-v9.0.16...interop-v9.0.17) (2026-01-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/car bumped from ^5.3.3 to ^5.3.4
+    * @helia/mfs bumped from ^6.0.4 to ^7.0.0
+    * @helia/unixfs bumped from ^6.0.4 to ^7.0.0
+
 ## [9.0.16](https://github.com/ipfs/helia/compare/interop-v9.0.15...interop-v9.0.16) (2025-12-15)
 
 
