@@ -56,7 +56,7 @@
     "any-signal": "^4.1.1",
     "interface-blockstore": "^6.0.1",
     "ipfs-unixfs": "^12.0.0",
-    "ipfs-unixfs-exporter": "^14.0.1",
+    "ipfs-unixfs-exporter": "^15.0.2",
     "it-drain": "^3.0.10",
     "it-map": "^3.1.4",
     "it-to-buffer": "^4.0.10",
