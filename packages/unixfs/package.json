@@ -76,7 +76,7 @@
     "hamt-sharding": "^3.0.6",
     "interface-blockstore": "^6.0.1",
     "ipfs-unixfs": "^12.0.0",
-    "ipfs-unixfs-exporter": "^14.0.1",
+    "ipfs-unixfs-exporter": "^15.0.2",
     "ipfs-unixfs-importer": "^16.0.1",
     "it-all": "^3.0.9",
     "it-first": "^3.0.9",

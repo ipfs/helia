@@ -1,7 +1,7 @@
 import * as dagPB from '@ipld/dag-pb'
 import { logger } from '@libp2p/logger'
 import { UnixFS } from 'ipfs-unixfs'
-import { recursive } from 'ipfs-unixfs-exporter'
+import { exporter, recursive } from 'ipfs-unixfs-exporter'
 import { importer } from 'ipfs-unixfs-importer'
 import last from 'it-last'
 import { pipe } from 'it-pipe'
@@ -35,13 +35,14 @@ export async function touch (cid: CID, blockstore: GetStore & PutStore, options:
         for await (const entry of recursive(resolved.cid, blockstore)) {
           let metadata: UnixFS
           let links: PBLink[]
+          const file = await exporter(entry.cid, blockstore, options)
 
-          if (entry.type === 'raw') {
-            metadata = new UnixFS({ data: entry.node })
+          if (file.type === 'raw') {
+            metadata = new UnixFS({ data: file.node })
             links = []
-          } else if (entry.type === 'file' || entry.type === 'directory') {
-            metadata = entry.unixfs
-            links = entry.node.Links
+          } else if (file.type === 'file' || file.type === 'directory') {
+            metadata = file.unixfs
+            links = file.node.Links
           } else {
             throw new NotUnixFSError()
           }
