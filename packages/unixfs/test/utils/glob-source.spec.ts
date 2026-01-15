@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import fs from 'fs'
 import Path from 'path'
 import { fileURLToPath } from 'url'

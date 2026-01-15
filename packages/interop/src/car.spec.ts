@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { car } from '@helia/car'
 import { unixfs } from '@helia/unixfs'
 import { CarReader } from '@ipld/car'

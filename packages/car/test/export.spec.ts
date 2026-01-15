@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { unixfs } from '@helia/unixfs'
 import { CarReader } from '@ipld/car'
 import * as dagCbor from '@ipld/dag-cbor'

@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { identify } from '@libp2p/identify'
 import { webSockets } from '@libp2p/websockets'
 import { expect } from 'aegir/chai'

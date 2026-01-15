@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import * as dagPb from '@ipld/dag-pb'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
