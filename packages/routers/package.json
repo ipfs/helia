@@ -1,6 +1,6 @@
 {
   "name": "@helia/routers",
-  "version": "4.0.5",
+  "version": "4.0.6",
   "description": "Routers for Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/routers#readme",
