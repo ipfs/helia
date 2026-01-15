@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { sha3512 } from '@multiformats/sha3'
 import { expect } from 'aegir/chai'
 import toBuffer from 'it-to-buffer'

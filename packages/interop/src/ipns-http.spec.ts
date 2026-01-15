@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { createHeliaHTTP } from '@helia/http'
 import { ipns } from '@helia/ipns'
 import { delegatedHTTPRouting } from '@helia/routers'

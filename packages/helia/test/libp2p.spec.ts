@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
 import { createHelia } from '../src/index.js'

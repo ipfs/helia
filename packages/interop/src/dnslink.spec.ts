@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { dnsLink } from '@helia/dnslink'
 import { expect } from 'aegir/chai'
 import { createHeliaNode } from './fixtures/create-helia.js'

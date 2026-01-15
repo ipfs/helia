@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { unixfs } from '@helia/unixfs'
 import { expect } from 'aegir/chai'
 import toBuffer from 'it-to-buffer'

@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { mfs } from '@helia/mfs'
 import { expect } from 'aegir/chai'
 import { createHeliaNode } from './fixtures/create-helia.js'

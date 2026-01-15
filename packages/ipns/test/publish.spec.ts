@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { start, stop } from '@libp2p/interface'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
