@@ -1,5 +1,31 @@
 # Changelog
 
+## [9.0.18](https://github.com/ipfs/helia/compare/interop-v9.0.17...interop-v9.0.18) (2026-01-15)
+
+
+### Bug Fixes
+
+* use non-deprecated factory function to create delegated client ([#934](https://github.com/ipfs/helia/issues/934)) ([20ba9cf](https://github.com/ipfs/helia/commit/20ba9cf6256961d2b664af0e8f48b5e9d009d834))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.0.13 to ^5.0.14
+    * @helia/dnslink bumped from ^1.1.3 to ^1.1.4
+    * @helia/car bumped from ^5.3.4 to ^5.3.5
+    * @helia/dag-cbor bumped from ^5.0.3 to ^5.0.4
+    * @helia/dag-json bumped from ^5.0.3 to ^5.0.4
+    * @helia/http bumped from ^3.0.14 to ^3.0.15
+    * @helia/ipns bumped from ^9.1.5 to ^9.1.6
+    * @helia/json bumped from ^5.0.3 to ^5.0.4
+    * @helia/mfs bumped from ^7.0.0 to ^7.0.1
+    * @helia/routers bumped from ^4.0.5 to ^4.0.6
+    * @helia/strings bumped from ^5.0.3 to ^5.0.4
+    * @helia/unixfs bumped from ^7.0.0 to ^7.0.1
+    * helia bumped from ^6.0.14 to ^6.0.15
+
 ## [9.0.17](https://github.com/ipfs/helia/compare/interop-v9.0.16...interop-v9.0.17) (2026-01-12)
 
 

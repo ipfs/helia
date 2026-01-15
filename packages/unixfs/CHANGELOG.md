@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.0.1](https://github.com/ipfs/helia/compare/unixfs-v7.0.0...unixfs-v7.0.1) (2026-01-15)
+
+
+### Bug Fixes
+
+* use non-deprecated factory function to create delegated client ([#934](https://github.com/ipfs/helia/issues/934)) ([20ba9cf](https://github.com/ipfs/helia/commit/20ba9cf6256961d2b664af0e8f48b5e9d009d834))
+
 ## [7.0.0](https://github.com/ipfs/helia/compare/unixfs-v6.0.4...unixfs-v7.0.0) (2026-01-12)
 
 

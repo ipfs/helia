@@ -1,6 +1,6 @@
 {
   "name": "@helia/ipns",
-  "version": "9.1.5",
+  "version": "9.1.6",
   "description": "An implementation of IPNS for Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/ipns#readme",
