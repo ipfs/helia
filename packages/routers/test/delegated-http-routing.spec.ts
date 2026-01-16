@@ -1,4 +1,5 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
+import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { multihashToIPNSRoutingKey, createIPNSRecord, marshalIPNSRecord } from 'ipns'
@@ -9,7 +10,6 @@ import { delegatedHTTPRouting } from '../src/index.js'
 import type { DelegatedRoutingV1HttpApiClient, PeerRecord } from '@helia/delegated-routing-v1-http-api-client'
 import type { Routing } from '@helia/interface'
 import type { StubbedInstance } from 'sinon-ts'
-import { defaultLogger } from '@libp2p/logger'
 
 describe('delegated-http-routing', () => {
   let client: StubbedInstance<DelegatedRoutingV1HttpApiClient>
