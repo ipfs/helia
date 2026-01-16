@@ -51,7 +51,7 @@
     "@chainsafe/libp2p-noise": "^17.0.0",
     "@chainsafe/libp2p-yamux": "^8.0.0",
     "@helia/block-brokers": "^5.0.14",
-    "@helia/delegated-routing-v1-http-api-client": "^5.1.2",
+    "@helia/delegated-routing-v1-http-api-client": "^6.0.0",
     "@helia/interface": "^6.0.2",
     "@helia/routers": "^4.0.6",
     "@helia/utils": "^2.3.4",
