@@ -9,6 +9,7 @@ import { delegatedHTTPRouting } from '../src/index.js'
 import type { DelegatedRoutingV1HttpApiClient, PeerRecord } from '@helia/delegated-routing-v1-http-api-client'
 import type { Routing } from '@helia/interface'
 import type { StubbedInstance } from 'sinon-ts'
+import { defaultLogger } from '@libp2p/logger'
 
 describe('delegated-http-routing', () => {
   let client: StubbedInstance<DelegatedRoutingV1HttpApiClient>
@@ -17,7 +18,11 @@ describe('delegated-http-routing', () => {
   beforeEach(() => {
     client = stubInterface<DelegatedRoutingV1HttpApiClient>()
 
-    router = delegatedHTTPRouting('http://127.0.0.1')
+    router = delegatedHTTPRouting({
+      url: 'http://127.0.0.1'
+    })({
+      logger: defaultLogger()
+    })
     // @ts-expect-error private field
     router.client = client
   })

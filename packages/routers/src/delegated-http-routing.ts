@@ -1,6 +1,5 @@
 import { delegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
 import { NotFoundError } from '@libp2p/interface'
-import { defaultLogger } from '@libp2p/logger'
 import { marshalIPNSRecord, multihashFromIPNSRoutingKey, unmarshalIPNSRecord } from 'ipns'
 import first from 'it-first'
 import map from 'it-map'
@@ -22,7 +21,7 @@ function isIPNSKey (key: Uint8Array): boolean {
 class DelegatedHTTPRouter implements Routing {
   private readonly client: DelegatedRoutingV1HttpApiClient
 
-  constructor (components: DelegatedRoutingV1HttpApiClientComponents, init: DelegatedRoutingV1HttpApiClientInit & { url: string | URL }) {
+  constructor (components: DelegatedRoutingV1HttpApiClientComponents, init: DelegatedRoutingV1HttpApiClientInit) {
     this.client = delegatedRoutingV1HttpApiClient(init)(components)
   }
 
@@ -105,24 +104,6 @@ class DelegatedHTTPRouter implements Routing {
 /**
  * Creates a Helia Router that connects to an endpoint that supports the [Delegated Routing V1 HTTP API](https://specs.ipfs.tech/routing/http-routing-v1/) spec.
  */
-export function delegatedHTTPRouting (init: DelegatedRoutingV1HttpApiClientInit & { url: string | URL }): (components: any) => Routing
-/**
- * @deprecated Use `delegatedHTTPRouting(init)` instead
- */
-export function delegatedHTTPRouting (url: string | URL, init?: DelegatedRoutingV1HttpApiClientInit): Routing
-export function delegatedHTTPRouting (url: string | URL | (DelegatedRoutingV1HttpApiClientInit & { url: string | URL }), init?: DelegatedRoutingV1HttpApiClientInit): Routing | ((components: any) => Routing) {
-  if (typeof url === 'string' || url instanceof URL) {
-    return new DelegatedHTTPRouter({
-      logger: defaultLogger()
-    }, {
-      ...delegatedHTTPRoutingDefaults(),
-      ...init,
-      url: new URL(url)
-    })
-  }
-
-  return (components: any) => new DelegatedHTTPRouter(components, {
-    ...delegatedHTTPRoutingDefaults(),
-    ...url
-  })
+export function delegatedHTTPRouting (init: DelegatedRoutingV1HttpApiClientInit): (components: any) => Routing {
+  return (components: any) => new DelegatedHTTPRouter(components, delegatedHTTPRoutingDefaults(init))
 }
