@@ -1,5 +1,21 @@
 # Changelog
 
+## [10.0.0](https://github.com/ipfs/helia/compare/interop-v9.0.18...interop-v10.0.0) (2026-01-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* pass the endpoint URL to the delegated routing router  as a `url` property of an init object
+
+### Dependencies
+
+* update delegated routing client ([#937](https://github.com/ipfs/helia/issues/937)) ([1c79dae](https://github.com/ipfs/helia/commit/1c79dae55273a2751eb6d11648702f2946df4bcc))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/http bumped from ^3.0.15 to ^3.0.16
+    * @helia/routers bumped from ^4.0.6 to ^5.0.0
+    * helia bumped from ^6.0.15 to ^6.0.16
+
 ## [9.0.18](https://github.com/ipfs/helia/compare/interop-v9.0.17...interop-v9.0.18) (2026-01-15)
 
 
