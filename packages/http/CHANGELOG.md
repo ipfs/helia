@@ -1,5 +1,20 @@
 # Changelog
 
+## [3.0.16](https://github.com/ipfs/helia/compare/http-v3.0.15...http-v3.0.16) (2026-01-16)
+
+
+### Documentation
+
+* update readme ([14e7873](https://github.com/ipfs/helia/commit/14e78732fdca2053ddc1cd2a3905b4faa4eaf916))
+
+
+### Dependencies
+
+* update delegated routing client to v6 ([#936](https://github.com/ipfs/helia/issues/936)) ([ec26650](https://github.com/ipfs/helia/commit/ec2665082163f3c87ff0f9d3b491295f5cdf49b0))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/routers bumped from ^4.0.6 to ^5.0.0
+
 ## [3.0.15](https://github.com/ipfs/helia/compare/http-v3.0.14...http-v3.0.15) (2026-01-15)
 
 
