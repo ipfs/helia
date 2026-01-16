@@ -63,7 +63,9 @@ const helia = await createHeliaHTTP({
     trustlessGateway()
   ],
   routers: [
-    delegatedHTTPRouting('https://delegated-ipfs.dev'),
+    delegatedHTTPRouting({
+      url: 'https://delegated-ipfs.dev'
+    }),
     httpGatewayRouting({
       gateways: ['https://cloudflare-ipfs.com', 'https://ipfs.io']
     })
