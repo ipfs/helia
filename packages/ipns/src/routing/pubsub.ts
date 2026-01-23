@@ -123,7 +123,7 @@ class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPN
             }
 
             this.#handlePeerJoin(peerId, sub.topic).catch(err => {
-              log.error('Error fetching IPNS record from peer %s - %e', peerId, err)
+              log.error('error fetching IPNS record from peer %s - %e', peerId, err)
             })
           }
         })
@@ -141,12 +141,12 @@ class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPN
             return undefined
           }
         })
-        log('Registered lookup function for IPNS with libp2p/fetch service')
+        log('registered lookup function for IPNS with libp2p/fetch service')
       } catch (e) {
-        log('Unable to register lookup function for IPNS with libp2p/fetch service. May already exist')
+        log('unable to register lookup function for IPNS with libp2p/fetch service - %e', e)
       }
     } else {
-      log('No libp2p/fetch service found. Skipping registration of lookup function for IPNS.')
+      log('no libp2p/fetch service found. Skipping registration of lookup function for IPNS.')
     }
   }
 
@@ -191,7 +191,7 @@ class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPN
     }
 
     if (marshalledRecord == null) {
-      log('no record found on peer', peerId)
+      log('no record found on peer %p', peerId)
       return
     }
 
@@ -271,7 +271,7 @@ class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPN
       throw err
     }
 
-    throw new NotFoundError('Pubsub routing does not actively query peers.')
+    throw new NotFoundError('Pubsub routing does not actively query peers')
   }
 
   /**
