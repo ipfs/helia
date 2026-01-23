@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import * as dagCbor from '@ipld/dag-cbor'
 import * as dagPb from '@ipld/dag-pb'
 import * as raw from 'multiformats/codecs/raw'

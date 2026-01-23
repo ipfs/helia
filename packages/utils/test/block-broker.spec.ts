@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
@@ -82,10 +80,10 @@ describe('block-broker', () => {
         yield blocks[i].cid
         await delay(10)
       }
-    }()), ({ cid, bytes }) => {
+    }()), async ({ cid, bytes }) => {
       return {
         cid,
-        block: toBuffer(bytes)
+        block: await toBuffer(bytes)
       }
     }))
 
@@ -118,10 +116,10 @@ describe('block-broker', () => {
         yield blocks[i].cid
         await delay(10)
       }
-    }()), ({ cid, bytes }) => {
+    }()), async ({ cid, bytes }) => {
       return {
         cid,
-        block: toBuffer(bytes)
+        block: await toBuffer(bytes)
       }
     }))
 

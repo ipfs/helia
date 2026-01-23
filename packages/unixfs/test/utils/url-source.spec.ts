@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { expect } from 'aegir/chai'
 import all from 'it-all'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'

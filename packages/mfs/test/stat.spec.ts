@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import * as dagPb from '@ipld/dag-pb'
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'

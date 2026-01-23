@@ -1,5 +1,58 @@
 # Changelog
 
+## [10.0.0](https://github.com/ipfs/helia/compare/interop-v9.0.18...interop-v10.0.0) (2026-01-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* pass the endpoint URL to the delegated routing router  as a `url` property of an init object
+
+### Dependencies
+
+* update delegated routing client ([#937](https://github.com/ipfs/helia/issues/937)) ([1c79dae](https://github.com/ipfs/helia/commit/1c79dae55273a2751eb6d11648702f2946df4bcc))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/http bumped from ^3.0.15 to ^3.0.16
+    * @helia/routers bumped from ^4.0.6 to ^5.0.0
+    * helia bumped from ^6.0.15 to ^6.0.16
+
+## [9.0.18](https://github.com/ipfs/helia/compare/interop-v9.0.17...interop-v9.0.18) (2026-01-15)
+
+
+### Bug Fixes
+
+* use non-deprecated factory function to create delegated client ([#934](https://github.com/ipfs/helia/issues/934)) ([20ba9cf](https://github.com/ipfs/helia/commit/20ba9cf6256961d2b664af0e8f48b5e9d009d834))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.0.13 to ^5.0.14
+    * @helia/dnslink bumped from ^1.1.3 to ^1.1.4
+    * @helia/car bumped from ^5.3.4 to ^5.3.5
+    * @helia/dag-cbor bumped from ^5.0.3 to ^5.0.4
+    * @helia/dag-json bumped from ^5.0.3 to ^5.0.4
+    * @helia/http bumped from ^3.0.14 to ^3.0.15
+    * @helia/ipns bumped from ^9.1.5 to ^9.1.6
+    * @helia/json bumped from ^5.0.3 to ^5.0.4
+    * @helia/mfs bumped from ^7.0.0 to ^7.0.1
+    * @helia/routers bumped from ^4.0.5 to ^4.0.6
+    * @helia/strings bumped from ^5.0.3 to ^5.0.4
+    * @helia/unixfs bumped from ^7.0.0 to ^7.0.1
+    * helia bumped from ^6.0.14 to ^6.0.15
+
+## [9.0.17](https://github.com/ipfs/helia/compare/interop-v9.0.16...interop-v9.0.17) (2026-01-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/car bumped from ^5.3.3 to ^5.3.4
+    * @helia/mfs bumped from ^6.0.4 to ^7.0.0
+    * @helia/unixfs bumped from ^6.0.4 to ^7.0.0
+
 ## [9.0.16](https://github.com/ipfs/helia/compare/interop-v9.0.15...interop-v9.0.16) (2025-12-15)
 
 

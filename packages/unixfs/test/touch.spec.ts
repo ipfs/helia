@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import delay from 'delay'
@@ -142,7 +140,9 @@ describe('.files.touch', () => {
       // no bigint support
       .that.satisfies((s: bigint) => s > seconds)
 
-    for await (const file of fs.ls(updatedCid)) {
+    for await (const entry of fs.ls(updatedCid)) {
+      const file = await fs.stat(entry.cid)
+
       expect(file).to.have.nested.property('unixfs.mtime.secs')
         // no bigint support
         .that.satisfies((s: bigint) => s > seconds)

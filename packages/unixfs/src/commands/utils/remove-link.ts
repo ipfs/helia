@@ -141,19 +141,21 @@ const convertToFlatDirectory = async (parent: Directory, blockstore: PutStore & 
   const rootNode: PBNode = {
     Links: []
   }
-  const dir = await exporter(parent.cid, blockstore)
+  const dir = await exporter(parent.cid, blockstore, options)
 
   if (dir.type !== 'directory') {
     throw new Error('Unexpected node type')
   }
 
-  for await (const entry of dir.content()) {
+  for await (const entry of dir.entries()) {
     let tsize = 0
 
-    if (entry.node instanceof Uint8Array) {
-      tsize = entry.node.byteLength
+    const file = await exporter(entry.cid, blockstore, options)
+
+    if (file.node instanceof Uint8Array) {
+      tsize = file.node.byteLength
     } else {
-      tsize = dagPB.encode(entry.node).length
+      tsize = dagPB.encode(file.node).length
     }
 
     rootNode.Links.push({

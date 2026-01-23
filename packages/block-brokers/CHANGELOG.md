@@ -1,5 +1,20 @@
 # Changelog
 
+## [5.0.14](https://github.com/ipfs/helia/compare/block-brokers-v5.0.13...block-brokers-v5.0.14) (2026-01-15)
+
+
+### Bug Fixes
+
+* use non-deprecated factory function to create delegated client ([#934](https://github.com/ipfs/helia/issues/934)) ([20ba9cf](https://github.com/ipfs/helia/commit/20ba9cf6256961d2b664af0e8f48b5e9d009d834))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^3.0.13 to ^3.0.14
+    * @helia/utils bumped from ^2.3.3 to ^2.3.4
+
 ## [5.0.13](https://github.com/ipfs/helia/compare/block-brokers-v5.0.12...block-brokers-v5.0.13) (2025-12-15)
 
 

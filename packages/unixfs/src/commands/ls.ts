@@ -1,43 +1,18 @@
 import { exporter } from 'ipfs-unixfs-exporter'
-import { NoContentError, NotADirectoryError } from '../errors.js'
 import { resolve } from './utils/resolve.js'
 import type { LsOptions } from '../index.js'
 import type { GetStore } from '../unixfs.js'
-import type { UnixFSEntry, UnixFSBasicEntry } from 'ipfs-unixfs-exporter'
+import type { UnixFSDirectoryEntry } from 'ipfs-unixfs-exporter'
 import type { CID } from 'multiformats/cid'
 
-export function ls (cid: CID, blockstore: GetStore, options: Partial<LsOptions & { extended: false }>): AsyncIterable<UnixFSBasicEntry>
-export function ls (cid: CID, blockstore: GetStore, options?: Partial<LsOptions>): AsyncIterable<UnixFSEntry>
-export async function * ls (cid: CID, blockstore: GetStore, options: Partial<LsOptions> = {}): AsyncIterable<any> {
+export async function * ls (cid: CID, blockstore: GetStore, options: Partial<LsOptions> = {}): AsyncIterable<UnixFSDirectoryEntry> {
   const resolved = await resolve(cid, options.path, blockstore, options)
-  const result = await exporter(resolved.cid, blockstore, {
-    ...options,
-    extended: true
-  })
+  const result = await exporter(resolved.cid, blockstore, options)
 
-  if (result.type === 'file' || result.type === 'raw') {
-    if (options.extended === false) {
-      const basic: UnixFSBasicEntry = {
-        name: result.name,
-        path: result.path,
-        cid: result.cid
-      }
-
-      yield basic
-    } else {
-      yield result
-    }
-
+  if (result.type === 'directory') {
+    yield * result.entries(options)
     return
   }
 
-  if (result.content == null) {
-    throw new NoContentError()
-  }
-
-  if (result.type !== 'directory') {
-    throw new NotADirectoryError()
-  }
-
-  yield * result.content(options)
+  yield result
 }

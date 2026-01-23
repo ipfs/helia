@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { ipns } from '@helia/ipns'
 import { generateKeyPair, privateKeyToProtobuf } from '@libp2p/crypto/keys'
 import { peerIdFromString } from '@libp2p/peer-id'

@@ -2,12 +2,13 @@ import { unixfs } from '@helia/unixfs'
 import { AlreadyExistsError, DoesNotExistError, InvalidParametersError, NotADirectoryError } from '@helia/unixfs/errors'
 import { Key } from 'interface-datastore'
 import { UnixFS as IPFSUnixFS } from 'ipfs-unixfs'
+import map from 'it-map'
 import { CID } from 'multiformats/cid'
 import { basename } from './utils/basename.js'
 import type { MFSComponents, MFSInit, MFS as MFSInterface, MkdirOptions, RmOptions, WriteOptions } from './index.js'
 import type { CatOptions, ChmodOptions, CpOptions, LsOptions, StatOptions, TouchOptions, UnixFS, FileStats, DirectoryStats, RawStats, ExtendedStatOptions, ExtendedFileStats, ExtendedDirectoryStats, ExtendedRawStats } from '@helia/unixfs'
 import type { AbortOptions, Logger } from '@libp2p/interface'
-import type { UnixFSEntry } from 'ipfs-unixfs-exporter'
+import type { UnixFSDirectoryEntry } from 'ipfs-unixfs-exporter'
 import type { ByteStream } from 'ipfs-unixfs-importer'
 
 interface PathEntry {
@@ -140,16 +141,30 @@ export class MFS implements MFSInterface {
     this.root = await this.#persistPath(trail, options)
   }
 
-  async * ls (path?: string, options?: Partial<LsOptions>): AsyncIterable<UnixFSEntry> {
+  async * ls (path?: string, options?: Partial<LsOptions>): AsyncIterable<UnixFSDirectoryEntry> {
     const root = await this.#getRootCID()
 
     if (options?.path != null) {
       path = `${path}/${options.path}`
     }
 
-    yield * this.unixfs.ls(root, {
+    const rootString = root.toString()
+
+    yield * map(this.unixfs.ls(root, {
       ...options,
       path
+    }), (file) => {
+      // remove CID from start of path
+      let filePath = file.path.split('/').slice(1).join('/')
+
+      if (filePath.startsWith(rootString)) {
+        filePath = filePath.substring(0, rootString.length)
+      }
+
+      return {
+        ...file,
+        path: `${path === '/' ? '' : path}/${filePath}`
+      }
     })
   }
 

@@ -7,6 +7,7 @@ import { cidToDirectory } from './cid-to-directory.js'
 import { cidToPBLink } from './cid-to-pblink.js'
 import type { GetStore, PutStore } from '../../unixfs.js'
 import type { AbortOptions } from '@libp2p/interface'
+import type { PathEntry } from 'ipfs-unixfs-exporter'
 import type { CID } from 'multiformats/cid'
 
 const log = logger('helia:unixfs:components:utils:resolve')
@@ -30,7 +31,7 @@ export interface ResolveResult {
    *
    * If not present, there was no path passed or the path was an empty string
    */
-  segments?: Segment[]
+  segments?: PathEntry[]
 }
 
 export async function resolve (cid: CID, path: string | undefined, blockstore: GetStore, options: AbortOptions): Promise<ResolveResult> {

@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { createHeliaHTTP } from '@helia/http'
 import { ipns } from '@helia/ipns'
 import { delegatedHTTPRouting } from '@helia/routers'
@@ -27,7 +25,9 @@ describe('@helia/ipns - http', () => {
     kubo = await createKuboNode()
     helia = await createHeliaHTTP({
       routers: [
-        delegatedHTTPRouting('http://127.0.0.1:8180')
+        delegatedHTTPRouting({
+          url: 'http://127.0.0.1:8180'
+        })
       ]
     })
     name = ipns(helia)

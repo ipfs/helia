@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { car } from '@helia/car'
 import { dagCbor } from '@helia/dag-cbor'
 import { dagJson } from '@helia/dag-json'

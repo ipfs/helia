@@ -1,5 +1,37 @@
 # Changelog
 
+## [7.0.1](https://github.com/ipfs/helia/compare/mfs-v7.0.0...mfs-v7.0.1) (2026-01-15)
+
+
+### Bug Fixes
+
+* use non-deprecated factory function to create delegated client ([#934](https://github.com/ipfs/helia/issues/934)) ([20ba9cf](https://github.com/ipfs/helia/commit/20ba9cf6256961d2b664af0e8f48b5e9d009d834))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/unixfs bumped from ^7.0.0 to ^7.0.1
+
+## [7.0.0](https://github.com/ipfs/helia/compare/mfs-v6.0.4...mfs-v7.0.0) (2026-01-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* metadata is no longer returned from fs.ls - use fs.stat or similar to obtain it
+
+### Features
+
+* return cid/name/path from ls ([#929](https://github.com/ipfs/helia/issues/929)) ([b0033ca](https://github.com/ipfs/helia/commit/b0033ca2e1591981d2c9ecb6105911e41e7b786b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/unixfs bumped from ^6.0.4 to ^7.0.0
+
 ## [6.0.4](https://github.com/ipfs/helia/compare/mfs-v6.0.3...mfs-v6.0.4) (2025-12-12)
 
 

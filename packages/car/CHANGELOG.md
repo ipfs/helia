@@ -1,5 +1,33 @@
 # Changelog
 
+## [5.3.5](https://github.com/ipfs/helia/compare/car-v5.3.4...car-v5.3.5) (2026-01-15)
+
+
+### Bug Fixes
+
+* use non-deprecated factory function to create delegated client ([#934](https://github.com/ipfs/helia/issues/934)) ([20ba9cf](https://github.com/ipfs/helia/commit/20ba9cf6256961d2b664af0e8f48b5e9d009d834))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^2.3.3 to ^2.3.4
+  * devDependencies
+    * @helia/mfs bumped from ^7.0.0 to ^7.0.1
+    * @helia/unixfs bumped from ^7.0.0 to ^7.0.1
+
+## [5.3.4](https://github.com/ipfs/helia/compare/car-v5.3.3...car-v5.3.4) (2026-01-12)
+
+
+### Dependencies
+
+* update ipfs-unixfs-exporter in @helia/car ([#933](https://github.com/ipfs/helia/issues/933)) ([4e19769](https://github.com/ipfs/helia/commit/4e19769aaa0f5b1fe6c9471275cb28f850d4ab56))
+* The following workspace dependencies were updated
+  * devDependencies
+    * @helia/mfs bumped from ^6.0.4 to ^7.0.0
+    * @helia/unixfs bumped from ^6.0.4 to ^7.0.0
+
 ## [5.3.3](https://github.com/ipfs/helia/compare/car-v5.3.2...car-v5.3.3) (2025-12-15)
 
 

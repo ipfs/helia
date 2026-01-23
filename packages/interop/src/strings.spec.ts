@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { strings } from '@helia/strings'
 import { expect } from 'aegir/chai'
 import { CID } from 'multiformats/cid'

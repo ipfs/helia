@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { unixfs } from '@helia/unixfs'
 import * as dagPb from '@ipld/dag-pb'
 import { multiaddr } from '@multiformats/multiaddr'

@@ -1,5 +1,23 @@
 # Changelog
 
+## [5.0.0](https://github.com/ipfs/helia/compare/routers-v4.0.6...routers-v5.0.0) (2026-01-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* pass the endpoint URL to the delegated routing router  as a `url` property of an init object
+
+### Dependencies
+
+* update delegated routing client ([#937](https://github.com/ipfs/helia/issues/937)) ([1c79dae](https://github.com/ipfs/helia/commit/1c79dae55273a2751eb6d11648702f2946df4bcc))
+
+## [4.0.6](https://github.com/ipfs/helia/compare/routers-v4.0.5...routers-v4.0.6) (2026-01-15)
+
+
+### Bug Fixes
+
+* use non-deprecated factory function to create delegated client ([#934](https://github.com/ipfs/helia/issues/934)) ([20ba9cf](https://github.com/ipfs/helia/commit/20ba9cf6256961d2b664af0e8f48b5e9d009d834))
+
 ## [4.0.5](https://github.com/ipfs/helia/compare/routers-v4.0.4...routers-v4.0.5) (2025-12-12)
 
 

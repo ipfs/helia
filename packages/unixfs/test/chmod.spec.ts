@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { unixfs } from '../src/index.js'

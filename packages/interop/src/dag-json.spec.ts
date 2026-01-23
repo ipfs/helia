@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { dagJson } from '@helia/dag-json'
 import { expect } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
