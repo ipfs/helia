@@ -225,8 +225,7 @@ class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPN
     const publicKey: PublicKey = isCodec(routingMultihash, 0x0)
       ? publicKeyFromMultihash(routingMultihash)
       : extractPublicKeyFromIPNSRecord(record)!
-    const event = new CustomEvent('record-update', { detail: { publicKey, record } })
-    this.safeDispatchEvent<IPNSPublishResult>('record-update', event)
+    this.safeDispatchEvent<IPNSPublishResult>('record-update', { detail: { publicKey, record } })
   }
 
   /**
