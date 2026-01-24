@@ -137,8 +137,6 @@ class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPN
             if (err.name !== 'NotFoundError') {
               throw err
             }
-
-            return undefined
           }
         })
         log('registered lookup function for IPNS with libp2p/fetch service')
