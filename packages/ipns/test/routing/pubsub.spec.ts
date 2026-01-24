@@ -228,13 +228,8 @@ describe('pubsub routing', () => {
     })
 
     it('skips if topic not found in subscriptions', async () => {
-      try {
-        await pubsubRouter.get(routingKey)
-      } catch (err: any) {
-        if (err.name !== 'NotFoundError') {
-          throw err
-        }
-      }
+      await expect(pubsubRouter.get(routingKey)).to.eventually.be.rejected
+        .with.property('name', 'NotFoundError')
 
       subscription.topic = 'not-found'
       target.safeDispatchEvent('subscription-change', event)
@@ -246,13 +241,8 @@ describe('pubsub routing', () => {
     })
 
     it('skips if peer is leaving the mesh', async () => {
-      try {
-        await pubsubRouter.get(routingKey)
-      } catch (err: any) {
-        if (err.name !== 'NotFoundError') {
-          throw err
-        }
-      }
+      await expect(pubsubRouter.get(routingKey)).to.eventually.be.rejected
+        .with.property('name', 'NotFoundError')
 
       subscription.subscribe = false
       target.safeDispatchEvent('subscription-change', event)
@@ -264,13 +254,8 @@ describe('pubsub routing', () => {
     })
 
     it('skips if peer does not have record', async () => {
-      try {
-        await pubsubRouter.get(routingKey)
-      } catch (err: any) {
-        if (err.name !== 'NotFoundError') {
-          throw err
-        }
-      }
+      await expect(pubsubRouter.get(routingKey)).to.eventually.be.rejected
+        .with.property('name', 'NotFoundError')
 
       fetch.fetch.callsFake(async () => undefined)
       target.safeDispatchEvent('subscription-change', event)
