@@ -11,7 +11,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { InvalidTopicError } from '../errors.js'
 import { localStore } from '../local-store.js'
-import { IPNS_STRING_PREFIX, isCodec } from '../utils.ts'
+import { IDENTITY_CODEC, IPNS_STRING_PREFIX, isCodec } from '../utils.ts'
 import type { GetOptions, IPNSRouting, PutOptions } from './index.js'
 import type { IPNSPublishResult } from '../index.ts'
 import type { LocalStore } from '../local-store.js'
@@ -226,7 +226,7 @@ export class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> impleme
     // emit record-updates
     const routingMultihash = multihashFromIPNSRoutingKey(routingKey)
     const record = unmarshalIPNSRecord(marshalledRecord)
-    const publicKey: PublicKey = isCodec(routingMultihash, 0x0)
+    const publicKey: PublicKey = isCodec(routingMultihash, IDENTITY_CODEC)
       ? publicKeyFromMultihash(routingMultihash)
       : extractPublicKeyFromIPNSRecord(record)!
     this.safeDispatchEvent<IPNSPublishResult>('record-update', { detail: { publicKey, record } })
