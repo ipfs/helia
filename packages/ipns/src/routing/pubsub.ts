@@ -78,7 +78,7 @@ export interface PubSubRouterEvents {
   'record-update': CustomEvent<IPNSPublishResult>
 }
 
-class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPNSRouting {
+export class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPNSRouting {
   private subscriptions: string[]
   private readonly localStore: LocalStore
   private readonly peerId: PeerId
@@ -341,6 +341,6 @@ interface PubsubRoutingOptions {
  * updated records, so the first call to `.get` should be expected
  * to fail!
  */
-export function pubsub (components: PubsubRoutingComponents, options: PubsubRoutingOptions = {}): PubSubRouting {
+export function pubsub (components: PubsubRoutingComponents, options: PubsubRoutingOptions = {}): IPNSRouting {
   return new PubSubRouting(components, options)
 }

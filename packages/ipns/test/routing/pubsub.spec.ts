@@ -13,7 +13,7 @@ import { localStore } from '../../src/local-store.ts'
 import { pubsub as pubsubRouting } from '../../src/routing/pubsub.ts'
 import type { IPNSRecord } from '../../src/index.ts'
 import type { LocalStore } from '../../src/local-store.ts'
-import type { Message, PubSub, PubSubEvents, PubsubRoutingComponents, Subscription } from '../../src/routing/pubsub.ts'
+import { PubSubRouting, type Message, type PubSub, type PubSubEvents, type PubsubRoutingComponents, type Subscription } from '../../src/routing/pubsub.ts'
 import type { Fetch } from '@libp2p/fetch'
 import type { Ed25519PrivateKey, PeerId, PublicKey } from '@libp2p/interface'
 import type { StubbedInstance } from 'sinon-ts'
@@ -24,7 +24,7 @@ describe('pubsub routing', () => {
   let pubsub: StubbedInstance<PubSub>
   let fetch: StubbedInstance<Fetch>
   let components: PubsubRoutingComponents
-  let pubsubRouter: ReturnType<typeof pubsubRouting>
+  let pubsubRouter: PubSubRouting
   let routingKey: Uint8Array
   let topic: string
   let privateKey: Ed25519PrivateKey
@@ -59,7 +59,7 @@ describe('pubsub routing', () => {
       }
     }
 
-    pubsubRouter = pubsubRouting(components)
+    pubsubRouter = new PubSubRouting(components)
 
     privateKey = await generateKeyPair('Ed25519')
     routingKey = multihashToIPNSRoutingKey(privateKey.publicKey.toMultihash())
