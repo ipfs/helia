@@ -81,6 +81,7 @@
     "@libp2p/keychain": "^6.0.5",
     "@libp2p/logger": "^6.0.5",
     "@libp2p/utils": "^7.0.5",
+    "any-signal": "^4.2.0",
     "interface-datastore": "^9.0.2",
     "ipns": "^10.1.2",
     "multiformats": "^13.4.1",
