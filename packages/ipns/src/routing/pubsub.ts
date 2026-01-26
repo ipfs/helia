@@ -207,7 +207,7 @@ export class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> impleme
       const { record: currentRecord } = await this.localStore.get(routingKey)
 
       if (uint8ArrayEquals(currentRecord, marshalledRecord)) {
-        log.trace('found identical record for', routingKey)
+        log.trace('found identical record for %m', routingKey)
         return
       }
 
@@ -215,12 +215,12 @@ export class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> impleme
       const index = ipnsSelector(routingKey, records)
 
       if (index === 0) {
-        log.trace('found old record for', routingKey)
+        log.trace('found old record for %m', routingKey)
         return
       }
     }
 
-    log('found new record for', routingKey)
+    log('found new record for %m', routingKey)
     await this.localStore.put(routingKey, marshalledRecord)
 
     // emit record-updates
