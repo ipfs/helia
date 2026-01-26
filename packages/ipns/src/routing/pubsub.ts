@@ -96,6 +96,8 @@ class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPN
     this.pubsub = components.libp2p.services.pubsub
     this.fetch = components.libp2p.services.fetch
     this.fetchConcurrency = init.fetchConcurrency ?? 8
+    // default libp2p-fetch timeout is 10 seconds
+    // we should have an existing connection to the peer so this can be shortened
     this.fetchTimeout = init.fetchTimeout ?? 2_500
     this.queue = new Queue<Uint8Array | undefined>({ concurrency: this.fetchConcurrency })
 
@@ -182,8 +184,6 @@ class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPN
     try {
       marshalledRecord = await this.queue.add(async () => {
         log('fetching ipns record for %s from peer %s', routingKey, peerId)
-        // default timeout is 10 seconds
-        // we should have an existing connection to the peer so this can be shortened
         const signal = AbortSignal.timeout(this.fetchTimeout)
         return this.fetch?.fetch(peerId, routingKey, { signal })
       })
