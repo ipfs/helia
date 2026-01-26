@@ -2,6 +2,7 @@ import { publicKeyFromMultihash } from '@libp2p/crypto/keys'
 import { isPublicKey, NotFoundError, TypedEventEmitter } from '@libp2p/interface'
 import { logger } from '@libp2p/logger'
 import { Queue } from '@libp2p/utils'
+import { anySignal } from 'any-signal'
 import { extractPublicKeyFromIPNSRecord, multihashFromIPNSRoutingKey, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from 'ipns'
 import { ipnsSelector } from 'ipns/selector'
 import { ipnsValidator } from 'ipns/validator'
@@ -16,7 +17,7 @@ import type { GetOptions, IPNSRouting, PutOptions } from './index.js'
 import type { IPNSPublishResult } from '../index.ts'
 import type { LocalStore } from '../local-store.js'
 import type { Fetch } from '@libp2p/fetch'
-import type { PeerId, PublicKey, TypedEventTarget, ComponentLogger } from '@libp2p/interface'
+import type { PeerId, PublicKey, TypedEventTarget, ComponentLogger, Startable } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 import type { ProgressEvent } from 'progress-events'
@@ -78,7 +79,7 @@ export interface PubSubRouterEvents {
   'record-update': CustomEvent<IPNSPublishResult>
 }
 
-export class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPNSRouting {
+export class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPNSRouting, Startable {
   private subscriptions: string[]
   private readonly localStore: LocalStore
   private readonly peerId: PeerId
@@ -182,10 +183,20 @@ export class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> impleme
 
     let marshalledRecord: Uint8Array | undefined
     try {
-      marshalledRecord = await this.queue.add(async () => {
+      marshalledRecord = await this.queue.add(async ({ signal }) => {
         log('fetching ipns record for %s from peer %s', routingKey, peerId)
-        const signal = AbortSignal.timeout(this.fetchTimeout)
-        return this.fetch?.fetch(peerId, routingKey, { signal })
+        const sig = anySignal([
+          signal,
+          AbortSignal.timeout(this.fetchTimeout)
+        ])
+
+        try {
+          return await this.fetch?.fetch(peerId, routingKey, {
+            signal: sig
+          })
+        } finally {
+          sig.clear()
+        }
       })
     } catch (err: any) {
       log.error('failed to fetch ipns record for %s from peer %s - %e', routingKey, peerId, err)
@@ -301,6 +312,14 @@ export class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> impleme
 
   toString (): string {
     return 'PubSubRouting()'
+  }
+
+  start (): void {
+
+  }
+
+  stop (): void {
+    this.queue.abort()
   }
 }
 
