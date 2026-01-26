@@ -184,7 +184,7 @@ export class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> impleme
     let marshalledRecord: Uint8Array | undefined
     try {
       marshalledRecord = await this.queue.add(async ({ signal }) => {
-        log('fetching ipns record for %s from peer %s', routingKey, peerId)
+        log('fetching ipns record for %m from peer %s', routingKey, peerId)
         const sig = anySignal([
           signal,
           AbortSignal.timeout(this.fetchTimeout)
@@ -199,7 +199,7 @@ export class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> impleme
         }
       })
     } catch (err: any) {
-      log.error('failed to fetch ipns record for %s from peer %s - %e', routingKey, peerId, err)
+      log.error('failed to fetch ipns record for %m from peer %s - %e', routingKey, peerId, err)
       return
     }
 
