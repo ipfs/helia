@@ -84,16 +84,18 @@ class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPN
   private readonly peerId: PeerId
   private readonly pubsub: PubSub
   private readonly fetch: Fetch | undefined
+  private readonly fetchConcurrency: number
   private readonly queue: Queue<Uint8Array | undefined>
 
-  constructor (components: PubsubRoutingComponents) {
+  constructor (components: PubsubRoutingComponents, init: PubsubRoutingOptions = {}) {
     super()
     this.subscriptions = []
     this.localStore = localStore(components.datastore, components.logger.forComponent('helia:ipns:local-store'))
     this.peerId = components.libp2p.peerId
     this.pubsub = components.libp2p.services.pubsub
     this.fetch = components.libp2p.services.fetch
-    this.queue = new Queue<Uint8Array | undefined>({ concurrency: 32 })
+    this.fetchConcurrency = init.fetchConcurrency ?? 8
+    this.queue = new Queue<Uint8Array | undefined>({ concurrency: this.fetchConcurrency })
 
     this.pubsub.addEventListener('message', (evt) => {
       const message = evt.detail
@@ -324,6 +326,10 @@ function topicToKey (topic: string): Uint8Array {
   return uint8ArrayFromString(key, 'base64url')
 }
 
+interface PubsubRoutingOptions {
+  fetchConcurrency?: number
+}
+
 /**
  * This IPNS routing receives IPNS record updates via dedicated
  * pubsub topic.
@@ -332,6 +338,6 @@ function topicToKey (topic: string): Uint8Array {
  * updated records, so the first call to `.get` should be expected
  * to fail!
  */
-export function pubsub (components: PubsubRoutingComponents): PubSubRouting {
-  return new PubSubRouting(components)
+export function pubsub (components: PubsubRoutingComponents, options: PubsubRoutingOptions = {}): PubSubRouting {
+  return new PubSubRouting(components, options)
 }
