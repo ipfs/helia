@@ -85,6 +85,7 @@ class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPN
   private readonly pubsub: PubSub
   private readonly fetch: Fetch | undefined
   private readonly fetchConcurrency: number
+  private readonly fetchTimeout: number
   private readonly queue: Queue<Uint8Array | undefined>
 
   constructor (components: PubsubRoutingComponents, init: PubsubRoutingOptions = {}) {
@@ -95,6 +96,7 @@ class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPN
     this.pubsub = components.libp2p.services.pubsub
     this.fetch = components.libp2p.services.fetch
     this.fetchConcurrency = init.fetchConcurrency ?? 8
+    this.fetchTimeout = init.fetchTimeout ?? 2_500
     this.queue = new Queue<Uint8Array | undefined>({ concurrency: this.fetchConcurrency })
 
     this.pubsub.addEventListener('message', (evt) => {
@@ -182,7 +184,7 @@ class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPN
         log('fetching ipns record for %s from peer %s', routingKey, peerId)
         // default timeout is 10 seconds
         // we should have an existing connection to the peer so this can be shortened
-        const signal = AbortSignal.timeout(2_500)
+        const signal = AbortSignal.timeout(this.fetchTimeout)
         return this.fetch?.fetch(peerId, routingKey, { signal })
       })
     } catch (err: any) {
@@ -328,6 +330,7 @@ function topicToKey (topic: string): Uint8Array {
 
 interface PubsubRoutingOptions {
   fetchConcurrency?: number
+  fetchTimeout?: number
 }
 
 /**
