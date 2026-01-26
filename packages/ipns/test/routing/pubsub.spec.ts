@@ -83,13 +83,8 @@ describe('pubsub routing', () => {
 
     describe('record handling', () => {
       it('adds record to local-store', async () => {
-        try {
-          await pubsubRouter.get(routingKey)
-        } catch (err: any) {
-          if (err.name !== 'NotFoundError') {
-            throw err
-          }
-        }
+        await expect(pubsubRouter.get(routingKey)).to.eventually.be.rejected
+          .with.property('name', 'NotFoundError')
 
         target.safeDispatchEvent('message', event)
 
@@ -99,13 +94,8 @@ describe('pubsub routing', () => {
       })
 
       it('updates record in local-store', async () => {
-        try {
-          await pubsubRouter.get(routingKey)
-        } catch (err: any) {
-          if (err.name !== 'NotFoundError') {
-            throw err
-          }
-        }
+        await expect(pubsubRouter.get(routingKey)).to.eventually.be.rejected
+          .with.property('name', 'NotFoundError')
 
         const batchSpy = Sinon.spy(components.datastore, 'batch')
 
@@ -122,13 +112,8 @@ describe('pubsub routing', () => {
       })
 
       it('skips the message if duplicate record', async () => {
-        try {
-          await pubsubRouter.get(routingKey)
-        } catch (err: any) {
-          if (err.name !== 'NotFoundError') {
-            throw err
-          }
-        }
+        await expect(pubsubRouter.get(routingKey)).to.eventually.be.rejected
+          .with.property('name', 'NotFoundError')
         await store.put(routingKey, marshalIPNSRecord(record))
 
         const batchSpy = Sinon.spy(components.datastore.batch)
@@ -142,13 +127,8 @@ describe('pubsub routing', () => {
     })
 
     it('skips the message if not signed', async () => {
-      try {
-        await pubsubRouter.get(routingKey)
-      } catch (err: any) {
-        if (err.name !== 'NotFoundError') {
-          throw err
-        }
-      }
+      await expect(pubsubRouter.get(routingKey)).to.eventually.be.rejected
+        .with.property('name', 'NotFoundError')
 
       message.type = 'unsigned'
       target.safeDispatchEvent('message', event)
@@ -159,13 +139,8 @@ describe('pubsub routing', () => {
     })
 
     it('skips if topic is not in subscriptions', async () => {
-      try {
-        await pubsubRouter.get(routingKey)
-      } catch (err: any) {
-        if (err.name !== 'NotFoundError') {
-          throw err
-        }
-      }
+      await expect(pubsubRouter.get(routingKey)).to.eventually.be.rejected
+        .with.property('name', 'NotFoundError')
 
       message.topic = 'not-in-subscriptions'
       target.safeDispatchEvent('message', event)
@@ -176,13 +151,8 @@ describe('pubsub routing', () => {
     })
 
     it('skips if message is from our peerId', async () => {
-      try {
-        await pubsubRouter.get(routingKey)
-      } catch (err: any) {
-        if (err.name !== 'NotFoundError') {
-          throw err
-        }
-      }
+      await expect(pubsubRouter.get(routingKey)).to.eventually.be.rejected
+        .with.property('name', 'NotFoundError')
 
       message.from.equals = () => true
       target.safeDispatchEvent('message', event)
@@ -210,13 +180,8 @@ describe('pubsub routing', () => {
     })
 
     it('fetches record from joining peer', async () => {
-      try {
-        await pubsubRouter.get(routingKey)
-      } catch (err: any) {
-        if (err.name !== 'NotFoundError') {
-          throw err
-        }
-      }
+      await expect(pubsubRouter.get(routingKey)).to.eventually.be.rejected
+        .with.property('name', 'NotFoundError')
 
       const recordUpdatePromise = pEvent<'record-update', CustomEvent<{ publicKey: PublicKey, record: IPNSRecord }>>(pubsubRouter, 'record-update')
       target.safeDispatchEvent('subscription-change', event)
