@@ -1,11 +1,29 @@
-import { decodeMessage, encodeMessage, message } from 'protons-runtime'
+import { decodeMessage, encodeMessage, enumeration, message } from 'protons-runtime'
 import type { Codec, DecodeOptions } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
+
+export enum Upkeep {
+  republish = 'republish',
+  refresh = 'refresh',
+  none = 'none'
+}
+
+enum __UpkeepValues {
+  republish = 0,
+  refresh = 1,
+  none = 3
+}
+
+export namespace Upkeep {
+  export const codec = (): Codec<Upkeep> => {
+    return enumeration<Upkeep>(__UpkeepValues)
+  }
+}
 
 export interface IPNSPublishMetadata {
   keyName: string
   lifetime: number
-  refresh: boolean
+  upkeep: Upkeep
 }
 
 export namespace IPNSPublishMetadata {
@@ -28,9 +46,9 @@ export namespace IPNSPublishMetadata {
           w.uint32(obj.lifetime)
         }
 
-        if ((obj.refresh != null && obj.refresh !== false)) {
+        if (obj.upkeep != null && __UpkeepValues[obj.upkeep] !== 0) {
           w.uint32(24)
-          w.bool(obj.refresh)
+          Upkeep.codec().encode(obj.upkeep, w)
         }
 
         if (opts.lengthDelimited !== false) {
@@ -40,7 +58,7 @@ export namespace IPNSPublishMetadata {
         const obj: any = {
           keyName: '',
           lifetime: 0,
-          refresh: false
+          upkeep: Upkeep.republish
         }
 
         const end = length == null ? reader.len : reader.pos + length
@@ -58,7 +76,7 @@ export namespace IPNSPublishMetadata {
               break
             }
             case 3: {
-              obj.refresh = reader.bool()
+              obj.upkeep = Upkeep.codec().decode(reader)
               break
             }
             default: {

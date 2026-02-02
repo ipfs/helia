@@ -1,11 +1,19 @@
 syntax = "proto3";
 
+enum Upkeep {
+  republish = 0; // Republish the record with an updated ttl (key must be in keychain)
+  refresh = 1; // Republish the record as is (while it is still valid)
+  none = 3; // Disables automated republishing for the record
+}
+
 message IPNSPublishMetadata {
   // The name of the key that was used to publish the record
   string keyName = 1;
 
   // Lifetime is the duration of the signature validity in milliseconds
+  // Relevant for Upkeep.REPUBLISH
   uint32 lifetime = 2;
 
-  bool refresh = 3;
+  // How the record should be republished
+  Upkeep upkeep = 3;
 }
