@@ -209,10 +209,12 @@ export class IPNSRepublisher {
         }
       }
       try {
-        // published record
-        const { record } = await this.resolver.resolve(key, { nocache: true })
-        publishedRecord = record
-        records.push(record)
+        if (options.force !== true) {
+          // published record
+          const { record } = await this.resolver.resolve(key, { nocache: true })
+          publishedRecord = record
+          records.push(record)
+        }
       } catch (err: any) {
         if (err.name !== 'NotFoundError') {
           throw err
@@ -225,7 +227,7 @@ export class IPNSRepublisher {
       // check if record is already published
       const selectedRecord = records[ipnsSelector(routingKey, records.map(marshalIPNSRecord))]
       const marshaledRecord = marshalIPNSRecord(selectedRecord)
-      if (options.force !== true && publishedRecord != null && uint8ArrayEquals(marshaledRecord, marshalIPNSRecord(publishedRecord))) {
+      if (publishedRecord != null && uint8ArrayEquals(marshaledRecord, marshalIPNSRecord(publishedRecord))) {
         throw new Error('Record already published')
       }
 
