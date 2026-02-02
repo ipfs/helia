@@ -151,7 +151,7 @@ HTTP/1.1 %d %s
 
           if (!res.ok) {
             this.#errors++
-            throw new Error(`Unable to fetch raw block for CID ${cid} from gateway ${this.url}, recieved ${res.status} ${res.statusText}`)
+            throw new Error(`Unable to fetch raw block for CID ${cid} from gateway ${this.url}, received ${res.status} ${res.statusText}`)
           }
           // limited Response ensures the body is less than 2MiB (or configurable maxSize)
           // see https://github.com/ipfs/helia/issues/790
