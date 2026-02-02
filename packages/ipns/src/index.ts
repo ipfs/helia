@@ -213,7 +213,7 @@ export interface PublishOptions extends AbortOptions, ProgressOptions<PublishPro
   lifetime?: number
 
   /**
-   * Only publish to a local datastore (default: false)
+   * Initially only publish to a local datastore (default: false)
    */
   offline?: boolean
 
@@ -227,6 +227,15 @@ export interface PublishOptions extends AbortOptions, ProgressOptions<PublishPro
    * The TTL of the record in ms (default: 5 minutes)
    */
   ttl?: number
+
+  /**
+   * Automated record upkeep policy. (default: "republish")
+   *
+   * - `republish`: create a new record with a refreshed TTL
+   * - `refresh`: publish the existing record until it expires
+   * - `none`: disable automated publishing
+   */
+  upkeep?: "republish" | "refresh" | "none"
 }
 
 export interface IPNSRecordMetadata {
@@ -257,6 +266,11 @@ export interface RepublishOptions extends AbortOptions, ProgressOptions<Republis
   record?: IPNSRecord
 
   /**
+   * Initially only republish to a local datastore (default: false)
+   */
+  offline?: boolean
+
+  /**
    * Force the record to be published immediately even if it's already resolvable
    *
    * @default false
@@ -264,11 +278,12 @@ export interface RepublishOptions extends AbortOptions, ProgressOptions<Republis
   force?: boolean
 
   /**
-   * Republish the latest existing record for the key on a regularly basis
+   * Automated record upkeep policy. (default: "refresh")
    *
-   * @default true
+   * - `refresh`: republish the existing record until it expires
+   * - `none`: disable automated publishing
    */
-  repeat?: boolean
+  upkeep?: "refresh" | "none"
 }
 
 export interface ResolveResult {
