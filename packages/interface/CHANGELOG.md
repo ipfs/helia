@@ -5,6 +5,13 @@
 
 * expose .dns property on @helia/interface ([#465](https://github.com/ipfs/helia/issues/465)) ([8c9bb7d](https://github.com/ipfs/helia/commit/8c9bb7d224a1b786cba1fba18bffe07001a3b95d))
 
+## [6.0.3](https://github.com/ipfs/helia/compare/interface-v6.0.2...interface-v6.0.3) (2026-02-02)
+
+
+### Bug Fixes
+
+* ensure offline can be passed to create session ([#946](https://github.com/ipfs/helia/issues/946)) ([6f4c25f](https://github.com/ipfs/helia/commit/6f4c25f65e82942c3788304b26b6ab0a4de95110))
+
 ## [6.0.2](https://github.com/ipfs/helia/compare/interface-v6.0.1...interface-v6.0.2) (2025-10-29)
 
 
