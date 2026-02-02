@@ -1,5 +1,26 @@
 # Changelog
 
+## [10.0.1](https://github.com/ipfs/helia/compare/interop-v10.0.0...interop-v10.0.1) (2026-02-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.0.14 to ^5.0.15
+    * @helia/car bumped from ^5.3.5 to ^5.3.6
+    * @helia/dag-cbor bumped from ^5.0.4 to ^5.0.5
+    * @helia/dag-json bumped from ^5.0.4 to ^5.0.5
+    * @helia/http bumped from ^3.0.16 to ^3.0.17
+    * @helia/interface bumped from ^6.0.2 to ^6.0.3
+    * @helia/ipns bumped from ^9.1.6 to ^9.1.7
+    * @helia/json bumped from ^5.0.4 to ^5.0.5
+    * @helia/mfs bumped from ^7.0.1 to ^7.0.2
+    * @helia/routers bumped from ^5.0.0 to ^5.0.1
+    * @helia/strings bumped from ^5.0.4 to ^5.0.5
+    * @helia/unixfs bumped from ^7.0.1 to ^7.0.2
+    * helia bumped from ^6.0.16 to ^6.0.17
+
 ## [10.0.0](https://github.com/ipfs/helia/compare/interop-v9.0.18...interop-v10.0.0) (2026-01-16)
 
 

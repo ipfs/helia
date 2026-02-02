@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.0.17](https://github.com/ipfs/helia/compare/http-v3.0.16...http-v3.0.17) (2026-02-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.0.14 to ^5.0.15
+    * @helia/interface bumped from ^6.0.2 to ^6.0.3
+    * @helia/routers bumped from ^5.0.0 to ^5.0.1
+    * @helia/utils bumped from ^2.3.4 to ^2.3.5
+
 ## [3.0.16](https://github.com/ipfs/helia/compare/http-v3.0.15...http-v3.0.16) (2026-01-16)
 
 
