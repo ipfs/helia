@@ -216,7 +216,7 @@ export class IPNSRepublisher {
         }
       }
       try {
-        if (options.force !== true) {
+        if (options.offline !== true) {
           // published record
           const { record } = await this.resolver.resolve(key, { nocache: true })
           publishedRecord = record
@@ -234,7 +234,7 @@ export class IPNSRepublisher {
       // check if record is already published
       const selectedRecord = records[ipnsSelector(routingKey, records.map(marshalIPNSRecord))]
       const marshaledRecord = marshalIPNSRecord(selectedRecord)
-      if (publishedRecord != null && uint8ArrayEquals(marshaledRecord, marshalIPNSRecord(publishedRecord))) {
+      if (options.force !== true && publishedRecord != null && uint8ArrayEquals(marshaledRecord, marshalIPNSRecord(publishedRecord))) {
         throw new Error('Record already published')
       }
 
