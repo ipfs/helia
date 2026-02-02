@@ -76,7 +76,7 @@ ProgressOptions<DeleteBlockProgressEvents>, ProgressOptions<DeleteManyBlocksProg
    * The initial set of peers can be specified, alternatively a `findProviders`
    * routing query will occur to populate the set instead.
    */
-  createSession(root: CID, options?: CreateSessionOptions<GetOfflineOptions & ProviderOptions & GetBlockProgressEvents>): SessionBlockstore
+  createSession(root: CID, options?: CreateSessionOptions<GetBlockProgressEvents>): SessionBlockstore
 }
 
 /**
@@ -122,7 +122,7 @@ export interface BlockAnnounceOptions <ProgressEvents extends ProgressEvent<any,
 
 }
 
-export interface CreateSessionOptions <ProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> extends AbortOptions, ProgressOptions<ProgressEvents>, ProviderOptions {
+export interface CreateSessionOptions <ProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> extends AbortOptions, ProgressOptions<ProgressEvents>, ProviderOptions, GetOfflineOptions {
   /**
    * The minimum number of providers for the root CID that are required for
    * successful session creation.
