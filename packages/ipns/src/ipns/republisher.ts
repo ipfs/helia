@@ -245,9 +245,13 @@ export class IPNSRepublisher {
         // overwrite so Record.created is reset for #republish
         overwrite: true
       }
-      await Promise.all(
-        this.routers.map(r => r.put(routingKey, marshaledRecord, putOptions))
-      )
+      if (options.offline) {
+        await this.localStore.put(routingKey, marshaledRecord, putOptions)
+      } else {
+        await Promise.all(
+          this.routers.map(r => r.put(routingKey, marshaledRecord, putOptions))
+        )
+      }
 
       return { record: selectedRecord }
     } catch (err: any) {
