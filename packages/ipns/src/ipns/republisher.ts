@@ -6,6 +6,7 @@ import { CustomProgressEvent } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { DEFAULT_REPUBLISH_CONCURRENCY, DEFAULT_REPUBLISH_INTERVAL_MS, DEFAULT_TTL_NS } from '../constants.ts'
 import { ipnsSelector } from '../index.ts'
+import { Upkeep } from '../pb/metadata.ts'
 import { keyToMultihash, shouldRefresh, shouldRepublish } from '../utils.js'
 import type { IPNSRepublishResult, RepublishOptions } from '../index.ts'
 import type { LocalStore } from '../local-store.js'
@@ -16,7 +17,6 @@ import type { Keychain } from '@libp2p/keychain'
 import type { RepeatingTask } from '@libp2p/utils'
 import type { IPNSRecord } from 'ipns'
 import type { CID, MultihashDigest } from 'multiformats/cid'
-import { Upkeep } from '../pb/metadata.ts'
 
 export interface IPNSRepublisherComponents {
   logger: ComponentLogger

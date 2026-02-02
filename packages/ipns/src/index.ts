@@ -235,7 +235,7 @@ export interface PublishOptions extends AbortOptions, ProgressOptions<PublishPro
    * - `refresh`: publish the existing record until it expires
    * - `none`: disable automated publishing
    */
-  upkeep?: "republish" | "refresh" | "none"
+  upkeep?: 'republish' | 'refresh' | 'none'
 }
 
 export interface IPNSRecordMetadata {
@@ -283,7 +283,7 @@ export interface RepublishOptions extends AbortOptions, ProgressOptions<Republis
    * - `refresh`: republish the existing record until it expires
    * - `none`: disable automated publishing
    */
-  upkeep?: "refresh" | "none"
+  upkeep?: 'refresh' | 'none'
 }
 
 export interface ResolveResult {

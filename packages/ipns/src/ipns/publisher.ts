@@ -4,6 +4,7 @@ import { createIPNSRecord, marshalIPNSRecord, multihashToIPNSRoutingKey, unmarsh
 import { CID } from 'multiformats/cid'
 import { CustomProgressEvent } from 'progress-events'
 import { DEFAULT_LIFETIME_MS, DEFAULT_TTL_NS } from '../constants.ts'
+import { IPNSPublishMetadata, Upkeep } from '../pb/metadata.ts'
 import { keyToMultihash } from '../utils.ts'
 import type { IPNSPublishResult, PublishOptions } from '../index.js'
 import type { LocalStore } from '../local-store.js'
@@ -12,7 +13,6 @@ import type { AbortOptions, ComponentLogger, Libp2p, PeerId, PrivateKey, PublicK
 import type { Keychain } from '@libp2p/keychain'
 import type { Datastore } from 'interface-datastore'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
-import { IPNSPublishMetadata, Upkeep } from '../pb/metadata.ts'
 
 export interface IPNSPublisherComponents {
   datastore: Datastore
