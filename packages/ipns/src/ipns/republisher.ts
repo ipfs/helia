@@ -16,6 +16,7 @@ import type { Keychain } from '@libp2p/keychain'
 import type { RepeatingTask } from '@libp2p/utils'
 import type { IPNSRecord } from 'ipns'
 import type { CID, MultihashDigest } from 'multiformats/cid'
+import { Upkeep } from '../pb/metadata.ts'
 
 export interface IPNSRepublisherComponents {
   logger: ComponentLogger
@@ -100,7 +101,13 @@ export class IPNSRepublisher {
           continue
         }
 
-        if (metadata.refresh) {
+        if (metadata.upkeep === Upkeep.none) {
+          // Skip republishing, disabled for this record
+          this.log(`republishing is disabled for record ${routingKey.toString()}, skipping`)
+          continue
+        }
+
+        if (metadata.upkeep === Upkeep.refresh) {
           if (!shouldRefresh(created)) {
             this.log.trace(`skipping record ${routingKey.toString()} within republish threshold`)
             continue
@@ -234,7 +241,7 @@ export class IPNSRepublisher {
       // publish record to routers
       const putOptions = {
         ...options,
-        metadata: options.repeat !== false ? { refresh: true } : undefined,
+        metadata: { upkeep: Upkeep[options.upkeep ?? 'refresh'] },
         // overwrite so Record.created is reset for #republish
         overwrite: true
       }

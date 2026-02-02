@@ -12,6 +12,7 @@ import type { AbortOptions, ComponentLogger, Libp2p, PeerId, PrivateKey, PublicK
 import type { Keychain } from '@libp2p/keychain'
 import type { Datastore } from 'interface-datastore'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
+import { IPNSPublishMetadata, Upkeep } from '../pb/metadata.ts'
 
 export interface IPNSPublisherComponents {
   datastore: Datastore
@@ -58,13 +59,14 @@ export class IPNSPublisher {
       const record = await createIPNSRecord(privKey, value, sequenceNumber, lifetime, { ...options, ttlNs })
       const marshaledRecord = marshalIPNSRecord(record)
 
+      const metadata: IPNSPublishMetadata = { keyName, lifetime, upkeep: Upkeep[options.upkeep ?? 'republish'] }
       if (options.offline === true) {
         // only store record locally
-        await this.localStore.put(routingKey, marshaledRecord, { ...options, metadata: { keyName, lifetime } })
+        await this.localStore.put(routingKey, marshaledRecord, { ...options, metadata })
       } else {
         // publish record to routing (including the local store)
         await Promise.all(this.routers.map(async r => {
-          await r.put(routingKey, marshaledRecord, { ...options, metadata: { keyName, lifetime } })
+          await r.put(routingKey, marshaledRecord, { ...options, metadata })
         }))
       }
 
