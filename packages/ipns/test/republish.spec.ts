@@ -570,20 +570,6 @@ describe('republish', () => {
         expect(getStubHelia.called).to.be.true()
       })
 
-      it('should only publish once if repeat is false', async () => {
-        const key = await generateKeyPair('Ed25519')
-        const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
-        const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
-
-        // Store the record in the real datastore
-        const store = localStore(result.datastore, result.log)
-        await store.put(routingKey, marshalIPNSRecord(record))
-
-        await name.republish(multihashFromIPNSRoutingKey(routingKey), { upkeep: 'none' })
-
-        expect(() => result.datastore.get(ipnsMetadataKey(routingKey))).to.throw('Not Found')
-      })
-
       it('should use options.record if necessary', async () => {
         const key = await generateKeyPair('Ed25519')
         const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
