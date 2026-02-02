@@ -9,7 +9,7 @@ import { CID } from 'multiformats/cid'
 import sinon from 'sinon'
 import { REPUBLISH_THRESHOLD } from '../src/constants.ts'
 import { localStore } from '../src/local-store.js'
-import { IPNSPublishMetadata } from '../src/pb/metadata.ts'
+import { IPNSPublishMetadata, Upkeep } from '../src/pb/metadata.ts'
 import { dhtRoutingKey, ipnsMetadataKey } from '../src/utils.ts'
 import { createIPNS } from './fixtures/create-ipns.js'
 import type { IPNS } from '../src/ipns.js'
@@ -155,7 +155,7 @@ describe('republish', () => {
 
       // Store the dht record and metadata in the real datastore
       await result.datastore.put(dhtRoutingKey(routingKey), dhtRecord.serialize())
-      await result.datastore.put(ipnsMetadataKey(routingKey), IPNSPublishMetadata.encode({ refresh: true }))
+      await result.datastore.put(ipnsMetadataKey(routingKey), IPNSPublishMetadata.encode({ upkeep: Upkeep.refresh }))
 
       // Start publishing
       await start(name)
@@ -180,6 +180,26 @@ describe('republish', () => {
       // Store the record without metadata (simulate old records)
       const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record)) // No metadata
+
+      await start(name)
+      await new Promise(resolve => setTimeout(resolve, 20))
+
+      // Verify no records were republished
+      expect(putStubCustom.called).to.be.false()
+    })
+
+    it('should skip records with republishing disabled', async () => {
+      const key = await generateKeyPair('Ed25519')
+      const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
+      const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+      // Store the record without metadata (simulate old records)
+      const store = localStore(result.datastore, result.log)
+      await store.put(routingKey, marshalIPNSRecord(record), {
+        metadata: {
+          upkeep: Upkeep.none
+        }
+      })
 
       await start(name)
       await new Promise(resolve => setTimeout(resolve, 20))
@@ -243,7 +263,7 @@ describe('republish', () => {
       const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
         metadata: {
-          refresh: true
+          upkeep: Upkeep.refresh
         }
       })
 
@@ -464,7 +484,7 @@ describe('republish', () => {
       const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
         metadata: {
-          refresh: true
+          upkeep: Upkeep.refresh
         }
       })
 
@@ -559,7 +579,7 @@ describe('republish', () => {
         const store = localStore(result.datastore, result.log)
         await store.put(routingKey, marshalIPNSRecord(record))
 
-        await name.republish(multihashFromIPNSRoutingKey(routingKey), { repeat: false })
+        await name.republish(multihashFromIPNSRoutingKey(routingKey), { upkeep: 'none' })
 
         expect(() => result.datastore.get(ipnsMetadataKey(routingKey))).to.throw('Not Found')
       })
