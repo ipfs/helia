@@ -271,7 +271,7 @@ export interface RepublishOptions extends AbortOptions, ProgressOptions<Republis
   offline?: boolean
 
   /**
-   * Force the record to be published immediately even if it's already resolvable
+   * Force the record to be republished even if already resolvable
    *
    * @default false
    */
