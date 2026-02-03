@@ -4,7 +4,7 @@ import { createIPNSRecord, marshalIPNSRecord, multihashToIPNSRoutingKey, unmarsh
 import { CID } from 'multiformats/cid'
 import { CustomProgressEvent } from 'progress-events'
 import { DEFAULT_LIFETIME_MS, DEFAULT_TTL_NS } from '../constants.ts'
-import { IPNSPublishMetadata, Upkeep } from '../pb/metadata.ts'
+import { Upkeep } from '../pb/metadata.ts'
 import { keyToMultihash } from '../utils.ts'
 import type { IPNSPublishResult, PublishOptions } from '../index.js'
 import type { LocalStore } from '../local-store.js'
@@ -59,7 +59,7 @@ export class IPNSPublisher {
       const record = await createIPNSRecord(privKey, value, sequenceNumber, lifetime, { ...options, ttlNs })
       const marshaledRecord = marshalIPNSRecord(record)
 
-      const metadata: IPNSPublishMetadata = { keyName, lifetime, upkeep: Upkeep[options.upkeep ?? 'republish'] }
+      const metadata = { keyName, lifetime, upkeep: Upkeep[options.upkeep ?? 'republish'] }
       if (options.offline === true) {
         // only store record locally
         await this.localStore.put(routingKey, marshaledRecord, { ...options, metadata })

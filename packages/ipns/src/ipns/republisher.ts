@@ -238,18 +238,12 @@ export class IPNSRepublisher {
         throw new Error('Record already published')
       }
 
-      // publish record to routers
-      const putOptions = {
-        ...options,
-        metadata: { upkeep: Upkeep[options.upkeep ?? 'refresh'] },
-        // overwrite so Record.created is reset for #republish
-        overwrite: true
-      }
+      const metadata = { upkeep: Upkeep[options.upkeep ?? 'refresh'] }
       if (options.offline) {
-        await this.localStore.put(routingKey, marshaledRecord, putOptions)
+        await this.localStore.put(routingKey, marshaledRecord, { ...options, overwrite: true, metadata })
       } else {
         await Promise.all(
-          this.routers.map(r => r.put(routingKey, marshaledRecord, putOptions))
+          this.routers.map(r => r.put(routingKey, marshaledRecord, { ...options, overwrite: true, metadata }))
         )
       }
 
