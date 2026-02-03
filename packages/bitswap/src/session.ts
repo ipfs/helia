@@ -17,6 +17,7 @@ export interface BitswapSessionComponents {
 }
 
 class BitswapSession extends AbstractSession<PeerId, BitswapWantProgressEvents> {
+  public readonly name = 'bitswap-session'
   private readonly wantList: WantList
   private readonly network: Network
   private readonly libp2p: Libp2p

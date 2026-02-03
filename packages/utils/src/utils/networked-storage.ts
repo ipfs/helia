@@ -418,7 +418,7 @@ class SessionStorage extends Storage implements SessionBlockstore {
   }
 }
 
-function isRetrievingBlockBroker (broker: BlockBroker): broker is Required<Pick<BlockBroker, 'retrieve'>> {
+function isRetrievingBlockBroker (broker: BlockBroker): broker is Required<Pick<BlockBroker, 'name' | 'retrieve'>> {
   return typeof broker.retrieve === 'function'
 }
 
@@ -459,7 +459,7 @@ async function raceBlockRetrievers (cid: CID, blockBrokers: BlockBroker[], hashe
   const signal = anySignal([controller.signal, options.signal])
   setMaxListeners(Infinity, controller.signal, signal)
 
-  const retrievers: Array<Required<Pick<BlockBroker, 'retrieve'>>> = []
+  const retrievers: Array<Required<Pick<BlockBroker, 'name' | 'retrieve'>>> = []
 
   for (const broker of blockBrokers) {
     if (isRetrievingBlockBroker(broker)) {
@@ -496,7 +496,7 @@ async function raceBlockRetrievers (cid: CID, blockBrokers: BlockBroker[], hashe
 
             return block
           } catch (err) {
-            options.log.error('could not retrieve verified block for %c - %e', cid, err)
+            options.log.error('could not retrieve verified block for %c from %s - %e', cid, retriever.name, err)
             throw err
           }
         })

@@ -81,7 +81,7 @@ export class TrustlessGateway {
   constructor (url: URL | string, { logger, transformRequestInit }: TrustlessGatewayComponents) {
     this.url = url instanceof URL ? url : new URL(url)
     this.transformRequestInit = transformRequestInit
-    this.log = logger.forComponent(`helia:trustless-gateway-block-broker:${this.url.hostname}`)
+    this.log = logger.forComponent(`helia:trustless-gateway-block-broker:${this.url.host}`)
   }
 
   /**

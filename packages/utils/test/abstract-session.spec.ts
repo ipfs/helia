@@ -17,6 +17,8 @@ interface SessionPeer {
 }
 
 class Session extends AbstractSession<SessionPeer, ProgressEvent> {
+  public readonly name = 'test-session'
+
   constructor () {
     super({
       logger: defaultLogger()

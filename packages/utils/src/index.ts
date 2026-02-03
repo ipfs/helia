@@ -6,7 +6,6 @@
  */
 
 import { contentRoutingSymbol, peerRoutingSymbol, start, stop, TypedEventEmitter } from '@libp2p/interface'
-import { defaultLogger } from '@libp2p/logger'
 import { dns } from '@multiformats/dns'
 import drain from 'it-drain'
 import { CustomProgressEvent } from 'progress-events'
@@ -208,7 +207,7 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
   private readonly log: Logger
 
   constructor (init: Omit<HeliaInit, 'start' | 'libp2p'> & { libp2p: T }) {
-    this.logger = init.logger ?? defaultLogger()
+    this.logger = init.logger ?? init.libp2p.logger
     this.log = this.logger.forComponent('helia')
     this.getHasher = getHasher(init.hashers, init.loadHasher)
     this.getCodec = getCodec(init.codecs, init.loadCodec)
