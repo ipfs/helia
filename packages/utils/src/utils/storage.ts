@@ -1,0 +1,295 @@
+import { InvalidMultihashError, InvalidParametersError, setMaxListeners } from '@libp2p/interface'
+import { anySignal } from 'any-signal'
+import { IdentityBlockstore } from 'blockstore-core/identity'
+import filter from 'it-filter'
+import forEach from 'it-foreach'
+import { CustomProgressEvent } from 'progress-events'
+import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import { BlockNotFoundWhileOfflineError, InvalidConfigurationError, LoadBlockFailedError } from '../errors.ts'
+import { isPromise } from './is-promise.js'
+import type { HasherLoader } from '@helia/interface'
+import type { BlockBroker, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions, BlockRetrievalOptions } from '@helia/interface/blocks'
+import type { AbortOptions, ComponentLogger, Logger, LoggerOptions } from '@libp2p/interface'
+import type { Blockstore, InputPair } from 'interface-blockstore'
+import type { AwaitIterable } from 'interface-store'
+import type { CID } from 'multiformats/cid'
+import type { MultihashDigest, MultihashHasher } from 'multiformats/hashes/interface'
+import type { ProgressEvent, ProgressOptions } from 'progress-events'
+
+export interface StorageComponents<Broker extends BlockBroker<ProgressEvent<any, any>, ProgressEvent<any, any>>> {
+  blockstore: Blockstore
+  logger: ComponentLogger
+  blockBrokers: Broker[]
+  getHasher: HasherLoader
+}
+
+export interface StorageInit {
+  maxIdentityHashDigestLength?: number
+}
+
+const DEFAULT_MAX_IDENTITY_HASH_DIGEST_LENGTH = 128
+
+export class Storage <Broker extends BlockBroker<ProgressEvent<any, any>, ProgressEvent<any, any>>> implements Blockstore {
+  protected readonly child: Blockstore
+  protected readonly getHasher: HasherLoader
+  protected log: Logger
+  protected readonly logger: ComponentLogger
+  protected readonly blockBrokers: Broker[]
+
+  /**
+   * Create a new BlockStorage
+   */
+  constructor (components: StorageComponents<Broker>, init: StorageInit = {}) {
+    this.log = components.logger.forComponent('helia:networked-storage')
+    this.logger = components.logger
+    this.blockBrokers = components.blockBrokers
+    this.child = new IdentityBlockstore(components.blockstore, {
+      maxDigestLength: init.maxIdentityHashDigestLength ?? DEFAULT_MAX_IDENTITY_HASH_DIGEST_LENGTH
+    })
+    this.getHasher = components.getHasher
+  }
+
+  /**
+   * Put a block to the underlying datastore
+   */
+  async put (cid: CID, block: Uint8Array, options: AbortOptions & ProgressOptions<PutBlockProgressEvents> = {}): Promise<CID> {
+    if (await this.child.has(cid, options)) {
+      options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:duplicate', cid))
+      return cid
+    }
+
+    options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:providers:notify', cid))
+
+    await Promise.all(
+      this.blockBrokers.map(async broker => broker.announce?.(cid, options))
+    )
+
+    options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:blockstore:put', cid))
+
+    return this.child.put(cid, block, options)
+  }
+
+  /**
+   * Put a multiple blocks to the underlying datastore
+   */
+  async * putMany (blocks: AwaitIterable<InputPair>, options: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents> = {}): AsyncGenerator<CID> {
+    const missingBlocks = filter(blocks, async ({ cid }): Promise<boolean> => {
+      const has = await this.child.has(cid, options)
+
+      if (has) {
+        options.onProgress?.(new CustomProgressEvent<CID>('blocks:put-many:duplicate', cid))
+      }
+
+      return !has
+    })
+
+    const notifyEach = forEach(missingBlocks, async ({ cid }): Promise<void> => {
+      options.onProgress?.(new CustomProgressEvent<CID>('blocks:put-many:providers:notify', cid))
+      await Promise.all(
+        this.blockBrokers.map(async broker => broker.announce?.(cid, options))
+      )
+    })
+
+    options.onProgress?.(new CustomProgressEvent('blocks:put-many:blockstore:put-many'))
+    yield * this.child.putMany(notifyEach, options)
+  }
+
+  /**
+   * Get a block by cid
+   */
+  async * get (cid: CID, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetBlockProgressEvents> = {}): AsyncGenerator<Uint8Array> {
+    const has = await this.child.has(cid, options)
+    const offline = options.offline === true
+
+    if (!has) {
+      if (offline) {
+        throw new BlockNotFoundWhileOfflineError('The block was present in the blockstore and the node is running offline so cannot fetch it')
+      }
+
+      const hasher = await this.getHasher(cid.multihash.code)
+      options?.signal?.throwIfAborted()
+
+      // we do not have the block locally, get it from a block provider
+
+      options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:providers:get', cid))
+      const block = await raceBlockRetrievers(cid, this.blockBrokers, hasher, {
+        ...options,
+        log: this.log
+      })
+      options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:blockstore:put', cid))
+      await this.child.put(cid, block, options)
+
+      // notify other block providers of the new block
+      options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:providers:notify', cid))
+      await Promise.all(
+        this.blockBrokers.map(async broker => broker.announce?.(cid, options))
+      )
+
+      yield block
+      return
+    }
+
+    options.onProgress?.(new CustomProgressEvent<CID>('blocks:get:blockstore:get', cid))
+
+    yield * this.child.get(cid, options)
+  }
+
+  /**
+   * Get multiple blocks back from an (async) iterable of cids
+   */
+  async * getMany (cids: AwaitIterable<CID>, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetManyBlocksProgressEvents> = {}): AsyncGenerator<Pair> {
+    options.onProgress?.(new CustomProgressEvent('blocks:get-many:blockstore:get-many'))
+
+    yield * this.child.getMany(forEach(cids, async (cid): Promise<void> => {
+      const has = await this.child.has(cid, options)
+      const offline = options.offline === true
+
+      if (!has) {
+        if (offline) {
+          throw new BlockNotFoundWhileOfflineError('The block was present in the blockstore and the node is running offline so cannot fetch it')
+        }
+
+        const hasher = await this.getHasher(cid.multihash.code)
+        options?.signal?.throwIfAborted()
+
+        // we do not have the block locally, get it from a block provider
+        options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:providers:get', cid))
+        const block = await raceBlockRetrievers(cid, this.blockBrokers, hasher, {
+          ...options,
+          log: this.log
+        })
+        options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:blockstore:put', cid))
+        await this.child.put(cid, block, options)
+
+        // notify other block providers of the new block
+        options.onProgress?.(new CustomProgressEvent<CID>('blocks:get-many:providers:notify', cid))
+        await Promise.all(
+          this.blockBrokers.map(async broker => broker.announce?.(cid, options))
+        )
+      }
+    }))
+  }
+
+  /**
+   * Delete a block from the blockstore
+   */
+  async delete (cid: CID, options: AbortOptions & ProgressOptions<DeleteBlockProgressEvents> = {}): Promise<void> {
+    options.onProgress?.(new CustomProgressEvent<CID>('blocks:delete:blockstore:delete', cid))
+
+    await this.child.delete(cid, options)
+  }
+
+  /**
+   * Delete multiple blocks from the blockstore
+   */
+  async * deleteMany (cids: AwaitIterable<CID>, options: AbortOptions & ProgressOptions<DeleteManyBlocksProgressEvents> = {}): AsyncGenerator<CID> {
+    options.onProgress?.(new CustomProgressEvent('blocks:delete-many:blockstore:delete-many'))
+    yield * this.child.deleteMany((async function * (): AsyncGenerator<CID> {
+      for await (const cid of cids) {
+        yield cid
+      }
+    }()), options)
+  }
+
+  async has (cid: CID, options: AbortOptions = {}): Promise<boolean> {
+    return this.child.has(cid, options)
+  }
+
+  async * getAll (options: AbortOptions & ProgressOptions<GetAllBlocksProgressEvents> = {}): AsyncGenerator<Pair> {
+    options.onProgress?.(new CustomProgressEvent('blocks:get-all:blockstore:get-many'))
+    yield * this.child.getAll(options)
+  }
+}
+
+/**
+ * Race block providers cancelling any pending requests once the block has been
+ * found.
+ */
+async function raceBlockRetrievers (cid: CID, blockBrokers: BlockBroker[], hasher: MultihashHasher, options: AbortOptions & LoggerOptions): Promise<Uint8Array> {
+  const validateFn = getCidBlockVerifierFunction(cid, hasher)
+
+  const controller = new AbortController()
+  const signal = anySignal([controller.signal, options.signal])
+  setMaxListeners(Infinity, controller.signal, signal)
+
+  const retrievers: Array<Required<Pick<BlockBroker, 'name' | 'retrieve'>>> = []
+
+  for (const broker of blockBrokers) {
+    if (isRetrievingBlockBroker(broker)) {
+      retrievers.push(broker)
+    }
+  }
+
+  if (retrievers.length === 0) {
+    throw new InvalidConfigurationError(`No block brokers capable of retrieving blocks are configured, the CID ${cid} cannot be fetched from the network`)
+  }
+
+  try {
+    return await Promise.any(
+      retrievers
+        .map(async retriever => {
+          try {
+            let blocksWereValidated = false
+            const block = await retriever.retrieve(cid, {
+              ...options,
+              signal,
+              validateFn: async (block: Uint8Array): Promise<void> => {
+                await validateFn(block)
+                options.signal?.throwIfAborted()
+                blocksWereValidated = true
+              }
+            })
+
+            if (!blocksWereValidated) {
+              // the blockBroker either did not throw an error when attempting to validate the block
+              // or did not call the validateFn at all. We should validate the block ourselves
+              await validateFn(block)
+              options.signal?.throwIfAborted()
+            }
+
+            return block
+          } catch (err) {
+            options.log.error('could not retrieve verified block for %c from %s - %e', cid, retriever.name, err)
+            throw err
+          }
+        })
+    )
+  } catch (err: any) {
+    throw new LoadBlockFailedError(err.errors, `Failed to load block for ${cid}`)
+  } finally {
+    // we have the block from the fastest block retriever, abort any still
+    // in-flight retrieve attempts
+    controller.abort()
+    signal.clear()
+  }
+}
+
+function isRetrievingBlockBroker (broker: BlockBroker): broker is Required<Pick<BlockBroker, 'name' | 'retrieve'>> {
+  return typeof broker.retrieve === 'function'
+}
+
+export const getCidBlockVerifierFunction = (cid: CID, hasher: MultihashHasher): Required<BlockRetrievalOptions>['validateFn'] => {
+  if (hasher == null) {
+    throw new InvalidParametersError(`No hasher configured for multihash code 0x${cid.multihash.code.toString(16)}, please configure one. You can look up which hash this is at https://github.com/multiformats/multicodec/blob/master/table.csv`)
+  }
+
+  return async (block: Uint8Array): Promise<void> => {
+    // verify block
+    let hash: MultihashDigest<number>
+    const res = hasher.digest(block, {
+      // support truncated hashes where they are truncated
+      truncate: cid.multihash.digest.byteLength
+    })
+
+    if (isPromise(res)) {
+      hash = await res
+    } else {
+      hash = res
+    }
+
+    if (!uint8ArrayEquals(hash.digest, cid.multihash.digest)) {
+      // if a hash mismatch occurs for a TrustlessGatewayBlockBroker, we should try another gateway
+      throw new InvalidMultihashError('Hash of downloaded block did not match multihash from passed CID')
+    }
+  }
+}

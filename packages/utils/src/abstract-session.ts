@@ -250,6 +250,21 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     return false
   }
 
+  async addPeer (peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<void> {
+    const provider = await this.convertToProvider(peer, options)
+
+    if (provider == null || this.hasProvider(provider)) {
+      return
+    }
+
+    this.providers.push(provider)
+
+    // let the new peer join current queries
+    this.safeDispatchEvent('provider', {
+      detail: provider
+    })
+  }
+
   private async findProviders (cid: CID, count: number, options: AbortOptions): Promise<void> {
     const deferred: DeferredPromise<void> = pDefer()
     let found = 0
