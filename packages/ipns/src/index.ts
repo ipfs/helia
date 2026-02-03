@@ -34,7 +34,11 @@
  * value.
  *
  * ```TypeScript
- * import { createHelia } from 'helia'
+ * import { createHelia } from 'helia'export interface IPNSRecordMetadata {
+  keyName: string
+  lifetime: number
+  upkeep: Upkeep
+}
  * import { ipns } from '@helia/ipns'
  * import { unixfs } from '@helia/unixfs'
  * import { generateKeyPair } from '@libp2p/crypto/keys'
@@ -236,11 +240,6 @@ export interface PublishOptions extends AbortOptions, ProgressOptions<PublishPro
    * - `none`: disable automated publishing
    */
   upkeep?: 'republish' | 'refresh' | 'none'
-}
-
-export interface IPNSRecordMetadata {
-  keyName: string
-  lifetime: number
 }
 
 export interface ResolveOptions extends AbortOptions, ProgressOptions<ResolveProgressEvents | IPNSRoutingProgressEvents> {
