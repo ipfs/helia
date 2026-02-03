@@ -50,9 +50,7 @@ describe('helia - blockstore sessions', () => {
     const root = CID.parse(cid.toString())
 
     const session = helia.blockstore.createSession(root, {
-      providers: [
-        kuboInfo.multiaddrs.map(str => multiaddr(str))
-      ]
+      providers: kuboInfo.multiaddrs.map(str => multiaddr(str))
     })
 
     const output = await toBuffer(session.get(root))
@@ -69,16 +67,16 @@ describe('helia - blockstore sessions', () => {
     const root = CID.parse(cid.toString())
 
     const session = helia.blockstore.createSession(root, {
-      providers: [
-        kuboInfo.multiaddrs.map(str => multiaddr(str))
-      ]
+      providers: kuboInfo.multiaddrs.map(str => multiaddr(str))
     })
 
     await expect(toBuffer(session.get(root))).to.eventually.be.rejected
       .with.property('name', 'LoadBlockFailedError')
 
     await Promise.all(
-      kubo2Info.multiaddrs.map(async (str) => session.addPeer(multiaddr(str)))
+      kubo2Info.multiaddrs
+        .map(str => multiaddr(str))
+        .map(ma => session.addPeer(ma))
     )
 
     const output = await toBuffer(session.get(root))

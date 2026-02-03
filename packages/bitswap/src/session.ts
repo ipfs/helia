@@ -66,9 +66,15 @@ class BitswapSession extends AbstractSession<PeerId, BitswapWantProgressEvents> 
       return provider
     }
 
-    const connection = await this.libp2p.dial(provider, options)
+    if (await this.libp2p.isDialable(provider) === false) {
+      return
+    }
 
-    return connection.remotePeer
+    try {
+      const connection = await this.libp2p.dial(provider, options)
+
+      return connection.remotePeer
+    } catch {}
   }
 }
 
