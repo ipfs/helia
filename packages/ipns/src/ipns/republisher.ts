@@ -3,7 +3,6 @@ import { Queue, repeatingTask } from '@libp2p/utils'
 import { createIPNSRecord, marshalIPNSRecord, multihashFromIPNSRoutingKey, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from 'ipns'
 import { ipnsValidator } from 'ipns/validator'
 import { CustomProgressEvent } from 'progress-events'
-import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { DEFAULT_REPUBLISH_CONCURRENCY, DEFAULT_REPUBLISH_INTERVAL_MS, DEFAULT_TTL_NS } from '../constants.ts'
 import { ipnsSelector } from '../index.ts'
 import { Upkeep } from '../pb/metadata.ts'
@@ -232,11 +231,12 @@ export class IPNSRepublisher {
       }
 
       // check if record is already published
-      const selectedRecord = records[ipnsSelector(routingKey, records.map(marshalIPNSRecord))]
-      const marshaledRecord = marshalIPNSRecord(selectedRecord)
-      if (options.force !== true && publishedRecord != null && uint8ArrayEquals(marshaledRecord, marshalIPNSRecord(publishedRecord))) {
+      if (options.force !== true && publishedRecord != null) {
         throw new Error('Record already published')
       }
+
+      const selectedRecord = records[ipnsSelector(routingKey, records.map(marshalIPNSRecord))]
+      const marshaledRecord = marshalIPNSRecord(selectedRecord)
 
       const metadata = { upkeep: Upkeep[options.upkeep ?? 'refresh'] }
       if (options.offline) {
