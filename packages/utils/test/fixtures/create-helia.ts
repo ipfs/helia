@@ -1,3 +1,4 @@
+import { defaultLogger } from '@libp2p/logger'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import { isLibp2p, createLibp2p } from 'libp2p'
@@ -6,7 +7,6 @@ import { Helia as HeliaClass } from '../../src/index.js'
 import type { HeliaInit } from '../../src/index.js'
 import type { Helia } from '@helia/interface'
 import type { Libp2p } from '@libp2p/interface'
-import { defaultLogger } from '@libp2p/logger'
 
 export async function createHelia (opts: Partial<HeliaInit> = {}): Promise<Helia> {
   const datastore = new MemoryDatastore()
