@@ -6,6 +6,7 @@ import { Helia as HeliaClass } from '../../src/index.js'
 import type { HeliaInit } from '../../src/index.js'
 import type { Helia } from '@helia/interface'
 import type { Libp2p } from '@libp2p/interface'
+import { defaultLogger } from '@libp2p/logger'
 
 export async function createHelia (opts: Partial<HeliaInit> = {}): Promise<Helia> {
   const datastore = new MemoryDatastore()
@@ -17,7 +18,9 @@ export async function createHelia (opts: Partial<HeliaInit> = {}): Promise<Helia
   } else if (opts.libp2p != null) {
     libp2p = await createLibp2p(opts.libp2p)
   } else {
-    libp2p = stubInterface<Libp2p<any>>()
+    libp2p = stubInterface<Libp2p<any>>({
+      logger: defaultLogger()
+    })
   }
 
   const init = {
