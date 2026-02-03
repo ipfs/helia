@@ -15,7 +15,7 @@ export async function createKuboNode (): Promise<KuboNode> {
             '/ip4/0.0.0.0/tcp/0',
             '/ip4/0.0.0.0/tcp/0/ws'
           ],
-          Gateway: '/ip4/127.0.0.1/tcp/8180'
+          Gateway: '/ip4/127.0.0.1/tcp/0'
         },
         Gateway: {
           NoFetch: true,
