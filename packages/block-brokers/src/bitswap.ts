@@ -19,6 +19,7 @@ export interface BitswapBlockBrokerInit extends BitswapOptions {
 }
 
 class BitswapBlockBroker implements BlockBroker<BitswapWantBlockProgressEvents, BitswapNotifyProgressEvents>, Startable {
+  public readonly name = 'bitswap'
   private readonly bitswap: Bitswap
   private started: boolean
 
@@ -62,6 +63,8 @@ class BitswapBlockBroker implements BlockBroker<BitswapWantBlockProgressEvents, 
     const session = this.bitswap.createSession(options)
 
     return {
+      name: 'bitswap-session',
+
       announce: async (cid, options) => {
         await this.bitswap.notify(cid, options)
       },

@@ -19,6 +19,7 @@ export interface TrustlessGatewaySessionComponents {
 }
 
 class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, TrustlessGatewayGetBlockProgressEvents> {
+  public readonly name = 'trustless-gateway-session'
   private readonly routing: Routing
   private readonly allowInsecure: boolean
   private readonly allowLocal: boolean

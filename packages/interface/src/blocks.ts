@@ -144,6 +144,11 @@ export interface CreateSessionOptions <ProgressEvents extends ProgressEvent<any,
 
 export interface BlockBroker<RetrieveProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>, AnnounceProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> {
   /**
+   * The name of the block broker, used for logging purposes
+   */
+  name: string
+
+  /**
    * Retrieve a block from a source
    */
   retrieve?(cid: CID, options?: BlockRetrievalOptions<RetrieveProgressEvents>): Promise<Uint8Array>

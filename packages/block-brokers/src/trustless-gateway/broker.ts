@@ -38,6 +38,7 @@ export interface CreateTrustlessGatewaySessionOptions extends CreateSessionOptio
  * for blocks.
  */
 export class TrustlessGatewayBlockBroker implements BlockBroker<TrustlessGatewayGetBlockProgressEvents> {
+  public readonly name = 'trustless-gateway'
   private readonly allowInsecure: boolean
   private readonly allowLocal: boolean
   private readonly transformRequestInit?: TransformRequestInit

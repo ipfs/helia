@@ -30,9 +30,10 @@ interface Request {
 }
 
 export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents extends ProgressEvent> extends TypedEventEmitter<BlockstoreSessionEvents<Provider>> implements BlockBroker<RetrieveBlockProgressEvents> {
+  public abstract name: string
   private initialPeerSearchComplete?: Promise<void>
   private readonly requests: Map<string, Request>
-  private readonly name: string
+  private readonly logName: string
   protected log: Logger
   protected logger: ComponentLogger
   private readonly minProviders: number
@@ -45,9 +46,9 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     super()
 
     setMaxListeners(Infinity, this)
-    this.name = init.name
+    this.logName = init.name
     this.logger = components.logger
-    this.log = components.logger.forComponent(this.name)
+    this.log = components.logger.forComponent(this.logName)
     this.requests = new Map()
     this.minProviders = init.minProviders ?? DEFAULT_SESSION_MIN_PROVIDERS
     this.maxProviders = init.maxProviders ?? DEFAULT_SESSION_MAX_PROVIDERS
@@ -79,7 +80,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
 
       if (this.initialPeerSearchComplete == null) {
         first = true
-        this.log = this.logger.forComponent(`${this.name}:${cid}`)
+        this.log = this.logger.forComponent(`${this.logName}:${cid}`)
         this.initialPeerSearchComplete = this.findProviders(cid, this.minProviders, options)
       }
 
