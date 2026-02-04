@@ -5,6 +5,18 @@
 
 * expose .dns property on @helia/interface ([#465](https://github.com/ipfs/helia/issues/465)) ([8c9bb7d](https://github.com/ipfs/helia/commit/8c9bb7d224a1b786cba1fba18bffe07001a3b95d))
 
+## [6.1.0](https://github.com/ipfs/helia/compare/interface-v6.0.3...interface-v6.1.0) (2026-02-04)
+
+
+### Features
+
+* allow adding peers to session ([#950](https://github.com/ipfs/helia/issues/950)) ([33e4681](https://github.com/ipfs/helia/commit/33e4681394539d4298a028d2d9ff48a14f76a8e3))
+
+
+### Bug Fixes
+
+* add name to block brokers ([#949](https://github.com/ipfs/helia/issues/949)) ([0456c42](https://github.com/ipfs/helia/commit/0456c42dbd92d94633c133d4f5fe35264a6bbb80))
+
 ## [6.0.3](https://github.com/ipfs/helia/compare/interface-v6.0.2...interface-v6.0.3) (2026-02-02)
 
 

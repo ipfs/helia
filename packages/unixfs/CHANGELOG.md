@@ -1,5 +1,14 @@
 # Changelog
 
+## [7.0.3](https://github.com/ipfs/helia/compare/unixfs-v7.0.2...unixfs-v7.0.3) (2026-02-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.0.3 to ^6.1.0
+
 ## [7.0.2](https://github.com/ipfs/helia/compare/unixfs-v7.0.1...unixfs-v7.0.2) (2026-02-02)
 
 
