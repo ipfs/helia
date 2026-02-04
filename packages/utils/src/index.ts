@@ -258,16 +258,16 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
       providerLookupConcurrency: init.providerLookupConcurrency
     })
 
+    components.blockBrokers = init.blockBrokers.map((fn) => {
+      return fn(components)
+    })
+
     const networkedStorage = new NetworkedStorage(components, init)
     this.pins = new PinsImpl(init.datastore, networkedStorage, this.getCodec)
     this.blockstore = new BlockStorage(networkedStorage, this.pins, {
       holdGcLock: init.holdGcLock ?? true
     })
     this.datastore = init.datastore
-
-    components.blockBrokers = init.blockBrokers.map((fn) => {
-      return fn(components)
-    })
   }
 
   async start (): Promise<void> {

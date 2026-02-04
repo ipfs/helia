@@ -3,7 +3,7 @@ import { findHttpGatewayProviders } from './utils.js'
 import { DEFAULT_ALLOW_INSECURE, DEFAULT_ALLOW_LOCAL } from './index.js'
 import type { TrustlessGatewayBlockBrokerInit, TrustlessGatewayBlockBrokerComponents, TrustlessGatewayGetBlockProgressEvents } from './index.js'
 import type { TransformRequestInit } from './trustless-gateway.js'
-import type { Routing, BlockRetrievalOptions, BlockBroker, CreateSessionOptions } from '@helia/interface'
+import type { Routing, BlockRetrievalOptions, BlockBroker, CreateSessionOptions, SessionBlockBroker } from '@helia/interface'
 import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 
@@ -98,7 +98,7 @@ export class TrustlessGatewayBlockBroker implements BlockBroker<TrustlessGateway
     }
   }
 
-  createSession (options: CreateTrustlessGatewaySessionOptions = {}): BlockBroker<TrustlessGatewayGetBlockProgressEvents> {
+  createSession (options: CreateTrustlessGatewaySessionOptions = {}): SessionBlockBroker<TrustlessGatewayGetBlockProgressEvents> {
     return createTrustlessGatewaySession({
       logger: this.logger,
       routing: this.routing

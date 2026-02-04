@@ -1,6 +1,6 @@
 import { createBitswap } from '@helia/bitswap'
 import type { BitswapOptions, Bitswap, BitswapWantBlockProgressEvents, BitswapNotifyProgressEvents } from '@helia/bitswap'
-import type { BlockAnnounceOptions, BlockBroker, BlockRetrievalOptions, CreateSessionOptions, Routing, HasherLoader } from '@helia/interface'
+import type { BlockAnnounceOptions, BlockBroker, BlockRetrievalOptions, CreateSessionOptions, Routing, HasherLoader, SessionBlockBroker } from '@helia/interface'
 import type { Libp2p, Startable, ComponentLogger } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
@@ -59,11 +59,15 @@ class BitswapBlockBroker implements BlockBroker<BitswapWantBlockProgressEvents, 
     return this.bitswap.want(cid, options)
   }
 
-  createSession (options?: CreateSessionOptions<BitswapWantBlockProgressEvents>): BlockBroker<BitswapWantBlockProgressEvents, BitswapNotifyProgressEvents> {
+  createSession (options?: CreateSessionOptions<BitswapWantBlockProgressEvents>): SessionBlockBroker<BitswapWantBlockProgressEvents, BitswapNotifyProgressEvents> {
     const session = this.bitswap.createSession(options)
 
     return {
       name: 'bitswap-session',
+
+      addPeer: async (peer, options) => {
+        await session.addPeer(peer, options)
+      },
 
       announce: async (cid, options) => {
         await this.bitswap.notify(cid, options)

@@ -97,6 +97,12 @@ ProgressOptions<DeleteBlockProgressEvents>, ProgressOptions<DeleteManyBlocksProg
    * Any in-progress operations will be aborted.
    */
   close(): void
+
+  /**
+   * Adds a new peer to the session if they are supported and are either
+   * not already in the session and have not been evicted previously.
+   */
+  addPeer (peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<void>
 }
 
 export interface BlockRetrievalOptions <ProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> extends AbortOptions, ProgressOptions<ProgressEvents>, ProviderOptions {
@@ -161,7 +167,15 @@ export interface BlockBroker<RetrieveProgressEvents extends ProgressEvent<any, a
   /**
    * Create a new session
    */
-  createSession?(options?: CreateSessionOptions<RetrieveProgressEvents>): BlockBroker<RetrieveProgressEvents, AnnounceProgressEvents>
+  createSession?(options?: CreateSessionOptions<RetrieveProgressEvents>): SessionBlockBroker<RetrieveProgressEvents, AnnounceProgressEvents>
+}
+
+export interface SessionBlockBroker<RetrieveProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>, AnnounceProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> extends BlockBroker<RetrieveProgressEvents, AnnounceProgressEvents> {
+  /**
+   * Adds a new peer to the session if they are supported and are either
+   * not already in the session and have not been evicted previously.
+   */
+  addPeer (peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<void>
 }
 
 export const DEFAULT_SESSION_MIN_PROVIDERS = 1

@@ -23,10 +23,11 @@ describe('@helia/ipns - http', () => {
    */
   beforeEach(async () => {
     kubo = await createKuboNode()
+    const kuboInfo = await kubo.info()
     helia = await createHeliaHTTP({
       routers: [
         delegatedHTTPRouting({
-          url: 'http://127.0.0.1:8180'
+          url: kuboInfo.gateway
         })
       ]
     })
