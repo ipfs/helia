@@ -1,6 +1,6 @@
 {
   "name": "helia",
-  "version": "6.0.17",
+  "version": "6.0.18",
   "description": "An implementation of IPFS in JavaScript",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/helia#readme",
@@ -50,11 +50,11 @@
   "dependencies": {
     "@chainsafe/libp2p-noise": "^17.0.0",
     "@chainsafe/libp2p-yamux": "^8.0.0",
-    "@helia/block-brokers": "^5.0.15",
+    "@helia/block-brokers": "^5.1.0",
     "@helia/delegated-routing-v1-http-api-client": "^6.0.0",
-    "@helia/interface": "^6.0.3",
-    "@helia/routers": "^5.0.1",
-    "@helia/utils": "^2.3.5",
+    "@helia/interface": "^6.1.0",
+    "@helia/routers": "^5.0.2",
+    "@helia/utils": "^2.4.0",
     "@ipshipyard/libp2p-auto-tls": "^2.0.1",
     "@libp2p/autonat": "^3.0.5",
     "@libp2p/bootstrap": "^12.0.6",

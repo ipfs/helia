@@ -1,5 +1,18 @@
 # Changelog
 
+## [5.3.7](https://github.com/ipfs/helia/compare/car-v5.3.6...car-v5.3.7) (2026-02-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.0.3 to ^6.1.0
+    * @helia/utils bumped from ^2.3.5 to ^2.4.0
+  * devDependencies
+    * @helia/mfs bumped from ^7.0.2 to ^7.0.3
+    * @helia/unixfs bumped from ^7.0.2 to ^7.0.3
+
 ## [5.3.6](https://github.com/ipfs/helia/compare/car-v5.3.5...car-v5.3.6) (2026-02-02)
 
 

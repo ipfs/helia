@@ -1,5 +1,25 @@
 # Changelog
 
+## [3.1.0](https://github.com/ipfs/helia/compare/bitswap-v3.0.15...bitswap-v3.1.0) (2026-02-04)
+
+
+### Features
+
+* allow adding peers to session ([#950](https://github.com/ipfs/helia/issues/950)) ([33e4681](https://github.com/ipfs/helia/commit/33e4681394539d4298a028d2d9ff48a14f76a8e3))
+
+
+### Bug Fixes
+
+* add name to block brokers ([#949](https://github.com/ipfs/helia/issues/949)) ([0456c42](https://github.com/ipfs/helia/commit/0456c42dbd92d94633c133d4f5fe35264a6bbb80))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.0.3 to ^6.1.0
+    * @helia/utils bumped from ^2.3.5 to ^2.4.0
+
 ## [3.0.15](https://github.com/ipfs/helia/compare/bitswap-v3.0.14...bitswap-v3.0.15) (2026-02-02)
 
 

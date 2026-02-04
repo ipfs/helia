@@ -1,5 +1,24 @@
 # Changelog
 
+## [2.4.0](https://github.com/ipfs/helia/compare/utils-v2.3.5...utils-v2.4.0) (2026-02-04)
+
+
+### Features
+
+* allow adding peers to session ([#950](https://github.com/ipfs/helia/issues/950)) ([33e4681](https://github.com/ipfs/helia/commit/33e4681394539d4298a028d2d9ff48a14f76a8e3))
+
+
+### Bug Fixes
+
+* add name to block brokers ([#949](https://github.com/ipfs/helia/issues/949)) ([0456c42](https://github.com/ipfs/helia/commit/0456c42dbd92d94633c133d4f5fe35264a6bbb80))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.0.3 to ^6.1.0
+
 ## [2.3.5](https://github.com/ipfs/helia/compare/utils-v2.3.4...utils-v2.3.5) (2026-02-02)
 
 

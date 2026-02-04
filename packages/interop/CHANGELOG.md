@@ -1,5 +1,31 @@
 # Changelog
 
+## [10.1.0](https://github.com/ipfs/helia/compare/interop-v10.0.1...interop-v10.1.0) (2026-02-04)
+
+
+### Features
+
+* allow adding peers to session ([#950](https://github.com/ipfs/helia/issues/950)) ([33e4681](https://github.com/ipfs/helia/commit/33e4681394539d4298a028d2d9ff48a14f76a8e3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.0.15 to ^5.1.0
+    * @helia/car bumped from ^5.3.6 to ^5.3.7
+    * @helia/dag-cbor bumped from ^5.0.5 to ^5.0.6
+    * @helia/dag-json bumped from ^5.0.5 to ^5.0.6
+    * @helia/http bumped from ^3.0.17 to ^3.0.18
+    * @helia/interface bumped from ^6.0.3 to ^6.1.0
+    * @helia/ipns bumped from ^9.1.7 to ^9.1.8
+    * @helia/json bumped from ^5.0.5 to ^5.0.6
+    * @helia/mfs bumped from ^7.0.2 to ^7.0.3
+    * @helia/routers bumped from ^5.0.1 to ^5.0.2
+    * @helia/strings bumped from ^5.0.5 to ^5.0.6
+    * @helia/unixfs bumped from ^7.0.2 to ^7.0.3
+    * helia bumped from ^6.0.17 to ^6.0.18
+
 ## [10.0.1](https://github.com/ipfs/helia/compare/interop-v10.0.0...interop-v10.0.1) (2026-02-02)
 
 

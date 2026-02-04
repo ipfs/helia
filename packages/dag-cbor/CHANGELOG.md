@@ -1,5 +1,14 @@
 # Changelog
 
+## [5.0.6](https://github.com/ipfs/helia/compare/dag-cbor-v5.0.5...dag-cbor-v5.0.6) (2026-02-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.0.3 to ^6.1.0
+
 ## [5.0.5](https://github.com/ipfs/helia/compare/dag-cbor-v5.0.4...dag-cbor-v5.0.5) (2026-02-02)
 
 
