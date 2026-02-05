@@ -1,5 +1,21 @@
 # Changelog
 
+## [5.1.1](https://github.com/ipfs/helia/compare/block-brokers-v5.1.0...block-brokers-v5.1.1) (2026-02-05)
+
+
+### Bug Fixes
+
+* emit provider event for initial providers ([#953](https://github.com/ipfs/helia/issues/953)) ([f058fba](https://github.com/ipfs/helia/commit/f058fba8a06f8afdd3558bdf7c3801381648ffec))
+* emit provider event for initial provides ([f058fba](https://github.com/ipfs/helia/commit/f058fba8a06f8afdd3558bdf7c3801381648ffec))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^3.1.0 to ^3.1.1
+    * @helia/utils bumped from ^2.4.0 to ^2.4.1
+
 ## [5.1.0](https://github.com/ipfs/helia/compare/block-brokers-v5.0.15...block-brokers-v5.1.0) (2026-02-04)
 
 

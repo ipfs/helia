@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.4.1](https://github.com/ipfs/helia/compare/utils-v2.4.0...utils-v2.4.1) (2026-02-05)
+
+
+### Bug Fixes
+
+* emit provider event for initial providers ([#953](https://github.com/ipfs/helia/issues/953)) ([f058fba](https://github.com/ipfs/helia/commit/f058fba8a06f8afdd3558bdf7c3801381648ffec))
+* emit provider event for initial provides ([f058fba](https://github.com/ipfs/helia/commit/f058fba8a06f8afdd3558bdf7c3801381648ffec))
+
 ## [2.4.0](https://github.com/ipfs/helia/compare/utils-v2.3.5...utils-v2.4.0) (2026-02-04)
 
 

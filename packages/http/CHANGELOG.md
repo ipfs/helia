@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.0.19](https://github.com/ipfs/helia/compare/http-v3.0.18...http-v3.0.19) (2026-02-05)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.1.0 to ^5.1.1
+    * @helia/utils bumped from ^2.4.0 to ^2.4.1
+
 ## [3.0.18](https://github.com/ipfs/helia/compare/http-v3.0.17...http-v3.0.18) (2026-02-04)
 
 
