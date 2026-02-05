@@ -1,9 +1,10 @@
 import { AbstractSession } from '@helia/utils'
 import { isPeerId } from '@libp2p/interface'
-import type { BitswapWantProgressEvents } from './index.js'
+import { CustomProgressEvent } from 'progress-events'
+import type { BitswapProvider, BitswapWantProgressEvents } from './index.js'
 import type { Network } from './network.js'
 import type { WantList } from './want-list.js'
-import type { CreateSessionOptions } from '@helia/interface'
+import type { BlockRetrievalOptions, CreateSessionOptions } from '@helia/interface'
 import type { ComponentLogger, Libp2p, PeerId } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { AbortOptions } from 'interface-store'
@@ -16,7 +17,12 @@ export interface BitswapSessionComponents {
   libp2p: Libp2p
 }
 
-class BitswapSession extends AbstractSession<PeerId, BitswapWantProgressEvents> {
+interface ProviderPeer {
+  peerId: PeerId
+  routing: string
+}
+
+class BitswapSession extends AbstractSession<ProviderPeer, BitswapWantProgressEvents> {
   public readonly name = 'bitswap-session'
   private readonly wantList: WantList
   private readonly network: Network
@@ -33,10 +39,10 @@ class BitswapSession extends AbstractSession<PeerId, BitswapWantProgressEvents> 
     this.libp2p = components.libp2p
   }
 
-  async queryProvider (cid: CID, provider: PeerId, options: AbortOptions): Promise<Uint8Array> {
+  async queryProvider (cid: CID, provider: ProviderPeer, options: AbortOptions): Promise<Uint8Array> {
     this.log('sending WANT-BLOCK for %c to %p', cid, provider)
 
-    const result = await this.wantList.wantSessionBlock(cid, provider, options)
+    const result = await this.wantList.wantSessionBlock(cid, provider.peerId, options)
 
     this.log('%p %s %c', provider, result.has ? 'has' : 'does not have', cid)
 
@@ -47,23 +53,29 @@ class BitswapSession extends AbstractSession<PeerId, BitswapWantProgressEvents> 
     throw new Error('Provider did not have block')
   }
 
-  async * findNewProviders (cid: CID, options: AbortOptions = {}): AsyncGenerator<PeerId> {
+  async * findNewProviders (cid: CID, options: AbortOptions = {}): AsyncGenerator<ProviderPeer> {
     for await (const provider of this.network.findProviders(cid, options)) {
-      yield provider.id
+      yield {
+        peerId: provider.id,
+        routing: provider.routing
+      }
     }
   }
 
-  toEvictionKey (provider: PeerId): Uint8Array | string {
-    return provider.toMultihash().bytes
+  toFilterKey (provider: ProviderPeer): Uint8Array | string {
+    return provider.peerId.toMultihash().bytes
   }
 
-  equals (providerA: PeerId, providerB: PeerId): boolean {
-    return providerA.equals(providerB)
+  equals (providerA: ProviderPeer, providerB: ProviderPeer): boolean {
+    return providerA.peerId.equals(providerB.peerId)
   }
 
-  async convertToProvider (provider: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<PeerId | undefined> {
+  async convertToProvider (provider: PeerId | Multiaddr | Multiaddr[], routing: string, options?: AbortOptions): Promise<ProviderPeer | undefined> {
     if (isPeerId(provider)) {
-      return provider
+      return {
+        peerId: provider,
+        routing
+      }
     }
 
     if (await this.libp2p.isDialable(provider) === false) {
@@ -73,8 +85,24 @@ class BitswapSession extends AbstractSession<PeerId, BitswapWantProgressEvents> 
     try {
       const connection = await this.libp2p.dial(provider, options)
 
-      return connection.remotePeer
+      return {
+        peerId: connection.remotePeer,
+        routing
+      }
     } catch {}
+  }
+
+  emitFoundProviderProgressEvent (cid: CID, provider: ProviderPeer, options: BlockRetrievalOptions<BitswapWantProgressEvents>): void {
+    options?.onProgress?.(new CustomProgressEvent<BitswapProvider>('bitswap:found-provider', {
+      type: 'bitswap',
+      cid,
+      provider: {
+        id: provider.peerId,
+        multiaddrs: [],
+        routing: provider.routing
+      },
+      routing: provider.routing
+    }))
   }
 }
 

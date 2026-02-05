@@ -19,6 +19,7 @@ export interface TransformRequestInit {
 export interface TrustlessGatewayComponents {
   logger: ComponentLogger
   transformRequestInit?: TransformRequestInit
+  routing: string
 }
 
 export interface GetRawBlockOptions {
@@ -78,10 +79,13 @@ export class TrustlessGateway {
   private readonly log: Logger
   private readonly transformRequestInit?: TransformRequestInit
 
-  constructor (url: URL | string, { logger, transformRequestInit }: TrustlessGatewayComponents) {
+  public readonly routing: string
+
+  constructor (url: URL | string, { logger, transformRequestInit, routing }: TrustlessGatewayComponents) {
     this.url = url instanceof URL ? url : new URL(url)
     this.transformRequestInit = transformRequestInit
     this.log = logger.forComponent(`helia:trustless-gateway-block-broker:${this.url.host}`)
+    this.routing = routing
   }
 
   /**
