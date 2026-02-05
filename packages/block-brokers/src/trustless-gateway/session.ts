@@ -1,11 +1,12 @@
 import { AbstractSession } from '@helia/utils'
 import { isPeerId } from '@libp2p/interface'
 import { multiaddrToUri } from '@multiformats/multiaddr-to-uri'
+import { CustomProgressEvent } from 'progress-events'
 import { TrustlessGateway } from './trustless-gateway.js'
 import { filterNonHTTPMultiaddrs, findHttpGatewayProviders } from './utils.js'
 import { DEFAULT_ALLOW_INSECURE, DEFAULT_ALLOW_LOCAL } from './index.js'
 import type { CreateTrustlessGatewaySessionOptions } from './broker.js'
-import type { TrustlessGatewayGetBlockProgressEvents } from './index.js'
+import type { TrustlessGatewayGetBlockProgressEvents, TrustlessGatewayProvider } from './index.js'
 import type { TransformRequestInit } from './trustless-gateway.js'
 import type { BlockRetrievalOptions, Routing } from '@helia/interface'
 import type { ComponentLogger, PeerId } from '@libp2p/interface'
@@ -52,7 +53,7 @@ class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, Trustles
     yield * findHttpGatewayProviders(cid, this.routing, this.logger, this.allowInsecure, this.allowLocal, { ...options, transformRequestInit: this.transformRequestInit })
   }
 
-  toEvictionKey (provider: TrustlessGateway): Uint8Array | string {
+  toFilterKey (provider: TrustlessGateway): Uint8Array | string {
     return provider.url.toString()
   }
 
@@ -60,7 +61,7 @@ class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, Trustles
     return providerA.url.toString() === providerB.url.toString()
   }
 
-  async convertToProvider (provider: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<TrustlessGateway | undefined> {
+  async convertToProvider (provider: PeerId | Multiaddr | Multiaddr[], routing: string, options?: AbortOptions): Promise<TrustlessGateway | undefined> {
     if (isPeerId(provider)) {
       return
     }
@@ -79,8 +80,18 @@ class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, Trustles
 
     return new TrustlessGateway(uri, {
       logger: this.logger,
-      transformRequestInit: this.transformRequestInit
+      transformRequestInit: this.transformRequestInit,
+      routing
     })
+  }
+
+  emitFoundProviderProgressEvent (cid: CID, provider: TrustlessGateway, options: BlockRetrievalOptions<TrustlessGatewayGetBlockProgressEvents>): void {
+    options?.onProgress?.(new CustomProgressEvent<TrustlessGatewayProvider>('trustless-gateway:found-provider', {
+      type: 'trustless-gateway',
+      cid,
+      url: provider.url.toJSON(),
+      routing: provider.routing
+    }))
   }
 }
 

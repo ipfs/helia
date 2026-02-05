@@ -282,7 +282,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
       })
 
       if (!dialable) {
-        this.log('skipping peer %p as they are not dialable - %a[]', provider.id, provider.multiaddrs)
+        this.log('skipping peer %p as they are not dialable - %a', provider.id, provider.multiaddrs)
         continue
       }
 

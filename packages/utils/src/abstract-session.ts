@@ -27,6 +27,7 @@ export interface BlockstoreSessionEvents<Provider> {
 interface Request {
   promise: Promise<Uint8Array>
   observers: number
+  queryFilter: Filter
 }
 
 export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents extends ProgressEvent> extends TypedEventEmitter<BlockstoreSessionEvents<Provider>> implements BlockBroker<RetrieveBlockProgressEvents> {
@@ -54,7 +55,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     this.maxProviders = init.maxProviders ?? DEFAULT_SESSION_MAX_PROVIDERS
     this.providers = []
     this.evictionFilter = createScalableCuckooFilter(this.maxProviders)
-    this.initialProviders = init.providers ?? []
+    this.initialProviders = [...(init.providers ?? [])]
   }
 
   async retrieve (cid: CID, options: BlockRetrievalOptions<RetrieveBlockProgressEvents> = {}): Promise<Uint8Array> {
@@ -71,41 +72,18 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     const deferred: DeferredPromise<Uint8Array> = pDefer()
     const request = {
       promise: deferred.promise,
-      observers: 1
+      observers: 1,
+      queryFilter: createScalableCuckooFilter(1024)
     }
     this.requests.set(cidStr, request)
 
-    if (this.providers.length === 0) {
-      let first = false
+    // if this is the first time this session has been used
+    let first = false
 
-      if (this.initialPeerSearchComplete == null) {
-        first = true
-        this.log = this.logger.forComponent(`${this.logName}:${cid}`)
-        this.initialPeerSearchComplete = this.findProviders(cid, this.minProviders, options)
-      }
-
-      try {
-        await raceSignal(this.initialPeerSearchComplete, options.signal)
-
-        if (first) {
-          this.log('found initial session peers for %c', cid)
-        }
-      } catch (err) {
-        if (first) {
-          this.log('failed to find initial session peers for %c - %e', cid, err)
-        }
-
-        this.requests.delete(cidStr)
-
-        if (request.observers > 1) {
-          // only need to reject request if another context is now also waiting
-          // for the result - otherwise we can end up with an unhandled promise
-          // rejection
-          deferred.reject(err)
-        }
-
-        throw err
-      }
+    if (this.initialPeerSearchComplete == null) {
+      first = true
+      this.log = this.logger.forComponent(`${this.logName}:${cid}`)
+      this.initialPeerSearchComplete = this.findProviders(cid, this.minProviders, options)
     }
 
     let foundBlock = false
@@ -167,6 +145,17 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     })
 
     const peerAddedToSessionListener = (event: CustomEvent<Provider>): void => {
+      const filterKey = this.toFilterKey(event.detail)
+
+      if (request.queryFilter.has(filterKey)) {
+        return
+      }
+
+      request.queryFilter.add(filterKey)
+
+      // dispatch progress notification
+      this.emitFoundProviderProgressEvent(cid, event.detail, options)
+
       queue.add(async () => {
         return this.queryProvider(cid, event.detail, options)
       }, {
@@ -186,14 +175,50 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     // add new session peers to query as they are discovered
     this.addEventListener('provider', peerAddedToSessionListener)
 
+    if (first) {
+      try {
+        await raceSignal(this.initialPeerSearchComplete, options.signal)
+
+        if (first) {
+          this.log('found initial session peers for %c', cid)
+        }
+      } catch (err) {
+        if (first) {
+          this.log('failed to find initial session peers for %c - %e', cid, err)
+        }
+
+        this.requests.delete(cidStr)
+
+        if (request.observers > 1) {
+          // only need to reject request if another context is now also waiting
+          // for the result - otherwise we can end up with an unhandled promise
+          // rejection
+          deferred.reject(err)
+        }
+
+        throw err
+      }
+    }
+
     // query each session peer directly
-    Promise.all([...this.providers].map(async (provider) => {
-      return queue.add(async () => {
-        return this.queryProvider(cid, provider, options)
-      }, {
-        provider
-      })
-    }))
+    Promise.all(
+      [...this.providers]
+        .filter(provider => {
+          const filterKey = this.toFilterKey(provider)
+          const has = request.queryFilter.has(filterKey)
+
+          if (!has) {
+            request.queryFilter.add(this.toFilterKey(provider))
+          }
+
+          return !has
+        })
+        .map(async (provider) => {
+          return queue.add(async () => this.queryProvider(cid, provider, options), {
+            provider
+          })
+        })
+    )
       .catch(err => {
         if (options.signal?.aborted === true) {
           // skip logging error if signal was aborted because abort can happen
@@ -222,7 +247,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
   }
 
   evict (provider: Provider): void {
-    this.evictionFilter.add(this.toEvictionKey(provider))
+    this.evictionFilter.add(this.toFilterKey(provider))
     const index = this.providers.findIndex(prov => this.equals(prov, provider))
 
     if (index === -1) {
@@ -233,7 +258,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
   }
 
   isEvicted (provider: Provider): boolean {
-    return this.evictionFilter.has(this.toEvictionKey(provider))
+    return this.evictionFilter.has(this.toFilterKey(provider))
   }
 
   hasProvider (provider: Provider): boolean {
@@ -251,7 +276,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
   }
 
   async addPeer (peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<void> {
-    const provider = await this.convertToProvider(peer, options)
+    const provider = await this.convertToProvider(peer, 'manually-added', options)
 
     if (provider == null || this.hasProvider(provider)) {
       return
@@ -265,7 +290,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     })
   }
 
-  private async findProviders (cid: CID, count: number, options: AbortOptions): Promise<void> {
+  private async findProviders (cid: CID, count: number, options: BlockRetrievalOptions<RetrieveBlockProgressEvents>): Promise<void> {
     const deferred: DeferredPromise<void> = pDefer()
     let found = 0
 
@@ -273,7 +298,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     // found but continue util this.providers reaches this.maxProviders
     void Promise.resolve()
       .then(async () => {
-        this.log('finding %d-%d new provider(s) for %c', count, this.maxProviders, cid)
+        this.log('finding %d-%d new provider(s) for %c - %d initial providers', count, this.maxProviders, cid, this.initialProviders.length)
 
         // process any specific providers for this session
         if (this.initialProviders.length > 0) {
@@ -284,7 +309,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
               break
             }
 
-            const provider = await this.convertToProvider(prov, options)
+            const provider = await this.convertToProvider(prov, 'manual', options)
 
             if (options.signal?.aborted === true) {
               break
@@ -309,7 +334,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
             found++
 
             if (found === count) {
-              this.log('session is ready')
+              this.log('session is ready with %d peer(s), only initial peers present', count)
               deferred.resolve()
               // continue finding peers until we reach this.maxProviders
             }
@@ -343,7 +368,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
             found++
 
             if (found === count) {
-              this.log('session is ready')
+              this.log('session is ready with %d peer(s), new peers present', count)
               deferred.resolve()
               // continue finding peers until we reach this.maxProviders
             }
@@ -374,7 +399,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
    * into the format required or return `undefined` if the provider is not
    * compatible with this session implementation
    */
-  abstract convertToProvider (provider: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<Provider | undefined>
+  abstract convertToProvider (provider: PeerId | Multiaddr | Multiaddr[], routing: string, options?: AbortOptions): Promise<Provider | undefined>
 
   /**
    * This method should search for new providers and yield them.
@@ -392,12 +417,17 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
 
   /**
    * Turn a provider into a concise Uint8Array representation for use in a Bloom
-   * filter
+   * or Cuckoo filter
    */
-  abstract toEvictionKey (provider: Provider): Uint8Array | string
+  abstract toFilterKey (provider: Provider): Uint8Array | string
 
   /**
    * Return `true` if we consider one provider to be the same as another
    */
   abstract equals (providerA: Provider, providerB: Provider): boolean
+
+  /**
+   * Invoke the progress handler with the session-specific found provider event
+   */
+  abstract emitFoundProviderProgressEvent (cid: CID, provider: Provider, options: BlockRetrievalOptions<RetrieveBlockProgressEvents>): void
 }

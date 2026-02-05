@@ -26,7 +26,8 @@ export function filterNonHTTPMultiaddrs (multiaddrs: Multiaddr[], allowInsecure:
       return isPrivate(ma) === false
     }
 
-    // When allowInsecure is false and allowLocal is true, allow multiaddrs with "127.0.0.1", "localhost", or any subdomain ending with ".localhost"
+    // When allowInsecure is false and allowLocal is true, allow multiaddrs with
+    // "127.0.0.1", "localhost", or any subdomain ending with ".localhost"
     if (!allowInsecure && allowLocal) {
       const { host } = getNetConfig(ma)
 
@@ -67,7 +68,11 @@ export async function * findHttpGatewayProviders (cid: CID, routing: Routing, lo
 
     options?.onProgress?.(new CustomProgressEvent('trustless-gateway:found-provider', prov))
 
-    yield new TrustlessGateway(uri, { logger, transformRequestInit: options.transformRequestInit })
+    yield new TrustlessGateway(uri, {
+      logger,
+      transformRequestInit: options.transformRequestInit,
+      routing: provider.routing
+    })
   }
 }
 

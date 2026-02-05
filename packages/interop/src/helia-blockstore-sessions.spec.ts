@@ -1,10 +1,12 @@
 import { stop } from '@libp2p/interface'
+import { peerIdFromString } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
+import type { BitswapProvider } from '@helia/block-brokers'
 import type { Helia } from 'helia'
 import type { KuboInfo, KuboNode } from 'ipfsd-ctl'
 
@@ -82,5 +84,33 @@ describe('helia - blockstore sessions', () => {
     const output = await toBuffer(session.get(root))
 
     expect(output).to.equalBytes(input)
+  })
+
+  it('should emit providers for seeded peers', async () => {
+    const input = Uint8Array.from([0, 1, 2, 3, 4])
+    const { cid } = await kubo.api.add({ content: input }, {
+      cidVersion: 1,
+      rawLeaves: true
+    })
+    const root = CID.parse(cid.toString())
+
+    const session = helia.blockstore.createSession(root, {
+      providers: kuboInfo.multiaddrs.map(str => multiaddr(str))
+    })
+
+    const foundProviders: Array<BitswapProvider> = []
+
+    const output = await toBuffer(session.get(root, {
+      onProgress (evt) {
+        // @ts-expect-error event is not in types
+        if (evt.type === 'bitswap:found-provider') {
+          // @ts-expect-error event is not in types
+          foundProviders.push(evt.detail)
+        }
+      }
+    }))
+
+    expect(output).to.equalBytes(input)
+    expect(foundProviders).to.have.deep.nested.property('[0].provider.id', peerIdFromString(kuboInfo.peerId ?? ''))
   })
 })
