@@ -57,16 +57,7 @@ export async function * findHttpGatewayProviders (cid: CID, routing: Routing, lo
     // /ip4/x.x.x.x/tcp/31337/http
     // /ip4/x.x.x.x/tcp/31337/https
     // etc
-    const uri = multiaddrToUri(httpAddresses[0])
-
-    const prov: TrustlessGatewayProvider = {
-      type: 'trustless-gateway',
-      cid,
-      url: uri.toString(),
-      routing: provider.routing
-    }
-
-    options?.onProgress?.(new CustomProgressEvent('trustless-gateway:found-provider', prov))
+    const uri = new URL(multiaddrToUri(httpAddresses[0]))
 
     yield new TrustlessGateway(uri, {
       logger,
