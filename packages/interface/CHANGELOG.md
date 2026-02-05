@@ -5,6 +5,13 @@
 
 * expose .dns property on @helia/interface ([#465](https://github.com/ipfs/helia/issues/465)) ([8c9bb7d](https://github.com/ipfs/helia/commit/8c9bb7d224a1b786cba1fba18bffe07001a3b95d))
 
+## [6.1.1](https://github.com/ipfs/helia/compare/interface-v6.1.0...interface-v6.1.1) (2026-02-05)
+
+
+### Bug Fixes
+
+* allow configuring cid peer filter size ([#955](https://github.com/ipfs/helia/issues/955)) ([e16b7a7](https://github.com/ipfs/helia/commit/e16b7a7dcd013f13321dea162eee0130473541ea))
+
 ## [6.1.0](https://github.com/ipfs/helia/compare/interface-v6.0.3...interface-v6.1.0) (2026-02-04)
 
 

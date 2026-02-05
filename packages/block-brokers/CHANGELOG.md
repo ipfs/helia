@@ -1,5 +1,21 @@
 # Changelog
 
+## [5.1.2](https://github.com/ipfs/helia/compare/block-brokers-v5.1.1...block-brokers-v5.1.2) (2026-02-05)
+
+
+### Bug Fixes
+
+* remove duplicate provider event ([#957](https://github.com/ipfs/helia/issues/957)) ([264e68d](https://github.com/ipfs/helia/commit/264e68d1ca94033c7bfeed408830b2fdaab942e5))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^3.1.1 to ^3.1.2
+    * @helia/interface bumped from ^6.1.0 to ^6.1.1
+    * @helia/utils bumped from ^2.4.1 to ^2.4.2
+
 ## [5.1.1](https://github.com/ipfs/helia/compare/block-brokers-v5.1.0...block-brokers-v5.1.1) (2026-02-05)
 
 
