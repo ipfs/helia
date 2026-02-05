@@ -146,6 +146,15 @@ export interface CreateSessionOptions <ProgressEvents extends ProgressEvent<any,
    * @default 5
    */
   maxProviders?: number
+
+  /**
+   * A scalable cuckoo filter is used to ensure we do not query the same peer
+   * multiple times for the same CID. This setting controls how the initial
+   * maximum number of peers that are expected to be in the filter.
+   *
+   * @default 100
+   */
+  cidPeerFilterSize?: number
 }
 
 export interface BlockBroker<RetrieveProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>, AnnounceProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> {
@@ -180,3 +189,4 @@ export interface SessionBlockBroker<RetrieveProgressEvents extends ProgressEvent
 
 export const DEFAULT_SESSION_MIN_PROVIDERS = 1
 export const DEFAULT_SESSION_MAX_PROVIDERS = 5
+export const DEFAULT_CID_PEER_FILTER_SIZE = 100

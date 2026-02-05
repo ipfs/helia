@@ -1,4 +1,4 @@
-import { DEFAULT_SESSION_MIN_PROVIDERS, DEFAULT_SESSION_MAX_PROVIDERS, InsufficientProvidersError } from '@helia/interface'
+import { DEFAULT_SESSION_MIN_PROVIDERS, DEFAULT_SESSION_MAX_PROVIDERS, DEFAULT_CID_PEER_FILTER_SIZE, InsufficientProvidersError } from '@helia/interface'
 import { AbortError, TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { createScalableCuckooFilter, Queue } from '@libp2p/utils'
 import { base64 } from 'multiformats/bases/base64'
@@ -42,6 +42,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
   public readonly providers: Provider[]
   private readonly evictionFilter: Filter
   private readonly initialProviders: Array<PeerId | Multiaddr | Multiaddr[]>
+  private readonly cidPeerFilterSize: number
 
   constructor (components: AbstractSessionComponents, init: AbstractCreateSessionOptions) {
     super()
@@ -53,6 +54,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     this.requests = new Map()
     this.minProviders = init.minProviders ?? DEFAULT_SESSION_MIN_PROVIDERS
     this.maxProviders = init.maxProviders ?? DEFAULT_SESSION_MAX_PROVIDERS
+    this.cidPeerFilterSize = init.cidPeerFilterSize ?? DEFAULT_CID_PEER_FILTER_SIZE
     this.providers = []
     this.evictionFilter = createScalableCuckooFilter(this.maxProviders)
     this.initialProviders = [...(init.providers ?? [])]
@@ -73,7 +75,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     const request = {
       promise: deferred.promise,
       observers: 1,
-      queryFilter: createScalableCuckooFilter(1024)
+      queryFilter: createScalableCuckooFilter(this.cidPeerFilterSize)
     }
     this.requests.set(cidStr, request)
 
