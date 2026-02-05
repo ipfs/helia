@@ -1,5 +1,20 @@
 # Changelog
 
+## [3.1.1](https://github.com/ipfs/helia/compare/bitswap-v3.1.0...bitswap-v3.1.1) (2026-02-05)
+
+
+### Bug Fixes
+
+* emit provider event for initial providers ([#953](https://github.com/ipfs/helia/issues/953)) ([f058fba](https://github.com/ipfs/helia/commit/f058fba8a06f8afdd3558bdf7c3801381648ffec))
+* emit provider event for initial provides ([f058fba](https://github.com/ipfs/helia/commit/f058fba8a06f8afdd3558bdf7c3801381648ffec))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^2.4.0 to ^2.4.1
+
 ## [3.1.0](https://github.com/ipfs/helia/compare/bitswap-v3.0.15...bitswap-v3.1.0) (2026-02-04)
 
 

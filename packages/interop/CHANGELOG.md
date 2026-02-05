@@ -1,5 +1,23 @@
 # Changelog
 
+## [10.1.1](https://github.com/ipfs/helia/compare/interop-v10.1.0...interop-v10.1.1) (2026-02-05)
+
+
+### Bug Fixes
+
+* emit provider event for initial providers ([#953](https://github.com/ipfs/helia/issues/953)) ([f058fba](https://github.com/ipfs/helia/commit/f058fba8a06f8afdd3558bdf7c3801381648ffec))
+* emit provider event for initial provides ([f058fba](https://github.com/ipfs/helia/commit/f058fba8a06f8afdd3558bdf7c3801381648ffec))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.1.0 to ^5.1.1
+    * @helia/car bumped from ^5.3.7 to ^5.3.8
+    * @helia/http bumped from ^3.0.18 to ^3.0.19
+    * helia bumped from ^6.0.18 to ^6.0.19
+
 ## [10.1.0](https://github.com/ipfs/helia/compare/interop-v10.0.1...interop-v10.1.0) (2026-02-04)
 
 

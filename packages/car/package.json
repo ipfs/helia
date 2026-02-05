@@ -1,6 +1,6 @@
 {
   "name": "@helia/car",
-  "version": "5.3.7",
+  "version": "5.3.8",
   "description": "Import/export car files from Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/car#readme",
@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@helia/interface": "^6.1.0",
-    "@helia/utils": "^2.4.0",
+    "@helia/utils": "^2.4.1",
     "@ipld/car": "^5.4.2",
     "@ipld/dag-pb": "^4.1.5",
     "@libp2p/interface": "^3.1.0",
