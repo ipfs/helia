@@ -210,7 +210,7 @@ export class IPNSRepublisher {
         const { record } = await this.resolver.resolve(key, { offline: true })
         records.push(record)
       } catch (err: any) {
-        if (err.name !== 'NotFoundError') {
+        if (err.name !== 'RecordNotFoundError') {
           throw err
         }
       }
@@ -222,7 +222,7 @@ export class IPNSRepublisher {
           records.push(record)
         }
       } catch (err: any) {
-        if (err.name !== 'NotFoundError') {
+        if (err.name !== 'RecordNotFoundError') {
           throw err
         }
       }
