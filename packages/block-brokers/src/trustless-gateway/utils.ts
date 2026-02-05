@@ -1,10 +1,9 @@
 import { getNetConfig, isPrivate } from '@libp2p/utils'
 import { DNS, HTTP, HTTPS } from '@multiformats/multiaddr-matcher'
 import { multiaddrToUri } from '@multiformats/multiaddr-to-uri'
-import { CustomProgressEvent } from 'progress-events'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { TrustlessGateway } from './trustless-gateway.js'
-import type { TrustlessGatewayGetBlockProgressEvents, TrustlessGatewayProvider } from './index.ts'
+import type { TrustlessGatewayGetBlockProgressEvents } from './index.ts'
 import type { TransformRequestInit } from './trustless-gateway.js'
 import type { Routing } from '@helia/interface'
 import type { ComponentLogger, Logger, AbortOptions } from '@libp2p/interface'
@@ -57,16 +56,7 @@ export async function * findHttpGatewayProviders (cid: CID, routing: Routing, lo
     // /ip4/x.x.x.x/tcp/31337/http
     // /ip4/x.x.x.x/tcp/31337/https
     // etc
-    const uri = multiaddrToUri(httpAddresses[0])
-
-    const prov: TrustlessGatewayProvider = {
-      type: 'trustless-gateway',
-      cid,
-      url: uri.toString(),
-      routing: provider.routing
-    }
-
-    options?.onProgress?.(new CustomProgressEvent('trustless-gateway:found-provider', prov))
+    const uri = new URL(multiaddrToUri(httpAddresses[0]))
 
     yield new TrustlessGateway(uri, {
       logger,
