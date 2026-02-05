@@ -1,7 +1,7 @@
 import type { LocalStore } from '../local-store.ts'
 import type { IPNSRouting, PutOptions, GetOptions } from './index.ts'
 
-export class LocalStoreRouting {
+class LocalStoreRouting {
   private localStore: LocalStore
 
   constructor (localStore: LocalStore) {
@@ -16,6 +16,10 @@ export class LocalStoreRouting {
     const { record } = await this.localStore.get(routingKey, options)
 
     return record
+  }
+
+  toString (): string {
+    return 'LocalStoreRouting()'
   }
 }
 

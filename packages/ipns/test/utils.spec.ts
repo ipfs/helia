@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
 import { shouldRepublish } from '../src/utils.ts'

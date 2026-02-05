@@ -1,5 +1,154 @@
 # Changelog
 
+## [10.0.0](https://github.com/ipfs/helia/compare/interop-v9.0.18...interop-v10.0.0) (2026-01-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* pass the endpoint URL to the delegated routing router  as a `url` property of an init object
+
+### Dependencies
+
+* update delegated routing client ([#937](https://github.com/ipfs/helia/issues/937)) ([1c79dae](https://github.com/ipfs/helia/commit/1c79dae55273a2751eb6d11648702f2946df4bcc))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/http bumped from ^3.0.15 to ^3.0.16
+    * @helia/routers bumped from ^4.0.6 to ^5.0.0
+    * helia bumped from ^6.0.15 to ^6.0.16
+
+## [9.0.18](https://github.com/ipfs/helia/compare/interop-v9.0.17...interop-v9.0.18) (2026-01-15)
+
+
+### Bug Fixes
+
+* use non-deprecated factory function to create delegated client ([#934](https://github.com/ipfs/helia/issues/934)) ([20ba9cf](https://github.com/ipfs/helia/commit/20ba9cf6256961d2b664af0e8f48b5e9d009d834))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.0.13 to ^5.0.14
+    * @helia/dnslink bumped from ^1.1.3 to ^1.1.4
+    * @helia/car bumped from ^5.3.4 to ^5.3.5
+    * @helia/dag-cbor bumped from ^5.0.3 to ^5.0.4
+    * @helia/dag-json bumped from ^5.0.3 to ^5.0.4
+    * @helia/http bumped from ^3.0.14 to ^3.0.15
+    * @helia/ipns bumped from ^9.1.5 to ^9.1.6
+    * @helia/json bumped from ^5.0.3 to ^5.0.4
+    * @helia/mfs bumped from ^7.0.0 to ^7.0.1
+    * @helia/routers bumped from ^4.0.5 to ^4.0.6
+    * @helia/strings bumped from ^5.0.3 to ^5.0.4
+    * @helia/unixfs bumped from ^7.0.0 to ^7.0.1
+    * helia bumped from ^6.0.14 to ^6.0.15
+
+## [9.0.17](https://github.com/ipfs/helia/compare/interop-v9.0.16...interop-v9.0.17) (2026-01-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/car bumped from ^5.3.3 to ^5.3.4
+    * @helia/mfs bumped from ^6.0.4 to ^7.0.0
+    * @helia/unixfs bumped from ^6.0.4 to ^7.0.0
+
+## [9.0.16](https://github.com/ipfs/helia/compare/interop-v9.0.15...interop-v9.0.16) (2025-12-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.0.12 to ^5.0.13
+    * @helia/car bumped from ^5.3.2 to ^5.3.3
+    * @helia/http bumped from ^3.0.13 to ^3.0.14
+    * helia bumped from ^6.0.13 to ^6.0.14
+
+## [9.0.15](https://github.com/ipfs/helia/compare/interop-v9.0.14...interop-v9.0.15) (2025-12-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/ipns bumped from ^9.1.4 to ^9.1.5
+
+## [9.0.14](https://github.com/ipfs/helia/compare/interop-v9.0.13...interop-v9.0.14) (2025-12-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.0.11 to ^5.0.12
+    * @helia/car bumped from ^5.3.1 to ^5.3.2
+    * @helia/http bumped from ^3.0.12 to ^3.0.13
+    * @helia/mfs bumped from ^6.0.3 to ^6.0.4
+    * @helia/unixfs bumped from ^6.0.3 to ^6.0.4
+    * helia bumped from ^6.0.12 to ^6.0.13
+
+## [9.0.13](https://github.com/ipfs/helia/compare/interop-v9.0.12...interop-v9.0.13) (2025-12-12)
+
+
+### Dependencies
+
+* bump kubo from 0.38.2 to 0.39.0 in the kubo-deps group ([#911](https://github.com/ipfs/helia/issues/911)) ([5e06685](https://github.com/ipfs/helia/commit/5e0668547b3029ce6ab9fd70081bce70aea950fb))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.0.10 to ^5.0.11
+    * @helia/car bumped from ^5.3.0 to ^5.3.1
+    * @helia/http bumped from ^3.0.11 to ^3.0.12
+    * @helia/ipns bumped from ^9.1.3 to ^9.1.4
+    * @helia/routers bumped from ^4.0.4 to ^4.0.5
+    * helia bumped from ^6.0.11 to ^6.0.12
+
+## [9.0.12](https://github.com/ipfs/helia/compare/interop-v9.0.11...interop-v9.0.12) (2025-11-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.0.9 to ^5.0.10
+    * @helia/car bumped from ^5.2.5 to ^5.3.0
+    * @helia/http bumped from ^3.0.10 to ^3.0.11
+    * helia bumped from ^6.0.10 to ^6.0.11
+
+## [9.0.11](https://github.com/ipfs/helia/compare/interop-v9.0.10...interop-v9.0.11) (2025-11-14)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.0.8 to ^5.0.9
+    * @helia/car bumped from ^5.2.4 to ^5.2.5
+    * @helia/http bumped from ^3.0.9 to ^3.0.10
+    * helia bumped from ^6.0.9 to ^6.0.10
+
+## [9.0.10](https://github.com/ipfs/helia/compare/interop-v9.0.9...interop-v9.0.10) (2025-11-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.0.7 to ^5.0.8
+    * @helia/car bumped from ^5.2.3 to ^5.2.4
+    * @helia/http bumped from ^3.0.8 to ^3.0.9
+    * @helia/routers bumped from ^4.0.3 to ^4.0.4
+    * helia bumped from ^6.0.8 to ^6.0.9
+
+## [9.0.9](https://github.com/ipfs/helia/compare/interop-v9.0.8...interop-v9.0.9) (2025-11-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/dnslink bumped from ^1.1.2 to ^1.1.3
+
 ## [9.0.8](https://github.com/ipfs/helia/compare/interop-v9.0.7...interop-v9.0.8) (2025-10-29)
 
 

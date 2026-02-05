@@ -1,5 +1,26 @@
 # Changelog
 
+## [9.1.6](https://github.com/ipfs/helia/compare/ipns-v9.1.5...ipns-v9.1.6) (2026-01-15)
+
+
+### Bug Fixes
+
+* use non-deprecated factory function to create delegated client ([#934](https://github.com/ipfs/helia/issues/934)) ([20ba9cf](https://github.com/ipfs/helia/commit/20ba9cf6256961d2b664af0e8f48b5e9d009d834))
+
+## [9.1.5](https://github.com/ipfs/helia/compare/ipns-v9.1.4...ipns-v9.1.5) (2025-12-12)
+
+
+### Bug Fixes
+
+* throw specific error when IPNS lookup fails ([#919](https://github.com/ipfs/helia/issues/919)) ([574ac5e](https://github.com/ipfs/helia/commit/574ac5e4405ba904d223c740e07e9ac21394cb9b))
+
+## [9.1.4](https://github.com/ipfs/helia/compare/ipns-v9.1.3...ipns-v9.1.4) (2025-12-12)
+
+
+### Bug Fixes
+
+* improve error reporting ([#896](https://github.com/ipfs/helia/issues/896)) ([71f9c4e](https://github.com/ipfs/helia/commit/71f9c4ef2c8557d92e5769675a69da2679c8b7d2))
+
 ## [9.1.3](https://github.com/ipfs/helia/compare/ipns-v9.1.2...ipns-v9.1.3) (2025-10-29)
 
 

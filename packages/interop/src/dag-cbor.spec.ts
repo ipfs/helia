@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { dagCbor } from '@helia/dag-cbor'
 import * as codec from '@ipld/dag-cbor'
 import { expect } from 'aegir/chai'

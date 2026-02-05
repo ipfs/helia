@@ -1,4 +1,5 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
+import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { multihashToIPNSRoutingKey, createIPNSRecord, marshalIPNSRecord } from 'ipns'
@@ -17,7 +18,11 @@ describe('delegated-http-routing', () => {
   beforeEach(() => {
     client = stubInterface<DelegatedRoutingV1HttpApiClient>()
 
-    router = delegatedHTTPRouting('http://127.0.0.1')
+    router = delegatedHTTPRouting({
+      url: 'http://127.0.0.1'
+    })({
+      logger: defaultLogger()
+    })
     // @ts-expect-error private field
     router.client = client
   })

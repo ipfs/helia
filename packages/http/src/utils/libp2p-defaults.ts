@@ -1,4 +1,4 @@
-import { createDelegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
+import { delegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
 import { keychain } from '@libp2p/keychain'
 import { userAgent } from 'libp2p/user-agent'
 import type { Libp2pHTTPDefaultOptions } from './libp2p.js'
@@ -27,11 +27,11 @@ export function libp2pDefaults (options: Libp2pHTTPDefaultOptions = {}): Libp2pO
     streamMuxers: [],
     peerDiscovery: [],
     services: {
-      delegatedRouting: () =>
-        createDelegatedRoutingV1HttpApiClient('https://delegated-ipfs.dev', {
-          filterAddrs: ['https'],
-          filterProtocols: ['transport-ipfs-gateway-http']
-        }),
+      delegatedRouting: delegatedRoutingV1HttpApiClient({
+        url: 'https://delegated-ipfs.dev',
+        filterAddrs: ['https'],
+        filterProtocols: ['transport-ipfs-gateway-http']
+      }),
       keychain: keychain(options.keychain)
     }
   }

@@ -1,5 +1,100 @@
 # Changelog
 
+## [5.3.5](https://github.com/ipfs/helia/compare/car-v5.3.4...car-v5.3.5) (2026-01-15)
+
+
+### Bug Fixes
+
+* use non-deprecated factory function to create delegated client ([#934](https://github.com/ipfs/helia/issues/934)) ([20ba9cf](https://github.com/ipfs/helia/commit/20ba9cf6256961d2b664af0e8f48b5e9d009d834))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^2.3.3 to ^2.3.4
+  * devDependencies
+    * @helia/mfs bumped from ^7.0.0 to ^7.0.1
+    * @helia/unixfs bumped from ^7.0.0 to ^7.0.1
+
+## [5.3.4](https://github.com/ipfs/helia/compare/car-v5.3.3...car-v5.3.4) (2026-01-12)
+
+
+### Dependencies
+
+* update ipfs-unixfs-exporter in @helia/car ([#933](https://github.com/ipfs/helia/issues/933)) ([4e19769](https://github.com/ipfs/helia/commit/4e19769aaa0f5b1fe6c9471275cb28f850d4ab56))
+* The following workspace dependencies were updated
+  * devDependencies
+    * @helia/mfs bumped from ^6.0.4 to ^7.0.0
+    * @helia/unixfs bumped from ^6.0.4 to ^7.0.0
+
+## [5.3.3](https://github.com/ipfs/helia/compare/car-v5.3.2...car-v5.3.3) (2025-12-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^2.3.2 to ^2.3.3
+
+## [5.3.2](https://github.com/ipfs/helia/compare/car-v5.3.1...car-v5.3.2) (2025-12-12)
+
+
+### Bug Fixes
+
+* throw a specific error when offline and a block is missing ([#917](https://github.com/ipfs/helia/issues/917)) ([e27aa2d](https://github.com/ipfs/helia/commit/e27aa2de96fef39950f4c7d00a517208372aaf4e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^2.3.1 to ^2.3.2
+  * devDependencies
+    * @helia/mfs bumped from ^6.0.3 to ^6.0.4
+    * @helia/unixfs bumped from ^6.0.3 to ^6.0.4
+
+## [5.3.1](https://github.com/ipfs/helia/compare/car-v5.3.0...car-v5.3.1) (2025-12-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^2.3.0 to ^2.3.1
+
+## [5.3.0](https://github.com/ipfs/helia/compare/car-v5.2.5...car-v5.3.0) (2025-11-20)
+
+
+### Features
+
+* allow specifying graph export strategy ([#907](https://github.com/ipfs/helia/issues/907)) ([7676912](https://github.com/ipfs/helia/commit/7676912ec08b7599309e3a6afdd4183f8dc61b27))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^2.2.5 to ^2.3.0
+
+## [5.2.5](https://github.com/ipfs/helia/compare/car-v5.2.4...car-v5.2.5) (2025-11-14)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^2.2.4 to ^2.2.5
+
+## [5.2.4](https://github.com/ipfs/helia/compare/car-v5.2.3...car-v5.2.4) (2025-11-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^2.2.3 to ^2.2.4
+
 ## [5.2.3](https://github.com/ipfs/helia/compare/car-v5.2.2...car-v5.2.3) (2025-10-29)
 
 

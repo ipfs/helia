@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { identity } from 'multiformats/hashes/identity'

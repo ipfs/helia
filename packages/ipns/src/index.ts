@@ -151,16 +151,21 @@
  * ```TypeScript
  * import { createHelia } from 'helia'
  * import { ipns, ipnsValidator } from '@helia/ipns'
- * import { createDelegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
+ * import { delegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
  * import { CID } from 'multiformats/cid'
  * import { multihashToIPNSRoutingKey, marshalIPNSRecord } from 'ipns'
+ * import { defaultLogger } from '@libp2p/logger'
  *
  * const helia = await createHelia()
  * const name = ipns(helia)
  *
  * const ipnsName = 'k51qzi5uqu5dktsyfv7xz8h631pri4ct7osmb43nibxiojpttxzoft6hdyyzg4'
  * const parsedCid: CID<unknown, 114, 0 | 18, 1> = CID.parse(ipnsName)
- * const delegatedClient = createDelegatedRoutingV1HttpApiClient('https://delegated-ipfs.dev')
+ * const delegatedClient = delegatedRoutingV1HttpApiClient({
+ *   url: 'https://delegated-ipfs.dev'
+ * })({
+ *   logger: defaultLogger()
+ * })
  * const record = await delegatedClient.getIPNS(parsedCid)
  *
  * // publish the latest existing record to routing

@@ -9,7 +9,7 @@ import { stat } from './commands/stat.js'
 import { touch } from './commands/touch.js'
 import type { AddOptions, CatOptions, ChmodOptions, CpOptions, ExtendedStatOptions, ExtendedDirectoryStats, ExtendedFileStats, FileCandidate, LsOptions, MkdirOptions, RmOptions, StatOptions, TouchOptions, UnixFSComponents, DirectoryStats, FileStats, UnixFS as UnixFSInterface, RawStats, ExtendedRawStats } from './index.js'
 import type { Blockstore } from 'interface-blockstore'
-import type { UnixFSEntry } from 'ipfs-unixfs-exporter'
+import type { UnixFSDirectoryEntry } from 'ipfs-unixfs-exporter'
 import type { ByteStream, DirectoryCandidate, ImportCandidateStream, ImportResult } from 'ipfs-unixfs-importer'
 import type { CID } from 'multiformats/cid'
 
@@ -56,7 +56,7 @@ export class UnixFS implements UnixFSInterface {
     return cp(source, target, name, this.components.blockstore, options)
   }
 
-  async * ls (cid: CID, options: Partial<LsOptions> = {}): AsyncIterable<UnixFSEntry> {
+  async * ls (cid: CID, options: Partial<LsOptions> = {}): AsyncIterable<UnixFSDirectoryEntry> {
     yield * ls(cid, this.components.blockstore, options)
   }
 

@@ -5,12 +5,14 @@ import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { CID } from 'multiformats/cid'
-import { sha256 } from 'multiformats/hashes/sha2'
+import * as raw from 'multiformats/codecs/raw'
+import { sha256, sha512 } from 'multiformats/hashes/sha2'
 import pDefer from 'p-defer'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { Bitswap } from '../src/bitswap.js'
 import { cidToPrefix } from '../src/utils/cid-prefix.js'
+import type { MultihashHasherLoader } from '../src/index.ts'
 import type { BitswapMessageEventDetail } from '../src/network.js'
 import type { Routing } from '@helia/interface/routing'
 import type { Libp2p, PeerId } from '@libp2p/interface'
@@ -29,11 +31,13 @@ describe('bitswap', () => {
   let bitswap: Bitswap
   let cid: CID
   let block: Uint8Array
+  let hashLoader: StubbedInstance<MultihashHasherLoader>
 
   beforeEach(async () => {
     block = Uint8Array.from([0, 1, 2, 3, 4])
     const mh = await sha256.digest(block)
     cid = CID.createV0(mh).toV1()
+    hashLoader = stubInterface<MultihashHasherLoader>()
 
     components = {
       peerId: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
@@ -47,6 +51,8 @@ describe('bitswap', () => {
     bitswap = new Bitswap({
       ...components,
       logger: defaultLogger()
+    }, {
+      hashLoader
     })
 
     components.libp2p.getConnections.returns([])
@@ -62,6 +68,59 @@ describe('bitswap', () => {
 
   describe('want', () => {
     it('should want a block that is available on the network', async () => {
+      const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      const findProvsSpy = bitswap.network.findAndConnect = Sinon.stub()
+      findProvsSpy.resolves()
+
+      // add peer
+      bitswap.wantList.peers.set(remotePeer, new Set())
+
+      // wait for message send to peer
+      const sentMessages = pDefer()
+
+      bitswap.network.sendMessage = async (peerId) => {
+        if (remotePeer.equals(peerId)) {
+          sentMessages.resolve()
+        }
+      }
+
+      const p = bitswap.want(cid)
+
+      // wait for message send to peer
+      await sentMessages.promise
+
+      // provider sends message
+      bitswap.network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
+        detail: {
+          peer: remotePeer,
+          message: {
+            blocks: [{
+              prefix: cidToPrefix(cid),
+              data: block
+            }],
+            blockPresences: [],
+            pendingBytes: 0
+          }
+        }
+      })
+
+      const b = await p
+
+      // should have added cid to wantlist and searched for providers
+      expect(findProvsSpy.called).to.be.true()
+
+      // should have cancelled the notification request
+      expect(b).to.equalBytes(block)
+    })
+
+    it('should want a block with a truncated hash', async () => {
+      hashLoader.getHasher.withArgs(sha512.code).resolves(sha512)
+
+      const mh = await sha512.digest(block, {
+        truncate: 32
+      })
+      cid = CID.createV1(raw.code, mh)
+
       const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
       const findProvsSpy = bitswap.network.findAndConnect = Sinon.stub()
       findProvsSpy.resolves()

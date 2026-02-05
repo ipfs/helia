@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
@@ -11,12 +9,13 @@ import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
 import { identity } from 'multiformats/hashes/identity'
+import { sha256, sha512 } from 'multiformats/hashes/sha2'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { getHasher } from '../../src/utils/get-hasher.js'
-import { NetworkedStorage } from '../../src/utils/networked-storage.js'
+import { getCidBlockVerifierFunction, NetworkedStorage } from '../../src/utils/networked-storage.js'
 import { createBlock } from '../fixtures/create-block.js'
 import type { NetworkedStorageComponents } from '../../src/utils/networked-storage.js'
 import type { BlockBroker } from '@helia/interface/blocks'
@@ -63,7 +62,15 @@ describe('networked-storage', () => {
 
     await expect(drain(storage.get(cid, {
       offline: true
-    }))).to.eventually.be.rejected.with.property('name', 'NotFoundError')
+    }))).to.eventually.be.rejected.with.property('name', 'BlockNotFoundWhileOfflineError')
+  })
+
+  it('gets many blocks from the blockstore offline', async () => {
+    const { cid } = blocks[0]
+
+    await expect(drain(storage.getMany([cid], {
+      offline: true
+    }))).to.eventually.be.rejected.with.property('name', 'BlockNotFoundWhileOfflineError')
   })
 
   it('gets a block from the blockstore with progress', async () => {
@@ -91,10 +98,10 @@ describe('networked-storage', () => {
         yield blocks[i].cid
         await delay(10)
       }
-    }()), ({ cid, bytes }) => {
+    }()), async ({ cid, bytes }) => {
       return {
         cid,
-        block: toBuffer(bytes)
+        block: await toBuffer(bytes)
       }
     }))
 
@@ -106,12 +113,12 @@ describe('networked-storage', () => {
 
     await expect(drain(map(storage.getMany([cid], {
       offline: true
-    }), ({ cid, bytes }) => {
+    }), async ({ cid, bytes }) => {
       return {
         cid,
-        block: toBuffer(bytes)
+        block: await toBuffer(bytes)
       }
-    }))).to.eventually.be.rejected.with.property('name', 'NotFoundError')
+    }))).to.eventually.be.rejected.with.property('name', 'BlockNotFoundWhileOfflineError')
   })
 
   it('puts a block into the blockstore', async () => {
@@ -165,10 +172,10 @@ describe('networked-storage', () => {
         yield blocks[i].cid
         await delay(10)
       }
-    }()), ({ cid, bytes }) => {
+    }()), async ({ cid, bytes }) => {
       return {
         cid,
-        block: toBuffer(bytes)
+        block: await toBuffer(bytes)
       }
     }))
 
@@ -201,10 +208,10 @@ describe('networked-storage', () => {
         yield blocks[i].cid
         await delay(10)
       }
-    }()), ({ cid, bytes }) => {
+    }()), async ({ cid, bytes }) => {
       return {
         cid,
-        block: toBuffer(bytes)
+        block: await toBuffer(bytes)
       }
     }))
 
@@ -233,5 +240,29 @@ describe('networked-storage', () => {
 
     expect(block).to.equalBytes(blocks[0].block)
     expect(slowBroker.retrieve.getCall(0)).to.have.nested.property('args[1].signal.aborted', true)
+  })
+
+  describe('block verifier', () => {
+    it('should verify a block', async () => {
+      const block = Uint8Array.from([0, 1, 2, 3, 4])
+      const digest = await sha256.digest(block)
+      const cid = CID.createV1(raw.code, digest)
+      const fn = getCidBlockVerifierFunction(cid, sha256)
+
+      // no promise rejection is a success
+      await fn(block)
+    })
+
+    it('should verify a block with a truncated hash', async () => {
+      const block = Uint8Array.from([0, 1, 2, 3, 4])
+      const digest = await sha512.digest(block, {
+        truncate: 32
+      })
+      const cid = CID.createV1(raw.code, digest)
+      const fn = getCidBlockVerifierFunction(cid, sha512)
+
+      // no promise rejection is a success
+      await fn(block)
+    })
   })
 })

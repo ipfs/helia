@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import all from 'it-all'
@@ -105,7 +103,6 @@ describe('addFile', () => {
 
     const contents = await all(fs.ls(cid))
     expect(contents).to.have.lengthOf(1)
-    expect(contents).to.have.nested.property('[0].type', 'raw')
     expect(contents).to.have.nested.property('[0].name', 'file.txt')
     expect(contents).to.have.nested.property('[0].path', 'bafybeid5m2zdvy6yz2ozuzidsaxex53epmminr4dkynmxjhcnbpvglql74/file.txt')
   })
@@ -131,7 +128,6 @@ describe('addFile', () => {
 
     const contents = await all(fs.ls(cid))
     expect(contents).to.have.lengthOf(1)
-    expect(contents).to.have.nested.property('[0].type', 'raw')
     expect(contents).to.have.nested.property('[0].name', 'download')
     expect(contents).to.have.nested.property('[0].path', 'bafybeieij4nwevti7uttnkvutw5samohrnqxpakitwnoagwl55vn5oltrm/download')
   })

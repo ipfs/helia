@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.1.4](https://github.com/ipfs/helia/compare/dnslink-v1.1.3...dnslink-v1.1.4) (2026-01-15)
+
+
+### Bug Fixes
+
+* use non-deprecated factory function to create delegated client ([#934](https://github.com/ipfs/helia/issues/934)) ([20ba9cf](https://github.com/ipfs/helia/commit/20ba9cf6256961d2b664af0e8f48b5e9d009d834))
+
+## [1.1.3](https://github.com/ipfs/helia/compare/dnslink-v1.1.2...dnslink-v1.1.3) (2025-11-10)
+
+
+### Bug Fixes
+
+* support recursive DNSLink lookups ([#897](https://github.com/ipfs/helia/issues/897)) ([636e950](https://github.com/ipfs/helia/commit/636e9503ff56e49c2209f6af480df36b7a8c3735))
+
 ## [1.1.2](https://github.com/ipfs/helia/compare/dnslink-v1.1.1...dnslink-v1.1.2) (2025-10-29)
 
 

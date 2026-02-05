@@ -42,3 +42,8 @@ export class InvalidTopicError extends Error {
     this.name = 'InvalidTopicError'
   }
 }
+
+export class RecordNotFoundError extends Error {
+  static name = 'RecordNotFoundError'
+  name = 'RecordNotFoundError'
+}

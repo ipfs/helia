@@ -1,4 +1,4 @@
-import { createDelegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
+import { delegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
 import { NotFoundError } from '@libp2p/interface'
 import { marshalIPNSRecord, multihashFromIPNSRoutingKey, unmarshalIPNSRecord } from 'ipns'
 import first from 'it-first'
@@ -7,7 +7,7 @@ import { CID } from 'multiformats/cid'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { delegatedHTTPRoutingDefaults } from './utils/delegated-http-routing-defaults.js'
-import type { DelegatedRoutingV1HttpApiClient, DelegatedRoutingV1HttpApiClientInit } from '@helia/delegated-routing-v1-http-api-client'
+import type { DelegatedRoutingV1HttpApiClient, DelegatedRoutingV1HttpApiClientComponents, DelegatedRoutingV1HttpApiClientInit } from '@helia/delegated-routing-v1-http-api-client'
 import type { Provider, Routing, RoutingOptions } from '@helia/interface'
 import type { PeerId, PeerInfo } from '@libp2p/interface'
 import type { Version } from 'multiformats'
@@ -21,8 +21,8 @@ function isIPNSKey (key: Uint8Array): boolean {
 class DelegatedHTTPRouter implements Routing {
   private readonly client: DelegatedRoutingV1HttpApiClient
 
-  constructor (url: URL, init: DelegatedRoutingV1HttpApiClientInit = {}) {
-    this.client = createDelegatedRoutingV1HttpApiClient(url, init)
+  constructor (components: DelegatedRoutingV1HttpApiClientComponents, init: DelegatedRoutingV1HttpApiClientInit) {
+    this.client = delegatedRoutingV1HttpApiClient(init)(components)
   }
 
   async provide (cid: CID, options?: RoutingOptions): Promise<void> {
@@ -95,12 +95,15 @@ class DelegatedHTTPRouter implements Routing {
   async * getClosestPeers (key: Uint8Array, options?: RoutingOptions): AsyncIterable<PeerInfo> {
     // noop
   }
+
+  toString (): string {
+    return `DelegatedHTTPRouter(${this.client.url})`
+  }
 }
 
 /**
  * Creates a Helia Router that connects to an endpoint that supports the [Delegated Routing V1 HTTP API](https://specs.ipfs.tech/routing/http-routing-v1/) spec.
  */
-export function delegatedHTTPRouting (url: string | URL, init?: DelegatedRoutingV1HttpApiClientInit): Routing {
-  const config = init ?? delegatedHTTPRoutingDefaults()
-  return new DelegatedHTTPRouter(new URL(url), config)
+export function delegatedHTTPRouting (init: DelegatedRoutingV1HttpApiClientInit): (components: any) => Routing {
+  return (components: any) => new DelegatedHTTPRouter(components, delegatedHTTPRoutingDefaults(init))
 }

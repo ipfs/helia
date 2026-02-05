@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { expect } from 'aegir/chai'
 import { toMtime } from '../../src/utils/to-mtime.js'
 

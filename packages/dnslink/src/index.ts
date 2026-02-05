@@ -181,6 +181,28 @@ export interface DNSLinkIPNSResult {
   path: string
 }
 
+export interface DNSLinkDNSLinkResult {
+  /**
+   * The resolved record
+   */
+  answer: Answer
+
+  /**
+   * The IPNS namespace
+   */
+  namespace: 'dnslink'
+
+  /**
+   * The resolved value
+   */
+  value: string
+
+  /**
+   * If the resolved value is an IPFS path, it will be present here
+   */
+  path: string
+}
+
 export interface DNSLinkResolveResult {
   /**
    * The resolved record

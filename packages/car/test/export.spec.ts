@@ -1,5 +1,4 @@
-/* eslint-env mocha */
-
+import { unixfs } from '@helia/unixfs'
 import { CarReader } from '@ipld/car'
 import * as dagCbor from '@ipld/dag-cbor'
 import { defaultLogger } from '@libp2p/logger'
@@ -15,7 +14,7 @@ import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import sinon from 'sinon'
 import { BlockExporter, SubgraphExporter, UnixFSExporter } from '../src/export-strategies/index.js'
-import { car } from '../src/index.js'
+import { breadthFirstWalker, depthFirstWalker, car } from '../src/index.js'
 import { CIDPath, GraphSearch, UnixFSPath } from '../src/traversal-strategies/index.js'
 import { carEquals, CarEqualsSkip } from './fixtures/car-equals.js'
 import { getCodec } from './fixtures/get-codec.js'
@@ -27,6 +26,12 @@ describe('export', () => {
   let blockstore: Blockstore
   let c: Car
   let blockstoreGetSpy: sinon.SinonSpy
+
+  // contains a DAG-CBOR block
+  const nonUnixFsRoot = CID.parse('bafyreieurv3eg6sxth6avdr2zel52mdcqw7dghkljzcnaodb4conrzqjei')
+
+  // contains a HAMT shard root block
+  const shardRoot = CID.parse('bafybeidbclfqleg2uojchspzd4bob56dqetqjsj27gy2cq3klkkgxtpn4i')
 
   // "/" (1x block)
   const dagRootCid = CID.parse('bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu')
@@ -63,8 +68,7 @@ describe('export', () => {
   })
 
   it('should round-trip fixture CAR file', async () => {
-    // cspell:ignore bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu
-    const { reader, bytes } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
+    const { reader, bytes } = await loadCarFixture(`test/fixtures/${dagRootCid}.car`)
 
     // import all the blocks from the car file
     await c.import(reader)
@@ -79,7 +83,7 @@ describe('export', () => {
   })
 
   it('should export a single block from a DAG', async () => {
-    const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
+    const { reader } = await loadCarFixture(`test/fixtures/${dagRootCid}.car`)
 
     await c.import(reader)
 
@@ -104,9 +108,7 @@ describe('export', () => {
 
   it('should error on non-UnixFS data with UnixFSExporter', async () => {
     // dag-cbor only blocks in this car file
-    const nonUnixFsRoot = CID.parse('bafyreieurv3eg6sxth6avdr2zel52mdcqw7dghkljzcnaodb4conrzqjei')
-    // cspell:ignore bafyreieurv3eg6sxth6avdr2zel52mdcqw7dghkljzcnaodb4conrzqjei
-    const { reader } = await loadCarFixture('test/fixtures/bafyreieurv3eg6sxth6avdr2zel52mdcqw7dghkljzcnaodb4conrzqjei.car')
+    const { reader } = await loadCarFixture(`test/fixtures/${nonUnixFsRoot}.car`)
 
     await c.import(reader)
 
@@ -117,9 +119,7 @@ describe('export', () => {
 
   it('should export non-UnixFS data with SubGraphExporter', async () => {
     // dag-cbor only blocks in this car file
-    const nonUnixFsRoot = CID.parse('bafyreieurv3eg6sxth6avdr2zel52mdcqw7dghkljzcnaodb4conrzqjei')
-    // cspell:ignore bafyreieurv3eg6sxth6avdr2zel52mdcqw7dghkljzcnaodb4conrzqjei
-    const { reader } = await loadCarFixture('test/fixtures/bafyreieurv3eg6sxth6avdr2zel52mdcqw7dghkljzcnaodb4conrzqjei.car')
+    const { reader } = await loadCarFixture(`test/fixtures/${nonUnixFsRoot}.car`)
 
     await c.import(reader)
 
@@ -143,8 +143,98 @@ describe('export', () => {
     expect(blockstoreGetSpy.callCount).to.equal(1)
   })
 
+  it('should default to breadth-first with SubGraphExporter', async () => {
+    const { reader } = await loadCarFixture(`test/fixtures/${dagRootCid}.car`)
+
+    await c.import(reader)
+
+    // create a directory like `subdirCid` but with a file after multiblock.txt
+    // so we can assert traversal is correct
+    const u = unixfs({ blockstore })
+    const dirCid = await u.cp(asciiTextCid, subdirCid, 'qux.txt')
+
+    const ourReader = await CarReader.fromBytes(await toBuffer(c.export(dirCid, {
+      exporter: new SubgraphExporter()
+    })))
+
+    await expect(ourReader.getRoots()).to.eventually.deep.equal([
+      dirCid
+    ])
+
+    // should traverse 'qux.txt' before descending into 'multiblock.txt'
+    await expect(all(ourReader.cids())).to.eventually.deep.equal([
+      dirCid,
+      asciiTextCid,
+      helloTextCid,
+      multiBlockTxtCid,
+      asciiTextCid,
+      ...multiBlockTxtCids
+    ])
+  })
+
+  it('should export depth-first with SubGraphExporter', async () => {
+    const { reader } = await loadCarFixture(`test/fixtures/${dagRootCid}.car`)
+
+    await c.import(reader)
+
+    // create a directory like `subdirCid` but with a file after multiblock.txt
+    // so we can assert traversal is correct
+    const u = unixfs({ blockstore })
+    const dirCid = await u.cp(asciiTextCid, subdirCid, 'qux.txt')
+
+    const ourReader = await CarReader.fromBytes(await toBuffer(c.export(dirCid, {
+      exporter: new SubgraphExporter({
+        walker: depthFirstWalker()
+      })
+    })))
+
+    await expect(ourReader.getRoots()).to.eventually.deep.equal([
+      dirCid
+    ])
+    // should descend into 'multiblock.txt' before 'qux.txt'
+    await expect(all(ourReader.cids())).to.eventually.deep.equal([
+      dirCid,
+      asciiTextCid,
+      helloTextCid,
+      multiBlockTxtCid,
+      ...multiBlockTxtCids,
+      asciiTextCid
+    ])
+  })
+
+  it('should export breadth-first with SubGraphExporter', async () => {
+    const { reader } = await loadCarFixture(`test/fixtures/${dagRootCid}.car`)
+
+    await c.import(reader)
+
+    // create a directory like `subdirCid` but with a file after multiblock.txt
+    // so we can assert traversal is correct
+    const u = unixfs({ blockstore })
+    const dirCid = await u.cp(asciiTextCid, subdirCid, 'qux.txt')
+
+    const ourReader = await CarReader.fromBytes(await toBuffer(c.export(dirCid, {
+      exporter: new SubgraphExporter({
+        walker: breadthFirstWalker()
+      })
+    })))
+
+    await expect(ourReader.getRoots()).to.eventually.deep.equal([
+      dirCid
+    ])
+
+    // should traverse 'qux.txt' before descending into 'multiblock.txt'
+    await expect(all(ourReader.cids())).to.eventually.deep.equal([
+      dirCid,
+      asciiTextCid,
+      helloTextCid,
+      multiBlockTxtCid,
+      asciiTextCid,
+      ...multiBlockTxtCids
+    ])
+  })
+
   it('should only include root block when block exporter is used', async () => {
-    const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
+    const { reader } = await loadCarFixture(`test/fixtures/${dagRootCid}.car`)
 
     await c.import(reader)
 
@@ -195,7 +285,7 @@ describe('export', () => {
 
   describe('unixfs-exporter', () => {
     it('should export the start of a file', async () => {
-      const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
+      const { reader } = await loadCarFixture(`test/fixtures/${dagRootCid}.car`)
 
       await c.import(reader)
 
@@ -216,7 +306,7 @@ describe('export', () => {
     })
 
     it('should export a slice of a file', async () => {
-      const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
+      const { reader } = await loadCarFixture(`test/fixtures/${dagRootCid}.car`)
 
       await c.import(reader)
 
@@ -237,7 +327,7 @@ describe('export', () => {
     })
 
     it('should require a positive offset', async () => {
-      const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
+      const { reader } = await loadCarFixture(`test/fixtures/${dagRootCid}.car`)
 
       await c.import(reader)
 
@@ -251,7 +341,7 @@ describe('export', () => {
     })
 
     it('should require a positive length', async () => {
-      const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
+      const { reader } = await loadCarFixture(`test/fixtures/${dagRootCid}.car`)
 
       await c.import(reader)
 
@@ -265,7 +355,7 @@ describe('export', () => {
     })
 
     it('should export a slice of a file when later blocks are missing', async () => {
-      const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
+      const { reader } = await loadCarFixture(`test/fixtures/${dagRootCid}.car`)
 
       await c.import(reader)
 
@@ -289,7 +379,7 @@ describe('export', () => {
     })
 
     it('should export a slice of a file when early blocks are missing', async () => {
-      const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
+      const { reader } = await loadCarFixture(`test/fixtures/${dagRootCid}.car`)
 
       await c.import(reader)
 
@@ -313,9 +403,6 @@ describe('export', () => {
     })
 
     it('should export a hamt-sharded directory listing', async () => {
-      // cspell:ignore bafybeidbclfqleg2uojchspzd4bob56dqetqjsj27gy2cq3klkkgxtpn4i
-      const shardRoot = CID.parse('bafybeidbclfqleg2uojchspzd4bob56dqetqjsj27gy2cq3klkkgxtpn4i')
-
       const { reader, bytes: carFileBytes } = await loadCarFixture(`test/fixtures/${shardRoot}.car`)
 
       // import all the blocks from the car file
@@ -340,8 +427,7 @@ describe('export', () => {
 
   describe('graph-search', () => {
     it('should find a sub-DAG using a CID and export it', async () => {
-      // cspell:ignore bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu
-      const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
+      const { reader } = await loadCarFixture(`test/fixtures/${dagRootCid}.car`)
 
       // import all the blocks from the car file
       await c.import(reader)
@@ -363,8 +449,7 @@ describe('export', () => {
     })
 
     it('should find a sub-DAG using a CID and export it starting from a parent node', async () => {
-      // cspell:ignore bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu
-      const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
+      const { reader } = await loadCarFixture(`test/fixtures/${dagRootCid}.car`)
 
       // import all the blocks from the car file
       await c.import(reader)
@@ -389,7 +474,7 @@ describe('export', () => {
 
   describe('cid-path', () => {
     it('should use CIDPath to restrain DAG traversal', async () => {
-      const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
+      const { reader } = await loadCarFixture(`test/fixtures/${dagRootCid}.car`)
 
       await c.import(reader)
 
@@ -415,7 +500,7 @@ describe('export', () => {
     })
 
     it('should not include traversal blocks when traversing from a parent node and includeTraversalBlocks is not set', async () => {
-      const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
+      const { reader } = await loadCarFixture(`test/fixtures/${dagRootCid}.car`)
 
       await c.import(reader)
 
@@ -436,7 +521,7 @@ describe('export', () => {
     })
 
     it('should include traversal blocks when traversing from a parent node and includeTraversalBlocks is set', async () => {
-      const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
+      const { reader } = await loadCarFixture(`test/fixtures/${dagRootCid}.car`)
 
       await c.import(reader)
 
@@ -460,7 +545,7 @@ describe('export', () => {
     })
 
     it('should throw if CID path traversal does not lead to export root', async () => {
-      const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
+      const { reader } = await loadCarFixture(`test/fixtures/${dagRootCid}.car`)
 
       await c.import(reader)
 
@@ -472,7 +557,7 @@ describe('export', () => {
     })
 
     it('should throw an error when an invalid path is provided to CID path traversal', async () => {
-      const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
+      const { reader } = await loadCarFixture(`test/fixtures/${dagRootCid}.car`)
 
       await c.import(reader)
 
@@ -491,8 +576,7 @@ describe('export', () => {
 
   describe('unixfs-path', () => {
     it('should find a sub-DAG using a path and export it', async () => {
-      // cspell:ignore bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu
-      const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
+      const { reader } = await loadCarFixture(`test/fixtures/${dagRootCid}.car`)
 
       // import all the blocks from the car file
       await c.import(reader)
@@ -513,8 +597,7 @@ describe('export', () => {
     })
 
     it('should export part of a DAG', async () => {
-      // cspell:ignore bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu
-      const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
+      const { reader } = await loadCarFixture(`test/fixtures/${dagRootCid}.car`)
 
       // import all the blocks from the car file
       await c.import(reader)
@@ -536,7 +619,7 @@ describe('export', () => {
     })
 
     it('should use UnixFSPath to restrain DAG traversal', async () => {
-      const { reader } = await loadCarFixture('test/fixtures/bafybeidh6k2vzukelqtrjsmd4p52cpmltd2ufqrdtdg6yigi73in672fwu.car')
+      const { reader } = await loadCarFixture(`test/fixtures/${dagRootCid}.car`)
 
       await c.import(reader)
 

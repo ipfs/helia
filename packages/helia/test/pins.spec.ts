@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { webSockets } from '@libp2p/websockets'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'

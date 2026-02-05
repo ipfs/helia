@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - uses: actions/setup-node@v6
       with:
         node-version: lts/*
@@ -22,7 +22,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - uses: actions/setup-node@v6
       with:
         node-version: lts/*
@@ -41,13 +41,13 @@ jobs:
         node: [lts/*]
       fail-fast: true
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
       - uses: ipfs/aegir/actions/cache-node-modules@main
       - run: npm run --if-present test:node
-      - uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
+      - uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
         with:
           flags: node
           files: .coverage/*,packages/*/.coverage/*
@@ -57,13 +57,13 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@main
       - run: npm run --if-present test:chrome
-      - uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
+      - uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
         with:
           flags: chrome
           files: .coverage/*,packages/*/.coverage/*
@@ -73,13 +73,13 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@main
       - run: npm run --if-present test:chrome-webworker
-      - uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
+      - uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
         with:
           flags: chrome-webworker
           files: .coverage/*,packages/*/.coverage/*
@@ -89,13 +89,13 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@main
       - run: npm run --if-present test:firefox
-      - uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
+      - uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
         with:
           flags: firefox
           files: .coverage/*,packages/*/.coverage/*
@@ -105,13 +105,13 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@main
       - run: npm run --if-present test:firefox-webworker
-      - uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
+      - uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
         with:
           flags: firefox-webworker
           files: .coverage/*,packages/*/.coverage/*
@@ -121,13 +121,13 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@main
       - run: npm run --if-present test:webkit
-      - uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
+      - uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
         with:
           flags: webkit
           files: .coverage/*,packages/*/.coverage/*
@@ -137,13 +137,13 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@main
       - run: npx xvfb-maybe npm run --if-present test:electron-main
-      - uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
+      - uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
         with:
           flags: electron-main
           files: .coverage/*,packages/*/.coverage/*
@@ -153,13 +153,13 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@main
       - run: npx xvfb-maybe npm run --if-present test:electron-renderer
-      - uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
+      - uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
         with:
           flags: electron-renderer
           files: .coverage/*,packages/*/.coverage/*
@@ -190,7 +190,7 @@ jobs:
           token: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}
           manifest-file: .release-please-manifest.json
           config-file: .release-please.json
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - uses: actions/setup-node@v6

@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.0.4](https://github.com/ipfs/helia/compare/strings-v5.0.3...strings-v5.0.4) (2026-01-15)
+
+
+### Bug Fixes
+
+* use non-deprecated factory function to create delegated client ([#934](https://github.com/ipfs/helia/issues/934)) ([20ba9cf](https://github.com/ipfs/helia/commit/20ba9cf6256961d2b664af0e8f48b5e9d009d834))
+
 ## [5.0.3](https://github.com/ipfs/helia/compare/strings-v5.0.2...strings-v5.0.3) (2025-10-29)
 
 
