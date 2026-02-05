@@ -1,5 +1,14 @@
 # Changelog
 
+## [5.0.3](https://github.com/ipfs/helia/compare/routers-v5.0.2...routers-v5.0.3) (2026-02-05)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.1.0 to ^6.1.1
+
 ## [5.0.2](https://github.com/ipfs/helia/compare/routers-v5.0.1...routers-v5.0.2) (2026-02-04)
 
 

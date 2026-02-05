@@ -1,5 +1,14 @@
 # Changelog
 
+## [7.0.4](https://github.com/ipfs/helia/compare/mfs-v7.0.3...mfs-v7.0.4) (2026-02-05)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/unixfs bumped from ^7.0.3 to ^7.0.4
+
 ## [7.0.3](https://github.com/ipfs/helia/compare/mfs-v7.0.2...mfs-v7.0.3) (2026-02-04)
 
 

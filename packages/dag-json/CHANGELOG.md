@@ -1,5 +1,14 @@
 # Changelog
 
+## [5.0.7](https://github.com/ipfs/helia/compare/dag-json-v5.0.6...dag-json-v5.0.7) (2026-02-05)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.1.0 to ^6.1.1
+
 ## [5.0.6](https://github.com/ipfs/helia/compare/dag-json-v5.0.5...dag-json-v5.0.6) (2026-02-04)
 
 

@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.4.2](https://github.com/ipfs/helia/compare/utils-v2.4.1...utils-v2.4.2) (2026-02-05)
+
+
+### Bug Fixes
+
+* allow configuring cid peer filter size ([#955](https://github.com/ipfs/helia/issues/955)) ([e16b7a7](https://github.com/ipfs/helia/commit/e16b7a7dcd013f13321dea162eee0130473541ea))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.1.0 to ^6.1.1
+
 ## [2.4.1](https://github.com/ipfs/helia/compare/utils-v2.4.0...utils-v2.4.1) (2026-02-05)
 
 
