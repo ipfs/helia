@@ -215,7 +215,7 @@ export class IPNSRepublisher {
         }
       }
       try {
-        if (options.offline !== true) {
+        if (!options.skipResolution) {
           // published record
           const { record } = await this.resolver.resolve(key, { nocache: true })
           publishedRecord = record
