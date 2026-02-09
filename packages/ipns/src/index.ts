@@ -278,14 +278,15 @@ export interface RepublishOptions extends AbortOptions, ProgressOptions<Republis
    * Skip resolution of latest record before republishing (default: false)
    *
    * It's important to resolve the latest record before republishing to routers
-   * Resolution should only be skipped if confident the latest record is already known
+   * Resolution should only be skipped when confident the latest record is already known
    */
   skipResolution?: boolean
 
   /**
-   * Force the record to be republished even if already resolvable
+   * Force the record to be republished even when already resolvable (default: false)
    *
-   * @default false
+   * It's important for republishing to be handled by a single machine
+   * Republishing should only be forced when confident the record is not being republished by other clients
    */
   force?: boolean
 
