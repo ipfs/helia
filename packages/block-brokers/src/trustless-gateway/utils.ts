@@ -1,10 +1,9 @@
 import { getNetConfig, isPrivate } from '@libp2p/utils'
 import { DNS, HTTP, HTTPS } from '@multiformats/multiaddr-matcher'
 import { multiaddrToUri } from '@multiformats/multiaddr-to-uri'
-import { CustomProgressEvent } from 'progress-events'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { TrustlessGateway } from './trustless-gateway.js'
-import type { TrustlessGatewayGetBlockProgressEvents, TrustlessGatewayProvider } from './index.ts'
+import type { TrustlessGatewayGetBlockProgressEvents } from './index.ts'
 import type { TransformRequestInit } from './trustless-gateway.js'
 import type { Routing } from '@helia/interface'
 import type { ComponentLogger, Logger, AbortOptions } from '@libp2p/interface'
@@ -26,7 +25,8 @@ export function filterNonHTTPMultiaddrs (multiaddrs: Multiaddr[], allowInsecure:
       return isPrivate(ma) === false
     }
 
-    // When allowInsecure is false and allowLocal is true, allow multiaddrs with "127.0.0.1", "localhost", or any subdomain ending with ".localhost"
+    // When allowInsecure is false and allowLocal is true, allow multiaddrs with
+    // "127.0.0.1", "localhost", or any subdomain ending with ".localhost"
     if (!allowInsecure && allowLocal) {
       const { host } = getNetConfig(ma)
 
@@ -56,18 +56,13 @@ export async function * findHttpGatewayProviders (cid: CID, routing: Routing, lo
     // /ip4/x.x.x.x/tcp/31337/http
     // /ip4/x.x.x.x/tcp/31337/https
     // etc
-    const uri = multiaddrToUri(httpAddresses[0])
+    const uri = new URL(multiaddrToUri(httpAddresses[0]))
 
-    const prov: TrustlessGatewayProvider = {
-      type: 'trustless-gateway',
-      cid,
-      url: uri.toString(),
+    yield new TrustlessGateway(uri, {
+      logger,
+      transformRequestInit: options.transformRequestInit,
       routing: provider.routing
-    }
-
-    options?.onProgress?.(new CustomProgressEvent('trustless-gateway:found-provider', prov))
-
-    yield new TrustlessGateway(uri, { logger, transformRequestInit: options.transformRequestInit })
+    })
   }
 }
 

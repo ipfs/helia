@@ -8,6 +8,7 @@ import { CID } from 'multiformats/cid'
 import { raceSignal } from 'race-signal'
 import Sinon from 'sinon'
 import { AbstractSession } from '../src/abstract-session.js'
+import type { BlockRetrievalOptions } from '@helia/interface'
 import type { PeerId } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressEvent } from 'progress-events'
@@ -17,6 +18,8 @@ interface SessionPeer {
 }
 
 class Session extends AbstractSession<SessionPeer, ProgressEvent> {
+  public readonly name = 'test-session'
+
   constructor () {
     super({
       logger: defaultLogger()
@@ -28,7 +31,7 @@ class Session extends AbstractSession<SessionPeer, ProgressEvent> {
   findNewProviders = Sinon.stub()
   queryProvider = Sinon.stub()
 
-  toEvictionKey (prov: SessionPeer): string {
+  toFilterKey (prov: SessionPeer): string {
     return prov.id.toString()
   }
 
@@ -42,6 +45,10 @@ class Session extends AbstractSession<SessionPeer, ProgressEvent> {
         id: provider
       }
     }
+  }
+
+  emitFoundProviderProgressEvent (cid: CID, provider: SessionPeer, options: BlockRetrievalOptions<ProgressEvent<any, unknown>>): void {
+
   }
 }
 

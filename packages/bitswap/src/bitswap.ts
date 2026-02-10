@@ -7,7 +7,7 @@ import { createBitswapSession } from './session.js'
 import { Stats } from './stats.js'
 import { WantList } from './want-list.js'
 import type { BitswapOptions, Bitswap as BitswapInterface, BitswapWantProgressEvents, BitswapNotifyProgressEvents, WantListEntry, BitswapComponents } from './index.js'
-import type { BlockBroker, CreateSessionOptions, ProviderOptions } from '@helia/interface'
+import type { CreateSessionOptions, ProviderOptions, SessionBlockBroker } from '@helia/interface'
 import type { ComponentLogger, Libp2p, PeerId, AbortOptions } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
 import type { Blockstore } from 'interface-blockstore'
@@ -63,7 +63,7 @@ export class Bitswap implements BitswapInterface {
     }, init)
   }
 
-  createSession (options: CreateSessionOptions = {}): Required<Pick<BlockBroker<BitswapWantProgressEvents>, 'retrieve'>> {
+  createSession (options: CreateSessionOptions = {}): Required<Pick<SessionBlockBroker<BitswapWantProgressEvents>, 'retrieve' | 'addPeer'>> {
     return createBitswapSession({
       wantList: this.wantList,
       network: this.network,

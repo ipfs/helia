@@ -1,5 +1,32 @@
 # Changelog
 
+## [5.0.7](https://github.com/ipfs/helia/compare/strings-v5.0.6...strings-v5.0.7) (2026-02-05)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.1.0 to ^6.1.1
+
+## [5.0.6](https://github.com/ipfs/helia/compare/strings-v5.0.5...strings-v5.0.6) (2026-02-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.0.3 to ^6.1.0
+
+## [5.0.5](https://github.com/ipfs/helia/compare/strings-v5.0.4...strings-v5.0.5) (2026-02-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.0.2 to ^6.0.3
+
 ## [5.0.4](https://github.com/ipfs/helia/compare/strings-v5.0.3...strings-v5.0.4) (2026-01-15)
 
 

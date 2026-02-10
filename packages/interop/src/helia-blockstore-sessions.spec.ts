@@ -1,9 +1,12 @@
+import { stop } from '@libp2p/interface'
+import { peerIdFromString } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import { createHeliaNode } from './fixtures/create-helia.js'
 import { createKuboNode } from './fixtures/create-kubo.js'
+import type { BitswapProvider } from '@helia/block-brokers'
 import type { Helia } from 'helia'
 import type { KuboInfo, KuboNode } from 'ipfsd-ctl'
 
@@ -11,21 +14,19 @@ describe('helia - blockstore sessions', () => {
   let helia: Helia
   let kubo: KuboNode
   let kuboInfo: KuboInfo
+  let kubo2: KuboNode
+  let kubo2Info: KuboInfo
 
   beforeEach(async () => {
     helia = await createHeliaNode()
     kubo = await createKuboNode()
     kuboInfo = await kubo.info()
+    kubo2 = await createKuboNode()
+    kubo2Info = await kubo2.info()
   })
 
   afterEach(async () => {
-    if (helia != null) {
-      await helia.stop()
-    }
-
-    if (kubo != null) {
-      await kubo.stop()
-    }
+    await stop(helia, kubo, kubo2)
   })
 
   it('should be able to receive a block from a peer', async () => {
@@ -51,13 +52,65 @@ describe('helia - blockstore sessions', () => {
     const root = CID.parse(cid.toString())
 
     const session = helia.blockstore.createSession(root, {
-      providers: [
-        kuboInfo.multiaddrs.map(str => multiaddr(str))
-      ]
+      providers: kuboInfo.multiaddrs.map(str => multiaddr(str))
     })
 
     const output = await toBuffer(session.get(root))
 
     expect(output).to.equalBytes(input)
+  })
+
+  it('should be able to add peers to a session after creation', async () => {
+    const input = Uint8Array.from([0, 1, 2, 3, 4])
+    const { cid } = await kubo2.api.add({ content: input }, {
+      cidVersion: 1,
+      rawLeaves: true
+    })
+    const root = CID.parse(cid.toString())
+
+    const session = helia.blockstore.createSession(root, {
+      providers: kuboInfo.multiaddrs.map(str => multiaddr(str))
+    })
+
+    await expect(toBuffer(session.get(root))).to.eventually.be.rejected
+      .with.property('name', 'LoadBlockFailedError')
+
+    await Promise.all(
+      kubo2Info.multiaddrs
+        .map(str => multiaddr(str))
+        .map(ma => session.addPeer(ma))
+    )
+
+    const output = await toBuffer(session.get(root))
+
+    expect(output).to.equalBytes(input)
+  })
+
+  it('should emit providers for seeded peers', async () => {
+    const input = Uint8Array.from([0, 1, 2, 3, 4])
+    const { cid } = await kubo.api.add({ content: input }, {
+      cidVersion: 1,
+      rawLeaves: true
+    })
+    const root = CID.parse(cid.toString())
+
+    const session = helia.blockstore.createSession(root, {
+      providers: kuboInfo.multiaddrs.map(str => multiaddr(str))
+    })
+
+    const foundProviders: Array<BitswapProvider> = []
+
+    const output = await toBuffer(session.get(root, {
+      onProgress (evt) {
+        // @ts-expect-error event is not in types
+        if (evt.type === 'bitswap:found-provider') {
+          // @ts-expect-error event is not in types
+          foundProviders.push(evt.detail)
+        }
+      }
+    }))
+
+    expect(output).to.equalBytes(input)
+    expect(foundProviders).to.have.deep.nested.property('[0].provider.id', peerIdFromString(kuboInfo.peerId ?? ''))
   })
 })

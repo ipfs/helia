@@ -97,7 +97,7 @@ describe('session', () => {
     await expect(session.retrieve?.(cid)).to.eventually.deep.equal(block)
 
     expect(session.providers.length).to.be.lessThan(DEFAULT_SESSION_MAX_PROVIDERS)
-    expect([...session.providers].map(p => p.toString())).to.include(providers[1].id.toString())
+    expect([...session.providers].map(p => p.peerId.toString())).to.include(providers[1].id.toString())
 
     // the query continues after the session is ready
     await pWaitFor(() => {

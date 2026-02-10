@@ -76,7 +76,7 @@ ProgressOptions<DeleteBlockProgressEvents>, ProgressOptions<DeleteManyBlocksProg
    * The initial set of peers can be specified, alternatively a `findProviders`
    * routing query will occur to populate the set instead.
    */
-  createSession(root: CID, options?: CreateSessionOptions<GetOfflineOptions & ProviderOptions & GetBlockProgressEvents>): SessionBlockstore
+  createSession(root: CID, options?: CreateSessionOptions<GetBlockProgressEvents>): SessionBlockstore
 }
 
 /**
@@ -97,6 +97,12 @@ ProgressOptions<DeleteBlockProgressEvents>, ProgressOptions<DeleteManyBlocksProg
    * Any in-progress operations will be aborted.
    */
   close(): void
+
+  /**
+   * Adds a new peer to the session if they are supported and are either
+   * not already in the session and have not been evicted previously.
+   */
+  addPeer (peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<void>
 }
 
 export interface BlockRetrievalOptions <ProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> extends AbortOptions, ProgressOptions<ProgressEvents>, ProviderOptions {
@@ -122,7 +128,7 @@ export interface BlockAnnounceOptions <ProgressEvents extends ProgressEvent<any,
 
 }
 
-export interface CreateSessionOptions <ProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> extends AbortOptions, ProgressOptions<ProgressEvents>, ProviderOptions {
+export interface CreateSessionOptions <ProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> extends AbortOptions, ProgressOptions<ProgressEvents>, ProviderOptions, GetOfflineOptions {
   /**
    * The minimum number of providers for the root CID that are required for
    * successful session creation.
@@ -140,9 +146,23 @@ export interface CreateSessionOptions <ProgressEvents extends ProgressEvent<any,
    * @default 5
    */
   maxProviders?: number
+
+  /**
+   * A scalable cuckoo filter is used to ensure we do not query the same peer
+   * multiple times for the same CID. This setting controls how the initial
+   * maximum number of peers that are expected to be in the filter.
+   *
+   * @default 100
+   */
+  cidPeerFilterSize?: number
 }
 
 export interface BlockBroker<RetrieveProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>, AnnounceProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> {
+  /**
+   * The name of the block broker, used for logging purposes
+   */
+  name: string
+
   /**
    * Retrieve a block from a source
    */
@@ -156,8 +176,17 @@ export interface BlockBroker<RetrieveProgressEvents extends ProgressEvent<any, a
   /**
    * Create a new session
    */
-  createSession?(options?: CreateSessionOptions<RetrieveProgressEvents>): BlockBroker<RetrieveProgressEvents, AnnounceProgressEvents>
+  createSession?(options?: CreateSessionOptions<RetrieveProgressEvents>): SessionBlockBroker<RetrieveProgressEvents, AnnounceProgressEvents>
+}
+
+export interface SessionBlockBroker<RetrieveProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>, AnnounceProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> extends BlockBroker<RetrieveProgressEvents, AnnounceProgressEvents> {
+  /**
+   * Adds a new peer to the session if they are supported and are either
+   * not already in the session and have not been evicted previously.
+   */
+  addPeer (peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<void>
 }
 
 export const DEFAULT_SESSION_MIN_PROVIDERS = 1
 export const DEFAULT_SESSION_MAX_PROVIDERS = 5
+export const DEFAULT_CID_PEER_FILTER_SIZE = 100

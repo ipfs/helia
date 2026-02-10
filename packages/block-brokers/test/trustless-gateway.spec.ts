@@ -151,7 +151,10 @@ describe('trustless-gateway-block-broker', () => {
     if (process.env.TRUSTLESS_GATEWAY == null) {
       return this.skip()
     }
-    const trustlessGateway = new TrustlessGateway(process.env.TRUSTLESS_GATEWAY, { logger: defaultLogger() })
+    const trustlessGateway = new TrustlessGateway(process.env.TRUSTLESS_GATEWAY, {
+      logger: defaultLogger(),
+      routing: 'test'
+    })
 
     // Call getRawBlock multiple times with the same CID
     const promises = Array.from({ length: 10 }, async () => trustlessGateway.getRawBlock(cid))
@@ -182,6 +185,7 @@ describe('trustless-gateway-block-broker', () => {
 
     const trustlessGateway = new TrustlessGateway(process.env.TRUSTLESS_GATEWAY, {
       logger: defaultLogger(),
+      routing: 'test',
       transformRequestInit: (requestInit) => {
         requestInit.headers = {
           ...requestInit.headers,

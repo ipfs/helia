@@ -1,5 +1,69 @@
 # Changelog
 
+## [5.1.2](https://github.com/ipfs/helia/compare/block-brokers-v5.1.1...block-brokers-v5.1.2) (2026-02-05)
+
+
+### Bug Fixes
+
+* remove duplicate provider event ([#957](https://github.com/ipfs/helia/issues/957)) ([264e68d](https://github.com/ipfs/helia/commit/264e68d1ca94033c7bfeed408830b2fdaab942e5))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^3.1.1 to ^3.1.2
+    * @helia/interface bumped from ^6.1.0 to ^6.1.1
+    * @helia/utils bumped from ^2.4.1 to ^2.4.2
+
+## [5.1.1](https://github.com/ipfs/helia/compare/block-brokers-v5.1.0...block-brokers-v5.1.1) (2026-02-05)
+
+
+### Bug Fixes
+
+* emit provider event for initial providers ([#953](https://github.com/ipfs/helia/issues/953)) ([f058fba](https://github.com/ipfs/helia/commit/f058fba8a06f8afdd3558bdf7c3801381648ffec))
+* emit provider event for initial provides ([f058fba](https://github.com/ipfs/helia/commit/f058fba8a06f8afdd3558bdf7c3801381648ffec))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^3.1.0 to ^3.1.1
+    * @helia/utils bumped from ^2.4.0 to ^2.4.1
+
+## [5.1.0](https://github.com/ipfs/helia/compare/block-brokers-v5.0.15...block-brokers-v5.1.0) (2026-02-04)
+
+
+### Features
+
+* allow adding peers to session ([#950](https://github.com/ipfs/helia/issues/950)) ([33e4681](https://github.com/ipfs/helia/commit/33e4681394539d4298a028d2d9ff48a14f76a8e3))
+
+
+### Bug Fixes
+
+* add name to block brokers ([#949](https://github.com/ipfs/helia/issues/949)) ([0456c42](https://github.com/ipfs/helia/commit/0456c42dbd92d94633c133d4f5fe35264a6bbb80))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^3.0.15 to ^3.1.0
+    * @helia/interface bumped from ^6.0.3 to ^6.1.0
+    * @helia/utils bumped from ^2.3.5 to ^2.4.0
+
+## [5.0.15](https://github.com/ipfs/helia/compare/block-brokers-v5.0.14...block-brokers-v5.0.15) (2026-02-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^3.0.14 to ^3.0.15
+    * @helia/interface bumped from ^6.0.2 to ^6.0.3
+    * @helia/utils bumped from ^2.3.4 to ^2.3.5
+
 ## [5.0.14](https://github.com/ipfs/helia/compare/block-brokers-v5.0.13...block-brokers-v5.0.14) (2026-01-15)
 
 
