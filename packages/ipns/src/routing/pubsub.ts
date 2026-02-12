@@ -1,6 +1,9 @@
-import { isPublicKey } from '@libp2p/interface'
+import { publicKeyFromMultihash } from '@libp2p/crypto/keys'
+import { isPublicKey, NotFoundError, TypedEventEmitter } from '@libp2p/interface'
 import { logger } from '@libp2p/logger'
-import { multihashToIPNSRoutingKey } from 'ipns'
+import { Queue } from '@libp2p/utils'
+import { anySignal } from 'any-signal'
+import { extractPublicKeyFromIPNSRecord, multihashFromIPNSRoutingKey, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from 'ipns'
 import { ipnsSelector } from 'ipns/selector'
 import { ipnsValidator } from 'ipns/validator'
 import { CustomProgressEvent } from 'progress-events'
@@ -9,9 +12,12 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { InvalidTopicError } from '../errors.js'
 import { localStore } from '../local-store.js'
+import { IDENTITY_CODEC, IPNS_STRING_PREFIX, isCodec } from '../utils.ts'
 import type { GetOptions, IPNSRouting, PutOptions } from './index.js'
+import type { IPNSPublishResult } from '../index.ts'
 import type { LocalStore } from '../local-store.js'
-import type { PeerId, PublicKey, TypedEventTarget, ComponentLogger } from '@libp2p/interface'
+import type { Fetch } from '@libp2p/fetch'
+import type { PeerId, PublicKey, TypedEventTarget, ComponentLogger, Startable } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 import type { ProgressEvent } from 'progress-events'
@@ -25,7 +31,18 @@ export interface Message {
   data: Uint8Array
 }
 
+export interface Subscription {
+  topic: string
+  subscribe: boolean
+}
+
+export interface SubscriptionChangeData {
+  peerId: PeerId
+  subscriptions: Subscription[]
+}
+
 export interface PubSubEvents {
+  'subscription-change': CustomEvent<SubscriptionChangeData>
   message: CustomEvent<Message>
 }
 
@@ -48,6 +65,7 @@ export interface PubsubRoutingComponents {
     peerId: PeerId
     services: {
       pubsub: PubSub
+      fetch?: Fetch
     }
   }
 }
@@ -57,17 +75,32 @@ export type PubSubProgressEvents =
   ProgressEvent<'ipns:pubsub:subscribe', { topic: string }> |
   ProgressEvent<'ipns:pubsub:error', Error>
 
-class PubSubRouting implements IPNSRouting {
+export interface PubSubRouterEvents {
+  'record-update': CustomEvent<IPNSPublishResult>
+}
+
+export class PubSubRouting extends TypedEventEmitter<PubSubRouterEvents> implements IPNSRouting, Startable {
   private subscriptions: string[]
   private readonly localStore: LocalStore
   private readonly peerId: PeerId
   private readonly pubsub: PubSub
+  private readonly fetch: Fetch | undefined
+  private readonly fetchConcurrency: number
+  private readonly fetchTimeout: number
+  private readonly queue: Queue<Uint8Array | undefined>
 
-  constructor (components: PubsubRoutingComponents) {
+  constructor (components: PubsubRoutingComponents, init: PubsubRoutingOptions = {}) {
+    super()
     this.subscriptions = []
     this.localStore = localStore(components.datastore, components.logger.forComponent('helia:ipns:local-store'))
     this.peerId = components.libp2p.peerId
     this.pubsub = components.libp2p.services.pubsub
+    this.fetch = components.libp2p.services.fetch
+    this.fetchConcurrency = init.fetchConcurrency ?? 8
+    // default libp2p-fetch timeout is 10 seconds
+    // we should have an existing connection to the peer so this can be shortened
+    this.fetchTimeout = init.fetchTimeout ?? 2_500
+    this.queue = new Queue<Uint8Array | undefined>({ concurrency: this.fetchConcurrency })
 
     this.pubsub.addEventListener('message', (evt) => {
       const message = evt.detail
@@ -80,6 +113,46 @@ class PubSubRouting implements IPNSRouting {
         log.error('Error processing message - %e', err)
       })
     })
+
+    // ipns over libp2p-fetch feature
+    if (this.fetch != null) {
+      try {
+        this.pubsub.addEventListener('subscription-change', (evt) => {
+          const { peerId, subscriptions } = evt.detail
+
+          for (const sub of subscriptions) {
+            if (!this.subscriptions.includes(sub.topic)) {
+              continue
+            }
+
+            if (sub.subscribe === false) {
+              continue
+            }
+
+            this.#handlePeerJoin(peerId, sub.topic).catch(err => {
+              log.error('error fetching IPNS record from peer %s - %e', peerId, err)
+            })
+          }
+        })
+
+        this.fetch.registerLookupFunction(IPNS_STRING_PREFIX, async (key) => {
+          try {
+            const { record } = await this.localStore.get(key)
+
+            return record
+          } catch (err: any) {
+            if (err.name !== 'NotFoundError') {
+              throw err
+            }
+          }
+        })
+        log('registered lookup function for IPNS with libp2p/fetch service')
+      } catch (e) {
+        log('unable to register lookup function for IPNS with libp2p/fetch service - %e', e)
+      }
+    } else {
+      log('no libp2p/fetch service found. Skipping registration of lookup function for IPNS.')
+    }
   }
 
   async #processPubSubMessage (message: Message): Promise<void> {
@@ -95,28 +168,79 @@ class PubSubRouting implements IPNSRouting {
       return
     }
 
-    const routingKey = topicToKey(message.topic)
+    await this.#handleRecord(topicToKey(message.topic), message.data)
+  }
 
-    await ipnsValidator(routingKey, message.data)
+  async #handlePeerJoin (peerId: PeerId, topic: string): Promise<void> {
+    log('peer %s joined topic %s', peerId, topic)
+
+    if (this.fetch == null) {
+      log('no libp2p fetch found, skipping record fetch')
+      return
+    }
+
+    const routingKey = topicToKey(topic)
+
+    let marshalledRecord: Uint8Array | undefined
+    try {
+      marshalledRecord = await this.queue.add(async ({ signal }) => {
+        log('fetching ipns record for %m from peer %s', routingKey, peerId)
+        const sig = anySignal([
+          signal,
+          AbortSignal.timeout(this.fetchTimeout)
+        ])
+
+        try {
+          return await this.fetch?.fetch(peerId, routingKey, {
+            signal: sig
+          })
+        } finally {
+          sig.clear()
+        }
+      })
+    } catch (err: any) {
+      log.error('failed to fetch ipns record for %m from peer %s - %e', routingKey, peerId, err)
+      return
+    }
+
+    if (marshalledRecord == null) {
+      log('no record found on peer %p', peerId)
+      return
+    }
+
+    await this.#handleRecord(routingKey, marshalledRecord)
+  }
+
+  async #handleRecord (routingKey: Uint8Array, marshalledRecord: Uint8Array): Promise<void> {
+    await ipnsValidator(routingKey, marshalledRecord)
 
     if (await this.localStore.has(routingKey)) {
       const { record: currentRecord } = await this.localStore.get(routingKey)
 
-      if (uint8ArrayEquals(currentRecord, message.data)) {
-        log('not storing record as we already have it')
+      if (uint8ArrayEquals(currentRecord, marshalledRecord)) {
+        log.trace('found identical record for %m', routingKey)
         return
       }
 
-      const records = [currentRecord, message.data]
+      const records = [currentRecord, marshalledRecord]
       const index = ipnsSelector(routingKey, records)
 
       if (index === 0) {
-        log('not storing record as the one we have is better')
+        log.trace('found old record for %m', routingKey)
         return
       }
     }
 
-    await this.localStore.put(routingKey, message.data)
+    log('found new record for %m', routingKey)
+    await this.localStore.put(routingKey, marshalledRecord)
+
+    // emit record-updates
+    const routingMultihash = multihashFromIPNSRoutingKey(routingKey)
+    const record = unmarshalIPNSRecord(marshalledRecord)
+    const publicKey: PublicKey = isCodec(routingMultihash, IDENTITY_CODEC)
+      ? publicKeyFromMultihash(routingMultihash)
+      : extractPublicKeyFromIPNSRecord(record)!
+    this.safeDispatchEvent<IPNSPublishResult>('record-update', { detail: { publicKey, record } })
   }
 
   /**
@@ -154,15 +278,12 @@ class PubSubRouting implements IPNSRouting {
 
         options.onProgress?.(new CustomProgressEvent('ipns:pubsub:subscribe', { topic }))
       }
-
-      // chain through to local store
-      const { record } = await this.localStore.get(routingKey, options)
-
-      return record
     } catch (err: any) {
       options.onProgress?.(new CustomProgressEvent<Error>('ipns:pubsub:error', err))
       throw err
     }
+
+    throw new NotFoundError('Pubsub routing does not actively query peers')
   }
 
   /**
@@ -192,6 +313,14 @@ class PubSubRouting implements IPNSRouting {
   toString (): string {
     return 'PubSubRouting()'
   }
+
+  start (): void {
+
+  }
+
+  stop (): void {
+    this.queue.abort()
+  }
 }
 
 const PUBSUB_NAMESPACE = '/record/'
@@ -218,6 +347,11 @@ function topicToKey (topic: string): Uint8Array {
   return uint8ArrayFromString(key, 'base64url')
 }
 
+interface PubsubRoutingOptions {
+  fetchConcurrency?: number
+  fetchTimeout?: number
+}
+
 /**
  * This IPNS routing receives IPNS record updates via dedicated
  * pubsub topic.
@@ -226,6 +360,6 @@ function topicToKey (topic: string): Uint8Array {
  * updated records, so the first call to `.get` should be expected
  * to fail!
  */
-export function pubsub (components: PubsubRoutingComponents): IPNSRouting {
-  return new PubSubRouting(components)
+export function pubsub (components: PubsubRoutingComponents, options: PubsubRoutingOptions = {}): IPNSRouting {
+  return new PubSubRouting(components, options)
 }

@@ -75,11 +75,13 @@
   "dependencies": {
     "@helia/interface": "^6.1.1",
     "@libp2p/crypto": "^5.1.7",
+    "@libp2p/fetch": "^4.0.9",
     "@libp2p/interface": "^3.1.0",
     "@libp2p/kad-dht": "^16.1.0",
     "@libp2p/keychain": "^6.0.5",
     "@libp2p/logger": "^6.0.5",
     "@libp2p/utils": "^7.0.5",
+    "any-signal": "^4.2.0",
     "interface-datastore": "^9.0.2",
     "ipns": "^10.1.2",
     "multiformats": "^13.4.1",
@@ -94,6 +96,7 @@
     "aegir": "^47.0.22",
     "datastore-core": "^11.0.2",
     "it-drain": "^3.0.10",
+    "p-event": "^7.0.1",
     "protons": "^7.6.1",
     "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0"
