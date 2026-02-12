@@ -10,7 +10,7 @@ import type { CID } from 'multiformats/cid'
 export interface CreateTrustlessGatewaySessionOptions extends CreateSessionOptions<TrustlessGatewayGetBlockProgressEvents> {
   /**
    * By default we will only connect to peers with HTTPS addresses, pass true
-   * to also connect to HTTP addresses.
+   * to also connect to HTTP addresses. 
    *
    * @default false
    */
@@ -62,7 +62,7 @@ export class TrustlessGatewayBlockBroker implements BlockBroker<TrustlessGateway
       this.log('getting block for %c from %s', cid, gateway.url)
 
       try {
-        const block = await gateway.getRawBlock(cid, options)
+        const block = await gateway.getRawBlock(cid, { ...options, provider: options.provider })
         this.log.trace('got block for %c from %s', cid, gateway.url)
 
         try {
