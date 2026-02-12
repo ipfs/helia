@@ -20,10 +20,10 @@ describe('addAll', () => {
 
   it('adds a stream of files', async () => {
     const output = await all(fs.addAll([{
-      path: './foo.txt',
+      path: 'foo.txt',
       content: Uint8Array.from([0, 1, 2, 3, 4])
     }, {
-      path: './bar.txt',
+      path: 'bar.txt',
       content: Uint8Array.from([5, 4, 3, 2, 1])
     }]))
 
