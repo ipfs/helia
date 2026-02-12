@@ -111,10 +111,15 @@ describe('resolve', () => {
 
     heliaRouting.get.resolves(marshalIPNSRecord(record))
 
+    // @ts-ignore
+    const storeGetSpy = Sinon.spy(name.localStore, 'get')
     const resolvedValue = await name.resolve(publicKey, {
       nocache: true
     })
     expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
+
+    // check that localStore.get not called
+    expect(storeGetSpy.called).to.be.false()
 
     expect(heliaRouting.get.called).to.be.true()
     expect(customRouting.get.called).to.be.true()

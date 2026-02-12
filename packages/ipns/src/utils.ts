@@ -1,7 +1,8 @@
-import { InvalidParametersError } from '@libp2p/interface'
+import { InvalidParametersError, isPeerId, isPublicKey } from '@libp2p/interface'
 import { Key } from 'interface-datastore'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { DHT_EXPIRY_MS, REPUBLISH_THRESHOLD } from './constants.ts'
+import type { PeerId, PublicKey } from '@libp2p/interface'
 import type { IPNSRecord } from 'ipns'
 import type { CID } from 'multiformats/cid'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
@@ -43,16 +44,26 @@ export function ipnsMetadataKey (key: Uint8Array): Key {
 
 export function shouldRepublish (ipnsRecord: IPNSRecord, created: Date): boolean {
   const now = Date.now()
-  const dhtExpiry = created.getTime() + DHT_EXPIRY_MS
   const recordExpiry = new Date(ipnsRecord.validity).getTime()
 
-  // If the DHT expiry is within the threshold, republish it
-  if (dhtExpiry - now < REPUBLISH_THRESHOLD) {
+  if (shouldRefresh(created)) {
     return true
   }
 
   // If the record expiry (based on validity/lifetime) is within the threshold, republish it
   if (recordExpiry - now < REPUBLISH_THRESHOLD) {
+    return true
+  }
+
+  return false
+}
+
+export function shouldRefresh (created: Date): boolean {
+  const now = Date.now()
+  const dhtExpiry = created.getTime() + DHT_EXPIRY_MS
+
+  // If the DHT expiry is within the threshold, republish it
+  if (dhtExpiry - now < REPUBLISH_THRESHOLD) {
     return true
   }
 
@@ -77,4 +88,16 @@ export function isLibp2pCID (obj?: any): obj is CID<unknown, 0x72, 0x00 | 0x12, 
   }
 
   return true
+}
+
+export function keyToMultihash (key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId): MultihashDigest<0x00 | 0x012> {
+  if (isPublicKey(key) || isPeerId(key)) {
+    return key.toMultihash()
+  }
+
+  if (isLibp2pCID(key)) {
+    return key.multihash
+  }
+
+  return key
 }

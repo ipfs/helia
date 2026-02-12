@@ -178,6 +178,11 @@ export class IPNSResolver {
       this.routers.map(async (router) => {
         let record: Uint8Array
 
+        // skip checking cache when nocache is true
+        if (String(router) === 'LocalStoreRouting()' && options.nocache === true) {
+          return
+        }
+
         try {
           record = await router.get(routingKey, {
             ...options,

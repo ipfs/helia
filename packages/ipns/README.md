@@ -193,18 +193,12 @@ const delegatedClient = delegatedRoutingV1HttpApiClient({
 })
 const record = await delegatedClient.getIPNS(parsedCid)
 
-const routingKey = multihashToIPNSRoutingKey(parsedCid.multihash)
-const marshaledRecord = marshalIPNSRecord(record)
+// publish the latest existing record to routing
+// use `options.force` if the record is already published
+const { record: latestRecord } = await name.republish(parsedCid, { record })
 
-// validate that they key corresponds to the record
-await ipnsValidator(routingKey, marshaledRecord)
-
-// publish record to routing
-await Promise.all(
-  name.routers.map(async r => {
-    await r.put(routingKey, marshaledRecord)
-  })
-)
+// stop republishing a key
+await name.unpublish(parsedCid)
 ```
 
 # Install
