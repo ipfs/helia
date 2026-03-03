@@ -263,7 +263,10 @@ describe('peer-want-lists', () => {
     // have to wait for network send
     await delay(DEFAULT_MESSAGE_SEND_DELAY * 3)
 
-    expect(wantLists.wantListForPeer(remotePeer)?.map(entry => entry.cid.toString())).to.not.include(cid.toString())
+    expect(wantLists.wantListForPeer(remotePeer)
+      ?.filter(entry => entry.status === 'want')
+      .map(entry => entry.cid.toString())).to.not.include(cid.toString()
+    )
   })
 
   it('should send requested block presences to peer', async () => {
@@ -397,7 +400,10 @@ describe('peer-want-lists', () => {
     // have to wait for network send
     await delay(1)
 
-    expect(wantLists.wantListForPeer(remotePeer)?.map(entry => entry.cid.toString())).to.not.include(cid.toString())
+    expect(wantLists.wantListForPeer(remotePeer)
+      ?.filter(entry => entry.status === 'want')
+      .map(entry => entry.cid.toString())).to.not.include(cid.toString()
+    )
   })
 
   it('should send requested block presences to peer for blocks we don\'t have', async () => {
@@ -595,7 +601,10 @@ describe('peer-want-lists', () => {
     // have to wait for network send
     await delay(1)
 
-    expect(wantLists.wantListForPeer(remotePeer)?.map(entry => entry.cid.toString()))
+    expect(wantLists.wantListForPeer(remotePeer)
+      ?.filter(entry => entry.status === 'want')
+      .map(entry => entry.cid.toString())
+    )
       .to.not.include(cid.toString())
 
     // should only have sent one message

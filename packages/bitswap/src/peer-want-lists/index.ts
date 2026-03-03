@@ -1,9 +1,11 @@
+/* eslint-disable max-depth */
+
 import { trackedPeerMap } from '@libp2p/peer-collections'
 import { CID } from 'multiformats/cid'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { WantType } from '../pb/message.js'
 import { Ledger } from './ledger.js'
-import type { BitswapNotifyProgressEvents, WantListEntry } from '../index.js'
+import type { BitswapNotifyProgressEvents, PeerWantListEntry } from '../index.js'
 import type { Network } from '../network.js'
 import type { BitswapMessage } from '../pb/message.js'
 import type { AbortOptions, ComponentLogger, Libp2p, Logger, Metrics, PeerId } from '@libp2p/interface'
@@ -13,6 +15,7 @@ import type { ProgressOptions } from 'progress-events'
 
 export interface PeerWantListsInit {
   maxSizeReplaceHasWithBlock?: number
+  doNotResendBlockWindow?: number
 }
 
 export interface PeerWantListsComponents {
@@ -36,6 +39,7 @@ export class PeerWantLists {
   public network: Network
   public readonly ledgerMap: PeerMap<Ledger>
   private readonly maxSizeReplaceHasWithBlock?: number
+  private readonly doNotResendBlockWindow?: number
   private readonly log: Logger
   private readonly logger: ComponentLogger
 
@@ -43,6 +47,7 @@ export class PeerWantLists {
     this.blockstore = components.blockstore
     this.network = components.network
     this.maxSizeReplaceHasWithBlock = init.maxSizeReplaceHasWithBlock
+    this.doNotResendBlockWindow = init.doNotResendBlockWindow
     this.log = components.logger.forComponent('helia:bitswap:peer-want-lists')
     this.logger = components.logger
 
@@ -78,12 +83,15 @@ export class PeerWantLists {
     }
   }
 
-  wantListForPeer (peerId: PeerId): WantListEntry[] | undefined {
+  wantListForPeer (peerId: PeerId): PeerWantListEntry[] | undefined {
     const ledger = this.ledgerMap.get(peerId)
 
     if (ledger == null) {
       return undefined
     }
+
+    // remove any expired wants
+    ledger.removeExpiredWants()
 
     return [...ledger.wants.values()]
   }
@@ -105,13 +113,17 @@ export class PeerWantLists {
         network: this.network,
         logger: this.logger
       }, {
-        maxSizeReplaceHasWithBlock: this.maxSizeReplaceHasWithBlock
+        maxSizeReplaceHasWithBlock: this.maxSizeReplaceHasWithBlock,
+        doNotResendBlockWindow: this.doNotResendBlockWindow
       })
       this.ledgerMap.set(peerId, ledger)
     }
 
     // record the amount of block data received
     ledger.receivedBytes(message.blocks?.reduce((acc, curr) => acc + curr.data.byteLength, 0) ?? 0)
+
+    // remove any expired wants
+    ledger.removeExpiredWants()
 
     if (message.wantlist != null) {
       // if the message has a full wantlist, clear the current wantlist
@@ -134,11 +146,32 @@ export class PeerWantLists {
             this.log('peer %p wanted block for %c', peerId, cid)
           }
 
+          const existingWant = ledger.wants.get(cidStr)
+
+          // we are already tracking a want for this CID, just update the fields
+          if (existingWant != null) {
+            const sentOrSending = existingWant.status === 'sent' || existingWant.status === 'sending'
+            const wantTypeUpgrade = existingWant.wantType === WantType.WantHave && (entry.wantType == null || entry.wantType === WantType.WantBlock)
+
+            // allow upgrade from WantHave to WantBlock if we've previously
+            // sent or are sending a WantHave
+            if (sentOrSending && wantTypeUpgrade) {
+              existingWant.status = 'want'
+            }
+
+            existingWant.priority = entry.priority
+            existingWant.wantType = entry.wantType ?? WantType.WantBlock
+            existingWant.sendDontHave = entry.sendDontHave ?? false
+            continue
+          }
+
+          // add a new want
           ledger.wants.set(cidStr, {
             cid,
             priority: entry.priority,
             wantType: entry.wantType ?? WantType.WantBlock,
-            sendDontHave: entry.sendDontHave ?? false
+            sendDontHave: entry.sendDontHave ?? false,
+            status: 'want'
           })
         }
       }

@@ -1,5 +1,5 @@
 import toBuffer from 'it-to-buffer'
-import { DEFAULT_MAX_SIZE_REPLACE_HAS_WITH_BLOCK } from '../constants.js'
+import { DEFAULT_MAX_SIZE_REPLACE_HAS_WITH_BLOCK, DEFAULT_DO_NOT_RESEND_BLOCK_WINDOW } from '../constants.js'
 import { BlockPresenceType, WantType } from '../pb/message.js'
 import { QueuedBitswapMessage } from '../utils/bitswap-message.js'
 import { cidToPrefix } from '../utils/cid-prefix.js'
@@ -17,6 +17,7 @@ export interface LedgerComponents {
 
 export interface LedgerInit {
   maxSizeReplaceHasWithBlock?: number
+  doNotResendBlockWindow?: number
 }
 
 export interface PeerWantListEntry {
@@ -45,6 +46,19 @@ export interface PeerWantListEntry {
    * If we don't have the block and we've told them we don't have the block
    */
   sentDoNotHave?: boolean
+
+  /**
+   * If the status is `sending` or `sent`, the block for this CID is or has been
+   * sent to the peer so we should not attempt to send it again
+   */
+  status: 'want' | 'sending' | 'sent'
+
+  /**
+   * A timestamp for when this want should be removed from the list, typically
+   * this is set with the `sent` status to prevent sending duplicate blocks to a
+   * peer. Once it has expired the peer can request the block a subsequent time.
+   */
+  expires?: number
 }
 
 export class Ledger {
@@ -58,6 +72,7 @@ export class Ledger {
   public lastExchange?: number
   private readonly maxSizeReplaceHasWithBlock: number
   private readonly log: Logger
+  private readonly doNotResendBlockWindow: number
 
   constructor (components: LedgerComponents, init: LedgerInit) {
     this.peerId = components.peerId
@@ -70,6 +85,7 @@ export class Ledger {
     this.bytesSent = 0
     this.bytesReceived = 0
     this.maxSizeReplaceHasWithBlock = init.maxSizeReplaceHasWithBlock ?? DEFAULT_MAX_SIZE_REPLACE_HAS_WITH_BLOCK
+    this.doNotResendBlockWindow = init.doNotResendBlockWindow ?? DEFAULT_DO_NOT_RESEND_BLOCK_WINDOW
   }
 
   sentBytes (n: number): void {
@@ -88,18 +104,47 @@ export class Ledger {
     return (this.bytesSent / (this.bytesReceived + 1)) // +1 is to prevent division by zero
   }
 
+  removeExpiredWants (): void {
+    // remove any expired wants
+    this.wants.forEach((value, key) => {
+      if (value.expires != null && value.expires < Date.now()) {
+        this.wants.delete(key)
+      }
+    })
+  }
+
   public async sendBlocksToPeer (options?: AbortOptions): Promise<void> {
     const message = new QueuedBitswapMessage()
     const sentBlocks = new Set<string>()
 
-    for (const [key, entry] of this.wants.entries()) {
+    // remove any expired wants
+    this.removeExpiredWants()
+
+    // pick unsent wants
+    const unsent = [...this.wants.entries()]
+      .filter(([key, value]) => value.status === 'want')
+
+    // update status, ensure we don't send the same blocks repeatedly
+    unsent.forEach(([key, value]) => {
+      value.status = 'sending'
+    })
+
+    for (const [key, entry] of unsent) {
       try {
         const block = await toBuffer(this.blockstore.get(entry.cid, options))
+
+        // ensure we still need to send the block/status, status may have
+        // changed due to incoming message while we were waiting for async block
+        // load
+        if (entry.status !== 'sending') {
+          continue
+        }
 
         // do they want the block or just us to tell them we have the block
         if (entry.wantType === WantType.WantHave) {
           if (block.byteLength < this.maxSizeReplaceHasWithBlock) {
             this.log('sending have and block for %c', entry.cid)
+
             // if the block is small we just send it to them
             sentBlocks.add(key)
             message.addBlock(entry.cid, {
@@ -123,10 +168,16 @@ export class Ledger {
             prefix: cidToPrefix(entry.cid)
           })
         }
+
+        entry.status = 'sent'
+        entry.expires = Date.now() + this.doNotResendBlockWindow
       } catch (err: any) {
         if (err.name !== 'NotFoundError') {
           throw err
         }
+
+        // reset status to try again later
+        entry.status = 'want'
 
         this.log('do not have block for %c', entry.cid)
 
@@ -157,12 +208,6 @@ export class Ledger {
 
       // update accounting
       this.sentBytes([...message.blocks.values()].reduce((acc, curr) => acc + curr.data.byteLength, 0))
-
-      // remove sent blocks from local copy of their want list - they can still
-      // re-request if required
-      for (const key of sentBlocks) {
-        this.wants.delete(key)
-      }
     }
   }
 }

@@ -6,7 +6,7 @@ import { PeerWantLists } from './peer-want-lists/index.js'
 import { createBitswapSession } from './session.js'
 import { Stats } from './stats.js'
 import { WantList } from './want-list.js'
-import type { BitswapOptions, Bitswap as BitswapInterface, BitswapWantProgressEvents, BitswapNotifyProgressEvents, WantListEntry, BitswapComponents } from './index.js'
+import type { BitswapOptions, Bitswap as BitswapInterface, BitswapWantProgressEvents, BitswapNotifyProgressEvents, WantListEntry, BitswapComponents, PeerWantListEntry } from './index.js'
 import type { CreateSessionOptions, ProviderOptions, SessionBlockBroker } from '@helia/interface'
 import type { ComponentLogger, Libp2p, PeerId, AbortOptions } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
@@ -127,7 +127,7 @@ export class Bitswap implements BitswapInterface {
       }))
   }
 
-  getPeerWantlist (peer: PeerId): WantListEntry[] | undefined {
+  getPeerWantlist (peer: PeerId): PeerWantListEntry[] | undefined {
     return this.peerWantLists.wantListForPeer(peer)
   }
 

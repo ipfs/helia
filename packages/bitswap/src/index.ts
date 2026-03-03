@@ -35,10 +35,16 @@ export type { BitswapNetworkProgressEvents }
 export type { WantType }
 export type { BitswapProvider } from './network.ts'
 
+export type WantStatus = 'want' | 'sending' | 'sent'
+
 export interface WantListEntry {
   cid: CID
   priority: number
   wantType: WantType
+}
+
+export interface PeerWantListEntry extends WantListEntry {
+  status: WantStatus
 }
 
 export interface Bitswap extends Startable {
@@ -51,7 +57,7 @@ export interface Bitswap extends Startable {
    * Returns the current state of the wantlist for a peer, if it is being
    * tracked
    */
-  getPeerWantlist(peerId: PeerId): WantListEntry[] | undefined
+  getPeerWantlist(peerId: PeerId): PeerWantListEntry[] | undefined
 
   /**
    * Notify bitswap that a new block is available
@@ -188,6 +194,12 @@ export interface BitswapOptions {
    * @default 2097152
    */
   maxIncomingMessageSize?: number
+
+  /**
+   * If a block has been sent to a peer and it is requested again by the same
+   * peer, do not send it again until this many ms have elapsed
+   */
+  doNotResendBlockWindow?: number
 }
 
 export const createBitswap = (components: BitswapComponents, options: BitswapOptions = {}): Bitswap => {
