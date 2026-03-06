@@ -5,12 +5,13 @@ import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import delay from 'delay'
 import { CID } from 'multiformats/cid'
+import { sha256 } from 'multiformats/hashes/sha2'
 import pRetry from 'p-retry'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { DEFAULT_MAX_SIZE_REPLACE_HAS_WITH_BLOCK, DEFAULT_MESSAGE_SEND_DELAY } from '../src/constants.js'
 import { Network } from '../src/network.js'
-import { BlockPresenceType, WantType } from '../src/pb/message.js'
+import { BlockPresenceType, WantlistEntry, WantType } from '../src/pb/message.js'
 import { PeerWantLists } from '../src/peer-want-lists/index.js'
 import ve from '../src/utils/varint-encoder.js'
 import type { Routing } from '@helia/interface'
@@ -25,12 +26,43 @@ interface PeerWantListsComponentStubs {
   logger: ComponentLogger
 }
 
+function receiveWant (network: Network, from: PeerId, entries: WantlistEntry[], full: boolean = false): void {
+  network.safeDispatchEvent('bitswap:message', {
+    detail: {
+      peer: from,
+      message: {
+        full,
+        blocks: [],
+        blockPresences: [],
+        pendingBytes: 0,
+        wantlist: {
+          full,
+          entries
+        }
+      }
+    }
+  })
+}
+
 describe('peer-want-lists', () => {
   let components: PeerWantListsComponentStubs
   let wantLists: PeerWantLists
   let network: Network
+  let cids: CID[]
+  let blocks: Uint8Array[]
 
   beforeEach(async () => {
+    blocks = []
+    cids = []
+
+    for (let i = 0; i < 5; i++) {
+      const block = new Uint8Array(DEFAULT_MAX_SIZE_REPLACE_HAS_WITH_BLOCK + 1).fill(i)
+      const cid = CID.createV0(await sha256.digest(block)).toV1()
+
+      blocks.push(block)
+      cids.push(cid)
+    }
+
     const logger = defaultLogger()
     const libp2p = stubInterface<Libp2p>({
       getConnections: () => [],
@@ -610,5 +642,140 @@ describe('peer-want-lists', () => {
     // should only have sent one message
     await delay(100)
     expect(sendMessageStub.callCount).to.equal(1)
+  })
+
+  it('should evict low priority wants', async () => {
+    const maxWantListSize = 3
+
+    // @ts-expect-error private, readonly field
+    wantLists.maxWantListSize = maxWantListSize
+
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+
+    receiveWant(network, remotePeer, [{
+      cid: cids[0].bytes,
+      priority: 1
+    }, {
+      cid: cids[1].bytes,
+      priority: 1
+    }, {
+      cid: cids[2].bytes,
+      priority: 10
+    }, {
+      cid: cids[3].bytes,
+      priority: 10
+    }, {
+      cid: cids[4].bytes,
+      priority: 10
+    }])
+
+    await delay(100)
+
+    expect(wantLists.wantListForPeer(remotePeer)).to.have.lengthOf(maxWantListSize)
+    expect(wantLists.wantListForPeer(remotePeer)?.every(entry => entry.priority > 1)).to.be.true()
+  })
+
+  it('should evict old wants', async () => {
+    const maxWantListSize = 3
+
+    // @ts-expect-error private, readonly field
+    wantLists.maxWantListSize = maxWantListSize
+
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+
+    receiveWant(network, remotePeer, [{
+      cid: cids[0].bytes,
+      priority: 10
+    }])
+
+    await delay(10)
+
+    receiveWant(network, remotePeer, [{
+      cid: cids[1].bytes,
+      priority: 10
+    }])
+
+    await delay(10)
+
+    receiveWant(network, remotePeer, [{
+      cid: cids[2].bytes,
+      priority: 10
+    }])
+
+    await delay(10)
+
+    receiveWant(network, remotePeer, [{
+      cid: cids[3].bytes,
+      priority: 10
+    }])
+
+    await delay(10)
+
+    receiveWant(network, remotePeer, [{
+      cid: cids[4].bytes,
+      priority: 10
+    }])
+
+    await delay(100)
+
+    expect(wantLists.wantListForPeer(remotePeer)).to.have.lengthOf(maxWantListSize)
+    expect(wantLists.wantListForPeer(remotePeer)?.map(entry => entry.cid.toString()).sort()).to.deep.equal([
+      `${cids[2]}`,
+      `${cids[3]}`,
+      `${cids[4]}`
+    ].sort())
+  })
+
+  it('should evict wants we do not have blocks for', async () => {
+    const maxWantListSize = 3
+
+    // @ts-expect-error private, readonly field
+    wantLists.maxWantListSize = maxWantListSize
+
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+
+    receiveWant(network, remotePeer, [{
+      cid: cids[0].bytes,
+      priority: 10
+    }, {
+      cid: cids[1].bytes,
+      priority: 10
+    }, {
+      cid: cids[2].bytes,
+      priority: 10
+    }])
+
+    const entry0 = wantLists.wantListForPeer(remotePeer)?.find(entry => entry.cid.equals(cids[0]))
+
+    if (entry0 != null) {
+      // @ts-expect-error haveBlock is not in interface
+      delete entry0.haveBlock
+    }
+
+    const entry1 = wantLists.wantListForPeer(remotePeer)?.find(entry => entry.cid.equals(cids[2]))
+
+    if (entry1 != null) {
+      expect(entry1).to.have.property('haveBlock', false)
+    }
+
+    const entry2 = wantLists.wantListForPeer(remotePeer)?.find(entry => entry.cid.equals(cids[2]))
+
+    if (entry2 != null) {
+      // @ts-expect-error haveBlock is not in interface
+      delete entry2.haveBlock
+    }
+
+    // cids[1] will be evicted as `haveBlock` is false
+    receiveWant(network, remotePeer, [{
+      cid: cids[3].bytes,
+      priority: 10
+    }])
+
+    expect(wantLists.wantListForPeer(remotePeer)).to.have.lengthOf(maxWantListSize)
+    expect(wantLists.wantListForPeer(remotePeer)?.map(entry => entry.cid.toString()).sort()).to.deep.equal([
+      `${cids[0]}`,
+      `${cids[2]}`,
+      `${cids[3]}`
+    ].sort())
   })
 })

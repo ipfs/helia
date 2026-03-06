@@ -1,4 +1,5 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
+import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
@@ -19,7 +20,7 @@ describe('wantlist', () => {
   let wantList: WantList
   let components: StubbedWantListComponents
 
-  beforeEach(() => {
+  beforeEach(async () => {
     components = {
       network: stubInterface<Network>(),
       libp2p: stubInterface<Libp2p>({
@@ -32,13 +33,11 @@ describe('wantlist', () => {
       logger: defaultLogger()
     })
 
-    wantList.start()
+    await start(wantList)
   })
 
-  afterEach(() => {
-    if (wantList != null) {
-      wantList.stop()
-    }
+  afterEach(async () => {
+    await stop(wantList)
   })
 
   it('should add peers to peer list on connect', async () => {
