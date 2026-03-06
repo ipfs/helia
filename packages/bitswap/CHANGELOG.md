@@ -1,5 +1,14 @@
 # Changelog
 
+## [3.1.3](https://github.com/ipfs/helia/compare/bitswap-v3.1.2...bitswap-v3.1.3) (2026-03-06)
+
+
+### Bug Fixes
+
+* do not send blocks repeatedly ([#966](https://github.com/ipfs/helia/issues/966)) ([92480ee](https://github.com/ipfs/helia/commit/92480ee8b81ceaff212ed198b84c1ec0460ad86c))
+* enforce maximum peer wantlist size ([#970](https://github.com/ipfs/helia/issues/970)) ([eaeb734](https://github.com/ipfs/helia/commit/eaeb734da7f48aef3d4086d731587d9f2a185ffb))
+* lower do not resend window ([#969](https://github.com/ipfs/helia/issues/969)) ([b3783c0](https://github.com/ipfs/helia/commit/b3783c0d4c28113989600482474f883b72db8af1))
+
 ## [3.1.2](https://github.com/ipfs/helia/compare/bitswap-v3.1.1...bitswap-v3.1.2) (2026-02-05)
 
 

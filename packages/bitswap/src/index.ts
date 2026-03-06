@@ -198,8 +198,17 @@ export interface BitswapOptions {
   /**
    * If a block has been sent to a peer and it is requested again by the same
    * peer, do not send it again until this many ms have elapsed
+   *
+   * @default 5000
    */
   doNotResendBlockWindow?: number
+
+  /**
+   * Restrict the local copy of each peer wantlist to this many entries
+   *
+   * @default 1024
+   */
+  maxWantlistSize?: number
 }
 
 export const createBitswap = (components: BitswapComponents, options: BitswapOptions = {}): Bitswap => {
