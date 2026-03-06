@@ -4,6 +4,8 @@ import { createIPNSRecord, marshalIPNSRecord, multihashToIPNSRoutingKey, unmarsh
 import { CID } from 'multiformats/cid'
 import { CustomProgressEvent } from 'progress-events'
 import { DEFAULT_LIFETIME_MS, DEFAULT_TTL_NS } from '../constants.ts'
+import { Upkeep } from '../pb/metadata.ts'
+import { keyToMultihash } from '../utils.ts'
 import type { IPNSPublishResult, PublishOptions } from '../index.js'
 import type { LocalStore } from '../local-store.js'
 import type { IPNSRouting } from '../routing/index.js'
@@ -57,13 +59,14 @@ export class IPNSPublisher {
       const record = await createIPNSRecord(privKey, value, sequenceNumber, lifetime, { ...options, ttlNs })
       const marshaledRecord = marshalIPNSRecord(record)
 
+      const metadata = { keyName, lifetime, upkeep: Upkeep[options.upkeep ?? 'republish'] }
       if (options.offline === true) {
         // only store record locally
-        await this.localStore.put(routingKey, marshaledRecord, { ...options, metadata: { keyName, lifetime } })
+        await this.localStore.put(routingKey, marshaledRecord, { ...options, metadata })
       } else {
         // publish record to routing (including the local store)
         await Promise.all(this.routers.map(async r => {
-          await r.put(routingKey, marshaledRecord, { ...options, metadata: { keyName, lifetime } })
+          await r.put(routingKey, marshaledRecord, { ...options, metadata })
         }))
       }
 
@@ -88,10 +91,13 @@ export class IPNSPublisher {
     }
   }
 
-  async unpublish (keyName: string, options?: AbortOptions): Promise<void> {
-    const { publicKey } = await this.keychain.exportKey(keyName)
-    const digest = publicKey.toMultihash()
-    const routingKey = multihashToIPNSRoutingKey(digest)
+  async unpublish (keyName: string | CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options?: AbortOptions): Promise<void> {
+    if (typeof keyName === 'string') {
+      const { publicKey } = await this.keychain.exportKey(keyName)
+      keyName = publicKey.toMultihash()
+    }
+
+    const routingKey = multihashToIPNSRoutingKey(keyToMultihash(keyName))
     await this.localStore.delete(routingKey, options)
   }
 }
