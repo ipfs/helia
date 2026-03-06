@@ -1,9 +1,5 @@
-/* eslint-disable max-depth */
-
 import { trackedPeerMap } from '@libp2p/peer-collections'
 import { CID } from 'multiformats/cid'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { WantType } from '../pb/message.js'
 import { Ledger } from './ledger.js'
 import type { BitswapNotifyProgressEvents, PeerWantListEntry } from '../index.js'
 import type { Network } from '../network.js'
@@ -16,6 +12,7 @@ import type { ProgressOptions } from 'progress-events'
 export interface PeerWantListsInit {
   maxSizeReplaceHasWithBlock?: number
   doNotResendBlockWindow?: number
+  maxWantListSize?: number
 }
 
 export interface PeerWantListsComponents {
@@ -40,6 +37,7 @@ export class PeerWantLists {
   public readonly ledgerMap: PeerMap<Ledger>
   private readonly maxSizeReplaceHasWithBlock?: number
   private readonly doNotResendBlockWindow?: number
+  private readonly maxWantListSize?: number
   private readonly log: Logger
   private readonly logger: ComponentLogger
 
@@ -48,6 +46,7 @@ export class PeerWantLists {
     this.network = components.network
     this.maxSizeReplaceHasWithBlock = init.maxSizeReplaceHasWithBlock
     this.doNotResendBlockWindow = init.doNotResendBlockWindow
+    this.maxWantListSize = init.maxWantListSize
     this.log = components.logger.forComponent('helia:bitswap:peer-want-lists')
     this.logger = components.logger
 
@@ -93,7 +92,7 @@ export class PeerWantLists {
     // remove any expired wants
     ledger.removeExpiredWants()
 
-    return [...ledger.wants.values()]
+    return ledger.getWants()
   }
 
   peers (): PeerId[] {
@@ -114,7 +113,8 @@ export class PeerWantLists {
         logger: this.logger
       }, {
         maxSizeReplaceHasWithBlock: this.maxSizeReplaceHasWithBlock,
-        doNotResendBlockWindow: this.doNotResendBlockWindow
+        doNotResendBlockWindow: this.doNotResendBlockWindow,
+        maxWantListSize: this.maxWantListSize
       })
       this.ledgerMap.set(peerId, ledger)
     }
@@ -125,68 +125,18 @@ export class PeerWantLists {
     // remove any expired wants
     ledger.removeExpiredWants()
 
-    if (message.wantlist != null) {
-      // if the message has a full wantlist, clear the current wantlist
-      if (message.wantlist.full === true) {
-        ledger.wants.clear()
-      }
-
-      // clear cancelled wants and add new wants to the ledger
-      for (const entry of message.wantlist.entries) {
-        const cid = CID.decode(entry.cid)
-        const cidStr = uint8ArrayToString(cid.multihash.bytes, 'base64')
-
-        if (entry.cancel === true) {
-          this.log('peer %p cancelled want of block for %c', peerId, cid)
-          ledger.wants.delete(cidStr)
-        } else {
-          if (entry.wantType === WantType.WantHave) {
-            this.log('peer %p wanted block presence for %c', peerId, cid)
-          } else {
-            this.log('peer %p wanted block for %c', peerId, cid)
-          }
-
-          const existingWant = ledger.wants.get(cidStr)
-
-          // we are already tracking a want for this CID, just update the fields
-          if (existingWant != null) {
-            const sentOrSending = existingWant.status === 'sent' || existingWant.status === 'sending'
-            const wantTypeUpgrade = existingWant.wantType === WantType.WantHave && (entry.wantType == null || entry.wantType === WantType.WantBlock)
-
-            // allow upgrade from WantHave to WantBlock if we've previously
-            // sent or are sending a WantHave
-            if (sentOrSending && wantTypeUpgrade) {
-              existingWant.status = 'want'
-            }
-
-            existingWant.priority = entry.priority
-            existingWant.wantType = entry.wantType ?? WantType.WantBlock
-            existingWant.sendDontHave = entry.sendDontHave ?? false
-            continue
-          }
-
-          // add a new want
-          ledger.wants.set(cidStr, {
-            cid,
-            priority: entry.priority,
-            wantType: entry.wantType ?? WantType.WantBlock,
-            sendDontHave: entry.sendDontHave ?? false,
-            status: 'want'
-          })
-        }
-      }
-    }
+    // add new wants
+    ledger.addWants(message.wantlist)
 
     this.log('send blocks to peer')
     await ledger.sendBlocksToPeer()
   }
 
   async receivedBlock (cid: CID, options: ProgressOptions<BitswapNotifyProgressEvents> & AbortOptions): Promise<void> {
-    const cidStr = uint8ArrayToString(cid.multihash.bytes, 'base64')
     const ledgers: Ledger[] = []
 
     for (const ledger of this.ledgerMap.values()) {
-      if (ledger.wants.has(cidStr)) {
+      if (ledger.hasWant(cid)) {
         ledgers.push(ledger)
       }
     }

@@ -202,6 +202,13 @@ export interface BitswapOptions {
    * @default 5000
    */
   doNotResendBlockWindow?: number
+
+  /**
+   * Restrict the local copy of each peer wantlist to this many entries
+   *
+   * @default 1024
+   */
+  maxWantlistSize?: number
 }
 
 export const createBitswap = (components: BitswapComponents, options: BitswapOptions = {}): Bitswap => {

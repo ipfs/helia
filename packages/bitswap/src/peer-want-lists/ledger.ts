@@ -1,12 +1,14 @@
 import toBuffer from 'it-to-buffer'
-import { DEFAULT_MAX_SIZE_REPLACE_HAS_WITH_BLOCK, DEFAULT_DO_NOT_RESEND_BLOCK_WINDOW } from '../constants.js'
+import { CID } from 'multiformats/cid'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { DEFAULT_MAX_SIZE_REPLACE_HAS_WITH_BLOCK, DEFAULT_DO_NOT_RESEND_BLOCK_WINDOW, DEFAULT_MAX_WANTLIST_SIZE } from '../constants.js'
 import { BlockPresenceType, WantType } from '../pb/message.js'
 import { QueuedBitswapMessage } from '../utils/bitswap-message.js'
 import { cidToPrefix } from '../utils/cid-prefix.js'
 import type { Network } from '../network.js'
+import type { Wantlist } from '../pb/message.js'
 import type { AbortOptions, ComponentLogger, Logger, PeerId } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
-import type { CID } from 'multiformats/cid'
 
 export interface LedgerComponents {
   peerId: PeerId
@@ -18,6 +20,7 @@ export interface LedgerComponents {
 export interface LedgerInit {
   maxSizeReplaceHasWithBlock?: number
   doNotResendBlockWindow?: number
+  maxWantListSize?: number
 }
 
 export interface PeerWantListEntry {
@@ -59,13 +62,29 @@ export interface PeerWantListEntry {
    * peer. Once it has expired the peer can request the block a subsequent time.
    */
   expires?: number
+
+  /**
+   * A timestamp of when this entry was created
+   */
+  created: number
+
+  /**
+   * If this field is false, we have attempted to send this WantList entry but
+   * found there is no block for the CID in the blockstore and we are
+   * optimistically waiting to see if we come across it later.
+   *
+   * We only perform the check when we are about to send the block, by which
+   * point the entry status is 'sending' so this value with either be false or
+   * not set
+   */
+  haveBlock?: false
 }
 
 export class Ledger {
   public peerId: PeerId
   private readonly blockstore: Blockstore
   private readonly network: Network
-  public wants: Map<string, PeerWantListEntry>
+  private wants: Map<string, PeerWantListEntry>
   public exchangeCount: number
   public bytesSent: number
   public bytesReceived: number
@@ -73,6 +92,7 @@ export class Ledger {
   private readonly maxSizeReplaceHasWithBlock: number
   private readonly log: Logger
   private readonly doNotResendBlockWindow: number
+  private readonly maxWantListSize: number
 
   constructor (components: LedgerComponents, init: LedgerInit) {
     this.peerId = components.peerId
@@ -86,6 +106,7 @@ export class Ledger {
     this.bytesReceived = 0
     this.maxSizeReplaceHasWithBlock = init.maxSizeReplaceHasWithBlock ?? DEFAULT_MAX_SIZE_REPLACE_HAS_WITH_BLOCK
     this.doNotResendBlockWindow = init.doNotResendBlockWindow ?? DEFAULT_DO_NOT_RESEND_BLOCK_WINDOW
+    this.maxWantListSize = init.maxWantListSize ?? DEFAULT_MAX_WANTLIST_SIZE
   }
 
   sentBytes (n: number): void {
@@ -111,6 +132,133 @@ export class Ledger {
         this.wants.delete(key)
       }
     })
+  }
+
+  public addWants (wantlist?: Wantlist): void {
+    if (wantlist == null) {
+      return
+    }
+
+    // if the message has a full wantlist, remove all entries not currently
+    // being sent to the peer
+    if (wantlist.full === true) {
+      this.wants.forEach((value, key) => {
+        if (value.status === 'want') {
+          this.wants.delete(key)
+        }
+      })
+    }
+
+    // clear cancelled wants and add new wants to the ledger
+    for (const entry of wantlist.entries) {
+      const cid = CID.decode(entry.cid)
+      const cidStr = uint8ArrayToString(cid.multihash.bytes, 'base64')
+
+      if (entry.cancel === true) {
+        this.log('peer %p cancelled want of block for %c', this.peerId, cid)
+        this.wants.delete(cidStr)
+      } else {
+        if (entry.wantType === WantType.WantHave) {
+          this.log('peer %p wanted block presence for %c', this.peerId, cid)
+        } else {
+          this.log('peer %p wanted block for %c', this.peerId, cid)
+        }
+
+        const existingWant = this.wants.get(cidStr)
+
+        // we are already tracking a want for this CID, just update the fields
+        if (existingWant != null) {
+          const sentOrSending = existingWant.status === 'sent' || existingWant.status === 'sending'
+          const wantTypeUpgrade = existingWant.wantType === WantType.WantHave && (entry.wantType == null || entry.wantType === WantType.WantBlock)
+
+          // allow upgrade from WantHave to WantBlock if we've previously
+          // sent or are sending a WantHave
+          if (sentOrSending && wantTypeUpgrade) {
+            existingWant.status = 'want'
+          }
+
+          existingWant.priority = entry.priority
+          existingWant.wantType = entry.wantType ?? WantType.WantBlock
+          existingWant.sendDontHave = entry.sendDontHave ?? false
+          continue
+        }
+
+        // add a new want
+        this.wants.set(cidStr, {
+          cid,
+          priority: entry.priority,
+          wantType: entry.wantType ?? WantType.WantBlock,
+          sendDontHave: entry.sendDontHave ?? false,
+          status: 'want',
+          created: Date.now()
+        })
+      }
+    }
+
+    // if we have exceeded maxWantListSize, truncate the list - first select
+    // wants that are not currently being sent to the user
+    const wants = [...this.wants.entries()]
+      .filter(([key, entry]) => entry.status === 'want')
+
+    if (wants.length > this.maxWantListSize) {
+      this.truncateWants(wants)
+    }
+  }
+
+  private truncateWants (wants: Array<[string, PeerWantListEntry]>): void {
+    // sort wants by priority, lack of block presence, then age so the wants
+    // to be evicted are a older, low priority wants that we don't have the
+    // block for
+    wants = wants
+      .sort((a, b) => {
+        if (a[1].created < b[1].created) {
+          return -1
+        }
+
+        if (b[1].created < a[1].created) {
+          return 1
+        }
+
+        return 0
+      })
+      .sort((a, b) => {
+        if (a[1].haveBlock === false) {
+          return -1
+        }
+
+        if (b[1].haveBlock === false) {
+          return 1
+        }
+
+        return 0
+      })
+      .sort((a, b) => {
+        if (a[1].priority < b[1].priority) {
+          return -1
+        }
+
+        if (b[1].priority < a[1].priority) {
+          return 1
+        }
+
+        return 0
+      })
+
+    const toRemove = wants.length - this.maxWantListSize
+
+    for (let i = 0; i < toRemove; i++) {
+      this.wants.delete(wants[i][0])
+    }
+  }
+
+  public getWants (): PeerWantListEntry[] {
+    return [...this.wants.values()]
+  }
+
+  public hasWant (cid: CID): boolean {
+    const cidStr = uint8ArrayToString(cid.multihash.bytes, 'base64')
+
+    return this.wants.has(cidStr)
   }
 
   public async sendBlocksToPeer (options?: AbortOptions): Promise<void> {
@@ -178,6 +326,9 @@ export class Ledger {
 
         // reset status to try again later
         entry.status = 'want'
+
+        // used to maybe delete this want later if the want list grows too large
+        entry.haveBlock = false
 
         this.log('do not have block for %c', entry.cid)
 
