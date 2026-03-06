@@ -198,6 +198,8 @@ export interface BitswapOptions {
   /**
    * If a block has been sent to a peer and it is requested again by the same
    * peer, do not send it again until this many ms have elapsed
+   *
+   * @default 5000
    */
   doNotResendBlockWindow?: number
 }
