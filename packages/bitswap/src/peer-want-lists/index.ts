@@ -125,9 +125,8 @@ export class PeerWantLists {
     // remove any expired wants
     ledger.removeExpiredWants()
 
-    if (message.wantlist != null) {
-      ledger.addWants(message.wantlist)
-    }
+    // add new wants
+    ledger.addWants(message.wantlist)
 
     this.log('send blocks to peer')
     await ledger.sendBlocksToPeer()

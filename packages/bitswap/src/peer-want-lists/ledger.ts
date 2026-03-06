@@ -134,10 +134,19 @@ export class Ledger {
     })
   }
 
-  public addWants (wantlist: Wantlist): void {
-    // if the message has a full wantlist, clear the current wantlist
+  public addWants (wantlist?: Wantlist): void {
+    if (wantlist == null) {
+      return
+    }
+
+    // if the message has a full wantlist, remove all entries not currently
+    // being sent to the peer
     if (wantlist.full === true) {
-      this.wants.clear()
+      this.wants.forEach((value, key) => {
+        if (value.status === 'want') {
+          this.wants.delete(key)
+        }
+      })
     }
 
     // clear cancelled wants and add new wants to the ledger
@@ -202,11 +211,15 @@ export class Ledger {
     // block for
     wants = wants
       .sort((a, b) => {
-        if (a[1].created === b[1].created) {
-          return 0
+        if (a[1].created < b[1].created) {
+          return -1
         }
 
-        return a[1].created < b[1].created ? 1 : -1
+        if (b[1].created < a[1].created) {
+          return 1
+        }
+
+        return 0
       })
       .sort((a, b) => {
         if (a[1].haveBlock === false) {
@@ -220,11 +233,15 @@ export class Ledger {
         return 0
       })
       .sort((a, b) => {
-        if (a[1].priority === b[1].priority) {
-          return 0
+        if (a[1].priority < b[1].priority) {
+          return -1
         }
 
-        return a[1].priority > b[1].priority ? 1 : -1
+        if (b[1].priority < a[1].priority) {
+          return 1
+        }
+
+        return 0
       })
 
     const toRemove = wants.length - this.maxWantListSize

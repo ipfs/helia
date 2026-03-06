@@ -690,12 +690,24 @@ describe('peer-want-lists', () => {
 
     await delay(10)
 
+    // reset haveBlock to ensure we only sort on created time
+    wantLists.wantListForPeer(remotePeer)?.forEach(entry => {
+      // @ts-expect-error not in interface
+      delete entry.haveBlock
+    })
+
     receiveWant(network, remotePeer, [{
       cid: cids[1].bytes,
       priority: 10
     }])
 
     await delay(10)
+
+    // reset haveBlock to ensure we only sort on created time
+    wantLists.wantListForPeer(remotePeer)?.forEach(entry => {
+      // @ts-expect-error not in interface
+      delete entry.haveBlock
+    })
 
     receiveWant(network, remotePeer, [{
       cid: cids[2].bytes,
@@ -704,12 +716,24 @@ describe('peer-want-lists', () => {
 
     await delay(10)
 
+    // reset haveBlock to ensure we only sort on created time
+    wantLists.wantListForPeer(remotePeer)?.forEach(entry => {
+      // @ts-expect-error not in interface
+      delete entry.haveBlock
+    })
+
     receiveWant(network, remotePeer, [{
       cid: cids[3].bytes,
       priority: 10
     }])
 
     await delay(10)
+
+    // reset haveBlock to ensure we only sort on created time
+    wantLists.wantListForPeer(remotePeer)?.forEach(entry => {
+      // @ts-expect-error not in interface
+      delete entry.haveBlock
+    })
 
     receiveWant(network, remotePeer, [{
       cid: cids[4].bytes,
