@@ -26,7 +26,7 @@ export async function isOverShardThreshold (node: PBNode, blockstore: GetStore, 
   }
 
   const threshold = options.shardSplitThresholdBytes ?? DEFAULT_SHARD_SPLIT_THRESHOLD_BYTES
-  let strategy: ShardSplitStrategy = options.shardSplitStrategy ?? 'block-bytes'
+  let strategy: ShardSplitStrategy = options.shardSplitStrategy ?? 'links-bytes'
 
   if (options.profile === 'unixfs-v0-2015') {
     strategy = 'links-bytes'
