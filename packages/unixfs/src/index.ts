@@ -90,7 +90,7 @@ import type { Blockstore } from 'interface-blockstore'
 import type { Mtime, UnixFS as IPFSUnixFS } from 'ipfs-unixfs'
 import type { ExporterProgressEvents, UnixFSDirectoryEntry } from 'ipfs-unixfs-exporter'
 import type { ByteStream, DirectoryCandidate, ImportCandidateStream, ImporterOptions, ImporterProgressEvents, ImportResult, ImportContent } from 'ipfs-unixfs-importer'
-import type { CID, Version } from 'multiformats/cid'
+import type { CID } from 'multiformats/cid'
 import type { ProgressOptions } from 'progress-events'
 
 export interface UnixFSComponents {
@@ -158,12 +158,6 @@ export interface ChmodOptions extends AbortOptions, ProgressOptions<GetEvents | 
   path?: string
 
   /**
-   * DAGs with a root block larger than this value will be sharded. Blocks
-   * smaller than this value will be regular UnixFS directories.
-   */
-  shardSplitThresholdBytes: number
-
-  /**
    * If true, do not perform any network operations and throw if blocks are
    * missing from the local store. (default: false)
    */
@@ -173,17 +167,11 @@ export interface ChmodOptions extends AbortOptions, ProgressOptions<GetEvents | 
 /**
  * Options to pass to the cp command
  */
-export interface CpOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents>, ProviderOptions {
+export interface CpOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents>, ProviderOptions, Pick<ImporterOptions, 'shardFanoutBits' | 'shardSplitStrategy' | 'shardSplitThresholdBytes'> {
   /**
    * If true, allow overwriting existing directory entries (default: false)
    */
   force: boolean
-
-  /**
-   * DAGs with a root block larger than this value will be sharded. Blocks
-   * smaller than this value will be regular UnixFS directories.
-   */
-  shardSplitThresholdBytes: number
 
   /**
    * If true, do not perform any network operations and throw if blocks are
@@ -222,13 +210,7 @@ export interface LsOptions extends AbortOptions, ProgressOptions<GetEvents> {
 /**
  * Options to pass to the mkdir command
  */
-export interface MkdirOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents>, ProviderOptions {
-  /**
-   * The CID version to create the new directory with - defaults to the same
-   * version as the containing directory
-   */
-  cidVersion: Version
-
+export interface MkdirOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents>, ProviderOptions, Pick<ImporterOptions, 'profile' | 'shardFanoutBits' | 'shardSplitStrategy' | 'shardSplitThresholdBytes' | 'cidVersion'> {
   /**
    * If true, allow overwriting existing directory entries (default: false)
    */
@@ -245,12 +227,6 @@ export interface MkdirOptions extends AbortOptions, ProgressOptions<GetEvents | 
   mtime?: Mtime
 
   /**
-   * DAGs with a root block larger than this value will be sharded. Blocks
-   * smaller than this value will be regular UnixFS directories.
-   */
-  shardSplitThresholdBytes: number
-
-  /**
    * If true, do not perform any network operations and throw if blocks are
    * missing from the local store. (default: false)
    */
@@ -260,13 +236,7 @@ export interface MkdirOptions extends AbortOptions, ProgressOptions<GetEvents | 
 /**
  * Options to pass to the rm command
  */
-export interface RmOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents>, ProviderOptions {
-  /**
-   * DAGs with a root block larger than this value will be sharded. Blocks
-   * smaller than this value will be regular UnixFS directories.
-   */
-  shardSplitThresholdBytes: number
-
+export interface RmOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents>, ProviderOptions, Pick<ImporterOptions, 'shardFanoutBits' | 'shardSplitStrategy' | 'shardSplitThresholdBytes'> {
   /**
    * If true, do not perform any network operations and throw if blocks are
    * missing from the local store. (default: false)
@@ -438,7 +408,7 @@ export interface ExtendedRawStats extends ExtendedStats {
 /**
  * Options to pass to the touch command
  */
-export interface TouchOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents> {
+export interface TouchOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents>, Pick<ImporterOptions, 'shardFanoutBits' | 'shardSplitStrategy' | 'shardSplitThresholdBytes'> {
   /**
    * Optional mtime to set on the DAG root, defaults to the current time
    */
@@ -453,12 +423,6 @@ export interface TouchOptions extends AbortOptions, ProgressOptions<GetEvents | 
    * If the DAG is a directory and this is true, update the mtime on all contents
    */
   recursive: boolean
-
-  /**
-   * DAGs with a root block larger than this value will be sharded. Blocks
-   * smaller than this value will be regular UnixFS directories.
-   */
-  shardSplitThresholdBytes: number
 
   /**
    * If true, do not perform any network operations and throw if blocks are

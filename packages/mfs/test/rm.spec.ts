@@ -105,7 +105,8 @@ describe('rm', () => {
       content: Uint8Array.from([0, 1, 2, 3, 4])
     }], blockstore, {
       wrapWithDirectory: true,
-      shardSplitThresholdBytes
+      shardSplitThresholdBytes,
+      shardSplitStrategy: 'links-bytes'
     }))
 
     if (importResult == null) {
@@ -122,19 +123,22 @@ describe('rm', () => {
 
     // create the same shard with unixfs command
     await fs.writeBytes(Uint8Array.from([0, 1, 2, 3, 4]), `${dirPath}/file-1.txt`, {
-      shardSplitThresholdBytes
+      shardSplitThresholdBytes,
+      shardSplitStrategy: 'links-bytes'
     })
 
     await expect(fs.stat(dirPath)).to.eventually.have.nested.property('unixfs.type', 'directory')
 
     await fs.writeBytes(Uint8Array.from([0, 1, 2, 3, 4]), `${dirPath}/file-2.txt`, {
-      shardSplitThresholdBytes
+      shardSplitThresholdBytes,
+      shardSplitStrategy: 'links-bytes'
     })
 
     await expect(fs.stat(dirPath)).to.eventually.have.nested.property('unixfs.type', 'hamt-sharded-directory')
 
     await fs.rm(`${dirPath}/file-2.txt`, {
-      shardSplitThresholdBytes
+      shardSplitThresholdBytes,
+      shardSplitStrategy: 'links-bytes'
     })
 
     const dirStats = await fs.stat(dirPath)
@@ -151,7 +155,8 @@ describe('rm', () => {
       content: Uint8Array.from([0, 1, 2, 3, 4])
     }], blockstore, {
       wrapWithDirectory: true,
-      shardSplitThresholdBytes
+      shardSplitThresholdBytes,
+      shardSplitStrategy: 'links-bytes'
     }))
 
     if (importResult == null) {
@@ -168,19 +173,22 @@ describe('rm', () => {
 
     // create the same shard with unixfs command
     await fs.writeBytes(Uint8Array.from([0, 1, 2, 3, 4]), `${dirPath}/file-1.txt`, {
-      shardSplitThresholdBytes
+      shardSplitThresholdBytes,
+      shardSplitStrategy: 'links-bytes'
     })
 
     await expect(fs.stat(dirPath)).to.eventually.have.nested.property('unixfs.type', 'hamt-sharded-directory')
 
     await fs.writeBytes(Uint8Array.from([0, 1, 2, 3, 4]), `${dirPath}/file-2.txt`, {
-      shardSplitThresholdBytes
+      shardSplitThresholdBytes,
+      shardSplitStrategy: 'links-bytes'
     })
 
     await expect(fs.stat(dirPath)).to.eventually.have.nested.property('unixfs.type', 'hamt-sharded-directory')
 
     await fs.rm(`${dirPath}/file-2.txt`, {
-      shardSplitThresholdBytes
+      shardSplitThresholdBytes,
+      shardSplitStrategy: 'links-bytes'
     })
 
     const dirStats = await fs.stat(dirPath)
@@ -204,7 +212,8 @@ describe('rm', () => {
 
     // remove the file that caused the sub-shard to be created and the CID should be the same as the importer
     await fs.rm(`${dirPath}/${fileName}`, {
-      shardSplitThresholdBytes: 1
+      shardSplitThresholdBytes: 1,
+      shardSplitStrategy: 'links-bytes'
     })
 
     // should still be a shard
@@ -231,7 +240,8 @@ describe('rm', () => {
 
     // remove the file that caused the sub-shard to be created and the CID should be the same as the importer
     await fs.rm(`${dirPath}/${fileName}`, {
-      shardSplitThresholdBytes: 1
+      shardSplitThresholdBytes: 1,
+      shardSplitStrategy: 'links-bytes'
     })
 
     // should still be a shard

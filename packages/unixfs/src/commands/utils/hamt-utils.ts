@@ -1,13 +1,13 @@
 import * as dagPB from '@ipld/dag-pb'
 import { logger } from '@libp2p/logger'
 import { UnixFS } from 'ipfs-unixfs'
+import { DirSharded } from 'ipfs-unixfs-importer/utils'
 import last from 'it-last'
 import toBuffer from 'it-to-buffer'
 // @ts-expect-error no types
 import SparseArray from 'sparse-array'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { wrapHash } from './consumable-hash.js'
-import { DirSharded } from './dir-sharded.js'
 import {
   hamtHashCode,
   hamtHashFn,
@@ -57,7 +57,7 @@ export const createShard = async (blockstore: PutStore, contents: Array<{ name: 
   }, options)
 
   for (let i = 0; i < contents.length; i++) {
-    await shard._bucket.put(contents[i].name, {
+    await shard.bucket.put(contents[i].name, {
       size: contents[i].size,
       cid: contents[i].cid
     })
