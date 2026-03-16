@@ -1,6 +1,6 @@
+import { DEFAULT_ALLOW_INSECURE, DEFAULT_ALLOW_LOCAL } from './index.ts'
 import { createTrustlessGatewaySession } from './session.ts'
 import { findHttpGatewayProviders } from './utils.ts'
-import { DEFAULT_ALLOW_INSECURE, DEFAULT_ALLOW_LOCAL } from './index.ts'
 import type { TrustlessGatewayBlockBrokerInit, TrustlessGatewayBlockBrokerComponents, TrustlessGatewayGetBlockProgressEvents } from './index.ts'
 import type { TransformRequestInit } from './trustless-gateway.ts'
 import type { Routing, BlockRetrievalOptions, BlockBroker, CreateSessionOptions, SessionBlockBroker } from '@helia/interface'

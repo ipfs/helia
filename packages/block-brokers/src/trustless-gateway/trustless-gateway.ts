@@ -1,6 +1,6 @@
 import { base64 } from 'multiformats/bases/base64'
-import { limitedResponse } from './utils.ts'
 import { DEFAULT_MAX_SIZE } from './index.ts'
+import { limitedResponse } from './utils.ts'
 import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 
