@@ -1,7 +1,7 @@
 import * as dagPb from '@ipld/dag-pb'
 import { exporter, walkPath } from 'ipfs-unixfs-exporter'
 import { createUnsafe } from 'multiformats/block'
-import type { TraversalStrategy } from '../index.js'
+import type { TraversalStrategy } from '../index.ts'
 import type { CodecLoader } from '@helia/interface'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'

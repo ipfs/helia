@@ -6,17 +6,17 @@ import toBuffer from 'it-to-buffer'
 // @ts-expect-error no types
 import SparseArray from 'sparse-array'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { wrapHash } from './consumable-hash.js'
-import { DirSharded } from './dir-sharded.js'
+import { wrapHash } from './consumable-hash.ts'
+import { DirSharded } from './dir-sharded.ts'
 import {
   hamtHashCode,
   hamtHashFn,
   hamtBucketBits
-} from './hamt-constants.js'
-import { persist } from './persist.js'
-import type { InfiniteHash } from './consumable-hash.js'
-import type { PersistOptions } from './persist.js'
-import type { GetStore, PutStore } from '../../unixfs.js'
+} from './hamt-constants.ts'
+import { persist } from './persist.ts'
+import type { InfiniteHash } from './consumable-hash.ts'
+import type { PersistOptions } from './persist.ts'
+import type { GetStore, PutStore } from '../../unixfs.ts'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { Mtime } from 'ipfs-unixfs'

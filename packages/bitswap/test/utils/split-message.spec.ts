@@ -5,12 +5,12 @@ import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
-import { DEFAULT_MAX_OUTGOING_MESSAGE_SIZE } from '../../src/constants.js'
-import { BitswapMessage, BlockPresenceType } from '../../src/pb/message.js'
-import { QueuedBitswapMessage } from '../../src/utils/bitswap-message.js'
-import { cidToPrefix } from '../../src/utils/cid-prefix.js'
-import { MAX_BLOCK_SIZE, splitMessage } from '../../src/utils/split-message.js'
-import type { Block, BlockPresence, WantlistEntry } from '../../src/pb/message.js'
+import { DEFAULT_MAX_OUTGOING_MESSAGE_SIZE } from '../../src/constants.ts'
+import { BitswapMessage, BlockPresenceType } from '../../src/pb/message.ts'
+import { QueuedBitswapMessage } from '../../src/utils/bitswap-message.ts'
+import { cidToPrefix } from '../../src/utils/cid-prefix.ts'
+import { MAX_BLOCK_SIZE, splitMessage } from '../../src/utils/split-message.ts'
+import type { Block, BlockPresence, WantlistEntry } from '../../src/pb/message.ts'
 
 async function createBlock (size = 1024): Promise<{ cid: CID, data: Uint8Array }> {
   const randomLength = 1024

@@ -1,8 +1,8 @@
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { identity } from 'multiformats/hashes/identity'
-import { dagCbor } from '../src/index.js'
-import type { DAGCBOR } from '../src/index.js'
+import { dagCbor } from '../src/index.ts'
+import type { DAGCBOR } from '../src/index.ts'
 import type { Blockstore } from 'interface-blockstore'
 
 describe('put', () => {

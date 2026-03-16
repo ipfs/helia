@@ -1,5 +1,5 @@
 import { expect } from 'aegir/chai'
-import { toMtime } from '../../src/utils/to-mtime.js'
+import { toMtime } from '../../src/utils/to-mtime.ts'
 
 describe('to-mtime', () => {
   it('should survive undefined', async function () {

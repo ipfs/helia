@@ -5,12 +5,12 @@ import { exporter } from 'ipfs-unixfs-exporter'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { DEFAULT_CID_VERSION } from '../constants.ts'
-import { InvalidParametersError, NotADirectoryError } from '../errors.js'
-import { addLink } from './utils/add-link.js'
-import { cidToDirectory } from './utils/cid-to-directory.js'
-import { cidToPBLink } from './utils/cid-to-pblink.js'
-import type { MkdirOptions } from '../index.js'
-import type { GetStore, PutStore } from '../unixfs.js'
+import { InvalidParametersError, NotADirectoryError } from '../errors.ts'
+import { addLink } from './utils/add-link.ts'
+import { cidToDirectory } from './utils/cid-to-directory.ts'
+import { cidToPBLink } from './utils/cid-to-pblink.ts'
+import type { MkdirOptions } from '../index.ts'
+import type { GetStore, PutStore } from '../unixfs.ts'
 
 const log = logger('helia:unixfs:mkdir')
 

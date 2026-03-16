@@ -5,10 +5,10 @@ import { CID } from 'multiformats/cid'
 import {
   hamtHashCode,
   hamtHashFn
-} from './hamt-constants.js'
-import { persist } from './persist.js'
-import type { PersistOptions } from './persist.js'
-import type { PutStore } from '../../unixfs.js'
+} from './hamt-constants.ts'
+import { persist } from './persist.ts'
+import type { PersistOptions } from './persist.ts'
+import type { PutStore } from '../../unixfs.ts'
 import type { PBLink } from '@ipld/dag-pb'
 import type { BucketChild } from 'hamt-sharding'
 import type { Mtime } from 'ipfs-unixfs'

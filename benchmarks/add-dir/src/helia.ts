@@ -10,7 +10,7 @@ import { createHelia } from 'helia'
 import { fixedSize } from 'ipfs-unixfs-importer/chunker'
 import { balanced } from 'ipfs-unixfs-importer/layout'
 import last from 'it-last'
-import type { AddDirBenchmark } from './index.js'
+import type { AddDirBenchmark } from './index.ts'
 import type { CID } from 'multiformats/cid'
 
 const unixFsAddOptions: Partial<AddOptions> = {

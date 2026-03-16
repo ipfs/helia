@@ -1,4 +1,4 @@
-import ve from './varint-encoder.js'
+import ve from './varint-encoder.ts'
 import type { CID } from 'multiformats/cid'
 
 export function cidToPrefix (cid: CID): Uint8Array {

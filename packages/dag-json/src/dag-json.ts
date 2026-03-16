@@ -3,7 +3,7 @@ import * as codec from '@ipld/dag-json'
 import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
-import type { AddOptions, DAGJSONComponents, DAGJSON as DAGJSONInterface, GetOptions } from './index.js'
+import type { AddOptions, DAGJSONComponents, DAGJSON as DAGJSONInterface, GetOptions } from './index.ts'
 
 export class DAGJSON implements DAGJSONInterface {
   private readonly components: DAGJSONComponents

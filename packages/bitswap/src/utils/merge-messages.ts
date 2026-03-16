@@ -1,4 +1,4 @@
-import type { QueuedBitswapMessage } from './bitswap-message.js'
+import type { QueuedBitswapMessage } from './bitswap-message.ts'
 
 export function mergeMessages (existingMessage: QueuedBitswapMessage, newMessage: QueuedBitswapMessage): QueuedBitswapMessage {
   for (const [key, entry] of newMessage.wantlist.entries()) {

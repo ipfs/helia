@@ -3,7 +3,7 @@ import * as codec from '@ipld/dag-cbor'
 import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
-import type { AddOptions, DAGCBORComponents, DAGCBOR as DAGCBORInterface, GetOptions } from './index.js'
+import type { AddOptions, DAGCBORComponents, DAGCBOR as DAGCBORInterface, GetOptions } from './index.ts'
 
 export class DAGCBOR implements DAGCBORInterface {
   private readonly components: DAGCBORComponents

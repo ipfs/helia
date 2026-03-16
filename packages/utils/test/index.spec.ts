@@ -1,7 +1,7 @@
 import { expect } from 'aegir/chai'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { createHelia } from './fixtures/create-helia.js'
+import { createHelia } from './fixtures/create-helia.ts'
 import type { Helia, Routing } from '@helia/interface'
 import type { Startable, Metrics } from '@libp2p/interface'
 

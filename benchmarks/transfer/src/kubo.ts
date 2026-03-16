@@ -8,7 +8,7 @@ import { path as kuboPath } from 'kubo'
 import { create as kuboRpcClient, type BlockPutOptions } from 'kubo-rpc-client'
 import * as raw from 'multiformats/codecs/raw'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import type { ImportOptions, TransferBenchmark } from './index.js'
+import type { ImportOptions, TransferBenchmark } from './index.ts'
 
 const FORMAT_LOOKUP: Record<number, string> = {
   [dagPB.code]: 'dag-pb',

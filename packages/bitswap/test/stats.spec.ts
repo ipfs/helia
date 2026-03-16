@@ -2,7 +2,7 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
-import { Stats } from '../src/stats.js'
+import { Stats } from '../src/stats.ts'
 import type { Libp2p, MetricGroup, Metrics } from '@libp2p/interface'
 import type { StubbedInstance } from 'sinon-ts'
 

@@ -23,7 +23,7 @@
  */
 
 import { CID } from 'multiformats/cid'
-import { Strings as StringsClass } from './strings.js'
+import { Strings as StringsClass } from './strings.ts'
 import type { GetBlockProgressEvents, ProviderOptions, PutBlockProgressEvents } from '@helia/interface/blocks'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'

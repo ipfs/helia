@@ -1,7 +1,7 @@
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
 import { shouldRepublish } from '../src/utils.ts'
-import type { IPNSRecord } from '../src/index.js'
+import type { IPNSRecord } from '../src/index.ts'
 
 describe('shouldRepublish', () => {
   it('should return true when DHT expiry is within threshold', () => {

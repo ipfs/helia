@@ -2,8 +2,8 @@ import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { CID } from 'multiformats/cid'
 import { identity } from 'multiformats/hashes/identity'
-import { strings } from '../src/index.js'
-import type { Strings } from '../src/index.js'
+import { strings } from '../src/index.ts'
+import type { Strings } from '../src/index.ts'
 import type { Blockstore } from 'interface-blockstore'
 
 describe('get', () => {
