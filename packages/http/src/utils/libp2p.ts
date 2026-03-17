@@ -1,6 +1,6 @@
 import { loadOrCreateSelfKey } from '@libp2p/config'
 import { createLibp2p as create } from 'libp2p'
-import { libp2pDefaults } from './libp2p-defaults.js'
+import { libp2pDefaults } from './libp2p-defaults.ts'
 import type { ComponentLogger, Libp2p, PrivateKey } from '@libp2p/interface'
 import type { KeychainInit } from '@libp2p/keychain'
 import type { DNS } from '@multiformats/dns'

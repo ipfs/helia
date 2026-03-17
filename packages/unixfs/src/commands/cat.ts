@@ -1,8 +1,8 @@
 import { exporter } from 'ipfs-unixfs-exporter'
-import { NoContentError, NotAFileError } from '../errors.js'
-import { resolve } from './utils/resolve.js'
-import type { CatOptions } from '../index.js'
-import type { GetStore } from '../unixfs.js'
+import { NoContentError, NotAFileError } from '../errors.ts'
+import { resolve } from './utils/resolve.ts'
+import type { CatOptions } from '../index.ts'
+import type { GetStore } from '../unixfs.ts'
 import type { CID } from 'multiformats/cid'
 
 export async function * cat (cid: CID, blockstore: GetStore, options: Partial<CatOptions> = {}): AsyncIterable<Uint8Array> {

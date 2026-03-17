@@ -1,7 +1,7 @@
 import { exporter } from 'ipfs-unixfs-exporter'
-import { resolve } from './utils/resolve.js'
-import type { LsOptions } from '../index.js'
-import type { GetStore } from '../unixfs.js'
+import { resolve } from './utils/resolve.ts'
+import type { LsOptions } from '../index.ts'
+import type { GetStore } from '../unixfs.ts'
 import type { UnixFSDirectoryEntry } from 'ipfs-unixfs-exporter'
 import type { CID } from 'multiformats/cid'
 

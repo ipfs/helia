@@ -1,7 +1,7 @@
 import { expect } from 'aegir/chai'
 import { Key } from 'interface-datastore'
 import { CID } from 'multiformats/cid'
-import { createHeliaHTTP } from '../src/index.js'
+import { createHeliaHTTP } from '../src/index.ts'
 import type { Helia } from '@helia/interface'
 
 describe('helia factory', () => {

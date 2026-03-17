@@ -1,6 +1,6 @@
 import { start, stop } from '@libp2p/interface'
 import createMortice from 'mortice'
-import { BlockPinnedError } from './errors.js'
+import { BlockPinnedError } from './errors.ts'
 import type { Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions, SessionBlockstore } from '@helia/interface/blocks'
 import type { Pins } from '@helia/interface/pins'
 import type { AbortOptions, Startable } from '@libp2p/interface'

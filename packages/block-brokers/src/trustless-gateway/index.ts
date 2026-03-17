@@ -1,5 +1,5 @@
-import { TrustlessGatewayBlockBroker } from './broker.js'
-import type { TransformRequestInit } from './trustless-gateway.js'
+import { TrustlessGatewayBlockBroker } from './broker.ts'
+import type { TransformRequestInit } from './trustless-gateway.ts'
 import type { Routing, BlockBroker } from '@helia/interface'
 import type { ComponentLogger } from '@libp2p/interface'
 import type { CID } from 'multiformats'

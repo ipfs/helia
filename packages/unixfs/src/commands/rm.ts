@@ -1,9 +1,9 @@
 import { logger } from '@libp2p/logger'
-import { InvalidParametersError } from '../errors.js'
-import { cidToDirectory } from './utils/cid-to-directory.js'
-import { removeLink } from './utils/remove-link.js'
-import type { RmOptions } from '../index.js'
-import type { GetStore, PutStore } from '../unixfs.js'
+import { InvalidParametersError } from '../errors.ts'
+import { cidToDirectory } from './utils/cid-to-directory.ts'
+import { removeLink } from './utils/remove-link.ts'
+import type { RmOptions } from '../index.ts'
+import type { GetStore, PutStore } from '../unixfs.ts'
 import type { CID } from 'multiformats/cid'
 
 const log = logger('helia:unixfs:rm')

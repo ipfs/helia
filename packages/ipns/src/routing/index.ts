@@ -1,6 +1,6 @@
-import type { HeliaRoutingProgressEvents } from './helia.js'
-import type { DatastoreProgressEvents } from '../index.js'
-import type { PubSubProgressEvents } from './pubsub.js'
+import type { HeliaRoutingProgressEvents } from './helia.ts'
+import type { DatastoreProgressEvents } from '../index.ts'
+import type { PubSubProgressEvents } from './pubsub.ts'
 import type { IPNSPublishMetadata } from '../pb/metadata.ts'
 import type { AbortOptions } from '@libp2p/interface'
 import type { ProgressOptions } from 'progress-events'
@@ -32,6 +32,6 @@ export type IPNSRoutingProgressEvents =
   HeliaRoutingProgressEvents |
   PubSubProgressEvents
 
-export { helia } from './helia.js'
-export { pubsub } from './pubsub.js'
-export type { PubsubRoutingComponents, PubSub, Message, PublishResult, PubSubEvents } from './pubsub.js'
+export { helia } from './helia.ts'
+export { pubsub } from './pubsub.ts'
+export type { PubsubRoutingComponents, PubSub, Message, PublishResult, PubSubEvents } from './pubsub.ts'

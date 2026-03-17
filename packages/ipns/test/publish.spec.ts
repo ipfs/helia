@@ -4,10 +4,10 @@ import { expect } from 'aegir/chai'
 import { base36 } from 'multiformats/bases/base36'
 import { CID } from 'multiformats/cid'
 import Sinon from 'sinon'
-import { localStore } from '../src/local-store.js'
-import { createIPNS } from './fixtures/create-ipns.js'
-import type { CreateIPNSResult } from './fixtures/create-ipns.js'
-import type { IPNS } from '../src/ipns.js'
+import { localStore } from '../src/local-store.ts'
+import { createIPNS } from './fixtures/create-ipns.ts'
+import type { CreateIPNSResult } from './fixtures/create-ipns.ts'
+import type { IPNS } from '../src/ipns.ts'
 
 const cid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
 

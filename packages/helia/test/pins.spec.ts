@@ -4,7 +4,7 @@ import { expect } from 'aegir/chai'
 import all from 'it-all'
 import drain from 'it-drain'
 import { CID } from 'multiformats/cid'
-import { createHelia } from '../src/index.js'
+import { createHelia } from '../src/index.ts'
 import type { Helia } from '@helia/interface'
 
 describe('pins', () => {

@@ -3,9 +3,9 @@ import { MemoryBlockstore } from 'blockstore-core'
 import all from 'it-all'
 import last from 'it-last'
 import { isNode } from 'wherearewe'
-import { globSource, unixfs, urlSource } from '../src/index.js'
-import { urlByteSource } from '../src/utils/url-source.js'
-import type { UnixFS } from '../src/index.js'
+import { globSource, unixfs, urlSource } from '../src/index.ts'
+import { urlByteSource } from '../src/utils/url-source.ts'
+import type { UnixFS } from '../src/index.ts'
 import type { Blockstore } from 'interface-blockstore'
 
 describe('addAll', () => {

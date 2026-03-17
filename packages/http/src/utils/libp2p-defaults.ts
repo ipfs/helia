@@ -1,7 +1,7 @@
 import { delegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
 import { keychain } from '@libp2p/keychain'
 import { userAgent } from 'libp2p/user-agent'
-import type { Libp2pHTTPDefaultOptions } from './libp2p.js'
+import type { Libp2pHTTPDefaultOptions } from './libp2p.ts'
 import type { Keychain } from '@libp2p/keychain'
 import type { Libp2pOptions } from 'libp2p'
 

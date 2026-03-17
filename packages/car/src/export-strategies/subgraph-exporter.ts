@@ -1,5 +1,5 @@
 import { breadthFirstWalker } from '@helia/utils'
-import type { ExportStrategy } from '../index.js'
+import type { ExportStrategy } from '../index.ts'
 import type { CodecLoader } from '@helia/interface'
 import type { GraphWalker, GraphWalkerComponents } from '@helia/utils'
 import type { AbortOptions } from '@libp2p/interface'

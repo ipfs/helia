@@ -1,5 +1,5 @@
 import { base64 } from 'multiformats/bases/base64'
-import type { Block, BlockPresence, WantlistEntry } from '../pb/message.js'
+import type { Block, BlockPresence, WantlistEntry } from '../pb/message.ts'
 import type { CID } from 'multiformats'
 
 /**
