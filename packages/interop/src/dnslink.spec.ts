@@ -1,6 +1,6 @@
 import { dnsLink } from '@helia/dnslink'
 import { expect } from 'aegir/chai'
-import { createHeliaNode } from './fixtures/create-helia.js'
+import { createHeliaNode } from './fixtures/create-helia.ts'
 import type { DNSLink } from '@helia/dnslink'
 import type { DefaultLibp2pServices, Helia } from 'helia'
 import type { Libp2p } from 'libp2p'

@@ -5,8 +5,8 @@ import os from 'node:os'
 import path from 'node:path'
 import debug from 'debug'
 import { execa, type ExecaChildProcess } from 'execa'
-import type { File } from './index.js'
-import type { Test as TestInit } from './tests.js'
+import type { File } from './index.ts'
+import type { Test as TestInit } from './tests.ts'
 
 const outLog = debug('test:stdout')
 const errorLog = debug('test:stderr')

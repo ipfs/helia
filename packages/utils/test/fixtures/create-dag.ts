@@ -1,5 +1,5 @@
 import * as dagCbor from '@ipld/dag-cbor'
-import { createAndPutBlock } from './create-block.js'
+import { createAndPutBlock } from './create-block.ts'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 

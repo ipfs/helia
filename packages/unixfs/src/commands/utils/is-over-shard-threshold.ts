@@ -1,8 +1,8 @@
 import * as dagPb from '@ipld/dag-pb'
 import { UnixFS } from 'ipfs-unixfs'
 import toBuffer from 'it-to-buffer'
-import { CID_V0, CID_V1 } from './dir-sharded.js'
-import type { GetStore } from '../../unixfs.js'
+import { CID_V0, CID_V1 } from './dir-sharded.ts'
+import type { GetStore } from '../../unixfs.ts'
 import type { PBNode } from '@ipld/dag-pb'
 import type { AbortOptions } from '@libp2p/interface'
 

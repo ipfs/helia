@@ -13,7 +13,7 @@ import { fixedSize } from 'ipfs-unixfs-importer/chunker'
 import { balanced } from 'ipfs-unixfs-importer/layout'
 import drain from 'it-drain'
 import { createLibp2p } from 'libp2p'
-import type { TransferBenchmark } from './index.js'
+import type { TransferBenchmark } from './index.ts'
 
 export async function createHeliaBenchmark (): Promise<TransferBenchmark> {
   const repoPath = path.join(os.tmpdir(), `helia-${Math.random()}`)

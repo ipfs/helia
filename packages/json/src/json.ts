@@ -3,7 +3,7 @@ import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import * as jsonCodec from 'multiformats/codecs/json'
 import { sha256 } from 'multiformats/hashes/sha2'
-import type { AddOptions, GetOptions, JSONComponents, JSON as JSONInterface } from './index.js'
+import type { AddOptions, GetOptions, JSONComponents, JSON as JSONInterface } from './index.ts'
 
 export class JSON implements JSONInterface {
   private readonly components: JSONComponents

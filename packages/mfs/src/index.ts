@@ -28,7 +28,7 @@
  */
 
 import { CID } from 'multiformats/cid'
-import { MFS as MFSClass } from './mfs.js'
+import { MFS as MFSClass } from './mfs.ts'
 import type { AddOptions, CatOptions, ChmodOptions, CpOptions, LsOptions, MkdirOptions as UnixFsMkdirOptions, RmOptions as UnixFsRmOptions, StatOptions, TouchOptions, FileStats, DirectoryStats, RawStats, ExtendedStatOptions, ExtendedFileStats, ExtendedDirectoryStats, ExtendedRawStats } from '@helia/unixfs'
 import type { ComponentLogger } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'

@@ -105,7 +105,7 @@
  * ```
  */
 
-import { DNSLink as DNSLinkClass } from './dnslink.js'
+import { DNSLink as DNSLinkClass } from './dnslink.ts'
 import type { AbortOptions, ComponentLogger, PeerId } from '@libp2p/interface'
 import type { Answer, DNS, ResolveDnsProgressEvents as ResolveProgressEvents } from '@multiformats/dns'
 import type { CID } from 'multiformats/cid'

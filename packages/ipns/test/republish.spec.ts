@@ -4,10 +4,10 @@ import { expect } from 'aegir/chai'
 import { createIPNSRecord, marshalIPNSRecord, unmarshalIPNSRecord, multihashToIPNSRoutingKey } from 'ipns'
 import { CID } from 'multiformats/cid'
 import sinon from 'sinon'
-import { localStore } from '../src/local-store.js'
-import { createIPNS } from './fixtures/create-ipns.js'
-import type { IPNS } from '../src/ipns.js'
-import type { CreateIPNSResult } from './fixtures/create-ipns.js'
+import { localStore } from '../src/local-store.ts'
+import { createIPNS } from './fixtures/create-ipns.ts'
+import type { IPNS } from '../src/ipns.ts'
+import type { CreateIPNSResult } from './fixtures/create-ipns.ts'
 
 // Helper to await until a stub is called
 function waitForStubCall (stub: sinon.SinonStub, callCount = 1): Promise<void> {

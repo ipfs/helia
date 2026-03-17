@@ -82,7 +82,7 @@
  * ```
  */
 
-import { UnixFS as UnixFSClass } from './unixfs.js'
+import { UnixFS as UnixFSClass } from './unixfs.ts'
 import type { GetBlockProgressEvents, ProviderOptions, PutBlockProgressEvents } from '@helia/interface/blocks'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Filter } from '@libp2p/utils'
@@ -725,6 +725,6 @@ export function unixfs (helia: { blockstore: Pick<Blockstore, 'get' | 'put' | 'h
   return new UnixFSClass(helia)
 }
 
-export { globSource } from './utils/glob-source.js'
-export type { GlobSourceResult, GlobSourceOptions } from './utils/glob-source.js'
-export { urlSource } from './utils/url-source.js'
+export { globSource } from './utils/glob-source.ts'
+export type { GlobSourceResult, GlobSourceOptions } from './utils/glob-source.ts'
+export { urlSource } from './utils/url-source.ts'

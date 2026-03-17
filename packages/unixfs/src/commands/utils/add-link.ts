@@ -8,18 +8,18 @@ import { sha256 } from 'multiformats/hashes/sha2'
 import SparseArray from 'sparse-array'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DEFAULT_SHARD_SPLIT_THRESHOLD_BYTES } from '../../constants.ts'
-import { AlreadyExistsError, InvalidParametersError, InvalidPBNodeError } from '../../errors.js'
-import { wrapHash } from './consumable-hash.js'
-import { hamtBucketBits, hamtHashFn } from './hamt-constants.js'
+import { AlreadyExistsError, InvalidParametersError, InvalidPBNodeError } from '../../errors.ts'
+import { wrapHash } from './consumable-hash.ts'
+import { hamtBucketBits, hamtHashFn } from './hamt-constants.ts'
 import {
   createShard,
   recreateShardedDirectory,
   toPrefix,
   updateShardedDirectory
-} from './hamt-utils.js'
-import { isOverShardThreshold } from './is-over-shard-threshold.js'
-import type { Directory } from './cid-to-directory.js'
-import type { GetStore, PutStore } from '../../unixfs.js'
+} from './hamt-utils.ts'
+import { isOverShardThreshold } from './is-over-shard-threshold.ts'
+import type { Directory } from './cid-to-directory.ts'
+import type { GetStore, PutStore } from '../../unixfs.ts'
 import type { PBNode, PBLink } from '@ipld/dag-pb'
 import type { AbortOptions } from '@libp2p/interface'
 import type { ImportResult } from 'ipfs-unixfs-importer'

@@ -6,9 +6,9 @@
  * It supersedes the older [ipfs-bitswap](https://www.npmjs.com/package/ipfs-bitswap) module with the aim of being smaller, faster, better integrated with libp2p/helia, having fewer dependencies and using standard JavaScript instead of Node.js APIs.
  */
 
-import { Bitswap as BitswapClass } from './bitswap.js'
-import type { BitswapNetworkNotifyProgressEvents, BitswapNetworkWantProgressEvents, BitswapNetworkProgressEvents } from './network.js'
-import type { WantType } from './pb/message.js'
+import { Bitswap as BitswapClass } from './bitswap.ts'
+import type { BitswapNetworkNotifyProgressEvents, BitswapNetworkWantProgressEvents, BitswapNetworkProgressEvents } from './network.ts'
+import type { WantType } from './pb/message.ts'
 import type { CreateSessionOptions, ProviderOptions, SessionBlockBroker } from '@helia/interface'
 import type { Routing } from '@helia/interface/routing'
 import type { Libp2p, AbortOptions, Startable, ComponentLogger, Metrics, PeerId } from '@libp2p/interface'

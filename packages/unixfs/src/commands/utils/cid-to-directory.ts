@@ -1,6 +1,6 @@
 import { exporter } from 'ipfs-unixfs-exporter'
-import { NotADirectoryError } from '../../errors.js'
-import type { GetStore } from '../../unixfs.js'
+import { NotADirectoryError } from '../../errors.ts'
+import type { GetStore } from '../../unixfs.ts'
 import type { PBNode } from '@ipld/dag-pb'
 import type { ExporterOptions } from 'ipfs-unixfs-exporter'
 import type { CID } from 'multiformats/cid'

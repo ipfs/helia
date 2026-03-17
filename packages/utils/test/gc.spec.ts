@@ -4,8 +4,8 @@ import * as dagPb from '@ipld/dag-pb'
 import { expect } from 'aegir/chai'
 import drain from 'it-drain'
 import * as raw from 'multiformats/codecs/raw'
-import { createAndPutBlock } from './fixtures/create-block.js'
-import { createHelia } from './fixtures/create-helia.js'
+import { createAndPutBlock } from './fixtures/create-block.ts'
+import { createHelia } from './fixtures/create-helia.ts'
 import type { GcEvents, Helia } from '@helia/interface'
 
 describe('gc', () => {

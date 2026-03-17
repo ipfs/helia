@@ -2,8 +2,8 @@ import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { CID } from 'multiformats/cid'
 import { identity } from 'multiformats/hashes/identity'
-import { dagJson } from '../src/index.js'
-import type { DAGJSON } from '../src/index.js'
+import { dagJson } from '../src/index.ts'
+import type { DAGJSON } from '../src/index.ts'
 import type { Blockstore } from 'interface-blockstore'
 
 describe('get', () => {

@@ -4,7 +4,7 @@ import nodePath from 'node:path'
 import { execa } from 'execa'
 import { path as kuboPath } from 'kubo'
 import { CID } from 'multiformats/cid'
-import type { AddDirBenchmark } from './index.js'
+import type { AddDirBenchmark } from './index.ts'
 
 export async function createKuboDirectBenchmark (): Promise<AddDirBenchmark> {
   const repoDir = nodePath.join(os.tmpdir(), 'kubo-direct')

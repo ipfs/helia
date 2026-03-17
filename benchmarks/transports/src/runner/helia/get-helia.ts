@@ -6,8 +6,8 @@ import { identify } from '@libp2p/identify'
 import { prefixLogger } from '@libp2p/logger'
 import { createHelia, type Helia } from 'helia'
 import { createLibp2p } from 'libp2p'
-import { getStores } from './stores.js'
-import { getTransports } from './transports.js'
+import { getStores } from './stores.ts'
+import { getTransports } from './transports.ts'
 import type { Libp2p } from '@libp2p/interface'
 
 export async function getHelia (): Promise<Helia<Libp2p<any>>> {
