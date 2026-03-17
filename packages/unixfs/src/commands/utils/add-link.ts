@@ -54,7 +54,7 @@ export async function addLink (parent: Directory, child: Required<PBLink>, block
   if (await isOverShardThreshold(result.node, blockstore, options)) {
     log('converting directory to sharded directory')
 
-    const converted = await convertToShardedDirectory(result, blockstore)
+    const converted = await convertToShardedDirectory(result, blockstore, options)
     result.cid = converted.cid
     result.node = dagPB.decode(await toBuffer(blockstore.get(converted.cid, options)))
   }
@@ -62,7 +62,7 @@ export async function addLink (parent: Directory, child: Required<PBLink>, block
   return result
 }
 
-const convertToShardedDirectory = async (parent: Directory, blockstore: PutStore): Promise<ImportResult> => {
+const convertToShardedDirectory = async (parent: Directory, blockstore: PutStore, options: AddLinkOptions): Promise<ImportResult> => {
   if (parent.node.Data == null) {
     throw new InvalidParametersError('Invalid parent passed to convertToShardedDirectory')
   }
@@ -74,6 +74,7 @@ const convertToShardedDirectory = async (parent: Directory, blockstore: PutStore
     size: BigInt(link.Tsize ?? 0),
     cid: link.Hash
   })), {
+    ...options,
     mode: unixfs.mode,
     mtime: unixfs.mtime,
     cidVersion: parent.cid.version
@@ -126,9 +127,11 @@ const addToDirectory = async (parent: Directory, child: PBLink, blockstore: PutS
   // Persist the new parent PbNode
   const buf = dagPB.encode(parent.node)
   const hash = await sha256.digest(buf)
+  options?.signal?.throwIfAborted()
+
   const cid = CID.create(parent.cid.version, dagPB.code, hash)
 
-  await blockstore.put(cid, buf)
+  await blockstore.put(cid, buf, options)
 
   return {
     node: parent.node,
@@ -153,6 +156,7 @@ const addToShardedDirectory = async (parent: Directory, child: Required<PBLink>,
 
   const linkName = `${prefix}${child.Name}`
   const existingLink = finalSegment.node.Links.find(l => (l.Name ?? '').startsWith(prefix))
+  const prefixLength = prefix.length
 
   if (existingLink != null) {
     log('link %s was present in shard', linkName)
@@ -171,7 +175,7 @@ const addToShardedDirectory = async (parent: Directory, child: Required<PBLink>,
         Hash: child.Hash,
         Tsize: child.Tsize
       })
-    } else if (existingLink.Name?.length === 2) {
+    } else if (existingLink.Name?.length === prefixLength) {
       throw new Error('Existing link was sub-shard?!')
     } else {
       // conflict, add a new HAMT segment
@@ -181,23 +185,29 @@ const addToShardedDirectory = async (parent: Directory, child: Required<PBLink>,
       const sibling = finalSegment.node.Links.splice(index, 1)[0]
 
       // give the sibling a new HAMT prefix
-      const siblingName = (sibling.Name ?? '').substring(2)
+      const siblingName = (sibling.Name ?? '').substring(prefixLength)
       const wrapped = wrapHash(hamtHashFn)
       const siblingHash = wrapped(uint8ArrayFromString(siblingName))
+      const hashBits = options.shardFanoutBits ?? hamtBucketBits
 
       // discard hash bits until we reach the sub-shard depth
       for (let i = 0; i < path.length; i++) {
-        await siblingHash.take(hamtBucketBits)
+        await siblingHash.take(hashBits)
+        options?.signal?.throwIfAborted()
       }
 
       while (true) {
-        const siblingIndex = await siblingHash.take(hamtBucketBits)
-        const siblingPrefix = toPrefix(siblingIndex)
+        const siblingIndex = await siblingHash.take(hashBits)
+        options?.signal?.throwIfAborted()
+
+        const siblingPrefix = toPrefix(siblingIndex, hashBits)
         sibling.Name = `${siblingPrefix}${siblingName}`
 
         // calculate the target file's HAMT prefix in the new sub-shard
-        const newIndex = await hash.take(hamtBucketBits)
-        const newPrefix = toPrefix(newIndex)
+        const newIndex = await hash.take(hashBits)
+        options?.signal?.throwIfAborted()
+
+        const newPrefix = toPrefix(newIndex, hashBits)
 
         if (siblingPrefix === newPrefix) {
           // the two sibling names have caused another conflict - add an intermediate node to

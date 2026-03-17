@@ -3,9 +3,9 @@ import { logger } from '@libp2p/logger'
 import { UnixFS } from 'ipfs-unixfs'
 import { exporter } from 'ipfs-unixfs-exporter'
 import { InvalidParametersError, InvalidPBNodeError } from '../../errors.ts'
+import { hamtBucketBits } from './hamt-constants.ts'
 import {
   recreateShardedDirectory,
-
   updateShardedDirectory
 } from './hamt-utils.ts'
 import { isOverShardThreshold } from './is-over-shard-threshold.ts'
@@ -83,13 +83,14 @@ const removeFromShardedDirectory = async (parent: Directory, name: string, block
     throw new Error('Invalid HAMT, could not generate path')
   }
 
-  const linkName = finalSegment.node.Links.filter(l => (l.Name ?? '').substring(2) === name).map(l => l.Name).pop()
+  const prefixLength = (Math.pow(2, options.shardFanoutBits ?? hamtBucketBits) - 1).toString(16).length
+  const linkName = finalSegment.node.Links.filter(l => (l.Name ?? '').substring(prefixLength) === name).map(l => l.Name).pop()
 
   if (linkName == null) {
     throw new Error('File not found')
   }
 
-  const prefix = linkName.substring(0, 2)
+  const prefix = linkName.substring(0, prefixLength)
   const index = parseInt(prefix, 16)
 
   // remove the file from the shard
@@ -123,7 +124,7 @@ const removeFromShardedDirectory = async (parent: Directory, name: string, block
       nextSegment.node.Links = nextSegment.node.Links.filter(l => !(l.Name ?? '').startsWith(nextSegment.prefix))
       nextSegment.node.Links.push({
         Hash: link.Hash,
-        Name: `${nextSegment.prefix}${(link.Name ?? '').substring(2)}`,
+        Name: `${nextSegment.prefix}${(link.Name ?? '').substring(prefixLength)}`,
         Tsize: link.Tsize
       })
     }

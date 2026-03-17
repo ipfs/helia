@@ -4,12 +4,13 @@ import { UnixFS } from 'ipfs-unixfs'
 import { dataFieldSerializedSize, linkSerializedSize, utf8ByteLength } from 'ipfs-unixfs-importer/utils'
 import toBuffer from 'it-to-buffer'
 import { DEFAULT_SHARD_SPLIT_THRESHOLD_BYTES } from '../../constants.ts'
+import { hamtBucketBits } from './hamt-constants.ts'
 import type { GetStore } from '../../unixfs.js'
 import type { PBNode } from '@ipld/dag-pb'
 import type { AbortOptions } from '@libp2p/interface'
 import type { ImporterOptions, ShardSplitStrategy } from 'ipfs-unixfs-importer'
 
-export interface IsOverShardThresholdOptions extends AbortOptions, Pick<ImporterOptions, 'profile' | 'shardSplitThresholdBytes' | 'shardSplitStrategy'> {
+export interface IsOverShardThresholdOptions extends AbortOptions, Pick<ImporterOptions, 'profile' | 'shardSplitThresholdBytes' | 'shardSplitStrategy' | 'shardFanoutBits'> {
 
 }
 
@@ -78,7 +79,7 @@ function calculateNodeSize (unixfs: UnixFS, node: PBNode): number {
   return size
 }
 
-async function estimateShardSize (node: PBNode, current: number, max: number, blockstore: GetStore, options: AbortOptions): Promise<number> {
+async function estimateShardSize (node: PBNode, current: number, max: number, blockstore: GetStore, options: IsOverShardThresholdOptions): Promise<number> {
   if (current > max) {
     return max
   }
@@ -93,11 +94,13 @@ async function estimateShardSize (node: PBNode, current: number, max: number, bl
     return current
   }
 
+  const prefixLength = (Math.pow(2, options.shardFanoutBits ?? hamtBucketBits) - 1).toString(16).length
+
   for (const link of node.Links) {
     let name = link.Name ?? ''
 
     // remove hamt hash prefix from name
-    name = name.substring(2)
+    name = name.substring(prefixLength)
 
     current += utf8ByteLength(name)
     current += link.Hash.bytes.byteLength
@@ -113,7 +116,7 @@ async function estimateShardSize (node: PBNode, current: number, max: number, bl
   return current
 }
 
-async function calculateShardSize (node: PBNode, current: number, max: number, blockstore: GetStore, options: AbortOptions): Promise<number> {
+async function calculateShardSize (node: PBNode, current: number, max: number, blockstore: GetStore, options: IsOverShardThresholdOptions): Promise<number> {
   if (current > max) {
     return max
   }
@@ -128,11 +131,13 @@ async function calculateShardSize (node: PBNode, current: number, max: number, b
     return current
   }
 
+  const prefixLength = (Math.pow(2, options.shardFanoutBits ?? hamtBucketBits) - 1).toString(16).length
+
   for (const link of node.Links) {
     let name = link.Name ?? ''
 
     // remove hamt hash prefix from name
-    name = name.substring(2)
+    name = name.substring(prefixLength)
 
     current += linkSerializedSize(
       utf8ByteLength(name), link.Hash.byteLength, Number(link.Tsize ?? 0)
