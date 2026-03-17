@@ -53,7 +53,7 @@
     "interface-datastore": "^9.0.2",
     "ipfs-unixfs": "^12.0.0",
     "ipfs-unixfs-exporter": "^15.0.2",
-    "ipfs-unixfs-importer": "^16.0.1",
+    "ipfs-unixfs-importer": "^16.1.4",
     "it-map": "^3.1.4",
     "multiformats": "^13.4.1"
   },

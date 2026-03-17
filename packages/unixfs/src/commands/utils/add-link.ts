@@ -7,7 +7,6 @@ import { sha256 } from 'multiformats/hashes/sha2'
 // @ts-expect-error no types
 import SparseArray from 'sparse-array'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { DEFAULT_SHARD_SPLIT_THRESHOLD_BYTES } from '../../constants.ts'
 import { AlreadyExistsError, InvalidParametersError, InvalidPBNodeError } from '../../errors.ts'
 import { wrapHash } from './consumable-hash.ts'
 import { hamtBucketBits, hamtHashFn } from './hamt-constants.ts'
@@ -22,8 +21,7 @@ import type { Directory } from './cid-to-directory.ts'
 import type { GetStore, PutStore } from '../../unixfs.ts'
 import type { PBNode, PBLink } from '@ipld/dag-pb'
 import type { AbortOptions } from '@libp2p/interface'
-import type { ImportResult } from 'ipfs-unixfs-importer'
-import type { Version } from 'multiformats/cid'
+import type { ImporterOptions, ImportResult } from 'ipfs-unixfs-importer'
 
 const log = logger('helia:unixfs:components:utils:add-link')
 
@@ -32,10 +30,8 @@ export interface AddLinkResult {
   cid: CID
 }
 
-export interface AddLinkOptions extends AbortOptions {
+export interface AddLinkOptions extends AbortOptions, Pick<ImporterOptions, 'profile' | 'shardSplitThresholdBytes' | 'shardSplitStrategy' | 'shardFanoutBits' | 'cidVersion'> {
   allowOverwriting?: boolean
-  shardSplitThresholdBytes?: number
-  cidVersion?: Version
 }
 
 export async function addLink (parent: Directory, child: Required<PBLink>, blockstore: GetStore & PutStore, options: AddLinkOptions): Promise<AddLinkResult> {
@@ -55,7 +51,7 @@ export async function addLink (parent: Directory, child: Required<PBLink>, block
 
   const result = await addToDirectory(parent, child, blockstore, options)
 
-  if (await isOverShardThreshold(result.node, blockstore, options.shardSplitThresholdBytes ?? DEFAULT_SHARD_SPLIT_THRESHOLD_BYTES, options)) {
+  if (await isOverShardThreshold(result.node, blockstore, options)) {
     log('converting directory to sharded directory')
 
     const converted = await convertToShardedDirectory(result, blockstore)
