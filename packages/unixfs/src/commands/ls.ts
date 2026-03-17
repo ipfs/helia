@@ -5,7 +5,7 @@ import type { GetStore } from '../unixfs.ts'
 import type { UnixFSDirectoryEntry } from 'ipfs-unixfs-exporter'
 import type { CID } from 'multiformats/cid'
 
-export async function * ls (cid: CID, blockstore: GetStore, options: Partial<LsOptions> = {}): AsyncIterable<UnixFSDirectoryEntry> {
+export async function * ls (cid: CID, blockstore: GetStore, options: LsOptions = {}): AsyncIterable<UnixFSDirectoryEntry> {
   const resolved = await resolve(cid, options.path, blockstore, options)
   const result = await exporter(resolved.cid, blockstore, options)
 

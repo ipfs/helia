@@ -18,7 +18,7 @@ import type { PBNode, PBLink } from '@ipld/dag-pb'
 
 const log = logger('helia:unixfs:chmod')
 
-export async function chmod (cid: CID, mode: number, blockstore: PutStore & GetStore, options: Partial<ChmodOptions> = {}): Promise<CID> {
+export async function chmod (cid: CID, mode: number, blockstore: PutStore & GetStore, options: ChmodOptions = {}): Promise<CID> {
   const resolved = await resolve(cid, options.path, blockstore, options)
 
   log('chmod %c %d', resolved.cid, mode)

@@ -111,7 +111,7 @@ export interface AddOptions extends AbortOptions, Omit<ImporterOptions, 'onProgr
 
 }
 
-export type AddFileOptions = Omit<AddOptions, 'wrapWithDirectory'>
+export type AddFileOptions = Omit<AddOptions, 'wrapWithDirectory'> & Pick<FileCandidate, 'mode' | 'mtime'>
 
 export type GetEvents = GetBlockProgressEvents
 | ExporterProgressEvents
@@ -150,7 +150,7 @@ export interface ChmodOptions extends AbortOptions, ProgressOptions<GetEvents | 
    * If the target of the operation is a directory and this is true,
    * apply the new mode to all directory contents
    */
-  recursive: boolean
+  recursive?: boolean
 
   /**
    * Optional path to set the mode on directory contents
@@ -171,7 +171,7 @@ export interface CpOptions extends AbortOptions, ProgressOptions<GetEvents | Put
   /**
    * If true, allow overwriting existing directory entries (default: false)
    */
-  force: boolean
+  force?: boolean
 
   /**
    * If true, do not perform any network operations and throw if blocks are
@@ -214,7 +214,7 @@ export interface MkdirOptions extends AbortOptions, ProgressOptions<GetEvents | 
   /**
    * If true, allow overwriting existing directory entries (default: false)
    */
-  force: boolean
+  force?: boolean
 
   /**
    * An optional mode to set on the new directory
@@ -408,7 +408,7 @@ export interface ExtendedRawStats extends ExtendedStats {
 /**
  * Options to pass to the touch command
  */
-export interface TouchOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents>, Pick<ImporterOptions, 'shardFanoutBits' | 'shardSplitStrategy' | 'shardSplitThresholdBytes'> {
+export interface TouchOptions extends AbortOptions, ProgressOptions<GetEvents | PutBlockProgressEvents> {
   /**
    * Optional mtime to set on the DAG root, defaults to the current time
    */
@@ -422,7 +422,7 @@ export interface TouchOptions extends AbortOptions, ProgressOptions<GetEvents | 
   /**
    * If the DAG is a directory and this is true, update the mtime on all contents
    */
-  recursive: boolean
+  recursive?: boolean
 
   /**
    * If true, do not perform any network operations and throw if blocks are
@@ -457,7 +457,7 @@ export interface UnixFS {
    * }
    * ```
    */
-  addAll(source: ImportCandidateStream, options?: Partial<AddOptions>): AsyncIterable<ImportResult>
+  addAll(source: ImportCandidateStream, options?: Omit<AddOptions, 'mtime' | 'mode'>): AsyncIterable<ImportResult>
 
   /**
    * Add a single `Uint8Array` to your Helia node and receive a CID that will
@@ -474,7 +474,7 @@ export interface UnixFS {
    * console.info(cid)
    * ```
    */
-  addBytes(bytes: Uint8Array, options?: Partial<AddFileOptions>): Promise<CID>
+  addBytes(bytes: Uint8Array, options?: AddFileOptions): Promise<CID>
 
   /**
    * Add a stream of `Uint8Array`s to your Helia node and receive a CID that
@@ -494,7 +494,7 @@ export interface UnixFS {
    * console.info(cid)
    * ```
    */
-  addByteStream(bytes: ByteStream, options?: Partial<AddFileOptions>): Promise<CID>
+  addByteStream(bytes: ByteStream, options?: AddFileOptions): Promise<CID>
 
   /**
    * Add a file to your Helia node with metadata. The returned CID will resolve
@@ -519,7 +519,7 @@ export interface UnixFS {
    * console.info(cid)
    * ```
    */
-  addFile(file: FileCandidate, options?: Partial<AddFileOptions>): Promise<CID>
+  addFile(file: FileCandidate, options?: AddFileOptions): Promise<CID>
 
   /**
    * Add a directory to your Helia node.
@@ -554,7 +554,7 @@ export interface UnixFS {
    * console.info(stat.cid) // empty directory CID
    * ```
    */
-  addDirectory(dir?: Partial<DirectoryCandidate>, options?: Partial<AddFileOptions>): Promise<CID>
+  addDirectory(dir?: Partial<DirectoryCandidate>, options?: AddFileOptions): Promise<CID>
 
   /**
    * Retrieve the contents of a file from your Helia node.
@@ -567,7 +567,7 @@ export interface UnixFS {
    * }
    * ```
    */
-  cat(cid: CID, options?: Partial<CatOptions>): AsyncIterable<Uint8Array>
+  cat(cid: CID, options?: CatOptions): AsyncIterable<Uint8Array>
 
   /**
    * Change the permissions on a file or directory in a DAG
@@ -601,7 +601,7 @@ export interface UnixFS {
    * console.info(updatedCid)
    * ```
    */
-  cp(source: CID, target: CID, name: string, options?: Partial<CpOptions>): Promise<CID>
+  cp(source: CID, target: CID, name: string, options?: CpOptions): Promise<CID>
 
   /**
    * List directory contents.
@@ -614,7 +614,7 @@ export interface UnixFS {
    * }
    * ```
    */
-  ls(cid: CID, options?: Partial<LsOptions>): AsyncIterable<UnixFSDirectoryEntry>
+  ls(cid: CID, options?: LsOptions): AsyncIterable<UnixFSDirectoryEntry>
 
   /**
    * Make a new directory under an existing directory.
@@ -629,7 +629,7 @@ export interface UnixFS {
    * console.info(updatedCid)
    * ```
    */
-  mkdir(cid: CID, dirname: string, options?: Partial<MkdirOptions>): Promise<CID>
+  mkdir(cid: CID, dirname: string, options?: MkdirOptions): Promise<CID>
 
   /**
    * Remove a file or directory from an existing directory.
@@ -645,7 +645,7 @@ export interface UnixFS {
    * console.info(finalCid)
    * ```
    */
-  rm(cid: CID, path: string, options?: Partial<RmOptions>): Promise<CID>
+  rm(cid: CID, path: string, options?: RmOptions): Promise<CID>
 
   /**
    * Return statistics about a UnixFS DAG.
@@ -679,7 +679,7 @@ export interface UnixFS {
    * console.info(afterCid, afterStats)
    * ```
    */
-  touch(cid: CID, options?: Partial<TouchOptions>): Promise<CID>
+  touch(cid: CID, options?: TouchOptions): Promise<CID>
 }
 
 /**
