@@ -5,7 +5,7 @@ import type { CatOptions } from '../index.ts'
 import type { GetStore } from '../unixfs.ts'
 import type { CID } from 'multiformats/cid'
 
-export async function * cat (cid: CID, blockstore: GetStore, options: Partial<CatOptions> = {}): AsyncIterable<Uint8Array> {
+export async function * cat (cid: CID, blockstore: GetStore, options: CatOptions = {}): AsyncIterable<Uint8Array> {
   const resolved = await resolve(cid, options.path, blockstore, options)
   const result = await exporter(resolved.cid, blockstore, options)
 

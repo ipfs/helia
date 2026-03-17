@@ -1,4 +1,4 @@
-import { importBytes, importByteStream, importer } from 'ipfs-unixfs-importer'
+import { importer, importFile } from 'ipfs-unixfs-importer'
 import { fixedSize } from 'ipfs-unixfs-importer/chunker'
 import { balanced } from 'ipfs-unixfs-importer/layout'
 import first from 'it-first'
@@ -23,15 +23,19 @@ const defaultImporterSettings: AddOptions = {
   })
 }
 
-export async function * addAll (source: ImportCandidateStream, blockstore: PutStore, options: Partial<AddOptions> = {}): AsyncGenerator<ImportResult, void, unknown> {
+export async function * addAll (source: ImportCandidateStream, blockstore: PutStore, options: AddOptions = {}): AsyncGenerator<ImportResult, void, unknown> {
   yield * importer(source, blockstore, {
     ...defaultImporterSettings,
     ...options
   })
 }
 
-export async function addBytes (bytes: Uint8Array, blockstore: PutStore, options: Partial<AddFileOptions> = {}): Promise<CID> {
-  const { cid } = await importBytes(bytes, blockstore, {
+export async function addBytes (bytes: Uint8Array, blockstore: PutStore, options: AddFileOptions = {}): Promise<CID> {
+  const { cid } = await importFile({
+    content: bytes,
+    mode: options.mode,
+    mtime: options.mtime
+  }, blockstore, {
     ...defaultImporterSettings,
     ...options
   })
@@ -39,8 +43,12 @@ export async function addBytes (bytes: Uint8Array, blockstore: PutStore, options
   return cid
 }
 
-export async function addByteStream (bytes: ByteStream, blockstore: PutStore, options: Partial<AddFileOptions> = {}): Promise<CID> {
-  const { cid } = await importByteStream(bytes, blockstore, {
+export async function addByteStream (bytes: ByteStream, blockstore: PutStore, options: AddFileOptions = {}): Promise<CID> {
+  const { cid } = await importFile({
+    content: bytes,
+    mode: options.mode,
+    mtime: options.mtime
+  }, blockstore, {
     ...defaultImporterSettings,
     ...options
   })
@@ -48,7 +56,7 @@ export async function addByteStream (bytes: ByteStream, blockstore: PutStore, op
   return cid
 }
 
-export async function addFile (file: FileCandidate, blockstore: PutStore, options: Partial<AddFileOptions> = {}): Promise<CID> {
+export async function addFile (file: FileCandidate, blockstore: PutStore, options: AddFileOptions = {}): Promise<CID> {
   if (file.path == null) {
     throw new InvalidParametersError('path is required')
   }
@@ -70,7 +78,7 @@ export async function addFile (file: FileCandidate, blockstore: PutStore, option
   return result.cid
 }
 
-export async function addDirectory (dir: Partial<DirectoryCandidate>, blockstore: PutStore, options: Partial<AddFileOptions> = {}): Promise<CID> {
+export async function addDirectory (dir: Partial<DirectoryCandidate>, blockstore: PutStore, options: AddFileOptions = {}): Promise<CID> {
   // @ts-expect-error field is not in the types
   if (dir.content != null) {
     throw new InvalidParametersError('Directories cannot have content, use addFile instead')

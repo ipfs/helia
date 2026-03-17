@@ -14,7 +14,7 @@ import type { GetStore, PutStore } from '../unixfs.ts'
 
 const log = logger('helia:unixfs:mkdir')
 
-export async function mkdir (parentCid: CID, dirname: string, blockstore: GetStore & PutStore, options: Partial<MkdirOptions> = {}): Promise<CID> {
+export async function mkdir (parentCid: CID, dirname: string, blockstore: GetStore & PutStore, options: MkdirOptions = {}): Promise<CID> {
   if (dirname.includes('/')) {
     throw new InvalidParametersError('Path must not have slashes')
   }

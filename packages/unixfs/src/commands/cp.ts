@@ -9,7 +9,7 @@ import type { CID } from 'multiformats/cid'
 
 const log = logger('helia:unixfs:cp')
 
-export async function cp (source: CID, target: CID, name: string, blockstore: GetStore & PutStore, options: Partial<CpOptions> = {}): Promise<CID> {
+export async function cp (source: CID, target: CID, name: string, blockstore: GetStore & PutStore, options: CpOptions = {}): Promise<CID> {
   if (name.includes('/')) {
     throw new InvalidParametersError('Name must not have slashes')
   }

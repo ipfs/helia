@@ -18,7 +18,7 @@ import type { PBNode, PBLink } from '@ipld/dag-pb'
 
 const log = logger('helia:unixfs:touch')
 
-export async function touch (cid: CID, blockstore: GetStore & PutStore, options: Partial<TouchOptions> = {}): Promise<CID> {
+export async function touch (cid: CID, blockstore: GetStore & PutStore, options: TouchOptions = {}): Promise<CID> {
   const resolved = await resolve(cid, options.path, blockstore, options)
   const mtime = options.mtime ?? {
     secs: BigInt(Math.round(Date.now() / 1000)),
