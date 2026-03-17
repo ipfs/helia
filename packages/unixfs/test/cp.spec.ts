@@ -1,3 +1,4 @@
+import * as dagPb from '@ipld/dag-pb'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import first from 'it-first'
