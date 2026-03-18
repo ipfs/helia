@@ -1,5 +1,19 @@
 # Changelog
 
+## [7.0.5](https://github.com/ipfs/helia/compare/mfs-v7.0.4...mfs-v7.0.5) (2026-03-18)
+
+
+### Bug Fixes
+
+* support profiles and shard split thresholds in mfs ([#972](https://github.com/ipfs/helia/issues/972)) ([9aff8d0](https://github.com/ipfs/helia/commit/9aff8d097a27a71efbdd500ab7b97a89baf57aa6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/unixfs bumped from ^7.0.4 to ^7.1.0
+
 ## [7.0.4](https://github.com/ipfs/helia/compare/mfs-v7.0.3...mfs-v7.0.4) (2026-02-05)
 
 

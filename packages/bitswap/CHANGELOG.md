@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.4](https://github.com/ipfs/helia/compare/bitswap-v3.1.3...bitswap-v3.1.4) (2026-03-18)
+
+
+### Bug Fixes
+
+* add toString method to bitswap providers ([#973](https://github.com/ipfs/helia/issues/973)) ([0a6e505](https://github.com/ipfs/helia/commit/0a6e5052e75c83383bff2429c75a7a97a615de40))
+
 ## [3.1.3](https://github.com/ipfs/helia/compare/bitswap-v3.1.2...bitswap-v3.1.3) (2026-03-06)
 
 

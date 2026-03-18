@@ -1,5 +1,20 @@
 # Changelog
 
+## [10.1.4](https://github.com/ipfs/helia/compare/interop-v10.1.3...interop-v10.1.4) (2026-03-18)
+
+
+### Dependencies
+
+* bump kubo from 0.39.0 to 0.40.0 ([#963](https://github.com/ipfs/helia/issues/963)) ([2d30414](https://github.com/ipfs/helia/commit/2d30414a0752c64428a68ef3e15695eb8506b163))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.1.3 to ^5.1.4
+    * @helia/car bumped from ^5.3.9 to ^5.3.10
+    * @helia/http bumped from ^3.0.21 to ^3.0.22
+    * @helia/mfs bumped from ^7.0.4 to ^7.0.5
+    * @helia/unixfs bumped from ^7.0.4 to ^7.1.0
+    * helia bumped from ^6.0.21 to ^6.0.22
+
 ## [10.1.3](https://github.com/ipfs/helia/compare/interop-v10.1.2...interop-v10.1.3) (2026-03-06)
 
 
