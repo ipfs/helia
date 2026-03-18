@@ -585,7 +585,7 @@ export interface UnixFS {
    * console.info(afterCid, afterStats)
    * ```
    */
-  chmod(cid: CID, mode: number, options?: Partial<ChmodOptions>): Promise<CID>
+  chmod(cid: CID, mode: number, options?: ChmodOptions): Promise<CID>
 
   /**
    * Add a file or directory to a target directory.

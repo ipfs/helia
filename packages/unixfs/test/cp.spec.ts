@@ -1,3 +1,4 @@
+import * as dagPb from '@ipld/dag-pb'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import first from 'it-first'
@@ -190,5 +191,20 @@ describe('cp', () => {
       offline: true
     })).to.eventually.be.rejected
       .with.property('name', 'NotFoundError')
+  })
+
+  it('creates shard with non-standard prefix length', async () => {
+    const path = 'file.txt'
+    const cid = await fs.addBytes(smallFile)
+    let dirCid = await fs.addDirectory()
+
+    dirCid = await fs.cp(cid, dirCid, path, {
+      shardSplitThresholdBytes: 0,
+      shardFanoutBits: 16
+    })
+
+    const block = await toBuffer(blockstore.get(dirCid))
+    const node = dagPb.decode(block)
+    expect(node.Links[0].Name?.substring(4)).to.equal(path)
   })
 })
