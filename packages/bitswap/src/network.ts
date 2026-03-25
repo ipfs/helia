@@ -15,7 +15,7 @@ import type { WantOptions } from './bitswap.ts'
 import type { MultihashHasherLoader } from './index.ts'
 import type { Block } from './pb/message.ts'
 import type { QueuedBitswapMessage } from './utils/bitswap-message.ts'
-import type { Provider, Routing } from '@helia/interface/routing'
+import type { Provider, Routing, RoutingFindProvidersProgressEvents } from '@helia/interface/routing'
 import type { Libp2p, AbortOptions, Connection, PeerId, Topology, ComponentLogger, IdentifyResult, Counter, Metrics, Stream } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
 import type { PeerQueueJobOptions } from '@libp2p/utils'
@@ -54,7 +54,8 @@ export type BitswapNetworkWantProgressEvents =
   ProgressEvent<'bitswap:send-wantlist:error', { peer: PeerId, error: Error }> |
   ProgressEvent<'bitswap:find-providers', CID> |
   ProgressEvent<'bitswap:found-provider', BitswapProvider> |
-  BitswapNetworkProgressEvents
+  BitswapNetworkProgressEvents |
+  RoutingFindProvidersProgressEvents
 
 export type BitswapNetworkNotifyProgressEvents =
   BitswapNetworkProgressEvents |
