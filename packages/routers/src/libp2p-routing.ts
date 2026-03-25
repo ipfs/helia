@@ -3,6 +3,7 @@ import type { Libp2p, PeerId, PeerInfo } from '@libp2p/interface'
 import type { CID } from 'multiformats'
 
 class Libp2pRouter implements Routing {
+  public readonly name = 'libp2p-router'
   private readonly libp2p: Libp2p
 
   constructor (libp2p: Libp2p) {

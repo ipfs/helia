@@ -406,7 +406,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
   /**
    * This method should search for new providers and yield them.
    */
-  abstract findNewProviders (cid: CID, options: AbortOptions): AsyncGenerator<Provider>
+  abstract findNewProviders (cid: CID, options: BlockRetrievalOptions<RetrieveBlockProgressEvents>): AsyncGenerator<Provider>
 
   /**
    * The subclass should contact the provider and request the block from it.

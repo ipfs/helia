@@ -2,6 +2,7 @@ import { NoRoutersAvailableError } from '@helia/interface'
 import { NotFoundError, start, stop } from '@libp2p/interface'
 import { PeerQueue } from '@libp2p/utils'
 import merge from 'it-merge'
+import { CustomProgressEvent } from 'progress-events'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { GetFailedError } from './errors.ts'
 import type { Routing as RoutingInterface, Provider, RoutingOptions } from '@helia/interface'
@@ -21,11 +22,14 @@ export interface RoutingComponents {
 }
 
 export class Routing implements RoutingInterface, Startable {
+  public name: string
+
   private readonly log: Logger
   private readonly routers: Array<Partial<RoutingInterface>>
   private readonly providerLookupConcurrency: number
 
   constructor (components: RoutingComponents, init: RoutingInit) {
+    this.name = 'helia'
     this.log = components.logger.forComponent('helia:routing')
     this.routers = init.routers ?? []
     this.providerLookupConcurrency = init.providerLookupConcurrency ?? DEFAULT_PROVIDER_LOOKUP_CONCURRENCY
@@ -89,15 +93,33 @@ export class Routing implements RoutingInterface, Startable {
       .map(async function * (router) {
         let foundProviders = 0
 
+        options?.onProgress?.(new CustomProgressEvent('helia:routing:find-providers:start', {
+          routing: router.name,
+          cid: key
+        }))
+
         try {
           for await (const prov of router.findProviders(key, options)) {
             foundProviders++
+
+            options?.onProgress?.(new CustomProgressEvent('helia:routing:find-providers:provider', {
+              routing: router.name,
+              cid: key,
+              provider: prov
+            }))
+
             yield prov
           }
         } catch (err: any) {
           errors.push(err)
         } finally {
           self.log('router %s found %d providers for %c', router, foundProviders, key)
+
+          options?.onProgress?.(new CustomProgressEvent('helia:routing:find-providers:end', {
+            routing: router.name,
+            cid: key,
+            found: foundProviders
+          }))
 
           routersFinished++
 
@@ -282,6 +304,6 @@ export class Routing implements RoutingInterface, Startable {
   }
 }
 
-function supports <Operation extends keyof Routing> (routers: any[], key: Operation): Array<Pick<Routing, Operation>> {
+function supports <Operation extends keyof Routing> (routers: any[], key: Operation): Array<Pick<Routing, Operation | 'name'>> {
   return routers.filter(router => router[key] != null)
 }

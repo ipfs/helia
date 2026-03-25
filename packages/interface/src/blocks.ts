@@ -1,9 +1,10 @@
-import type { PeerId } from '@libp2p/interface'
+import type { PeerId, PeerInfo } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Blockstore } from 'interface-blockstore'
 import type { AbortOptions } from 'interface-store'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
+import type { RoutingFindProvidersProgressEvents } from './routing.ts'
 
 export type { Pair, InputPair } from 'interface-blockstore'
 
@@ -37,7 +38,8 @@ export type PutManyBlocksProgressEvents =
 export type GetBlockProgressEvents =
   ProgressEvent<'blocks:get:providers:want', CID> |
   ProgressEvent<'blocks:get:blockstore:get', CID> |
-  ProgressEvent<'blocks:get:blockstore:put', CID>
+  ProgressEvent<'blocks:get:blockstore:put', CID> |
+  RoutingFindProvidersProgressEvents
 
 export type GetManyBlocksProgressEvents =
   ProgressEvent<'blocks:get-many:blockstore:get-many'> |

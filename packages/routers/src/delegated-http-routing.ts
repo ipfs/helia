@@ -19,6 +19,7 @@ function isIPNSKey (key: Uint8Array): boolean {
 }
 
 class DelegatedHTTPRouter implements Routing {
+  public readonly name = 'delegated-http-router'
   private readonly client: DelegatedRoutingV1HttpApiClient
 
   constructor (components: DelegatedRoutingV1HttpApiClientComponents, init: DelegatedRoutingV1HttpApiClientInit) {
