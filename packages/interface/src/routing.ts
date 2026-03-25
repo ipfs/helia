@@ -94,7 +94,94 @@ export type RoutingFindProvidersProviderEvent = RoutingFindProvidersHttpGatewayP
 export type RoutingFindProvidersProgressEvents =
   ProgressEvent<'helia:routing:find-providers:start', RoutingFindProvidersStartEvent> |
   ProgressEvent<'helia:routing:find-providers:provider', RoutingFindProvidersProviderEvent> |
-  ProgressEvent<'helia:routing:find-providers:end', RoutingFindProvidersEndEvent>
+  ProgressEvent<'helia:routing:find-providers:end', RoutingFindProvidersEndEvent> |
+  RoutingFindPeerProgressEvents
+
+export interface RoutingProvideStartEvent {
+  routing: string
+  cid: CID
+}
+
+export interface RoutingProvideEndEvent {
+  routing: string
+  cid: CID
+}
+
+export type RoutingProvideProgressEvents =
+  ProgressEvent<'helia:routing:provide:start', RoutingProvideStartEvent> |
+  ProgressEvent<'helia:routing:provide:end', RoutingProvideEndEvent>
+
+export interface RoutingCancelReprovideStartEvent {
+  routing: string
+  cid: CID
+}
+
+export interface RoutingCancelReprovideEndEvent {
+  routing: string
+  cid: CID
+}
+
+export type RoutingCancelReprovideProgressEvents =
+  ProgressEvent<'helia:routing:cancel-reprovide:start', RoutingCancelReprovideStartEvent> |
+  ProgressEvent<'helia:routing:cancel-reprovide:end', RoutingCancelReprovideEndEvent>
+
+export interface RoutingPutStartEvent {
+  routing: string
+  key: Uint8Array
+  value: Uint8Array
+}
+
+export interface RoutingPutEndEvent {
+  routing: string
+  key: Uint8Array
+  value: Uint8Array
+}
+
+export type RoutingPutProgressEvents =
+  ProgressEvent<'helia:routing:put:start', RoutingPutStartEvent> |
+  ProgressEvent<'helia:routing:put:end', RoutingPutEndEvent>
+
+export interface RoutingGetStartEvent {
+  routing: string
+  key: Uint8Array
+}
+
+export interface RoutingGetEndEvent {
+  routing: string
+  key: Uint8Array
+}
+
+export type RoutingGetProgressEvents =
+  ProgressEvent<'helia:routing:get:start', RoutingGetStartEvent> |
+  ProgressEvent<'helia:routing:get:end', RoutingGetEndEvent>
+
+export interface RoutingFindPeerStartEvent {
+  routing: string
+  peerId: PeerId
+}
+
+export interface RoutingFindPeerEndEvent {
+  routing: string
+  peerId: PeerId
+}
+
+export type RoutingFindPeerProgressEvents =
+  ProgressEvent<'helia:routing:find-peer:start', RoutingFindPeerStartEvent> |
+  ProgressEvent<'helia:routing:find-peer:end', RoutingFindPeerEndEvent>
+
+export interface RoutingGetClosestPeersStartEvent {
+  routing: string
+  key: Uint8Array
+}
+
+export interface RoutingGetClosestPeersEndEvent {
+  routing: string
+  key: Uint8Array
+}
+
+export type RoutingGetClosestPeersProgressEvents =
+  ProgressEvent<'helia:routing:get-closest-peers:start', RoutingGetClosestPeersStartEvent> |
+  ProgressEvent<'helia:routing:get-closest-peers:end', RoutingGetClosestPeersEndEvent>
 
 export interface Routing {
   /**
@@ -113,7 +200,7 @@ export interface Routing {
    * await contentRouting.provide(cid)
    * ```
    */
-  provide(cid: CID, options?: RoutingOptions): Promise<void>
+  provide(cid: CID, options?: RoutingOptions<RoutingProvideProgressEvents>): Promise<void>
 
   /**
    * Helia will periodically re-provide every previously provided CID. Use this
@@ -156,7 +243,7 @@ export interface Routing {
    * await contentRouting.put(key, value)
    * ```
    */
-  put(key: Uint8Array, value: Uint8Array, options?: RoutingOptions): Promise<void>
+  put(key: Uint8Array, value: Uint8Array, options?: RoutingOptions<RoutingPutProgressEvents>): Promise<void>
 
   /**
    * Retrieves a value from the network corresponding to the passed key.
@@ -170,7 +257,7 @@ export interface Routing {
    * const value = await contentRouting.get(key)
    * ```
    */
-  get(key: Uint8Array, options?: RoutingOptions): Promise<Uint8Array>
+  get(key: Uint8Array, options?: RoutingOptions<RoutingGetProgressEvents>): Promise<Uint8Array>
 
   /**
    * Searches the network for peer info corresponding to the passed peer id.
@@ -182,7 +269,7 @@ export interface Routing {
    * const peer = await peerRouting.findPeer(peerId, options)
    * ```
    */
-  findPeer(peerId: PeerId, options?: RoutingOptions): Promise<PeerInfo>
+  findPeer(peerId: PeerId, options?: RoutingOptions<RoutingFindPeerProgressEvents>): Promise<PeerInfo>
 
   /**
    * Search the network for peers that are closer to the passed key. Peer
@@ -197,5 +284,5 @@ export interface Routing {
    * }
    * ```
    */
-  getClosestPeers(key: Uint8Array, options?: RoutingOptions): AsyncIterable<PeerInfo>
+  getClosestPeers(key: Uint8Array, options?: RoutingOptions<RoutingGetClosestPeersProgressEvents>): AsyncIterable<PeerInfo>
 }
