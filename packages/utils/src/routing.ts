@@ -6,7 +6,7 @@ import { CustomProgressEvent } from 'progress-events'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { GetFailedError } from './errors.ts'
 import type { Routing as RoutingInterface, Provider, RoutingOptions, RoutingFindProvidersProgressEvents, RoutingProvideProgressEvents, RoutingPutProgressEvents, RoutingGetProgressEvents, RoutingFindPeerProgressEvents, RoutingGetClosestPeersProgressEvents, RoutingCancelReprovideProgressEvents } from '@helia/interface'
-import type { AbortOptions, ComponentLogger, Logger, Metrics, PeerId, PeerInfo, Startable } from '@libp2p/interface'
+import type { ComponentLogger, Logger, Metrics, PeerId, PeerInfo, Startable } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 
 const DEFAULT_PROVIDER_LOOKUP_CONCURRENCY = 5
