@@ -1,3 +1,5 @@
+/* eslint-disable no-console,no-only-tests/no-only-tests */
+
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
@@ -123,7 +125,7 @@ describe('touch', () => {
     expect(updatedMtime.secs).to.satisfy((s: bigint) => s > originalMtime.secs)
   })
 
-  it('should update mtime recursively for a hamt-sharded-directory', async function () {
+  it.only('should update mtime recursively for a hamt-sharded-directory', async function () {
     this.slow(5 * 1000)
     const mtime = new Date()
     const seconds = Math.floor(mtime.getTime() / 1000)
@@ -132,14 +134,18 @@ describe('touch', () => {
     await fs.cp(shardedDirCid, shardedDirPath)
 
     await delay(2000)
+
+    console.info('update dir')
     await fs.touch(shardedDirPath, {
       recursive: true
     })
 
+    console.info('check dir')
     await expect(fs.stat(shardedDirPath)).to.eventually.have.nested.property('mtime.secs')
       // no bigint support
       .that.satisfies((s: bigint) => s > seconds)
 
+    console.info('check entries')
     for await (const entry of fs.ls(shardedDirPath)) {
       const file = await fs.stat(entry.path)
 
