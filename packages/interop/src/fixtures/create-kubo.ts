@@ -30,6 +30,9 @@ export async function createKuboNode (): Promise<KuboNode> {
     },
     start: {
       args: ['--enable-pubsub-experiment', '--enable-namesys-pubsub']
+    },
+    env: {
+      IPFS_LOGGING: 'debug'
     }
   })
 }

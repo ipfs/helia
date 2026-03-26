@@ -43,7 +43,7 @@
     "doc-check": "aegir doc-check",
     "build": "aegir build",
     "test": "aegir test",
-    "test:chrome": "DEBUG=ipfsd-ctl*,ipfsd-ctl*:trace IPFS_LOGGING=debug aegir test -t browser --cov",
+    "test:chrome": "DEBUG=ipfsd-ctl*,ipfsd-ctl*:trace aegir test -t browser --cov",
     "test:chrome-webworker": "aegir test -t webworker",
     "test:firefox": "aegir test -t browser -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
