@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { randomBytes } from '@libp2p/crypto'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
@@ -117,7 +115,6 @@ describe('split-message', () => {
   })
 
   it('should send presences before wants', async () => {
-    console.info('start test')
     // CID + integer is 40 bytes
     const wants = Math.round(DEFAULT_MAX_OUTGOING_MESSAGE_SIZE / 40)
     const presences = Math.round(DEFAULT_MAX_OUTGOING_MESSAGE_SIZE / 40)
@@ -128,18 +125,14 @@ describe('split-message', () => {
       input.addWantlistEntry(want.cid, want.entry)
     }
 
-    console.info('created wants')
-
     for (let i = 0; i < presences; i++) {
       const presence = await createBlockPresence()
       input.addBlockPresence(presence.cid, presence.presence)
     }
 
-    console.info('created presences')
-
     const block1 = await createBitswapBlock(MAX_BLOCK_SIZE)
     const block2 = await createBitswapBlock(MAX_BLOCK_SIZE)
-    console.info('done all async')
+
     input.addBlock(block1.cid, block1.block)
     input.addBlock(block2.cid, block2.block)
 
