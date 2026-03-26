@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 import { car } from '@helia/car'
 import { unixfs } from '@helia/unixfs'
 import { CarReader } from '@ipld/car'
@@ -25,8 +27,13 @@ describe('@helia/car', () => {
     u = unixfs(helia)
     kubo = await createKuboNode()
 
+    console.info('get id')
+    const id = await kubo.api.id()
+
     // connect helia to kubo
-    await helia.libp2p.dial((await (kubo.api.id())).addresses)
+    console.info('dial kubo', id.addresses.map(ma => ma.toString()))
+    await helia.libp2p.dial(id.addresses)
+    console.info('dialled kubo')
   })
 
   afterEach(async () => {
@@ -40,6 +47,7 @@ describe('@helia/car', () => {
   })
 
   it('should export a car from Helia, import and read the contents from kubo', async () => {
+    console.info('start test')
     const chunkSize = 1024 * 1024
     const size = chunkSize * 10
     const input: Uint8Array[] = []
