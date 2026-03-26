@@ -22,9 +22,11 @@ describe('@helia/car', () => {
   let kubo: KuboNode
 
   beforeEach(async () => {
+    console.info('create helia')
     helia = await createHeliaNode()
     c = car(helia)
     u = unixfs(helia)
+    console.info('create kubo')
     kubo = await createKuboNode()
 
     console.info('get id')
