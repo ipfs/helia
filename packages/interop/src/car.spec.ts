@@ -22,20 +22,15 @@ describe('@helia/car', () => {
   let kubo: KuboNode
 
   beforeEach(async () => {
-    console.info('create helia')
     helia = await createHeliaNode()
     c = car(helia)
     u = unixfs(helia)
-    console.info('create kubo')
     kubo = await createKuboNode()
 
-    console.info('get id')
     const id = await kubo.api.id()
 
     // connect helia to kubo
-    console.info('dial kubo', id.addresses.map(ma => ma.toString()))
     await helia.libp2p.dial(id.addresses)
-    console.info('dialled kubo')
   })
 
   afterEach(async () => {
