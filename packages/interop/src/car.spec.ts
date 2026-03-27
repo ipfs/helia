@@ -27,7 +27,11 @@ describe('@helia/car', () => {
     u = unixfs(helia)
     kubo = await createKuboNode()
 
+    console.info('created kubo, getting id')
+
     const id = await kubo.api.id()
+
+    console.info('dialling kubo')
 
     // connect helia to kubo
     await helia.libp2p.dial(id.addresses)

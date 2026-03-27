@@ -5,7 +5,8 @@ import { raceSignal } from 'race-signal'
 import type { KuboNode } from 'ipfsd-ctl'
 
 export async function createKuboNode (): Promise<KuboNode> {
-  const timeout = AbortSignal.timeout(30_000)
+  const ms = 30_000
+  const timeout = AbortSignal.timeout(ms)
 
   return raceSignal(createNode({
     type: 'kubo',
@@ -40,7 +41,7 @@ export async function createKuboNode (): Promise<KuboNode> {
   }), timeout, {
     translateError (signal) {
       if (timeout.aborted) {
-        return new Error('Kubo failed to start after 30s')
+        return new Error(`Kubo failed to start after ${ms/1000}s`)
       }
 
       return signal.reason
