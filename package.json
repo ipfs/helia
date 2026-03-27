@@ -45,5 +45,8 @@
   "type": "module",
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "overrides": {
+    "playwright-core": "1.54.1"
+  }
 }
