@@ -45,5 +45,10 @@
   "type": "module",
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "overrides": {
+    "aegir": {
+      "playwright-test": "14.1.12"
+    }
+  }
 }
