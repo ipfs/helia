@@ -125,7 +125,7 @@ describe('touch', () => {
     expect(updatedMtime.secs).to.satisfy((s: bigint) => s > originalMtime.secs)
   })
 
-  it.only('should update mtime recursively for a hamt-sharded-directory', async function () {
+  it('should update mtime recursively for a hamt-sharded-directory', async function () {
     // this is very slow on Firefox in CI
     this.timeout(180_000_000)
     this.slow(5 * 1000)
