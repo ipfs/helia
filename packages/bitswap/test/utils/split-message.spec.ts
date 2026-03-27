@@ -114,7 +114,10 @@ describe('split-message', () => {
     expect(BitswapMessage.decode(output[2]).blockPresences).to.have.lengthOf(presences)
   })
 
-  it('should send presences before wants', async () => {
+  it('should send presences before wants', async function () {
+    // this is very slow on Firefox in CI
+    this.timeout(180_000_000)
+
     // CID + integer is 40 bytes
     const wants = Math.round(DEFAULT_MAX_OUTGOING_MESSAGE_SIZE / 40)
     const presences = Math.round(DEFAULT_MAX_OUTGOING_MESSAGE_SIZE / 40)

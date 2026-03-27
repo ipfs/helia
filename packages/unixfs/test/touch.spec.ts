@@ -125,6 +125,8 @@ describe('.files.touch', () => {
   })
 
   it('should update mtime recursively for a hamt-sharded-directory', async function () {
+    // this is very slow on Firefox in CI
+    this.timeout(180_000_000)
     this.slow(5 * 1000)
     const mtime = new Date()
     const seconds = Math.floor(mtime.getTime() / 1000)
