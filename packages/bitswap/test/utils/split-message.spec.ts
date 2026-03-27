@@ -135,7 +135,6 @@ describe('split-message', () => {
 
     const block1 = await createBitswapBlock(MAX_BLOCK_SIZE)
     const block2 = await createBitswapBlock(MAX_BLOCK_SIZE)
-
     input.addBlock(block1.cid, block1.block)
     input.addBlock(block2.cid, block2.block)
 

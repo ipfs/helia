@@ -43,7 +43,7 @@
     "doc-check": "aegir doc-check",
     "build": "aegir build",
     "test": "aegir test",
-    "test:chrome": "DEBUG=ipfsd-ctl*,ipfsd-ctl*:trace IPFS_LOGGING=debug aegir test -t browser --cov",
+    "test:chrome": "aegir test -t browser --cov",
     "test:chrome-webworker": "aegir test -t webworker",
     "test:firefox": "aegir test -t browser -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
@@ -91,7 +91,6 @@
     "kubo-rpc-client": "^6.0.2",
     "libp2p": "^3.0.6",
     "multiformats": "^13.4.1",
-    "race-signal": "^2.0.0",
     "uint8arrays": "^5.1.0",
     "wherearewe": "^2.0.1"
   },

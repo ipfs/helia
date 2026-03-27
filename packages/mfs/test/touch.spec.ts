@@ -1,5 +1,3 @@
-/* eslint-disable no-console,no-only-tests/no-only-tests */
-
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
@@ -137,17 +135,14 @@ describe('touch', () => {
 
     await delay(2000)
 
-    console.info('update dir')
     await fs.touch(shardedDirPath, {
       recursive: true
     })
 
-    console.info('check dir')
     await expect(fs.stat(shardedDirPath)).to.eventually.have.nested.property('mtime.secs')
       // no bigint support
       .that.satisfies((s: bigint) => s > seconds)
 
-    console.info('check entries')
     for await (const entry of fs.ls(shardedDirPath)) {
       const file = await fs.stat(entry.path)
 

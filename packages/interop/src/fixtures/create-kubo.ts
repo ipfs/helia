@@ -1,14 +1,10 @@
 import { createNode } from 'ipfsd-ctl'
 import { path as kuboPath } from 'kubo'
 import { create as kuboRpcClient } from 'kubo-rpc-client'
-import { raceSignal } from 'race-signal'
 import type { KuboNode } from 'ipfsd-ctl'
 
 export async function createKuboNode (): Promise<KuboNode> {
-  const ms = 30_000
-  const timeout = AbortSignal.timeout(ms)
-
-  return raceSignal(createNode({
+  return createNode({
     type: 'kubo',
     rpc: kuboRpcClient,
     bin: kuboPath(),
@@ -34,17 +30,6 @@ export async function createKuboNode (): Promise<KuboNode> {
     },
     start: {
       args: ['--enable-pubsub-experiment', '--enable-namesys-pubsub']
-    },
-    env: {
-      IPFS_LOGGING: 'debug'
-    }
-  }), timeout, {
-    translateError (signal) {
-      if (timeout.aborted) {
-        return new Error(`Kubo failed to start after ${ms/1000}s`)
-      }
-
-      return signal.reason
     }
   })
 }
