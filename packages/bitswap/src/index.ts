@@ -9,7 +9,7 @@
 import { Bitswap as BitswapClass } from './bitswap.ts'
 import type { BitswapNetworkNotifyProgressEvents, BitswapNetworkWantProgressEvents, BitswapNetworkProgressEvents } from './network.ts'
 import type { WantType } from './pb/message.ts'
-import type { CreateSessionOptions, ProviderOptions, SessionBlockBroker } from '@helia/interface'
+import type { Await, BlockBrokerGetBlockProgressEvents, CreateSessionOptions, ProviderOptions, SessionBlockBroker } from '@helia/interface'
 import type { Routing } from '@helia/interface/routing'
 import type { Libp2p, AbortOptions, Startable, ComponentLogger, Metrics, PeerId } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
@@ -27,7 +27,8 @@ export type BitswapWantBlockProgressEvents =
   ProgressEvent<'bitswap:unwant', CID> |
   ProgressEvent<'bitswap:want', CID> |
   ProgressEvent<'bitswap:block', { cid: CID, sender: PeerId }> |
-  BitswapNetworkWantProgressEvents
+  BitswapNetworkWantProgressEvents |
+  BlockBrokerGetBlockProgressEvents
 
 export type { BitswapNetworkNotifyProgressEvents }
 export type { BitswapNetworkWantProgressEvents }
@@ -76,7 +77,7 @@ export interface Bitswap extends Startable {
 }
 
 export interface MultihashHasherLoader {
-  getHasher(codeOrName: number | string): Promise<MultihashHasher>
+  getHasher(codeOrName: number | string): Await<MultihashHasher>
 }
 
 export interface BitswapComponents {
@@ -85,6 +86,7 @@ export interface BitswapComponents {
   logger: ComponentLogger
   libp2p: Libp2p
   metrics?: Metrics
+  hashLoader?: MultihashHasherLoader
 }
 
 export interface BitswapOptions {
@@ -119,11 +121,6 @@ export interface BitswapOptions {
   runOnLimitedConnections?: boolean
 
   /**
-   * Enables loading esoteric hash functions
-   */
-  hashLoader?: MultihashHasherLoader
-
-  /**
    * The protocol that we speak
    *
    * @default '/ipfs/bitswap/1.2.0'
@@ -138,6 +135,21 @@ export interface BitswapOptions {
   messageSendConcurrency?: number
 
   /**
+   * Wantlist or blocks must be sent to peers within this many milliseconds
+   *
+   * @default 10_000
+   */
+  messageSendTimeout?: number
+
+  /**
+   * Incoming wantlist or block messages must be received from peers within this
+   * many milliseconds
+   *
+   * @default 10_000
+   */
+  messageReceiveTimeout?: number
+
+  /**
    * When sending blocks to peers, how many messages to send at once
    *
    * @default 50
@@ -149,7 +161,7 @@ export interface BitswapOptions {
    * This is useful for preventing slow/large peer-connections from consuming
    * your bandwidth/streams.
    *
-   * @default 10000
+   * @default 10_000
    */
   sendBlocksTimeout?: number
 
@@ -161,6 +173,15 @@ export interface BitswapOptions {
    * @default 10
    */
   sendBlocksDebounce?: number
+
+  /**
+   * When a want is added to the local wantlist, wait this many milliseconds
+   * before sending the wantlist to connected or session peers in case more
+   * wants are about to be added
+   *
+   * @default 10
+   */
+  sendWantlistDebounce?: number
 
   /**
    * If the client sends a want-have, and we have the corresponding block, we

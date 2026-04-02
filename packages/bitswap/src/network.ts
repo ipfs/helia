@@ -7,7 +7,7 @@ import { pushable } from 'it-pushable'
 import take from 'it-take'
 import { CustomProgressEvent } from 'progress-events'
 import { raceEvent } from 'race-event'
-import { BITSWAP_120, DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_INCOMING_MESSAGE_SIZE, DEFAULT_MAX_OUTBOUND_STREAMS, DEFAULT_MAX_OUTGOING_MESSAGE_SIZE, DEFAULT_MAX_PROVIDERS_PER_REQUEST, DEFAULT_MESSAGE_RECEIVE_TIMEOUT, DEFAULT_MESSAGE_SEND_CONCURRENCY, DEFAULT_RUN_ON_TRANSIENT_CONNECTIONS } from './constants.ts'
+import { BITSWAP_120, DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_INCOMING_MESSAGE_SIZE, DEFAULT_MAX_OUTBOUND_STREAMS, DEFAULT_MAX_OUTGOING_MESSAGE_SIZE, DEFAULT_MAX_PROVIDERS_PER_REQUEST, DEFAULT_MESSAGE_RECEIVE_TIMEOUT, DEFAULT_MESSAGE_SEND_CONCURRENCY, DEFAULT_MESSAGE_SEND_TIMEOUT, DEFAULT_RUN_ON_TRANSIENT_CONNECTIONS } from './constants.ts'
 import { BitswapMessage } from './pb/message.ts'
 import { mergeMessages } from './utils/merge-messages.ts'
 import { splitMessage } from './utils/split-message.ts'
@@ -16,13 +16,14 @@ import type { MultihashHasherLoader } from './index.ts'
 import type { Block } from './pb/message.ts'
 import type { QueuedBitswapMessage } from './utils/bitswap-message.ts'
 import type { Provider, Routing, RoutingFindProvidersProgressEvents } from '@helia/interface/routing'
-import type { Libp2p, AbortOptions, Connection, PeerId, Topology, ComponentLogger, IdentifyResult, Counter, Metrics, Stream } from '@libp2p/interface'
+import type { Libp2p, AbortOptions, Connection, PeerId, Topology, ComponentLogger, IdentifyResult, Counter, Metrics, Stream, OpenConnectionProgressEvents, NewStreamProgressEvents } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
 import type { PeerQueueJobOptions } from '@libp2p/utils'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { CID } from 'multiformats/cid'
+import { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 import type { Uint8ArrayList } from 'uint8arraylist'
+import type { BlockBrokerGetBlockProgressEvents } from '@helia/interface'
 
 export interface BitswapProvider {
   /**
@@ -47,7 +48,9 @@ export interface BitswapProvider {
 }
 
 export type BitswapNetworkProgressEvents =
-  ProgressEvent<'bitswap:dial', PeerId | Multiaddr | Multiaddr[]>
+  ProgressEvent<'bitswap:dial', PeerId | Multiaddr | Multiaddr[]> |
+  OpenConnectionProgressEvents |
+  NewStreamProgressEvents
 
 export type BitswapNetworkWantProgressEvents =
   ProgressEvent<'bitswap:send-wantlist', PeerId> |
@@ -55,7 +58,8 @@ export type BitswapNetworkWantProgressEvents =
   ProgressEvent<'bitswap:find-providers', CID> |
   ProgressEvent<'bitswap:found-provider', BitswapProvider> |
   BitswapNetworkProgressEvents |
-  RoutingFindProvidersProgressEvents
+  RoutingFindProvidersProgressEvents |
+  BlockBrokerGetBlockProgressEvents
 
 export type BitswapNetworkNotifyProgressEvents =
   BitswapNetworkProgressEvents |
@@ -66,6 +70,7 @@ export interface NetworkInit {
   maxInboundStreams?: number
   maxOutboundStreams?: number
   messageReceiveTimeout?: number
+  messageSendTimeout?: number
   messageSendConcurrency?: number
   protocols?: string[]
   runOnLimitedConnections?: boolean
@@ -81,12 +86,16 @@ export interface NetworkComponents {
 }
 
 export interface BitswapMessageEventDetail {
+  /**
+   * @deprecated access the peer via connection.remotePeer instead
+   */
   peer: PeerId
   message: BitswapMessage
+  connection: Connection
 }
 
 export interface NetworkEvents {
-  'bitswap:message': CustomEvent<{ peer: PeerId, message: BitswapMessage }>
+  'bitswap:message': CustomEvent<BitswapMessageEventDetail>
   'peer:connected': CustomEvent<PeerId>
   'peer:disconnected': CustomEvent<PeerId>
 }
@@ -104,6 +113,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
   private readonly maxInboundStreams: number
   private readonly maxOutboundStreams: number
   private readonly messageReceiveTimeout: number
+  private readonly messageSendTimeout: number
   private registrarIds: string[]
   private readonly metrics: { blocksSent?: Counter, dataSent?: Counter }
   private readonly sendQueue: PeerQueue<void, SendMessageJobOptions>
@@ -126,6 +136,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
     this.maxInboundStreams = init.maxInboundStreams ?? DEFAULT_MAX_INBOUND_STREAMS
     this.maxOutboundStreams = init.maxOutboundStreams ?? DEFAULT_MAX_OUTBOUND_STREAMS
     this.messageReceiveTimeout = init.messageReceiveTimeout ?? DEFAULT_MESSAGE_RECEIVE_TIMEOUT
+    this.messageSendTimeout = init.messageSendTimeout ?? DEFAULT_MESSAGE_SEND_TIMEOUT
     this.runOnLimitedConnections = init.runOnLimitedConnections ?? DEFAULT_RUN_ON_TRANSIENT_CONNECTIONS
     this.maxIncomingMessageSize = init.maxIncomingMessageSize ?? DEFAULT_MAX_OUTGOING_MESSAGE_SIZE
     this.maxOutgoingMessageSize = init.maxOutgoingMessageSize ?? init.maxIncomingMessageSize ?? DEFAULT_MAX_INCOMING_MESSAGE_SIZE
@@ -245,10 +256,11 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
           const message = BitswapMessage.decode(data)
           this.log('incoming new bitswap %s message from %p on stream', stream.protocol, connection.remotePeer, stream.id)
 
-          this.safeDispatchEvent('bitswap:message', {
+          this.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
             detail: {
               peer: connection.remotePeer,
-              message
+              message,
+              connection
             }
           })
 
@@ -287,7 +299,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
         continue
       }
 
-      options?.onProgress?.(new CustomProgressEvent('bitswap:found-provider', {
+      options?.onProgress?.(new CustomProgressEvent<BitswapProvider>('bitswap:found-provider', {
         type: 'bitswap',
         cid,
         provider,
@@ -325,8 +337,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
   }
 
   /**
-   * Connect to the given peer
-   * Send the given msg (instance of Message) to the given peer
+   * Connect to the specified peer and send the given message
    */
   async sendMessage (peerId: PeerId, message: QueuedBitswapMessage, options?: AbortOptions & ProgressOptions<BitswapNetworkWantProgressEvents>): Promise<void> {
     if (!this.running) {
@@ -359,7 +370,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
       options?.onProgress?.(new CustomProgressEvent<PeerId>('bitswap:network:send-wantlist', peerId))
 
       const stream = await this.libp2p.dialProtocol(peerId, BITSWAP_120, options)
-      await stream.closeRead()
+      await stream.closeRead(options)
 
       try {
         for (const buf of splitMessage(message, this.maxOutgoingMessageSize)) {
@@ -377,8 +388,9 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
 
       this._updateSentStats(message.blocks)
     }, {
+      onProgress: options?.onProgress,
       peerId,
-      signal: options?.signal,
+      signal: options?.signal ?? AbortSignal.timeout(this.messageSendTimeout),
       message
     })
   }

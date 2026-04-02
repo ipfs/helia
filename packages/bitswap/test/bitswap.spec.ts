@@ -19,7 +19,7 @@ import { cidToPrefix } from '../src/utils/cid-prefix.ts'
 import type { MultihashHasherLoader } from '../src/index.ts'
 import type { BitswapMessageEventDetail } from '../src/network.ts'
 import type { Routing } from '@helia/interface/routing'
-import type { Libp2p, PeerId } from '@libp2p/interface'
+import type { Connection, Libp2p, PeerId } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { StubbedInstance } from 'sinon-ts'
 
@@ -28,6 +28,7 @@ interface StubbedBitswapComponents {
   routing: StubbedInstance<Routing>
   blockstore: Blockstore
   libp2p: StubbedInstance<Libp2p>
+  hashLoader: MultihashHasherLoader
 }
 
 describe('bitswap', () => {
@@ -59,14 +60,14 @@ describe('bitswap', () => {
       blockstore: new MemoryBlockstore(),
       libp2p: stubInterface<Libp2p>({
         metrics: undefined
-      })
+      }),
+      hashLoader
     }
 
     bitswap = new Bitswap({
       ...components,
       logger: defaultLogger()
     }, {
-      hashLoader,
       doNotResendBlockWindow: 1_500
     })
 
@@ -107,6 +108,9 @@ describe('bitswap', () => {
       bitswap.network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
         detail: {
           peer: remotePeer,
+          connection: stubInterface<Connection>({
+            remotePeer
+          }),
           message: {
             blocks: [{
               prefix: cidToPrefix(cids[0]),
@@ -159,6 +163,9 @@ describe('bitswap', () => {
       bitswap.network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
         detail: {
           peer: remotePeer,
+          connection: stubInterface<Connection>({
+            remotePeer
+          }),
           message: {
             blocks: [{
               prefix: cidToPrefix(cid),
@@ -227,6 +234,9 @@ describe('bitswap', () => {
       bitswap.network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
         detail: {
           peer: remotePeer,
+          connection: stubInterface<Connection>({
+            remotePeer
+          }),
           message: {
             blocks: [{
               prefix: cidToPrefix(cids[0]),
@@ -269,6 +279,9 @@ describe('bitswap', () => {
       bitswap.network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
         detail: {
           peer: remotePeer,
+          connection: stubInterface<Connection>({
+            remotePeer
+          }),
           message: {
             wantlist: {
               full: false,
@@ -298,6 +311,9 @@ describe('bitswap', () => {
         bitswap.network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
           detail: {
             peer: remotePeer,
+            connection: stubInterface<Connection>({
+              remotePeer
+            }),
             message: {
               wantlist: {
                 full: false,
@@ -333,6 +349,9 @@ describe('bitswap', () => {
       bitswap.network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
         detail: {
           peer: remotePeer,
+          connection: stubInterface<Connection>({
+            remotePeer
+          }),
           message: {
             wantlist: {
               full: false,
@@ -383,6 +402,9 @@ describe('bitswap', () => {
       bitswap.network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
         detail: {
           peer: remotePeer,
+          connection: stubInterface<Connection>({
+            remotePeer
+          }),
           message: {
             wantlist: {
               full: false,
@@ -405,6 +427,9 @@ describe('bitswap', () => {
       bitswap.network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
         detail: {
           peer: remotePeer,
+          connection: stubInterface<Connection>({
+            remotePeer
+          }),
           message: {
             wantlist: {
               full: false,
@@ -439,6 +464,9 @@ describe('bitswap', () => {
       bitswap.network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
         detail: {
           peer: remotePeer,
+          connection: stubInterface<Connection>({
+            remotePeer
+          }),
           message: {
             wantlist: {
               full: false,
@@ -462,6 +490,9 @@ describe('bitswap', () => {
       bitswap.network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
         detail: {
           peer: remotePeer,
+          connection: stubInterface<Connection>({
+            remotePeer
+          }),
           message: {
             wantlist: {
               full: false,
@@ -510,6 +541,9 @@ describe('bitswap', () => {
       bitswap.network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
         detail: {
           peer: remotePeer,
+          connection: stubInterface<Connection>({
+            remotePeer
+          }),
           message: {
             wantlist: {
               full: false,
@@ -541,6 +575,9 @@ describe('bitswap', () => {
       bitswap.network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
         detail: {
           peer: remotePeer,
+          connection: stubInterface<Connection>({
+            remotePeer
+          }),
           message: {
             wantlist: {
               full: false,

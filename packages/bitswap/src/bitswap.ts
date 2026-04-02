@@ -7,7 +7,7 @@ import { createBitswapSession } from './session.ts'
 import { Stats } from './stats.ts'
 import { WantList } from './want-list.ts'
 import type { BitswapOptions, Bitswap as BitswapInterface, BitswapWantProgressEvents, BitswapNotifyProgressEvents, WantListEntry, BitswapComponents, PeerWantListEntry } from './index.ts'
-import type { CreateSessionOptions, ProviderOptions, SessionBlockBroker } from '@helia/interface'
+import type { BlockBrokerReceiveBlockProgressEvent, CreateSessionOptions, ProviderOptions, SessionBlockBroker } from '@helia/interface'
 import type { ComponentLogger, Libp2p, PeerId, AbortOptions } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
 import type { Blockstore } from 'interface-blockstore'
@@ -96,7 +96,7 @@ export class Bitswap implements BitswapInterface {
         signal
       })
 
-      options.onProgress?.(new CustomProgressEvent<{ cid: CID, sender: PeerId }>('bitswap:block', { cid, sender: result.sender }))
+      options.onProgress?.(new CustomProgressEvent<{ cid: CID, sender: PeerId }>('bitswap:block', { cid, sender: result.connection.remotePeer }))
 
       return result.block
     } finally {

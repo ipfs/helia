@@ -7,29 +7,34 @@ import pDefer from 'p-defer'
 import { raceEvent } from 'race-event'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { DEFAULT_MESSAGE_SEND_DELAY } from './constants.ts'
+import { DEFAULT_WANTLIST_SEND_DEBOUNCE } from './constants.ts'
 import { BlockPresenceType, WantType } from './pb/message.ts'
 import { QueuedBitswapMessage } from './utils/bitswap-message.ts'
 import vd from './utils/varint-decoder.ts'
 import type { BitswapNotifyProgressEvents, MultihashHasherLoader } from './index.ts'
 import type { BitswapNetworkWantProgressEvents, Network } from './network.ts'
 import type { BitswapMessage } from './pb/message.ts'
-import type { ComponentLogger, PeerId, Startable, AbortOptions, Libp2p, TypedEventTarget, Metrics } from '@libp2p/interface'
+import type { ComponentLogger, PeerId, Startable, AbortOptions, Libp2p, TypedEventTarget, Metrics, Connection } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { DeferredPromise } from 'p-defer'
-import type { ProgressOptions } from 'progress-events'
+import { type ProgressEventListener, type ProgressOptions } from 'progress-events'
 
 export interface WantListComponents {
   network: Network
   logger: ComponentLogger
   libp2p: Libp2p
   metrics?: Metrics
+  hashLoader?: MultihashHasherLoader
 }
 
 export interface WantListInit {
-  sendMessagesDelay?: number
-  hashLoader?: MultihashHasherLoader
+  sendWantlistDebounce?: number
+}
+
+export interface ProgressCallback {
+  onProgress: ProgressEventListener<BitswapNetworkWantProgressEvents>
+  signal?: AbortSignal
 }
 
 export interface WantListEntry {
@@ -58,6 +63,11 @@ export interface WantListEntry {
    * Whether the remote should tell us if they have the block or not
    */
   sendDontHave: boolean
+
+  /**
+   * Progress event handlers interested in this CID
+   */
+  onProgress: ProgressCallback[]
 }
 
 export interface WantOptions extends AbortOptions, ProgressOptions<BitswapNetworkWantProgressEvents> {
@@ -68,7 +78,11 @@ export interface WantOptions extends AbortOptions, ProgressOptions<BitswapNetwor
 }
 
 export interface WantBlockResult {
+  /**
+   * @deprecated access the sender via connection.remotePeer instead
+   */
   sender: PeerId
+  connection: Connection
   cid: CID
   block: Uint8Array
 }
@@ -101,7 +115,7 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
   public readonly wants: Map<string, WantListEntry>
   private readonly network: Network
   private readonly log: Logger
-  private readonly sendMessagesDelay: number
+  private readonly sendWantlistDebounce: number
   private sendMessagesTimeout?: ReturnType<typeof setTimeout>
   private readonly hashLoader?: MultihashHasherLoader
   private sendingMessages?: DeferredPromise<void>
@@ -119,14 +133,14 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
       metrics: components.metrics
     })
     this.network = components.network
-    this.sendMessagesDelay = init.sendMessagesDelay ?? DEFAULT_MESSAGE_SEND_DELAY
+    this.sendWantlistDebounce = init.sendWantlistDebounce ?? DEFAULT_WANTLIST_SEND_DEBOUNCE
     this.log = components.logger.forComponent('helia:bitswap:wantlist')
-    this.hashLoader = init.hashLoader
+    this.hashLoader = components.hashLoader
 
     this.network.addEventListener('bitswap:message', (evt) => {
-      this.receiveMessage(evt.detail.peer, evt.detail.message)
+      this.receiveMessage(evt.detail.connection, evt.detail.message)
         .catch(err => {
-          this.log.error('error receiving bitswap message from %p - %e', evt.detail.peer, err)
+          this.log.error('error receiving bitswap message from %p - %e', evt.detail.connection.remotePeer, err)
         })
     })
     this.network.addEventListener('peer:connected', evt => {
@@ -152,10 +166,18 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
         priority: options.priority ?? 1,
         wantType: options.wantType ?? WantType.WantBlock,
         cancel: false,
-        sendDontHave: true
+        sendDontHave: true,
+        onProgress: []
       }
 
       this.wants.set(cidStr, entry)
+    }
+
+    if (options.onProgress != null) {
+      entry.onProgress.push({
+        onProgress: options.onProgress,
+        signal: options.signal
+      })
     }
 
     // upgrade want-have to want-block if the new want is a WantBlock but the
@@ -207,7 +229,7 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
         .catch(err => {
           this.log('error sending messages to peers - %e', err)
         })
-    }, this.sendMessagesDelay)
+    }, this.sendWantlistDebounce)
   }
 
   private async sendMessages (): Promise<void> {
@@ -244,7 +266,15 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
 
         // add message to send queue
         try {
-          await this.network.sendMessage(peerId, message)
+          await this.network.sendMessage(peerId, message, {
+            onProgress: (evt => {
+              this.wants.forEach(({ onProgress }) => {
+                onProgress.forEach(({ onProgress }) => {
+                  onProgress(evt)
+                })
+              })
+            })
+          })
 
           // update list of messages sent to remote
           for (const key of sent) {
@@ -291,7 +321,7 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
     })
 
     // sending WantHave directly to peer
-    await this.network.sendMessage(peerId, message)
+    await this.network.sendMessage(peerId, message, options)
 
     // wait for peer response
     const event = await raceEvent<CustomEvent<WantHaveResult | WantDoNotHaveResult>>(this, 'presence', options.signal, {
@@ -326,7 +356,7 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
     })
 
     // sending WantBlockResult directly to peer
-    await this.network.sendMessage(peerId, message)
+    await this.network.sendMessage(peerId, message, options)
 
     // wait for peer response
     const event = await raceEvent<CustomEvent<WantPresenceResult>>(this, 'presence', options.signal, {
@@ -358,8 +388,8 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
   /**
    * Invoked when a message is received from a bitswap peer
    */
-  private async receiveMessage (sender: PeerId, message: BitswapMessage): Promise<void> {
-    this.log('received message from %p with %d blocks', sender, message.blocks.length)
+  private async receiveMessage (connection: Connection, message: BitswapMessage): Promise<void> {
+    this.log('received message from %p with %d blocks', connection.remotePeer, message.blocks.length)
     let blocksCancelled = false
 
     // process blocks
@@ -391,19 +421,20 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
 
       const cid = CID.create(cidVersion === 0 ? 0 : 1, multicodec, hash)
 
-      this.log('received block from %p for %c', sender, cid)
+      this.log('received block from %p for %c', connection.remotePeer, cid)
 
       this.safeDispatchEvent<WantBlockResult>('block', {
         detail: {
-          sender,
+          sender: connection.remotePeer,
           cid,
-          block: block.data
+          block: block.data,
+          connection
         }
       })
 
       this.safeDispatchEvent<WantHaveResult | WantDoNotHaveResult>('presence', {
         detail: {
-          sender,
+          sender: connection.remotePeer,
           cid,
           has: true,
           block: block.data
@@ -428,11 +459,11 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
     for (const { cid: cidBytes, type } of message.blockPresences) {
       const cid = CID.decode(cidBytes)
 
-      this.log('received %s from %p for %c', type, sender, cid)
+      this.log('received %s from %p for %c', type, connection.remotePeer, cid)
 
       this.safeDispatchEvent<WantHaveResult | WantDoNotHaveResult>('presence', {
         detail: {
-          sender,
+          sender: connection.remotePeer,
           cid,
           has: type === BlockPresenceType.HaveBlock
         }

@@ -13,7 +13,7 @@ import pRetry from 'p-retry'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { BITSWAP_120 } from '../src/constants.ts'
-import { Network } from '../src/network.ts'
+import { Network, type BitswapMessageEventDetail } from '../src/network.ts'
 import { BitswapMessage, BlockPresenceType } from '../src/pb/message.ts'
 import { QueuedBitswapMessage } from '../src/utils/bitswap-message.ts'
 import { cidToPrefix } from '../src/utils/cid-prefix.ts'
@@ -92,7 +92,7 @@ describe('network', () => {
     const [outboundStream, inboundStream] = await streamPair()
     const handler = components.libp2p.handle.getCall(0).args[1]
 
-    const messageEventPromise = pEvent<'bitswap:message', CustomEvent<{ peer: PeerId, message: BitswapMessage }>>(network, 'bitswap:message')
+    const messageEventPromise = pEvent<'bitswap:message', CustomEvent<BitswapMessageEventDetail>>(network, 'bitswap:message')
 
     handler(inboundStream, connection)
 
@@ -109,7 +109,7 @@ describe('network', () => {
 
     const event = await messageEventPromise
 
-    expect(event.detail.peer.toString()).to.equal(remotePeer.toString())
+    expect(event.detail.connection.remotePeer.toString()).to.equal(remotePeer.toString())
     expect(event.detail).to.have.nested.property('message.wantlist.full', true)
   })
 

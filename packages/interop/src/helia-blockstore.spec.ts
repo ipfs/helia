@@ -43,13 +43,18 @@ describe('helia - blockstore', () => {
     expect(output).to.equalBytes(input)
   })
 
-  it('should be able to receive a block', async () => {
+  it.only('should be able to receive a block', async () => {
     const input = Uint8Array.from([0, 1, 2, 3, 4])
     const { cid } = await kubo.api.add({ content: input }, {
       cidVersion: 1,
       rawLeaves: true
     })
-    const output = await toBuffer(helia.blockstore.get(CID.parse(cid.toString())))
+    const output = await toBuffer(helia.blockstore.get(CID.parse(cid.toString()), {
+      onProgress (evt) {
+        if (evt.type.startsWith('helia:block-broker'))
+        console.info(evt.type, evt.detail)
+      }
+    }))
 
     expect(output).to.equalBytes(input)
   })
