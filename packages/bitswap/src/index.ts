@@ -9,12 +9,11 @@
 import { Bitswap as BitswapClass } from './bitswap.ts'
 import type { BitswapNetworkNotifyProgressEvents, BitswapNetworkWantProgressEvents, BitswapNetworkProgressEvents } from './network.ts'
 import type { WantType } from './pb/message.ts'
-import type { Await, BlockBrokerGetBlockProgressEvents, CreateSessionOptions, ProviderOptions, SessionBlockBroker } from '@helia/interface'
+import type { BlockBrokerGetBlockProgressEvents, CreateSessionOptions, HasherLoader, ProviderOptions, SessionBlockBroker } from '@helia/interface'
 import type { Routing } from '@helia/interface/routing'
 import type { Libp2p, AbortOptions, Startable, ComponentLogger, Metrics, PeerId } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
-import type { MultihashHasher } from 'multiformats/hashes/interface'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
 export type BitswapWantProgressEvents =
@@ -76,17 +75,13 @@ export interface Bitswap extends Startable {
   createSession(options?: CreateSessionOptions<BitswapWantProgressEvents>): Required<Pick<SessionBlockBroker<BitswapWantProgressEvents>, 'retrieve' | 'addPeer'>>
 }
 
-export interface MultihashHasherLoader {
-  getHasher(codeOrName: number | string): Await<MultihashHasher>
-}
-
 export interface BitswapComponents {
   routing: Routing
   blockstore: Blockstore
   logger: ComponentLogger
   libp2p: Libp2p
+  getHasher: HasherLoader
   metrics?: Metrics
-  hashLoader?: MultihashHasherLoader
 }
 
 export interface BitswapOptions {

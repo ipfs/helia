@@ -11,21 +11,22 @@ import { DEFAULT_WANTLIST_SEND_DEBOUNCE } from './constants.ts'
 import { BlockPresenceType, WantType } from './pb/message.ts'
 import { QueuedBitswapMessage } from './utils/bitswap-message.ts'
 import vd from './utils/varint-decoder.ts'
-import type { BitswapNotifyProgressEvents, MultihashHasherLoader } from './index.ts'
+import type { BitswapNotifyProgressEvents } from './index.ts'
 import type { BitswapNetworkWantProgressEvents, Network } from './network.ts'
 import type { BitswapMessage } from './pb/message.ts'
+import type { HasherLoader } from '@helia/interface'
 import type { ComponentLogger, PeerId, Startable, AbortOptions, Libp2p, TypedEventTarget, Metrics, Connection } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { DeferredPromise } from 'p-defer'
-import { type ProgressEventListener, type ProgressOptions } from 'progress-events'
+import type { ProgressEventListener, ProgressOptions } from 'progress-events'
 
 export interface WantListComponents {
   network: Network
   logger: ComponentLogger
   libp2p: Libp2p
+  getHasher: HasherLoader
   metrics?: Metrics
-  hashLoader?: MultihashHasherLoader
 }
 
 export interface WantListInit {
@@ -117,7 +118,7 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
   private readonly log: Logger
   private readonly sendWantlistDebounce: number
   private sendMessagesTimeout?: ReturnType<typeof setTimeout>
-  private readonly hashLoader?: MultihashHasherLoader
+  private readonly getHasher: HasherLoader
   private sendingMessages?: DeferredPromise<void>
 
   constructor (components: WantListComponents, init: WantListInit = {}) {
@@ -135,7 +136,7 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
     this.network = components.network
     this.sendWantlistDebounce = init.sendWantlistDebounce ?? DEFAULT_WANTLIST_SEND_DEBOUNCE
     this.log = components.logger.forComponent('helia:bitswap:wantlist')
-    this.hashLoader = components.hashLoader
+    this.getHasher = components.getHasher
 
     this.network.addEventListener('bitswap:message', (evt) => {
       this.receiveMessage(evt.detail.connection, evt.detail.message)
@@ -267,13 +268,13 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
         // add message to send queue
         try {
           await this.network.sendMessage(peerId, message, {
-            onProgress: (evt => {
+            onProgress: evt => {
               this.wants.forEach(({ onProgress }) => {
                 onProgress.forEach(({ onProgress }) => {
                   onProgress(evt)
                 })
               })
-            })
+            }
           })
 
           // update list of messages sent to remote
@@ -404,7 +405,7 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
       const hashAlg = values[2]
       const hashLen = values[3]
 
-      const hasher = hashAlg === sha256.code ? sha256 : await this.hashLoader?.getHasher(hashAlg)
+      const hasher = hashAlg === sha256.code ? sha256 : await this.getHasher(hashAlg)
 
       if (hasher == null) {
         this.log.error('unknown hash algorithm', hashAlg)

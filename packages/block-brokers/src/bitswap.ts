@@ -1,11 +1,11 @@
 import { createBitswap } from '@helia/bitswap'
+import { isPeerId } from '@libp2p/interface'
+import { CustomProgressEvent } from 'progress-events'
 import type { BitswapOptions, Bitswap, BitswapWantBlockProgressEvents, BitswapNotifyProgressEvents } from '@helia/bitswap'
 import type { BlockAnnounceOptions, BlockBroker, BlockRetrievalOptions, CreateSessionOptions, Routing, HasherLoader, SessionBlockBroker, BlockBrokerConnectProgressEvent, BlockBrokerConnectedProgressEvent, BlockBrokerRequestBlockProgressEvent, BlockBrokerReceiveBlockProgressEvent } from '@helia/interface'
-import { type Libp2p, type Startable, type ComponentLogger, isPeerId } from '@libp2p/interface'
+import type { Libp2p, Startable, ComponentLogger } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
-import type { MultihashHasher } from 'multiformats/hashes/interface'
-import { CustomProgressEvent } from 'progress-events'
 
 export interface BitswapBlockBrokerComponents {
   libp2p: Libp2p

@@ -1,14 +1,15 @@
+import { peerIdFromCID } from '@libp2p/peer-id'
+import { uriToMultiaddr } from '@multiformats/uri-to-multiaddr'
 import { base64 } from 'multiformats/bases/base64'
+import { CID } from 'multiformats/cid'
+import { identity } from 'multiformats/hashes/identity'
+import { CustomProgressEvent } from 'progress-events'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DEFAULT_MAX_SIZE } from './index.ts'
 import { limitedResponse } from './utils.ts'
-import type { ComponentLogger, Logger, PeerId } from '@libp2p/interface'
-import { CID } from 'multiformats/cid'
-import { CustomProgressEvent, type ProgressOptions } from 'progress-events'
 import type { BlockBrokerConnectedProgressEvent, BlockBrokerConnectProgressEvent, BlockBrokerGetBlockProgressEvents, BlockBrokerReceiveBlockProgressEvent, BlockBrokerRequestBlockProgressEvent } from '@helia/interface'
-import { uriToMultiaddr } from '@multiformats/uri-to-multiaddr'
-import { peerIdFromCID } from '@libp2p/peer-id'
-import { identity } from 'multiformats/hashes/identity'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import type { ComponentLogger, Logger, PeerId } from '@libp2p/interface'
+import type { ProgressOptions } from 'progress-events'
 
 const TRANSPORT_IPFS_GATEWAY_HTTP_CODE = 0x0920
 

@@ -5,6 +5,7 @@ import * as lp from 'it-length-prefixed'
 import map from 'it-map'
 import { pushable } from 'it-pushable'
 import take from 'it-take'
+import { CID } from 'multiformats/cid'
 import { CustomProgressEvent } from 'progress-events'
 import { raceEvent } from 'race-event'
 import { BITSWAP_120, DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_INCOMING_MESSAGE_SIZE, DEFAULT_MAX_OUTBOUND_STREAMS, DEFAULT_MAX_OUTGOING_MESSAGE_SIZE, DEFAULT_MAX_PROVIDERS_PER_REQUEST, DEFAULT_MESSAGE_RECEIVE_TIMEOUT, DEFAULT_MESSAGE_SEND_CONCURRENCY, DEFAULT_MESSAGE_SEND_TIMEOUT, DEFAULT_RUN_ON_TRANSIENT_CONNECTIONS } from './constants.ts'
@@ -12,18 +13,16 @@ import { BitswapMessage } from './pb/message.ts'
 import { mergeMessages } from './utils/merge-messages.ts'
 import { splitMessage } from './utils/split-message.ts'
 import type { WantOptions } from './bitswap.ts'
-import type { MultihashHasherLoader } from './index.ts'
 import type { Block } from './pb/message.ts'
 import type { QueuedBitswapMessage } from './utils/bitswap-message.ts'
+import type { BlockBrokerGetBlockProgressEvents } from '@helia/interface'
 import type { Provider, Routing, RoutingFindProvidersProgressEvents } from '@helia/interface/routing'
 import type { Libp2p, AbortOptions, Connection, PeerId, Topology, ComponentLogger, IdentifyResult, Counter, Metrics, Stream, OpenConnectionProgressEvents, NewStreamProgressEvents } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
 import type { PeerQueueJobOptions } from '@libp2p/utils'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 import type { Uint8ArrayList } from 'uint8arraylist'
-import type { BlockBrokerGetBlockProgressEvents } from '@helia/interface'
 
 export interface BitswapProvider {
   /**
@@ -66,7 +65,6 @@ export type BitswapNetworkNotifyProgressEvents =
   ProgressEvent<'bitswap:send-block', PeerId>
 
 export interface NetworkInit {
-  hashLoader?: MultihashHasherLoader
   maxInboundStreams?: number
   maxOutboundStreams?: number
   messageReceiveTimeout?: number
