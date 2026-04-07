@@ -10,9 +10,9 @@ import delay from 'delay'
 import { CID } from 'multiformats/cid'
 import pWaitFor from 'p-wait-for'
 import { stubInterface } from 'sinon-ts'
-import { createBitswapSession } from '../src/session.js'
-import type { Network } from '../src/network.js'
-import type { WantList } from '../src/want-list.js'
+import { createBitswapSession } from '../src/session.ts'
+import type { Network } from '../src/network.ts'
+import type { WantList } from '../src/want-list.ts'
 import type { ComponentLogger, Libp2p } from '@libp2p/interface'
 import type { StubbedInstance } from 'sinon-ts'
 
@@ -97,7 +97,7 @@ describe('session', () => {
     await expect(session.retrieve?.(cid)).to.eventually.deep.equal(block)
 
     expect(session.providers.length).to.be.lessThan(DEFAULT_SESSION_MAX_PROVIDERS)
-    expect([...session.providers].map(p => p.toString())).to.include(providers[1].id.toString())
+    expect([...session.providers].map(p => p.peerId.toString())).to.include(providers[1].id.toString())
 
     // the query continues after the session is ready
     await pWaitFor(() => {

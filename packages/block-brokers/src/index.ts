@@ -47,8 +47,8 @@
  * ```
  */
 
-export { bitswap } from './bitswap.js'
-export type { BitswapBlockBrokerInit, BitswapBlockBrokerComponents } from './bitswap.js'
-export { trustlessGateway } from './trustless-gateway/index.js'
-export type { TrustlessGatewayBlockBrokerInit, TrustlessGatewayBlockBrokerComponents, TrustlessGatewayGetBlockProgressEvents, TrustlessGatewayProvider } from './trustless-gateway/index.js'
+export { bitswap } from './bitswap.ts'
+export type { BitswapBlockBrokerInit, BitswapBlockBrokerComponents } from './bitswap.ts'
+export { trustlessGateway } from './trustless-gateway/index.ts'
+export type { TrustlessGatewayBlockBrokerInit, TrustlessGatewayBlockBrokerComponents, TrustlessGatewayGetBlockProgressEvents, TrustlessGatewayProvider } from './trustless-gateway/index.ts'
 export type { BitswapProvider } from '@helia/bitswap'

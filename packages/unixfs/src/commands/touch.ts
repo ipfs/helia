@@ -9,16 +9,16 @@ import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
 import { sha256 } from 'multiformats/hashes/sha2'
-import { InvalidPBNodeError, NotUnixFSError, UnknownError } from '../errors.js'
-import { persist } from './utils/persist.js'
-import { resolve, updatePathCids } from './utils/resolve.js'
-import type { TouchOptions } from '../index.js'
-import type { GetStore, PutStore } from '../unixfs.js'
+import { InvalidPBNodeError, NotUnixFSError, UnknownError } from '../errors.ts'
+import { persist } from './utils/persist.ts'
+import { resolve, updatePathCids } from './utils/resolve.ts'
+import type { TouchOptions } from '../index.ts'
+import type { GetStore, PutStore } from '../unixfs.ts'
 import type { PBNode, PBLink } from '@ipld/dag-pb'
 
 const log = logger('helia:unixfs:touch')
 
-export async function touch (cid: CID, blockstore: GetStore & PutStore, options: Partial<TouchOptions> = {}): Promise<CID> {
+export async function touch (cid: CID, blockstore: GetStore & PutStore, options: TouchOptions = {}): Promise<CID> {
   const resolved = await resolve(cid, options.path, blockstore, options)
   const mtime = options.mtime ?? {
     secs: BigInt(Math.round(Date.now() / 1000)),

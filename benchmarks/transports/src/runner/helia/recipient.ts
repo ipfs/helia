@@ -4,7 +4,7 @@ import { unixfs } from '@helia/unixfs'
 import { multiaddr } from '@multiformats/multiaddr'
 import drain from 'it-drain'
 import { CID } from 'multiformats'
-import { getHelia } from './get-helia.js'
+import { getHelia } from './get-helia.ts'
 
 process.title = `helia transport benchmark ${process.env.HELIA_TYPE}`
 

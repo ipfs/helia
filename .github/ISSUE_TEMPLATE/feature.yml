@@ -1,0 +1,35 @@
+name: Feature / Enhancement
+description: Suggest a new feature or improvement to an existing Helia feature.
+labels:
+  - kind/enhancement
+  - need/triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Suggest a new feature or enhancement to Helia. If you'd like to suggest an improvement to the IPFS protocol, please discuss it on [the forum](https://discuss.ipfs.tech).
+
+        Issues in this repo must be specific, actionable, and well motivated. They should be starting points for _building_ new features, not brainstorming ideas.
+
+        If you have an idea you'd like to discuss, please open a new thread on [the forum](https://discuss.ipfs.tech).
+
+        **Example:**
+
+        > Add streaming support to `@helia/unixfs` (specific) by implementing async iterators for large files (actionable). This would let me efficiently handle files larger than available memory (motivated).
+
+  - type: checkboxes
+    attributes:
+      label: Checklist
+      description: Please verify the following.
+      options:
+        - label: My issue is specific & actionable.
+          required: true
+        - label: I am not suggesting a protocol enhancement.
+          required: true
+        - label: I have searched on the [issue tracker](https://github.com/ipfs/helia/issues?q=is%3Aissue) for my issue.
+          required: true
+  - type: textarea
+    attributes:
+      label: Description
+      description: |
+        Please describe your idea. When requesting a feature, please be sure to include your motivation and a concrete description of how the feature should work.

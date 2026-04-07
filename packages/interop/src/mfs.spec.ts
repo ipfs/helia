@@ -1,7 +1,7 @@
 import { mfs } from '@helia/mfs'
 import { expect } from 'aegir/chai'
-import { createHeliaNode } from './fixtures/create-helia.js'
-import { createKuboNode } from './fixtures/create-kubo.js'
+import { createHeliaNode } from './fixtures/create-helia.ts'
+import { createKuboNode } from './fixtures/create-kubo.ts'
 import type { MFS } from '@helia/mfs'
 import type { Helia } from 'helia'
 import type { KuboNode } from 'ipfsd-ctl'
@@ -67,10 +67,7 @@ describe('@helia/mfs', () => {
   it('should have the same CID after creating a file', async () => {
     const filePath = '/foo.txt'
     const fileData = Uint8Array.from([0, 1, 2, 3, 4])
-    await fs.writeBytes(fileData, filePath, {
-      rawLeaves: true,
-      reduceSingleLeafToSelf: false
-    })
+    await fs.writeBytes(fileData, filePath)
     await kubo.api.files.write(filePath, fileData, {
       cidVersion: 1,
       create: true
@@ -85,10 +82,7 @@ describe('@helia/mfs', () => {
   it('should have the same CID after removing a file', async () => {
     const filePath = '/foo.txt'
     const fileData = Uint8Array.from([0, 1, 2, 3, 4])
-    await fs.writeBytes(fileData, filePath, {
-      rawLeaves: true,
-      reduceSingleLeafToSelf: false
-    })
+    await fs.writeBytes(fileData, filePath)
     await fs.rm(filePath)
     await kubo.api.files.write(filePath, fileData, {
       cidVersion: 1,

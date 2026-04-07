@@ -1,7 +1,7 @@
 import { encodingLength } from 'uint8-varint'
-import { BlockTooLargeError } from '../errors.js'
-import { BitswapMessage, Block, BlockPresence, WantlistEntry } from '../pb/message.js'
-import type { QueuedBitswapMessage } from './bitswap-message.js'
+import { BlockTooLargeError } from '../errors.ts'
+import { BitswapMessage, Block, BlockPresence, WantlistEntry } from '../pb/message.ts'
+import type { QueuedBitswapMessage } from './bitswap-message.ts'
 
 /**
  * https://github.com/ipfs/kubo/issues/4473#issuecomment-350390693

@@ -6,7 +6,7 @@ import { createHelia } from 'helia'
 import all from 'it-all'
 import drain from 'it-drain'
 import map from 'it-map'
-import type { GcBenchmark } from './index.js'
+import type { GcBenchmark } from './index.ts'
 
 export async function createHeliaBenchmark (): Promise<GcBenchmark> {
   const repoPath = path.join(os.tmpdir(), `helia-${Math.random()}`)

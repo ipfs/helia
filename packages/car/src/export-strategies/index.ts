@@ -1,3 +1,3 @@
-export * from './subgraph-exporter.js'
-export * from './block-exporter.js'
-export * from './unixfs-exporter.js'
+export * from './subgraph-exporter.ts'
+export * from './block-exporter.ts'
+export * from './unixfs-exporter.ts'

@@ -1,0 +1,66 @@
+name: Bug Report
+description: Report a bug in Helia.
+labels:
+  - kind/bug
+  - need/triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        - Make sure you are running the [latest version of Helia][releases] before reporting an issue.
+        - If you have an enhancement or feature request for Helia, please select [a different option][issues].
+        - Please report possible security issues by email to security@ipfs.io
+
+        [issues]: https://github.com/ipfs/helia/issues/new/choose
+        [releases]: https://github.com/ipfs/helia/releases
+  - type: checkboxes
+    attributes:
+      label: Checklist
+      description: Please verify that you've followed these steps
+      options:
+        - label: This is a bug report, not a question. Ask questions on [discuss.ipfs.tech](https://discuss.ipfs.tech/c/help/13).
+          required: true
+        - label: I have searched on the [issue tracker](https://github.com/ipfs/helia/issues?q=is%3Aissue) for my bug.
+          required: true
+        - label: I am running the latest [Helia version](https://github.com/ipfs/helia/releases) or have an issue updating.
+          required: true
+  - type: dropdown
+    id: environment
+    validations:
+      required: true
+    attributes:
+      label: Environment
+      description: Where are you running Helia?
+      options:
+        - Node.js
+        - Browser (Chrome/Chromium)
+        - Browser (Firefox)
+        - Browser (Safari)
+        - Browser (Other)
+        - Electron
+        - React Native
+        - Other
+  - type: textarea
+    id: version
+    attributes:
+      label: Version
+      render: Text
+      description: |
+        Please include the Helia version(s) you are using. You can find this in your package.json or by running `npm ls helia`.
+  - type: textarea
+    id: runtime
+    attributes:
+      label: Runtime version
+      render: Text
+      description: |
+        Please include your Node.js version (`node --version`) or browser version.
+  - type: textarea
+    attributes:
+      label: Description
+      description: |
+        This is where you get to tell us what went wrong. When doing so, please make sure to include *all* relevant information.
+
+        Please try to include:
+        * What you were doing when you experienced the bug.
+        * Any error messages you saw, *where* you saw them, and what you believe may have caused them (if you have any ideas).
+        * When possible, steps to reliably produce the bug.

@@ -7,7 +7,7 @@ import { balanced } from 'ipfs-unixfs-importer/layout'
 import bufferStream from 'it-buffer-stream'
 import * as raw from 'multiformats/codecs/raw'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import { getKubo } from './get-kubo.js'
+import { getKubo } from './get-kubo.ts'
 import type { BlockPutOptions } from 'kubo-rpc-client'
 
 process.title = `helia transport benchmark ${process.env.HELIA_TYPE}`

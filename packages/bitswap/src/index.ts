@@ -6,10 +6,10 @@
  * It supersedes the older [ipfs-bitswap](https://www.npmjs.com/package/ipfs-bitswap) module with the aim of being smaller, faster, better integrated with libp2p/helia, having fewer dependencies and using standard JavaScript instead of Node.js APIs.
  */
 
-import { Bitswap as BitswapClass } from './bitswap.js'
-import type { BitswapNetworkNotifyProgressEvents, BitswapNetworkWantProgressEvents, BitswapNetworkProgressEvents } from './network.js'
-import type { WantType } from './pb/message.js'
-import type { BlockBroker, CreateSessionOptions, ProviderOptions } from '@helia/interface'
+import { Bitswap as BitswapClass } from './bitswap.ts'
+import type { BitswapNetworkNotifyProgressEvents, BitswapNetworkWantProgressEvents, BitswapNetworkProgressEvents } from './network.ts'
+import type { WantType } from './pb/message.ts'
+import type { CreateSessionOptions, ProviderOptions, SessionBlockBroker } from '@helia/interface'
 import type { Routing } from '@helia/interface/routing'
 import type { Libp2p, AbortOptions, Startable, ComponentLogger, Metrics, PeerId } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
@@ -35,10 +35,16 @@ export type { BitswapNetworkProgressEvents }
 export type { WantType }
 export type { BitswapProvider } from './network.ts'
 
+export type WantStatus = 'want' | 'sending' | 'sent'
+
 export interface WantListEntry {
   cid: CID
   priority: number
   wantType: WantType
+}
+
+export interface PeerWantListEntry extends WantListEntry {
+  status: WantStatus
 }
 
 export interface Bitswap extends Startable {
@@ -51,7 +57,7 @@ export interface Bitswap extends Startable {
    * Returns the current state of the wantlist for a peer, if it is being
    * tracked
    */
-  getPeerWantlist(peerId: PeerId): WantListEntry[] | undefined
+  getPeerWantlist(peerId: PeerId): PeerWantListEntry[] | undefined
 
   /**
    * Notify bitswap that a new block is available
@@ -66,7 +72,7 @@ export interface Bitswap extends Startable {
   /**
    * Start a session to retrieve a file from the network
    */
-  createSession(options?: CreateSessionOptions<BitswapWantProgressEvents>): Required<Pick<BlockBroker<BitswapWantProgressEvents>, 'retrieve'>>
+  createSession(options?: CreateSessionOptions<BitswapWantProgressEvents>): Required<Pick<SessionBlockBroker<BitswapWantProgressEvents>, 'retrieve' | 'addPeer'>>
 }
 
 export interface MultihashHasherLoader {
@@ -188,6 +194,21 @@ export interface BitswapOptions {
    * @default 2097152
    */
   maxIncomingMessageSize?: number
+
+  /**
+   * If a block has been sent to a peer and it is requested again by the same
+   * peer, do not send it again until this many ms have elapsed
+   *
+   * @default 5000
+   */
+  doNotResendBlockWindow?: number
+
+  /**
+   * Restrict the local copy of each peer wantlist to this many entries
+   *
+   * @default 1024
+   */
+  maxWantlistSize?: number
 }
 
 export const createBitswap = (components: BitswapComponents, options: BitswapOptions = {}): Bitswap => {

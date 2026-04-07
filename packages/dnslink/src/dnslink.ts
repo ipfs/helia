@@ -1,10 +1,10 @@
 import { MAX_RECURSIVE_DEPTH, RecordType } from '@multiformats/dns'
 import QuickLRU from 'quick-lru'
 import { CACHE_MAX_AGE, CACHE_MAX_ANSWERS, CACHE_SIZE } from './constants.ts'
-import { DNSLinkNotFoundError } from './errors.js'
+import { DNSLinkNotFoundError } from './errors.ts'
 import { ipfs } from './namespaces/ipfs.ts'
 import { ipns } from './namespaces/ipns.ts'
-import type { DNSLink as DNSLinkInterface, ResolveDNSLinkOptions, DNSLinkOptions, DNSLinkComponents, DNSLinkParser, DNSLinkResolveResult } from './index.js'
+import type { DNSLink as DNSLinkInterface, ResolveDNSLinkOptions, DNSLinkOptions, DNSLinkComponents, DNSLinkParser, DNSLinkResolveResult } from './index.ts'
 import type { Logger } from '@libp2p/interface'
 import type { DNS } from '@multiformats/dns'
 

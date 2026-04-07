@@ -1,7 +1,7 @@
 import { expect } from 'aegir/chai'
 import all from 'it-all'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { urlSource } from '../../src/utils/url-source.js'
+import { urlSource } from '../../src/utils/url-source.ts'
 
 describe('url-source', function () {
   it('can get url content', async function () {

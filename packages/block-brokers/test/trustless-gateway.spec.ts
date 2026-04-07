@@ -8,8 +8,8 @@ import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { stubInterface } from 'sinon-ts'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import { TrustlessGatewayBlockBroker } from '../src/trustless-gateway/broker.js'
-import { TrustlessGateway } from '../src/trustless-gateway/trustless-gateway.js'
+import { TrustlessGatewayBlockBroker } from '../src/trustless-gateway/broker.ts'
+import { TrustlessGateway } from '../src/trustless-gateway/trustless-gateway.ts'
 import type { Provider, Routing } from '@helia/interface'
 import type { StubbedInstance } from 'sinon-ts'
 
@@ -151,7 +151,10 @@ describe('trustless-gateway-block-broker', () => {
     if (process.env.TRUSTLESS_GATEWAY == null) {
       return this.skip()
     }
-    const trustlessGateway = new TrustlessGateway(process.env.TRUSTLESS_GATEWAY, { logger: defaultLogger() })
+    const trustlessGateway = new TrustlessGateway(process.env.TRUSTLESS_GATEWAY, {
+      logger: defaultLogger(),
+      routing: 'test'
+    })
 
     // Call getRawBlock multiple times with the same CID
     const promises = Array.from({ length: 10 }, async () => trustlessGateway.getRawBlock(cid))
@@ -182,6 +185,7 @@ describe('trustless-gateway-block-broker', () => {
 
     const trustlessGateway = new TrustlessGateway(process.env.TRUSTLESS_GATEWAY, {
       logger: defaultLogger(),
+      routing: 'test',
       transformRequestInit: (requestInit) => {
         requestInit.headers = {
           ...requestInit.headers,

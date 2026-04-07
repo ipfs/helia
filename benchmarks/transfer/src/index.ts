@@ -2,8 +2,8 @@
 
 import bufferStream from 'it-buffer-stream'
 import prettyBytes from 'pretty-bytes'
-import { createHeliaBenchmark } from './helia.js'
-import { createKuboBenchmark } from './kubo.js'
+import { createHeliaBenchmark } from './helia.ts'
+import { createKuboBenchmark } from './kubo.ts'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { CID } from 'multiformats/cid'
 

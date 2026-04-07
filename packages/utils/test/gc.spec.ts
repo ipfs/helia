@@ -1,12 +1,11 @@
-/* eslint-env mocha */
 import * as dagCbor from '@ipld/dag-cbor'
 import * as dagJson from '@ipld/dag-json'
 import * as dagPb from '@ipld/dag-pb'
 import { expect } from 'aegir/chai'
 import drain from 'it-drain'
 import * as raw from 'multiformats/codecs/raw'
-import { createAndPutBlock } from './fixtures/create-block.js'
-import { createHelia } from './fixtures/create-helia.js'
+import { createAndPutBlock } from './fixtures/create-block.ts'
+import { createHelia } from './fixtures/create-helia.ts'
 import type { GcEvents, Helia } from '@helia/interface'
 
 describe('gc', () => {

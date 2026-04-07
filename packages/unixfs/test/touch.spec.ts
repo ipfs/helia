@@ -1,10 +1,10 @@
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import delay from 'delay'
-import { unixfs } from '../src/index.js'
-import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
-import { smallFile } from './fixtures/files.js'
-import type { UnixFS } from '../src/index.js'
+import { unixfs } from '../src/index.ts'
+import { createShardedDirectory } from './fixtures/create-sharded-directory.ts'
+import { smallFile } from './fixtures/files.ts'
+import type { UnixFS } from '../src/index.ts'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 
@@ -125,6 +125,8 @@ describe('.files.touch', () => {
   })
 
   it('should update mtime recursively for a hamt-sharded-directory', async function () {
+    // this is very slow on Firefox in CI
+    this.timeout(180_000_000)
     this.slow(5 * 1000)
     const mtime = new Date()
     const seconds = Math.floor(mtime.getTime() / 1000)

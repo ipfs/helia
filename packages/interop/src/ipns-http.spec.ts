@@ -5,7 +5,7 @@ import { peerIdFromCID } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
 import { isNode } from 'wherearewe'
-import { createKuboNode } from './fixtures/create-kubo.js'
+import { createKuboNode } from './fixtures/create-kubo.ts'
 import type { Helia } from '@helia/interface'
 import type { IPNS } from '@helia/ipns'
 import type { KuboNode } from 'ipfsd-ctl'
@@ -23,10 +23,11 @@ describe('@helia/ipns - http', () => {
    */
   beforeEach(async () => {
     kubo = await createKuboNode()
+    const kuboInfo = await kubo.info()
     helia = await createHeliaHTTP({
       routers: [
         delegatedHTTPRouting({
-          url: 'http://127.0.0.1:8180'
+          url: kuboInfo.gateway
         })
       ]
     })

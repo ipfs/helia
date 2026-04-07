@@ -1,6 +1,6 @@
 {
   "name": "@helia/ipns",
-  "version": "9.1.6",
+  "version": "9.1.9",
   "description": "An implementation of IPNS for Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/ipns#readme",
@@ -73,7 +73,7 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@helia/interface": "^6.0.2",
+    "@helia/interface": "^6.1.1",
     "@libp2p/crypto": "^5.1.7",
     "@libp2p/fetch": "^4.0.9",
     "@libp2p/interface": "^3.1.0",
@@ -86,7 +86,7 @@
     "ipns": "^10.1.2",
     "multiformats": "^13.4.1",
     "progress-events": "^1.0.1",
-    "protons-runtime": "^5.5.0",
+    "protons-runtime": "^6.0.1",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
   },
@@ -96,8 +96,8 @@
     "aegir": "^47.0.22",
     "datastore-core": "^11.0.2",
     "it-drain": "^3.0.10",
-    "p-event": "^7.0.1",
-    "protons": "^7.6.1",
+    "p-event": "^7.0.0",
+    "protons": "^8.1.1",
     "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0"
   },

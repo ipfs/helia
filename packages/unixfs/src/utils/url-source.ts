@@ -1,5 +1,5 @@
-import { UnknownError } from '../errors.js'
-import type { FileCandidate } from '../index.js'
+import { UnknownError } from '../errors.ts'
+import type { FileCandidate } from '../index.ts'
 
 /**
  * Import a file directly from a URL. The path of the file will be the path

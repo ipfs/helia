@@ -6,18 +6,17 @@
  */
 
 import { contentRoutingSymbol, peerRoutingSymbol, start, stop, TypedEventEmitter } from '@libp2p/interface'
-import { defaultLogger } from '@libp2p/logger'
 import { dns } from '@multiformats/dns'
 import drain from 'it-drain'
 import { CustomProgressEvent } from 'progress-events'
-import { PinsImpl } from './pins.js'
-import { Routing as RoutingClass } from './routing.js'
-import { BlockStorage } from './storage.js'
-import { assertDatastoreVersionIsCurrent } from './utils/datastore-version.js'
-import { getCodec } from './utils/get-codec.js'
-import { getHasher } from './utils/get-hasher.js'
-import { NetworkedStorage } from './utils/networked-storage.js'
-import type { BlockStorageInit } from './storage.js'
+import { PinsImpl } from './pins.ts'
+import { Routing as RoutingClass } from './routing.ts'
+import { BlockStorage } from './storage.ts'
+import { assertDatastoreVersionIsCurrent } from './utils/datastore-version.ts'
+import { getCodec } from './utils/get-codec.ts'
+import { getHasher } from './utils/get-hasher.ts'
+import { NetworkedStorage } from './utils/networked-storage.ts'
+import type { BlockStorageInit } from './storage.ts'
 import type { Await, CodecLoader, GCOptions, HasherLoader, Helia as HeliaInterface, HeliaEvents, Routing } from '@helia/interface'
 import type { BlockBroker } from '@helia/interface/blocks'
 import type { Pins } from '@helia/interface/pins'
@@ -31,8 +30,8 @@ import type { BlockCodec } from 'multiformats'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 
-export { AbstractSession } from './abstract-session.js'
-export type { AbstractCreateSessionOptions, BlockstoreSessionEvents, AbstractSessionComponents } from './abstract-session.js'
+export { AbstractSession } from './abstract-session.ts'
+export type { AbstractCreateSessionOptions, BlockstoreSessionEvents, AbstractSessionComponents } from './abstract-session.ts'
 
 export type { BlockStorage, BlockStorageInit }
 
@@ -208,7 +207,7 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
   private readonly log: Logger
 
   constructor (init: Omit<HeliaInit, 'start' | 'libp2p'> & { libp2p: T }) {
-    this.logger = init.logger ?? defaultLogger()
+    this.logger = init.logger ?? init.libp2p.logger
     this.log = this.logger.forComponent('helia')
     this.getHasher = getHasher(init.hashers, init.loadHasher)
     this.getCodec = getCodec(init.codecs, init.loadCodec)
@@ -259,16 +258,16 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
       providerLookupConcurrency: init.providerLookupConcurrency
     })
 
+    components.blockBrokers = init.blockBrokers.map((fn) => {
+      return fn(components)
+    })
+
     const networkedStorage = new NetworkedStorage(components, init)
     this.pins = new PinsImpl(init.datastore, networkedStorage, this.getCodec)
     this.blockstore = new BlockStorage(networkedStorage, this.pins, {
       holdGcLock: init.holdGcLock ?? true
     })
     this.datastore = init.datastore
-
-    components.blockBrokers = init.blockBrokers.map((fn) => {
-      return fn(components)
-    })
   }
 
   async start (): Promise<void> {

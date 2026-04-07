@@ -2,10 +2,11 @@ import { NoRoutersAvailableError } from '@helia/interface'
 import { NotFoundError, start, stop } from '@libp2p/interface'
 import { PeerQueue } from '@libp2p/utils'
 import merge from 'it-merge'
+import { CustomProgressEvent } from 'progress-events'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { GetFailedError } from './errors.ts'
-import type { Routing as RoutingInterface, Provider, RoutingOptions } from '@helia/interface'
-import type { AbortOptions, ComponentLogger, Logger, Metrics, PeerId, PeerInfo, Startable } from '@libp2p/interface'
+import type { Routing as RoutingInterface, Provider, RoutingOptions, RoutingFindProvidersProgressEvents, RoutingProvideProgressEvents, RoutingPutProgressEvents, RoutingGetProgressEvents, RoutingFindPeerProgressEvents, RoutingGetClosestPeersProgressEvents, RoutingCancelReprovideProgressEvents } from '@helia/interface'
+import type { ComponentLogger, Logger, Metrics, PeerId, PeerInfo, Startable } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 
 const DEFAULT_PROVIDER_LOOKUP_CONCURRENCY = 5
@@ -21,11 +22,14 @@ export interface RoutingComponents {
 }
 
 export class Routing implements RoutingInterface, Startable {
+  public name: string
+
   private readonly log: Logger
   private readonly routers: Array<Partial<RoutingInterface>>
   private readonly providerLookupConcurrency: number
 
   constructor (components: RoutingComponents, init: RoutingInit) {
+    this.name = 'helia'
     this.log = components.logger.forComponent('helia:routing')
     this.routers = init.routers ?? []
     this.providerLookupConcurrency = init.providerLookupConcurrency ?? DEFAULT_PROVIDER_LOOKUP_CONCURRENCY
@@ -65,7 +69,7 @@ export class Routing implements RoutingInterface, Startable {
    * Iterates over all content routers in parallel to find providers of the
    * given key
    */
-  async * findProviders (key: CID, options: RoutingOptions = {}): AsyncIterable<Provider> {
+  async * findProviders (key: CID, options: RoutingOptions<RoutingFindProvidersProgressEvents> = {}): AsyncIterable<Provider> {
     if (this.routers.length === 0) {
       throw new NoRoutersAvailableError('No content routers available')
     }
@@ -89,15 +93,34 @@ export class Routing implements RoutingInterface, Startable {
       .map(async function * (router) {
         let foundProviders = 0
 
+        options?.onProgress?.(new CustomProgressEvent('helia:routing:find-providers:start', {
+          routing: router.name,
+          cid: key
+        }))
+
         try {
           for await (const prov of router.findProviders(key, options)) {
             foundProviders++
+
+            // @ts-expect-error router.name is a string, needs to be specific
+            options?.onProgress?.(new CustomProgressEvent('helia:routing:find-providers:provider', {
+              routing: router.name,
+              cid: key,
+              provider: prov
+            }))
+
             yield prov
           }
         } catch (err: any) {
           errors.push(err)
         } finally {
           self.log('router %s found %d providers for %c', router, foundProviders, key)
+
+          options?.onProgress?.(new CustomProgressEvent('helia:routing:find-providers:end', {
+            routing: router.name,
+            cid: key,
+            found: foundProviders
+          }))
 
           routersFinished++
 
@@ -165,7 +188,7 @@ export class Routing implements RoutingInterface, Startable {
    * Iterates over all content routers in parallel to notify it is
    * a provider of the given key
    */
-  async provide (key: CID, options: AbortOptions = {}): Promise<void> {
+  async provide (key: CID, options: RoutingOptions<RoutingProvideProgressEvents> = {}): Promise<void> {
     if (this.routers.length === 0) {
       throw new NoRoutersAvailableError('No content routers available')
     }
@@ -173,16 +196,36 @@ export class Routing implements RoutingInterface, Startable {
     await Promise.all(
       supports(this.routers, 'provide')
         .map(async (router) => {
+          options?.onProgress?.(new CustomProgressEvent('helia:routing:provide:start', {
+            routing: router.name,
+            cid: key
+          }))
+
           await router.provide(key, options)
+
+          options?.onProgress?.(new CustomProgressEvent('helia:routing:provide:end', {
+            routing: router.name,
+            cid: key
+          }))
         })
     )
   }
 
-  async cancelReprovide (key: CID, options: AbortOptions = {}): Promise<void> {
+  async cancelReprovide (key: CID, options: RoutingOptions<RoutingCancelReprovideProgressEvents> = {}): Promise<void> {
     await Promise.all(
       supports(this.routers, 'cancelReprovide')
         .map(async (router) => {
+          options?.onProgress?.(new CustomProgressEvent('helia:routing:cancel-reprovide:start', {
+            routing: router.name,
+            cid: key
+          }))
+
           await router.cancelReprovide(key, options)
+
+          options?.onProgress?.(new CustomProgressEvent('helia:routing:cancel-reprovide:end', {
+            routing: router.name,
+            cid: key
+          }))
         })
     )
   }
@@ -190,11 +233,23 @@ export class Routing implements RoutingInterface, Startable {
   /**
    * Store the given key/value pair in the available content routings
    */
-  async put (key: Uint8Array, value: Uint8Array, options?: AbortOptions): Promise<void> {
+  async put (key: Uint8Array, value: Uint8Array, options?: RoutingOptions<RoutingPutProgressEvents>): Promise<void> {
     await Promise.all(
       supports(this.routers, 'put')
         .map(async (router) => {
+          options?.onProgress?.(new CustomProgressEvent('helia:routing:put:start', {
+            routing: router.name,
+            key,
+            value
+          }))
+
           await router.put(key, value, options)
+
+          options?.onProgress?.(new CustomProgressEvent('helia:routing:put:end', {
+            routing: router.name,
+            key,
+            value
+          }))
         })
     )
   }
@@ -203,7 +258,7 @@ export class Routing implements RoutingInterface, Startable {
    * Get the value to the given key. The first value offered by any configured
    * router will be returned.
    */
-  async get (key: Uint8Array, options?: AbortOptions): Promise<Uint8Array> {
+  async get (key: Uint8Array, options?: RoutingOptions<RoutingGetProgressEvents>): Promise<Uint8Array> {
     const errors: Error[] = []
     let result: Uint8Array | undefined
 
@@ -211,11 +266,21 @@ export class Routing implements RoutingInterface, Startable {
       result = await Promise.any(
         supports(this.routers, 'get')
           .map(async (router) => {
+            options?.onProgress?.(new CustomProgressEvent('helia:routing:get:start', {
+              routing: router.name,
+              key
+            }))
+
             try {
               return await router.get(key, options)
             } catch (err: any) {
               this.log('router %s failed with %e', router, err)
               errors.push(err)
+            } finally {
+              options?.onProgress?.(new CustomProgressEvent('helia:routing:get:end', {
+                routing: router.name,
+                key
+              }))
             }
           })
       )
@@ -233,7 +298,7 @@ export class Routing implements RoutingInterface, Startable {
   /**
    * Iterates over all peer routers in parallel to find the given peer
    */
-  async findPeer (id: PeerId, options?: RoutingOptions): Promise<PeerInfo> {
+  async findPeer (id: PeerId, options?: RoutingOptions<RoutingFindPeerProgressEvents>): Promise<PeerInfo> {
     if (this.routers.length === 0) {
       throw new NoRoutersAvailableError('No peer routers available')
     }
@@ -242,10 +307,20 @@ export class Routing implements RoutingInterface, Startable {
     const source = merge(
       ...supports(this.routers, 'findPeer')
         .map(router => (async function * () {
+          options?.onProgress?.(new CustomProgressEvent('helia:routing:find-peer:start', {
+            routing: router.name,
+            peerId: id
+          }))
+
           try {
             yield await router.findPeer(id, options)
           } catch (err) {
             self.log.error(err)
+          } finally {
+            options?.onProgress?.(new CustomProgressEvent('helia:routing:find-peer:end', {
+              routing: router.name,
+              peerId: id
+            }))
           }
         })())
     )
@@ -264,14 +339,28 @@ export class Routing implements RoutingInterface, Startable {
   /**
    * Attempt to find the closest peers on the network to the given key
    */
-  async * getClosestPeers (key: Uint8Array, options: RoutingOptions = {}): AsyncIterable<PeerInfo> {
+  async * getClosestPeers (key: Uint8Array, options: RoutingOptions<RoutingGetClosestPeersProgressEvents> = {}): AsyncIterable<PeerInfo> {
     if (this.routers.length === 0) {
       throw new NoRoutersAvailableError('No peer routers available')
     }
 
     for await (const peer of merge(
       ...supports(this.routers, 'getClosestPeers')
-        .map(router => router.getClosestPeers(key, options))
+        .map(async function * (router) {
+          options?.onProgress?.(new CustomProgressEvent('helia:routing:get-closest-peers:start', {
+            routing: router.name,
+            key
+          }))
+
+          try {
+            yield * router.getClosestPeers(key, options)
+          } finally {
+            options?.onProgress?.(new CustomProgressEvent('helia:routing:get-closest-peers:end', {
+              routing: router.name,
+              key
+            }))
+          }
+        })
     )) {
       if (peer == null) {
         continue
@@ -282,6 +371,6 @@ export class Routing implements RoutingInterface, Startable {
   }
 }
 
-function supports <Operation extends keyof Routing> (routers: any[], key: Operation): Array<Pick<Routing, Operation>> {
+function supports <Operation extends keyof Routing> (routers: any[], key: Operation): Array<Pick<Routing, Operation | 'name'>> {
   return routers.filter(router => router[key] != null)
 }

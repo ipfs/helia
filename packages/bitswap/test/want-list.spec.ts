@@ -1,12 +1,13 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
+import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
 import { stubInterface } from 'sinon-ts'
-import { WantType } from '../src/pb/message.js'
-import { WantList } from '../src/want-list.js'
-import type { Network } from '../src/network.js'
+import { WantType } from '../src/pb/message.ts'
+import { WantList } from '../src/want-list.ts'
+import type { Network } from '../src/network.ts'
 import type { Libp2p } from '@libp2p/interface'
 import type { StubbedInstance } from 'sinon-ts'
 
@@ -19,7 +20,7 @@ describe('wantlist', () => {
   let wantList: WantList
   let components: StubbedWantListComponents
 
-  beforeEach(() => {
+  beforeEach(async () => {
     components = {
       network: stubInterface<Network>(),
       libp2p: stubInterface<Libp2p>({
@@ -32,13 +33,11 @@ describe('wantlist', () => {
       logger: defaultLogger()
     })
 
-    wantList.start()
+    await start(wantList)
   })
 
-  afterEach(() => {
-    if (wantList != null) {
-      wantList.stop()
-    }
+  afterEach(async () => {
+    await stop(wantList)
   })
 
   it('should add peers to peer list on connect', async () => {

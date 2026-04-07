@@ -1,5 +1,76 @@
 # Changelog
 
+## [3.1.4](https://github.com/ipfs/helia/compare/bitswap-v3.1.3...bitswap-v3.1.4) (2026-03-18)
+
+
+### Bug Fixes
+
+* add toString method to bitswap providers ([#973](https://github.com/ipfs/helia/issues/973)) ([0a6e505](https://github.com/ipfs/helia/commit/0a6e5052e75c83383bff2429c75a7a97a615de40))
+
+## [3.1.3](https://github.com/ipfs/helia/compare/bitswap-v3.1.2...bitswap-v3.1.3) (2026-03-06)
+
+
+### Bug Fixes
+
+* do not send blocks repeatedly ([#966](https://github.com/ipfs/helia/issues/966)) ([92480ee](https://github.com/ipfs/helia/commit/92480ee8b81ceaff212ed198b84c1ec0460ad86c))
+* enforce maximum peer wantlist size ([#970](https://github.com/ipfs/helia/issues/970)) ([eaeb734](https://github.com/ipfs/helia/commit/eaeb734da7f48aef3d4086d731587d9f2a185ffb))
+* lower do not resend window ([#969](https://github.com/ipfs/helia/issues/969)) ([b3783c0](https://github.com/ipfs/helia/commit/b3783c0d4c28113989600482474f883b72db8af1))
+
+## [3.1.2](https://github.com/ipfs/helia/compare/bitswap-v3.1.1...bitswap-v3.1.2) (2026-02-05)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.1.0 to ^6.1.1
+    * @helia/utils bumped from ^2.4.1 to ^2.4.2
+
+## [3.1.1](https://github.com/ipfs/helia/compare/bitswap-v3.1.0...bitswap-v3.1.1) (2026-02-05)
+
+
+### Bug Fixes
+
+* emit provider event for initial providers ([#953](https://github.com/ipfs/helia/issues/953)) ([f058fba](https://github.com/ipfs/helia/commit/f058fba8a06f8afdd3558bdf7c3801381648ffec))
+* emit provider event for initial provides ([f058fba](https://github.com/ipfs/helia/commit/f058fba8a06f8afdd3558bdf7c3801381648ffec))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^2.4.0 to ^2.4.1
+
+## [3.1.0](https://github.com/ipfs/helia/compare/bitswap-v3.0.15...bitswap-v3.1.0) (2026-02-04)
+
+
+### Features
+
+* allow adding peers to session ([#950](https://github.com/ipfs/helia/issues/950)) ([33e4681](https://github.com/ipfs/helia/commit/33e4681394539d4298a028d2d9ff48a14f76a8e3))
+
+
+### Bug Fixes
+
+* add name to block brokers ([#949](https://github.com/ipfs/helia/issues/949)) ([0456c42](https://github.com/ipfs/helia/commit/0456c42dbd92d94633c133d4f5fe35264a6bbb80))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.0.3 to ^6.1.0
+    * @helia/utils bumped from ^2.3.5 to ^2.4.0
+
+## [3.0.15](https://github.com/ipfs/helia/compare/bitswap-v3.0.14...bitswap-v3.0.15) (2026-02-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.0.2 to ^6.0.3
+    * @helia/utils bumped from ^2.3.4 to ^2.3.5
+
 ## [3.0.14](https://github.com/ipfs/helia/compare/bitswap-v3.0.13...bitswap-v3.0.14) (2026-01-15)
 
 

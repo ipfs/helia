@@ -6,7 +6,7 @@ import map from 'it-map'
 import { CID } from 'multiformats/cid'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { delegatedHTTPRoutingDefaults } from './utils/delegated-http-routing-defaults.js'
+import { delegatedHTTPRoutingDefaults } from './utils/delegated-http-routing-defaults.ts'
 import type { DelegatedRoutingV1HttpApiClient, DelegatedRoutingV1HttpApiClientComponents, DelegatedRoutingV1HttpApiClientInit } from '@helia/delegated-routing-v1-http-api-client'
 import type { Provider, Routing, RoutingOptions } from '@helia/interface'
 import type { PeerId, PeerInfo } from '@libp2p/interface'
@@ -19,6 +19,7 @@ function isIPNSKey (key: Uint8Array): boolean {
 }
 
 class DelegatedHTTPRouter implements Routing {
+  public readonly name = 'delegated-http-router'
   private readonly client: DelegatedRoutingV1HttpApiClient
 
   constructor (components: DelegatedRoutingV1HttpApiClientComponents, init: DelegatedRoutingV1HttpApiClientInit) {

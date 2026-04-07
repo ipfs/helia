@@ -1,11 +1,9 @@
 import { trackedPeerMap } from '@libp2p/peer-collections'
 import { CID } from 'multiformats/cid'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { WantType } from '../pb/message.js'
-import { Ledger } from './ledger.js'
-import type { BitswapNotifyProgressEvents, WantListEntry } from '../index.js'
-import type { Network } from '../network.js'
-import type { BitswapMessage } from '../pb/message.js'
+import { Ledger } from './ledger.ts'
+import type { BitswapNotifyProgressEvents, PeerWantListEntry } from '../index.ts'
+import type { Network } from '../network.ts'
+import type { BitswapMessage } from '../pb/message.ts'
 import type { AbortOptions, ComponentLogger, Libp2p, Logger, Metrics, PeerId } from '@libp2p/interface'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { Blockstore } from 'interface-blockstore'
@@ -13,6 +11,8 @@ import type { ProgressOptions } from 'progress-events'
 
 export interface PeerWantListsInit {
   maxSizeReplaceHasWithBlock?: number
+  doNotResendBlockWindow?: number
+  maxWantListSize?: number
 }
 
 export interface PeerWantListsComponents {
@@ -36,6 +36,8 @@ export class PeerWantLists {
   public network: Network
   public readonly ledgerMap: PeerMap<Ledger>
   private readonly maxSizeReplaceHasWithBlock?: number
+  private readonly doNotResendBlockWindow?: number
+  private readonly maxWantListSize?: number
   private readonly log: Logger
   private readonly logger: ComponentLogger
 
@@ -43,6 +45,8 @@ export class PeerWantLists {
     this.blockstore = components.blockstore
     this.network = components.network
     this.maxSizeReplaceHasWithBlock = init.maxSizeReplaceHasWithBlock
+    this.doNotResendBlockWindow = init.doNotResendBlockWindow
+    this.maxWantListSize = init.maxWantListSize
     this.log = components.logger.forComponent('helia:bitswap:peer-want-lists')
     this.logger = components.logger
 
@@ -78,14 +82,17 @@ export class PeerWantLists {
     }
   }
 
-  wantListForPeer (peerId: PeerId): WantListEntry[] | undefined {
+  wantListForPeer (peerId: PeerId): PeerWantListEntry[] | undefined {
     const ledger = this.ledgerMap.get(peerId)
 
     if (ledger == null) {
       return undefined
     }
 
-    return [...ledger.wants.values()]
+    // remove any expired wants
+    ledger.removeExpiredWants()
+
+    return ledger.getWants()
   }
 
   peers (): PeerId[] {
@@ -105,7 +112,9 @@ export class PeerWantLists {
         network: this.network,
         logger: this.logger
       }, {
-        maxSizeReplaceHasWithBlock: this.maxSizeReplaceHasWithBlock
+        maxSizeReplaceHasWithBlock: this.maxSizeReplaceHasWithBlock,
+        doNotResendBlockWindow: this.doNotResendBlockWindow,
+        maxWantListSize: this.maxWantListSize
       })
       this.ledgerMap.set(peerId, ledger)
     }
@@ -113,47 +122,21 @@ export class PeerWantLists {
     // record the amount of block data received
     ledger.receivedBytes(message.blocks?.reduce((acc, curr) => acc + curr.data.byteLength, 0) ?? 0)
 
-    if (message.wantlist != null) {
-      // if the message has a full wantlist, clear the current wantlist
-      if (message.wantlist.full === true) {
-        ledger.wants.clear()
-      }
+    // remove any expired wants
+    ledger.removeExpiredWants()
 
-      // clear cancelled wants and add new wants to the ledger
-      for (const entry of message.wantlist.entries) {
-        const cid = CID.decode(entry.cid)
-        const cidStr = uint8ArrayToString(cid.multihash.bytes, 'base64')
-
-        if (entry.cancel === true) {
-          this.log('peer %p cancelled want of block for %c', peerId, cid)
-          ledger.wants.delete(cidStr)
-        } else {
-          if (entry.wantType === WantType.WantHave) {
-            this.log('peer %p wanted block presence for %c', peerId, cid)
-          } else {
-            this.log('peer %p wanted block for %c', peerId, cid)
-          }
-
-          ledger.wants.set(cidStr, {
-            cid,
-            priority: entry.priority,
-            wantType: entry.wantType ?? WantType.WantBlock,
-            sendDontHave: entry.sendDontHave ?? false
-          })
-        }
-      }
-    }
+    // add new wants
+    ledger.addWants(message.wantlist)
 
     this.log('send blocks to peer')
     await ledger.sendBlocksToPeer()
   }
 
   async receivedBlock (cid: CID, options: ProgressOptions<BitswapNotifyProgressEvents> & AbortOptions): Promise<void> {
-    const cidStr = uint8ArrayToString(cid.multihash.bytes, 'base64')
     const ledgers: Ledger[] = []
 
     for (const ledger of this.ledgerMap.values()) {
-      if (ledger.wants.has(cidStr)) {
+      if (ledger.hasWant(cid)) {
         ledgers.push(ledger)
       }
     }

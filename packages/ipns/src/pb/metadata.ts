@@ -1,4 +1,4 @@
-import { decodeMessage, encodeMessage, message } from 'protons-runtime'
+import { decodeMessage, encodeMessage, message, streamMessage } from 'protons-runtime'
 import type { Codec, DecodeOptions } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -58,17 +58,58 @@ export namespace IPNSPublishMetadata {
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              yield {
+                field: `${prefix}.keyName`,
+                value: reader.string()
+              }
+              break
+            }
+            case 2: {
+              yield {
+                field: `${prefix}.lifetime`,
+                value: reader.uint32()
+              }
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<IPNSPublishMetadata>): Uint8Array => {
+  export interface IPNSPublishMetadataKeyNameFieldEvent {
+    field: '$.keyName'
+    value: string
+  }
+
+  export interface IPNSPublishMetadataLifetimeFieldEvent {
+    field: '$.lifetime'
+    value: number
+  }
+
+  export function encode (obj: Partial<IPNSPublishMetadata>): Uint8Array {
     return encodeMessage(obj, IPNSPublishMetadata.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<IPNSPublishMetadata>): IPNSPublishMetadata => {
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<IPNSPublishMetadata>): IPNSPublishMetadata {
     return decodeMessage(buf, IPNSPublishMetadata.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<IPNSPublishMetadata>): Generator<IPNSPublishMetadataKeyNameFieldEvent | IPNSPublishMetadataLifetimeFieldEvent> {
+    return streamMessage(buf, IPNSPublishMetadata.codec(), opts)
   }
 }

@@ -1,3 +1,4 @@
+import * as dagPb from '@ipld/dag-pb'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import first from 'it-first'
@@ -5,11 +6,11 @@ import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import { identity } from 'multiformats/hashes/identity'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { unixfs } from '../src/index.js'
-import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
-import { createSubShardedDirectory } from './fixtures/create-subsharded-directory.js'
-import { smallFile } from './fixtures/files.js'
-import type { UnixFS } from '../src/index.js'
+import { unixfs } from '../src/index.ts'
+import { createShardedDirectory } from './fixtures/create-sharded-directory.ts'
+import { createSubShardedDirectory } from './fixtures/create-subsharded-directory.ts'
+import { smallFile } from './fixtures/files.ts'
+import type { UnixFS } from '../src/index.ts'
 import type { Blockstore } from 'interface-blockstore'
 
 describe('cp', () => {
@@ -190,5 +191,20 @@ describe('cp', () => {
       offline: true
     })).to.eventually.be.rejected
       .with.property('name', 'NotFoundError')
+  })
+
+  it('creates shard with non-standard prefix length', async () => {
+    const path = 'file.txt'
+    const cid = await fs.addBytes(smallFile)
+    let dirCid = await fs.addDirectory()
+
+    dirCid = await fs.cp(cid, dirCid, path, {
+      shardSplitThresholdBytes: 0,
+      shardFanoutBits: 16
+    })
+
+    const block = await toBuffer(blockstore.get(dirCid))
+    const node = dagPb.decode(block)
+    expect(node.Links[0].Name?.substring(4)).to.equal(path)
   })
 })
