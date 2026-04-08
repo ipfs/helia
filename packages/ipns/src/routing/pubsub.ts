@@ -1,4 +1,4 @@
-import { isPublicKey, NotFoundError } from '@libp2p/interface'
+import { isPublicKey, NotFoundError, setMaxListeners } from '@libp2p/interface'
 import { logger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { Queue } from '@libp2p/utils'
@@ -109,6 +109,7 @@ export class PubSubRouting implements IPNSRouting, Startable {
   constructor (components: PubsubRoutingComponents, init: PubsubRoutingInit = {}) {
     this.subscriptions = new Set()
     this.shutdownController = new AbortController()
+    setMaxListeners(Infinity, this.shutdownController.signal)
     this.fetchPeers = new PeerSet()
     this.localStore = localStore(components.datastore, components.logger.forComponent('helia:ipns:local-store'))
     this.libp2p = components.libp2p
@@ -381,6 +382,7 @@ export class PubSubRouting implements IPNSRouting, Startable {
 
   async start (): Promise<void> {
     this.shutdownController = new AbortController()
+    setMaxListeners(Infinity, this.shutdownController.signal)
 
     if (this.libp2p.services.fetch != null) {
       this.fetchTopologyId = await this.libp2p.register(this.libp2p.services.fetch.protocol, {
