@@ -1,10 +1,11 @@
 import { createBitswap } from '@helia/bitswap'
+import { isPeerId } from '@libp2p/interface'
+import { CustomProgressEvent } from 'progress-events'
 import type { BitswapOptions, Bitswap, BitswapWantBlockProgressEvents, BitswapNotifyProgressEvents } from '@helia/bitswap'
-import type { BlockAnnounceOptions, BlockBroker, BlockRetrievalOptions, CreateSessionOptions, Routing, HasherLoader, SessionBlockBroker } from '@helia/interface'
+import type { BlockAnnounceOptions, BlockBroker, BlockRetrievalOptions, CreateSessionOptions, Routing, HasherLoader, SessionBlockBroker, BlockBrokerConnectProgressEvent, BlockBrokerConnectedProgressEvent, BlockBrokerRequestBlockProgressEvent, BlockBrokerReceiveBlockProgressEvent } from '@helia/interface'
 import type { Libp2p, Startable, ComponentLogger } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
-import type { MultihashHasher } from 'multiformats/hashes/interface'
 
 export interface BitswapBlockBrokerComponents {
   libp2p: Libp2p
@@ -24,16 +25,7 @@ class BitswapBlockBroker implements BlockBroker<BitswapWantBlockProgressEvents, 
   private started: boolean
 
   constructor (components: BitswapBlockBrokerComponents, init: BitswapBlockBrokerInit = {}) {
-    const { getHasher } = components
-
-    this.bitswap = createBitswap(components, {
-      hashLoader: {
-        getHasher: async (codecOrName: number): Promise<MultihashHasher<number>> => {
-          return getHasher(codecOrName)
-        }
-      },
-      ...init
-    })
+    this.bitswap = createBitswap(components, init)
     this.started = false
   }
 
@@ -56,7 +48,53 @@ class BitswapBlockBroker implements BlockBroker<BitswapWantBlockProgressEvents, 
   }
 
   async retrieve (cid: CID, options: BlockRetrievalOptions<BitswapWantBlockProgressEvents> = {}): Promise<Uint8Array> {
-    return this.bitswap.want(cid, options)
+    return this.bitswap.want(cid, {
+      ...options,
+      onProgress: (evt) => {
+        if (options?.onProgress == null) {
+          return
+        }
+
+        options.onProgress(evt)
+
+        if (evt.type === 'connection:open') {
+          if (!isPeerId(evt.detail)) {
+            // should not happen as bitswap impl only sends wantlist to
+            // connected peers so we always have a peer id
+            return
+          }
+
+          options.onProgress(new CustomProgressEvent<BlockBrokerConnectProgressEvent>('helia:block-broker:connect', {
+            broker: 'bitswap',
+            type: 'connect',
+            provider: evt.detail,
+            cid
+          }))
+        } else if (evt.type === 'connection:opened') {
+          options.onProgress(new CustomProgressEvent<BlockBrokerConnectedProgressEvent>('helia:block-broker:connected', {
+            broker: 'bitswap',
+            type: 'connected',
+            provider: evt.detail.remotePeer,
+            address: evt.detail.remoteAddr,
+            cid
+          }))
+        } else if (evt.type === 'connection:open-stream') {
+          options.onProgress(new CustomProgressEvent<BlockBrokerRequestBlockProgressEvent>('helia:block-broker:request-block', {
+            broker: 'bitswap',
+            type: 'request-block',
+            provider: evt.detail.connection.remotePeer,
+            cid
+          }))
+        } else if (evt.type === 'bitswap:block') {
+          options.onProgress(new CustomProgressEvent<BlockBrokerReceiveBlockProgressEvent>('helia:block-broker:receive-block', {
+            broker: 'bitswap',
+            type: 'receive-block',
+            provider: evt.detail.sender,
+            cid
+          }))
+        }
+      }
+    })
   }
 
   createSession (options?: CreateSessionOptions<BitswapWantBlockProgressEvents>): SessionBlockBroker<BitswapWantBlockProgressEvents, BitswapNotifyProgressEvents> {

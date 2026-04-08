@@ -20,6 +20,52 @@ export interface ProviderOptions {
   providers?: Array<PeerId | Multiaddr | Multiaddr[]>
 }
 
+/**
+ * A block broker will contact a provider to retrieve a block
+ */
+export interface BlockBrokerConnectProgressEvent {
+  broker: string
+  type: 'connect'
+  provider: PeerId
+  cid: CID
+}
+
+/**
+ * A block broker has contacted a provider to retrieve a block
+ */
+export interface BlockBrokerConnectedProgressEvent {
+  broker: string
+  type: 'connected'
+  provider: PeerId
+  address: Multiaddr
+  cid: CID
+}
+
+/**
+ * A block broker has retrieved a block from a provider
+ */
+export interface BlockBrokerRequestBlockProgressEvent {
+  broker: string
+  type: 'request-block'
+  provider: PeerId
+  cid: CID
+}
+
+/**
+ * A block broker has retrieved a block from a provider
+ */
+export interface BlockBrokerReceiveBlockProgressEvent {
+  broker: string
+  type: 'receive-block'
+  provider: PeerId
+  cid: CID
+}
+
+export type BlockBrokerGetBlockProgressEvents = ProgressEvent<'helia:block-broker:connect', BlockBrokerConnectProgressEvent>
+  | ProgressEvent<'helia:block-broker:connected', BlockBrokerConnectedProgressEvent>
+  | ProgressEvent<'helia:block-broker:request-block', BlockBrokerRequestBlockProgressEvent>
+  | ProgressEvent<'helia:block-broker:receive-block', BlockBrokerReceiveBlockProgressEvent>
+
 export type HasBlockProgressEvents =
   ProgressEvent<'blocks:put:duplicate', CID> |
   ProgressEvent<'blocks:put:providers:notify', CID> |
@@ -39,7 +85,8 @@ export type GetBlockProgressEvents =
   ProgressEvent<'blocks:get:providers:want', CID> |
   ProgressEvent<'blocks:get:blockstore:get', CID> |
   ProgressEvent<'blocks:get:blockstore:put', CID> |
-  RoutingFindProvidersProgressEvents
+  RoutingFindProvidersProgressEvents |
+  BlockBrokerGetBlockProgressEvents
 
 export type GetManyBlocksProgressEvents =
   ProgressEvent<'blocks:get-many:blockstore:get-many'> |

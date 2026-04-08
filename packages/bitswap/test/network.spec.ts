@@ -17,8 +17,9 @@ import { Network } from '../src/network.ts'
 import { BitswapMessage, BlockPresenceType } from '../src/pb/message.ts'
 import { QueuedBitswapMessage } from '../src/utils/bitswap-message.ts'
 import { cidToPrefix } from '../src/utils/cid-prefix.ts'
+import type { BitswapMessageEventDetail } from '../src/network.ts'
 import type { Routing } from '@helia/interface/routing'
-import type { Connection, Libp2p, PeerId, IdentifyResult } from '@libp2p/interface'
+import type { Connection, Libp2p, IdentifyResult } from '@libp2p/interface'
 import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedNetworkComponents {
@@ -92,7 +93,7 @@ describe('network', () => {
     const [outboundStream, inboundStream] = await streamPair()
     const handler = components.libp2p.handle.getCall(0).args[1]
 
-    const messageEventPromise = pEvent<'bitswap:message', CustomEvent<{ peer: PeerId, message: BitswapMessage }>>(network, 'bitswap:message')
+    const messageEventPromise = pEvent<'bitswap:message', CustomEvent<BitswapMessageEventDetail>>(network, 'bitswap:message')
 
     handler(inboundStream, connection)
 
@@ -109,7 +110,7 @@ describe('network', () => {
 
     const event = await messageEventPromise
 
-    expect(event.detail.peer.toString()).to.equal(remotePeer.toString())
+    expect(event.detail.connection.remotePeer.toString()).to.equal(remotePeer.toString())
     expect(event.detail).to.have.nested.property('message.wantlist.full', true)
   })
 

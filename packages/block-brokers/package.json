@@ -50,22 +50,23 @@
     "@helia/bitswap": "^3.1.4",
     "@helia/interface": "^6.1.1",
     "@helia/utils": "^2.4.2",
-    "@libp2p/interface": "^3.1.0",
+    "@libp2p/interface": "^3.2.0",
+    "@libp2p/peer-id": "^6.0.6",
     "@libp2p/utils": "^7.0.5",
     "@multiformats/multiaddr": "^13.0.1",
     "@multiformats/multiaddr-matcher": "^3.0.1",
     "@multiformats/multiaddr-to-uri": "^12.0.0",
+    "@multiformats/uri-to-multiaddr": "^10.0.0",
     "interface-blockstore": "^6.0.1",
     "interface-store": "^7.0.0",
     "multiformats": "^13.4.1",
     "progress-events": "^1.0.1",
-    "uint8arraylist": "^2.4.8"
+    "uint8arraylist": "^2.4.8",
+    "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
     "@libp2p/crypto": "^5.1.12",
     "@libp2p/logger": "^6.0.5",
-    "@libp2p/peer-id": "^6.0.3",
-    "@multiformats/uri-to-multiaddr": "^10.0.0",
     "@types/polka": "^0.5.7",
     "@types/sinon": "^21.0.0",
     "aegir": "^47.0.22",
@@ -73,7 +74,6 @@
     "polka": "^0.5.2",
     "race-signal": "^2.0.0",
     "sinon": "^21.0.0",
-    "sinon-ts": "^2.0.0",
-    "uint8arrays": "^5.1.0"
+    "sinon-ts": "^2.0.0"
   }
 }

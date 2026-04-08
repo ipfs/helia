@@ -9,13 +9,14 @@ import { sha256 } from 'multiformats/hashes/sha2'
 import pRetry from 'p-retry'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { DEFAULT_MAX_SIZE_REPLACE_HAS_WITH_BLOCK, DEFAULT_MESSAGE_SEND_DELAY } from '../src/constants.ts'
+import { DEFAULT_MAX_SIZE_REPLACE_HAS_WITH_BLOCK, DEFAULT_WANTLIST_SEND_DEBOUNCE } from '../src/constants.ts'
 import { Network } from '../src/network.ts'
 import { BlockPresenceType, WantlistEntry, WantType } from '../src/pb/message.ts'
 import { PeerWantLists } from '../src/peer-want-lists/index.ts'
 import ve from '../src/utils/varint-encoder.ts'
+import type { BitswapMessageEventDetail } from '../src/network.ts'
 import type { Routing } from '@helia/interface'
-import type { Libp2p, ComponentLogger, PeerId } from '@libp2p/interface'
+import type { Libp2p, ComponentLogger, PeerId, Connection } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 
 interface PeerWantListsComponentStubs {
@@ -27,11 +28,13 @@ interface PeerWantListsComponentStubs {
 }
 
 function receiveWant (network: Network, from: PeerId, entries: WantlistEntry[], full: boolean = false): void {
-  network.safeDispatchEvent('bitswap:message', {
+  network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
     detail: {
       peer: from,
+      connection: stubInterface<Connection>({
+        remotePeer: from
+      }),
       message: {
-        full,
         blocks: [],
         blockPresences: [],
         pendingBytes: 0,
@@ -92,9 +95,12 @@ describe('peer-want-lists', () => {
 
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
 
-    network.safeDispatchEvent('bitswap:message', {
+    network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
       detail: {
         peer: remotePeer,
+        connection: stubInterface<Connection>({
+          remotePeer
+        }),
         message: {
           blocks: [],
           blockPresences: [],
@@ -126,9 +132,12 @@ describe('peer-want-lists', () => {
     const cid2 = CID.parse('bafyreidykglsfhoixmivffc5uwhcgshx4j465xwqntbmu43nb2dzqwfvae')
 
     // first wantlist
-    network.safeDispatchEvent('bitswap:message', {
+    network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
       detail: {
         peer: remotePeer,
+        connection: stubInterface<Connection>({
+          remotePeer
+        }),
         message: {
           blocks: [],
           blockPresences: [],
@@ -147,9 +156,12 @@ describe('peer-want-lists', () => {
 
     expect(entries?.map(entry => entry.cid.toString())).to.include(cid1.toString())
 
-    network.safeDispatchEvent('bitswap:message', {
+    network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
       detail: {
         peer: remotePeer,
+        connection: stubInterface<Connection>({
+          remotePeer
+        }),
         message: {
           blocks: [],
           blockPresences: [],
@@ -179,9 +191,12 @@ describe('peer-want-lists', () => {
     const cid2 = CID.parse('bafyreidykglsfhoixmivffc5uwhcgshx4j465xwqntbmu43nb2dzqwfvae')
 
     // first wantlist
-    network.safeDispatchEvent('bitswap:message', {
+    network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
       detail: {
         peer: remotePeer,
+        connection: stubInterface<Connection>({
+          remotePeer
+        }),
         message: {
           blocks: [],
           blockPresences: [],
@@ -200,9 +215,12 @@ describe('peer-want-lists', () => {
 
     expect(entries?.map(entry => entry.cid.toString())).to.include(cid1.toString())
 
-    network.safeDispatchEvent('bitswap:message', {
+    network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
       detail: {
         peer: remotePeer,
+        connection: stubInterface<Connection>({
+          remotePeer
+        }),
         message: {
           blocks: [],
           blockPresences: [],
@@ -227,9 +245,12 @@ describe('peer-want-lists', () => {
   it('should record the amount of incoming data', async () => {
     const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
-    network.safeDispatchEvent('bitswap:message', {
+    network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
       detail: {
         peer: remotePeer,
+        connection: stubInterface<Connection>({
+          remotePeer
+        }),
         message: {
           blocks: [{
             prefix: Uint8Array.from([0, 1, 2, 3, 4]),
@@ -260,9 +281,12 @@ describe('peer-want-lists', () => {
     await components.blockstore.put(cid, block)
 
     // incoming message
-    network.safeDispatchEvent('bitswap:message', {
+    network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
       detail: {
         peer: remotePeer,
+        connection: stubInterface<Connection>({
+          remotePeer
+        }),
         message: {
           blocks: [],
           blockPresences: [],
@@ -293,7 +317,7 @@ describe('peer-want-lists', () => {
     ]))
 
     // have to wait for network send
-    await delay(DEFAULT_MESSAGE_SEND_DELAY * 3)
+    await delay(DEFAULT_WANTLIST_SEND_DEBOUNCE * 3)
 
     expect(wantLists.wantListForPeer(remotePeer)
       ?.filter(entry => entry.status === 'want')
@@ -311,9 +335,12 @@ describe('peer-want-lists', () => {
     // we have block
     await components.blockstore.put(cid, block)
 
-    network.safeDispatchEvent('bitswap:message', {
+    network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
       detail: {
         peer: remotePeer,
+        connection: stubInterface<Connection>({
+          remotePeer
+        }),
         message: {
           blocks: [],
           blockPresences: [],
@@ -351,9 +378,12 @@ describe('peer-want-lists', () => {
     // CID for a block we don't have
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
 
-    network.safeDispatchEvent('bitswap:message', {
+    network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
       detail: {
         peer: remotePeer,
+        connection: stubInterface<Connection>({
+          remotePeer
+        }),
         message: {
           blocks: [],
           blockPresences: [],
@@ -395,9 +425,12 @@ describe('peer-want-lists', () => {
     // we have block
     await components.blockstore.put(cid, block)
 
-    network.safeDispatchEvent('bitswap:message', {
+    network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
       detail: {
         peer: remotePeer,
+        connection: stubInterface<Connection>({
+          remotePeer
+        }),
         message: {
           blocks: [],
           blockPresences: [],
@@ -444,9 +477,12 @@ describe('peer-want-lists', () => {
 
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
 
-    network.safeDispatchEvent('bitswap:message', {
+    network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
       detail: {
         peer: remotePeer,
+        connection: stubInterface<Connection>({
+          remotePeer
+        }),
         message: {
           blocks: [],
           blockPresences: [],
@@ -483,9 +519,12 @@ describe('peer-want-lists', () => {
 
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
 
-    network.safeDispatchEvent('bitswap:message', {
+    network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
       detail: {
         peer: remotePeer,
+        connection: stubInterface<Connection>({
+          remotePeer
+        }),
         message: {
           blocks: [],
           blockPresences: [],
@@ -502,9 +541,12 @@ describe('peer-want-lists', () => {
 
     expect(wantLists.wantListForPeer(remotePeer)?.map(entry => entry.cid.toString())).to.include(cid.toString())
 
-    network.safeDispatchEvent('bitswap:message', {
+    network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
       detail: {
         peer: remotePeer,
+        connection: stubInterface<Connection>({
+          remotePeer
+        }),
         message: {
           blocks: [],
           blockPresences: [],
@@ -532,9 +574,12 @@ describe('peer-want-lists', () => {
     // we have block
     await components.blockstore.put(cid, block)
 
-    network.safeDispatchEvent('bitswap:message', {
+    network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
       detail: {
         peer: remotePeer,
+        connection: stubInterface<Connection>({
+          remotePeer
+        }),
         message: {
           blocks: [],
           blockPresences: [],
@@ -563,9 +608,12 @@ describe('peer-want-lists', () => {
 
     expect(wantLists.peers()).to.be.empty()
 
-    network.safeDispatchEvent('bitswap:message', {
+    network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
       detail: {
         peer: remotePeer,
+        connection: stubInterface<Connection>({
+          remotePeer
+        }),
         message: {
           blocks: [{
             prefix: Uint8Array.from([0, 1, 2, 3, 4]),
@@ -590,9 +638,12 @@ describe('peer-want-lists', () => {
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
     const block = Uint8Array.from([0, 1, 2, 3, 4])
 
-    network.safeDispatchEvent('bitswap:message', {
+    network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
       detail: {
         peer: remotePeer,
+        connection: stubInterface<Connection>({
+          remotePeer
+        }),
         message: {
           blocks: [],
           blockPresences: [],

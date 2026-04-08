@@ -41,8 +41,26 @@ class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, Trustles
   async queryProvider (cid: CID, provider: TrustlessGateway, options: BlockRetrievalOptions): Promise<Uint8Array> {
     this.log('fetching BLOCK for %c from %s', cid, provider.url)
 
-    const block = await provider.getRawBlock(cid, options)
-    this.log.trace('got block for %c from %s', cid, provider.url)
+    options?.onProgress?.(new CustomProgressEvent('helia:block-brokers:query-provider:start', {
+      blockBroker: 'trustless-gateway',
+      provider: provider.url,
+      transport: 'http',
+      cid
+    }))
+
+    let block: Uint8Array
+
+    try {
+      block = await provider.getRawBlock(cid, options)
+      this.log.trace('got block for %c from %s', cid, provider.url)
+    } finally {
+      options?.onProgress?.(new CustomProgressEvent('helia:block-brokers:query-provider:end', {
+        blockBroker: 'trustless-gateway',
+        provider: provider.url,
+        transport: 'http',
+        cid
+      }))
+    }
 
     await options.validateFn?.(block)
 

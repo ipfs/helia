@@ -4,16 +4,19 @@ import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
+import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { WantType } from '../src/pb/message.ts'
 import { WantList } from '../src/want-list.ts'
 import type { Network } from '../src/network.ts'
+import type { HasherLoader } from '@helia/interface'
 import type { Libp2p } from '@libp2p/interface'
 import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedWantListComponents {
   network: StubbedInstance<Network>
   libp2p: StubbedInstance<Libp2p>
+  getHasher: HasherLoader
 }
 
 describe('wantlist', () => {
@@ -25,7 +28,8 @@ describe('wantlist', () => {
       network: stubInterface<Network>(),
       libp2p: stubInterface<Libp2p>({
         metrics: undefined
-      })
+      }),
+      getHasher: Sinon.stub()
     }
 
     wantList = new WantList({

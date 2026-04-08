@@ -1,8 +1,17 @@
+import { peerIdFromCID } from '@libp2p/peer-id'
+import { uriToMultiaddr } from '@multiformats/uri-to-multiaddr'
 import { base64 } from 'multiformats/bases/base64'
+import { CID } from 'multiformats/cid'
+import { identity } from 'multiformats/hashes/identity'
+import { CustomProgressEvent } from 'progress-events'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DEFAULT_MAX_SIZE } from './index.ts'
 import { limitedResponse } from './utils.ts'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { CID } from 'multiformats/cid'
+import type { BlockBrokerConnectedProgressEvent, BlockBrokerConnectProgressEvent, BlockBrokerGetBlockProgressEvents, BlockBrokerReceiveBlockProgressEvent, BlockBrokerRequestBlockProgressEvent } from '@helia/interface'
+import type { ComponentLogger, Logger, PeerId } from '@libp2p/interface'
+import type { ProgressOptions } from 'progress-events'
+
+const TRANSPORT_IPFS_GATEWAY_HTTP_CODE = 0x0920
 
 export interface TrustlessGatewayStats {
   attempts: number
@@ -22,7 +31,7 @@ export interface TrustlessGatewayComponents {
   routing: string
 }
 
-export interface GetRawBlockOptions {
+export interface GetRawBlockOptions extends ProgressOptions<BlockBrokerGetBlockProgressEvents> {
   signal?: AbortSignal
 
   /**
@@ -41,6 +50,8 @@ export interface GetRawBlockOptions {
  */
 export class TrustlessGateway {
   public readonly url: URL
+  private readonly peer: PeerId
+
   /**
    * The number of times this gateway has been attempted to be used to fetch a
    * block. This includes successful, errored, and aborted attempts. By counting
@@ -86,6 +97,7 @@ export class TrustlessGateway {
     this.transformRequestInit = transformRequestInit
     this.log = logger.forComponent(`helia:trustless-gateway-block-broker:${this.url.host}`)
     this.routing = routing
+    this.peer = peerIdFromCID(CID.createV1(TRANSPORT_IPFS_GATEWAY_HTTP_CODE, identity.digest(uint8ArrayFromString(this.url.toString()))))
   }
 
   /**
@@ -106,15 +118,16 @@ export class TrustlessGateway {
    * Fetch a raw block from `this.url` following the specification defined at
    * https://specs.ipfs.tech/http-gateways/trustless-gateway/
    */
-  async getRawBlock (cid: CID, { signal, maxSize = DEFAULT_MAX_SIZE }: GetRawBlockOptions = {}): Promise<Uint8Array> {
+  async getRawBlock (cid: CID, options: GetRawBlockOptions = {}): Promise<Uint8Array> {
     const gwUrl = new URL(this.url.toString())
     gwUrl.pathname = `/ipfs/${cid.toString()}`
+    const maxSize = options.maxSize ?? DEFAULT_MAX_SIZE
 
     // necessary as not every gateway supports dag-cbor, but every should support
     // sending raw block as-is
     gwUrl.search = '?format=raw'
 
-    if (signal?.aborted === true) {
+    if (options.signal?.aborted === true) {
       throw new Error(`Signal to fetch raw block for CID ${cid} from gateway ${this.url} was aborted prior to fetch`)
     }
 
@@ -125,7 +138,7 @@ export class TrustlessGateway {
     const abortInnerSignal = (): void => {
       innerController.abort()
     }
-    signal?.addEventListener('abort', abortInnerSignal)
+    options.signal?.addEventListener('abort', abortInnerSignal)
 
     try {
       let pendingResponse: Promise<Uint8Array> | undefined = this.#pendingResponses.get(blockId)
@@ -147,6 +160,13 @@ export class TrustlessGateway {
 %s
 `, reqInit.method ?? 'GET', gwUrl, [...headers.entries()].map(([key, value]) => `${key}: ${value}`).join('\n'))
 
+        options.onProgress?.(new CustomProgressEvent<BlockBrokerConnectProgressEvent>('helia:block-broker:connect', {
+          broker: 'trustless-gateway',
+          type: 'connect',
+          provider: this.peer,
+          cid
+        }))
+
         pendingResponse = fetch(gwUrl.toString(), reqInit).then(async (res) => {
           this.log(`received response
 HTTP/1.1 %d %s
@@ -157,9 +177,33 @@ HTTP/1.1 %d %s
             this.#errors++
             throw new Error(`Unable to fetch raw block for CID ${cid} from gateway ${this.url}, received ${res.status} ${res.statusText}`)
           }
+
+          options.onProgress?.(new CustomProgressEvent<BlockBrokerConnectedProgressEvent>('helia:block-broker:connected', {
+            broker: 'trustless-gateway',
+            type: 'connected',
+            provider: this.peer,
+            address: uriToMultiaddr(gwUrl.toString()),
+            cid
+          }))
+
+          options.onProgress?.(new CustomProgressEvent<BlockBrokerRequestBlockProgressEvent>('helia:block-broker:request-block', {
+            broker: 'trustless-gateway',
+            type: 'request-block',
+            provider: this.peer,
+            cid
+          }))
+
           // limited Response ensures the body is less than 2MiB (or configurable maxSize)
           // see https://github.com/ipfs/helia/issues/790
           const body = await limitedResponse(res, maxSize, { signal: innerController.signal, log: this.log })
+
+          options.onProgress?.(new CustomProgressEvent<BlockBrokerReceiveBlockProgressEvent>('helia:block-broker:receive-block', {
+            broker: 'trustless-gateway',
+            type: 'receive-block',
+            provider: this.peer,
+            cid
+          }))
+
           this.#successes++
           return body
         })
@@ -175,7 +219,7 @@ HTTP/1.1 %d %s
       this.#errors++
       throw new Error(`Unable to fetch raw block for CID ${cid} - ${cause.message}`)
     } finally {
-      signal?.removeEventListener('abort', abortInnerSignal)
+      options.signal?.removeEventListener('abort', abortInnerSignal)
       this.#pendingResponses.delete(blockId)
     }
   }

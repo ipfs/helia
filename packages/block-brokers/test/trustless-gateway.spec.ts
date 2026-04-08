@@ -208,4 +208,25 @@ describe('trustless-gateway-block-broker', () => {
     expect(logs).to.have.lengthOf(1)
     expect(logs[0].headers['x-my-header']).to.equal('my-value')
   })
+
+  it('should notify of progress during find providers', async function () {
+    routing.findProviders.callsFake(async function * () {
+      yield badGatewayPeer
+    })
+
+    const events = new Map<string, number>()
+
+    await gatewayBlockBroker.retrieve?.(cid, {
+      onProgress: (evt) => {
+        let count = events.get(evt.type) ?? 0
+        count++
+        events.set(evt.type, count)
+      }
+    })
+
+    expect(events.get('helia:block-broker:connect')).to.equal(1)
+    expect(events.get('helia:block-broker:connected')).to.equal(1)
+    expect(events.get('helia:block-broker:request-block')).to.equal(1)
+    expect(events.get('helia:block-broker:receive-block')).to.equal(1)
+  })
 })

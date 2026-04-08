@@ -1,6 +1,6 @@
 import { TrustlessGatewayBlockBroker } from './broker.ts'
 import type { TransformRequestInit } from './trustless-gateway.ts'
-import type { Routing, BlockBroker, RoutingFindProvidersProgressEvents } from '@helia/interface'
+import type { Routing, BlockBroker, RoutingFindProvidersProgressEvents, BlockBrokerGetBlockProgressEvents } from '@helia/interface'
 import type { ComponentLogger } from '@libp2p/interface'
 import type { CID } from 'multiformats'
 import type { ProgressEvent } from 'progress-events'
@@ -39,7 +39,8 @@ export interface TrustlessGatewayProvider {
 export type TrustlessGatewayGetBlockProgressEvents =
   ProgressEvent<'trustless-gateway:get-block:fetch', URL> |
   ProgressEvent<'trustless-gateway:found-provider', TrustlessGatewayProvider> |
-  RoutingFindProvidersProgressEvents
+  RoutingFindProvidersProgressEvents |
+  BlockBrokerGetBlockProgressEvents
 
 export interface TrustlessGatewayBlockBrokerInit {
   /**

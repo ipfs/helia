@@ -53,13 +53,13 @@
     "@helia/routers": "^5.0.3",
     "@helia/utils": "^2.4.2",
     "@libp2p/config": "^1.1.20",
-    "@libp2p/interface": "^3.1.0",
+    "@libp2p/interface": "^3.2.0",
     "@libp2p/keychain": "^6.0.5",
     "@multiformats/dns": "^1.0.9",
     "blockstore-core": "^6.1.1",
     "datastore-core": "^11.0.2",
     "interface-datastore": "^9.0.2",
-    "libp2p": "^3.0.6"
+    "libp2p": "^3.2.0"
   },
   "devDependencies": {
     "aegir": "^47.0.22",
