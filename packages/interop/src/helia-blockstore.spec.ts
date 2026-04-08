@@ -83,13 +83,20 @@ describe('helia - blockstore', () => {
       rawLeaves: true
     })
     const events = new Map<string, number>()
+    const wat: any[] = []
     await drain(helia.blockstore.get(CID.parse(cid.toString()), {
       onProgress (evt) {
+        wat.push(evt.type)
         let count = events.get(evt.type) ?? 0
         count++
         events.set(evt.type, count)
       }
     }))
+
+    if (!events.has('helia:block-broker:connect')) {
+      // eslint-disable-next-line no-console
+      console.info(wat)
+    }
 
     expect(events.get('helia:block-broker:connect')).to.be.greaterThan(0)
     expect(events.get('helia:block-broker:connected')).to.be.greaterThan(0)
