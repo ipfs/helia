@@ -1,5 +1,33 @@
 # Changelog
 
+## [10.2.0](https://github.com/ipfs/helia/compare/interop-v10.1.4...interop-v10.2.0) (2026-04-08)
+
+
+### Features
+
+* emit standardized block broker events ([#995](https://github.com/ipfs/helia/issues/995)) ([397f2d8](https://github.com/ipfs/helia/commit/397f2d86cefd425178a67e70e8f338093d666fe9))
+* emit standardized routing events ([#981](https://github.com/ipfs/helia/issues/981)) ([5ee3283](https://github.com/ipfs/helia/commit/5ee3283f6f414a9cff4fbe941481aec5f0e4143a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.1.4 to ^5.2.0
+    * @helia/car bumped from ^5.3.10 to ^5.4.0
+    * @helia/dag-cbor bumped from ^5.0.7 to ^5.1.0
+    * @helia/dag-json bumped from ^5.0.7 to ^5.1.0
+    * @helia/dnslink bumped from ^1.1.4 to ^1.2.0
+    * @helia/http bumped from ^3.0.22 to ^3.1.0
+    * @helia/interface bumped from ^6.1.1 to ^6.2.0
+    * @helia/ipns bumped from ^9.1.9 to ^9.2.0
+    * @helia/json bumped from ^5.0.7 to ^5.1.0
+    * @helia/mfs bumped from ^7.0.5 to ^7.1.0
+    * @helia/routers bumped from ^5.0.3 to ^5.1.0
+    * @helia/strings bumped from ^5.0.7 to ^5.1.0
+    * @helia/unixfs bumped from ^7.1.0 to ^7.2.0
+    * helia bumped from ^6.0.22 to ^6.1.0
+
 ## [10.1.4](https://github.com/ipfs/helia/compare/interop-v10.1.3...interop-v10.1.4) (2026-03-18)
 
 

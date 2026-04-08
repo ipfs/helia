@@ -1,5 +1,22 @@
 # Changelog
 
+## [6.1.0](https://github.com/ipfs/helia/compare/helia-v6.0.22...helia-v6.1.0) (2026-04-08)
+
+
+### Features
+
+* emit standardized block broker events ([#995](https://github.com/ipfs/helia/issues/995)) ([397f2d8](https://github.com/ipfs/helia/commit/397f2d86cefd425178a67e70e8f338093d666fe9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.1.4 to ^5.2.0
+    * @helia/interface bumped from ^6.1.1 to ^6.2.0
+    * @helia/routers bumped from ^5.0.3 to ^5.1.0
+    * @helia/utils bumped from ^2.4.2 to ^2.5.0
+
 ## [6.0.22](https://github.com/ipfs/helia/compare/helia-v6.0.21...helia-v6.0.22) (2026-03-18)
 
 

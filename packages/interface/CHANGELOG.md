@@ -5,6 +5,14 @@
 
 * expose .dns property on @helia/interface ([#465](https://github.com/ipfs/helia/issues/465)) ([8c9bb7d](https://github.com/ipfs/helia/commit/8c9bb7d224a1b786cba1fba18bffe07001a3b95d))
 
+## [6.2.0](https://github.com/ipfs/helia/compare/interface-v6.1.1...interface-v6.2.0) (2026-04-08)
+
+
+### Features
+
+* emit standardized block broker events ([#995](https://github.com/ipfs/helia/issues/995)) ([397f2d8](https://github.com/ipfs/helia/commit/397f2d86cefd425178a67e70e8f338093d666fe9))
+* emit standardized routing events ([#981](https://github.com/ipfs/helia/issues/981)) ([5ee3283](https://github.com/ipfs/helia/commit/5ee3283f6f414a9cff4fbe941481aec5f0e4143a))
+
 ## [6.1.1](https://github.com/ipfs/helia/compare/interface-v6.1.0...interface-v6.1.1) (2026-02-05)
 
 

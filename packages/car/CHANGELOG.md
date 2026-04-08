@@ -1,5 +1,23 @@
 # Changelog
 
+## [5.4.0](https://github.com/ipfs/helia/compare/car-v5.3.10...car-v5.4.0) (2026-04-08)
+
+
+### Features
+
+* emit standardized block broker events ([#995](https://github.com/ipfs/helia/issues/995)) ([397f2d8](https://github.com/ipfs/helia/commit/397f2d86cefd425178a67e70e8f338093d666fe9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.1.1 to ^6.2.0
+    * @helia/utils bumped from ^2.4.2 to ^2.5.0
+  * devDependencies
+    * @helia/mfs bumped from ^7.0.5 to ^7.1.0
+    * @helia/unixfs bumped from ^7.1.0 to ^7.2.0
+
 ## [5.3.10](https://github.com/ipfs/helia/compare/car-v5.3.9...car-v5.3.10) (2026-03-18)
 
 

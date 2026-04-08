@@ -1,5 +1,19 @@
 # Changelog
 
+## [5.1.0](https://github.com/ipfs/helia/compare/strings-v5.0.7...strings-v5.1.0) (2026-04-08)
+
+
+### Features
+
+* emit standardized block broker events ([#995](https://github.com/ipfs/helia/issues/995)) ([397f2d8](https://github.com/ipfs/helia/commit/397f2d86cefd425178a67e70e8f338093d666fe9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.1.1 to ^6.2.0
+
 ## [5.0.7](https://github.com/ipfs/helia/compare/strings-v5.0.6...strings-v5.0.7) (2026-02-05)
 
 

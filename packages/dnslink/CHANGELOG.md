@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/ipfs/helia/compare/dnslink-v1.1.4...dnslink-v1.2.0) (2026-04-08)
+
+
+### Features
+
+* emit standardized block broker events ([#995](https://github.com/ipfs/helia/issues/995)) ([397f2d8](https://github.com/ipfs/helia/commit/397f2d86cefd425178a67e70e8f338093d666fe9))
+
 ## [1.1.4](https://github.com/ipfs/helia/compare/dnslink-v1.1.3...dnslink-v1.1.4) (2026-01-15)
 
 

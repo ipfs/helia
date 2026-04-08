@@ -1,5 +1,21 @@
 # Changelog
 
+## [3.2.0](https://github.com/ipfs/helia/compare/bitswap-v3.1.4...bitswap-v3.2.0) (2026-04-08)
+
+
+### Features
+
+* emit standardized block broker events ([#995](https://github.com/ipfs/helia/issues/995)) ([397f2d8](https://github.com/ipfs/helia/commit/397f2d86cefd425178a67e70e8f338093d666fe9))
+* emit standardized routing events ([#981](https://github.com/ipfs/helia/issues/981)) ([5ee3283](https://github.com/ipfs/helia/commit/5ee3283f6f414a9cff4fbe941481aec5f0e4143a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.1.1 to ^6.2.0
+    * @helia/utils bumped from ^2.4.2 to ^2.5.0
+
 ## [3.1.4](https://github.com/ipfs/helia/compare/bitswap-v3.1.3...bitswap-v3.1.4) (2026-03-18)
 
 
