@@ -1,3 +1,4 @@
+import { randomBytes } from '@libp2p/crypto'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import drain from 'it-drain'
@@ -35,7 +36,7 @@ describe('helia - blockstore', () => {
   })
 
   it('should be able to send a block', async () => {
-    const input = Uint8Array.from([0, 1, 2, 3, 4])
+    const input = randomBytes(10)
     const digest = await sha256.digest(input)
     const cid = CID.createV1(raw.code, digest)
     await helia.blockstore.put(cid, input)
@@ -45,7 +46,7 @@ describe('helia - blockstore', () => {
   })
 
   it('should be able to receive a block', async () => {
-    const input = Uint8Array.from([0, 1, 2, 3, 4])
+    const input = randomBytes(10)
     const { cid } = await kubo.api.add({ content: input }, {
       cidVersion: 1,
       rawLeaves: true
@@ -56,7 +57,7 @@ describe('helia - blockstore', () => {
   })
 
   it('should yield routing events', async () => {
-    const input = Uint8Array.from([0, 1, 2, 3, 4])
+    const input = randomBytes(10)
     const { cid } = await kubo.api.add({ content: input }, {
       cidVersion: 1,
       rawLeaves: true
@@ -76,7 +77,7 @@ describe('helia - blockstore', () => {
   })
 
   it('should yield block broker events', async () => {
-    const input = Uint8Array.from([0, 1, 2, 3, 4])
+    const input = randomBytes(10)
     const { cid } = await kubo.api.add({ content: input }, {
       cidVersion: 1,
       rawLeaves: true
