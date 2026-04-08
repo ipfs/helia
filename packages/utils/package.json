@@ -58,7 +58,7 @@
     "@multiformats/multiaddr": "^13.0.1",
     "any-signal": "^4.1.1",
     "blockstore-core": "^6.1.1",
-    "cborg": "^4.2.15",
+    "cborg": "^5.1.0",
     "interface-blockstore": "^6.0.1",
     "interface-datastore": "^9.0.2",
     "interface-store": "^7.0.0",
