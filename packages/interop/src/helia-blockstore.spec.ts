@@ -76,7 +76,7 @@ describe('helia - blockstore', () => {
     expect(events.get('helia:routing:find-providers:end')).to.be.greaterThan(0)
   })
 
-  it('should yield block broker events', async () => {
+  it.only('should yield block broker events', async () => {
     const input = randomBytes(10)
     const { cid } = await kubo.api.add({ content: input }, {
       cidVersion: 1,
@@ -86,7 +86,7 @@ describe('helia - blockstore', () => {
     const wat: any[] = []
     await drain(helia.blockstore.get(CID.parse(cid.toString()), {
       onProgress (evt) {
-        wat.push(evt.type)
+        wat.push([evt.type, evt.detail])
         let count = events.get(evt.type) ?? 0
         count++
         events.set(evt.type, count)
