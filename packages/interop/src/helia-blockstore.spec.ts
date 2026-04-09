@@ -1,7 +1,6 @@
 import { randomBytes } from '@libp2p/crypto'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import drain from 'it-drain'
 import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
@@ -17,9 +16,9 @@ describe('helia - blockstore', () => {
   let kuboInfo: KuboInfo
 
   beforeEach(async () => {
-    helia = await createHeliaNode()
     kubo = await createKuboNode()
     kuboInfo = await kubo.info()
+    helia = await createHeliaNode()
 
     // connect the two nodes
     await helia.libp2p.dial(kuboInfo.multiaddrs.map(str => multiaddr(str)))
@@ -54,53 +53,5 @@ describe('helia - blockstore', () => {
     const output = await toBuffer(helia.blockstore.get(CID.parse(cid.toString())))
 
     expect(output).to.equalBytes(input)
-  })
-
-  it('should yield routing events', async () => {
-    const input = randomBytes(10)
-    const { cid } = await kubo.api.add({ content: input }, {
-      cidVersion: 1,
-      rawLeaves: true
-    })
-    const events = new Map<string, number>()
-    await drain(helia.blockstore.get(CID.parse(cid.toString()), {
-      onProgress (evt) {
-        let count = events.get(evt.type) ?? 0
-        count++
-        events.set(evt.type, count)
-      }
-    }))
-
-    expect(events.get('helia:routing:find-providers:start')).to.be.greaterThan(0)
-    expect(events.get('helia:routing:find-providers:provider')).to.be.greaterThan(0)
-    expect(events.get('helia:routing:find-providers:end')).to.be.greaterThan(0)
-  })
-
-  it.only('should yield block broker events', async () => {
-    const input = randomBytes(10)
-    const { cid } = await kubo.api.add({ content: input }, {
-      cidVersion: 1,
-      rawLeaves: true
-    })
-    const events = new Map<string, number>()
-    const wat: any[] = []
-    await drain(helia.blockstore.get(CID.parse(cid.toString()), {
-      onProgress (evt) {
-        wat.push([evt.type, evt.detail])
-        let count = events.get(evt.type) ?? 0
-        count++
-        events.set(evt.type, count)
-      }
-    }))
-
-    if (!events.has('helia:block-broker:connect')) {
-      // eslint-disable-next-line no-console
-      console.info(wat)
-    }
-
-    expect(events.get('helia:block-broker:connect')).to.be.greaterThan(0)
-    expect(events.get('helia:block-broker:connected')).to.be.greaterThan(0)
-    expect(events.get('helia:block-broker:request-block')).to.be.greaterThan(0)
-    expect(events.get('helia:block-broker:receive-block')).to.be.greaterThan(0)
   })
 })

@@ -98,7 +98,7 @@ export interface NetworkEvents {
   'peer:disconnected': CustomEvent<PeerId>
 }
 
-interface SendMessageJobOptions extends AbortOptions, ProgressOptions, PeerQueueJobOptions {
+interface SendMessageJobOptions extends AbortOptions, ProgressOptions<BitswapNetworkWantProgressEvents>, PeerQueueJobOptions {
   message: QueuedBitswapMessage
 }
 
@@ -349,15 +349,13 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
     if (existingJob != null) {
       existingJob.options.message = mergeMessages(existingJob.options.message, message)
 
-      await existingJob.join({
-        signal: options?.signal
-      })
+      await existingJob.join(options)
 
       return
     }
 
     await this.sendQueue.add(async (options) => {
-      const message = options?.message
+      const message = options.message
 
       if (message == null) {
         throw new InvalidParametersError('No message to send')
@@ -365,7 +363,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
 
       this.log('sendMessage to %p', peerId)
 
-      options?.onProgress?.(new CustomProgressEvent<PeerId>('bitswap:network:send-wantlist', peerId))
+      options.onProgress?.(new CustomProgressEvent<PeerId>('bitswap:send-wantlist', peerId))
 
       const stream = await this.libp2p.dialProtocol(peerId, BITSWAP_120, options)
       await stream.closeRead(options)
@@ -379,8 +377,11 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
 
         await stream.close(options)
       } catch (err: any) {
-        options?.onProgress?.(new CustomProgressEvent<{ peer: PeerId, error: Error }>('bitswap:network:send-wantlist:error', { peer: peerId, error: err }))
         this.log.error('error sending message to %p - %e', peerId, err)
+        options?.onProgress?.(new CustomProgressEvent<{ peer: PeerId, error: Error }>('bitswap:send-wantlist:error', {
+          peer: peerId,
+          error: err
+        }))
         stream.abort(err)
       }
 
@@ -401,7 +402,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
       throw new NotStartedError('Network isn\'t running')
     }
 
-    options?.onProgress?.(new CustomProgressEvent<PeerId | Multiaddr | Multiaddr[]>('bitswap:network:dial', peer))
+    options?.onProgress?.(new CustomProgressEvent<PeerId | Multiaddr | Multiaddr[]>('bitswap:dial', peer))
 
     // dial and wait for identify - this is to avoid opening a protocol stream
     // that we are not going to use but depends on the remote node running the

@@ -508,7 +508,15 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
     }
 
     try {
-      await this.network.sendMessage(peerId, message)
+      await this.network.sendMessage(peerId, message, {
+        onProgress: evt => {
+          this.wants.forEach(({ onProgress }) => {
+            onProgress.forEach(({ onProgress }) => {
+              onProgress(evt)
+            })
+          })
+        }
+      })
 
       this.peers.set(peerId, sentWants)
     } catch (err) {

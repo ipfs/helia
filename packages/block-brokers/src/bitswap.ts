@@ -50,7 +50,7 @@ class BitswapBlockBroker implements BlockBroker<BitswapWantBlockProgressEvents, 
   async retrieve (cid: CID, options: BlockRetrievalOptions<BitswapWantBlockProgressEvents> = {}): Promise<Uint8Array> {
     return this.bitswap.want(cid, {
       ...options,
-      onProgress: (evt) => {
+      onProgress: function bitswapBlockBrokerRetrieveCallback (evt) {
         if (options?.onProgress == null) {
           return
         }
@@ -78,11 +78,11 @@ class BitswapBlockBroker implements BlockBroker<BitswapWantBlockProgressEvents, 
             address: evt.detail.remoteAddr,
             cid
           }))
-        } else if (evt.type === 'connection:open-stream') {
+        } else if (evt.type === 'bitswap:send-wantlist') {
           options.onProgress(new CustomProgressEvent<BlockBrokerRequestBlockProgressEvent>('helia:block-broker:request-block', {
             broker: 'bitswap',
             type: 'request-block',
-            provider: evt.detail.connection.remotePeer,
+            provider: evt.detail,
             cid
           }))
         } else if (evt.type === 'bitswap:block') {
