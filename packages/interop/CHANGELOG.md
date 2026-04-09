@@ -1,5 +1,21 @@
 # Changelog
 
+## [10.2.1](https://github.com/ipfs/helia/compare/interop-v10.2.0...interop-v10.2.1) (2026-04-09)
+
+
+### Bug Fixes
+
+* propagate progress events during bitswap operations ([#999](https://github.com/ipfs/helia/issues/999)) ([79dc114](https://github.com/ipfs/helia/commit/79dc114f480dd6da4a9e6ffa76e1d63d009f331e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.2.0 to ^5.2.1
+    * @helia/http bumped from ^3.1.0 to ^3.1.1
+    * helia bumped from ^6.1.0 to ^6.1.1
+
 ## [10.2.0](https://github.com/ipfs/helia/compare/interop-v10.1.4...interop-v10.2.0) (2026-04-08)
 
 

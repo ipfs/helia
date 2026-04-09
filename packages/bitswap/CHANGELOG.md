@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.2.1](https://github.com/ipfs/helia/compare/bitswap-v3.2.0...bitswap-v3.2.1) (2026-04-09)
+
+
+### Bug Fixes
+
+* propagate progress events during bitswap operations ([#999](https://github.com/ipfs/helia/issues/999)) ([79dc114](https://github.com/ipfs/helia/commit/79dc114f480dd6da4a9e6ffa76e1d63d009f331e))
+
 ## [3.2.0](https://github.com/ipfs/helia/compare/bitswap-v3.1.4...bitswap-v3.2.0) (2026-04-08)
 
 
