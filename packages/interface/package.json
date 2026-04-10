@@ -45,19 +45,23 @@
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.js"
+      "import": "./dist/src/index.js",
+      "module-sync": "./dist/src/index.js"
     },
     "./blocks": {
       "types": "./dist/src/blocks.d.ts",
-      "import": "./dist/src/blocks.js"
+      "import": "./dist/src/blocks.js",
+      "module-sync": "./dist/src/blocks.js"
     },
     "./pins": {
       "types": "./dist/src/pins.d.ts",
-      "import": "./dist/src/pins.js"
+      "import": "./dist/src/pins.js",
+      "module-sync": "./dist/src/pins.js"
     },
     "./routing": {
       "types": "./dist/src/routing.d.ts",
-      "import": "./dist/src/routing.js"
+      "import": "./dist/src/routing.js",
+      "module-sync": "./dist/src/routing.js"
     }
   },
   "scripts": {
@@ -69,16 +73,16 @@
   },
   "dependencies": {
     "@libp2p/interface": "^3.2.0",
-    "@multiformats/dns": "^1.0.9",
+    "@multiformats/dns": "^1.0.13",
     "@multiformats/multiaddr": "^13.0.1",
-    "interface-blockstore": "^6.0.1",
-    "interface-datastore": "^9.0.2",
-    "interface-store": "^7.0.0",
-    "multiformats": "^13.4.1",
-    "progress-events": "^1.0.1"
+    "interface-blockstore": "^6.0.2",
+    "interface-datastore": "^9.0.3",
+    "interface-store": "^7.0.2",
+    "multiformats": "^13.4.2",
+    "progress-events": "^1.1.0"
   },
   "devDependencies": {
-    "aegir": "^47.0.22"
+    "aegir": "^47.1.5"
   },
   "sideEffects": false
 }

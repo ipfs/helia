@@ -29,7 +29,8 @@
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.js"
+      "import": "./dist/src/index.js",
+      "module-sync": "./dist/src/index.js"
     }
   },
   "scripts": {
@@ -49,45 +50,45 @@
   },
   "dependencies": {
     "@chainsafe/libp2p-noise": "^17.0.0",
-    "@chainsafe/libp2p-yamux": "^8.0.0",
+    "@chainsafe/libp2p-yamux": "^8.0.1",
     "@helia/block-brokers": "^5.2.1",
-    "@helia/delegated-routing-v1-http-api-client": "^6.0.0",
+    "@helia/delegated-routing-v1-http-api-client": "^6.0.1",
     "@helia/interface": "^6.2.0",
     "@helia/routers": "^5.1.0",
     "@helia/utils": "^2.5.0",
     "@ipshipyard/libp2p-auto-tls": "^2.0.1",
-    "@libp2p/autonat": "^3.0.5",
-    "@libp2p/bootstrap": "^12.0.6",
-    "@libp2p/circuit-relay-v2": "^4.0.5",
-    "@libp2p/config": "^1.1.20",
-    "@libp2p/dcutr": "^3.0.5",
-    "@libp2p/http": "^2.0.0",
-    "@libp2p/identify": "^4.0.5",
+    "@libp2p/autonat": "^3.0.15",
+    "@libp2p/bootstrap": "^12.0.16",
+    "@libp2p/circuit-relay-v2": "^4.2.0",
+    "@libp2p/config": "^1.1.27",
+    "@libp2p/dcutr": "^3.0.15",
+    "@libp2p/http": "^2.0.1",
+    "@libp2p/identify": "^4.1.0",
     "@libp2p/interface": "^3.2.0",
-    "@libp2p/kad-dht": "^16.1.0",
-    "@libp2p/keychain": "^6.0.5",
-    "@libp2p/mdns": "^12.0.6",
-    "@libp2p/mplex": "^12.0.6",
-    "@libp2p/ping": "^3.0.5",
-    "@libp2p/tcp": "^11.0.5",
-    "@libp2p/tls": "^3.0.5",
-    "@libp2p/upnp-nat": "^4.0.5",
-    "@libp2p/webrtc": "^6.0.6",
-    "@libp2p/websockets": "^10.0.6",
-    "@multiformats/dns": "^1.0.9",
-    "blockstore-core": "^6.1.1",
-    "datastore-core": "^11.0.2",
-    "interface-datastore": "^9.0.2",
-    "ipns": "^10.1.2",
+    "@libp2p/kad-dht": "^16.2.0",
+    "@libp2p/keychain": "^6.0.12",
+    "@libp2p/mdns": "^12.0.16",
+    "@libp2p/mplex": "^12.0.16",
+    "@libp2p/ping": "^3.1.0",
+    "@libp2p/tcp": "^11.0.15",
+    "@libp2p/tls": "^3.0.15",
+    "@libp2p/upnp-nat": "^4.0.15",
+    "@libp2p/webrtc": "^6.0.16",
+    "@libp2p/websockets": "^10.1.8",
+    "@multiformats/dns": "^1.0.13",
+    "blockstore-core": "^6.1.3",
+    "datastore-core": "^11.0.3",
+    "interface-datastore": "^9.0.3",
+    "ipns": "^10.1.3",
     "libp2p": "^3.2.0",
-    "multiformats": "^13.4.1"
+    "multiformats": "^13.4.2"
   },
   "devDependencies": {
     "@multiformats/mafmt": "^12.1.6",
     "@multiformats/multiaddr": "^13.0.1",
-    "aegir": "^47.0.22",
-    "it-all": "^3.0.9",
-    "it-drain": "^3.0.10"
+    "aegir": "^47.1.5",
+    "it-all": "^3.0.11",
+    "it-drain": "^3.0.12"
   },
   "browser": {
     "./dist/src/utils/libp2p-defaults.js": "./dist/src/utils/libp2p-defaults.browser.js"

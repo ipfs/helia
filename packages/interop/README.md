@@ -38,6 +38,10 @@ Loading this module through a script tag will make its exports available as `Hel
 <script src="https://unpkg.com/@helia/interop/dist/index.min.js"></script>
 ```
 
+# API Docs
+
+- <https://ipfs.github.io/helia/modules/_helia_interop.html>
+
 # License
 
 Licensed under either of

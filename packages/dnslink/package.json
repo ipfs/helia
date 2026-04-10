@@ -20,22 +20,6 @@
   ],
   "type": "module",
   "types": "./dist/src/index.d.ts",
-  "typesVersions": {
-    "*": {
-      "*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ],
-      "src/*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ]
-    }
-  },
   "files": [
     "src",
     "dist",
@@ -45,7 +29,8 @@
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.js"
+      "import": "./dist/src/index.js",
+      "module-sync": "./dist/src/index.js"
     }
   },
   "scripts": {
@@ -66,15 +51,15 @@
   "dependencies": {
     "@libp2p/interface": "^3.2.0",
     "@libp2p/peer-id": "^6.0.6",
-    "@multiformats/dns": "^1.0.9",
-    "multiformats": "^13.4.1",
-    "progress-events": "^1.0.1",
+    "@multiformats/dns": "^1.0.13",
+    "multiformats": "^13.4.2",
+    "progress-events": "^1.1.0",
     "quick-lru": "^7.3.0"
   },
   "devDependencies": {
-    "@libp2p/logger": "^6.0.5",
+    "@libp2p/logger": "^6.2.4",
     "@types/dns-packet": "^5.6.5",
-    "aegir": "^47.0.22",
+    "aegir": "^47.1.5",
     "delay": "^7.0.0",
     "sinon-ts": "^2.0.0"
   },
