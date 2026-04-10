@@ -61,7 +61,6 @@
     "@multiformats/multiaddr": "^13.0.1",
     "any-signal": "^4.2.0",
     "interface-blockstore": "^6.0.2",
-    "interface-store": "^7.0.2",
     "it-drain": "^3.0.12",
     "it-length-prefixed": "^10.0.1",
     "it-map": "^3.1.5",
