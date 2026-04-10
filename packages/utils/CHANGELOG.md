@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.5.1](https://github.com/ipfs/helia/compare/utils-v2.5.0...utils-v2.5.1) (2026-04-10)
+
+
+### Bug Fixes
+
+* add module-sync ([#1001](https://github.com/ipfs/helia/issues/1001)) ([ef5363e](https://github.com/ipfs/helia/commit/ef5363e834439ba1838a408639cb2d05d3ba6867))
+
+
+### Dependencies
+
+* bump cborg from 4.5.8 to 5.1.0 ([#998](https://github.com/ipfs/helia/issues/998)) ([0ab3267](https://github.com/ipfs/helia/commit/0ab3267819dc3303a7760e3e42adc27e0e144595))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.2.0 to ^6.2.1
+
 ## [2.5.0](https://github.com/ipfs/helia/compare/utils-v2.4.2...utils-v2.5.0) (2026-04-08)
 
 

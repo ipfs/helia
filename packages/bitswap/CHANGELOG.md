@@ -1,5 +1,20 @@
 # Changelog
 
+## [3.2.2](https://github.com/ipfs/helia/compare/bitswap-v3.2.1...bitswap-v3.2.2) (2026-04-10)
+
+
+### Bug Fixes
+
+* add module-sync ([#1001](https://github.com/ipfs/helia/issues/1001)) ([ef5363e](https://github.com/ipfs/helia/commit/ef5363e834439ba1838a408639cb2d05d3ba6867))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.2.0 to ^6.2.1
+    * @helia/utils bumped from ^2.5.0 to ^2.5.1
+
 ## [3.2.1](https://github.com/ipfs/helia/compare/bitswap-v3.2.0...bitswap-v3.2.1) (2026-04-09)
 
 

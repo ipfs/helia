@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/ipfs/helia/compare/dnslink-v1.2.0...dnslink-v1.2.1) (2026-04-10)
+
+
+### Bug Fixes
+
+* add module-sync ([#1001](https://github.com/ipfs/helia/issues/1001)) ([ef5363e](https://github.com/ipfs/helia/commit/ef5363e834439ba1838a408639cb2d05d3ba6867))
+
 ## [1.2.0](https://github.com/ipfs/helia/compare/dnslink-v1.1.4...dnslink-v1.2.0) (2026-04-08)
 
 

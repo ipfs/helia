@@ -1,5 +1,32 @@
 # Changelog
 
+## [10.2.2](https://github.com/ipfs/helia/compare/interop-v10.2.1...interop-v10.2.2) (2026-04-10)
+
+
+### Bug Fixes
+
+* add module-sync ([#1001](https://github.com/ipfs/helia/issues/1001)) ([ef5363e](https://github.com/ipfs/helia/commit/ef5363e834439ba1838a408639cb2d05d3ba6867))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.2.1 to ^5.2.2
+    * @helia/car bumped from ^5.4.0 to ^5.4.1
+    * @helia/dag-cbor bumped from ^5.1.0 to ^5.1.1
+    * @helia/dag-json bumped from ^5.1.0 to ^5.1.1
+    * @helia/dnslink bumped from ^1.2.0 to ^1.2.1
+    * @helia/http bumped from ^3.1.1 to ^3.1.2
+    * @helia/interface bumped from ^6.2.0 to ^6.2.1
+    * @helia/ipns bumped from ^9.2.0 to ^9.2.1
+    * @helia/json bumped from ^5.1.0 to ^5.1.1
+    * @helia/mfs bumped from ^7.1.0 to ^7.1.1
+    * @helia/routers bumped from ^5.1.0 to ^5.1.1
+    * @helia/strings bumped from ^5.1.0 to ^5.1.1
+    * @helia/unixfs bumped from ^7.2.0 to ^7.2.1
+    * helia bumped from ^6.1.1 to ^6.1.2
+
 ## [10.2.1](https://github.com/ipfs/helia/compare/interop-v10.2.0...interop-v10.2.1) (2026-04-09)
 
 

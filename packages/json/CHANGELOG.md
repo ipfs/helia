@@ -1,5 +1,19 @@
 # Changelog
 
+## [5.1.1](https://github.com/ipfs/helia/compare/json-v5.1.0...json-v5.1.1) (2026-04-10)
+
+
+### Bug Fixes
+
+* add module-sync ([#1001](https://github.com/ipfs/helia/issues/1001)) ([ef5363e](https://github.com/ipfs/helia/commit/ef5363e834439ba1838a408639cb2d05d3ba6867))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.2.0 to ^6.2.1
+
 ## [5.1.0](https://github.com/ipfs/helia/compare/json-v5.0.7...json-v5.1.0) (2026-04-08)
 
 

@@ -1,5 +1,23 @@
 # Changelog
 
+## [5.4.1](https://github.com/ipfs/helia/compare/car-v5.4.0...car-v5.4.1) (2026-04-10)
+
+
+### Bug Fixes
+
+* add module-sync ([#1001](https://github.com/ipfs/helia/issues/1001)) ([ef5363e](https://github.com/ipfs/helia/commit/ef5363e834439ba1838a408639cb2d05d3ba6867))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.2.0 to ^6.2.1
+    * @helia/utils bumped from ^2.5.0 to ^2.5.1
+  * devDependencies
+    * @helia/mfs bumped from ^7.1.0 to ^7.1.1
+    * @helia/unixfs bumped from ^7.2.0 to ^7.2.1
+
 ## [5.4.0](https://github.com/ipfs/helia/compare/car-v5.3.10...car-v5.4.0) (2026-04-08)
 
 
