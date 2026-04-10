@@ -3,8 +3,8 @@ import filter from 'it-filter'
 import toBuffer from 'it-to-buffer'
 import { createUnsafe } from 'multiformats/block'
 import type { CodecLoader } from '@helia/interface'
+import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
-import type { AbortOptions } from 'interface-store'
 import type { BlockView, CID, Version } from 'multiformats'
 
 export interface GraphWalkerComponents {

@@ -70,7 +70,8 @@ describe('session', () => {
     components.wantList.wantSessionBlock.withArgs(cid, providers[0].id).resolves({
       sender: providers[0].id,
       has: true,
-      cid
+      cid,
+      block
     })
     components.wantList.wantSessionBlock.withArgs(cid, providers[1].id).resolves({
       sender: providers[1].id,
@@ -78,26 +79,34 @@ describe('session', () => {
       cid,
       block
     })
+    components.wantList.wantSessionBlock.withArgs(cid, providers[2].id).resolves({
+      sender: providers[2].id,
+      has: true,
+      cid,
+      block
+    })
     components.wantList.wantSessionBlock.withArgs(cid, providers[3].id).resolves({
       sender: providers[3].id,
-      has: true,
+      has: false,
       cid
     })
     components.wantList.wantSessionBlock.withArgs(cid, providers[4].id).resolves({
       sender: providers[4].id,
       has: true,
-      cid
+      cid,
+      block
     })
     components.wantList.wantSessionBlock.withArgs(cid, providers[5].id).resolves({
       sender: providers[5].id,
       has: true,
-      cid
+      cid,
+      block
     })
 
     await expect(session.retrieve?.(cid)).to.eventually.deep.equal(block)
 
     expect(session.providers.length).to.be.lessThan(DEFAULT_SESSION_MAX_PROVIDERS)
-    expect([...session.providers].map(p => p.peerId.toString())).to.include(providers[1].id.toString())
+    expect([...session.providers].map(p => p.peerId.toString())).to.include(providers[0].id.toString())
 
     // the query continues after the session is ready
     await pWaitFor(() => {

@@ -5,9 +5,8 @@ import type { BitswapProvider, BitswapWantProgressEvents } from './index.ts'
 import type { Network } from './network.ts'
 import type { WantList } from './want-list.ts'
 import type { BlockRetrievalOptions, CreateSessionOptions } from '@helia/interface'
-import type { ComponentLogger, Libp2p, PeerId } from '@libp2p/interface'
+import type { ComponentLogger, Libp2p, PeerId, AbortOptions } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { AbortOptions } from 'interface-store'
 import type { CID } from 'multiformats/cid'
 
 export interface BitswapSessionComponents {
@@ -47,8 +46,12 @@ class BitswapSession extends AbstractSession<ProviderPeer, BitswapWantProgressEv
 
     this.log('%p %s %c', provider, result.has ? 'has' : 'does not have', cid)
 
-    if (result.has && result.block != null) {
-      return result.block
+    if (result.has) {
+      if (result.block != null) {
+        return result.block
+      }
+
+      throw new Error('Provider has block but did not send it to us')
     }
 
     throw new Error('Provider did not have block')

@@ -239,7 +239,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     options.signal?.addEventListener('abort', signalAbortedListener)
 
     try {
-      return await raceSignal(deferred.promise, options.signal)
+      return await deferred.promise
     } finally {
       this.removeEventListener('provider', peerAddedToSessionListener)
       options.signal?.removeEventListener('abort', signalAbortedListener)
@@ -302,90 +302,68 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
       .then(async () => {
         this.log('finding %d-%d new provider(s) for %c - %d initial providers', count, this.maxProviders, cid, this.initialProviders.length)
 
+        const self = this
+
         // process any specific providers for this session
-        if (this.initialProviders.length > 0) {
-          while (found < count && this.initialProviders.length > 0) {
-            const prov = this.initialProviders.pop()
+        const initialProviders = async function * (): AsyncGenerator<Provider> {
+          while (self.initialProviders.length > 0) {
+            const initialProvider = self.initialProviders.pop()
 
-            if (prov == null) {
-              break
+            if (initialProvider == null) {
+              continue
             }
 
-            const provider = await this.convertToProvider(prov, 'manual', options)
-
-            if (options.signal?.aborted === true) {
-              break
-            }
+            const provider = await self.convertToProvider(initialProvider, 'manual', options)
 
             if (provider == null) {
               continue
             }
 
-            if (this.hasProvider(provider)) {
-              continue
-            }
-
-            this.log('found %d/%d new providers', found, this.maxProviders)
-            this.providers.push(provider)
-
-            // let the new peer join current queries
-            this.safeDispatchEvent('provider', {
-              detail: provider
-            })
-
-            found++
-
-            if (found === count) {
-              this.log('session is ready with %d peer(s), only initial peers present', count)
-              deferred.resolve()
-              // continue finding peers until we reach this.maxProviders
-            }
-
-            if (this.providers.length === this.maxProviders) {
-              this.log('found max session peers', found)
-              break
-            }
+            yield provider
           }
+        }
+
+        const providers = async function * (): AsyncGenerator<Provider> {
+          yield * initialProviders()
+          yield * self.findNewProviders(cid, options)
         }
 
         // still not got enough providers, search routing for more
-        if (found < this.maxProviders) {
-          for await (const provider of this.findNewProviders(cid, options)) {
-            if (found === this.maxProviders || options.signal?.aborted === true) {
-              break
-            }
+        for await (const provider of providers()) {
+          if (this.providers.length === this.maxProviders || options.signal?.aborted === true) {
+            break
+          }
 
-            if (this.hasProvider(provider)) {
-              continue
-            }
+          if (this.hasProvider(provider)) {
+            continue
+          }
 
-            this.log('found %d/%d new providers', found, this.maxProviders)
-            this.providers.push(provider)
+          this.log('found %d providers, %d in session', found, this.providers.length)
+          this.providers.push(provider)
 
-            // let the new peer join current queries
-            this.safeDispatchEvent('provider', {
-              detail: provider
-            })
+          // let the new peer join current queries
+          this.safeDispatchEvent('provider', {
+            detail: provider
+          })
 
-            found++
+          found++
 
-            if (found === count) {
-              this.log('session is ready with %d peer(s), new peers present', count)
-              deferred.resolve()
-              // continue finding peers until we reach this.maxProviders
-            }
+          if (this.providers.length === count) {
+            this.log('session is ready with %d peer(s), new peers present', this.providers.length)
+            deferred.resolve()
+            // continue finding peers until we reach this.maxProviders
+          }
 
-            if (this.providers.length === this.maxProviders) {
-              this.log('found max session peers', found)
-              break
-            }
+          if (this.providers.length === this.maxProviders) {
+            this.log('found max session peers %d', this.providers.length)
+            break
           }
         }
 
-        this.log('found %d/%d new session peers', found, this.maxProviders)
+        this.log('found %d new session peers while trying to find %d, %d in session', found, count, this.providers.length)
 
-        if (found < count) {
-          throw new InsufficientProvidersError(`Found ${found} of ${count} ${this.name} providers for ${cid}`)
+        if (this.providers.length < count) {
+          throw new InsufficientProvidersError(`Found ${found} of ${count} ${this.name} providers for ${cid}, ${this.providers.length} in session after evictions`)
         }
       })
       .catch(err => {
