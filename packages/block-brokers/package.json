@@ -1,6 +1,6 @@
 {
   "name": "@helia/block-brokers",
-  "version": "5.2.2",
+  "version": "5.2.3",
   "description": "Block brokers for Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/block-brokers#readme",

@@ -1,5 +1,16 @@
 # Changelog
 
+## [10.2.4](https://github.com/ipfs/helia/compare/interop-v10.2.3...interop-v10.2.4) (2026-04-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.2.2 to ^5.2.3
+    * @helia/http bumped from ^3.1.2 to ^3.1.3
+    * helia bumped from ^6.1.2 to ^6.1.3
+
 ## [10.2.3](https://github.com/ipfs/helia/compare/interop-v10.2.2...interop-v10.2.3) (2026-04-13)
 
 

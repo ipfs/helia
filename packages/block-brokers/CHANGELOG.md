@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.2.3](https://github.com/ipfs/helia/compare/block-brokers-v5.2.2...block-brokers-v5.2.3) (2026-04-13)
+
+
+### Bug Fixes
+
+* prefix signal access ([#1005](https://github.com/ipfs/helia/issues/1005)) ([eb1908b](https://github.com/ipfs/helia/commit/eb1908b31542296023ae1d1fa03b82b5987a6b02))
+
 ## [5.2.2](https://github.com/ipfs/helia/compare/block-brokers-v5.2.1...block-brokers-v5.2.2) (2026-04-10)
 
 
