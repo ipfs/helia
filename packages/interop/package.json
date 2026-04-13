@@ -27,7 +27,8 @@
     "src",
     "dist",
     "!dist/test",
-    "!**/*.tsbuildinfo"
+    "!**/*.tsbuildinfo",
+    ".aegir.js"
   ],
   "exports": {
     ".": {
