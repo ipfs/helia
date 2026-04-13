@@ -1,5 +1,12 @@
 # Changelog
 
+## [10.2.3](https://github.com/ipfs/helia/compare/interop-v10.2.2...interop-v10.2.3) (2026-04-13)
+
+
+### Bug Fixes
+
+* restore aegir file in interop suite ([#1003](https://github.com/ipfs/helia/issues/1003)) ([210059d](https://github.com/ipfs/helia/commit/210059d389e81c67f58fcd103fc7061c9c256654))
+
 ## [10.2.2](https://github.com/ipfs/helia/compare/interop-v10.2.1...interop-v10.2.2) (2026-04-10)
 
 

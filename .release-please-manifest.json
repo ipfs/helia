@@ -7,7 +7,7 @@
   "packages/dnslink": "1.2.1",
   "packages/helia": "6.1.2",
   "packages/interface": "6.2.1",
-  "packages/interop": "10.2.2",
+  "packages/interop": "10.2.3",
   "packages/ipns": "9.2.1",
   "packages/json": "5.1.1",
   "packages/mfs": "7.1.1",
