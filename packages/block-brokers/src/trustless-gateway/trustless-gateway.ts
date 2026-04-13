@@ -213,7 +213,7 @@ HTTP/1.1 %d %s
     } catch (cause: any) {
       // @ts-expect-error - TS thinks signal?.aborted can only be false now
       // because it was checked for true above.
-      if (signal?.aborted === true) {
+      if (options.signal?.aborted === true) {
         throw new Error(`Fetching raw block for CID ${cid} from gateway ${this.url} was aborted`)
       }
       this.#errors++
