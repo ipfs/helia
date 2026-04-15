@@ -7,13 +7,15 @@ import drain from 'it-drain'
 import map from 'it-map'
 import toBuffer from 'it-to-buffer'
 import * as raw from 'multiformats/codecs/raw'
+import { stubInterface } from 'sinon-ts'
 import { PinsImpl } from '../src/pins.ts'
 import { BlockStorage } from '../src/storage.ts'
 import { getCodec } from '../src/utils/get-codec.ts'
 import { createBlock } from './fixtures/create-block.ts'
-import type { Blocks, SessionBlockstore } from '@helia/interface'
+import type { Blocks, Routing, SessionBlockstore } from '@helia/interface'
 import type { Pins } from '@helia/interface/pins'
 import type { CID } from 'multiformats/cid'
+import type { StubbedInstance } from 'sinon-ts'
 
 class MemoryBlocks extends MemoryBlockstore implements Blocks {
   createSession (): SessionBlockstore {
@@ -25,6 +27,7 @@ describe('storage', () => {
   let storage: BlockStorage
   let blockstore: Blocks
   let pins: Pins
+  let routing: StubbedInstance<Routing>
   let blocks: Array<{ cid: CID, block: Uint8Array }>
 
   beforeEach(async () => {
@@ -38,7 +41,8 @@ describe('storage', () => {
 
     blockstore = new MemoryBlocks()
     pins = new PinsImpl(datastore, blockstore, getCodec())
-    storage = new BlockStorage(blockstore, pins, {
+    routing = stubInterface()
+    storage = new BlockStorage(blockstore, pins, routing, {
       holdGcLock: true
     })
   })
@@ -138,5 +142,42 @@ describe('storage', () => {
       signal: controller.signal
     }))).to.eventually.be.rejected
       .with.property('name', 'AbortError')
+  })
+
+  it('removes a block from the blockstore', async () => {
+    const { cid, block } = blocks[0]
+
+    await expect(storage.has(cid)).to.eventually.be.false()
+
+    await storage.put(cid, block)
+
+    await expect(storage.has(cid)).to.eventually.be.true()
+
+    expect(routing.cancelReprovide).to.have.property('called', false)
+    await storage.delete(cid)
+
+    await expect(storage.has(cid)).to.eventually.be.false()
+  })
+
+  it('stops re-providing a CID after removing a block from the blockstore', async () => {
+    const { cid, block } = blocks[0]
+    await storage.put(cid, block)
+
+    expect(routing.cancelReprovide).to.have.property('called', false)
+    await storage.delete(cid)
+
+    expect(routing.cancelReprovide).to.have.property('called', true, 'did not cancel re-providing of CID on block deletion')
+    expect(routing.cancelReprovide.getCall(0)?.args[0]).to.equal(cid)
+  })
+
+  it('stops re-providing a CID after removing many blocks from the blockstore', async () => {
+    const { cid, block } = blocks[0]
+    await storage.put(cid, block)
+
+    expect(routing.cancelReprovide).to.have.property('called', false)
+    await drain(storage.deleteMany([cid]))
+
+    expect(routing.cancelReprovide).to.have.property('called', true, 'did not cancel re-providing of CID on block deletion')
+    expect(routing.cancelReprovide.getCall(0)?.args[0]).to.equal(cid)
   })
 })

@@ -1,6 +1,7 @@
 import { start, stop } from '@libp2p/interface'
 import createMortice from 'mortice'
 import { BlockPinnedError } from './errors.ts'
+import type { Routing } from '@helia/interface'
 import type { Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions, SessionBlockstore } from '@helia/interface/blocks'
 import type { Pins } from '@helia/interface/pins'
 import type { AbortOptions, Startable } from '@libp2p/interface'
@@ -27,14 +28,16 @@ export class BlockStorage implements Blocks, Startable {
   public lock: Mortice
   private readonly child: Blocks
   private readonly pins: Pins
+  private readonly routing: Routing
   private started: boolean
 
   /**
    * Create a new BlockStorage
    */
-  constructor (blockstore: Blocks, pins: Pins, options: BlockStorageInit = {}) {
+  constructor (blockstore: Blocks, pins: Pins, routing: Routing, options: BlockStorageInit = {}) {
     this.child = blockstore
     this.pins = pins
+    this.routing = routing
     this.lock = createMortice({
       singleProcess: options.holdGcLock
     })
@@ -127,6 +130,9 @@ export class BlockStorage implements Blocks, Startable {
         throw new BlockPinnedError('Block was pinned - please unpin and try again')
       }
 
+      // stop re-providing this CID if necessary
+      await this.routing.cancelReprovide(cid, options)
+
       await this.child.delete(cid, options)
     } finally {
       releaseLock()
@@ -148,6 +154,9 @@ export class BlockStorage implements Blocks, Startable {
           if (await storage.pins.isPinned(cid)) {
             throw new BlockPinnedError('Block was pinned - please unpin and try again')
           }
+
+          // stop re-providing this CID if necessary
+          await storage.routing.cancelReprovide(cid, options)
 
           yield cid
         }

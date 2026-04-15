@@ -264,7 +264,7 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
 
     const networkedStorage = new NetworkedStorage(components, init)
     this.pins = new PinsImpl(init.datastore, networkedStorage, this.getCodec)
-    this.blockstore = new BlockStorage(networkedStorage, this.pins, {
+    this.blockstore = new BlockStorage(networkedStorage, this.pins, this.routing, {
       holdGcLock: init.holdGcLock ?? true
     })
     this.datastore = init.datastore
