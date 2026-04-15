@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.2](https://github.com/ipfs/helia/compare/utils-v2.5.1...utils-v2.5.2) (2026-04-15)
+
+
+### Bug Fixes
+
+* cancel re-provide when deleting block ([#1007](https://github.com/ipfs/helia/issues/1007)) ([35b081c](https://github.com/ipfs/helia/commit/35b081c77fb8c9488a2745d13e2cb6d8851c3ac8)), closes [#982](https://github.com/ipfs/helia/issues/982)
+
 ## [2.5.1](https://github.com/ipfs/helia/compare/utils-v2.5.0...utils-v2.5.1) (2026-04-10)
 
 
