@@ -4,6 +4,7 @@ import { createIPNSRecord, marshalIPNSRecord, multihashFromIPNSRoutingKey, multi
 import { ipnsValidator } from 'ipns/validator'
 import { CustomProgressEvent } from 'progress-events'
 import { DEFAULT_REPUBLISH_CONCURRENCY, DEFAULT_REPUBLISH_INTERVAL_MS, DEFAULT_TTL_NS } from '../constants.ts'
+import { RecordAlreadyPublishedError } from '../errors.ts'
 import { ipnsSelector } from '../index.ts'
 import { Upkeep } from '../pb/metadata.ts'
 import { keyToMultihash, shouldRefresh, shouldRepublish } from '../utils.ts'
@@ -232,7 +233,7 @@ export class IPNSRepublisher {
 
       // check if record is already published
       if (options.force !== true && publishedRecord != null) {
-        throw new Error('Record already published')
+        throw new RecordAlreadyPublishedError('Record already published')
       }
 
       const selectedRecord = records[ipnsSelector(routingKey, records.map(marshalIPNSRecord))]

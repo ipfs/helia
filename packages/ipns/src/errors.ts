@@ -47,3 +47,8 @@ export class RecordNotFoundError extends Error {
   static name = 'RecordNotFoundError'
   name = 'RecordNotFoundError'
 }
+
+export class RecordAlreadyPublishedError extends Error {
+  static name = 'RecordAlreadyPublishedError'
+  name = 'RecordAlreadyPublishedError'
+}
