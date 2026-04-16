@@ -289,6 +289,9 @@ export interface RepublishOptions extends AbortOptions, ProgressOptions<Republis
   /**
    * Automated record upkeep policy. (default: "refresh")
    *
+   * Defaults to `refresh` since `republish()` cannot sign new records without
+   * the private key.
+   *
    * - `refresh`: republish the existing record until it expires
    * - `none`: disable automated publishing
    */
