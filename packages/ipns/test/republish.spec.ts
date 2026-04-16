@@ -772,6 +772,43 @@ describe('republish', () => {
 
         await expect(name.republish(multihashFromIPNSRoutingKey(routingKey))).to.be.rejectedWith('Record already published')
       })
+
+      it('should rethrow non-RecordNotFoundError from router resolution', async () => {
+        const key = await generateKeyPair('Ed25519')
+        const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+        // routers return garbage bytes, triggering RecordsFailedValidationError (not RecordNotFoundError)
+        getStubCustom = sinon.stub().resolves(new Uint8Array([1, 2, 3]))
+        getStubHelia = sinon.stub().resolves(new Uint8Array([1, 2, 3]))
+        // @ts-ignore
+        result.customRouting.get = getStubCustom
+        // @ts-ignore
+        result.heliaRouting.get = getStubHelia
+
+        await expect(name.republish(multihashFromIPNSRoutingKey(routingKey))).to.be.rejectedWith('invalid')
+      })
+
+      it('should bypass the already-published check when force is true', async () => {
+        const key = await generateKeyPair('Ed25519')
+        const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
+        const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+        const store = localStore(result.datastore, result.log)
+        await store.put(routingKey, marshalIPNSRecord(record))
+
+        getStubCustom = sinon.stub().resolves(marshalIPNSRecord(record))
+        getStubHelia = sinon.stub().resolves(marshalIPNSRecord(record))
+        // @ts-ignore
+        result.customRouting.get = getStubCustom
+        // @ts-ignore
+        result.heliaRouting.get = getStubHelia
+
+        const republished = await name.republish(multihashFromIPNSRoutingKey(routingKey), { force: true })
+
+        expect(republished.record.sequence).to.equal(1n)
+        expect(result.customRouting.put.called).to.be.true()
+        expect(result.heliaRouting.put.called).to.be.true()
+      })
     })
   })
 })
