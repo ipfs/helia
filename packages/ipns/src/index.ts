@@ -403,9 +403,10 @@ export interface IPNS {
   /**
    * Republish the latest known existing record to all routers
    *
-   * This will automatically be done regularly unless `options.repeat` is false
+   * Updates the record's upkeep policy to `options.upkeep` (default: 'refresh').
+   * The background republisher will then keep the record alive accordingly.
    *
-   * Use `unpublish` to stop republishing a key
+   * Use `unpublish` to stop republishing a key.
    */
   republish(key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options?: RepublishOptions): Promise<IPNSRepublishResult>
 }
