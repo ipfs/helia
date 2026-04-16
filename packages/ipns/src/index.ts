@@ -34,11 +34,7 @@
  * value.
  *
  * ```TypeScript
- * import { createHelia } from 'helia'export interface IPNSRecordMetadata {
-  keyName: string
-  lifetime: number
-  upkeep: Upkeep
-}
+ * import { createHelia } from 'helia'
  * import { ipns } from '@helia/ipns'
  * import { unixfs } from '@helia/unixfs'
  * import { generateKeyPair } from '@libp2p/crypto/keys'
