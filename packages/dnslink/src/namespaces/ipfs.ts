@@ -1,6 +1,6 @@
 import { CID } from 'multiformats/cid'
 import { InvalidNamespaceError } from '../errors.ts'
-import type { DNSLinkParser, DNSLinkIPFSResult } from '../index.js'
+import type { DNSLinkParser, DNSLinkIPFSResult } from '../index.ts'
 import type { Answer } from '@multiformats/dns'
 
 export const ipfs: DNSLinkParser<DNSLinkIPFSResult> = (value: string, answer: Answer): DNSLinkIPFSResult => {

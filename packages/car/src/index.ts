@@ -126,7 +126,7 @@
  * ```
  */
 
-import { Car as CarClass } from './car.js'
+import { Car as CarClass } from './car.ts'
 import type { CodecLoader } from '@helia/interface'
 import type { PutManyBlocksProgressEvents, GetBlockProgressEvents, ProviderOptions } from '@helia/interface/blocks'
 import type { CarReader } from '@ipld/car'
@@ -168,8 +168,8 @@ export interface ExportStrategy {
   export(cid: CID, blockstore: Blockstore, getCodec: CodecLoader, options?: AbortOptions): AsyncGenerator<BlockView<unknown, number, number, 0 | 1>, void, undefined>
 }
 
-export * from './export-strategies/index.js'
-export * from './traversal-strategies/index.js'
+export * from './export-strategies/index.ts'
+export * from './traversal-strategies/index.ts'
 
 // re-export walkers from @helia/utils so consumers don't need an extra dep
 export type { GraphWalker } from '@helia/utils'

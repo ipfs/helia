@@ -2,14 +2,14 @@ import * as dagPb from '@ipld/dag-pb'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { DEFAULT_CID_VERSION } from '../../constants.ts'
-import type { PutStore } from '../../unixfs.js'
+import type { PutStore } from '../../unixfs.ts'
+import type { AbortOptions } from '@libp2p/interface'
 import type { Version as CIDVersion } from 'multiformats/cid'
 import type { BlockCodec } from 'multiformats/codecs/interface'
 
-export interface PersistOptions {
+export interface PersistOptions extends AbortOptions {
   codec?: BlockCodec<any, any>
   cidVersion?: CIDVersion
-  signal?: AbortSignal
 }
 
 export const persist = async (buffer: Uint8Array, blockstore: PutStore, options: PersistOptions): Promise<CID> => {

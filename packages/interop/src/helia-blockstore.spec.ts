@@ -1,11 +1,12 @@
+import { randomBytes } from '@libp2p/crypto'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
 import { sha256 } from 'multiformats/hashes/sha2'
-import { createHeliaNode } from './fixtures/create-helia.js'
-import { createKuboNode } from './fixtures/create-kubo.js'
+import { createHeliaNode } from './fixtures/create-helia.ts'
+import { createKuboNode } from './fixtures/create-kubo.ts'
 import type { Helia } from 'helia'
 import type { KuboInfo, KuboNode } from 'ipfsd-ctl'
 
@@ -15,9 +16,9 @@ describe('helia - blockstore', () => {
   let kuboInfo: KuboInfo
 
   beforeEach(async () => {
-    helia = await createHeliaNode()
     kubo = await createKuboNode()
     kuboInfo = await kubo.info()
+    helia = await createHeliaNode()
 
     // connect the two nodes
     await helia.libp2p.dial(kuboInfo.multiaddrs.map(str => multiaddr(str)))
@@ -34,7 +35,7 @@ describe('helia - blockstore', () => {
   })
 
   it('should be able to send a block', async () => {
-    const input = Uint8Array.from([0, 1, 2, 3, 4])
+    const input = randomBytes(10)
     const digest = await sha256.digest(input)
     const cid = CID.createV1(raw.code, digest)
     await helia.blockstore.put(cid, input)
@@ -44,7 +45,7 @@ describe('helia - blockstore', () => {
   })
 
   it('should be able to receive a block', async () => {
-    const input = Uint8Array.from([0, 1, 2, 3, 4])
+    const input = randomBytes(10)
     const { cid } = await kubo.api.add({ content: input }, {
       cidVersion: 1,
       rawLeaves: true

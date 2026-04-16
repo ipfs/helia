@@ -175,13 +175,13 @@
 
 import { ipnsValidator } from 'ipns/validator'
 import { CID } from 'multiformats/cid'
-import { IPNSResolver as IPNSResolverClass } from './ipns/resolver.js'
-import { IPNS as IPNSClass } from './ipns.js'
+import { IPNSResolver as IPNSResolverClass } from './ipns/resolver.ts'
+import { IPNS as IPNSClass } from './ipns.ts'
 import { localStore } from './local-store.ts'
-import { helia } from './routing/index.js'
+import { helia } from './routing/index.ts'
 import { localStoreRouting } from './routing/local-store.ts'
-import type { IPNSResolverComponents } from './ipns/resolver.js'
-import type { IPNSRouting, IPNSRoutingProgressEvents } from './routing/index.js'
+import type { IPNSResolverComponents } from './ipns/resolver.ts'
+import type { IPNSRouting, IPNSRoutingProgressEvents } from './routing/index.ts'
 import type { Routing, HeliaEvents } from '@helia/interface'
 import type { AbortOptions, ComponentLogger, Libp2p, PeerId, PublicKey, TypedEventEmitter } from '@libp2p/interface'
 import type { Keychain } from '@libp2p/keychain'
@@ -410,7 +410,7 @@ export interface IPNS {
   republish(key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options?: RepublishOptions): Promise<IPNSRepublishResult>
 }
 
-export type { IPNSRouting } from './routing/index.js'
+export type { IPNSRouting } from './routing/index.ts'
 
 export type { IPNSRecord } from 'ipns'
 

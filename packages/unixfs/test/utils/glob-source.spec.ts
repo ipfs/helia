@@ -4,8 +4,8 @@ import { fileURLToPath } from 'url'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
 import { isNode } from 'wherearewe'
-import { globSource } from '../../src/utils/glob-source.js'
-import { toMtime } from '../../src/utils/to-mtime.js'
+import { globSource } from '../../src/utils/glob-source.ts'
+import { toMtime } from '../../src/utils/to-mtime.ts'
 import type { Mtime } from 'ipfs-unixfs'
 
 function fixtureDir (): string {

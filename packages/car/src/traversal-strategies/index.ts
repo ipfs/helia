@@ -1,3 +1,3 @@
-export * from './graph-search.js'
-export * from './cid-path.js'
-export * from './unixfs-path.js'
+export * from './graph-search.ts'
+export * from './cid-path.ts'
+export * from './unixfs-path.ts'

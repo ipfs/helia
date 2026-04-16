@@ -9,16 +9,16 @@ import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
 import { sha256 } from 'multiformats/hashes/sha2'
-import { InvalidPBNodeError, NotUnixFSError, UnknownError } from '../errors.js'
-import { persist } from './utils/persist.js'
-import { resolve, updatePathCids } from './utils/resolve.js'
-import type { ChmodOptions } from '../index.js'
-import type { GetStore, PutStore } from '../unixfs.js'
+import { InvalidPBNodeError, NotUnixFSError, UnknownError } from '../errors.ts'
+import { persist } from './utils/persist.ts'
+import { resolve, updatePathCids } from './utils/resolve.ts'
+import type { ChmodOptions } from '../index.ts'
+import type { GetStore, PutStore } from '../unixfs.ts'
 import type { PBNode, PBLink } from '@ipld/dag-pb'
 
 const log = logger('helia:unixfs:chmod')
 
-export async function chmod (cid: CID, mode: number, blockstore: PutStore & GetStore, options: Partial<ChmodOptions> = {}): Promise<CID> {
+export async function chmod (cid: CID, mode: number, blockstore: PutStore & GetStore, options: ChmodOptions = {}): Promise<CID> {
   const resolved = await resolve(cid, options.path, blockstore, options)
 
   log('chmod %c %d', resolved.cid, mode)

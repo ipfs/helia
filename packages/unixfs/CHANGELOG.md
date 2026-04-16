@@ -1,5 +1,46 @@
 # Changelog
 
+## [7.2.1](https://github.com/ipfs/helia/compare/unixfs-v7.2.0...unixfs-v7.2.1) (2026-04-10)
+
+
+### Bug Fixes
+
+* add module-sync ([#1001](https://github.com/ipfs/helia/issues/1001)) ([ef5363e](https://github.com/ipfs/helia/commit/ef5363e834439ba1838a408639cb2d05d3ba6867))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.2.0 to ^6.2.1
+
+## [7.2.0](https://github.com/ipfs/helia/compare/unixfs-v7.1.0...unixfs-v7.2.0) (2026-04-08)
+
+
+### Features
+
+* emit standardized block broker events ([#995](https://github.com/ipfs/helia/issues/995)) ([397f2d8](https://github.com/ipfs/helia/commit/397f2d86cefd425178a67e70e8f338093d666fe9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.1.1 to ^6.2.0
+
+## [7.1.0](https://github.com/ipfs/helia/compare/unixfs-v7.0.4...unixfs-v7.1.0) (2026-03-18)
+
+
+### Features
+
+* support metadata when adding bytes/bytestreams ([#975](https://github.com/ipfs/helia/issues/975)) ([12fd852](https://github.com/ipfs/helia/commit/12fd852240a10f3c0fb0dfed4d40c76436e6348d))
+
+
+### Bug Fixes
+
+* do not hard code HAMT prefix length ([#976](https://github.com/ipfs/helia/issues/976)) ([d033889](https://github.com/ipfs/helia/commit/d033889a7a29029b62230a9a03356660ffbf5c2e))
+* support profiles and shard split thresholds in mfs ([#972](https://github.com/ipfs/helia/issues/972)) ([9aff8d0](https://github.com/ipfs/helia/commit/9aff8d097a27a71efbdd500ab7b97a89baf57aa6))
+
 ## [7.0.4](https://github.com/ipfs/helia/compare/unixfs-v7.0.3...unixfs-v7.0.4) (2026-02-05)
 
 

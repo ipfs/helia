@@ -2,16 +2,15 @@ import { AbstractSession } from '@helia/utils'
 import { isPeerId } from '@libp2p/interface'
 import { multiaddrToUri } from '@multiformats/multiaddr-to-uri'
 import { CustomProgressEvent } from 'progress-events'
-import { TrustlessGateway } from './trustless-gateway.js'
-import { filterNonHTTPMultiaddrs, findHttpGatewayProviders } from './utils.js'
-import { DEFAULT_ALLOW_INSECURE, DEFAULT_ALLOW_LOCAL } from './index.js'
-import type { CreateTrustlessGatewaySessionOptions } from './broker.js'
-import type { TrustlessGatewayGetBlockProgressEvents, TrustlessGatewayProvider } from './index.js'
-import type { TransformRequestInit } from './trustless-gateway.js'
+import { DEFAULT_ALLOW_INSECURE, DEFAULT_ALLOW_LOCAL } from './index.ts'
+import { TrustlessGateway } from './trustless-gateway.ts'
+import { filterNonHTTPMultiaddrs, findHttpGatewayProviders } from './utils.ts'
+import type { CreateTrustlessGatewaySessionOptions } from './broker.ts'
+import type { TrustlessGatewayGetBlockProgressEvents, TrustlessGatewayProvider } from './index.ts'
+import type { TransformRequestInit } from './trustless-gateway.ts'
 import type { BlockRetrievalOptions, Routing } from '@helia/interface'
-import type { ComponentLogger, PeerId } from '@libp2p/interface'
+import type { ComponentLogger, PeerId, AbortOptions } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { AbortOptions } from 'interface-store'
 import type { CID } from 'multiformats/cid'
 
 export interface TrustlessGatewaySessionComponents {
@@ -41,8 +40,26 @@ class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, Trustles
   async queryProvider (cid: CID, provider: TrustlessGateway, options: BlockRetrievalOptions): Promise<Uint8Array> {
     this.log('fetching BLOCK for %c from %s', cid, provider.url)
 
-    const block = await provider.getRawBlock(cid, options)
-    this.log.trace('got block for %c from %s', cid, provider.url)
+    options?.onProgress?.(new CustomProgressEvent('helia:block-brokers:query-provider:start', {
+      blockBroker: 'trustless-gateway',
+      provider: provider.url,
+      transport: 'http',
+      cid
+    }))
+
+    let block: Uint8Array
+
+    try {
+      block = await provider.getRawBlock(cid, options)
+      this.log.trace('got block for %c from %s', cid, provider.url)
+    } finally {
+      options?.onProgress?.(new CustomProgressEvent('helia:block-brokers:query-provider:end', {
+        blockBroker: 'trustless-gateway',
+        provider: provider.url,
+        transport: 'http',
+        cid
+      }))
+    }
 
     await options.validateFn?.(block)
 

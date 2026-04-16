@@ -1,5 +1,48 @@
 # Changelog
 
+## [7.1.1](https://github.com/ipfs/helia/compare/mfs-v7.1.0...mfs-v7.1.1) (2026-04-10)
+
+
+### Bug Fixes
+
+* add module-sync ([#1001](https://github.com/ipfs/helia/issues/1001)) ([ef5363e](https://github.com/ipfs/helia/commit/ef5363e834439ba1838a408639cb2d05d3ba6867))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/unixfs bumped from ^7.2.0 to ^7.2.1
+
+## [7.1.0](https://github.com/ipfs/helia/compare/mfs-v7.0.5...mfs-v7.1.0) (2026-04-08)
+
+
+### Features
+
+* emit standardized block broker events ([#995](https://github.com/ipfs/helia/issues/995)) ([397f2d8](https://github.com/ipfs/helia/commit/397f2d86cefd425178a67e70e8f338093d666fe9))
+* emit standardized routing events ([#981](https://github.com/ipfs/helia/issues/981)) ([5ee3283](https://github.com/ipfs/helia/commit/5ee3283f6f414a9cff4fbe941481aec5f0e4143a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/unixfs bumped from ^7.1.0 to ^7.2.0
+
+## [7.0.5](https://github.com/ipfs/helia/compare/mfs-v7.0.4...mfs-v7.0.5) (2026-03-18)
+
+
+### Bug Fixes
+
+* support profiles and shard split thresholds in mfs ([#972](https://github.com/ipfs/helia/issues/972)) ([9aff8d0](https://github.com/ipfs/helia/commit/9aff8d097a27a71efbdd500ab7b97a89baf57aa6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/unixfs bumped from ^7.0.4 to ^7.1.0
+
 ## [7.0.4](https://github.com/ipfs/helia/compare/mfs-v7.0.3...mfs-v7.0.4) (2026-02-05)
 
 

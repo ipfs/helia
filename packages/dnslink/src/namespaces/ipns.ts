@@ -1,6 +1,6 @@
 import { peerIdFromString } from '@libp2p/peer-id'
 import { InvalidNamespaceError } from '../errors.ts'
-import type { DNSLinkParser, DNSLinkIPNSResult, DNSLinkDNSLinkResult } from '../index.js'
+import type { DNSLinkParser, DNSLinkIPNSResult, DNSLinkDNSLinkResult } from '../index.ts'
 import type { Answer } from '@multiformats/dns'
 
 export const ipns: DNSLinkParser<DNSLinkIPNSResult | DNSLinkDNSLinkResult> = (value: string, answer: Answer): DNSLinkIPNSResult | DNSLinkDNSLinkResult => {

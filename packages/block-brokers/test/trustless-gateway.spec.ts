@@ -8,8 +8,8 @@ import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { stubInterface } from 'sinon-ts'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import { TrustlessGatewayBlockBroker } from '../src/trustless-gateway/broker.js'
-import { TrustlessGateway } from '../src/trustless-gateway/trustless-gateway.js'
+import { TrustlessGatewayBlockBroker } from '../src/trustless-gateway/broker.ts'
+import { TrustlessGateway } from '../src/trustless-gateway/trustless-gateway.ts'
 import type { Provider, Routing } from '@helia/interface'
 import type { StubbedInstance } from 'sinon-ts'
 
@@ -207,5 +207,26 @@ describe('trustless-gateway-block-broker', () => {
     // assert that fetch was called with the custom header
     expect(logs).to.have.lengthOf(1)
     expect(logs[0].headers['x-my-header']).to.equal('my-value')
+  })
+
+  it('should notify of progress during find providers', async function () {
+    routing.findProviders.callsFake(async function * () {
+      yield badGatewayPeer
+    })
+
+    const events = new Map<string, number>()
+
+    await gatewayBlockBroker.retrieve?.(cid, {
+      onProgress: (evt) => {
+        let count = events.get(evt.type) ?? 0
+        count++
+        events.set(evt.type, count)
+      }
+    })
+
+    expect(events.get('helia:block-broker:connect')).to.equal(1)
+    expect(events.get('helia:block-broker:connected')).to.equal(1)
+    expect(events.get('helia:block-broker:request-block')).to.equal(1)
+    expect(events.get('helia:block-broker:receive-block')).to.equal(1)
   })
 })

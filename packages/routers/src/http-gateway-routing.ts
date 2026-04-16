@@ -45,6 +45,7 @@ function toUrl (info: PeerInfo): URL {
 }
 
 class HTTPGatewayRouter implements Partial<Routing> {
+  public readonly name = 'http-gateway-router'
   private readonly gateways: PeerInfo[]
   private readonly shuffle: boolean
 

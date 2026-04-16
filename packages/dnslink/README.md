@@ -141,22 +141,22 @@ $ npm i @helia/dnslink
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make its exports available as `HeliaIpns` in the global namespace.
+Loading this module through a script tag will make its exports available as `HeliaDnslink` in the global namespace.
 
 ```html
-<script src="https://unpkg.com/@helia/ipns/dist/index.min.js"></script>
+<script src="https://unpkg.com/@helia/dnslink/dist/index.min.js"></script>
 ```
 
 # API Docs
 
-- <https://ipfs.github.io/helia/modules/_helia_ipns.html>
+- <https://ipfs.github.io/helia/modules/_helia_dnslink.html>
 
 # License
 
 Licensed under either of
 
-- Apache 2.0, ([LICENSE-APACHE](https://github.com/ipfs/helia/blob/main/packages/ipns/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT ([LICENSE-MIT](https://github.com/ipfs/helia/blob/main/packages/ipns/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+- Apache 2.0, ([LICENSE-APACHE](https://github.com/ipfs/helia/blob/main/packages/dnslink/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](https://github.com/ipfs/helia/blob/main/packages/dnslink/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
 # Contribute
 

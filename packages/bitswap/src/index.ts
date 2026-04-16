@@ -6,15 +6,14 @@
  * It supersedes the older [ipfs-bitswap](https://www.npmjs.com/package/ipfs-bitswap) module with the aim of being smaller, faster, better integrated with libp2p/helia, having fewer dependencies and using standard JavaScript instead of Node.js APIs.
  */
 
-import { Bitswap as BitswapClass } from './bitswap.js'
-import type { BitswapNetworkNotifyProgressEvents, BitswapNetworkWantProgressEvents, BitswapNetworkProgressEvents } from './network.js'
-import type { WantType } from './pb/message.js'
-import type { CreateSessionOptions, ProviderOptions, SessionBlockBroker } from '@helia/interface'
+import { Bitswap as BitswapClass } from './bitswap.ts'
+import type { BitswapNetworkNotifyProgressEvents, BitswapNetworkWantProgressEvents, BitswapNetworkProgressEvents } from './network.ts'
+import type { WantType } from './pb/message.ts'
+import type { BlockBrokerGetBlockProgressEvents, CreateSessionOptions, HasherLoader, ProviderOptions, SessionBlockBroker } from '@helia/interface'
 import type { Routing } from '@helia/interface/routing'
 import type { Libp2p, AbortOptions, Startable, ComponentLogger, Metrics, PeerId } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
-import type { MultihashHasher } from 'multiformats/hashes/interface'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
 export type BitswapWantProgressEvents =
@@ -27,7 +26,8 @@ export type BitswapWantBlockProgressEvents =
   ProgressEvent<'bitswap:unwant', CID> |
   ProgressEvent<'bitswap:want', CID> |
   ProgressEvent<'bitswap:block', { cid: CID, sender: PeerId }> |
-  BitswapNetworkWantProgressEvents
+  BitswapNetworkWantProgressEvents |
+  BlockBrokerGetBlockProgressEvents
 
 export type { BitswapNetworkNotifyProgressEvents }
 export type { BitswapNetworkWantProgressEvents }
@@ -35,10 +35,16 @@ export type { BitswapNetworkProgressEvents }
 export type { WantType }
 export type { BitswapProvider } from './network.ts'
 
+export type WantStatus = 'want' | 'sending' | 'sent'
+
 export interface WantListEntry {
   cid: CID
   priority: number
   wantType: WantType
+}
+
+export interface PeerWantListEntry extends WantListEntry {
+  status: WantStatus
 }
 
 export interface Bitswap extends Startable {
@@ -51,7 +57,7 @@ export interface Bitswap extends Startable {
    * Returns the current state of the wantlist for a peer, if it is being
    * tracked
    */
-  getPeerWantlist(peerId: PeerId): WantListEntry[] | undefined
+  getPeerWantlist(peerId: PeerId): PeerWantListEntry[] | undefined
 
   /**
    * Notify bitswap that a new block is available
@@ -69,15 +75,12 @@ export interface Bitswap extends Startable {
   createSession(options?: CreateSessionOptions<BitswapWantProgressEvents>): Required<Pick<SessionBlockBroker<BitswapWantProgressEvents>, 'retrieve' | 'addPeer'>>
 }
 
-export interface MultihashHasherLoader {
-  getHasher(codeOrName: number | string): Promise<MultihashHasher>
-}
-
 export interface BitswapComponents {
   routing: Routing
   blockstore: Blockstore
   logger: ComponentLogger
   libp2p: Libp2p
+  getHasher: HasherLoader
   metrics?: Metrics
 }
 
@@ -113,11 +116,6 @@ export interface BitswapOptions {
   runOnLimitedConnections?: boolean
 
   /**
-   * Enables loading esoteric hash functions
-   */
-  hashLoader?: MultihashHasherLoader
-
-  /**
    * The protocol that we speak
    *
    * @default '/ipfs/bitswap/1.2.0'
@@ -132,6 +130,21 @@ export interface BitswapOptions {
   messageSendConcurrency?: number
 
   /**
+   * Wantlist or blocks must be sent to peers within this many milliseconds
+   *
+   * @default 10_000
+   */
+  messageSendTimeout?: number
+
+  /**
+   * Incoming wantlist or block messages must be received from peers within this
+   * many milliseconds
+   *
+   * @default 10_000
+   */
+  messageReceiveTimeout?: number
+
+  /**
    * When sending blocks to peers, how many messages to send at once
    *
    * @default 50
@@ -143,7 +156,7 @@ export interface BitswapOptions {
    * This is useful for preventing slow/large peer-connections from consuming
    * your bandwidth/streams.
    *
-   * @default 10000
+   * @default 10_000
    */
   sendBlocksTimeout?: number
 
@@ -155,6 +168,15 @@ export interface BitswapOptions {
    * @default 10
    */
   sendBlocksDebounce?: number
+
+  /**
+   * When a want is added to the local wantlist, wait this many milliseconds
+   * before sending the wantlist to connected or session peers in case more
+   * wants are about to be added
+   *
+   * @default 10
+   */
+  sendWantlistDebounce?: number
 
   /**
    * If the client sends a want-have, and we have the corresponding block, we
@@ -188,6 +210,21 @@ export interface BitswapOptions {
    * @default 2097152
    */
   maxIncomingMessageSize?: number
+
+  /**
+   * If a block has been sent to a peer and it is requested again by the same
+   * peer, do not send it again until this many ms have elapsed
+   *
+   * @default 5000
+   */
+  doNotResendBlockWindow?: number
+
+  /**
+   * Restrict the local copy of each peer wantlist to this many entries
+   *
+   * @default 1024
+   */
+  maxWantlistSize?: number
 }
 
 export const createBitswap = (components: BitswapComponents, options: BitswapOptions = {}): Bitswap => {

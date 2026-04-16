@@ -1,7 +1,7 @@
 import { expect } from 'aegir/chai'
 import all from 'it-all'
 import { CID } from 'multiformats'
-import { httpGatewayRouting } from '../src/http-gateway-routing.js'
+import { httpGatewayRouting } from '../src/http-gateway-routing.ts'
 
 describe('http-gateway-routing', () => {
   it('should find providers', async () => {

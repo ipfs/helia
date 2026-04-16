@@ -5,7 +5,7 @@ import * as raw from 'multiformats/codecs/raw'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { AddOptions, GetOptions, StringsComponents, Strings as StringsInterface } from './index.js'
+import type { AddOptions, GetOptions, StringsComponents, Strings as StringsInterface } from './index.ts'
 
 export class Strings implements StringsInterface {
   private readonly components: StringsComponents

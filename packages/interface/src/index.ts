@@ -14,9 +14,9 @@
  * ```
  */
 
-import type { Blocks } from './blocks.js'
-import type { Pins } from './pins.js'
-import type { Routing } from './routing.js'
+import type { Blocks } from './blocks.ts'
+import type { Pins } from './pins.ts'
+import type { Routing } from './routing.ts'
 import type { AbortOptions, ComponentLogger, Libp2p, Metrics, TypedEventEmitter } from '@libp2p/interface'
 import type { DNS } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
@@ -148,7 +148,7 @@ export interface HeliaEvents<T extends Libp2p = Libp2p> {
   stop: CustomEvent<Helia<T>>
 }
 
-export * from './blocks.js'
-export * from './errors.js'
-export * from './pins.js'
-export * from './routing.js'
+export * from './blocks.ts'
+export * from './errors.ts'
+export * from './pins.ts'
+export * from './routing.ts'

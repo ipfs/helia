@@ -1,5 +1,77 @@
 # Changelog
 
+## [5.2.3](https://github.com/ipfs/helia/compare/block-brokers-v5.2.2...block-brokers-v5.2.3) (2026-04-13)
+
+
+### Bug Fixes
+
+* prefix signal access ([#1005](https://github.com/ipfs/helia/issues/1005)) ([eb1908b](https://github.com/ipfs/helia/commit/eb1908b31542296023ae1d1fa03b82b5987a6b02))
+
+## [5.2.2](https://github.com/ipfs/helia/compare/block-brokers-v5.2.1...block-brokers-v5.2.2) (2026-04-10)
+
+
+### Bug Fixes
+
+* add module-sync ([#1001](https://github.com/ipfs/helia/issues/1001)) ([ef5363e](https://github.com/ipfs/helia/commit/ef5363e834439ba1838a408639cb2d05d3ba6867))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^3.2.1 to ^3.2.2
+    * @helia/interface bumped from ^6.2.0 to ^6.2.1
+    * @helia/utils bumped from ^2.5.0 to ^2.5.1
+
+## [5.2.1](https://github.com/ipfs/helia/compare/block-brokers-v5.2.0...block-brokers-v5.2.1) (2026-04-09)
+
+
+### Bug Fixes
+
+* propagate progress events during bitswap operations ([#999](https://github.com/ipfs/helia/issues/999)) ([79dc114](https://github.com/ipfs/helia/commit/79dc114f480dd6da4a9e6ffa76e1d63d009f331e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^3.2.0 to ^3.2.1
+
+## [5.2.0](https://github.com/ipfs/helia/compare/block-brokers-v5.1.4...block-brokers-v5.2.0) (2026-04-08)
+
+
+### Features
+
+* emit standardized block broker events ([#995](https://github.com/ipfs/helia/issues/995)) ([397f2d8](https://github.com/ipfs/helia/commit/397f2d86cefd425178a67e70e8f338093d666fe9))
+* emit standardized routing events ([#981](https://github.com/ipfs/helia/issues/981)) ([5ee3283](https://github.com/ipfs/helia/commit/5ee3283f6f414a9cff4fbe941481aec5f0e4143a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^3.1.4 to ^3.2.0
+    * @helia/interface bumped from ^6.1.1 to ^6.2.0
+    * @helia/utils bumped from ^2.4.2 to ^2.5.0
+
+## [5.1.4](https://github.com/ipfs/helia/compare/block-brokers-v5.1.3...block-brokers-v5.1.4) (2026-03-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^3.1.3 to ^3.1.4
+
+## [5.1.3](https://github.com/ipfs/helia/compare/block-brokers-v5.1.2...block-brokers-v5.1.3) (2026-03-06)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^3.1.2 to ^3.1.3
+
 ## [5.1.2](https://github.com/ipfs/helia/compare/block-brokers-v5.1.1...block-brokers-v5.1.2) (2026-02-05)
 
 

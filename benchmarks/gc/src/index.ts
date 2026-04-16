@@ -5,8 +5,8 @@ import * as dagPb from '@ipld/dag-pb'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { Bench } from 'tinybench'
-import { createHeliaBenchmark } from './helia.js'
-import { createKuboBenchmark } from './kubo.js'
+import { createHeliaBenchmark } from './helia.ts'
+import { createKuboBenchmark } from './kubo.ts'
 
 const PINNED_DAG_COUNT = parseInt(process.env.INCREMENT ?? '10000')
 const GARBAGE_BLOCK_COUNT = parseInt(process.env.INCREMENT ?? '10000')

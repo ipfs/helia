@@ -3,7 +3,7 @@ import { expect } from 'aegir/chai'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'
 import { stubInterface } from 'sinon-ts'
-import { Routing } from '../src/routing.js'
+import { Routing } from '../src/routing.ts'
 import type { StubbedInstance } from 'sinon-ts'
 
 describe('routing', () => {

@@ -4,7 +4,7 @@ import { unixfs } from '@helia/unixfs'
 import { fixedSize } from 'ipfs-unixfs-importer/chunker'
 import { balanced } from 'ipfs-unixfs-importer/layout'
 import bufferStream from 'it-buffer-stream'
-import { getHelia } from './get-helia.js'
+import { getHelia } from './get-helia.ts'
 
 process.title = `helia transport benchmark ${process.env.HELIA_TYPE}`
 

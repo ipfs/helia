@@ -2,7 +2,7 @@ import * as dagPb from '@ipld/dag-pb'
 import { importer } from 'ipfs-unixfs-importer'
 import last from 'it-last'
 import toBuffer from 'it-to-buffer'
-import { unixfs } from '../../src/index.js'
+import { unixfs } from '../../src/index.ts'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 

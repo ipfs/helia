@@ -9,14 +9,14 @@ import { contentRoutingSymbol, peerRoutingSymbol, start, stop, TypedEventEmitter
 import { dns } from '@multiformats/dns'
 import drain from 'it-drain'
 import { CustomProgressEvent } from 'progress-events'
-import { PinsImpl } from './pins.js'
-import { Routing as RoutingClass } from './routing.js'
-import { BlockStorage } from './storage.js'
-import { assertDatastoreVersionIsCurrent } from './utils/datastore-version.js'
-import { getCodec } from './utils/get-codec.js'
-import { getHasher } from './utils/get-hasher.js'
-import { NetworkedStorage } from './utils/networked-storage.js'
-import type { BlockStorageInit } from './storage.js'
+import { PinsImpl } from './pins.ts'
+import { Routing as RoutingClass } from './routing.ts'
+import { BlockStorage } from './storage.ts'
+import { assertDatastoreVersionIsCurrent } from './utils/datastore-version.ts'
+import { getCodec } from './utils/get-codec.ts'
+import { getHasher } from './utils/get-hasher.ts'
+import { NetworkedStorage } from './utils/networked-storage.ts'
+import type { BlockStorageInit } from './storage.ts'
 import type { Await, CodecLoader, GCOptions, HasherLoader, Helia as HeliaInterface, HeliaEvents, Routing } from '@helia/interface'
 import type { BlockBroker } from '@helia/interface/blocks'
 import type { Pins } from '@helia/interface/pins'
@@ -30,8 +30,8 @@ import type { BlockCodec } from 'multiformats'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 
-export { AbstractSession } from './abstract-session.js'
-export type { AbstractCreateSessionOptions, BlockstoreSessionEvents, AbstractSessionComponents } from './abstract-session.js'
+export { AbstractSession } from './abstract-session.ts'
+export type { AbstractCreateSessionOptions, BlockstoreSessionEvents, AbstractSessionComponents } from './abstract-session.ts'
 
 export type { BlockStorage, BlockStorageInit }
 
@@ -264,7 +264,7 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
 
     const networkedStorage = new NetworkedStorage(components, init)
     this.pins = new PinsImpl(init.datastore, networkedStorage, this.getCodec)
-    this.blockstore = new BlockStorage(networkedStorage, this.pins, {
+    this.blockstore = new BlockStorage(networkedStorage, this.pins, this.routing, {
       holdGcLock: init.holdGcLock ?? true
     })
     this.datastore = init.datastore

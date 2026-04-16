@@ -1,5 +1,75 @@
 # Changelog
 
+## [3.1.3](https://github.com/ipfs/helia/compare/http-v3.1.2...http-v3.1.3) (2026-04-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.2.2 to ^5.2.3
+
+## [3.1.2](https://github.com/ipfs/helia/compare/http-v3.1.1...http-v3.1.2) (2026-04-10)
+
+
+### Bug Fixes
+
+* add module-sync ([#1001](https://github.com/ipfs/helia/issues/1001)) ([ef5363e](https://github.com/ipfs/helia/commit/ef5363e834439ba1838a408639cb2d05d3ba6867))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.2.1 to ^5.2.2
+    * @helia/interface bumped from ^6.2.0 to ^6.2.1
+    * @helia/routers bumped from ^5.1.0 to ^5.1.1
+    * @helia/utils bumped from ^2.5.0 to ^2.5.1
+
+## [3.1.1](https://github.com/ipfs/helia/compare/http-v3.1.0...http-v3.1.1) (2026-04-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.2.0 to ^5.2.1
+
+## [3.1.0](https://github.com/ipfs/helia/compare/http-v3.0.22...http-v3.1.0) (2026-04-08)
+
+
+### Features
+
+* emit standardized block broker events ([#995](https://github.com/ipfs/helia/issues/995)) ([397f2d8](https://github.com/ipfs/helia/commit/397f2d86cefd425178a67e70e8f338093d666fe9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.1.4 to ^5.2.0
+    * @helia/interface bumped from ^6.1.1 to ^6.2.0
+    * @helia/routers bumped from ^5.0.3 to ^5.1.0
+    * @helia/utils bumped from ^2.4.2 to ^2.5.0
+
+## [3.0.22](https://github.com/ipfs/helia/compare/http-v3.0.21...http-v3.0.22) (2026-03-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.1.3 to ^5.1.4
+
+## [3.0.21](https://github.com/ipfs/helia/compare/http-v3.0.20...http-v3.0.21) (2026-03-06)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/block-brokers bumped from ^5.1.2 to ^5.1.3
+
 ## [3.0.20](https://github.com/ipfs/helia/compare/http-v3.0.19...http-v3.0.20) (2026-02-05)
 
 

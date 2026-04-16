@@ -1,40 +1,41 @@
 import * as dagPB from '@ipld/dag-pb'
 import { logger } from '@libp2p/logger'
 import { UnixFS } from 'ipfs-unixfs'
+import { DirSharded } from 'ipfs-unixfs-importer/utils'
 import last from 'it-last'
 import toBuffer from 'it-to-buffer'
 // @ts-expect-error no types
 import SparseArray from 'sparse-array'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { wrapHash } from './consumable-hash.js'
-import { DirSharded } from './dir-sharded.js'
+import { wrapHash } from './consumable-hash.ts'
 import {
   hamtHashCode,
   hamtHashFn,
   hamtBucketBits
-} from './hamt-constants.js'
-import { persist } from './persist.js'
-import type { InfiniteHash } from './consumable-hash.js'
-import type { PersistOptions } from './persist.js'
-import type { GetStore, PutStore } from '../../unixfs.js'
+} from './hamt-constants.ts'
+import { persist } from './persist.ts'
+import type { InfiniteHash } from './consumable-hash.ts'
+import type { GetStore, PutStore } from '../../unixfs.ts'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { Mtime } from 'ipfs-unixfs'
-import type { ImportResult } from 'ipfs-unixfs-importer'
+import type { ImporterOptions, ImportResult } from 'ipfs-unixfs-importer'
 import type { CID, Version } from 'multiformats/cid'
 
 const log = logger('helia:unixfs:commands:utils:hamt-utils')
 
-export interface UpdateHamtDirectoryOptions extends AbortOptions {
+export interface UpdateHamtDirectoryOptions extends HAMTOptions {
   cidVersion?: Version
 }
 
-export const toPrefix = (position: number): string => {
+export const toPrefix = (position: number, bits = hamtBucketBits): string => {
+  const length = (Math.pow(2, bits) - 1).toString(16).length
+
   return position
     .toString(16)
     .toUpperCase()
-    .padStart(2, '0')
-    .substring(0, 2)
+    .padStart(length, '0')
+    .substring(0, length)
 }
 
 export interface CreateShardOptions {
@@ -57,7 +58,7 @@ export const createShard = async (blockstore: PutStore, contents: Array<{ name: 
   }, options)
 
   for (let i = 0; i < contents.length; i++) {
-    await shard._bucket.put(contents[i].name, {
+    await shard.bucket.put(contents[i].name, {
       size: contents[i].size,
       cid: contents[i].cid
     })
@@ -78,12 +79,12 @@ export interface HAMTPath {
   node: dagPB.PBNode
 }
 
-export const updateShardedDirectory = async (path: HAMTPath[], blockstore: GetStore & PutStore, options: PersistOptions): Promise<{ cid: CID, node: dagPB.PBNode }> => {
+export const updateShardedDirectory = async (path: HAMTPath[], blockstore: GetStore & PutStore, options: HAMTOptions): Promise<{ cid: CID, node: dagPB.PBNode }> => {
   // persist any metadata on the shard root
   const shardRoot = UnixFS.unmarshal(path[0].node.Data ?? new Uint8Array(0))
 
   // this is always the same
-  const fanout = BigInt(Math.pow(2, hamtBucketBits))
+  const fanout = BigInt(Math.pow(2, options.shardFanoutBits ?? hamtBucketBits))
 
   // start from the leaf and ascend to the root
   path.reverse()
@@ -145,18 +146,23 @@ export const updateShardedDirectory = async (path: HAMTPath[], blockstore: GetSt
   return { cid, node }
 }
 
-export const recreateShardedDirectory = async (cid: CID, fileName: string, blockstore: Pick<Blockstore, 'get'>, options: AbortOptions): Promise<{ path: HAMTPath[], hash: InfiniteHash }> => {
+export interface HAMTOptions extends AbortOptions, Pick<ImporterOptions, 'shardFanoutBits' | 'shardSplitStrategy' | 'shardSplitThresholdBytes'> {
+
+}
+
+export const recreateShardedDirectory = async (cid: CID, fileName: string, blockstore: Pick<Blockstore, 'get'>, options: HAMTOptions): Promise<{ path: HAMTPath[], hash: InfiniteHash }> => {
   const wrapped = wrapHash(hamtHashFn)
   const hash = wrapped(uint8ArrayFromString(fileName))
   const path: HAMTPath[] = []
+  const hashBits = options.shardFanoutBits ?? hamtBucketBits
 
   // descend the HAMT, loading each layer as we head towards the target child
   while (true) {
     const block = await toBuffer(blockstore.get(cid, options))
     const node = dagPB.decode(block)
     const children = new SparseArray()
-    const index = await hash.take(hamtBucketBits)
-    const prefix = toPrefix(index)
+    const index = await hash.take(hashBits)
+    const prefix = toPrefix(index, hashBits)
 
     path.push({
       prefix,
@@ -171,11 +177,11 @@ export const recreateShardedDirectory = async (cid: CID, fileName: string, block
     for (const link of node.Links) {
       const linkName = link.Name ?? ''
 
-      if (linkName.length < 2) {
+      if (linkName.length < prefix.length) {
         throw new Error('Invalid HAMT - link name was too short')
       }
 
-      const position = parseInt(linkName.substring(0, 2), 16)
+      const position = parseInt(linkName.substring(0, prefix.length), 16)
       children.set(position, true)
 
       // we found the child we are looking for
@@ -186,17 +192,17 @@ export const recreateShardedDirectory = async (cid: CID, fileName: string, block
 
     if (childLink == null) {
       log('no link found with prefix %s for %s', prefix, fileName)
-      // hash.untake(hamtBucketBits)
+      // hash.untake(hashBits)
       break
     }
 
     const linkName = childLink.Name ?? ''
 
-    if (linkName.length < 2) {
+    if (linkName.length < prefix.length) {
       throw new Error('Invalid HAMT - link name was too short')
     }
 
-    if (linkName.length === 2) {
+    if (linkName.length === prefix.length) {
       // found sub-shard
       cid = childLink.Hash
       log('descend into sub-shard with prefix %s', linkName)

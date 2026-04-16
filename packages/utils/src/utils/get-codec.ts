@@ -6,7 +6,7 @@ import * as dagJson from '@ipld/dag-json'
 import * as dagPb from '@ipld/dag-pb'
 import * as json from 'multiformats/codecs/json'
 import * as raw from 'multiformats/codecs/raw'
-import { isPromise } from './is-promise.js'
+import { isPromise } from './is-promise.ts'
 import type { Await } from '@helia/interface'
 import type { BlockCodec } from 'multiformats/codecs/interface'
 

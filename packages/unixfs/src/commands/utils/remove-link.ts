@@ -2,27 +2,26 @@ import * as dagPB from '@ipld/dag-pb'
 import { logger } from '@libp2p/logger'
 import { UnixFS } from 'ipfs-unixfs'
 import { exporter } from 'ipfs-unixfs-exporter'
-import { DEFAULT_SHARD_SPLIT_THRESHOLD_BYTES } from '../../constants.ts'
-import { InvalidParametersError, InvalidPBNodeError } from '../../errors.js'
+import { InvalidParametersError, InvalidPBNodeError } from '../../errors.ts'
+import { hamtBucketBits } from './hamt-constants.ts'
 import {
   recreateShardedDirectory,
-
   updateShardedDirectory
-} from './hamt-utils.js'
-import { isOverShardThreshold } from './is-over-shard-threshold.js'
-import { persist } from './persist.js'
-import type { Directory } from './cid-to-directory.js'
-import type { UpdateHamtDirectoryOptions } from './hamt-utils.js'
-import type { GetStore, PutStore } from '../../unixfs.js'
+} from './hamt-utils.ts'
+import { isOverShardThreshold } from './is-over-shard-threshold.ts'
+import { persist } from './persist.ts'
+import type { Directory } from './cid-to-directory.ts'
+import type { UpdateHamtDirectoryOptions } from './hamt-utils.ts'
+import type { GetStore, PutStore } from '../../unixfs.ts'
 import type { PBNode } from '@ipld/dag-pb'
 import type { AbortOptions } from '@libp2p/interface'
-import type { CID, Version } from 'multiformats/cid'
+import type { ImporterOptions } from 'ipfs-unixfs-importer'
+import type { CID } from 'multiformats/cid'
 
 const log = logger('helia:unixfs:utils:remove-link')
 
-export interface RmLinkOptions extends AbortOptions {
-  shardSplitThresholdBytes?: number
-  cidVersion?: Version
+export interface RmLinkOptions extends AbortOptions, Pick<ImporterOptions, 'profile' | 'shardSplitThresholdBytes' | 'shardSplitStrategy' | 'shardFanoutBits' | 'cidVersion'> {
+
 }
 
 export interface RemoveLinkResult {
@@ -42,7 +41,7 @@ export async function removeLink (parent: Directory, name: string, blockstore: P
 
     const result = await removeFromShardedDirectory(parent, name, blockstore, options)
 
-    if (!(await isOverShardThreshold(result.node, blockstore, options.shardSplitThresholdBytes ?? DEFAULT_SHARD_SPLIT_THRESHOLD_BYTES, options))) {
+    if (!(await isOverShardThreshold(result.node, blockstore, options))) {
       log('converting shard to flat directory %c', parent.cid)
 
       return convertToFlatDirectory(result, blockstore, options)
@@ -84,13 +83,14 @@ const removeFromShardedDirectory = async (parent: Directory, name: string, block
     throw new Error('Invalid HAMT, could not generate path')
   }
 
-  const linkName = finalSegment.node.Links.filter(l => (l.Name ?? '').substring(2) === name).map(l => l.Name).pop()
+  const prefixLength = (Math.pow(2, options.shardFanoutBits ?? hamtBucketBits) - 1).toString(16).length
+  const linkName = finalSegment.node.Links.filter(l => (l.Name ?? '').substring(prefixLength) === name).map(l => l.Name).pop()
 
   if (linkName == null) {
     throw new Error('File not found')
   }
 
-  const prefix = linkName.substring(0, 2)
+  const prefix = linkName.substring(0, prefixLength)
   const index = parseInt(prefix, 16)
 
   // remove the file from the shard
@@ -124,7 +124,7 @@ const removeFromShardedDirectory = async (parent: Directory, name: string, block
       nextSegment.node.Links = nextSegment.node.Links.filter(l => !(l.Name ?? '').startsWith(nextSegment.prefix))
       nextSegment.node.Links.push({
         Hash: link.Hash,
-        Name: `${nextSegment.prefix}${(link.Name ?? '').substring(2)}`,
+        Name: `${nextSegment.prefix}${(link.Name ?? '').substring(prefixLength)}`,
         Tsize: link.Tsize
       })
     }

@@ -3,9 +3,9 @@ import { MemoryBlockstore } from 'blockstore-core'
 import all from 'it-all'
 import last from 'it-last'
 import { isNode } from 'wherearewe'
-import { globSource, unixfs, urlSource } from '../src/index.js'
-import { urlByteSource } from '../src/utils/url-source.js'
-import type { UnixFS } from '../src/index.js'
+import { globSource, unixfs, urlSource } from '../src/index.ts'
+import { urlByteSource } from '../src/utils/url-source.ts'
+import type { UnixFS } from '../src/index.ts'
 import type { Blockstore } from 'interface-blockstore'
 
 describe('addAll', () => {
@@ -20,10 +20,10 @@ describe('addAll', () => {
 
   it('adds a stream of files', async () => {
     const output = await all(fs.addAll([{
-      path: './foo.txt',
+      path: 'foo.txt',
       content: Uint8Array.from([0, 1, 2, 3, 4])
     }, {
-      path: './bar.txt',
+      path: 'bar.txt',
       content: Uint8Array.from([5, 4, 3, 2, 1])
     }]))
 
@@ -62,6 +62,28 @@ describe('addBytes', () => {
     // spellchecker:disable-next-line
     expect(cid.toString()).to.equal('bafkreiaixnpf23vkyecj5xqispjq5ubcwgsntnnurw2bjby7khe4wnjihu')
   })
+
+  it('supports metadata for bytes', async () => {
+    const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]), {
+      mode: 0x700,
+      mtime: {
+        secs: 100n
+      }
+    })
+
+    // spellchecker:disable-next-line
+    expect(cid.toString()).to.equal('bafybeiakcmpjcpv5waxiipptqjn2hfz2kxm22kogkg53f2ilcuxmel2doe')
+
+    await expect(fs.stat(cid, {
+      extended: true
+    })).to.eventually.deep.include({
+      mode: 0x700,
+      mtime: {
+        secs: 100n,
+        nsecs: undefined
+      }
+    })
+  })
 })
 
 describe('addByteStream', () => {
@@ -79,6 +101,28 @@ describe('addByteStream', () => {
 
     // spellchecker:disable-next-line
     expect(cid.toString()).to.equal('bafkreiaixnpf23vkyecj5xqispjq5ubcwgsntnnurw2bjby7khe4wnjihu')
+  })
+
+  it('supports metadata for byte streams', async () => {
+    const cid = await fs.addByteStream([Uint8Array.from([0, 1, 2, 3, 4])], {
+      mode: 0x700,
+      mtime: {
+        secs: 100n
+      }
+    })
+
+    // spellchecker:disable-next-line
+    expect(cid.toString()).to.equal('bafybeiakcmpjcpv5waxiipptqjn2hfz2kxm22kogkg53f2ilcuxmel2doe')
+
+    await expect(fs.stat(cid, {
+      extended: true
+    })).to.eventually.deep.include({
+      mode: 0x700,
+      mtime: {
+        secs: 100n,
+        nsecs: undefined
+      }
+    })
   })
 })
 

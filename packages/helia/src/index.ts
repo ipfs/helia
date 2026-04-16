@@ -20,10 +20,10 @@
  */
 
 import { Helia as HeliaClass } from '@helia/utils'
-import { heliaDefaults } from './utils/helia-defaults.js'
-import { libp2pDefaults } from './utils/libp2p-defaults.js'
-import type { DefaultLibp2pServices } from './utils/libp2p-defaults.js'
-import type { Libp2pDefaultsOptions } from './utils/libp2p.js'
+import { heliaDefaults } from './utils/helia-defaults.ts'
+import { libp2pDefaults } from './utils/libp2p-defaults.ts'
+import type { DefaultLibp2pServices } from './utils/libp2p-defaults.ts'
+import type { Libp2pDefaultsOptions } from './utils/libp2p.ts'
 import type { Helia } from '@helia/interface'
 import type { HeliaInit } from '@helia/utils'
 import type { Libp2p } from '@libp2p/interface'

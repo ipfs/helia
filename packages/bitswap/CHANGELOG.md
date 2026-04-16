@@ -1,5 +1,59 @@
 # Changelog
 
+## [3.2.2](https://github.com/ipfs/helia/compare/bitswap-v3.2.1...bitswap-v3.2.2) (2026-04-10)
+
+
+### Bug Fixes
+
+* add module-sync ([#1001](https://github.com/ipfs/helia/issues/1001)) ([ef5363e](https://github.com/ipfs/helia/commit/ef5363e834439ba1838a408639cb2d05d3ba6867))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.2.0 to ^6.2.1
+    * @helia/utils bumped from ^2.5.0 to ^2.5.1
+
+## [3.2.1](https://github.com/ipfs/helia/compare/bitswap-v3.2.0...bitswap-v3.2.1) (2026-04-09)
+
+
+### Bug Fixes
+
+* propagate progress events during bitswap operations ([#999](https://github.com/ipfs/helia/issues/999)) ([79dc114](https://github.com/ipfs/helia/commit/79dc114f480dd6da4a9e6ffa76e1d63d009f331e))
+
+## [3.2.0](https://github.com/ipfs/helia/compare/bitswap-v3.1.4...bitswap-v3.2.0) (2026-04-08)
+
+
+### Features
+
+* emit standardized block broker events ([#995](https://github.com/ipfs/helia/issues/995)) ([397f2d8](https://github.com/ipfs/helia/commit/397f2d86cefd425178a67e70e8f338093d666fe9))
+* emit standardized routing events ([#981](https://github.com/ipfs/helia/issues/981)) ([5ee3283](https://github.com/ipfs/helia/commit/5ee3283f6f414a9cff4fbe941481aec5f0e4143a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.1.1 to ^6.2.0
+    * @helia/utils bumped from ^2.4.2 to ^2.5.0
+
+## [3.1.4](https://github.com/ipfs/helia/compare/bitswap-v3.1.3...bitswap-v3.1.4) (2026-03-18)
+
+
+### Bug Fixes
+
+* add toString method to bitswap providers ([#973](https://github.com/ipfs/helia/issues/973)) ([0a6e505](https://github.com/ipfs/helia/commit/0a6e5052e75c83383bff2429c75a7a97a615de40))
+
+## [3.1.3](https://github.com/ipfs/helia/compare/bitswap-v3.1.2...bitswap-v3.1.3) (2026-03-06)
+
+
+### Bug Fixes
+
+* do not send blocks repeatedly ([#966](https://github.com/ipfs/helia/issues/966)) ([92480ee](https://github.com/ipfs/helia/commit/92480ee8b81ceaff212ed198b84c1ec0460ad86c))
+* enforce maximum peer wantlist size ([#970](https://github.com/ipfs/helia/issues/970)) ([eaeb734](https://github.com/ipfs/helia/commit/eaeb734da7f48aef3d4086d731587d9f2a185ffb))
+* lower do not resend window ([#969](https://github.com/ipfs/helia/issues/969)) ([b3783c0](https://github.com/ipfs/helia/commit/b3783c0d4c28113989600482474f883b72db8af1))
+
 ## [3.1.2](https://github.com/ipfs/helia/compare/bitswap-v3.1.1...bitswap-v3.1.2) (2026-02-05)
 
 

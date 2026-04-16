@@ -1,13 +1,12 @@
 import { AbstractSession } from '@helia/utils'
 import { isPeerId } from '@libp2p/interface'
 import { CustomProgressEvent } from 'progress-events'
-import type { BitswapProvider, BitswapWantProgressEvents } from './index.js'
-import type { Network } from './network.js'
-import type { WantList } from './want-list.js'
+import type { BitswapProvider, BitswapWantProgressEvents } from './index.ts'
+import type { Network } from './network.ts'
+import type { WantList } from './want-list.ts'
 import type { BlockRetrievalOptions, CreateSessionOptions } from '@helia/interface'
-import type { ComponentLogger, Libp2p, PeerId } from '@libp2p/interface'
+import type { ComponentLogger, Libp2p, PeerId, AbortOptions } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { AbortOptions } from 'interface-store'
 import type { CID } from 'multiformats/cid'
 
 export interface BitswapSessionComponents {
@@ -20,6 +19,7 @@ export interface BitswapSessionComponents {
 interface ProviderPeer {
   peerId: PeerId
   routing: string
+  toString(): string
 }
 
 class BitswapSession extends AbstractSession<ProviderPeer, BitswapWantProgressEvents> {
@@ -46,8 +46,12 @@ class BitswapSession extends AbstractSession<ProviderPeer, BitswapWantProgressEv
 
     this.log('%p %s %c', provider, result.has ? 'has' : 'does not have', cid)
 
-    if (result.has && result.block != null) {
-      return result.block
+    if (result.has) {
+      if (result.block != null) {
+        return result.block
+      }
+
+      throw new Error('Provider has block but did not send it to us')
     }
 
     throw new Error('Provider did not have block')
@@ -57,7 +61,8 @@ class BitswapSession extends AbstractSession<ProviderPeer, BitswapWantProgressEv
     for await (const provider of this.network.findProviders(cid, options)) {
       yield {
         peerId: provider.id,
-        routing: provider.routing
+        routing: provider.routing,
+        toString: () => `Bitswap(${provider.id})`
       }
     }
   }
@@ -74,7 +79,8 @@ class BitswapSession extends AbstractSession<ProviderPeer, BitswapWantProgressEv
     if (isPeerId(provider)) {
       return {
         peerId: provider,
-        routing
+        routing,
+        toString: () => `Bitswap(${provider})`
       }
     }
 
@@ -87,7 +93,8 @@ class BitswapSession extends AbstractSession<ProviderPeer, BitswapWantProgressEv
 
       return {
         peerId: connection.remotePeer,
-        routing
+        routing,
+        toString: () => `Bitswap(${connection.remotePeer})`
       }
     } catch {}
   }

@@ -11,8 +11,8 @@ import drain from 'it-drain'
 import toBuffer from 'it-to-buffer'
 import { multiaddr } from 'kubo-rpc-client'
 import { CID } from 'multiformats/cid'
-import { createHeliaNode } from './fixtures/create-helia.js'
-import { createKuboNode } from './fixtures/create-kubo.js'
+import { createHeliaNode } from './fixtures/create-helia.ts'
+import { createKuboNode } from './fixtures/create-kubo.ts'
 import type { PeerId } from '@libp2p/interface'
 import type { Helia } from 'helia'
 import type { FileCandidate } from 'ipfs-unixfs-importer'
@@ -75,10 +75,8 @@ describe('providers', () => {
         kuboInfo.multiaddrs.map(ma => multiaddr(ma))
       ],
       onProgress (evt) {
-        // @ts-expect-error cannot derive config-based progress event types
-        if (evt.type === 'bitswap:block') {
-          // @ts-expect-error cannot derive config-based progress event types
-          sender = evt.detail.sender
+        if (evt.type === 'helia:block-broker:receive-block') {
+          sender = evt.detail.provider
         }
       }
     }))
@@ -101,10 +99,8 @@ describe('providers', () => {
         kuboInfo.multiaddrs.map(ma => multiaddr(ma))
       ],
       onProgress (evt) {
-        // @ts-expect-error cannot derive config-based progress event types
-        if (evt.type === 'bitswap:block') {
-          // @ts-expect-error cannot derive config-based progress event types
-          sender = evt.detail.sender
+        if (evt.type === 'helia:block-broker:receive-block') {
+          sender = evt.detail.provider
         }
       }
     })).to.eventually.deep.equal(obj)
@@ -125,10 +121,8 @@ describe('providers', () => {
         kuboInfo.multiaddrs.map(ma => multiaddr(ma))
       ],
       onProgress (evt) {
-        // @ts-expect-error cannot derive config-based progress event types
-        if (evt.type === 'bitswap:block') {
-          // @ts-expect-error cannot derive config-based progress event types
-          sender = evt.detail.sender
+        if (evt.type === 'helia:block-broker:receive-block') {
+          sender = evt.detail.provider
         }
       }
     })).to.eventually.deep.equal(obj)
@@ -149,10 +143,8 @@ describe('providers', () => {
         kuboInfo.multiaddrs.map(ma => multiaddr(ma))
       ],
       onProgress (evt) {
-        // @ts-expect-error cannot derive config-based progress event types
-        if (evt.type === 'bitswap:block') {
-          // @ts-expect-error cannot derive config-based progress event types
-          sender = evt.detail.sender
+        if (evt.type === 'helia:block-broker:receive-block') {
+          sender = evt.detail.provider
         }
       }
     })).to.eventually.equal(JSON.stringify(obj))
@@ -168,10 +160,8 @@ describe('providers', () => {
         kuboInfo.multiaddrs.map(ma => multiaddr(ma))
       ],
       onProgress (evt) {
-        // @ts-expect-error cannot derive config-based progress event types
-        if (evt.type === 'bitswap:block') {
-          // @ts-expect-error cannot derive config-based progress event types
-          sender = evt.detail.sender
+        if (evt.type === 'helia:block-broker:receive-block') {
+          sender = evt.detail.provider
         }
       }
     }))
@@ -189,10 +179,8 @@ describe('providers', () => {
         kuboInfo.multiaddrs.map(ma => multiaddr(ma))
       ],
       onProgress (evt) {
-        // @ts-expect-error cannot derive config-based progress event types
-        if (evt.type === 'bitswap:block') {
-          // @ts-expect-error cannot derive config-based progress event types
-          sender = evt.detail.sender
+        if (evt.type === 'helia:block-broker:receive-block') {
+          sender = evt.detail.provider
         }
       }
     })
@@ -214,10 +202,8 @@ describe('providers', () => {
         ],
         blockFilter: createScalableCuckooFilter(10),
         onProgress (evt) {
-          // @ts-expect-error cannot derive config-based progress event types
-          if (evt.type === 'bitswap:block') {
-            // @ts-expect-error cannot derive config-based progress event types
-            sender = evt.detail.sender
+          if (evt.type === 'helia:block-broker:receive-block') {
+            sender = evt.detail.provider
           }
         }
       }))

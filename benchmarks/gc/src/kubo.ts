@@ -5,7 +5,7 @@ import all from 'it-all'
 import drain from 'it-drain'
 import { path as kuboPath } from 'kubo'
 import { create as kuboRpcClient } from 'kubo-rpc-client'
-import type { GcBenchmark } from './index.js'
+import type { GcBenchmark } from './index.ts'
 
 export async function createKuboBenchmark (): Promise<GcBenchmark> {
   const controller = await createNode({

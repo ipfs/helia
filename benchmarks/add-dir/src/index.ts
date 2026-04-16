@@ -3,9 +3,9 @@
 import nodePath from 'node:path'
 import { CID } from 'multiformats/cid'
 import { Bench } from 'tinybench'
-import { createHeliaBenchmark } from './helia.js'
-import { createKuboDirectBenchmark } from './kubo-direct.js'
-import { createKuboBenchmark } from './kubo.js'
+import { createHeliaBenchmark } from './helia.ts'
+import { createKuboDirectBenchmark } from './kubo-direct.ts'
+import { createKuboBenchmark } from './kubo.ts'
 
 const ITERATIONS = parseInt(process.env.ITERATIONS ?? '5')
 const MIN_TIME = parseInt(process.env.MIN_TIME ?? '1')

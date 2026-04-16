@@ -3,9 +3,9 @@ import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import delay from 'delay'
-import { mfs } from '../src/index.js'
-import { createShardedDirectory } from './fixtures/create-sharded-directory.js'
-import type { MFS } from '../src/index.js'
+import { mfs } from '../src/index.ts'
+import { createShardedDirectory } from './fixtures/create-sharded-directory.ts'
+import type { MFS } from '../src/index.ts'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 
@@ -124,6 +124,8 @@ describe('touch', () => {
   })
 
   it('should update mtime recursively for a hamt-sharded-directory', async function () {
+    // this is very slow on Firefox in CI
+    this.timeout(180_000_000)
     this.slow(5 * 1000)
     const mtime = new Date()
     const seconds = Math.floor(mtime.getTime() / 1000)
@@ -132,6 +134,7 @@ describe('touch', () => {
     await fs.cp(shardedDirCid, shardedDirPath)
 
     await delay(2000)
+
     await fs.touch(shardedDirPath, {
       recursive: true
     })

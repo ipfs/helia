@@ -4,7 +4,7 @@ import { createNode } from 'ipfsd-ctl'
 import last from 'it-last'
 import { path as kuboPath } from 'kubo'
 import { globSource, create as kuboRpcClient } from 'kubo-rpc-client'
-import type { AddDirBenchmark } from './index.js'
+import type { AddDirBenchmark } from './index.ts'
 import type { CID } from 'multiformats/cid'
 
 export async function createKuboBenchmark (): Promise<AddDirBenchmark> {
