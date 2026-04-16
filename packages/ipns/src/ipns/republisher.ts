@@ -103,13 +103,13 @@ export class IPNSRepublisher {
 
         if (metadata.upkeep === Upkeep.none) {
           // Skip republishing, disabled for this record
-          this.log(`republishing is disabled for record ${routingKey.toString()}, skipping`)
+          this.log('republishing is disabled for record %m, skipping', routingKey)
           continue
         }
 
         if (metadata.upkeep === Upkeep.refresh) {
           if (!shouldRefresh(created)) {
-            this.log.trace(`skipping record ${routingKey.toString()} within republish threshold`)
+            this.log.trace('skipping record %m within republish threshold', routingKey)
             continue
           }
           keysToRepublish.push(routingKey)
@@ -126,7 +126,7 @@ export class IPNSRepublisher {
 
         // Only republish records that are within the DHT or record expiry threshold
         if (!shouldRepublish(ipnsRecord, created)) {
-          this.log.trace(`skipping record ${routingKey.toString()}within republish threshold`)
+          this.log.trace('skipping record %m within republish threshold', routingKey)
           continue
         }
         const sequenceNumber = ipnsRecord.sequence + 1n
