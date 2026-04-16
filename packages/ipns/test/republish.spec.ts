@@ -640,7 +640,7 @@ describe('republish', () => {
         expect(republished.record.sequence).to.equal(3n)
       })
 
-      it('should publish the local record record offline and return the local record', async () => {
+      it('should not touch the network when offline and skipResolution are both set', async () => {
         const key = await generateKeyPair('Ed25519')
         const record1 = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
         const record2 = await createIPNSRecord(key, testCid, 2n, 24 * 60 * 60 * 1000)
@@ -651,7 +651,71 @@ describe('republish', () => {
         const store = localStore(result.datastore, result.log)
         await store.put(routingKey, marshalIPNSRecord(record1))
 
-        // Stub the routers by default to reject
+        // Stub the routers - should never be called
+        getStubCustom = sinon.stub().resolves(marshalIPNSRecord(record2))
+        getStubHelia = sinon.stub().resolves(marshalIPNSRecord(record3))
+        // @ts-ignore
+        result.customRouting.get = getStubCustom
+        // @ts-ignore
+        result.heliaRouting.get = getStubHelia
+
+        // @ts-ignore
+        const storePutSpy = sinon.spy(name.localStore, 'put')
+
+        const republished = await name.republish(multihashFromIPNSRoutingKey(routingKey), { force: true, offline: true, skipResolution: true })
+
+        expect(storePutSpy.called).to.be.true()
+        expect(getStubCustom.called).to.be.false()
+        expect(getStubHelia.called).to.be.false()
+        expect(result.customRouting.put.called).to.be.false()
+        expect(result.heliaRouting.put.called).to.be.false()
+        expect(republished.record.sequence).to.equal(1n)
+      })
+
+      it('should skip router resolution and publish local record to routers when skipResolution is set', async () => {
+        const key = await generateKeyPair('Ed25519')
+        const record1 = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
+        const record2 = await createIPNSRecord(key, testCid, 2n, 24 * 60 * 60 * 1000)
+        const record3 = await createIPNSRecord(key, testCid, 3n, 24 * 60 * 60 * 1000)
+        const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+        // Store the record in the real datastore
+        const store = localStore(result.datastore, result.log)
+        await store.put(routingKey, marshalIPNSRecord(record1))
+
+        // Stub router GETs - should never be called when skipResolution is set
+        getStubCustom = sinon.stub().resolves(marshalIPNSRecord(record2))
+        getStubHelia = sinon.stub().resolves(marshalIPNSRecord(record3))
+        // @ts-ignore
+        result.customRouting.get = getStubCustom
+        // @ts-ignore
+        result.heliaRouting.get = getStubHelia
+
+        // @ts-ignore
+        const storePutSpy = sinon.spy(name.localStore, 'put')
+
+        const republished = await name.republish(multihashFromIPNSRoutingKey(routingKey), { force: true, skipResolution: true })
+
+        expect(storePutSpy.called).to.be.true()
+        expect(getStubCustom.called).to.be.false()
+        expect(getStubHelia.called).to.be.false()
+        expect(result.customRouting.put.called).to.be.true()
+        expect(result.heliaRouting.put.called).to.be.true()
+        expect(republished.record.sequence).to.equal(1n)
+      })
+
+      it('should resolve the latest record and write it to the local store only when offline', async () => {
+        const key = await generateKeyPair('Ed25519')
+        const record1 = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
+        const record2 = await createIPNSRecord(key, testCid, 2n, 24 * 60 * 60 * 1000)
+        const record3 = await createIPNSRecord(key, testCid, 3n, 24 * 60 * 60 * 1000)
+        const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+        // Store the record in the real datastore
+        const store = localStore(result.datastore, result.log)
+        await store.put(routingKey, marshalIPNSRecord(record1))
+
+        // Stub router GETs to return newer records
         getStubCustom = sinon.stub().resolves(marshalIPNSRecord(record2))
         getStubHelia = sinon.stub().resolves(marshalIPNSRecord(record3))
         // @ts-ignore
@@ -667,7 +731,7 @@ describe('republish', () => {
         expect(storePutSpy.called).to.be.true()
         expect(result.customRouting.put.called).to.be.false()
         expect(result.heliaRouting.put.called).to.be.false()
-        expect(republished.record.sequence).to.equal(1n)
+        expect(republished.record.sequence).to.equal(3n)
       })
     })
 
