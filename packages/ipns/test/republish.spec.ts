@@ -595,6 +595,23 @@ describe('republish', () => {
         expect(metadata.upkeep).to.equal(Upkeep.refresh)
       })
 
+      it('should round-trip the upkeep option through metadata', async () => {
+        const cases: Array<'refresh' | 'none'> = ['refresh', 'none']
+        for (const upkeep of cases) {
+          const key = await generateKeyPair('Ed25519')
+          const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
+          const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+          const store = localStore(result.datastore, result.log)
+          await store.put(routingKey, marshalIPNSRecord(record))
+
+          await name.republish(multihashFromIPNSRoutingKey(routingKey), { upkeep })
+
+          const metadataBuf = await result.datastore.get(ipnsMetadataKey(routingKey))
+          expect(IPNSPublishMetadata.decode(metadataBuf).upkeep).to.equal(Upkeep[upkeep])
+        }
+      })
+
       it('should overwrite the created date on the dht record', async () => {
         const key = await generateKeyPair('Ed25519')
         const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)

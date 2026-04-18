@@ -6,6 +6,7 @@ import { base36 } from 'multiformats/bases/base36'
 import { CID } from 'multiformats/cid'
 import Sinon from 'sinon'
 import { localStore } from '../src/local-store.ts'
+import { IPNSPublishMetadata, Upkeep } from '../src/pb/metadata.ts'
 import { dhtRoutingKey, ipnsMetadataKey } from '../src/utils.ts'
 import { createIPNS } from './fixtures/create-ipns.ts'
 import type { CreateIPNSResult } from './fixtures/create-ipns.ts'
@@ -204,6 +205,16 @@ describe('publish', () => {
 
     expect(result.cid.toString()).to.equal(cid.toString())
     expect(result.path).to.equal(path)
+  })
+
+  it('should round-trip the upkeep option through metadata', async () => {
+    const cases: Array<'republish' | 'refresh' | 'none'> = ['republish', 'refresh', 'none']
+    for (const upkeep of cases) {
+      const { publicKey } = await name.publish(`test-key-upkeep-${upkeep}`, cid, { offline: true, upkeep })
+      const routingKey = multihashToIPNSRoutingKey(publicKey.toMultihash())
+      const metadataBuf = await result.datastore.get(ipnsMetadataKey(routingKey))
+      expect(IPNSPublishMetadata.decode(metadataBuf).upkeep).to.equal(Upkeep[upkeep])
+    }
   })
 
   describe('localStore error handling', () => {
