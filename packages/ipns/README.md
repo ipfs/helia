@@ -175,10 +175,9 @@ of a record that was created elsewhere.
 
 ```TypeScript
 import { createHelia } from 'helia'
-import { ipns, ipnsValidator } from '@helia/ipns'
+import { ipns } from '@helia/ipns'
 import { delegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
 import { CID } from 'multiformats/cid'
-import { multihashToIPNSRoutingKey, marshalIPNSRecord } from 'ipns'
 import { defaultLogger } from '@libp2p/logger'
 
 const helia = await createHelia()
