@@ -394,8 +394,8 @@ export interface IPNS {
   /**
    * Stop republishing of an IPNS record
    *
-   * This will delete the last signed IPNS record from the datastore, but the
-   * key will remain in the keychain.
+   * This will delete the last signed IPNS record from the datastore. If a key
+   * name is passed, the key will remain in the keychain.
    *
    * Note that the record may still be resolved by other peers until it expires
    * or is no longer valid.
