@@ -590,7 +590,9 @@ describe('republish', () => {
 
         await name.republish(multihashFromIPNSRoutingKey(routingKey))
 
-        expect(() => result.datastore.get(ipnsMetadataKey(routingKey))).to.not.throw()
+        const metadataBuf = await result.datastore.get(ipnsMetadataKey(routingKey))
+        const metadata = IPNSPublishMetadata.decode(metadataBuf)
+        expect(metadata.upkeep).to.equal(Upkeep.refresh)
       })
 
       it('should overwrite the created date on the dht record', async () => {
