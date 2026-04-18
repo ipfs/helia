@@ -790,7 +790,8 @@ describe('republish', () => {
         // @ts-ignore
         result.customRouting.get = getStubCustom
 
-        await expect(name.republish(multihashFromIPNSRoutingKey(routingKey))).to.be.rejectedWith('Record already published')
+        const err = await expect(name.republish(multihashFromIPNSRoutingKey(routingKey))).to.be.rejectedWith('Record already published')
+        expect(marshalIPNSRecord(err.record)).to.deep.equal(marshalIPNSRecord(record))
       })
 
       it('should rethrow non-RecordNotFoundError from router resolution', async () => {

@@ -233,7 +233,7 @@ export class IPNSRepublisher {
 
       // check if record is already published
       if (options.force !== true && publishedRecord != null) {
-        throw new RecordAlreadyPublishedError('Record already published')
+        throw new RecordAlreadyPublishedError('Record already published', publishedRecord)
       }
 
       const selectedRecord = records[ipnsSelector(routingKey, records.map(marshalIPNSRecord))]
