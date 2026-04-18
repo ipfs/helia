@@ -146,10 +146,9 @@
  *
  * ```TypeScript
  * import { createHelia } from 'helia'
- * import { ipns, ipnsValidator } from '@helia/ipns'
+ * import { ipns } from '@helia/ipns'
  * import { delegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
  * import { CID } from 'multiformats/cid'
- * import { multihashToIPNSRoutingKey, marshalIPNSRecord } from 'ipns'
  * import { defaultLogger } from '@libp2p/logger'
  *
  * const helia = await createHelia()
@@ -218,7 +217,7 @@ export interface PublishOptions extends AbortOptions, ProgressOptions<PublishPro
   lifetime?: number
 
   /**
-   * Initially only publish to a local datastore (default: false)
+   * Only publish to the local datastore, skipping the routers (default: false)
    */
   offline?: boolean
 
@@ -266,7 +265,7 @@ export interface RepublishOptions extends AbortOptions, ProgressOptions<Republis
   record?: IPNSRecord
 
   /**
-   * Initially only republish to a local datastore (default: false)
+   * Only republish to the local datastore, skipping the routers (default: false)
    */
   offline?: boolean
 
@@ -410,6 +409,9 @@ export interface IPNS {
    * The background republisher will then keep the record alive accordingly.
    *
    * Use `unpublish` to stop republishing a key.
+   *
+   * @throws {NotFoundError} when no existing records can be found
+   * @throws {RecordAlreadyPublishedError} when a record is already published; pass `force: true` to bypass
    */
   republish(key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options?: RepublishOptions): Promise<IPNSRepublishResult>
 }

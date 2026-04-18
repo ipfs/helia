@@ -159,13 +159,13 @@ describe('republish', () => {
       await start(name)
       await waitForStubCall(putStubCustom)
 
-      // Verify the record was republished with incremented sequence
+      // Verify the existing record was republished unchanged (refresh mode)
       expect(putStubCustom.called).to.be.true()
       const callArgs = putStubCustom.firstCall.args
       expect(callArgs[0]).to.deep.equal(routingKey)
 
       const republishedRecord = unmarshalIPNSRecord(callArgs[1])
-      expect(republishedRecord.sequence).to.equal(1n) // Incremented from 1n
+      expect(republishedRecord.sequence).to.equal(1n)
     })
   })
 
@@ -238,7 +238,8 @@ describe('republish', () => {
       await store.put(routingKey, marshalIPNSRecord(record), {
         metadata: {
           keyName: 'test-key',
-          lifetime: 24 * 60 * 60 * 1000
+          lifetime: 24 * 60 * 60 * 1000,
+          upkeep: Upkeep.republish
         }
       })
 
@@ -269,7 +270,7 @@ describe('republish', () => {
       await start(name)
       await new Promise(resolve => setTimeout(resolve, 20))
 
-      // Should not republish due to unmarshal error
+      // Should not republish since the record is still within the refresh threshold
       expect(putStubCustom.called).to.be.false()
       expect(putStubHelia.called).to.be.false()
     })
@@ -490,7 +491,7 @@ describe('republish', () => {
       await start(name)
       await new Promise(resolve => setTimeout(resolve, 20))
 
-      // Should not republish due to unmarshal error
+      // Should not republish since the expired record cannot be resolved
       expect(putStubCustom.called).to.be.false()
       expect(putStubHelia.called).to.be.false()
     })
