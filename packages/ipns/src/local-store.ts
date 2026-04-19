@@ -1,5 +1,5 @@
-import { Record } from '@libp2p/kad-dht'
 import { InvalidParametersError } from '@libp2p/interface'
+import { Record } from '@libp2p/kad-dht'
 import { CustomProgressEvent } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
