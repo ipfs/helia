@@ -1,19 +1,12 @@
-import { InvalidParametersError } from '@libp2p/interface'
 import { Record } from '@libp2p/kad-dht'
 import { CustomProgressEvent } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { IPNSPublishMetadata, Upkeep } from './pb/metadata.ts'
+import { IPNSPublishMetadata } from './pb/metadata.ts'
 import { dhtRoutingKey, DHT_RECORD_PREFIX, ipnsMetadataKey } from './utils.ts'
 import type { DatastoreProgressEvents, GetOptions, PutOptions } from './routing/index.ts'
 import type { AbortOptions, Logger } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
-
-function validateMetadata (metadata: Partial<IPNSPublishMetadata>): void {
-  if (metadata.upkeep != null && !(metadata.upkeep in Upkeep)) {
-    throw new InvalidParametersError(`Invalid upkeep value: ${String(metadata.upkeep)}`)
-  }
-}
 
 export interface GetResult {
   record: Uint8Array
@@ -86,7 +79,6 @@ export function localStore (datastore: Datastore, log: Logger): LocalStore {
         batch.put(key, record.serialize())
 
         if (options.metadata != null) {
-          validateMetadata(options.metadata)
           // derive the datastore key for the IPNS metadata from the same routing key
           batch.put(ipnsMetadataKey(routingKey), IPNSPublishMetadata.encode(options.metadata))
         }
