@@ -173,6 +173,10 @@ It is sometimes useful to be able to republish an existing IPNS record
 without needing the private key. This allows you to extend the availability
 of a record that was created elsewhere.
 
+There should be only one republisher per IPNS key. Multiple machines
+republishing the same key will conflict on sequence numbers and flood the
+DHT with redundant writes.
+
 ```TypeScript
 import { createHelia } from 'helia'
 import { ipns } from '@helia/ipns'
@@ -192,8 +196,9 @@ const delegatedClient = delegatedRoutingV1HttpApiClient({
 })
 const record = await delegatedClient.getIPNS(parsedCid)
 
-// publish the latest existing record to routing
-// use `options.force` if the record is already published
+// republish to routing; throws RecordAlreadyPublishedError if a newer record
+// is already resolvable — pass `force: true` only if you know no one else is
+// republishing this key
 const { record: latestRecord } = await name.republish(parsedCid, { record })
 
 // stop republishing a key
