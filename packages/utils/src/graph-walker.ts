@@ -2,29 +2,17 @@ import { Queue } from '@libp2p/utils'
 import filter from 'it-filter'
 import toBuffer from 'it-to-buffer'
 import { createUnsafe } from 'multiformats/block'
-import type { CodecLoader } from '@helia/interface'
+import type {
+  GraphWalker,
+  GraphWalkerComponents,
+  GraphWalkerInit,
+  GraphNode,
+  WalkOptions
+} from '@helia/interface'
 import type { AbortOptions } from '@libp2p/interface'
-import type { Blockstore } from 'interface-blockstore'
-import type { BlockView, CID, Version } from 'multiformats'
+import type { CID } from 'multiformats'
 
-export interface GraphWalkerComponents {
-  blockstore: Blockstore
-  getCodec: CodecLoader
-}
-
-export interface GraphWalkerInit {
-
-}
-
-export interface GraphNode <T = unknown, C extends number = number, A extends number = number, V extends Version = 0 | 1> {
-  block: BlockView<T, C, A, V>
-  depth: number
-  path: CID[]
-}
-
-export interface GraphWalker {
-  walk <T = any> (cid: CID, options?: WalkOptions<T>): AsyncGenerator<GraphNode<T>>
-}
+export type { GraphWalker, GraphWalkerComponents, GraphWalkerInit, GraphNode, WalkOptions }
 
 /**
  * A depth-first walker descends into child blocks before processing successor
@@ -55,10 +43,6 @@ interface JobOptions extends AbortOptions {
   path: CID[]
 }
 
-export interface WalkOptions<T> extends AbortOptions {
-  includeChild?(child: CID, parent: BlockView<T, number, number, 0 | 1>): boolean
-}
-
 abstract class AbstractGraphWalker {
   private readonly components: GraphWalkerComponents
 
@@ -70,6 +54,7 @@ abstract class AbstractGraphWalker {
     const queue = this.getQueue()
     const gen = filter(queue.toGenerator(options), (node) => node != null) as AsyncGenerator<GraphNode<T>>
     let finished = false
+    const maxDepth = options?.depth ?? Infinity
 
     const job = async (opts: JobOptions): Promise<GraphNode<T> | undefined> => {
       const cid = opts.cid
@@ -80,25 +65,27 @@ abstract class AbstractGraphWalker {
         codec: await this.components.getCodec(cid.code)
       })
 
-      for (const [, linkedCid] of block.links()) {
-        if (options?.includeChild?.(linkedCid, block) === false) {
-          continue
-        }
+      if (opts.depth < maxDepth) {
+        for (const [, linkedCid] of block.links()) {
+          if (options?.includeChild?.(linkedCid, block) === false) {
+            continue
+          }
 
-        queue.add(job, {
-          ...opts,
-          cid: linkedCid,
-          depth: opts.depth + 1,
-          path: [...opts.path, linkedCid]
-        })
-          // eslint-disable-next-line no-loop-func
-          .catch(err => {
-            // only throw if the generator is still yielding results, otherwise
-            // it can cause unhandled promise rejections
-            if (!finished) {
-              gen.throw(err)
-            }
+          queue.add(job, {
+            ...opts,
+            cid: linkedCid,
+            depth: opts.depth + 1,
+            path: [...opts.path, linkedCid]
           })
+            // eslint-disable-next-line no-loop-func
+            .catch(err => {
+              // only throw if the generator is still yielding results, otherwise
+              // it can cause unhandled promise rejections
+              if (!finished) {
+                gen.throw(err)
+              }
+            })
+        }
       }
 
       return {
