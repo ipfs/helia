@@ -99,7 +99,7 @@
   "devDependencies": {
     "@libp2p/crypto": "^5.1.15",
     "@libp2p/peer-id": "^6.0.6",
-    "aegir": "^47.1.5",
+    "aegir": "^48.0.1",
     "datastore-core": "^11.0.3",
     "it-drain": "^3.0.12",
     "protons": "^8.1.1",
