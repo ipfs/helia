@@ -103,7 +103,7 @@
     "datastore-core": "^11.0.3",
     "it-drain": "^3.0.12",
     "protons": "^8.1.1",
-    "sinon": "^21.1.0",
+    "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0"
   },
   "browser": {
