@@ -92,7 +92,7 @@
     "kubo-rpc-client": "^6.1.0",
     "libp2p": "^3.2.0",
     "multiformats": "^13.4.2",
-    "uint8arrays": "^5.1.0",
+    "uint8arrays": "^6.1.0",
     "wherearewe": "^2.0.1"
   },
   "browser": {
