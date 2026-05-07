@@ -73,7 +73,7 @@
     "protons-runtime": "^6.0.1",
     "race-event": "^1.6.1",
     "uint8-varint": "^2.0.4",
-    "uint8arraylist": "^2.4.8",
+    "uint8arraylist": "^3.0.1",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {

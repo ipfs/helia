@@ -61,7 +61,7 @@
     "interface-blockstore": "^6.0.2",
     "multiformats": "^13.4.2",
     "progress-events": "^1.1.0",
-    "uint8arraylist": "^2.4.8",
+    "uint8arraylist": "^3.0.1",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
