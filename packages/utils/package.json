@@ -81,7 +81,7 @@
     "@libp2p/logger": "^6.2.4",
     "@libp2p/peer-id": "^6.0.6",
     "@types/sinon": "^21.0.1",
-    "aegir": "^48.0.1",
+    "aegir": "^48.0.4",
     "datastore-core": "^11.0.3",
     "delay": "^7.0.0",
     "it-all": "^3.0.11",

@@ -59,7 +59,7 @@
   "devDependencies": {
     "@libp2p/logger": "^6.2.4",
     "@types/dns-packet": "^5.6.5",
-    "aegir": "^48.0.1",
+    "aegir": "^48.0.4",
     "delay": "^7.0.0",
     "sinon-ts": "^2.0.0"
   },
