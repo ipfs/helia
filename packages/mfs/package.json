@@ -69,7 +69,7 @@
     "it-drain": "^3.0.12",
     "it-first": "^3.0.11",
     "it-last": "^3.0.11",
-    "it-to-buffer": "^4.0.12",
+    "it-to-buffer": "^5.0.0",
     "uint8arrays": "^5.1.0"
   },
   "sideEffects": false

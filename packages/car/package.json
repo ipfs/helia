@@ -60,7 +60,7 @@
     "ipfs-unixfs-exporter": "^15.0.4",
     "it-drain": "^3.0.12",
     "it-map": "^3.1.5",
-    "it-to-buffer": "^4.0.12",
+    "it-to-buffer": "^5.0.0",
     "multiformats": "^13.4.2",
     "progress-events": "^1.1.0",
     "race-signal": "^2.0.0"

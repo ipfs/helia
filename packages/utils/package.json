@@ -67,7 +67,7 @@
     "it-filter": "^3.1.5",
     "it-foreach": "^2.1.6",
     "it-merge": "^3.0.13",
-    "it-to-buffer": "^4.0.12",
+    "it-to-buffer": "^5.0.0",
     "libp2p": "^3.2.0",
     "mortice": "^3.3.1",
     "multiformats": "^13.4.2",

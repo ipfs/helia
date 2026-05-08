@@ -53,7 +53,7 @@
     "@ipld/dag-cbor": "^9.2.6",
     "@libp2p/interface": "^3.2.0",
     "interface-blockstore": "^6.0.2",
-    "it-to-buffer": "^4.0.12",
+    "it-to-buffer": "^5.0.0",
     "multiformats": "^13.4.2",
     "progress-events": "^1.1.0"
   },
