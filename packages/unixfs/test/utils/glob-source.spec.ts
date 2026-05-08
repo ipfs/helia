@@ -12,7 +12,7 @@ function fixtureDir (): string {
   const filename = fileURLToPath(import.meta.url)
   const dirname = Path.dirname(filename)
 
-  return Path.resolve(Path.join(dirname, '..', '..', '..', 'test', 'fixtures', 'files'))
+  return Path.resolve(Path.join(dirname, '..', '..', 'test', 'fixtures', 'files'))
 }
 
 function fixture (file: string): string {
