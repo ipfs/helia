@@ -20,7 +20,7 @@
     "@libp2p/identify": "^4.0.5",
     "@libp2p/tcp": "^11.0.5",
     "@multiformats/multiaddr": "^13.0.1",
-    "aegir": "^47.0.7",
+    "aegir": "^48.0.4",
     "blockstore-fs": "^3.0.2",
     "datastore-level": "^12.0.2",
     "helia": "^5.1.1",

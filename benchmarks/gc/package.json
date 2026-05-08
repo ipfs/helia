@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "@ipld/dag-pb": "^4.0.6",
-    "aegir": "^47.0.7",
+    "aegir": "^48.0.4",
     "blockstore-fs": "^3.0.2",
     "datastore-level": "^12.0.2",
     "execa": "^9.5.3",
