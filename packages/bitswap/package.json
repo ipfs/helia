@@ -62,7 +62,7 @@
     "any-signal": "^4.2.0",
     "interface-blockstore": "^6.0.2",
     "it-drain": "^3.0.12",
-    "it-length-prefixed": "^10.0.1",
+    "it-length-prefixed": "^11.0.1",
     "it-map": "^3.1.5",
     "it-pushable": "^3.2.3",
     "it-take": "^3.0.10",
