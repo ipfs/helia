@@ -102,7 +102,7 @@
     "aegir": "^48.0.4",
     "datastore-core": "^11.0.3",
     "it-drain": "^3.0.12",
-    "protons": "^8.1.1",
+    "protons": "^9.0.1",
     "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0"
   },
