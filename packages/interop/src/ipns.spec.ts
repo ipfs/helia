@@ -155,6 +155,7 @@ keyTypes.forEach(type => {
 
       // ensure the key is in the kubo keychain so we can use it to publish the IPNS record
       const body = new FormData()
+      // @ts-expect-error @libp2p/crypto needs updating to return `Uint8Array<ArrayBuffer>`
       body.append('key', new Blob([privateKeyToProtobuf(key)]))
 
       // can't use the kubo-rpc-api for this call yet
