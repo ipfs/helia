@@ -55,7 +55,7 @@
     "it-to-buffer": "^4.0.12",
     "multiformats": "^13.4.2",
     "progress-events": "^1.1.0",
-    "uint8arrays": "^5.1.0"
+    "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
     "aegir": "^48.0.4",
