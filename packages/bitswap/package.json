@@ -70,7 +70,7 @@
     "multiformats": "^13.4.2",
     "p-defer": "^4.0.1",
     "progress-events": "^1.1.0",
-    "protons-runtime": "^6.0.1",
+    "protons-runtime": "^7.0.0",
     "race-event": "^1.6.1",
     "uint8-varint": "^2.0.4",
     "uint8arraylist": "^2.4.8",
