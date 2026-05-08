@@ -77,7 +77,7 @@
     "it-all": "^3.0.11",
     "it-foreach": "^2.1.6",
     "it-length": "^3.0.11",
-    "sinon": "^21.1.0"
+    "sinon": "^22.0.0"
   },
   "sideEffects": false
 }
