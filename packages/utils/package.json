@@ -70,7 +70,7 @@
     "it-to-buffer": "^4.0.12",
     "libp2p": "^3.2.0",
     "mortice": "^3.3.1",
-    "multiformats": "^13.4.2",
+    "multiformats": "^14.0.0",
     "p-defer": "^4.0.1",
     "progress-events": "^1.1.0",
     "race-signal": "^2.0.0",

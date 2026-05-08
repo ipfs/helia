@@ -78,7 +78,7 @@
     "interface-blockstore": "^6.0.2",
     "interface-datastore": "^9.0.3",
     "interface-store": "^7.0.2",
-    "multiformats": "^13.4.2",
+    "multiformats": "^14.0.0",
     "progress-events": "^1.1.0"
   },
   "devDependencies": {

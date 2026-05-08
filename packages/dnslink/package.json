@@ -52,7 +52,7 @@
     "@libp2p/interface": "^3.2.0",
     "@libp2p/peer-id": "^6.0.6",
     "@multiformats/dns": "^1.0.13",
-    "multiformats": "^13.4.2",
+    "multiformats": "^14.0.0",
     "progress-events": "^1.1.0",
     "quick-lru": "^7.3.0"
   },

@@ -53,7 +53,7 @@
     "@libp2p/interface": "^3.2.0",
     "interface-blockstore": "^6.0.2",
     "it-to-buffer": "^4.0.12",
-    "multiformats": "^13.4.2",
+    "multiformats": "^14.0.0",
     "progress-events": "^1.1.0",
     "uint8arrays": "^5.1.0"
   },
