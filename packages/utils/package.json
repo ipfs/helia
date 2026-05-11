@@ -62,7 +62,7 @@
     "cborg": "^5.1.0",
     "interface-blockstore": "^6.0.2",
     "interface-datastore": "^9.0.3",
-    "interface-store": "^7.0.2",
+    "interface-store": "^8.0.0",
     "it-drain": "^3.0.12",
     "it-filter": "^3.1.5",
     "it-foreach": "^2.1.6",

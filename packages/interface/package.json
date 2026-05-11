@@ -77,7 +77,7 @@
     "@multiformats/multiaddr": "^13.0.1",
     "interface-blockstore": "^6.0.2",
     "interface-datastore": "^9.0.3",
-    "interface-store": "^7.0.2",
+    "interface-store": "^8.0.0",
     "multiformats": "^13.4.2",
     "progress-events": "^1.1.0"
   },
