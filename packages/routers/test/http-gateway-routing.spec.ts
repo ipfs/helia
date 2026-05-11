@@ -52,4 +52,21 @@ describe('http-gateway-routing', () => {
     const actual = providers.map(p => p.multiaddrs.map(ma => ma.toString())[0])
     expect(actual).to.deep.equal(expected)
   })
+
+  it('should delay yielding providers', async () => {
+    const gateway = 'https://example.com'
+    const routing = httpGatewayRouting({
+      gateways: [
+        gateway
+      ],
+      delay: 500
+    })
+
+    const cid = CID.parse('bafyreidykglsfhoixmivffc5uwhcgshx4j465xwqntbmu43nb2dzqwfvae')
+
+    const start = Date.now()
+    const providers = await all(routing.findProviders?.(cid) ?? [])
+    expect(providers).to.have.lengthOf(1)
+    expect(Date.now() - start > 100)
+  })
 })
