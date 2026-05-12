@@ -66,7 +66,7 @@
     "@helia/strings": "^5.1.1",
     "@helia/unixfs": "^7.2.1",
     "@ipld/car": "^5.4.3",
-    "@ipld/dag-cbor": "^9.2.6",
+    "@ipld/dag-cbor": "^10.0.1",
     "@ipld/dag-pb": "^4.1.5",
     "@libp2p/crypto": "^5.1.15",
     "@libp2p/floodsub": "^11.0.16",
