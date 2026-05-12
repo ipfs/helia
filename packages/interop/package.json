@@ -77,7 +77,7 @@
     "@libp2p/utils": "^7.0.15",
     "@libp2p/websockets": "^10.1.8",
     "@multiformats/multiaddr": "^13.0.1",
-    "@multiformats/sha3": "^3.0.2",
+    "@multiformats/sha3": "^4.0.0",
     "aegir": "^48.0.4",
     "helia": "^6.1.4",
     "ipfs-unixfs-importer": "^16.1.4",
@@ -91,7 +91,7 @@
     "kubo": "^0.41.0",
     "kubo-rpc-client": "^6.1.0",
     "libp2p": "^3.2.0",
-    "multiformats": "^13.4.2",
+    "multiformats": "^14.0.0",
     "uint8arrays": "^5.1.0",
     "wherearewe": "^2.0.1"
   },
