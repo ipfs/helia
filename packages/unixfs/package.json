@@ -78,7 +78,7 @@
     "interface-blockstore": "^6.0.2",
     "ipfs-unixfs": "^12.0.1",
     "ipfs-unixfs-exporter": "^15.0.4",
-    "ipfs-unixfs-importer": "^16.1.4",
+    "ipfs-unixfs-importer": "^17.0.1",
     "it-all": "^3.0.11",
     "it-first": "^3.0.11",
     "it-glob": "^3.0.5",
