@@ -56,7 +56,7 @@
     "@libp2p/utils": "^7.0.15",
     "any-signal": "^4.2.0",
     "interface-blockstore": "^6.0.2",
-    "ipfs-unixfs": "^12.0.1",
+    "ipfs-unixfs": "^13.0.0",
     "ipfs-unixfs-exporter": "^15.0.4",
     "it-drain": "^3.0.12",
     "it-map": "^3.1.5",

@@ -76,7 +76,7 @@
     "@libp2p/utils": "^7.0.15",
     "@multiformats/murmur3": "^2.2.2",
     "interface-blockstore": "^6.0.2",
-    "ipfs-unixfs": "^12.0.1",
+    "ipfs-unixfs": "^13.0.0",
     "ipfs-unixfs-exporter": "^15.0.4",
     "ipfs-unixfs-importer": "^16.1.4",
     "it-all": "^3.0.11",
