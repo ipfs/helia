@@ -184,7 +184,7 @@ export namespace WantlistEntry {
     value: boolean
   }
 
-  export function encode (obj: Partial<WantlistEntry>): Uint8Array {
+  export function encode (obj: Partial<WantlistEntry>): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, WantlistEntry.codec())
   }
 
@@ -343,7 +343,7 @@ export namespace Wantlist {
     value: boolean
   }
 
-  export function encode (obj: Partial<Wantlist>): Uint8Array {
+  export function encode (obj: Partial<Wantlist>): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, Wantlist.codec())
   }
 
@@ -455,7 +455,7 @@ export namespace Block {
     value: Uint8Array
   }
 
-  export function encode (obj: Partial<Block>): Uint8Array {
+  export function encode (obj: Partial<Block>): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, Block.codec())
   }
 
@@ -583,7 +583,7 @@ export namespace BlockPresence {
     value: BlockPresenceType
   }
 
-  export function encode (obj: Partial<BlockPresence>): Uint8Array {
+  export function encode (obj: Partial<BlockPresence>): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, BlockPresence.codec())
   }
 
@@ -829,7 +829,7 @@ export namespace BitswapMessage {
     value: number
   }
 
-  export function encode (obj: Partial<BitswapMessage>): Uint8Array {
+  export function encode (obj: Partial<BitswapMessage>): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, BitswapMessage.codec())
   }
 

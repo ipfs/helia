@@ -6,7 +6,6 @@ import type { Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressE
 import type { Pins } from '@helia/interface/pins'
 import type { AbortOptions, Startable } from '@libp2p/interface'
 import type { Blockstore, InputPair } from 'interface-blockstore'
-import type { AwaitIterable } from 'interface-store'
 import type { Mortice } from 'mortice'
 import type { CID } from 'multiformats/cid'
 import type { ProgressOptions } from 'progress-events'
@@ -79,7 +78,7 @@ export class BlockStorage implements Blocks, Startable {
   /**
    * Put a multiple blocks to the underlying datastore
    */
-  async * putMany (blocks: AwaitIterable<InputPair>, options: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents> = {}): AsyncGenerator<CID> {
+  async * putMany (blocks: Iterable<InputPair> | AsyncIterable<InputPair>, options: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents> = {}): AsyncGenerator<CID> {
     options?.signal?.throwIfAborted()
     const releaseLock = await this.lock.readLock()
 
@@ -107,7 +106,7 @@ export class BlockStorage implements Blocks, Startable {
   /**
    * Get multiple blocks back from an (async) iterable of cids
    */
-  async * getMany (cids: AwaitIterable<CID>, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetManyBlocksProgressEvents> = {}): AsyncGenerator<Pair> {
+  async * getMany (cids: Iterable<CID> | AsyncIterable<CID>, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetManyBlocksProgressEvents> = {}): AsyncGenerator<Pair> {
     options?.signal?.throwIfAborted()
     const releaseLock = await this.lock.readLock()
 
@@ -142,7 +141,7 @@ export class BlockStorage implements Blocks, Startable {
   /**
    * Delete multiple blocks from the blockstore
    */
-  async * deleteMany (cids: AwaitIterable<CID>, options: AbortOptions & ProgressOptions<DeleteManyBlocksProgressEvents> = {}): AsyncGenerator<CID> {
+  async * deleteMany (cids: Iterable<CID> | AsyncIterable<CID>, options: AbortOptions & ProgressOptions<DeleteManyBlocksProgressEvents> = {}): AsyncGenerator<CID> {
     options?.signal?.throwIfAborted()
     const releaseLock = await this.lock.writeLock()
 

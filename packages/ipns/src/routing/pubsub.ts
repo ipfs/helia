@@ -364,6 +364,7 @@ export class PubSubRouting implements IPNSRouting, Startable {
    */
   cancel (key: PublicKey | MultihashDigest<0x00 | 0x12>): void {
     const digest = isPublicKey(key) ? key.toMultihash() : key
+    // @ts-expect-error @libp2p/crypto needs new multiformats
     const routingKey = multihashToIPNSRoutingKey(digest)
     const topic = keyToTopic(routingKey)
 

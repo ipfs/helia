@@ -54,6 +54,7 @@ describe('republish', () => {
       // Create a test record and store it in the real datastore
       const key = await generateKeyPair('Ed25519')
       const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
+      // @ts-expect-error @libp2p/crypto needs new multiformats
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
       // Import the key into the real keychain
@@ -80,6 +81,7 @@ describe('republish', () => {
       // Create a test record and store it in the real datastore
       const key = await generateKeyPair('Ed25519')
       const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
+      // @ts-expect-error @libp2p/crypto needs new multiformats
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
       // Import the key into the real keychain
@@ -111,6 +113,7 @@ describe('republish', () => {
     it('should republish records with valid metadata', async () => {
       const key = await generateKeyPair('Ed25519')
       const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
+      // @ts-expect-error @libp2p/crypto needs new multiformats
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
       // Import the key into the real keychain
@@ -143,6 +146,7 @@ describe('republish', () => {
     it('should skip records without metadata', async () => {
       const key = await generateKeyPair('Ed25519')
       const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
+      // @ts-expect-error @libp2p/crypto needs new multiformats
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
       // Store the record without metadata (simulate old records)
@@ -178,6 +182,7 @@ describe('republish', () => {
     it('should increment sequence numbers correctly', async () => {
       const key = await generateKeyPair('Ed25519')
       const record = await createIPNSRecord(key, testCid, 5n, 24 * 60 * 60 * 1000) // Start with sequence 5
+      // @ts-expect-error @libp2p/crypto needs new multiformats
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
       // Import the key into the real keychain
@@ -208,6 +213,7 @@ describe('republish', () => {
       const key = await generateKeyPair('Ed25519')
       const customTtl = BigInt(10 * 60 * 1000) * 1_000_000n // 10 minutes in nanoseconds
       const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000, { ttlNs: customTtl })
+      // @ts-expect-error @libp2p/crypto needs new multiformats
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
       // Import the key into the real keychain
@@ -238,6 +244,7 @@ describe('republish', () => {
     it('should use default TTL when not present', async () => {
       const key = await generateKeyPair('Ed25519')
       const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
+      // @ts-expect-error @libp2p/crypto needs new multiformats
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
       // Import the key into the real keychain
@@ -265,6 +272,7 @@ describe('republish', () => {
       const key = await generateKeyPair('Ed25519')
       const customLifetime = 5 * 1000 // 5 seconds
       const record = await createIPNSRecord(key, testCid, 1n, customLifetime)
+      // @ts-expect-error @libp2p/crypto needs new multiformats
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
       // Import the key into the real keychain
@@ -301,6 +309,7 @@ describe('republish', () => {
     it('should skip republishing records with missing key', async () => {
       const key = await generateKeyPair('Ed25519')
       const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
+      // @ts-expect-error @libp2p/crypto needs new multiformats
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
       // Store the record in the real datastore (but don't import the key)
@@ -376,6 +385,7 @@ describe('republish', () => {
 
     it('should handle corrupt record data during republish iteration', async () => {
       const key = await generateKeyPair('Ed25519')
+      // @ts-expect-error @libp2p/crypto needs new multiformats
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
       // Import the key
@@ -403,7 +413,9 @@ describe('republish', () => {
       const key1 = await generateKeyPair('Ed25519')
       const key2 = await generateKeyPair('Ed25519')
       const record2 = await createIPNSRecord(key2, testCid, 1n, 24 * 60 * 60 * 1000)
+      // @ts-expect-error @libp2p/crypto needs new multiformats
       const routingKey1 = multihashToIPNSRoutingKey(key1.publicKey.toMultihash())
+      // @ts-expect-error @libp2p/crypto needs new multiformats
       const routingKey2 = multihashToIPNSRoutingKey(key2.publicKey.toMultihash())
 
       // Import both keys

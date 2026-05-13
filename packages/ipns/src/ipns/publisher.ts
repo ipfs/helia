@@ -38,6 +38,7 @@ export class IPNSPublisher {
     try {
       const privKey = await this.#loadOrCreateKey(keyName)
       let sequenceNumber = 1n
+      // @ts-expect-error @libp2p/crypto needs new multiformats
       const routingKey = multihashToIPNSRoutingKey(privKey.publicKey.toMultihash())
 
       if (await this.localStore.has(routingKey, options)) {
@@ -48,12 +49,14 @@ export class IPNSPublisher {
       }
 
       if (isPeerId(value)) {
+        // @ts-expect-error @libp2p/peer-id needs new multiformats
         value = value.toCID()
       }
 
       // convert ttl from milliseconds to nanoseconds as createIPNSRecord expects
       const ttlNs = options.ttl != null ? BigInt(options.ttl) * 1_000_000n : DEFAULT_TTL_NS
       const lifetime = options.lifetime ?? DEFAULT_LIFETIME_MS
+      // @ts-expect-error @libp2p/peer-id needs new multiformats
       const record = await createIPNSRecord(privKey, value, sequenceNumber, lifetime, { ...options, ttlNs })
       const marshaledRecord = marshalIPNSRecord(record)
 
@@ -91,6 +94,7 @@ export class IPNSPublisher {
   async unpublish (keyName: string, options?: AbortOptions): Promise<void> {
     const { publicKey } = await this.keychain.exportKey(keyName)
     const digest = publicKey.toMultihash()
+    // @ts-expect-error @libp2p/peer-id needs new multiformats
     const routingKey = multihashToIPNSRoutingKey(digest)
     await this.localStore.delete(routingKey, options)
   }

@@ -236,6 +236,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
       const input = pushable<Uint8Array | Uint8ArrayList>()
 
       stream.addEventListener('message', (evt) => {
+        // @ts-expect-error libp2p needs dep updates
         input.push(evt.data)
       })
       stream.addEventListener('remoteCloseWrite', () => {
@@ -370,6 +371,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
 
       try {
         for (const buf of splitMessage(message, this.maxOutgoingMessageSize)) {
+          // @ts-expect-error libp2p needs dep updates
           if (!stream.send(lp.encode.single(buf))) {
             await stream.onDrain(options)
           }

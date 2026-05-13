@@ -61,6 +61,7 @@ describe('pubsub routing', () => {
     })
 
     privateKey = await generateKeyPair('Ed25519')
+    // @ts-expect-error @libp2p/crypto needs new multiformats
     routingKey = multihashToIPNSRoutingKey(privateKey.publicKey.toMultihash())
     topic = `/record/${toString(routingKey, 'base64url')}`
     record = await createIPNSRecord(privateKey, '/test', 1n, DEFAULT_LIFETIME_MS)

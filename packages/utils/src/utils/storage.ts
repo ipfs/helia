@@ -11,7 +11,6 @@ import type { HasherLoader } from '@helia/interface'
 import type { BlockBroker, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions, BlockRetrievalOptions } from '@helia/interface/blocks'
 import type { AbortOptions, ComponentLogger, Logger, LoggerOptions } from '@libp2p/interface'
 import type { Blockstore, InputPair } from 'interface-blockstore'
-import type { AwaitIterable } from 'interface-store'
 import type { CID } from 'multiformats/cid'
 import type { MultihashDigest, MultihashHasher } from 'multiformats/hashes/interface'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
@@ -72,7 +71,7 @@ export class Storage <Broker extends BlockBroker<ProgressEvent<any, any>, Progre
   /**
    * Put a multiple blocks to the underlying datastore
    */
-  async * putMany (blocks: AwaitIterable<InputPair>, options: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents> = {}): AsyncGenerator<CID> {
+  async * putMany (blocks: Iterable<InputPair> | AsyncIterable<InputPair>, options: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents> = {}): AsyncGenerator<CID> {
     const missingBlocks = filter(blocks, async ({ cid }): Promise<boolean> => {
       const has = await this.child.has(cid, options)
 
@@ -137,7 +136,7 @@ export class Storage <Broker extends BlockBroker<ProgressEvent<any, any>, Progre
   /**
    * Get multiple blocks back from an (async) iterable of cids
    */
-  async * getMany (cids: AwaitIterable<CID>, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetManyBlocksProgressEvents> = {}): AsyncGenerator<Pair> {
+  async * getMany (cids: Iterable<CID> | AsyncIterable<CID>, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetManyBlocksProgressEvents> = {}): AsyncGenerator<Pair> {
     options.onProgress?.(new CustomProgressEvent('blocks:get-many:blockstore:get-many'))
 
     yield * this.child.getMany(forEach(cids, async (cid): Promise<void> => {
@@ -182,7 +181,7 @@ export class Storage <Broker extends BlockBroker<ProgressEvent<any, any>, Progre
   /**
    * Delete multiple blocks from the blockstore
    */
-  async * deleteMany (cids: AwaitIterable<CID>, options: AbortOptions & ProgressOptions<DeleteManyBlocksProgressEvents> = {}): AsyncGenerator<CID> {
+  async * deleteMany (cids: Iterable<CID> | AsyncIterable<CID>, options: AbortOptions & ProgressOptions<DeleteManyBlocksProgressEvents> = {}): AsyncGenerator<CID> {
     options.onProgress?.(new CustomProgressEvent('blocks:delete-many:blockstore:delete-many'))
     yield * this.child.deleteMany((async function * (): AsyncGenerator<CID> {
       for await (const cid of cids) {

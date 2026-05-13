@@ -17,7 +17,7 @@ import { getCodec } from './utils/get-codec.ts'
 import { getHasher } from './utils/get-hasher.ts'
 import { NetworkedStorage } from './utils/networked-storage.ts'
 import type { BlockStorageInit } from './storage.ts'
-import type { Await, CodecLoader, GCOptions, HasherLoader, Helia as HeliaInterface, HeliaEvents, Routing } from '@helia/interface'
+import type { CodecLoader, GCOptions, HasherLoader, Helia as HeliaInterface, HeliaEvents, Routing } from '@helia/interface'
 import type { BlockBroker } from '@helia/interface/blocks'
 import type { Pins } from '@helia/interface/pins'
 import type { ComponentLogger, ContentRouting, Libp2p, Logger, Metrics, PeerRouting } from '@libp2p/interface'
@@ -88,7 +88,7 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
    * An optional function that can load a MultihashHasher on demand. May return
    * a promise.
    */
-  loadHasher?(code: number): Await<MultihashHasher>
+  loadHasher?(code: number): MultihashHasher | Promise<MultihashHasher>
 
   /**
    * In order to pin CIDs that correspond to a DAG, it's necessary to know
@@ -101,7 +101,7 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
    * An optional function that can load a BlockCodec on demand. May return a
    * promise.
    */
-  loadCodec?(code: number): Await<BlockCodec<any, any>>
+  loadCodec?(code: number): BlockCodec<any, any> | Promise<BlockCodec<any, any>>
 
   /**
    * A list of strategies used to fetch blocks when they are not present in
