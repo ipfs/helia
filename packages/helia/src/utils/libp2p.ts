@@ -26,6 +26,7 @@ export async function createLibp2p <T extends Record<string, unknown>> (options:
 
   // if no peer id was passed, try to load it from the keychain
   if (libp2pOptions.privateKey == null && options.datastore != null) {
+    // @ts-expect-error libp2p needs dep updates
     libp2pOptions.privateKey = await loadOrCreateSelfKey(options.datastore, options.keychain)
   }
 

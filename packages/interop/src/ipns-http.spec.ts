@@ -62,6 +62,7 @@ describe('@helia/ipns - http', () => {
     })
 
     const key = peerIdFromCID(CID.parse(res.name))
+    // @ts-expect-error @libp2p/peer-id needs dep updates
     const { cid: resolvedCid } = await name.resolve(key.toMultihash())
     expect(resolvedCid.toString()).to.equal(cid.toString())
   })

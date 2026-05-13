@@ -35,6 +35,7 @@ export async function createIPNS (): Promise<CreateIPNSResult> {
     pass: 'very-strong-password'
   }
   const ipnsKeychain = keychain(keychainInit)({
+    // @ts-expect-error @libp2p/keychain needs new multiformats
     datastore,
     logger
   })

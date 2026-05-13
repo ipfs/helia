@@ -173,6 +173,7 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
       // we should get an update eventually
       await waitFor(async () => {
         try {
+          // @ts-expect-error @libp2p/peer-id needs dep updates
           resolveResult = await name.resolve(peerId.toMultihash())
 
           return true

@@ -101,7 +101,7 @@ export namespace IPNSPublishMetadata {
     value: number
   }
 
-  export function encode (obj: Partial<IPNSPublishMetadata>): Uint8Array {
+  export function encode (obj: Partial<IPNSPublishMetadata>): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, IPNSPublishMetadata.codec())
   }
 

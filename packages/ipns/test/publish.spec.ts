@@ -120,6 +120,7 @@ describe('publish', () => {
     expect(record.record.value).to.equal(`/ipfs/${cid.toV1().toString()}`)
 
     const keyName2 = 'test-key-7'
+    // @ts-expect-error @libp2p/crypto needs new multiformats
     const recursiveRecord = await name.publish(keyName2, record.publicKey.toCID(), {
       offline: true
     })
@@ -139,6 +140,7 @@ describe('publish', () => {
     expect(record.record.value).to.equal(`/ipfs/${cid.toV1().toString()}`)
 
     const keyName2 = 'test-key-9'
+    // @ts-expect-error @libp2p/crypto needs new multiformats
     const recursiveRecord = await name.publish(keyName2, record.publicKey.toCID().multihash, {
       offline: true
     })

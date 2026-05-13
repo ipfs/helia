@@ -48,6 +48,7 @@ export class IPNSResolver {
 
   async resolve (key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options: ResolveOptions = {}): Promise<IPNSResolveResult> {
     const digest = isPublicKey(key) || isPeerId(key) ? key.toMultihash() : isLibp2pCID(key) ? key.multihash : key
+    // @ts-expect-error @libp2p/peer-id needs new multiformats
     const routingKey = multihashToIPNSRoutingKey(digest)
     const record = await this.#findIpnsRecord(routingKey, options)
 
