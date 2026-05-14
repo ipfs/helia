@@ -1,4 +1,4 @@
-import { InvalidParametersError, NotStartedError, TimeoutError, TypedEventEmitter, UnsupportedProtocolError, setMaxListeners } from '@libp2p/interface'
+import { InvalidParametersError, NotStartedError, TimeoutError, TypedEventEmitter, UnsupportedProtocolError, isPeerId, setMaxListeners } from '@libp2p/interface'
 import { PeerQueue } from '@libp2p/utils'
 import drain from 'it-drain'
 import * as lp from 'it-length-prefixed'
@@ -405,6 +405,21 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
     }
 
     options?.onProgress?.(new CustomProgressEvent<PeerId | Multiaddr | Multiaddr[]>('bitswap:dial', peer))
+
+    // Fast path: peer:identify is single-shot per peer, so if the peer was
+    // already identified (e.g. dialed by another subsystem) the raceEvent
+    // below would wait for an event that has already fired. When the peerStore
+    // already lists BITSWAP_120 for this peer we can skip the race entirely.
+    if (isPeerId(peer)) {
+      try {
+        const peerData = await this.libp2p.peerStore.get(peer)
+        if (peerData.protocols.includes(BITSWAP_120)) {
+          return await this.libp2p.dial(peer, options)
+        }
+      } catch {
+        // peer not in peerStore yet — fall through to the identify race
+      }
+    }
 
     // dial and wait for identify - this is to avoid opening a protocol stream
     // that we are not going to use but depends on the remote node running the
