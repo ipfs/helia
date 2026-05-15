@@ -42,3 +42,8 @@ export class InvalidCodecError extends Error {
     this.name = 'InvalidCodecError'
   }
 }
+
+export class UnknownCryptoError extends Error {
+  static name = 'UnknownCryptoError'
+  name = 'UnknownCryptoError'
+}

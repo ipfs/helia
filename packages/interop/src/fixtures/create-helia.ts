@@ -1,5 +1,4 @@
 import { bitswap } from '@helia/block-brokers'
-import { ipnsValidator, ipnsSelector } from '@helia/ipns'
 import { kadDHT, removePublicAddressesMapper } from '@libp2p/kad-dht'
 import { sha3512 } from '@multiformats/sha3'
 import { createHelia, libp2pDefaults } from 'helia'
@@ -20,12 +19,6 @@ export async function createHeliaNode (libp2pOptions?: Libp2pOptions): Promise<H
     ...(defaults.services ?? {}),
     ...(libp2pOptions?.services ?? {}),
     dht: kadDHT({
-      validators: {
-        ipns: ipnsValidator
-      },
-      selectors: {
-        ipns: ipnsSelector
-      },
       protocol: '/ipfs/lan/kad/1.0.0',
       peerInfoMapper: removePublicAddressesMapper,
       clientMode: false

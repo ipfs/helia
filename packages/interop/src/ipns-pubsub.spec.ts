@@ -174,7 +174,7 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
       await waitFor(async () => {
         try {
           // @ts-expect-error @libp2p/peer-id needs dep updates
-          resolveResult = await name.resolve(peerId.toMultihash())
+          resolveResult = await last(name.resolve(peerId.toMultihash()))
 
           return true
         } catch {
@@ -189,7 +189,7 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
         throw new Error('Failed to resolve CID')
       }
 
-      expect(resolveResult.cid.toString()).to.equal(cid.toString())
+      expect(uint8ArrayToString(resolveResult.record.value)).to.equal(`/ipfs/${cid}`)
     })
   })
 })

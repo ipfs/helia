@@ -1,12 +1,11 @@
 import { TypedEventEmitter } from '@libp2p/interface'
-import { keychain } from '@libp2p/keychain'
 import { defaultLogger } from '@libp2p/logger'
 import { MemoryDatastore } from 'datastore-core'
+import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { IPNS } from '../../src/ipns.ts'
 import type { IPNSRouting } from '../../src/index.ts'
-import type { HeliaEvents, Routing } from '@helia/interface'
-import type { Keychain, KeychainInit } from '@libp2p/keychain'
+import type { HeliaEvents, Routing, Keychain } from '@helia/interface'
 import type { Logger } from '@libp2p/logger'
 import type { Datastore } from 'interface-datastore'
 import type { StubbedInstance } from 'sinon-ts'
@@ -15,7 +14,7 @@ export interface CreateIPNSResult {
   name: IPNS
   customRouting: StubbedInstance<IPNSRouting>
   heliaRouting: StubbedInstance<Routing>
-  ipnsKeychain: Keychain
+  keychain: StubbedInstance<Keychain>
   datastore: Datastore,
   log: Logger
   events: TypedEventEmitter<HeliaEvents>
@@ -31,28 +30,17 @@ export async function createIPNS (): Promise<CreateIPNSResult> {
   const heliaRouting = stubInterface<Routing>()
 
   const logger = defaultLogger()
-  const keychainInit: KeychainInit = {
-    pass: 'very-strong-password'
-  }
-  const ipnsKeychain = keychain(keychainInit)({
-    // @ts-expect-error @libp2p/keychain needs new multiformats
-    datastore,
-    logger
-  })
-
   const events = new TypedEventEmitter<HeliaEvents>()
+  const getCryptoKey = Sinon.stub()
+  const keychain = stubInterface<Keychain>()
 
   const name = new IPNS({
     datastore,
     routing: heliaRouting,
-    libp2p: {
-      status: 'stopped',
-      services: {
-        keychain: ipnsKeychain
-      }
-    } as any,
     logger,
-    events
+    events,
+    getCryptoKey,
+    keychain
   }, {
     routers: [customRouting]
   })
@@ -61,7 +49,7 @@ export async function createIPNS (): Promise<CreateIPNSResult> {
     name,
     customRouting,
     heliaRouting,
-    ipnsKeychain,
+    keychain,
     datastore,
     log: logger.forComponent('helia:ipns:test'),
     events

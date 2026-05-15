@@ -52,9 +52,9 @@ const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
 const { publicKey } = await name.publish('key-1', cid)
 
 // resolve the name
-const result = await name.resolve(publicKey)
-
-console.info(result.cid, result.path)
+for await (const result of name.resolve(publicKey)) {
+  console.info(new TextDecoder().decode(result.record.value)) // /ipfs/QmFoo
+}
 ```
 
 ## Example - Publishing a recursive record
@@ -82,8 +82,9 @@ const { publicKey } = await name.publish('key-1', cid)
 const { publicKey: recursivePublicKey } = await name.publish('key-2', publicKey)
 
 // resolve the name recursively - it resolves until a CID is found
-const result = await name.resolve(recursivePublicKey)
-console.info(result.cid.toString() === cid.toString()) // true
+for await (const result of name.resolve(recursivePublicKey)) {
+  console.info(new TextDecoder().decode(result.record.value)) // /ipfs/QmFoo../foo.txt
+}
 ```
 
 ## Example - Publishing a record with a path
@@ -111,9 +112,9 @@ const finalDirCid = await fs.cp(fileCid, dirCid, '/foo.txt')
 const { publicKey } = await name.publish('key-1', `/ipfs/${finalDirCid}/foo.txt`)
 
 // resolve the name
-const result = await name.resolve(publicKey)
-
-console.info(result.cid, result.path) // QmFoo.. 'foo.txt'
+for await (const result of name.resolve(publicKey)) {
+  console.info(new TextDecoder().decode(result.record.value)) // /ipfs/QmFoo../foo.txt
+}
 ```
 
 ## Example - Using custom PubSub router
@@ -164,47 +165,9 @@ const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
 const { publicKey } = await name.publish('key-1', cid)
 
 // resolve the name
-const result = await name.resolve(publicKey)
-```
-
-## Example - Republishing an existing IPNS record
-
-It is sometimes useful to be able to republish an existing IPNS record
-without needing the private key. This allows you to extend the availability
-of a record that was created elsewhere.
-
-```TypeScript
-import { createHelia } from 'helia'
-import { ipns, ipnsValidator } from '@helia/ipns'
-import { delegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
-import { CID } from 'multiformats/cid'
-import { multihashToIPNSRoutingKey, marshalIPNSRecord } from 'ipns'
-import { defaultLogger } from '@libp2p/logger'
-
-const helia = await createHelia()
-const name = ipns(helia)
-
-const ipnsName = 'k51qzi5uqu5dktsyfv7xz8h631pri4ct7osmb43nibxiojpttxzoft6hdyyzg4'
-const parsedCid: CID<unknown, 114, 0 | 18, 1> = CID.parse(ipnsName)
-const delegatedClient = delegatedRoutingV1HttpApiClient({
-  url: 'https://delegated-ipfs.dev'
-})({
-  logger: defaultLogger()
-})
-const record = await delegatedClient.getIPNS(parsedCid)
-
-const routingKey = multihashToIPNSRoutingKey(parsedCid.multihash)
-const marshaledRecord = marshalIPNSRecord(record)
-
-// validate that they key corresponds to the record
-await ipnsValidator(routingKey, marshaledRecord)
-
-// publish record to routing
-await Promise.all(
-  name.routers.map(async r => {
-    await r.put(routingKey, marshaledRecord)
-  })
-)
+for await (const result of name.resolve(publicKey)) {
+  console.info(new TextDecoder().decode(result.record.value))
+}
 ```
 
 # Install
