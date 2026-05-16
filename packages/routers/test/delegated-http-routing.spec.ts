@@ -53,6 +53,7 @@ describe('delegated-http-routing', () => {
 
   it('should put a IPNS record value', async () => {
     const privateKey = await generateKeyPair('Ed25519')
+    // @ts-expect-error @libp2p/crypto needs new multiformats
     const key = multihashToIPNSRoutingKey(privateKey.publicKey.toMultihash())
     const record = await createIPNSRecord(privateKey, '/hello world', 0, 100)
     const value = marshalIPNSRecord(record)
@@ -75,6 +76,7 @@ describe('delegated-http-routing', () => {
 
   it('should get a IPNS record value', async () => {
     const privateKey = await generateKeyPair('Ed25519')
+    // @ts-expect-error @libp2p/crypto needs new multiformats
     const key = multihashToIPNSRoutingKey(privateKey.publicKey.toMultihash())
     const record = await createIPNSRecord(privateKey, '/hello world', 0, 100)
     const options = {}

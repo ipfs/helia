@@ -123,6 +123,7 @@ describe('publish', () => {
     expect(record.record.value).to.equal(`/ipfs/${cid.toV1().toString()}`)
 
     const keyName2 = 'test-key-7'
+    // @ts-expect-error @libp2p/crypto needs new multiformats
     const recursiveRecord = await name.publish(keyName2, record.publicKey.toCID(), {
       offline: true
     })
@@ -142,6 +143,7 @@ describe('publish', () => {
     expect(record.record.value).to.equal(`/ipfs/${cid.toV1().toString()}`)
 
     const keyName2 = 'test-key-9'
+    // @ts-expect-error @libp2p/crypto needs new multiformats
     const recursiveRecord = await name.publish(keyName2, record.publicKey.toCID().multihash, {
       offline: true
     })
@@ -211,6 +213,7 @@ describe('publish', () => {
     const cases: Array<'republish' | 'refresh' | 'none'> = ['republish', 'refresh', 'none']
     for (const upkeep of cases) {
       const { publicKey } = await name.publish(`test-key-upkeep-${upkeep}`, cid, { offline: true, upkeep })
+      // @ts-expect-error @libp2p/crypto needs new multiformats
       const routingKey = multihashToIPNSRoutingKey(publicKey.toMultihash())
       const metadataBuf = await result.datastore.get(ipnsMetadataKey(routingKey))
       expect(IPNSPublishMetadata.decode(metadataBuf).upkeep).to.equal(Upkeep[upkeep])
@@ -309,6 +312,7 @@ describe('unpublish', () => {
   it('should unpublish by string keyName', async () => {
     const keyName = 'test-key-unpublish-1'
     const { publicKey } = await name.publish(keyName, cid, { offline: true })
+    // @ts-expect-error @libp2p/crypto needs new multiformats
     const routingKey = multihashToIPNSRoutingKey(publicKey.toMultihash())
 
     expect(await result.datastore.has(dhtRoutingKey(routingKey))).to.be.true()
@@ -323,6 +327,7 @@ describe('unpublish', () => {
   it('should unpublish by PublicKey', async () => {
     const keyName = 'test-key-unpublish-2'
     const { publicKey } = await name.publish(keyName, cid, { offline: true })
+    // @ts-expect-error @libp2p/crypto needs new multiformats
     const routingKey = multihashToIPNSRoutingKey(publicKey.toMultihash())
 
     await name.unpublish(publicKey)
@@ -334,8 +339,10 @@ describe('unpublish', () => {
   it('should unpublish by libp2p-key CID', async () => {
     const keyName = 'test-key-unpublish-3'
     const { publicKey } = await name.publish(keyName, cid, { offline: true })
+    // @ts-expect-error @libp2p/crypto needs new multiformats
     const routingKey = multihashToIPNSRoutingKey(publicKey.toMultihash())
 
+    // @ts-expect-error @libp2p/crypto needs new multiformats
     await name.unpublish(publicKey.toCID())
 
     expect(await result.datastore.has(dhtRoutingKey(routingKey))).to.be.false()
@@ -345,8 +352,10 @@ describe('unpublish', () => {
   it('should unpublish by multihash', async () => {
     const keyName = 'test-key-unpublish-4'
     const { publicKey } = await name.publish(keyName, cid, { offline: true })
+    // @ts-expect-error @libp2p/crypto needs new multiformats
     const routingKey = multihashToIPNSRoutingKey(publicKey.toMultihash())
 
+    // @ts-expect-error @libp2p/crypto needs new multiformats
     await name.unpublish(publicKey.toMultihash())
 
     expect(await result.datastore.has(dhtRoutingKey(routingKey))).to.be.false()
@@ -356,6 +365,7 @@ describe('unpublish', () => {
   it('should unpublish by PeerId', async () => {
     const keyName = 'test-key-unpublish-5'
     const { publicKey } = await name.publish(keyName, cid, { offline: true })
+    // @ts-expect-error @libp2p/crypto needs new multiformats
     const routingKey = multihashToIPNSRoutingKey(publicKey.toMultihash())
 
     await name.unpublish(peerIdFromCID(publicKey.toCID()))

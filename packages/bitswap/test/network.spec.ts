@@ -97,6 +97,7 @@ describe('network', () => {
 
     handler(inboundStream, connection)
 
+    // @ts-expect-error libp2p needs dep updates
     const pbstr = pbStream(outboundStream).pb(BitswapMessage)
     await pbstr.write({
       blockPresences: [],
@@ -354,6 +355,7 @@ describe('network', () => {
 
     void network.sendMessage(peerId, new QueuedBitswapMessage(true))
 
+    // @ts-expect-error libp2p needs dep updates
     const pbstr = pbStream(inboundStream).pb(BitswapMessage)
     const message = await pbstr.read()
 
@@ -455,6 +457,7 @@ describe('network', () => {
     // one dial for slowPeer, one for peerId
     expect(components.libp2p.dialProtocol).to.have.property('callCount', 2, 'made too many dials')
 
+    // @ts-expect-error libp2p needs dep updates
     const pbstr = pbStream(inboundStream).pb(BitswapMessage)
     const message = await pbstr.read()
 

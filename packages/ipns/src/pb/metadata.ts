@@ -142,7 +142,7 @@ export namespace IPNSPublishMetadata {
     value: Upkeep
   }
 
-  export function encode (obj: Partial<IPNSPublishMetadata>): Uint8Array {
+  export function encode (obj: Partial<IPNSPublishMetadata>): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, IPNSPublishMetadata.codec())
   }
 

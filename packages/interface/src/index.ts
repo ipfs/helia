@@ -20,19 +20,16 @@ import type { Routing } from './routing.ts'
 import type { AbortOptions, ComponentLogger, Libp2p, Metrics, TypedEventEmitter } from '@libp2p/interface'
 import type { DNS } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
-import type { Await } from 'interface-store'
 import type { BlockCodec, MultihashHasher } from 'multiformats'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
-export type { Await, AwaitIterable } from 'interface-store'
-
 export interface CodecLoader {
-  <T = any, Code extends number = any>(code: Code): Await<BlockCodec<Code, T>>
+  <T = any, Code extends number = any>(code: Code): BlockCodec<Code, T> | Promise<BlockCodec<Code, T>>
 }
 
 export interface HasherLoader {
-  (code: number): Await<MultihashHasher>
+  (code: number): MultihashHasher | Promise<MultihashHasher>
 }
 
 /**

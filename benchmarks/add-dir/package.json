@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "@helia/unixfs": "^5.0.2",
-    "aegir": "^47.0.7",
+    "aegir": "^48.0.4",
     "blockstore-core": "^6.1.1",
     "blockstore-fs": "^3.0.2",
     "datastore-core": "^11.0.2",
@@ -22,11 +22,11 @@
     "execa": "^9.5.3",
     "helia": "^5.1.1",
     "ipfs-unixfs-importer": "^16.0.1",
-    "ipfsd-ctl": "^15.0.0",
+    "ipfsd-ctl": "^17.0.0",
     "it-last": "^3.0.6",
-    "kubo": "^0.38.0",
-    "kubo-rpc-client": "^5.0.0",
-    "multiformats": "^13.1.0",
+    "kubo": "^0.41.0",
+    "kubo-rpc-client": "^7.0.0",
+    "multiformats": "^14.0.0",
     "tinybench": "^5.0.1"
   }
 }

@@ -54,6 +54,7 @@ keyTypes.forEach(type => {
           key = await generateKeyPair('RSA', 2048)
         }
 
+        // @ts-expect-error @libp2p/crypto needs dep updates
         const routingKey = multihashToIPNSRoutingKey(key.publicKey?.toMultihash())
 
         const [closest] = await sortClosestPeers(routingKey, [
@@ -155,6 +156,7 @@ keyTypes.forEach(type => {
 
       // ensure the key is in the kubo keychain so we can use it to publish the IPNS record
       const body = new FormData()
+      // @ts-expect-error @libp2p/crypto needs dep updates
       body.append('key', new Blob([privateKeyToProtobuf(key)]))
 
       // can't use the kubo-rpc-api for this call yet

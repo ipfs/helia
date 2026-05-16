@@ -1,6 +1,6 @@
 {
   "name": "@helia/block-brokers",
-  "version": "5.2.3",
+  "version": "5.2.4",
   "description": "Block brokers for Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/block-brokers#readme",
@@ -48,9 +48,9 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@helia/bitswap": "^3.2.2",
+    "@helia/bitswap": "^3.2.3",
     "@helia/interface": "^6.2.1",
-    "@helia/utils": "^2.5.1",
+    "@helia/utils": "^2.5.2",
     "@libp2p/interface": "^3.2.0",
     "@libp2p/peer-id": "^6.0.6",
     "@libp2p/utils": "^7.0.15",
@@ -58,22 +58,22 @@
     "@multiformats/multiaddr-matcher": "^3.0.2",
     "@multiformats/multiaddr-to-uri": "^12.0.0",
     "@multiformats/uri-to-multiaddr": "^10.0.0",
-    "interface-blockstore": "^6.0.2",
-    "multiformats": "^13.4.2",
+    "interface-blockstore": "^7.0.1",
+    "multiformats": "^14.0.0",
     "progress-events": "^1.1.0",
-    "uint8arraylist": "^2.4.8",
-    "uint8arrays": "^5.1.0"
+    "uint8arraylist": "^3.0.2",
+    "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
     "@libp2p/crypto": "^5.1.15",
     "@libp2p/logger": "^6.2.4",
     "@types/polka": "^0.5.8",
     "@types/sinon": "^21.0.1",
-    "aegir": "^47.1.5",
+    "aegir": "^48.0.4",
     "cors": "^2.8.6",
     "polka": "^0.5.2",
     "race-signal": "^2.0.0",
-    "sinon": "^21.1.0",
+    "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0"
   }
 }

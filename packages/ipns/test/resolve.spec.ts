@@ -62,6 +62,7 @@ describe('resolve', () => {
 
     heliaRouting.get.resolves(marshalIPNSRecord(record))
 
+    // @ts-expect-error @libp2p/crypto needs new multiformats
     const resolvedValue = await name.resolve(publicKey.toCID())
     expect(resolvedValue.cid.toString()).to.equal(cid.toV1().toString())
 
@@ -178,6 +179,7 @@ describe('resolve', () => {
 
   it('should cache a record', async function () {
     const key = await generateKeyPair('Ed25519')
+    // @ts-expect-error @libp2p/crypto needs new multiformats
     const customRoutingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
     const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
 
@@ -196,6 +198,7 @@ describe('resolve', () => {
 
   it('should cache the most recent record', async function () {
     const key = await generateKeyPair('Ed25519')
+    // @ts-expect-error @libp2p/crypto needs new multiformats
     const customRoutingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
     const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
 
@@ -231,6 +234,7 @@ describe('resolve', () => {
 
   it('should not search the routing for updated IPNS records when a locally cached copy is within the TTL', async () => {
     const key = await generateKeyPair('Ed25519')
+    // @ts-expect-error @libp2p/crypto needs new multiformats
     const customRoutingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
     const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
 
@@ -252,6 +256,7 @@ describe('resolve', () => {
   it('should search the routing for updated IPNS records when a locally cached copy has passed the TTL', async () => {
     const key = await generateKeyPair('Ed25519')
 
+    // @ts-expect-error @libp2p/crypto needs new multiformats
     const customRoutingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
     const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
 
@@ -273,6 +278,7 @@ describe('resolve', () => {
   it('should search the routing for updated IPNS records when a locally cached copy has passed the TTL and choose the record with a higher sequence number', async () => {
     const key = await generateKeyPair('Ed25519')
 
+    // @ts-expect-error @libp2p/crypto needs new multiformats
     const customRoutingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
     const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
 
@@ -300,6 +306,7 @@ describe('resolve', () => {
   it('should search the routing when a locally cached copy has an expired lifetime', async () => {
     const key = await generateKeyPair('Ed25519')
 
+    // @ts-expect-error @libp2p/crypto needs new multiformats
     const customRoutingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
     const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
 

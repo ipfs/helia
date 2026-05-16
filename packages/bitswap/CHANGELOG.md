@@ -1,5 +1,14 @@
 # Changelog
 
+## [3.2.3](https://github.com/ipfs/helia/compare/bitswap-v3.2.2...bitswap-v3.2.3) (2026-04-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^2.5.1 to ^2.5.2
+
 ## [3.2.2](https://github.com/ipfs/helia/compare/bitswap-v3.2.1...bitswap-v3.2.2) (2026-04-10)
 
 

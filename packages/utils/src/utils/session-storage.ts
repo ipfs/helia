@@ -6,7 +6,6 @@ import type { Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, G
 import type { AbortOptions, PeerId } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { InputPair } from 'interface-blockstore'
-import type { AwaitIterable } from 'interface-store'
 import type { CID } from 'multiformats/cid'
 import type { ProgressOptions } from 'progress-events'
 
@@ -63,7 +62,7 @@ export class SessionStorage extends Storage<SessionBlockBroker> implements Sessi
   /**
    * Put a multiple blocks to the underlying datastore
    */
-  async * putMany (blocks: AwaitIterable<InputPair>, options: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents> = {}): AsyncGenerator<CID> {
+  async * putMany (blocks: Iterable<InputPair> | AsyncIterable<InputPair>, options: AbortOptions & ProgressOptions<PutManyBlocksProgressEvents> = {}): AsyncGenerator<CID> {
     const signal = anySignal([this.closeController.signal, options.signal])
     setMaxListeners(Infinity, signal)
 
@@ -97,7 +96,7 @@ export class SessionStorage extends Storage<SessionBlockBroker> implements Sessi
   /**
    * Get multiple blocks back from an (async) iterable of cids
    */
-  async * getMany (cids: AwaitIterable<CID>, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetManyBlocksProgressEvents> = {}): AsyncGenerator<Pair> {
+  async * getMany (cids: Iterable<CID> | AsyncIterable<CID>, options: GetOfflineOptions & AbortOptions & ProgressOptions<GetManyBlocksProgressEvents> = {}): AsyncGenerator<Pair> {
     const signal = anySignal([this.closeController.signal, options.signal])
     setMaxListeners(Infinity, signal)
 
@@ -131,7 +130,7 @@ export class SessionStorage extends Storage<SessionBlockBroker> implements Sessi
   /**
    * Delete multiple blocks from the blockstore
    */
-  async * deleteMany (cids: AwaitIterable<CID>, options: AbortOptions & ProgressOptions<DeleteManyBlocksProgressEvents> = {}): AsyncGenerator<CID> {
+  async * deleteMany (cids: Iterable<CID> | AsyncIterable<CID>, options: AbortOptions & ProgressOptions<DeleteManyBlocksProgressEvents> = {}): AsyncGenerator<CID> {
     const signal = anySignal([this.closeController.signal, options.signal])
     setMaxListeners(Infinity, signal)
 
