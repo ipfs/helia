@@ -7,6 +7,7 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { Provider, Routing, RoutingOptions } from '@helia/interface'
 import type { PeerInfo } from '@libp2p/interface'
 import type { Version } from 'multiformats'
+import { delay } from './utils/delay.ts'
 
 export const DEFAULT_TRUSTLESS_GATEWAYS = [
   // 2023-10-03: IPNS, Origin, and Block/CAR support from https://ipfs.github.io/public-gateway-checker/
@@ -18,12 +19,22 @@ export const DEFAULT_TRUSTLESS_GATEWAYS = [
 
 export interface HTTPGatewayRouterInit {
   gateways?: Array<URL | string>
+
   /**
    * Whether to shuffle the list of gateways
    *
    * @default true
    */
   shuffle?: boolean
+
+  /**
+   * Trustless gateways should be used as a fallback provider, pass a number
+   * here to wait this many ms before yielding a trustless gateway as a provider
+   * of any given CID
+   *
+   * @default 0
+   */
+  delay?: number
 }
 
 // this value is from https://github.com/multiformats/multicodec/blob/master/table.csv
@@ -48,24 +59,26 @@ class HTTPGatewayRouter implements Partial<Routing> {
   public readonly name = 'http-gateway-router'
   private readonly gateways: PeerInfo[]
   private readonly shuffle: boolean
+  private readonly delay: number
 
   constructor (init: HTTPGatewayRouterInit = {}) {
     this.gateways = (init.gateways ?? DEFAULT_TRUSTLESS_GATEWAYS).map(url => toPeerInfo(url))
     this.shuffle = init.shuffle ?? true
+    this.delay = init.delay ?? 0
   }
 
   async * findProviders (cid: CID<unknown, number, number, Version>, options?: RoutingOptions | undefined): AsyncIterable<Provider> {
     yield * (this.shuffle
       ? this.gateways.toSorted(() => Math.random() > 0.5 ? 1 : -1)
       : this.gateways
-    ).map(info => {
-      const provider = {
+    ).map(async info => {
+      await delay(this.delay)
+
+      return {
         ...info,
         protocols: ['transport-ipfs-gateway-http'],
         routing: 'http-gateway-routing'
       }
-
-      return provider
     })
   }
 
