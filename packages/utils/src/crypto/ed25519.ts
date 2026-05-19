@@ -1,11 +1,15 @@
+import { InvalidPrivateKeyError } from '@libp2p/interface'
 import { CID } from 'multiformats'
 import { identity } from 'multiformats/hashes/identity'
+import { concat as uin8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import { withArrayBuffer as uint8ArrayWithArrayBuffer } from 'uint8arrays/with-array-buffer'
 import type { CryptoKeyImplementation, PrivateKey, PublicKey } from '@helia/interface'
 import type { AbortOptions } from 'abort-error'
 import type { MultihashDigest } from 'multiformats'
+
+const PRIVATE_KEY_LENGTH = 32
 
 class Ed25519PublicKey implements PublicKey {
   public type = 'Ed25519'
@@ -40,6 +44,10 @@ class Ed25519PrivateKey implements PrivateKey {
   public publicKey: PublicKey
 
   constructor (raw: ArrayBuffer, publicKey: PublicKey) {
+    if (raw.byteLength !== PRIVATE_KEY_LENGTH) {
+      throw new InvalidPrivateKeyError(`Incorrect key length, got ${raw.byteLength} expected ${PRIVATE_KEY_LENGTH}`)
+    }
+
     this.raw = raw
     this.publicKey = publicKey
   }
@@ -50,7 +58,7 @@ class Ed25519PrivateKey implements PrivateKey {
     const key = await crypto.subtle.importKey('jwk', {
       crv: 'Ed25519',
       kty: 'OKP',
-      // x: uint8arrayToString(privateKey.subarray(32), 'base64url'),
+      x: uint8arrayToString(new Uint8Array(this.publicKey.raw), 'base64url'),
       d: uint8arrayToString(new Uint8Array(privateKey), 'base64url'),
       ext: true,
       key_ops: ['sign']
@@ -71,8 +79,12 @@ class Ed25519Crypto implements CryptoKeyImplementation {
   code = 1
 
   async createPrivateKey (options?: AbortOptions & Record<string, any>): Promise<PrivateKey> {
-    const bytes = crypto.getRandomValues(new Uint8Array(32))
-    return new Ed25519PrivateKey(bytes.buffer, await derivePublicKey(bytes.buffer, options))
+    const key = await crypto.subtle.generateKey('Ed25519', true, ['sign', 'verify'])
+    const buf = await crypto.subtle.exportKey('pkcs8', key.privateKey)
+
+    // raw key is last 32 bytes of pkcs8 wrapper
+    const raw = new Uint8Array(buf, buf.byteLength - PRIVATE_KEY_LENGTH, PRIVATE_KEY_LENGTH).slice()
+    return new Ed25519PrivateKey(raw.buffer, await derivePublicKey(raw.buffer, options))
   }
 
   async publicKeyFromArray (key: ArrayBuffer | Uint8Array, options?: AbortOptions): Promise<PublicKey> {
@@ -83,8 +95,7 @@ class Ed25519Crypto implements CryptoKeyImplementation {
   }
 
   async privateKeyFromArray (key: ArrayBuffer | Uint8Array, options?: AbortOptions): Promise<PrivateKey> {
-    const raw = key instanceof ArrayBuffer ? key : uint8ArrayWithArrayBuffer(key).buffer
-
+    const raw = key instanceof ArrayBuffer ? key : uint8ArrayWithArrayBuffer(key).slice().buffer
     return new Ed25519PrivateKey(raw, await derivePublicKey(raw, options))
   }
 }
@@ -98,9 +109,9 @@ export function ed25519Crypto (): CryptoKeyImplementation {
  * truncate the Uint8Array to handle this case
  */
 function truncateKey (input: ArrayBuffer): ArrayBuffer {
-  const key = new ArrayBuffer(32)
+  const key = new ArrayBuffer(PRIVATE_KEY_LENGTH)
   const view = new Uint8Array(key)
-  view.set(new Uint8Array(input, 0, 32))
+  view.set(new Uint8Array(input, 0, PRIVATE_KEY_LENGTH))
 
   return key
 }
@@ -110,20 +121,11 @@ async function derivePublicKey (raw: ArrayBuffer, options?: AbortOptions): Promi
 
   // if the public key is appended to the private key, just return that
   if (raw.byteLength === 64) {
-    publicKey = new Uint8Array(raw, 32).slice().buffer
+    publicKey = new Uint8Array(raw, PRIVATE_KEY_LENGTH).slice().buffer
   } else {
     const privateKey = truncateKey(raw)
-
-    const key = await crypto.subtle.importKey('jwk', {
-      crv: 'Ed25519',
-      kty: 'OKP',
-      // x: uint8arrayToString(privateKey.subarray(32), 'base64url'),
-      d: uint8arrayToString(new Uint8Array(privateKey), 'base64url'),
-      ext: true,
-      key_ops: ['sign']
-    }, {
-      name: 'Ed25519'
-    }, true, ['sign'])
+    const pkcs8 = convertRawX25519KeyToPKCS(privateKey)
+    const key = await crypto.subtle.importKey('pkcs8', pkcs8, 'Ed25519', true, ['sign'])
     options?.signal?.throwIfAborted()
 
     const exported = await crypto.subtle.exportKey('jwk', key)
@@ -133,4 +135,16 @@ async function derivePublicKey (raw: ArrayBuffer, options?: AbortOptions): Promi
   }
 
   return new Ed25519PublicKey(publicKey)
+}
+
+const PKCS8_HEADER = Uint8Array.from([
+  48, 46, 2, 1, 0, 48, 5, 6, 3, 43, 101, 112, 4, 34, 4
+])
+
+function convertRawX25519KeyToPKCS (privateKey: ArrayBuffer): Uint8Array<ArrayBuffer> {
+  return uin8ArrayConcat([
+    PKCS8_HEADER,
+    Uint8Array.from([privateKey.byteLength]),
+    new Uint8Array(privateKey)
+  ], PKCS8_HEADER.byteLength + 1 + privateKey.byteLength)
 }

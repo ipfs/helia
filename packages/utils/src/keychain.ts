@@ -1,12 +1,14 @@
-import { InvalidParametersError, NotFoundError, NotStartedError, serviceCapabilities } from '@libp2p/interface'
+import { InvalidParametersError, NotStartedError, serviceCapabilities } from '@libp2p/interface'
 import { Key } from 'interface-datastore/key'
 import { base58btc } from 'multiformats/bases/base58'
 import { base64 } from 'multiformats/bases/base64'
 import { sha256 } from 'multiformats/hashes/sha2'
 import sanitize from 'sanitize-filename'
+import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { withArrayBuffer as uint8ArrayWithArrayBuffer } from 'uint8arrays/with-array-buffer'
+import { DecryptionFailedError } from './errors.ts'
 import { PrivateKeyMessage } from './keychain/keys.ts'
 import type { Keychain as KeychainInterface, KeyInfo, PrivateKey, CryptoKeyLoader } from '@helia/interface'
 import type { ComponentLogger, Logger } from '@libp2p/interface'
@@ -16,9 +18,6 @@ import type { Batch } from 'interface-datastore'
 
 const keyPrefix = '/pkcs8/'
 const infoPrefix = '/info/'
-const privates = new WeakMap<object, {
-  key: CryptoKey
-}>()
 
 /**
  * Default options for key derivation
@@ -40,6 +39,14 @@ const NIST = {
   minSaltLength: 128 / 8,
   minIterations: 1_000
 }
+
+const KEY_LENGTHS: Record<string, number> = {
+  'SHA-256': 64,
+  'SHA-384': 128,
+  'SHA-512': 256
+}
+
+const SALT_LENGTH = 16
 
 export interface DEKConfig {
   hash: string
@@ -78,7 +85,7 @@ export interface KeychainInit {
    *
    * @default SHA2-512
    */
-  hash?: string
+  hash?: 'SHA-256' | 'SHA-384' | 'SHA-512'
 
   /**
    * The 'self' key is the private key of the node from which the peer id is
@@ -148,7 +155,7 @@ export class Keychain implements KeychainInterface {
   private salt: Uint8Array
   private iterations: number
   private keyLength: number
-  private hash: string
+  private hash: 'SHA-256' | 'SHA-384' | 'SHA-512'
   private password: string
 
   /**
@@ -161,11 +168,11 @@ export class Keychain implements KeychainInterface {
     this.salt = uint8ArrayFromString(init.salt ?? DEK_INIT.salt)
     this.iterations = init.iterations ?? DEK_INIT.iterations
     this.keyLength = init.keyLength ?? DEK_INIT.keyLength
-    this.hash = init.hash ?? 'SHA2-512'
+    this.hash = init.hash ?? 'SHA-512'
     this.password = init.password ?? ''
 
     // Enforce NIST SP 800-132
-    if (this.password.length < MIN_PASS_LENGTH) {
+    if (init.password != null && this.password.length < MIN_PASS_LENGTH) {
       throw new Error('password must be least 20 characters')
     }
 
@@ -180,6 +187,10 @@ export class Keychain implements KeychainInterface {
     if (this.iterations < NIST.minIterations) {
       throw new Error(`iterations must be least ${NIST.minIterations}`)
     }
+
+    if (KEY_LENGTHS[this.hash] == null) {
+      throw new InvalidParametersError('Unsupported hash')
+    }
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/keychain'
@@ -192,19 +203,24 @@ export class Keychain implements KeychainInterface {
     this.key = await this.generateSaltedKey(this.password ?? '')
   }
 
+  async stop (): Promise<void> {
+
+  }
+
   private async generateSaltedKey (pass: string): Promise<CryptoKey> {
     const key = await crypto.subtle.importKey('raw', uint8ArrayFromString(pass), {
       name: 'PBKDF2'
-    }, false, ['deriveKey', 'deriveBits'])
+    }, false, ['deriveKey'])
     return crypto.subtle.deriveKey({
       name: 'PBKDF2',
       salt: uint8ArrayWithArrayBuffer(this.salt),
       iterations: this.iterations,
       hash: this.hash
     }, key, {
-      name: 'HMAC',
+      // name: 'HMAC',
+      name: 'AES-GCM',
       hash: this.hash,
-      length: this.keyLength
+      length: KEY_LENGTHS[this.hash]
     }, true, ['encrypt', 'decrypt'])
   }
 
@@ -213,38 +229,6 @@ export class Keychain implements KeychainInterface {
     const key = await crypto.createPrivateKey(options)
 
     return this.importKey(name, key, options)
-  }
-
-  async findKeyByName (name: string, options?: AbortOptions): Promise<PrivateKey> {
-    if (!validateKeyName(name)) {
-      throw new InvalidParametersError(`Invalid key name '${name}'`)
-    }
-
-    const datastoreName = dsInfoName(name)
-
-    try {
-      const res = await this.components.datastore.get(datastoreName, options)
-      return JSON.parse(uint8ArrayToString(res))
-    } catch (err: any) {
-      this.log.error('could not read key from datastore - %e', err)
-      throw new NotFoundError(`Key '${name}' does not exist.`)
-    }
-  }
-
-  async findKeyById (id: string): Promise<PrivateKey> {
-    const query = {
-      prefix: infoPrefix
-    }
-
-    for await (const value of this.components.datastore.query(query)) {
-      const key = JSON.parse(uint8ArrayToString(value.value))
-
-      if (key.id === id) {
-        return key
-      }
-    }
-
-    throw new InvalidParametersError(`Key with id '${id}' does not exist.`)
   }
 
   async importKey (name: string, key: PrivateKey, options?: AbortOptions): Promise<PrivateKey> {
@@ -266,12 +250,6 @@ export class Keychain implements KeychainInterface {
       throw new InvalidParametersError(`Key '${name}' already exists`)
     }
 
-    const cached = privates.get(this)
-
-    if (cached == null) {
-      throw new InvalidParametersError('dek missing')
-    }
-
     const batch = this.components.datastore.batch()
     await this._importKey(name, key, this.key, batch, options)
     await batch.commit(options)
@@ -281,19 +259,24 @@ export class Keychain implements KeychainInterface {
 
   private async _importKey (name: string, privateKey: PrivateKey, key: CryptoKey, batch: Batch, options?: AbortOptions): Promise<void> {
     const data = new Uint8Array(privateKey.raw.slice())
-
     const protobuf = PrivateKeyMessage.encode({
       Type: privateKey.code,
       Data: data
     })
 
-    const cipherText = await window.crypto.subtle.encrypt({
-      name: 'AES-GCM'
-      // iv: window.crypto.getRandomValues(new Uint8Array(12))
+    const iv = crypto.getRandomValues(new Uint8Array(SALT_LENGTH))
+    const cipherText = await crypto.subtle.encrypt({
+      name: 'AES-GCM',
+      iv
     }, key, protobuf)
     options?.signal?.throwIfAborted()
 
-    const buf = new Uint8Array(cipherText)
+    // prepend the iv to the buffer
+    const buf = uint8ArrayConcat([
+      iv,
+      new Uint8Array(cipherText)
+    ], iv.byteLength + cipherText.byteLength)
+
     const pem = base64.encode(buf)
     const keyInfo = {
       name,
@@ -309,33 +292,42 @@ export class Keychain implements KeychainInterface {
       throw new InvalidParametersError(`Invalid key name '${name}'`)
     }
 
-    const cached = privates.get(this)
-
-    if (cached == null) {
-      throw new InvalidParametersError('dek missing')
+    if (this.key == null) {
+      throw new NotStartedError()
     }
 
-    const key = cached.key
-
-    return this._exportKey(name, key, options)
+    return this._exportKey(name, this.key, options)
   }
 
   private async _exportKey (name: string, key: CryptoKey, options?: AbortOptions): Promise<PrivateKey> {
     const res = await this.components.datastore.get(dsName(name), options)
-    const info = await this.components.datastore.get(dsInfoName(name), options)
     const pem = uint8ArrayToString(res)
     const buf = base64.decode(pem)
+    const iv = buf.subarray(0, SALT_LENGTH)
+    let raw: ArrayBuffer
 
-    const raw = await window.crypto.subtle.decrypt({
-      name: 'AES-GCM'
-      // iv: window.crypto.getRandomValues(new Uint8Array(12))
-    }, key, buf)
-    options?.signal?.throwIfAborted()
+    try {
+      raw = await crypto.subtle.decrypt({
+        name: 'AES-GCM',
+        iv
+      }, key, buf.subarray(SALT_LENGTH))
+      options?.signal?.throwIfAborted()
+    } catch (err: any) {
+      if (err.name === 'OperationError') {
+        throw new DecryptionFailedError(err.message)
+      }
 
-    return {
-      ...JSON.parse(uint8ArrayToString(info)),
-      raw
+      throw err
     }
+
+    const privateKeyPb = PrivateKeyMessage.decode(new Uint8Array(raw))
+
+    if (privateKeyPb.Type == null || privateKeyPb.Data == null) {
+      throw new InvalidParametersError('Decoded private key protobuf did not have Type and/or Data fields')
+    }
+
+    const cryptoImplementation = await this.components.getCryptoKey(privateKeyPb.Type)
+    return cryptoImplementation.privateKeyFromArray(privateKeyPb.Data)
   }
 
   async removeKey (name: string, options?: AbortOptions): Promise<void> {
@@ -417,13 +409,12 @@ export class Keychain implements KeychainInterface {
     }
 
     this.log('recreating keychain')
-    const cached = privates.get(this)
 
-    if (cached == null) {
-      throw new InvalidParametersError('dek missing')
+    if (this.key == null) {
+      throw new NotStartedError()
     }
 
-    const oldKey = cached.key
+    const oldKey = this.key
     const newKey = await this.generateSaltedKey(password)
 
     const batch = this.components.datastore.batch()
@@ -437,10 +428,7 @@ export class Keychain implements KeychainInterface {
 
     await batch.commit(options)
 
-    privates.set(this, {
-      ...cached,
-      key: newKey
-    })
+    this.key = newKey
 
     this.log('keychain reconstructed')
   }
