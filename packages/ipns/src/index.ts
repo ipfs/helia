@@ -144,12 +144,15 @@
  * without needing the private key. This allows you to extend the availability
  * of a record that was created elsewhere.
  *
+ * There should be only one republisher per IPNS key. Multiple machines
+ * republishing the same key will conflict on sequence numbers and flood the
+ * DHT with redundant writes.
+ *
  * ```TypeScript
  * import { createHelia } from 'helia'
- * import { ipns, ipnsValidator } from '@helia/ipns'
+ * import { ipns } from '@helia/ipns'
  * import { delegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
  * import { CID } from 'multiformats/cid'
- * import { multihashToIPNSRoutingKey, marshalIPNSRecord } from 'ipns'
  * import { defaultLogger } from '@libp2p/logger'
  *
  * const helia = await createHelia()
@@ -164,18 +167,13 @@
  * })
  * const record = await delegatedClient.getIPNS(parsedCid)
  *
- * const routingKey = multihashToIPNSRoutingKey(parsedCid.multihash)
- * const marshaledRecord = marshalIPNSRecord(record)
+ * // republish to routing; throws RecordAlreadyPublishedError if a newer record
+ * // is already resolvable — pass `force: true` only if you know no one else is
+ * // republishing this key
+ * const { record: latestRecord } = await name.republish(parsedCid, { record })
  *
- * // validate that they key corresponds to the record
- * await ipnsValidator(routingKey, marshaledRecord)
- *
- * // publish record to routing
- * await Promise.all(
- *   name.routers.map(async r => {
- *     await r.put(routingKey, marshaledRecord)
- *   })
- * )
+ * // stop republishing a key
+ * await name.unpublish(parsedCid)
  * ```
  */
 
@@ -206,6 +204,11 @@ export type ResolveProgressEvents =
   ProgressEvent<'ipns:resolve:success', IPNSRecord> |
   ProgressEvent<'ipns:resolve:error', Error>
 
+export type RepublishProgressEvents =
+  ProgressEvent<'ipns:republish:start'> |
+  ProgressEvent<'ipns:republish:success', IPNSRecord> |
+  ProgressEvent<'ipns:republish:error', Error>
+
 export type DatastoreProgressEvents =
   ProgressEvent<'ipns:routing:datastore:put'> |
   ProgressEvent<'ipns:routing:datastore:get'> |
@@ -219,7 +222,7 @@ export interface PublishOptions extends AbortOptions, ProgressOptions<PublishPro
   lifetime?: number
 
   /**
-   * Only publish to a local datastore (default: false)
+   * Only publish to the local datastore, skipping the routers (default: false)
    */
   offline?: boolean
 
@@ -233,11 +236,15 @@ export interface PublishOptions extends AbortOptions, ProgressOptions<PublishPro
    * The TTL of the record in ms (default: 5 minutes)
    */
   ttl?: number
-}
 
-export interface IPNSRecordMetadata {
-  keyName: string
-  lifetime: number
+  /**
+   * Automated record upkeep policy. (default: "republish")
+   *
+   * - `republish`: create a new record with a refreshed TTL
+   * - `refresh`: publish the existing record until it expires
+   * - `none`: disable automated publishing
+   */
+  upkeep?: 'republish' | 'refresh' | 'none'
 }
 
 export interface ResolveOptions extends AbortOptions, ProgressOptions<ResolveProgressEvents | IPNSRoutingProgressEvents> {
@@ -254,6 +261,45 @@ export interface ResolveOptions extends AbortOptions, ProgressOptions<ResolvePro
    * @default false
    */
   nocache?: boolean
+}
+
+export interface RepublishOptions extends AbortOptions, ProgressOptions<RepublishProgressEvents | IPNSRoutingProgressEvents> {
+  /**
+   * A candidate IPNS record to use if no newer records are found
+   */
+  record?: IPNSRecord
+
+  /**
+   * Only republish to the local datastore, skipping the routers (default: false)
+   */
+  offline?: boolean
+
+  /**
+   * Skip resolution of latest record before republishing (default: false)
+   *
+   * It's important to resolve the latest record before republishing to routers
+   * Resolution should only be skipped when confident the latest record is already known
+   */
+  skipResolution?: boolean
+
+  /**
+   * Force the record to be republished even when already resolvable (default: false)
+   *
+   * It's important for republishing to be handled by a single machine
+   * Republishing should only be forced when confident the record is not being republished by other clients
+   */
+  force?: boolean
+
+  /**
+   * Automated record upkeep policy. (default: "refresh")
+   *
+   * Defaults to `refresh` since `republish()` cannot sign new records without
+   * the private key.
+   *
+   * - `refresh`: republish the existing record until it expires
+   * - `none`: disable automated publishing
+   */
+  upkeep?: 'refresh' | 'none'
 }
 
 export interface ResolveResult {
@@ -285,6 +331,13 @@ export interface IPNSPublishResult {
    * The public key that was used to publish the record
    */
   publicKey: PublicKey
+}
+
+export interface IPNSRepublishResult {
+  /**
+   * The published record
+   */
+  record: IPNSRecord
 }
 
 export interface IPNSResolver {
@@ -346,13 +399,26 @@ export interface IPNS {
   /**
    * Stop republishing of an IPNS record
    *
-   * This will delete the last signed IPNS record from the datastore, but the
-   * key will remain in the keychain.
+   * This will delete the last signed IPNS record from the datastore. If a key
+   * name is passed, the key will remain in the keychain.
    *
    * Note that the record may still be resolved by other peers until it expires
    * or is no longer valid.
    */
-  unpublish(keyName: string, options?: AbortOptions): Promise<void>
+  unpublish(keyName: string | CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options?: AbortOptions): Promise<void>
+
+  /**
+   * Republish the latest known existing record to all routers
+   *
+   * Updates the record's upkeep policy to `options.upkeep` (default: 'refresh').
+   * The background republisher will then keep the record alive accordingly.
+   *
+   * Use `unpublish` to stop republishing a key.
+   *
+   * @throws {NotFoundError} when no existing records can be found
+   * @throws {RecordAlreadyPublishedError} when a record is already published; pass `force: true` to bypass
+   */
+  republish(key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options?: RepublishOptions): Promise<IPNSRepublishResult>
 }
 
 export type { IPNSRouting } from './routing/index.ts'

@@ -1,3 +1,5 @@
+import type { IPNSRecord } from 'ipns'
+
 export class RecordsFailedValidationError extends Error {
   static name = 'RecordsFailedValidationError'
 
@@ -46,4 +48,13 @@ export class InvalidTopicError extends Error {
 export class RecordNotFoundError extends Error {
   static name = 'RecordNotFoundError'
   name = 'RecordNotFoundError'
+}
+
+export class RecordAlreadyPublishedError extends Error {
+  static name = 'RecordAlreadyPublishedError'
+  name = 'RecordAlreadyPublishedError'
+
+  constructor (message: string, public readonly record: IPNSRecord) {
+    super(message)
+  }
 }
