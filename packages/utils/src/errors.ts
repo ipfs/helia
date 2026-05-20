@@ -32,3 +32,13 @@ export class BlockNotFoundWhileOfflineError extends Error {
   static name = 'BlockNotFoundWhileOfflineError'
   name = 'BlockNotFoundWhileOfflineError'
 }
+
+export class UnsupportedCryptographyImplementationError extends Error {
+  static name = 'UnsupportedCryptographyImplementationError'
+  name = 'UnsupportedCryptographyImplementationError'
+}
+
+export class DecryptionFailedError extends Error {
+  static name = 'DecryptionFailedError'
+  name = 'DecryptionFailedError'
+}

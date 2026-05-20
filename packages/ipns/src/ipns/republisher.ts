@@ -1,17 +1,19 @@
 import { Queue, repeatingTask } from '@libp2p/utils'
-import { createIPNSRecord, marshalIPNSRecord, unmarshalIPNSRecord } from 'ipns'
 import { DEFAULT_REPUBLISH_CONCURRENCY, DEFAULT_REPUBLISH_INTERVAL_MS, DEFAULT_TTL_NS } from '../constants.ts'
+import { createIPNSRecord } from '../records.ts'
+import { marshalIPNSRecord, unmarshalIPNSRecord } from '../utils.ts'
 import { shouldRepublish } from '../utils.ts'
+import type { IPNSRecord } from '../index.ts'
 import type { LocalStore } from '../local-store.ts'
 import type { IPNSRouting } from '../routing/index.ts'
-import type { AbortOptions, ComponentLogger, Libp2p, Logger, PrivateKey } from '@libp2p/interface'
-import type { Keychain } from '@libp2p/keychain'
+import type { CryptoKeyLoader, Keychain, PrivateKey } from '@helia/interface'
+import type { AbortOptions, ComponentLogger, Logger } from '@libp2p/interface'
 import type { RepeatingTask } from '@libp2p/utils'
-import type { IPNSRecord } from 'ipns'
 
 export interface IPNSRepublisherComponents {
   logger: ComponentLogger
-  libp2p: Libp2p<{ keychain: Keychain }>
+  keychain: Keychain
+  getCryptoKey: CryptoKeyLoader
 }
 
 export interface IPNSRepublisherInit {
@@ -27,15 +29,17 @@ export class IPNSRepublisher {
   private readonly republishTask: RepeatingTask
   private readonly log: Logger
   private readonly keychain: Keychain
+  private readonly getCryptoKey: CryptoKeyLoader
   private started: boolean = false
   private readonly republishConcurrency: number
 
   constructor (components: IPNSRepublisherComponents, init: IPNSRepublisherInit) {
     this.log = components.logger.forComponent('helia:ipns')
     this.localStore = init.localStore
-    this.keychain = components.libp2p.services.keychain
+    this.keychain = components.keychain
+    this.getCryptoKey = components.getCryptoKey
     this.republishConcurrency = init.republishConcurrency || DEFAULT_REPUBLISH_CONCURRENCY
-    this.started = components.libp2p.status === 'started'
+    this.started = false
     this.routers = init.routers ?? []
 
     this.republishTask = repeatingTask(this.#republish.bind(this), init.republishInterval ?? DEFAULT_REPUBLISH_INTERVAL_MS, {
@@ -89,7 +93,7 @@ export class IPNSRepublisher {
         }
         let ipnsRecord: IPNSRecord
         try {
-          ipnsRecord = unmarshalIPNSRecord(record)
+          ipnsRecord = await unmarshalIPNSRecord(routingKey, record, this.getCryptoKey, options)
         } catch (err: any) {
           this.log.error('error unmarshaling record - %e', err)
           continue
@@ -110,9 +114,16 @@ export class IPNSRepublisher {
           this.log.error('missing key %s, skipping republishing record - %e', metadata.keyName, err)
           continue
         }
+
         try {
-          const updatedRecord = await createIPNSRecord(privKey, ipnsRecord.value, sequenceNumber, metadata.lifetime, { ...options, ttlNs })
-          recordsToRepublish.push({ routingKey, record: updatedRecord })
+          const updatedRecord = await createIPNSRecord(privKey, ipnsRecord.value, sequenceNumber, metadata.lifetime, {
+            ...options,
+            ttlNs
+          })
+          recordsToRepublish.push({
+            routingKey,
+            record: updatedRecord
+          })
         } catch (err: any) {
           this.log.error('error creating updated IPNS record for %s - %e', routingKey, err)
           continue

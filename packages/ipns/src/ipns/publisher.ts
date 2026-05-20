@@ -1,21 +1,20 @@
-import { generateKeyPair } from '@libp2p/crypto/keys'
-import { isPeerId } from '@libp2p/interface'
-import { createIPNSRecord, marshalIPNSRecord, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from 'ipns'
-import { CID } from 'multiformats/cid'
+import { base58btc } from 'multiformats/bases/base58'
 import { CustomProgressEvent } from 'progress-events'
 import { DEFAULT_LIFETIME_MS, DEFAULT_TTL_NS } from '../constants.ts'
-import type { IPNSPublishResult, PublishOptions } from '../index.ts'
+import { createIPNSRecord } from '../records.ts'
+import { marshalIPNSRecord, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from '../utils.ts'
+import type { PublishResult, PublishOptions } from '../index.ts'
 import type { LocalStore } from '../local-store.ts'
 import type { IPNSRouting } from '../routing/index.ts'
-import type { AbortOptions, ComponentLogger, Libp2p, PeerId, PrivateKey, PublicKey } from '@libp2p/interface'
-import type { Keychain } from '@libp2p/keychain'
+import type { CryptoKeyLoader, Keychain, PrivateKey } from '@helia/interface'
+import type { AbortOptions, ComponentLogger } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
-import type { MultihashDigest } from 'multiformats/hashes/interface'
 
 export interface IPNSPublisherComponents {
   datastore: Datastore
   logger: ComponentLogger
-  libp2p: Libp2p<{ keychain: Keychain }>
+  keychain: Keychain
+  getCryptoKey: CryptoKeyLoader
 }
 
 export interface IPNSPublisherInit {
@@ -27,30 +26,27 @@ export class IPNSPublisher {
   public readonly routers: IPNSRouting[]
   private readonly localStore: LocalStore
   private readonly keychain: Keychain
+  private readonly getCryptoKey: CryptoKeyLoader
 
   constructor (components: IPNSPublisherComponents, init: IPNSPublisherInit) {
-    this.keychain = components.libp2p.services.keychain
+    this.keychain = components.keychain
     this.localStore = init.localStore
     this.routers = init.routers
+    this.getCryptoKey = components.getCryptoKey
   }
 
-  async publish (keyName: string, value: CID | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId | string, options: PublishOptions = {}): Promise<IPNSPublishResult> {
+  async publish (keyName: string, value: Uint8Array, options: PublishOptions = {}): Promise<PublishResult> {
     try {
-      const privKey = await this.#loadOrCreateKey(keyName)
+      const key = await this.#loadOrCreateKey(keyName, options)
+      const digest = key.publicKey.toMultihash()
+      const routingKey = multihashToIPNSRoutingKey(digest)
       let sequenceNumber = 1n
-      // @ts-expect-error @libp2p/crypto needs new multiformats
-      const routingKey = multihashToIPNSRoutingKey(privKey.publicKey.toMultihash())
 
       if (await this.localStore.has(routingKey, options)) {
         // if we have published under this key before, increment the sequence number
         const { record } = await this.localStore.get(routingKey, options)
-        const existingRecord = unmarshalIPNSRecord(record)
+        const existingRecord = await unmarshalIPNSRecord(routingKey, record, this.getCryptoKey, options)
         sequenceNumber = existingRecord.sequence + 1n
-      }
-
-      if (isPeerId(value)) {
-        // @ts-expect-error @libp2p/peer-id needs new multiformats
-        value = value.toCID()
       }
 
       // convert ttl from milliseconds to nanoseconds as createIPNSRecord expects
@@ -72,7 +68,8 @@ export class IPNSPublisher {
 
       return {
         record,
-        publicKey: privKey.publicKey
+        name: `/ipns/${base58btc.encode(digest.bytes)}`,
+        publicKey: record.publicKey
       }
     } catch (err: any) {
       options.onProgress?.(new CustomProgressEvent<Error>('ipns:publish:error', err))
@@ -80,21 +77,26 @@ export class IPNSPublisher {
     }
   }
 
-  async #loadOrCreateKey (keyName: string): Promise<PrivateKey> {
+  /**
+   * Create the private key if it is not in the keychain already, defaulting to
+   * Ed25519 keys
+   */
+  async #loadOrCreateKey (keyName: string, options?: AbortOptions): Promise<PrivateKey> {
     try {
-      return await this.keychain.exportKey(keyName)
+      return await this.keychain.exportKey(keyName, options)
     } catch (err: any) {
-      // If no named key found in keychain, generate and import
-      const privKey = await generateKeyPair('Ed25519')
-      await this.keychain.importKey(keyName, privKey)
-      return privKey
+      if (err.name === 'NotFoundError') {
+        // create a new key
+        return this.keychain.createKey(keyName, 'Ed25519', options)
+      } else {
+        throw err
+      }
     }
   }
 
   async unpublish (keyName: string, options?: AbortOptions): Promise<void> {
-    const { publicKey } = await this.keychain.exportKey(keyName)
-    const digest = publicKey.toMultihash()
-    // @ts-expect-error @libp2p/peer-id needs new multiformats
+    const key = await this.keychain.exportKey(keyName, options)
+    const digest = key.publicKey.toMultihash()
     const routingKey = multihashToIPNSRoutingKey(digest)
     await this.localStore.delete(routingKey, options)
   }

@@ -1,21 +1,24 @@
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { Keychain } from '@helia/utils'
 import { start, stop, TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import delay from 'delay'
-import { createIPNSRecord, marshalIPNSRecord, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from 'ipns'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { toString } from 'uint8arrays'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DEFAULT_LIFETIME_MS } from '../../src/constants.ts'
 import { localStore } from '../../src/local-store.ts'
+import { createIPNSRecord, marshalIPNSRecord, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from '../../src/records.ts'
 import { PubSubRouting } from '../../src/routing/pubsub.ts'
+import { getCryptoKey } from '../fixtures/crypto-loader.ts'
 import type { IPNSRecord } from '../../src/index.ts'
 import type { LocalStore } from '../../src/local-store.ts'
 import type { Message, PubSub, PubSubEvents, Subscription } from '../../src/routing/pubsub.ts'
+import type { PrivateKey } from '@helia/interface'
 import type { Fetch } from '@libp2p/fetch'
-import type { Ed25519PrivateKey, Libp2p, PeerId } from '@libp2p/interface'
+import type { Libp2p, PeerId } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 import type { StubbedInstance } from 'sinon-ts'
 
@@ -28,10 +31,11 @@ describe('pubsub routing', () => {
   let pubsubRouter: PubSubRouting
   let routingKey: Uint8Array
   let topic: string
-  let privateKey: Ed25519PrivateKey
+  let privateKey: PrivateKey
   let record: IPNSRecord
   let target: TypedEventEmitter<PubSubEvents>
   let libp2p: StubbedInstance<Libp2p<{ pubsub: StubbedInstance<PubSub>, fetch: StubbedInstance<Fetch> }>>
+  let keychain: Keychain
 
   beforeEach(async () => {
     datastore = new MemoryDatastore()
@@ -57,14 +61,20 @@ describe('pubsub routing', () => {
     pubsubRouter = new PubSubRouting({
       datastore,
       logger,
-      libp2p
+      libp2p,
+      getCryptoKey
     })
 
-    privateKey = await generateKeyPair('Ed25519')
-    // @ts-expect-error @libp2p/crypto needs new multiformats
+    keychain = new Keychain({
+      datastore,
+      logger,
+      getCryptoKey
+    })
+
+    privateKey = await keychain.createKey('test-key', 'Ed25519')
     routingKey = multihashToIPNSRoutingKey(privateKey.publicKey.toMultihash())
     topic = `/record/${toString(routingKey, 'base64url')}`
-    record = await createIPNSRecord(privateKey, '/test', 1n, DEFAULT_LIFETIME_MS)
+    record = await createIPNSRecord(privateKey, uint8ArrayFromString('/test'), 1n, DEFAULT_LIFETIME_MS)
 
     await start(pubsubRouter)
   })
@@ -127,7 +137,7 @@ describe('pubsub routing', () => {
         await expect(pubsubRouter.get(routingKey)).to.eventually.be.rejected
           .with.property('name', 'NotFoundError')
 
-        const newRecord = await createIPNSRecord(privateKey, '/test2', 2n, DEFAULT_LIFETIME_MS)
+        const newRecord = await createIPNSRecord(privateKey, uint8ArrayFromString('/test2'), 2n, DEFAULT_LIFETIME_MS)
 
         message.data = marshalIPNSRecord(newRecord)
         target.safeDispatchEvent('message', event)
@@ -135,7 +145,7 @@ describe('pubsub routing', () => {
         await delay(100)
 
         const result = await store.get(routingKey)
-        const updatedRecord = unmarshalIPNSRecord(result.record)
+        const updatedRecord = await unmarshalIPNSRecord(routingKey, result.record, getCryptoKey)
         expect(updatedRecord.sequence).to.equal(2n)
         expect(updatedRecord.value).to.equal('/test2')
       })

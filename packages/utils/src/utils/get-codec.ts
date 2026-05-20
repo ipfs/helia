@@ -1,5 +1,3 @@
-/* eslint max-depth: ["error", 7] */
-
 import { UnknownCodecError } from '@helia/interface'
 import * as dagCbor from '@ipld/dag-cbor'
 import * as dagJson from '@ipld/dag-json'
@@ -7,9 +5,10 @@ import * as dagPb from '@ipld/dag-pb'
 import * as json from 'multiformats/codecs/json'
 import * as raw from 'multiformats/codecs/raw'
 import { isPromise } from './is-promise.ts'
+import type { CodecLoader } from '@helia/interface'
 import type { BlockCodec } from 'multiformats/codecs/interface'
 
-export function getCodec <T = any, Code extends number = any> (initialCodecs: Array<BlockCodec<any, any>> = [], loadCodec?: (code: number) => BlockCodec<any, any> | Promise<BlockCodec<any, any>>): (code: Code) => BlockCodec<Code, T> | Promise<BlockCodec<Code, T>> {
+export function getCodec (initialCodecs: Array<BlockCodec<any, any>> = [], loadCodec?: CodecLoader): CodecLoader {
   const codecs: Record<number, BlockCodec<any, any>> = {
     [dagPb.code]: dagPb,
     [raw.code]: raw,

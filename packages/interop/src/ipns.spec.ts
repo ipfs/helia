@@ -7,6 +7,7 @@ import last from 'it-last'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
 import { sha256 } from 'multiformats/hashes/sha2'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { isElectronMain } from 'wherearewe'
 import { connect } from './fixtures/connect.ts'
 import { createHeliaNode } from './fixtures/create-helia.ts'
@@ -14,8 +15,9 @@ import { createKuboNode } from './fixtures/create-kubo.ts'
 import { sortClosestPeers } from './fixtures/create-peer-ids.ts'
 import { keyTypes } from './fixtures/key-types.ts'
 import { waitFor } from './fixtures/wait-for.ts'
+import type { PrivateKey } from '@helia/interface'
 import type { IPNS } from '@helia/ipns'
-import type { Libp2p, PrivateKey } from '@libp2p/interface'
+import type { Libp2p } from '@libp2p/interface'
 import type { DefaultLibp2pServices, Helia } from 'helia'
 import type { KuboNode } from 'ipfsd-ctl'
 
@@ -47,11 +49,9 @@ keyTypes.forEach(type => {
       // find a PeerId that is KAD-closer to the resolver than the publisher when used as an IPNS key
       while (true) {
         if (type === 'Ed25519') {
-          key = await generateKeyPair('Ed25519')
-        } else if (type === 'secp256k1') {
-          key = await generateKeyPair('secp256k1')
+          key = await helia.keychain.createKey('test-key', 'Ed25519')
         } else {
-          key = await generateKeyPair('RSA', 2048)
+          key = await helia.keychain.createKey('test-key', 'RSA')
         }
 
         // @ts-expect-error @libp2p/crypto needs dep updates
@@ -175,9 +175,14 @@ keyTypes.forEach(type => {
         ttl: '1h'
       })
 
-      const { cid: resolvedCid, record } = await name.resolve(key.publicKey)
-      expect(resolvedCid.toString()).to.equal(cid.toString())
-      expect(record.ttl).to.equal(oneHourNS)
+      const result = await last(name.resolve(key.publicKey))
+
+      if (result == null) {
+        throw new Error('No result found')
+      }
+
+      expect(uint8ArrayToString(result.record.value)).to.equal(`/ipfs/${cid}`)
+      expect(result.record.ttl).to.equal(oneHourNS)
     })
   })
 })

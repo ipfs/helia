@@ -1,0 +1,39 @@
+// https://github.com/ipfs/boxo/blob/main/ipns/pb/record.proto
+
+syntax = "proto3";
+
+message IpnsEntry {
+	enum ValidityType {
+		// setting an EOL says "this record is valid until..."
+		EOL = 0;
+	}
+
+	// legacy V1 copy of data[Value]
+	optional bytes value = 1;
+
+	// legacy V1 field, verify 'signatureV2' instead
+	optional bytes signatureV1 = 2;
+
+	// legacy V1 copies of data[ValidityType] and data[Validity]
+	optional ValidityType validityType = 3;
+	optional bytes validity = 4;
+
+	// legacy V1 copy of data[Sequence]
+	optional uint64 sequence = 5;
+
+	// legacy V1 copy copy of data[TTL]
+	optional uint64 ttl = 6;
+
+	// Optional Public Key to be used for signature verification.
+	// Used for big keys such as old RSA keys. Including the public key as part of
+	// the record itself makes it verifiable in offline mode, without any additional lookup.
+	// For newer Ed25519 keys, the public key is small enough that it can be embedded in the
+	// IPNS Name itself, making this field unnecessary.
+	optional bytes publicKey = 7;
+
+	// (mandatory V2) signature of the IPNS record
+	optional bytes signatureV2 = 8;
+
+	// (mandatory V2) extensible record data in DAG-CBOR format
+	optional bytes data = 9;
+}

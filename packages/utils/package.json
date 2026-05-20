@@ -45,7 +45,8 @@
     "test:firefox": "aegir test -t browser -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
     "test:node": "aegir test -t node --cov",
-    "test:electron-main": "aegir test -t electron-main"
+    "test:electron-main": "aegir test -t electron-main",
+    "generate": "protons src/keychain/keys.proto"
   },
   "dependencies": {
     "@helia/interface": "^6.2.1",
@@ -53,10 +54,10 @@
     "@ipld/dag-json": "^11.0.0",
     "@ipld/dag-pb": "^4.1.5",
     "@libp2p/interface": "^3.2.0",
-    "@libp2p/keychain": "^6.0.12",
     "@libp2p/utils": "^7.0.15",
     "@multiformats/dns": "^1.0.13",
     "@multiformats/multiaddr": "^13.0.1",
+    "abort-error": "^1.0.2",
     "any-signal": "^4.2.0",
     "blockstore-core": "^7.0.1",
     "cborg": "^5.1.0",
@@ -72,11 +73,15 @@
     "multiformats": "^14.0.0",
     "p-defer": "^4.0.1",
     "progress-events": "^1.1.0",
+    "protons-runtime": "^7.0.0",
     "race-signal": "^2.0.0",
+    "sanitize-filename": "^1.6.4",
+    "uint8arraylist": "^3.0.2",
     "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
     "@libp2p/crypto": "^5.1.15",
+    "@libp2p/keychain": "^6.1.1",
     "@libp2p/logger": "^6.2.4",
     "@libp2p/peer-id": "^6.0.6",
     "@types/sinon": "^21.0.1",
@@ -85,6 +90,7 @@
     "delay": "^7.0.0",
     "it-all": "^3.0.11",
     "it-map": "^3.1.5",
+    "protons": "^9.0.1",
     "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0"
   },

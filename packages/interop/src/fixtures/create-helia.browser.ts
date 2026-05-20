@@ -1,5 +1,4 @@
 import { bitswap } from '@helia/block-brokers'
-import { ipnsValidator, ipnsSelector } from '@helia/ipns'
 import { kadDHT, removePublicAddressesMapper } from '@libp2p/kad-dht'
 import { webSockets } from '@libp2p/websockets'
 import { sha3512 } from '@multiformats/sha3'
@@ -30,12 +29,6 @@ export async function createHeliaNode (libp2pOptions?: Libp2pOptions): Promise<H
     ...(defaults.services ?? {}),
     ...(libp2pOptions?.services ?? {}),
     dht: kadDHT({
-      validators: {
-        ipns: ipnsValidator
-      },
-      selectors: {
-        ipns: ipnsSelector
-      },
       // skips waiting for the initial self-query to find peers
       allowQueryWithZeroPeers: true,
 
