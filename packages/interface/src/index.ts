@@ -147,5 +147,6 @@ export interface HeliaEvents<T extends Libp2p = Libp2p> {
 
 export * from './blocks.ts'
 export * from './errors.ts'
+export * from './graph-walker.ts'
 export * from './pins.ts'
 export * from './routing.ts'
