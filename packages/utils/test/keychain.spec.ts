@@ -1,4 +1,6 @@
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { start } from '@libp2p/interface'
+import { keychain as libp2pKeychainFactory } from '@libp2p/keychain'
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
@@ -9,11 +11,12 @@ import type { Keychain } from '../src/index.js'
 import type { KeychainInit } from '../src/keychain.ts'
 import type { PrivateKey } from '@helia/interface'
 import type { ComponentLogger } from '@libp2p/interface'
+import type { Keychain as Libp2pKeychain } from '@libp2p/keychain'
 import type { Datastore } from 'interface-datastore'
 
-const SUPPORTED_KEYS = [
-  'RSA',
-  'Ed25519'
+const SUPPORTED_KEYS: Array<'RSA' | 'Ed25519'> = [
+  'Ed25519',
+  'RSA'
 ]
 
 describe('keychain', () => {
@@ -72,8 +75,7 @@ describe('keychain', () => {
       password,
       hash: 'SHA-256',
       salt: 'salt-salt-salt-salt',
-      iterations: 1000,
-      keyLength: 14
+      iterations: 1000
     })
     expect(ok).to.exist()
   })
@@ -343,7 +345,6 @@ describe('keychain', () => {
         /* spell-checker:disable-next-line */
         salt: '3Nd/Ya4ENB3bcByNKptb4IR',
         iterations: 10000,
-        keyLength: 64,
         hash: 'SHA-512'
       }
 
@@ -471,6 +472,66 @@ describe('keychain', () => {
     it('does not support un-configured keys', async () => {
       await expect(keychain.createKey(keyName, 'ECDSA')).to.eventually.be.rejected
         .with.property('name', 'UnsupportedCryptographyImplementationError')
+    })
+  })
+
+  describe('@libp2p/keychain compatibility', () => {
+    let keychain: Keychain
+    let libp2pKeychain: Libp2pKeychain
+
+    beforeEach(async () => {
+      keychain = new KeychainClass({
+        datastore,
+        logger,
+        getCryptoKey
+      })
+      await start(keychain)
+
+      libp2pKeychain = libp2pKeychainFactory()({
+        // @ts-expect-error libp2p needs new interface-datastore
+        datastore,
+        logger
+      })
+    })
+
+    SUPPORTED_KEYS.forEach(type => {
+      it(`should read ${type} libp2p keychain keys`, async () => {
+        const keyName = 'my-key'
+        const libp2pPrivateKey = await generateKeyPair(type)
+        await libp2pKeychain.importKey(keyName, libp2pPrivateKey)
+        const heliaPrivateKey = await keychain.exportKey(keyName)
+        /*
+        if (type === 'Ed25519') {
+          // truncate key because libp2p appends the public key to the private key
+          expect(new Uint8Array(heliaPrivateKey.raw).subarray(0, 32)).to.equalBytes(libp2pPrivateKey.raw.subarray(0, 32))
+        } else if (type === 'RSA') {
+          expect(new Uint8Array(heliaPrivateKey.raw)).to.equalBytes(libp2pPrivateKey.raw)
+        } else {
+          throw new Error(`Uknown crypto type ${type}`)
+        }
+*/
+        const message = Uint8Array.from([0, 1, 2, 3, 4])
+
+        const heliaSig = await heliaPrivateKey.sign(message)
+        expect(await libp2pPrivateKey.publicKey.verify(message, heliaSig)).to.be.true()
+
+        const libp2pSig = await libp2pPrivateKey.sign(message)
+        expect(await heliaPrivateKey.publicKey.verify(message, libp2pSig)).to.be.true()
+      })
+
+      it(`should write ${type} libp2p keychain keys`, async () => {
+        const keyName = 'my-key'
+        const heliaPrivateKey = await keychain.createKey(keyName, type)
+        const libp2pPrivateKey = await libp2pKeychain.exportKey(keyName)
+
+        const message = Uint8Array.from([0, 1, 2, 3, 4])
+
+        const heliaSig = await heliaPrivateKey.sign(message)
+        expect(await libp2pPrivateKey.publicKey.verify(message, heliaSig)).to.be.true()
+
+        const libp2pSig = await libp2pPrivateKey.sign(message)
+        expect(await heliaPrivateKey.publicKey.verify(message, libp2pSig)).to.be.true()
+      })
     })
   })
 })

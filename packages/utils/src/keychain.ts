@@ -1,4 +1,4 @@
-import { InvalidParametersError, NotStartedError, serviceCapabilities } from '@libp2p/interface'
+import { InvalidParametersError, serviceCapabilities } from '@libp2p/interface'
 import { Key } from 'interface-datastore/key'
 import { base58btc } from 'multiformats/bases/base58'
 import { base64 } from 'multiformats/bases/base64'
@@ -7,10 +7,10 @@ import sanitize from 'sanitize-filename'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { withArrayBuffer as uint8ArrayWithArrayBuffer } from 'uint8arrays/with-array-buffer'
+import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { DecryptionFailedError } from './errors.ts'
 import { PrivateKeyMessage } from './keychain/keys.ts'
-import type { Keychain as KeychainInterface, KeyInfo, PrivateKey, CryptoKeyLoader } from '@helia/interface'
+import type { Keychain as KeychainInterface, KeyInfo, PrivateKey, CryptoKeyLoader, CryptoKeyImplementation, Cipher, CipherOptions } from '@helia/interface'
 import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { AbortOptions } from 'abort-error'
 import type { Datastore } from 'interface-datastore'
@@ -20,15 +20,32 @@ const keyPrefix = '/pkcs8/'
 const infoPrefix = '/info/'
 
 /**
- * Default options for key derivation
+ * Default options for key derivation for the keychain Data Encryption Key.
+ *
+ * Inherited from js-libp2p.
  *
  * @see https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#pbkdf2
  */
-const DEK_INIT = {
-  keyLength: 512 / 8,
+const KEYCHAIN_DEK_INIT = {
   iterations: 10_000,
-  salt: 'you should override this value with a crypto secure random number',
-  hash: 'sha2-512'
+  salt: uint8ArrayFromString('you should override this value with a crypto secure random number'),
+  hash: 'SHA-512',
+  algorithm: 'AES-GCM'
+}
+
+/**
+ * Each private key is encrypted at rest with a  Data Encryption Key created
+ * from these parameters.
+ *
+ * Inherited from js-libp2p.
+ */
+const PRIVATE_KEY_DEK_INIT = {
+  iterations: 32_767,
+  saltLength: 16,
+  ivLength: 12,
+  hash: 'SHA-256',
+  keyLength: 128,
+  algorithm: 'AES-GCM'
 }
 
 const MIN_PASS_LENGTH = 20
@@ -41,12 +58,10 @@ const NIST = {
 }
 
 const KEY_LENGTHS: Record<string, number> = {
-  'SHA-256': 64,
-  'SHA-384': 128,
+  'SHA-256': 128,
+  'SHA-384': 192,
   'SHA-512': 256
 }
-
-const SALT_LENGTH = 16
 
 export interface DEKConfig {
   hash: string
@@ -62,7 +77,7 @@ export interface KeychainInit {
   password?: string
 
   /**
-   * Random initialization vector
+   * Specify a non-default PBK2 function salt
    */
   salt?: string
 
@@ -72,13 +87,6 @@ export interface KeychainInit {
    * @default 10_000
    */
   iterations?: number
-
-  /**
-   * The default key length in bytes
-   *
-   * @default 64
-   */
-  keyLength?: number
 
   /**
    * The hash type
@@ -133,10 +141,23 @@ function dsInfoName (name: string): Key {
   return new Key(infoPrefix + name)
 }
 
-export async function keyId (key: ArrayBuffer | Uint8Array): Promise<string> {
-  const hash = await sha256.digest(key instanceof Uint8Array ? key : new Uint8Array(key, 0, key.byteLength))
-
+export async function keyId (key: PrivateKey): Promise<string> {
+  const pb = PrivateKeyMessage.encode({
+    Type: key.code,
+    Data: new Uint8Array(key.raw)
+  })
+  const hash = await sha256.digest(pb)
   return base58btc.encode(hash.bytes).substring(1)
+}
+
+function getSalt (salt?: string | Uint8Array): Uint8Array<ArrayBuffer> | undefined {
+  if (typeof salt === 'string') {
+    return uint8ArrayFromString(salt)
+  }
+
+  if (salt instanceof Uint8Array) {
+    return withArrayBuffer(salt)
+  }
 }
 
 /**
@@ -145,18 +166,15 @@ export async function keyId (key: ArrayBuffer | Uint8Array): Promise<string> {
  * A key in the store has two entries
  * - '/info/*key-name*', contains the KeyInfo for the key
  * - '/pkcs8/*key-name*', contains the PKCS #8 for the key
- *
  */
 export class Keychain implements KeychainInterface {
   private readonly components: KeychainComponents
   private readonly log: Logger
   private readonly self: string
-  private key?: CryptoKey
-  private salt: Uint8Array
-  private iterations: number
-  private keyLength: number
-  private hash: 'SHA-256' | 'SHA-384' | 'SHA-512'
-  private password: string
+  private cipher: Cipher
+  private salt: Uint8Array<ArrayBuffer>
+  private keychainDekOptions: DeriveKeyOptions
+  private privateKeyDekOptions: PrivateKeyDeriveKeyOptions
 
   /**
    * Creates a new instance of a key chain
@@ -165,32 +183,45 @@ export class Keychain implements KeychainInterface {
     this.components = components
     this.log = components.logger.forComponent('libp2p:keychain')
     this.self = init.selfKey ?? 'self'
-    this.salt = uint8ArrayFromString(init.salt ?? DEK_INIT.salt)
-    this.iterations = init.iterations ?? DEK_INIT.iterations
-    this.keyLength = init.keyLength ?? DEK_INIT.keyLength
-    this.hash = init.hash ?? 'SHA-512'
-    this.password = init.password ?? ''
+    this.salt = getSalt(init.salt) ?? KEYCHAIN_DEK_INIT.salt
 
-    // Enforce NIST SP 800-132
-    if (init.password != null && this.password.length < MIN_PASS_LENGTH) {
-      throw new Error('password must be least 20 characters')
+    this.keychainDekOptions = {
+      iterations: init.iterations ?? KEYCHAIN_DEK_INIT.iterations,
+      hash: init.hash ?? KEYCHAIN_DEK_INIT.hash,
+      keyLength: KEY_LENGTHS[init.hash ?? KEYCHAIN_DEK_INIT.hash],
+      algorithm: KEYCHAIN_DEK_INIT.algorithm
+    }
+    this.privateKeyDekOptions = {
+      iterations: PRIVATE_KEY_DEK_INIT.iterations,
+      hash: PRIVATE_KEY_DEK_INIT.hash,
+      saltLength: PRIVATE_KEY_DEK_INIT.saltLength,
+      ivLength: PRIVATE_KEY_DEK_INIT.ivLength,
+      keyLength: PRIVATE_KEY_DEK_INIT.keyLength,
+      algorithm: PRIVATE_KEY_DEK_INIT.algorithm
     }
 
+    // Enforce NIST SP 800-132
+    if (init.password != null && init.password.length < MIN_PASS_LENGTH) {
+      throw new Error('password must be least 20 characters')
+    }
+    /*
     if (this.keyLength < NIST.minKeyLength) {
       throw new Error(`dek.keyLength must be least ${NIST.minKeyLength} bytes`)
     }
-
+*/
     if (this.salt.byteLength != null && this.salt.byteLength < NIST.minSaltLength) {
       throw new Error(`salt must be least ${NIST.minSaltLength} bytes`)
     }
 
-    if (this.iterations < NIST.minIterations) {
+    if (init.iterations != null && init.iterations < NIST.minIterations) {
       throw new Error(`iterations must be least ${NIST.minIterations}`)
     }
 
-    if (KEY_LENGTHS[this.hash] == null) {
+    if (KEY_LENGTHS[this.keychainDekOptions.hash] == null) {
       throw new InvalidParametersError('Unsupported hash')
     }
+
+    this.cipher = createAESCipher(init.password ?? '', this.salt, this.keychainDekOptions, this.privateKeyDekOptions)
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/keychain'
@@ -198,31 +229,6 @@ export class Keychain implements KeychainInterface {
   readonly [serviceCapabilities]: string[] = [
     '@libp2p/keychain'
   ]
-
-  async start (): Promise<void> {
-    this.key = await this.generateSaltedKey(this.password ?? '')
-  }
-
-  async stop (): Promise<void> {
-
-  }
-
-  private async generateSaltedKey (pass: string): Promise<CryptoKey> {
-    const key = await crypto.subtle.importKey('raw', uint8ArrayFromString(pass), {
-      name: 'PBKDF2'
-    }, false, ['deriveKey'])
-    return crypto.subtle.deriveKey({
-      name: 'PBKDF2',
-      salt: uint8ArrayWithArrayBuffer(this.salt),
-      iterations: this.iterations,
-      hash: this.hash
-    }, key, {
-      // name: 'HMAC',
-      name: 'AES-GCM',
-      hash: this.hash,
-      length: KEY_LENGTHS[this.hash]
-    }, true, ['encrypt', 'decrypt'])
-  }
 
   async createKey (name: string, type: 'Ed25519' | 'RSA' | string, options?: AbortOptions & Record<string, any>): Promise<PrivateKey> {
     const crypto = await this.components.getCryptoKey(type, options)
@@ -240,10 +246,6 @@ export class Keychain implements KeychainInterface {
       throw new InvalidParametersError('Key is required')
     }
 
-    if (this.key == null) {
-      throw new NotStartedError()
-    }
-
     const exists = await this.components.datastore.has(dsName(name), options)
 
     if (exists) {
@@ -251,36 +253,21 @@ export class Keychain implements KeychainInterface {
     }
 
     const batch = this.components.datastore.batch()
-    await this._importKey(name, key, this.key, batch, options)
+    await this._importKey(name, key, this.cipher, batch, options)
     await batch.commit(options)
 
     return key
   }
 
-  private async _importKey (name: string, privateKey: PrivateKey, key: CryptoKey, batch: Batch, options?: AbortOptions): Promise<void> {
-    const data = new Uint8Array(privateKey.raw.slice())
-    const protobuf = PrivateKeyMessage.encode({
-      Type: privateKey.code,
-      Data: data
-    })
-
-    const iv = crypto.getRandomValues(new Uint8Array(SALT_LENGTH))
-    const cipherText = await crypto.subtle.encrypt({
-      name: 'AES-GCM',
-      iv
-    }, key, protobuf)
+  private async _importKey (name: string, privateKey: PrivateKey, cipher: Cipher, batch: Batch, options?: AbortOptions): Promise<void> {
+    const cryptoImpl = await this.components.getCryptoKey(privateKey.code)
+    const pem = await cryptoImpl.serialize(privateKey, cipher)
     options?.signal?.throwIfAborted()
 
-    // prepend the iv to the buffer
-    const buf = uint8ArrayConcat([
-      iv,
-      new Uint8Array(cipherText)
-    ], iv.byteLength + cipherText.byteLength)
-
-    const pem = base64.encode(buf)
     const keyInfo = {
       name,
-      type: privateKey.type
+      type: privateKey.type,
+      id: await keyId(privateKey)
     }
 
     batch.put(dsName(name), uint8ArrayFromString(pem))
@@ -292,26 +279,46 @@ export class Keychain implements KeychainInterface {
       throw new InvalidParametersError(`Invalid key name '${name}'`)
     }
 
-    if (this.key == null) {
-      throw new NotStartedError()
-    }
-
-    return this._exportKey(name, this.key, options)
+    return this._exportKey(name, this.cipher, options)
   }
 
-  private async _exportKey (name: string, key: CryptoKey, options?: AbortOptions): Promise<PrivateKey> {
-    const res = await this.components.datastore.get(dsName(name), options)
-    const pem = uint8ArrayToString(res)
-    const buf = base64.decode(pem)
-    const iv = buf.subarray(0, SALT_LENGTH)
-    let raw: ArrayBuffer
+  private async _exportKey (name: string, cipher: Cipher, options?: AbortOptions): Promise<PrivateKey> {
+    const infoBuf = await this.components.datastore.get(dsInfoName(name), options)
+    const keyBuf = await this.components.datastore.get(dsName(name), options)
+    const pem = uint8ArrayToString(keyBuf)
+
+    const info: KeyInfo = JSON.parse(uint8ArrayToString(infoBuf))
+    let cryptoImpl: CryptoKeyImplementation | undefined
+
+    if (info.type != null) {
+      cryptoImpl = await this.components.getCryptoKey(info.type, options)
+    } else {
+      // legacy @libp2p/keychain does not store the type of key so guess
+      if (pem.includes('BEGIN ENCRYPTED PRIVATE KEY')) {
+        cryptoImpl = await this.components.getCryptoKey('RSA', options)
+      } else {
+        const decoded = base64.decode(pem)
+        const salt = decoded.subarray(0, 16)
+        const iv = decoded.subarray(16, 16 + 12)
+        const cipherText = decoded.subarray(16 + 12)
+        const plainText = await cipher.decrypt(salt, iv, cipherText)
+        const pb = PrivateKeyMessage.decode(plainText)
+
+        if (pb.Type != null) {
+          cryptoImpl = await this.components.getCryptoKey(pb.Type, options)
+        }
+      }
+    }
+
+    if (cryptoImpl == null) {
+      throw new DecryptionFailedError('Unknown key type')
+    }
 
     try {
-      raw = await crypto.subtle.decrypt({
-        name: 'AES-GCM',
-        iv
-      }, key, buf.subarray(SALT_LENGTH))
+      const key = await cryptoImpl.deserialize(pem, cipher)
       options?.signal?.throwIfAborted()
+
+      return key
     } catch (err: any) {
       if (err.name === 'OperationError') {
         throw new DecryptionFailedError(err.message)
@@ -319,15 +326,6 @@ export class Keychain implements KeychainInterface {
 
       throw err
     }
-
-    const privateKeyPb = PrivateKeyMessage.decode(new Uint8Array(raw))
-
-    if (privateKeyPb.Type == null || privateKeyPb.Data == null) {
-      throw new InvalidParametersError('Decoded private key protobuf did not have Type and/or Data fields')
-    }
-
-    const cryptoImplementation = await this.components.getCryptoKey(privateKeyPb.Type)
-    return cryptoImplementation.privateKeyFromArray(privateKeyPb.Data)
   }
 
   async removeKey (name: string, options?: AbortOptions): Promise<void> {
@@ -384,7 +382,7 @@ export class Keychain implements KeychainInterface {
     const pem = await this.components.datastore.get(oldDatastoreName, options)
     const res = await this.components.datastore.get(oldInfoName, options)
 
-    const keyInfo = JSON.parse(uint8ArrayToString(res))
+    const keyInfo: KeyInfo = JSON.parse(uint8ArrayToString(res))
     keyInfo.name = newName
 
     const batch = this.components.datastore.batch()
@@ -410,26 +408,178 @@ export class Keychain implements KeychainInterface {
 
     this.log('recreating keychain')
 
-    if (this.key == null) {
-      throw new NotStartedError()
-    }
-
-    const oldKey = this.key
-    const newKey = await this.generateSaltedKey(password)
+    const oldCipher = this.cipher
+    const newCipher = this.cipher = createAESCipher(password, this.salt, this.keychainDekOptions, this.privateKeyDekOptions)
 
     const batch = this.components.datastore.batch()
 
     for await (const info of this.listKeys(options)) {
-      const key = await this._exportKey(info.name, oldKey)
+      const key = await this._exportKey(info.name, oldCipher)
 
       // Update stored key
-      await this._importKey(info.name, key, newKey, batch, options)
+      await this._importKey(info.name, key, newCipher, batch, options)
     }
 
     await batch.commit(options)
 
-    this.key = newKey
-
     this.log('keychain reconstructed')
+  }
+}
+
+/**
+ * WebKit on Linux does not support deriving a key from an empty PBKDF2 key.
+ * So, as a workaround, we provide the generated key as a constant.
+ *
+ * Generated via:
+ *
+ * ```ts
+ * const key = await crypto.subtle.importKey('raw', new Uint8Array(0), {
+ *   name: 'PBKDF2'
+ * }, false, ['deriveKey'])
+ *
+ * const derivedKey = await crypto.subtle.deriveKey({
+ *   name: 'PBKDF2',
+ *   salt: new Uint8Array(16),
+ *   iterations: 32767,
+ *   hash: {
+ *     name: 'SHA-256'
+ *   }
+ * }, key, {
+ *   name: 'AES-GCM',
+ *   length: 128
+ * }, true, ['encrypt', 'decrypt'])
+ *
+ * const jwk = await crypto.subtle.exportKey('jwk', derivedKey)
+ * ```
+ */
+const derivedEmptyPasswordKey = {
+  alg: 'A128GCM',
+  ext: true,
+  /* spell-checker:disable-next-line */
+  k: 'scm9jmO_4BJAgdwWGVulLg',
+  key_ops: ['encrypt', 'decrypt'],
+  kty: 'oct'
+}
+
+interface DeriveKeyOptions {
+  iterations: number
+  hash: string
+  keyLength: number
+  algorithm: string
+}
+
+interface PrivateKeyDeriveKeyOptions extends DeriveKeyOptions {
+  /**
+   * A random salt will be generated of this many bytes
+   *
+   * @default 16
+   */
+  saltLength: number
+
+  /**
+   * A random initialization vector will be generated of this many bytes
+   *
+   * @default 12
+   */
+  ivLength: number
+}
+
+// Based on code from https://github.com/luke-park/SecureCompatibleEncryptionExamples
+
+function createAESCipher (password: string, salt: Uint8Array<ArrayBuffer>, keychainDekOpts: DeriveKeyOptions, privateKeyDekOpts: PrivateKeyDeriveKeyOptions): Cipher {
+  let keychainDek: string | undefined
+
+  async function deriveKey (password: string, salt: Uint8Array, usages: KeyUsage[], opts: DeriveKeyOptions): Promise<CryptoKey> {
+    let cryptoKey: CryptoKey
+    const pass = uint8ArrayFromString(password)
+    const rawKey = await crypto.subtle.importKey('raw', pass, {
+      name: 'PBKDF2'
+    }, false, ['deriveKey'])
+
+    try {
+      cryptoKey = await crypto.subtle.deriveKey({
+        name: 'PBKDF2',
+        salt: withArrayBuffer(salt),
+        iterations: opts.iterations,
+        hash: {
+          name: opts.hash
+        }
+      }, rawKey, {
+        name: opts.algorithm ?? 'AES-GCM',
+        length: opts.keyLength
+      }, true, usages)
+    } catch (err) {
+      if (password === '') {
+        cryptoKey = await crypto.subtle.importKey('jwk', derivedEmptyPasswordKey, {
+          name: opts.algorithm ?? 'AES-GCM'
+        }, true, usages)
+      } else {
+        throw err
+      }
+    }
+
+    return cryptoKey
+  }
+
+  async function createKeychainDek (): Promise<string> {
+    if (password === '') {
+      return password
+    }
+
+    const key = await deriveKey(password, salt, ['encrypt', 'decrypt'], keychainDekOpts)
+    const jwk = await crypto.subtle.exportKey('jwk', key)
+
+    return jwk.k ?? ''
+  }
+
+  /**
+   * Encrypt data using the derived encryption key
+   */
+  async function encrypt (data: Uint8Array<ArrayBuffer>): Promise<Uint8Array<ArrayBuffer>> {
+    if (keychainDek == null) {
+      keychainDek = await createKeychainDek()
+    }
+
+    const salt = crypto.getRandomValues(new Uint8Array(privateKeyDekOpts.saltLength))
+    const iv = crypto.getRandomValues(new Uint8Array(privateKeyDekOpts.ivLength))
+    const cryptoKey = await deriveKey(keychainDek, salt, ['encrypt'], privateKeyDekOpts)
+    const ciphertext = await crypto.subtle.encrypt({
+      name: 'AES-GCM',
+      iv
+    }, cryptoKey, data)
+
+    return uint8ArrayConcat([
+      salt,
+      iv,
+      new Uint8Array(ciphertext)
+    ], salt.byteLength + iv.byteLength + ciphertext.byteLength)
+  }
+
+  /**
+   * Decrypt data using the derived encryption key
+   */
+  async function decrypt (salt: Uint8Array, iv: Uint8Array, cipherText: Uint8Array, opts?: CipherOptions): Promise<Uint8Array<ArrayBuffer>> {
+    if (keychainDek == null) {
+      keychainDek = await createKeychainDek()
+    }
+
+    const cryptoKey = await deriveKey(keychainDek, salt, ['decrypt'], {
+      iterations: opts?.iterations ?? privateKeyDekOpts.iterations,
+      keyLength: opts?.keyLength ?? privateKeyDekOpts.keyLength,
+      hash: opts?.hash ?? privateKeyDekOpts.hash,
+      algorithm: opts?.algorithm ?? 'AES-GCM'
+    })
+
+    const plaintext = await crypto.subtle.decrypt({
+      name: opts?.algorithm ?? 'AES-GCM',
+      iv: withArrayBuffer(iv)
+    }, cryptoKey, withArrayBuffer(cipherText))
+
+    return new Uint8Array(plaintext)
+  }
+
+  return {
+    encrypt,
+    decrypt
   }
 }

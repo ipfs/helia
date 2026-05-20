@@ -117,6 +117,18 @@ export function isPrivateKey (obj?: any): obj is PrivateKey {
     isPublicKey(obj.publicKey) && obj.sign === 'function'
 }
 
+export interface CipherOptions {
+  iterations?: number
+  hash?: string
+  keyLength?: number
+  algorithm?: string
+}
+
+export interface Cipher {
+  encrypt(data: Uint8Array): Promise<Uint8Array<ArrayBuffer>>
+  decrypt(salt: Uint8Array, iv: Uint8Array, cipherText: Uint8Array, options?: CipherOptions): Promise<Uint8Array<ArrayBuffer>>
+}
+
 export interface CryptoKeyImplementation {
   /**
    * The type of the crypto implementation, e.g. `Ed15519`
@@ -135,14 +147,20 @@ export interface CryptoKeyImplementation {
   createPrivateKey(options?: AbortOptions & Record<string, any>): Promise<PrivateKey>
 
   /**
-   * Convert the passed raw bytes into a public key
+   * Convert the passed bytes into a public key. The bytes come from the `.Data`
+   * field of a `PublicKey` protobuf message.
    */
   publicKeyFromArray(key: ArrayBuffer | Uint8Array, options?: AbortOptions): PublicKey | Promise<PublicKey>
 
   /**
-   * Convert the passed raw bytes into a private key
+   * Convert a private key into a string suitable for storing in a datastore
    */
-  privateKeyFromArray(key: ArrayBuffer | Uint8Array, options?: AbortOptions): PrivateKey | Promise<PrivateKey>
+  serialize (key: PrivateKey, cipher: Cipher): Promise<string>
+
+  /**
+   * Convert a string from a datastore into a private key
+   */
+  deserialize (pem: string, cipher: Cipher): Promise<PrivateKey>
 }
 
 /**

@@ -1,11 +1,14 @@
 import { InvalidPrivateKeyError } from '@libp2p/interface'
 import { CID } from 'multiformats'
+import { base64 } from 'multiformats/bases/base64'
 import { identity } from 'multiformats/hashes/identity'
 import { concat as uin8ArrayConcat } from 'uint8arrays/concat'
+import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import { withArrayBuffer as uint8ArrayWithArrayBuffer } from 'uint8arrays/with-array-buffer'
-import type { CryptoKeyImplementation, PrivateKey, PublicKey } from '@helia/interface'
+import { PrivateKeyMessage } from '../keychain/keys.ts'
+import type { Cipher, CryptoKeyImplementation, PrivateKey, PublicKey } from '@helia/interface'
 import type { AbortOptions } from 'abort-error'
 import type { MultihashDigest } from 'multiformats'
 
@@ -44,22 +47,20 @@ class Ed25519PrivateKey implements PrivateKey {
   public publicKey: PublicKey
 
   constructor (raw: ArrayBuffer, publicKey: PublicKey) {
-    if (raw.byteLength !== PRIVATE_KEY_LENGTH) {
+    if (raw.byteLength < PRIVATE_KEY_LENGTH) {
       throw new InvalidPrivateKeyError(`Incorrect key length, got ${raw.byteLength} expected ${PRIVATE_KEY_LENGTH}`)
     }
 
-    this.raw = raw
+    this.raw = truncateKey(raw)
     this.publicKey = publicKey
   }
 
   async sign (message: Uint8Array, options?: AbortOptions): Promise<Uint8Array<ArrayBuffer>> {
-    const privateKey = truncateKey(this.raw)
-
     const key = await crypto.subtle.importKey('jwk', {
       crv: 'Ed25519',
       kty: 'OKP',
       x: uint8arrayToString(new Uint8Array(this.publicKey.raw), 'base64url'),
-      d: uint8arrayToString(new Uint8Array(privateKey), 'base64url'),
+      d: uint8arrayToString(new Uint8Array(this.raw), 'base64url'),
       ext: true,
       key_ops: ['sign']
     }, {
@@ -94,9 +95,35 @@ class Ed25519Crypto implements CryptoKeyImplementation {
     return publicKey
   }
 
-  async privateKeyFromArray (key: ArrayBuffer | Uint8Array, options?: AbortOptions): Promise<PrivateKey> {
-    const raw = key instanceof ArrayBuffer ? key : uint8ArrayWithArrayBuffer(key).slice().buffer
-    return new Ed25519PrivateKey(raw, await derivePublicKey(raw, options))
+  async serialize (key: PrivateKey, cipher: Cipher): Promise<string> {
+    const buf = PrivateKeyMessage.encode({
+      Type: key.code,
+      Data: uint8ArrayConcat([
+        new Uint8Array(key.raw.slice()),
+        new Uint8Array(key.publicKey.raw.slice())
+      ], 64)
+    })
+
+    const cipherText = await cipher.encrypt(buf)
+
+    return base64.encode(cipherText)
+  }
+
+  async deserialize (pem: string, cipher: Cipher): Promise<PrivateKey> {
+    const decoded = base64.decode(pem)
+    const salt = decoded.subarray(0, 16)
+    const iv = decoded.subarray(16, 16 + 12)
+    const cipherText = decoded.subarray(16 + 12)
+
+    const plainText = await cipher.decrypt(salt, iv, cipherText)
+    const pb = PrivateKeyMessage.decode(plainText)
+
+    if (pb.Data == null) {
+      throw new InvalidPrivateKeyError('Protobuf message did not contain private key')
+    }
+
+    const raw = pb.Data.slice().buffer
+    return new Ed25519PrivateKey(raw, await derivePublicKey(raw))
   }
 }
 

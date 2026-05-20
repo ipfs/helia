@@ -3,6 +3,11 @@ import type { AbortOptions } from 'abort-error'
 
 export interface KeyInfo {
   /**
+   * The hash of the key
+   */
+  id: string
+
+  /**
    * The key name
    */
   name: string
@@ -10,7 +15,7 @@ export interface KeyInfo {
   /**
    * The key type
    */
-  type: 'Ed25519' | 'RSA' | string
+  type?: 'Ed25519' | 'RSA' | string
 }
 
 export interface Keychain {
