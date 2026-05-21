@@ -2,7 +2,6 @@ import { InvalidParametersError, InvalidPrivateKeyError } from '@libp2p/interfac
 import { CID } from 'multiformats'
 import { base64 } from 'multiformats/bases/base64'
 import { identity } from 'multiformats/hashes/identity'
-import { concat as uin8ArrayConcat } from 'uint8arrays/concat'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
@@ -105,7 +104,7 @@ class Ed25519Crypto implements CryptoKeyImplementation {
     return publicKey
   }
 
-  async serialize (key: PrivateKey, cipher: Cipher): Promise<string> {
+  async serialize (key: PrivateKey, cipher: Cipher, options?: AbortOptions): Promise<string> {
     const buf = PrivateKeyMessage.encode({
       Type: key.code,
       Data: uint8ArrayConcat([
@@ -114,12 +113,16 @@ class Ed25519Crypto implements CryptoKeyImplementation {
       ], 64)
     })
 
-    const cipherText = await cipher.encrypt(buf)
+    const result = await cipher.encrypt(buf, options)
 
-    return base64.encode(cipherText)
+    return base64.encode(uint8ArrayConcat([
+      result.salt,
+      result.iv,
+      result.cipherText
+    ], result.salt.byteLength + result.iv.byteLength + result.cipherText.byteLength))
   }
 
-  async deserialize (pem: string, cipher: Cipher): Promise<PrivateKey> {
+  async deserialize (pem: string, cipher: Cipher, options?: AbortOptions): Promise<PrivateKey> {
     const decoded = base64.decode(pem)
     const salt = decoded.subarray(0, 16)
     const iv = decoded.subarray(16, 16 + 12)
@@ -132,8 +135,8 @@ class Ed25519Crypto implements CryptoKeyImplementation {
       throw new InvalidPrivateKeyError('Protobuf message did not contain private key')
     }
 
-    const raw = pb.Data.slice().buffer
-    return new Ed25519PrivateKey(raw, await derivePublicKey(raw))
+    const raw = pb.Data.slice(0, 32).buffer
+    return new Ed25519PrivateKey(raw, await derivePublicKey(raw, options))
   }
 }
 
@@ -162,14 +165,20 @@ async function derivePublicKey (raw: ArrayBuffer, options?: AbortOptions): Promi
   } else {
     const privateKey = truncateKey(raw)
     const pkcs8 = convertRawX25519KeyToPKCS(privateKey)
-    const key = await crypto.subtle.importKey('pkcs8', pkcs8, 'Ed25519', true, ['sign'])
-    options?.signal?.throwIfAborted()
+    const key = await crypto.subtle.importKey('pkcs8', pkcs8, {
+      name: 'Ed25519'
+    }, true, ['sign'])
 
     const exported = await crypto.subtle.exportKey('jwk', key)
-    options?.signal?.throwIfAborted()
+
+    if (exported.x == null) {
+      throw new InvalidPrivateKeyError('Public key was missing from JWK export')
+    }
 
     publicKey = uint8arrayFromString(exported.x ?? '', 'base64url').buffer
   }
+
+  options?.signal?.throwIfAborted()
 
   return new Ed25519PublicKey(publicKey)
 }
@@ -179,7 +188,7 @@ const PKCS8_HEADER = Uint8Array.from([
 ])
 
 function convertRawX25519KeyToPKCS (privateKey: ArrayBuffer): Uint8Array<ArrayBuffer> {
-  return uin8ArrayConcat([
+  return uint8ArrayConcat([
     PKCS8_HEADER,
     Uint8Array.from([privateKey.byteLength]),
     new Uint8Array(privateKey)

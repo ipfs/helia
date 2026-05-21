@@ -115,15 +115,21 @@ export function isPrivateKey (obj?: any): obj is PrivateKey {
   return typeof obj.type === 'string' && typeof obj.code === 'number' && typeof obj.sign === 'function' && isPublicKey(obj.publicKey)
 }
 
-export interface CipherOptions {
+export interface CipherOptions extends AbortOptions {
   iterations?: number
   hash?: string
   keyLength?: number
   algorithm?: string
 }
 
+export interface EncryptionResult {
+  salt: Uint8Array<ArrayBuffer>
+  iv: Uint8Array<ArrayBuffer>
+  cipherText: Uint8Array<ArrayBuffer>
+}
+
 export interface Cipher {
-  encrypt(data: Uint8Array): Promise<Uint8Array<ArrayBuffer>>
+  encrypt(data: Uint8Array, options?: AbortOptions): Promise<EncryptionResult>
   decrypt(salt: Uint8Array, iv: Uint8Array, cipherText: Uint8Array, options?: CipherOptions): Promise<Uint8Array<ArrayBuffer>>
 }
 
@@ -153,12 +159,12 @@ export interface CryptoKeyImplementation {
   /**
    * Convert a private key into a string suitable for storing in a datastore
    */
-  serialize (key: PrivateKey, cipher: Cipher): Promise<string>
+  serialize (key: PrivateKey, cipher: Cipher, options?: AbortOptions): Promise<string>
 
   /**
    * Convert a string from a datastore into a private key
    */
-  deserialize (pem: string, cipher: Cipher): Promise<PrivateKey>
+  deserialize (pem: string, cipher: Cipher, options?: AbortOptions): Promise<PrivateKey>
 }
 
 /**

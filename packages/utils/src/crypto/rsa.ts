@@ -2,6 +2,7 @@ import { InvalidParametersError } from '@libp2p/interface'
 import { CID } from 'multiformats'
 import { base64 } from 'multiformats/bases/base64'
 import { sha256 } from 'multiformats/hashes/sha2'
+import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
@@ -78,6 +79,7 @@ class RSAPrivateKey implements PrivateKey {
     const sig = await crypto.subtle.sign({
       name: 'RSASSA-PKCS1-v1_5'
     }, key, uint8ArrayWithArrayBuffer(message))
+
     options?.signal?.throwIfAborted()
 
     return new Uint8Array(sig, 0, sig.byteLength)
@@ -101,16 +103,21 @@ class RSACrypto implements CryptoKeyImplementation {
     const exported = await crypto.subtle.exportKey('jwk', privateKey.publicKey)
     const publicKey = uint8arrayFromString(exported.n ?? '', 'base64url')
 
+    options?.signal?.throwIfAborted()
+
     return new RSAPrivateKey(rawPrivateKey, new RSAPublicKey(publicKey.buffer, await sha256.digest(new Uint8Array(publicKey))))
   }
 
   async publicKeyFromArray (key: ArrayBuffer | Uint8Array, options?: AbortOptions): Promise<PublicKey> {
     const raw = key instanceof ArrayBuffer ? key : uint8ArrayWithArrayBuffer(key).buffer
+    const digest = await sha256.digest(new Uint8Array(raw))
 
-    return new RSAPublicKey(raw, await sha256.digest(new Uint8Array(raw)))
+    options?.signal?.throwIfAborted()
+
+    return new RSAPublicKey(raw, digest)
   }
 
-  async serialize (key: PrivateKey, cipher: Cipher): Promise<string> {
+  async serialize (key: PrivateKey, cipher: Cipher, options?: AbortOptions): Promise<string> {
     const pkcs8 = await crypto.subtle.importKey('pkcs8', key.raw, {
       name: 'RSASSA-PKCS1-v1_5',
       hash: {
@@ -125,18 +132,22 @@ class RSACrypto implements CryptoKeyImplementation {
       Data: pkcs1
     })
 
-    const cipherText = await cipher.encrypt(buf)
+    const result = await cipher.encrypt(buf, options)
 
-    return base64.encode(cipherText)
+    return base64.encode(uint8ArrayConcat([
+      result.salt,
+      result.iv,
+      result.cipherText
+    ], result.salt.byteLength + result.iv.byteLength + result.cipherText.byteLength))
   }
 
-  async deserialize (pem: string, cipher: Cipher): Promise<PrivateKey> {
+  async deserialize (pem: string, cipher: Cipher, options?: AbortOptions): Promise<PrivateKey> {
     if (!pem.includes('-----BEGIN ENCRYPTED PRIVATE KEY-----')) {
       const decoded = base64.decode(`${pem}`)
       const salt = decoded.subarray(0, 16)
       const iv = decoded.subarray(16, 16 + 12)
       const cypherText = decoded.subarray(16 + 12)
-      const plainText = await cipher.decrypt(salt, iv, cypherText)
+      const plainText = await cipher.decrypt(salt, iv, cypherText, options)
       const pb = PrivateKeyMessage.decode(plainText)
 
       if (pb.Type !== 0) {
@@ -162,8 +173,11 @@ class RSACrypto implements CryptoKeyImplementation {
       }, true, ['sign'])
       const pkcs8 = await crypto.subtle.exportKey('pkcs8', importedJWK)
       const publicKey = uint8arrayFromString(jwk.n ?? '', 'base64url')
+      const digest = await sha256.digest(new Uint8Array(publicKey))
 
-      return new RSAPrivateKey(pkcs8, new RSAPublicKey(publicKey.buffer, await sha256.digest(new Uint8Array(publicKey))))
+      options?.signal?.throwIfAborted()
+
+      return new RSAPrivateKey(pkcs8, new RSAPublicKey(publicKey.buffer, digest))
     }
 
     pem = pem.replaceAll('-----BEGIN ENCRYPTED PRIVATE KEY-----', '')
@@ -184,7 +198,8 @@ class RSACrypto implements CryptoKeyImplementation {
       iterations,
       keyLength: keyLength * 8,
       hash: 'SHA-512',
-      algorithm: 'AES-CBC'
+      algorithm: 'AES-CBC',
+      signal: options?.signal
     })
 
     const keyWrapper = decodeDer(plainText)
@@ -205,8 +220,11 @@ class RSACrypto implements CryptoKeyImplementation {
     }, true, ['sign'])
     const pkcs8 = await crypto.subtle.exportKey('pkcs8', importedJWK)
     const publicKey = uint8arrayFromString(jwk.n ?? '', 'base64url')
+    const digest = await sha256.digest(new Uint8Array(publicKey))
 
-    return new RSAPrivateKey(pkcs8, new RSAPublicKey(publicKey.buffer, await sha256.digest(new Uint8Array(publicKey))))
+    options?.signal?.throwIfAborted()
+
+    return new RSAPrivateKey(pkcs8, new RSAPublicKey(publicKey.buffer, digest))
   }
 }
 

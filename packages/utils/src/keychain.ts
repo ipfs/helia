@@ -4,13 +4,12 @@ import { base58btc } from 'multiformats/bases/base58'
 import { base64 } from 'multiformats/bases/base64'
 import { sha256 } from 'multiformats/hashes/sha2'
 import sanitize from 'sanitize-filename'
-import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { DecryptionFailedError } from './errors.ts'
 import { PrivateKeyMessage } from './keychain/keys.ts'
-import type { Keychain as KeychainInterface, KeyInfo, PrivateKey, CryptoKeyLoader, CryptoKeyImplementation, Cipher, CipherOptions } from '@helia/interface'
+import type { Keychain as KeychainInterface, KeyInfo, PrivateKey, CryptoKeyLoader, CryptoKeyImplementation, Cipher, CipherOptions, EncryptionResult } from '@helia/interface'
 import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { AbortOptions } from 'abort-error'
 import type { Datastore } from 'interface-datastore'
@@ -141,12 +140,15 @@ function dsInfoName (name: string): Key {
   return new Key(infoPrefix + name)
 }
 
-export async function keyId (key: PrivateKey): Promise<string> {
+export async function keyId (key: PrivateKey, options?: AbortOptions): Promise<string> {
   const pb = PrivateKeyMessage.encode({
     Type: key.code,
     Data: new Uint8Array(key.raw)
   })
   const hash = await sha256.digest(pb)
+
+  options?.signal?.throwIfAborted()
+
   return base58btc.encode(hash.bytes).substring(1)
 }
 
@@ -260,14 +262,13 @@ export class Keychain implements KeychainInterface {
   }
 
   private async _importKey (name: string, privateKey: PrivateKey, cipher: Cipher, batch: Batch, options?: AbortOptions): Promise<void> {
-    const cryptoImpl = await this.components.getCryptoKey(privateKey.code)
-    const pem = await cryptoImpl.serialize(privateKey, cipher)
-    options?.signal?.throwIfAborted()
+    const cryptoImpl = await this.components.getCryptoKey(privateKey.code, options)
+    const pem = await cryptoImpl.serialize(privateKey, cipher, options)
 
     const keyInfo = {
       name,
       type: privateKey.type,
-      id: await keyId(privateKey)
+      id: await keyId(privateKey, options)
     }
 
     batch.put(dsName(name), uint8ArrayFromString(pem))
@@ -301,7 +302,7 @@ export class Keychain implements KeychainInterface {
         const salt = decoded.subarray(0, 16)
         const iv = decoded.subarray(16, 16 + 12)
         const cipherText = decoded.subarray(16 + 12)
-        const plainText = await cipher.decrypt(salt, iv, cipherText)
+        const plainText = await cipher.decrypt(salt, iv, cipherText, options)
         const pb = PrivateKeyMessage.decode(plainText)
 
         if (pb.Type != null) {
@@ -315,7 +316,7 @@ export class Keychain implements KeychainInterface {
     }
 
     try {
-      const key = await cryptoImpl.deserialize(pem, cipher)
+      const key = await cryptoImpl.deserialize(pem, cipher, options)
       options?.signal?.throwIfAborted()
 
       return key
@@ -535,7 +536,7 @@ function createAESCipher (password: string, salt: Uint8Array<ArrayBuffer>, keych
   /**
    * Encrypt data using the derived encryption key
    */
-  async function encrypt (data: Uint8Array<ArrayBuffer>): Promise<Uint8Array<ArrayBuffer>> {
+  async function encrypt (data: Uint8Array<ArrayBuffer>, opts?: AbortOptions): Promise<EncryptionResult> {
     if (keychainDek == null) {
       keychainDek = await createKeychainDek()
     }
@@ -548,11 +549,13 @@ function createAESCipher (password: string, salt: Uint8Array<ArrayBuffer>, keych
       iv
     }, cryptoKey, data)
 
-    return uint8ArrayConcat([
+    opts?.signal?.throwIfAborted()
+
+    return {
       salt,
       iv,
-      new Uint8Array(ciphertext)
-    ], salt.byteLength + iv.byteLength + ciphertext.byteLength)
+      cipherText: new Uint8Array(ciphertext)
+    }
   }
 
   /**
@@ -574,6 +577,8 @@ function createAESCipher (password: string, salt: Uint8Array<ArrayBuffer>, keych
       name: opts?.algorithm ?? 'AES-GCM',
       iv: withArrayBuffer(iv)
     }, cryptoKey, withArrayBuffer(cipherText))
+
+    opts?.signal?.throwIfAborted()
 
     return new Uint8Array(plaintext)
   }
