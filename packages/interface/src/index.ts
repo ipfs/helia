@@ -76,8 +76,7 @@ export function isPublicKey (obj?: any): obj is PublicKey {
     return false
   }
 
-  return typeof obj.type === 'string' && typeof obj.code === 'number' && obj.raw instanceof Uint8Array &&
-    typeof obj.toMultihash === 'function' && obj.verify === 'function'
+  return typeof obj.type === 'string' && typeof obj.code === 'number' && typeof obj.verify === 'function'
 }
 
 export interface PrivateKey {
@@ -113,8 +112,7 @@ export function isPrivateKey (obj?: any): obj is PrivateKey {
     return false
   }
 
-  return typeof obj.type === 'string' && typeof obj.code === 'number' && obj.raw instanceof Uint8Array &&
-    isPublicKey(obj.publicKey) && obj.sign === 'function'
+  return typeof obj.type === 'string' && typeof obj.code === 'number' && typeof obj.sign === 'function' && isPublicKey(obj.publicKey)
 }
 
 export interface CipherOptions {

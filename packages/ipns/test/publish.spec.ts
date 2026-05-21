@@ -95,18 +95,18 @@ describe('publish', () => {
 
   it('should publish recursively using a public key', async () => {
     const keyName1 = 'test-key-6'
-    const { record } = await name.publish(keyName1, cid, {
+    const published = await name.publish(keyName1, cid, {
       offline: true
     })
 
-    expect(uint8ArrayToString(record.value)).to.equal(`/ipfs/${cid.toV1().toString()}`)
+    expect(uint8ArrayToString(published.record.value)).to.equal(`/ipfs/${cid.toV1().toString()}`)
 
     const keyName2 = 'test-key-7'
-    const recursiveRecord = await name.publish(keyName2, record.publicKey, {
+    const recursiveRecord = await name.publish(keyName2, published.publicKey, {
       offline: true
     })
 
-    expect(uint8ArrayToString(recursiveRecord.record.value)).to.equal(`/ipns/${record.publicKey.toCID().toString(base36)}`)
+    expect(uint8ArrayToString(recursiveRecord.record.value)).to.equal(`/ipns/${published.publicKey.toCID().toString(base36)}`)
 
     const recursiveResult = await last(name.resolve(recursiveRecord.publicKey))
 
@@ -119,18 +119,18 @@ describe('publish', () => {
 
   it('should publish recursively using a libp2p-key CID', async () => {
     const keyName1 = 'test-key-6'
-    const record = await name.publish(keyName1, cid, {
+    const published = await name.publish(keyName1, cid, {
       offline: true
     })
 
-    expect(record.record.value).to.equal(`/ipfs/${cid.toV1().toString()}`)
+    expect(uint8ArrayToString(published.record.value)).to.equal(`/ipfs/${cid.toV1().toString()}`)
 
     const keyName2 = 'test-key-7'
-    const recursiveRecord = await name.publish(keyName2, record.publicKey.toCID(), {
+    const recursiveRecord = await name.publish(keyName2, published.publicKey.toCID(), {
       offline: true
     })
 
-    expect(recursiveRecord.record.value).to.equal(`/ipns/${record.publicKey.toCID().toString(base36)}`)
+    expect(uint8ArrayToString(recursiveRecord.record.value)).to.equal(`/ipns/${published.publicKey.toCID().toString(base36)}`)
 
     const recursiveResult = await last(name.resolve(recursiveRecord.publicKey))
 
@@ -143,18 +143,18 @@ describe('publish', () => {
 
   it('should publish recursively using a multihash', async () => {
     const keyName1 = 'test-key-8'
-    const record = await name.publish(keyName1, cid, {
+    const published = await name.publish(keyName1, cid, {
       offline: true
     })
 
-    expect(record.record.value).to.equal(`/ipfs/${cid.toV1().toString()}`)
+    expect(uint8ArrayToString(published.record.value)).to.equal(`/ipfs/${cid.toV1().toString()}`)
 
     const keyName2 = 'test-key-9'
-    const recursiveRecord = await name.publish(keyName2, record.publicKey.toCID().multihash, {
+    const recursiveRecord = await name.publish(keyName2, published.publicKey.toMultihash(), {
       offline: true
     })
 
-    expect(recursiveRecord.record.value).to.equal(`/ipns/${base36.encode(record.publicKey.toCID().multihash.bytes)}`)
+    expect(uint8ArrayToString(recursiveRecord.record.value)).to.equal(`/ipns/${base36.encode(published.publicKey.toMultihash().bytes)}`)
 
     const recursiveResult = await last(name.resolve(recursiveRecord.publicKey))
 
@@ -167,18 +167,18 @@ describe('publish', () => {
 
   it('should publish recursively using a string IPNS key', async () => {
     const keyName1 = 'test-key-10'
-    const record = await name.publish(keyName1, cid, {
+    const published = await name.publish(keyName1, cid, {
       offline: true
     })
 
-    expect(record.record.value).to.equal(`/ipfs/${cid.toV1().toString()}`)
+    expect(uint8ArrayToString(published.record.value)).to.equal(`/ipfs/${cid.toV1().toString()}`)
 
     const keyName2 = 'test-key-11'
-    const recursiveRecord = await name.publish(keyName2, `/ipns/${record.publicKey.toCID().toString(base36)}`, {
+    const recursiveRecord = await name.publish(keyName2, `/ipns/${published.publicKey.toCID().toString(base36)}`, {
       offline: true
     })
 
-    expect(recursiveRecord.record.value).to.equal(`/ipns/${record.publicKey.toCID().toString(base36)}`)
+    expect(uint8ArrayToString(recursiveRecord.record.value)).to.equal(`/ipns/${published.publicKey.toCID().toString(base36)}`)
 
     const recursiveResult = await last(name.resolve(recursiveRecord.publicKey))
 
@@ -194,13 +194,13 @@ describe('publish', () => {
     const fullPath = `/ipfs/${cid}/${path}`
 
     const keyName = 'test-key-12'
-    const record = await name.publish(keyName, fullPath, {
+    const published = await name.publish(keyName, fullPath, {
       offline: true
     })
 
-    expect(record.record.value).to.equal(fullPath)
+    expect(uint8ArrayToString(published.record.value)).to.equal(`/ipfs/${cid.toV1()}${path}`)
 
-    const result = await last(name.resolve(record.publicKey))
+    const result = await last(name.resolve(published.publicKey))
 
     if (result == null) {
       throw new Error('No results found')

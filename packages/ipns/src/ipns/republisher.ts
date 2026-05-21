@@ -82,13 +82,16 @@ export class IPNSRepublisher {
 
     try {
       const recordsToRepublish: Array<{ routingKey: Uint8Array, record: IPNSRecord }> = []
+      let listed = 0
 
       // Find all records using the localStore.list method
       for await (const { routingKey, record, metadata, created } of this.localStore.list(options)) {
+        listed++
+
         if (metadata == null) {
           // Skip if no metadata is found from before we started
           // storing metadata or for records republished without a key
-          this.log(`no metadata found for record ${routingKey.toString()}, skipping`)
+          this.log('no metadata found for record %b, skipping', routingKey)
           continue
         }
         let ipnsRecord: IPNSRecord
@@ -101,7 +104,7 @@ export class IPNSRepublisher {
 
         // Only republish records that are within the DHT or record expiry threshold
         if (!shouldRepublish(ipnsRecord, created)) {
-          this.log.trace(`skipping record ${routingKey.toString()}within republish threshold`)
+          this.log.trace('skipping record %b within republish threshold', routingKey)
           continue
         }
         const sequenceNumber = ipnsRecord.sequence + 1n
@@ -130,7 +133,7 @@ export class IPNSRepublisher {
         }
       }
 
-      this.log(`found ${recordsToRepublish.length} records to republish`)
+      this.log(`found ${recordsToRepublish.length}/${listed} records to republish`)
 
       // Republish each record
       for (const { routingKey, record } of recordsToRepublish) {

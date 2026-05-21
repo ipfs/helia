@@ -1,4 +1,4 @@
-import { InvalidPrivateKeyError } from '@libp2p/interface'
+import { InvalidParametersError, InvalidPrivateKeyError } from '@libp2p/interface'
 import { CID } from 'multiformats'
 import { base64 } from 'multiformats/bases/base64'
 import { identity } from 'multiformats/hashes/identity'
@@ -13,6 +13,7 @@ import type { AbortOptions } from 'abort-error'
 import type { MultihashDigest } from 'multiformats'
 
 const PRIVATE_KEY_LENGTH = 32
+const PUBLIC_KEY_LENGTH = 32
 
 class Ed25519PublicKey implements PublicKey {
   public type = 'Ed25519'
@@ -20,11 +21,20 @@ class Ed25519PublicKey implements PublicKey {
   public raw: ArrayBuffer
 
   constructor (raw: ArrayBuffer) {
+    if (raw.byteLength > PUBLIC_KEY_LENGTH) {
+      throw new InvalidParametersError(`Public key was too long ${raw.byteLength} > ${PUBLIC_KEY_LENGTH}`)
+    }
+
     this.raw = raw
   }
 
   toMultihash (): MultihashDigest {
-    return identity.digest(new Uint8Array(this.raw))
+    const buf = PrivateKeyMessage.encode({
+      Type: this.code,
+      Data: new Uint8Array(this.raw.slice())
+    })
+
+    return identity.digest(buf)
   }
 
   toCID (): CID<unknown, 0x72> {
@@ -89,7 +99,7 @@ class Ed25519Crypto implements CryptoKeyImplementation {
   }
 
   async publicKeyFromArray (key: ArrayBuffer | Uint8Array, options?: AbortOptions): Promise<PublicKey> {
-    const publicKey = new Ed25519PublicKey(key instanceof ArrayBuffer ? key : uint8ArrayWithArrayBuffer(key).buffer)
+    const publicKey = new Ed25519PublicKey(key instanceof ArrayBuffer ? key : uint8ArrayWithArrayBuffer(key).slice().buffer)
     options?.signal?.throwIfAborted()
 
     return publicKey

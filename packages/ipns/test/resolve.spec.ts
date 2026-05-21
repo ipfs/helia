@@ -274,7 +274,7 @@ describe('resolve', () => {
     await datastore.put(dhtKey, dhtRecord.serialize())
 
     const result = await last(name.resolve(key.publicKey))
-    expect(result).to.have.deep.property('record', unmarshalIPNSRecord(customRoutingKey, marshalIPNSRecord(ipnsRecord), getCryptoKey))
+    expect(result).to.have.deep.property('record', await unmarshalIPNSRecord(customRoutingKey, marshalIPNSRecord(ipnsRecord), getCryptoKey))
 
     // should not have searched the routing
     expect(customRouting.get.called).to.be.false()
@@ -294,7 +294,7 @@ describe('resolve', () => {
     await datastore.put(dhtKey, dhtRecord.serialize())
 
     const result = await last(name.resolve(key.publicKey))
-    expect(result).to.have.deep.property('record', unmarshalIPNSRecord(customRoutingKey, marshalIPNSRecord(ipnsRecord), getCryptoKey))
+    expect(result).to.have.deep.property('record', await unmarshalIPNSRecord(customRoutingKey, marshalIPNSRecord(ipnsRecord), getCryptoKey))
 
     // should have searched the routing
     expect(customRouting.get.called).to.be.true()
@@ -320,7 +320,7 @@ describe('resolve', () => {
     customRouting.get.withArgs(customRoutingKey).resolves(marshalIPNSRecord(ipnsRecordFromRouting))
 
     const result = await last(name.resolve(key.publicKey))
-    expect(result).to.have.deep.property('record', unmarshalIPNSRecord(customRoutingKey, marshalIPNSRecord(ipnsRecordFromRouting), getCryptoKey))
+    expect(result).to.have.deep.property('record', await unmarshalIPNSRecord(customRoutingKey, marshalIPNSRecord(ipnsRecordFromRouting), getCryptoKey))
 
     // should have searched the routing
     expect(customRouting.get.called).to.be.true()
@@ -346,7 +346,7 @@ describe('resolve', () => {
     customRouting.get.withArgs(customRoutingKey).resolves(marshalIPNSRecord(ipnsRecordFromRouting))
 
     const result = await last(name.resolve(key.publicKey))
-    expect(result).to.have.deep.property('record', unmarshalIPNSRecord(customRoutingKey, marshalIPNSRecord(ipnsRecordFromRouting), getCryptoKey))
+    expect(result).to.have.deep.property('record', await unmarshalIPNSRecord(customRoutingKey, marshalIPNSRecord(ipnsRecordFromRouting), getCryptoKey))
 
     // should have searched the routing
     expect(customRouting.get.called).to.be.true()

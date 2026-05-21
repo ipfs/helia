@@ -9,7 +9,7 @@ import { Keychain as KeychainClass } from '../src/keychain.ts'
 import { getCryptoKey } from './fixtures/crypto-loader.ts'
 import type { Keychain } from '../src/index.js'
 import type { KeychainInit } from '../src/keychain.ts'
-import type { PrivateKey } from '@helia/interface'
+import { isPrivateKey, isPublicKey, type PrivateKey } from '@helia/interface'
 import type { ComponentLogger } from '@libp2p/interface'
 import type { Keychain as Libp2pKeychain } from '@libp2p/keychain'
 import type { Datastore } from 'interface-datastore'
@@ -427,6 +427,9 @@ describe('keychain', () => {
         expect(privateKey).to.have.property('code').that.is.a('number')
         expect(privateKey).to.have.property('type', type)
         expect(privateKey).to.have.property('raw').that.is.an.instanceOf(ArrayBuffer)
+
+        expect(isPrivateKey(privateKey)).to.be.true()
+        expect(isPublicKey(privateKey.publicKey)).to.be.true()
       })
 
       it('can export/import a key', async () => {
@@ -500,16 +503,7 @@ describe('keychain', () => {
         const libp2pPrivateKey = await generateKeyPair(type)
         await libp2pKeychain.importKey(keyName, libp2pPrivateKey)
         const heliaPrivateKey = await keychain.exportKey(keyName)
-        /*
-        if (type === 'Ed25519') {
-          // truncate key because libp2p appends the public key to the private key
-          expect(new Uint8Array(heliaPrivateKey.raw).subarray(0, 32)).to.equalBytes(libp2pPrivateKey.raw.subarray(0, 32))
-        } else if (type === 'RSA') {
-          expect(new Uint8Array(heliaPrivateKey.raw)).to.equalBytes(libp2pPrivateKey.raw)
-        } else {
-          throw new Error(`Uknown crypto type ${type}`)
-        }
-*/
+
         const message = Uint8Array.from([0, 1, 2, 3, 4])
 
         const heliaSig = await heliaPrivateKey.sign(message)

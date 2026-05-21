@@ -25,6 +25,9 @@ function waitForStubCall (stub: sinon.SinonStub, callCount = 1): Promise<void> {
   })
 }
 
+// shorten the default validity so we are always within the republish window
+const SHORTENED_VALIDITY = 2 * 60 * 60 * 1000
+
 describe('republish', () => {
   const testCid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
   let name: IPNS
@@ -57,7 +60,7 @@ describe('republish', () => {
       const key = await result.keychain.createKey('test-key', 'Ed25519')
 
       // Create a test record and store it in the real datastore
-      const record = await createIPNSRecord(key, uint8ArrayFromString(`/ipfs/${testCid.toV1()}`), 1n, 24 * 60 * 60 * 1000)
+      const record = await createIPNSRecord(key, uint8ArrayFromString(`/ipfs/${testCid.toV1()}`), 1n, SHORTENED_VALIDITY)
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
       // Store the record in the real datastore using the localStore
@@ -65,7 +68,7 @@ describe('republish', () => {
       await store.put(routingKey, marshalIPNSRecord(record), {
         metadata: {
           keyName: 'test-key',
-          lifetime: 24 * 60 * 60 * 1000
+          lifetime: SHORTENED_VALIDITY
         }
       })
 
@@ -80,7 +83,7 @@ describe('republish', () => {
     it('should call all routers for republish', async () => {
       // Create a test record and store it in the real datastore
       const key = await result.keychain.createKey('test-key', 'Ed25519')
-      const record = await createIPNSRecord(key, uint8ArrayFromString(`/ipfs/${testCid.toV1()}`), 1n, 24 * 60 * 60 * 1000)
+      const record = await createIPNSRecord(key, uint8ArrayFromString(`/ipfs/${testCid.toV1()}`), 1n, SHORTENED_VALIDITY)
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
       // Store the record in the real datastore using the localStore
@@ -88,15 +91,16 @@ describe('republish', () => {
       await store.put(routingKey, marshalIPNSRecord(record), {
         metadata: {
           keyName: 'test-key',
-          lifetime: 24 * 60 * 60 * 1000
+          lifetime: SHORTENED_VALIDITY
         }
       })
-      // Start republishing
-      await start(name)
 
       await Promise.all([
         waitForStubCall(putStubCustom),
-        waitForStubCall(putStubHelia)
+        waitForStubCall(putStubHelia),
+
+        // Start republishing
+        start(name)
       ])
 
       // Check both routers
@@ -108,7 +112,7 @@ describe('republish', () => {
 
     it('should republish records with valid metadata', async () => {
       const key = await result.keychain.createKey('test-key', 'Ed25519')
-      const record = await createIPNSRecord(key, uint8ArrayFromString(`/ipfs/${testCid.toV1()}`), 1n, 24 * 60 * 60 * 1000)
+      const record = await createIPNSRecord(key, uint8ArrayFromString(`/ipfs/${testCid.toV1()}`), 1n, SHORTENED_VALIDITY)
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
       // Store the record in the real datastore
@@ -116,7 +120,7 @@ describe('republish', () => {
       await store.put(routingKey, marshalIPNSRecord(record), {
         metadata: {
           keyName: 'test-key',
-          lifetime: 24 * 60 * 60 * 1000
+          lifetime: SHORTENED_VALIDITY
         }
       })
 
@@ -137,7 +141,7 @@ describe('republish', () => {
   describe('record processing', () => {
     it('should skip records without metadata', async () => {
       const key = await result.keychain.createKey('test-key', 'Ed25519')
-      const record = await createIPNSRecord(key, uint8ArrayFromString(`/ipfs/${testCid.toV1()}`), 1n, 24 * 60 * 60 * 1000)
+      const record = await createIPNSRecord(key, uint8ArrayFromString(`/ipfs/${testCid.toV1()}`), 1n, SHORTENED_VALIDITY)
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
       // Store the record without metadata (simulate old records)
@@ -159,7 +163,7 @@ describe('republish', () => {
       await store.put(routingKey, new Uint8Array([255, 255, 255]), {
         metadata: {
           keyName: 'test-key',
-          lifetime: 24 * 60 * 60 * 1000
+          lifetime: SHORTENED_VALIDITY
         }
       })
 
@@ -172,7 +176,7 @@ describe('republish', () => {
 
     it('should increment sequence numbers correctly', async () => {
       const key = await result.keychain.createKey('test-key', 'Ed25519')
-      const record = await createIPNSRecord(key, uint8ArrayFromString(`/ipfs/${testCid.toV1()}`), 5n, 24 * 60 * 60 * 1000) // Start with sequence 5
+      const record = await createIPNSRecord(key, uint8ArrayFromString(`/ipfs/${testCid.toV1()}`), 5n, SHORTENED_VALIDITY) // Start with sequence 5
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
       // Store the record in the real datastore
@@ -180,7 +184,7 @@ describe('republish', () => {
       await store.put(routingKey, marshalIPNSRecord(record), {
         metadata: {
           keyName: 'test-key',
-          lifetime: 24 * 60 * 60 * 1000
+          lifetime: SHORTENED_VALIDITY
         }
       })
 
@@ -199,7 +203,7 @@ describe('republish', () => {
     it('should use existing TTL from records', async () => {
       const key = await result.keychain.createKey('test-key', 'Ed25519')
       const customTtl = BigInt(10 * 60 * 1000) * 1_000_000n // 10 minutes in nanoseconds
-      const record = await createIPNSRecord(key, uint8ArrayFromString(`/ipfs/${testCid.toV1()}`), 1n, 24 * 60 * 60 * 1000, { ttlNs: customTtl })
+      const record = await createIPNSRecord(key, uint8ArrayFromString(`/ipfs/${testCid.toV1()}`), 1n, SHORTENED_VALIDITY, { ttlNs: customTtl })
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
       // Store the record in the real datastore
@@ -207,7 +211,7 @@ describe('republish', () => {
       await store.put(routingKey, marshalIPNSRecord(record), {
         metadata: {
           keyName: 'test-key',
-          lifetime: 24 * 60 * 60 * 1000
+          lifetime: SHORTENED_VALIDITY
         }
       })
 
@@ -226,7 +230,7 @@ describe('republish', () => {
 
     it('should use default TTL when not present', async () => {
       const key = await result.keychain.createKey('test-key', 'Ed25519')
-      const record = await createIPNSRecord(key, uint8ArrayFromString(`/ipfs/${testCid.toV1()}`), 1n, 24 * 60 * 60 * 1000)
+      const record = await createIPNSRecord(key, uint8ArrayFromString(`/ipfs/${testCid.toV1()}`), 1n, SHORTENED_VALIDITY)
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
       // Store the record in the real datastore
@@ -234,7 +238,7 @@ describe('republish', () => {
       await store.put(routingKey, marshalIPNSRecord(record), {
         metadata: {
           keyName: 'test-key',
-          lifetime: 24 * 60 * 60 * 1000
+          lifetime: SHORTENED_VALIDITY
         }
       })
 
@@ -283,7 +287,7 @@ describe('republish', () => {
   describe('error handling', () => {
     it('should skip republishing records with missing key', async () => {
       const key = await result.keychain.createKey('test-key', 'Ed25519')
-      const record = await createIPNSRecord(key, uint8ArrayFromString(`/ipfs/${testCid.toV1()}`), 1n, 24 * 60 * 60 * 1000)
+      const record = await createIPNSRecord(key, uint8ArrayFromString(`/ipfs/${testCid.toV1()}`), 1n, SHORTENED_VALIDITY)
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
       // Store the record in the real datastore (but don't import the key)
@@ -291,7 +295,7 @@ describe('republish', () => {
       await store.put(routingKey, marshalIPNSRecord(record), {
         metadata: {
           keyName: 'missing-key',
-          lifetime: 24 * 60 * 60 * 1000
+          lifetime: SHORTENED_VALIDITY
         }
       })
 
@@ -367,7 +371,7 @@ describe('republish', () => {
       await store.put(routingKey, new Uint8Array([255, 255, 255]), {
         metadata: {
           keyName: 'test-key',
-          lifetime: 24 * 60 * 60 * 1000
+          lifetime: SHORTENED_VALIDITY
         }
       })
 
@@ -382,7 +386,7 @@ describe('republish', () => {
     it('should continue republishing other records when one record fails', async () => {
       const key1 = await result.keychain.createKey('test-key-1', 'Ed25519')
       const key2 = await result.keychain.createKey('test-key-2', 'Ed25519')
-      const record2 = await createIPNSRecord(key2, uint8ArrayFromString(`/ipfs/${testCid.toV1()}`), 1n, 24 * 60 * 60 * 1000)
+      const record2 = await createIPNSRecord(key2, uint8ArrayFromString(`/ipfs/${testCid.toV1()}`), 1n, SHORTENED_VALIDITY)
       const routingKey1 = multihashToIPNSRoutingKey(key1.publicKey.toMultihash())
       const routingKey2 = multihashToIPNSRoutingKey(key2.publicKey.toMultihash())
 
@@ -392,13 +396,13 @@ describe('republish', () => {
       await store.put(routingKey1, new Uint8Array([255, 255, 255]), {
         metadata: {
           keyName: 'test-key-1',
-          lifetime: 24 * 60 * 60 * 1000
+          lifetime: SHORTENED_VALIDITY
         }
       })
       await store.put(routingKey2, marshalIPNSRecord(record2), {
         metadata: {
           keyName: 'test-key-2',
-          lifetime: 24 * 60 * 60 * 1000
+          lifetime: SHORTENED_VALIDITY
         }
       })
 

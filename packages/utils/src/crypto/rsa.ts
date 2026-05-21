@@ -40,6 +40,7 @@ class RSAPublicKey implements PublicKey {
       alg: 'RS256',
       kty: 'RSA',
       n: uint8ArrayToString(new Uint8Array(this.raw), 'base64url'),
+      /* spell-checker:disable-next-line */
       e: 'AQAB'
     }, {
       name: 'RSASSA-PKCS1-v1_5',

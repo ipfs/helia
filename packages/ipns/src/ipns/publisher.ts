@@ -52,8 +52,7 @@ export class IPNSPublisher {
       // convert ttl from milliseconds to nanoseconds as createIPNSRecord expects
       const ttlNs = options.ttl != null ? BigInt(options.ttl) * 1_000_000n : DEFAULT_TTL_NS
       const lifetime = options.lifetime ?? DEFAULT_LIFETIME_MS
-      // @ts-expect-error @libp2p/peer-id needs new multiformats
-      const record = await createIPNSRecord(privKey, value, sequenceNumber, lifetime, { ...options, ttlNs })
+      const record = await createIPNSRecord(key, value, sequenceNumber, lifetime, { ...options, ttlNs })
       const marshaledRecord = marshalIPNSRecord(record)
 
       if (options.offline === true) {

@@ -2,7 +2,6 @@ import { isPublicKey } from '@helia/interface'
 import { InvalidParametersError } from '@libp2p/interface'
 import * as cborg from 'cborg'
 import { Key } from 'interface-datastore'
-import { digest } from 'multiformats'
 import { base36 } from 'multiformats/bases/base36'
 import { base58btc } from 'multiformats/bases/base58'
 import { CID } from 'multiformats/cid'
@@ -18,6 +17,7 @@ import { PublicKey as PublicKeyPB } from './pb/keys.ts'
 import type { IPNSRecord, IPNSRecordV2, IPNSRecordData } from './records.ts'
 import type { CryptoKeyLoader, PublicKey } from '@helia/interface'
 import type { AbortOptions } from '@libp2p/interface'
+import type { MultibaseDecoder } from 'multiformats/cid'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 
 export const LIBP2P_KEY_CODEC = 0x72
@@ -301,7 +301,7 @@ export function normalizeByteValue (value: Uint8Array): string {
 export function normalizeValue (value?: PublicKey | CID | MultihashDigest | string): string {
   if (value != null) {
     if (isPublicKey(value)) {
-      return `/ipns/${value.toCID().toString(base36)}`
+      return `/ipns/${value.toCID().toV1().toString(base36)}`
     }
 
     const cid = asCID(value)
@@ -310,7 +310,7 @@ export function normalizeValue (value?: PublicKey | CID | MultihashDigest | stri
     if (cid != null) {
       // PeerID encoded as a CID
       if (cid.code === LIBP2P_KEY_CODEC) {
-        return `/ipns/${cid.toString(base36)}`
+        return `/ipns/${cid.toV1().toString(base36)}`
       }
 
       return `/ipfs/${cid.toV1().toString()}`
@@ -322,6 +322,13 @@ export function normalizeValue (value?: PublicKey | CID | MultihashDigest | stri
 
     // if we have a path, check it is a valid path
     const string = value.toString().trim()
+
+    if (string.startsWith('/ipfs/')) {
+      const [, name, ...rest] = string.split('/')
+        .filter(component => component.trim() !== '')
+
+      return `/ipfs/${CID.parse(name).toV1()}${rest.length > 0 ? `/${rest.join('/')}` : ''}`
+    }
 
     if (string.startsWith('/') && string.length > 1) {
       return string
@@ -335,16 +342,16 @@ function isMultihashDigest (obj: any): obj is MultihashDigest {
   return typeof obj.code === 'number' && obj.digest instanceof Uint8Array && typeof obj.size === 'number' && obj.bytes instanceof Uint8Array
 }
 
-export function normalizeKey (value?: PublicKey | CID<unknown, 0x72> | MultihashDigest | string): { digest: MultihashDigest, path: string } {
-  if (value != null) {
-    if (isPublicKey(value)) {
+export function normalizeKey (key?: PublicKey | CID<unknown, 0x72> | MultihashDigest | string): { digest: MultihashDigest, path: string } {
+  if (key != null) {
+    if (isPublicKey(key)) {
       return {
-        digest: value.toMultihash(),
+        digest: key.toMultihash(),
         path: '/'
       }
     }
 
-    const cid = asCID(value)
+    const cid = asCID(key)
 
     // if we have a CID, turn it into an ipfs path
     if (cid != null) {
@@ -359,22 +366,37 @@ export function normalizeKey (value?: PublicKey | CID<unknown, 0x72> | Multihash
       }
     }
 
-    if (isMultihashDigest(value)) {
+    if (isMultihashDigest(key)) {
       return {
-        digest: value,
+        digest: key,
         path: '/'
       }
     }
 
-    value = value.toString()
+    key = key.toString()
 
-    if (value.startsWith('/ipns/')) {
-      const parts = value.split('/')
-      const codec = parts[1].startsWith('1') ? base58btc : base36
+    if (key.startsWith('/ipns/')) {
+      let [,, name, ...rest] = key.split('/')
+      let codec: MultibaseDecoder<any> = base36
+
+      // base58btc encoded public key hash or protobuf in identity hash
+      if (name.startsWith('1') || name.startsWith('Q')) {
+        name = `z${name}`
+        codec = base58btc
+      }
+
+      const buf = codec.decode(name)
+      let digest: MultihashDigest
+
+      try {
+        digest = CID.decode(buf).multihash
+      } catch {
+        digest = Digest.decode(buf)
+      }
 
       return {
-        digest: digest.decode(codec.decode(value[1])),
-        path: `/${parts.slice(2).join('/')}`
+        digest,
+        path: `/${rest.join('/')}`
       }
     }
   }

@@ -1,11 +1,12 @@
-import { TypedEventEmitter } from '@libp2p/interface'
+import { ed25519Crypto } from '@helia/utils'
+import { NotFoundError, TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { MemoryDatastore } from 'datastore-core'
-import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { IPNS } from '../../src/ipns.ts'
+import { getCryptoKey } from './crypto-loader.ts'
 import type { IPNSRouting } from '../../src/index.ts'
-import type { HeliaEvents, Routing, Keychain } from '@helia/interface'
+import type { HeliaEvents, Routing, Keychain, PrivateKey } from '@helia/interface'
 import type { Logger } from '@libp2p/logger'
 import type { Datastore } from 'interface-datastore'
 import type { StubbedInstance } from 'sinon-ts'
@@ -31,8 +32,32 @@ export async function createIPNS (): Promise<CreateIPNSResult> {
 
   const logger = defaultLogger()
   const events = new TypedEventEmitter<HeliaEvents>()
-  const getCryptoKey = Sinon.stub()
-  const keychain = stubInterface<Keychain>()
+
+  const keys = new Map<string, PrivateKey>()
+  const keychain = stubInterface<Keychain>({
+    async createKey (name) {
+      const key = await ed25519Crypto().createPrivateKey()
+      keys.set(name, key)
+      return key
+    },
+    async exportKey (name) {
+      const key = keys.get(name)
+
+      if (key == null) {
+        throw new NotFoundError(`No key found for ${name}`)
+      }
+
+      return key
+    },
+    async importKey (name, key) {
+      keys.set(name, key)
+
+      return key
+    },
+    async removeKey (name) {
+      keys.delete(name)
+    }
+  })
 
   const name = new IPNS({
     datastore,

@@ -8,6 +8,7 @@ import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { toString } from 'uint8arrays'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { DEFAULT_LIFETIME_MS } from '../../src/constants.ts'
 import { localStore } from '../../src/local-store.ts'
 import { createIPNSRecord, marshalIPNSRecord, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from '../../src/records.ts'
@@ -147,7 +148,7 @@ describe('pubsub routing', () => {
         const result = await store.get(routingKey)
         const updatedRecord = await unmarshalIPNSRecord(routingKey, result.record, getCryptoKey)
         expect(updatedRecord.sequence).to.equal(2n)
-        expect(updatedRecord.value).to.equal('/test2')
+        expect(uint8ArrayToString(updatedRecord.value)).to.equal('/test2')
       })
 
       it('skips the message if duplicate record', async () => {

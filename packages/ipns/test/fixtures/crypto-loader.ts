@@ -7,7 +7,7 @@ export const getCryptoKey: CryptoKeyLoader = async (code: number | string, optio
     return rsaCrypto()
   }
 
-  if (code === 1 || code === 'Ed15519') {
+  if (code === 1 || code === 'Ed25519') {
     return ed25519Crypto()
   }
 
