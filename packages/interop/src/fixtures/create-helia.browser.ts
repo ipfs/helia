@@ -29,9 +29,6 @@ export async function createHeliaNode (libp2pOptions?: Libp2pOptions): Promise<H
     ...(defaults.services ?? {}),
     ...(libp2pOptions?.services ?? {}),
     dht: kadDHT({
-      // skips waiting for the initial self-query to find peers
-      allowQueryWithZeroPeers: true,
-
       protocol: '/ipfs/lan/kad/1.0.0',
       peerInfoMapper: removePublicAddressesMapper,
       clientMode: false
