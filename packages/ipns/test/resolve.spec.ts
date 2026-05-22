@@ -10,7 +10,6 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { createIPNSRecord, createIPNSRecordWithExpiration, marshalIPNSRecord, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from '../src/records.ts'
 import { createIPNS } from './fixtures/create-ipns.ts'
-import { getCryptoKey } from './fixtures/crypto-loader.ts'
 import type { IPNS } from '../src/index.ts'
 import type { Routing } from '@helia/interface'
 import type { Keychain } from '@helia/interface'
@@ -194,7 +193,7 @@ describe('resolve', () => {
   })
 
   it('should cache a record', async function () {
-    const key = await keychain.createKey('test-key', 'Ed25519')
+    const key = await keychain.generateKey('test-key')
     const customRoutingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
     const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
 
@@ -217,7 +216,7 @@ describe('resolve', () => {
   })
 
   it('should cache the most recent record', async function () {
-    const key = await keychain.createKey('test-key', 'Ed25519')
+    const key = await keychain.generateKey('test-key')
     const customRoutingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
     const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
 
@@ -261,7 +260,7 @@ describe('resolve', () => {
   })
 
   it('should not search the routing for updated IPNS records when a locally cached copy is within the TTL', async () => {
-    const key = await keychain.createKey('test-key', 'Ed25519')
+    const key = await keychain.generateKey('test-key')
     const customRoutingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
     const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
 
@@ -274,14 +273,14 @@ describe('resolve', () => {
     await datastore.put(dhtKey, dhtRecord.serialize())
 
     const result = await last(name.resolve(key.publicKey))
-    expect(result).to.have.deep.property('record', await unmarshalIPNSRecord(customRoutingKey, marshalIPNSRecord(ipnsRecord), getCryptoKey))
+    expect(result).to.have.deep.property('record', await unmarshalIPNSRecord(customRoutingKey, marshalIPNSRecord(ipnsRecord), keychain))
 
     // should not have searched the routing
     expect(customRouting.get.called).to.be.false()
   })
 
   it('should search the routing for updated IPNS records when a locally cached copy has passed the TTL', async () => {
-    const key = await keychain.createKey('test-key', 'Ed25519')
+    const key = await keychain.generateKey('test-key')
     const customRoutingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
     const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
 
@@ -294,14 +293,14 @@ describe('resolve', () => {
     await datastore.put(dhtKey, dhtRecord.serialize())
 
     const result = await last(name.resolve(key.publicKey))
-    expect(result).to.have.deep.property('record', await unmarshalIPNSRecord(customRoutingKey, marshalIPNSRecord(ipnsRecord), getCryptoKey))
+    expect(result).to.have.deep.property('record', await unmarshalIPNSRecord(customRoutingKey, marshalIPNSRecord(ipnsRecord), keychain))
 
     // should have searched the routing
     expect(customRouting.get.called).to.be.true()
   })
 
   it('should search the routing for updated IPNS records when a locally cached copy has passed the TTL and choose the record with a higher sequence number', async () => {
-    const key = await keychain.createKey('test-key', 'Ed25519')
+    const key = await keychain.generateKey('test-key')
     const customRoutingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
     const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
 
@@ -320,14 +319,14 @@ describe('resolve', () => {
     customRouting.get.withArgs(customRoutingKey).resolves(marshalIPNSRecord(ipnsRecordFromRouting))
 
     const result = await last(name.resolve(key.publicKey))
-    expect(result).to.have.deep.property('record', await unmarshalIPNSRecord(customRoutingKey, marshalIPNSRecord(ipnsRecordFromRouting), getCryptoKey))
+    expect(result).to.have.deep.property('record', await unmarshalIPNSRecord(customRoutingKey, marshalIPNSRecord(ipnsRecordFromRouting), keychain))
 
     // should have searched the routing
     expect(customRouting.get.called).to.be.true()
   })
 
   it('should search the routing when a locally cached copy has an expired lifetime', async () => {
-    const key = await keychain.createKey('test-key', 'Ed25519')
+    const key = await keychain.generateKey('test-key')
     const customRoutingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
     const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
 
@@ -346,7 +345,7 @@ describe('resolve', () => {
     customRouting.get.withArgs(customRoutingKey).resolves(marshalIPNSRecord(ipnsRecordFromRouting))
 
     const result = await last(name.resolve(key.publicKey))
-    expect(result).to.have.deep.property('record', await unmarshalIPNSRecord(customRoutingKey, marshalIPNSRecord(ipnsRecordFromRouting), getCryptoKey))
+    expect(result).to.have.deep.property('record', await unmarshalIPNSRecord(customRoutingKey, marshalIPNSRecord(ipnsRecordFromRouting), keychain))
 
     // should have searched the routing
     expect(customRouting.get.called).to.be.true()

@@ -6,9 +6,10 @@ import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
 import all from 'it-all'
+import { PublicKeyMessage } from '../src/keychain/keys.ts'
 import { Keychain as KeychainClass } from '../src/keychain.ts'
 import { getCryptoKey } from './fixtures/crypto-loader.ts'
-import type { Keychain } from '../src/index.js'
+import type { Keychain } from '../src/index.ts'
 import type { KeychainInit } from '../src/keychain.ts'
 import type { PrivateKey } from '@helia/interface'
 import type { ComponentLogger } from '@libp2p/interface'
@@ -168,7 +169,7 @@ describe('keychain', () => {
     await start(keychain)
 
     const keyName = 'my-key'
-    const privateKey = await keychain.createKey(keyName, 'Ed25519')
+    const privateKey = await keychain.generateKey(keyName)
 
     await expect(keychain.importKey(keyName, privateKey)).to.eventually.be.rejected
       .with.property('name', 'InvalidParametersError')
@@ -186,7 +187,9 @@ describe('keychain', () => {
       })
       await start(keychain)
 
-      privateKey = await keychain.createKey(rsaKeyName, 'RSA')
+      privateKey = await keychain.generateKey(rsaKeyName, {
+        type: 'RSA'
+      })
     })
 
     it('finds all existing keys', async () => {
@@ -199,7 +202,7 @@ describe('keychain', () => {
     it('exports a key by name', async () => {
       const key = await keychain.exportKey(rsaKeyName)
       expect(key).to.exist()
-      expect(key).to.deep.equal(privateKey)
+      expect(key.toProtobuf()).to.equalBytes(privateKey.toProtobuf())
     })
 
     it('returns the key\'s name', async () => {
@@ -224,7 +227,9 @@ describe('keychain', () => {
       })
       await start(keychain)
 
-      privateKey = await keychain.createKey(rsaKeyName, 'RSA')
+      privateKey = await keychain.generateKey(rsaKeyName, {
+        type: 'RSA'
+      })
     })
 
     it('requires the key name', async () => {
@@ -238,7 +243,7 @@ describe('keychain', () => {
       expect(imported).to.deep.equal(privateKey)
 
       const exported = await keychain.exportKey('imported-key')
-      expect(exported).to.deep.equal(privateKey)
+      expect(exported.toProtobuf()).to.equalBytes(privateKey.toProtobuf())
     })
 
     it('requires the key', async () => {
@@ -265,7 +270,9 @@ describe('keychain', () => {
       })
       await start(keychain)
 
-      privateKey = await keychain.createKey(rsaKeyName, 'RSA')
+      privateKey = await keychain.generateKey(rsaKeyName, {
+        type: 'RSA'
+      })
     })
 
     it('requires an existing key name', async () => {
@@ -292,7 +299,7 @@ describe('keychain', () => {
     it('removes the existing key name', async () => {
       await keychain.renameKey(rsaKeyName, renamedRsaKeyName)
       const exported = await keychain.exportKey(renamedRsaKeyName)
-      expect(exported).to.deep.equal(privateKey)
+      expect(exported.toProtobuf()).to.equalBytes(privateKey.toProtobuf())
 
       // Try to find the changed key
       await expect(keychain.exportKey(rsaKeyName)).to.eventually.be.rejected()
@@ -331,6 +338,20 @@ describe('keychain', () => {
 
       await expect(keychain.exportKey(rsaKeyName)).to.eventually.be.rejected
         .with.property('name', 'NotFoundError')
+    })
+
+    it('can read a public key from a protobuf', async () => {
+      const key = await keychain.generateKey('my-key', {
+        type: 'Ed25519'
+      })
+
+      const pb = key.publicKey.toMultihash().digest
+      const read = await keychain.loadPublicKeyFromProtobuf(pb)
+
+      const message = Uint8Array.from([0, 1, 2, 3, 4])
+      const sig = await key.sign(message)
+
+      await expect(read.verify(message, sig)).to.eventually.be.true()
     })
   })
 
@@ -373,7 +394,7 @@ describe('keychain', () => {
     it('can rotate keychain passphrase', async () => {
       const newPassword = 'newInsecurePassphrase'
       const keyName = 'test-key'
-      const key = await keychain.createKey(keyName, 'Ed25519')
+      const key = await keychain.generateKey(keyName)
 
       await keychain.rotateKeychainPass(newPassword)
 
@@ -422,12 +443,13 @@ describe('keychain', () => {
       const keyName = 'my custom key'
 
       it(`can create a ${type} key`, async () => {
-        const privateKey = await keychain.createKey(keyName, type)
+        const privateKey = await keychain.generateKey(keyName, {
+          type
+        })
 
         expect(privateKey).to.be.ok()
         expect(privateKey).to.have.property('code').that.is.a('number')
         expect(privateKey).to.have.property('type', type)
-        expect(privateKey).to.have.property('raw').that.is.an.instanceOf(ArrayBuffer)
 
         expect(isPrivateKey(privateKey)).to.be.true()
         expect(isPublicKey(privateKey.publicKey)).to.be.true()
@@ -450,11 +472,35 @@ describe('keychain', () => {
 
       it('can sign and verify', async () => {
         const keyName = 'my-key'
-        const privateKey = await keychain.createKey(keyName, type)
+        const privateKey = await keychain.generateKey(keyName, {
+          type
+        })
         const message = Uint8Array.from([0, 1, 2, 3, 4])
         const sig = await privateKey.sign(message)
 
         await expect(privateKey.publicKey.verify(message, sig)).to.eventually.be.true()
+      })
+
+      it('can round-trip public key to protobuf', async () => {
+        const keyName = 'my-key'
+        const privateKey = await keychain.generateKey(keyName, {
+          type
+        })
+
+        const message = Uint8Array.from([0, 1, 2, 3, 4])
+        const sig = await privateKey.sign(message)
+
+        const pb = privateKey.publicKey.toProtobuf()
+        const pbMessage = PublicKeyMessage.decode(pb)
+
+        if (pbMessage.Type == null || pbMessage.Data == null) {
+          throw new Error('PublicKeyMessage message was missing Type and/or Data')
+        }
+
+        const crypto = await getCryptoKey(pbMessage.Type)
+        const publicKey = await crypto.publicKeyFromProtobuf(pbMessage.Data)
+
+        await expect(publicKey.verify(message, sig)).to.eventually.be.true()
       })
     })
   })
@@ -474,7 +520,9 @@ describe('keychain', () => {
     const keyName = 'my custom ECDSA key'
 
     it('does not support un-configured keys', async () => {
-      await expect(keychain.createKey(keyName, 'ECDSA')).to.eventually.be.rejected
+      await expect(keychain.generateKey(keyName, {
+        type: 'ECDSA'
+      })).to.eventually.be.rejected
         .with.property('name', 'UnsupportedCryptographyImplementationError')
     })
   })
@@ -492,7 +540,6 @@ describe('keychain', () => {
       await start(keychain)
 
       libp2pKeychain = libp2pKeychainFactory()({
-        // @ts-expect-error libp2p needs new interface-datastore
         datastore,
         logger
       })
@@ -516,7 +563,9 @@ describe('keychain', () => {
 
       it(`should write ${type} libp2p keychain keys`, async () => {
         const keyName = 'my-key'
-        const heliaPrivateKey = await keychain.createKey(keyName, type)
+        const heliaPrivateKey = await keychain.generateKey(keyName, {
+          type
+        })
         const libp2pPrivateKey = await libp2pKeychain.exportKey(keyName)
 
         const message = Uint8Array.from([0, 1, 2, 3, 4])

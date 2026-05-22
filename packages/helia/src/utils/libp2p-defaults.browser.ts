@@ -14,8 +14,6 @@ import { mplex } from '@libp2p/mplex'
 import { ping } from '@libp2p/ping'
 import { webRTC, webRTCDirect } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
-import { ipnsSelector } from 'ipns/selector'
-import { ipnsValidator } from 'ipns/validator'
 import { userAgent } from 'libp2p/user-agent'
 import { name, version } from '../version.ts'
 import { bootstrapConfig } from './bootstrappers.ts'
@@ -74,13 +72,7 @@ export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOpti
       dcutr: dcutr(),
       delegatedRouting: delegatedRoutingV1HttpApiClient(delegatedHTTPRoutingDefaults()),
       dht: kadDHT({
-        clientMode: true,
-        validators: {
-          ipns: ipnsValidator
-        },
-        selectors: {
-          ipns: ipnsSelector
-        }
+        clientMode: true
       }),
       identify: identify(),
       identifyPush: identifyPush(),

@@ -1,12 +1,13 @@
 import { InvalidParametersError, InvalidPrivateKeyError } from '@libp2p/interface'
 import { CID } from 'multiformats'
+import { base58btc } from 'multiformats/bases/base58'
 import { base64 } from 'multiformats/bases/base64'
 import { identity } from 'multiformats/hashes/identity'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import { withArrayBuffer as uint8ArrayWithArrayBuffer } from 'uint8arrays/with-array-buffer'
-import { PrivateKeyMessage } from '../keychain/keys.ts'
+import { PrivateKeyMessage, PublicKeyMessage } from '../keychain/keys.ts'
 import type { Cipher, CryptoKeyImplementation, PrivateKey, PublicKey } from '@helia/interface'
 import type { AbortOptions } from 'abort-error'
 import type { MultihashDigest } from 'multiformats'
@@ -27,17 +28,23 @@ class Ed25519PublicKey implements PublicKey {
     this.raw = raw
   }
 
-  toMultihash (): MultihashDigest {
-    const buf = PrivateKeyMessage.encode({
+  toMultihash (): MultihashDigest<0x00> {
+    return identity.digest(this.toProtobuf())
+  }
+
+  toCID (): CID<unknown, 0x72, 0x00, 1> {
+    return CID.createV1(0x72, this.toMultihash())
+  }
+
+  toString (): string {
+    return base58btc.encode(this.toMultihash().bytes).substring(1)
+  }
+
+  toProtobuf (): Uint8Array<ArrayBuffer> {
+    return PublicKeyMessage.encode({
       Type: this.code,
       Data: new Uint8Array(this.raw.slice())
     })
-
-    return identity.digest(buf)
-  }
-
-  toCID (): CID<unknown, 0x72> {
-    return CID.createV1(0x72, this.toMultihash())
   }
 
   async verify (message: Uint8Array, signature: Uint8Array, options?: AbortOptions): Promise<boolean> {
@@ -53,15 +60,25 @@ class Ed25519PrivateKey implements PrivateKey {
   public type = 'Ed25519'
   public code = 1
   public raw: ArrayBuffer
-  public publicKey: PublicKey
+  public publicKey: Ed25519PublicKey
 
-  constructor (raw: ArrayBuffer, publicKey: PublicKey) {
+  constructor (raw: ArrayBuffer, publicKey: Ed25519PublicKey) {
     if (raw.byteLength < PRIVATE_KEY_LENGTH) {
       throw new InvalidPrivateKeyError(`Incorrect key length, got ${raw.byteLength} expected ${PRIVATE_KEY_LENGTH}`)
     }
 
     this.raw = truncateKey(raw)
     this.publicKey = publicKey
+  }
+
+  toProtobuf (): Uint8Array<ArrayBuffer> {
+    return PrivateKeyMessage.encode({
+      Type: this.code,
+      Data: uint8ArrayConcat([
+        new Uint8Array(this.raw.slice()),
+        new Uint8Array(this.publicKey.raw.slice())
+      ], 64)
+    })
   }
 
   async sign (message: Uint8Array, options?: AbortOptions): Promise<Uint8Array<ArrayBuffer>> {
@@ -97,22 +114,15 @@ class Ed25519Crypto implements CryptoKeyImplementation {
     return new Ed25519PrivateKey(raw.buffer, await derivePublicKey(raw.buffer, options))
   }
 
-  async publicKeyFromArray (key: ArrayBuffer | Uint8Array, options?: AbortOptions): Promise<PublicKey> {
-    const publicKey = new Ed25519PublicKey(key instanceof ArrayBuffer ? key : uint8ArrayWithArrayBuffer(key).slice().buffer)
+  async publicKeyFromProtobuf (key: Uint8Array, options?: AbortOptions): Promise<PublicKey> {
+    const publicKey = new Ed25519PublicKey(uint8ArrayWithArrayBuffer(key).slice().buffer)
     options?.signal?.throwIfAborted()
 
     return publicKey
   }
 
   async serialize (key: PrivateKey, cipher: Cipher, options?: AbortOptions): Promise<string> {
-    const buf = PrivateKeyMessage.encode({
-      Type: key.code,
-      Data: uint8ArrayConcat([
-        new Uint8Array(key.raw.slice()),
-        new Uint8Array(key.publicKey.raw.slice())
-      ], 64)
-    })
-
+    const buf = key.toProtobuf()
     const result = await cipher.encrypt(buf, options)
 
     return base64.encode(uint8ArrayConcat([
@@ -156,7 +166,7 @@ function truncateKey (input: ArrayBuffer): ArrayBuffer {
   return key
 }
 
-async function derivePublicKey (raw: ArrayBuffer, options?: AbortOptions): Promise<PublicKey> {
+async function derivePublicKey (raw: ArrayBuffer, options?: AbortOptions): Promise<Ed25519PublicKey> {
   let publicKey: ArrayBuffer
 
   // if the public key is appended to the private key, just return that

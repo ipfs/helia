@@ -6,14 +6,13 @@ import { shouldRepublish } from '../utils.ts'
 import type { IPNSRecord } from '../index.ts'
 import type { LocalStore } from '../local-store.ts'
 import type { IPNSRouting } from '../routing/index.ts'
-import type { CryptoKeyLoader, Keychain, PrivateKey } from '@helia/interface'
+import type { Keychain, PrivateKey } from '@helia/interface'
 import type { AbortOptions, ComponentLogger, Logger } from '@libp2p/interface'
 import type { RepeatingTask } from '@libp2p/utils'
 
 export interface IPNSRepublisherComponents {
   logger: ComponentLogger
   keychain: Keychain
-  getCryptoKey: CryptoKeyLoader
 }
 
 export interface IPNSRepublisherInit {
@@ -29,7 +28,6 @@ export class IPNSRepublisher {
   private readonly republishTask: RepeatingTask
   private readonly log: Logger
   private readonly keychain: Keychain
-  private readonly getCryptoKey: CryptoKeyLoader
   private started: boolean = false
   private readonly republishConcurrency: number
 
@@ -37,7 +35,6 @@ export class IPNSRepublisher {
     this.log = components.logger.forComponent('helia:ipns')
     this.localStore = init.localStore
     this.keychain = components.keychain
-    this.getCryptoKey = components.getCryptoKey
     this.republishConcurrency = init.republishConcurrency || DEFAULT_REPUBLISH_CONCURRENCY
     this.started = false
     this.routers = init.routers ?? []
@@ -96,7 +93,7 @@ export class IPNSRepublisher {
         }
         let ipnsRecord: IPNSRecord
         try {
-          ipnsRecord = await unmarshalIPNSRecord(routingKey, record, this.getCryptoKey, options)
+          ipnsRecord = await unmarshalIPNSRecord(routingKey, record, this.keychain, options)
         } catch (err: any) {
           this.log.error('error unmarshaling record - %e', err)
           continue

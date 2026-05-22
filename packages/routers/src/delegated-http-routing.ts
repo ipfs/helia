@@ -1,9 +1,9 @@
 import { delegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
 import { NotFoundError } from '@libp2p/interface'
-import { marshalIPNSRecord, multihashFromIPNSRoutingKey, unmarshalIPNSRecord } from 'ipns'
 import first from 'it-first'
 import map from 'it-map'
 import { CID } from 'multiformats/cid'
+import * as Digest from 'multiformats/hashes/digest'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { delegatedHTTPRoutingDefaults } from './utils/delegated-http-routing-defaults.ts'
@@ -50,11 +50,10 @@ class DelegatedHTTPRouter implements Routing {
       return
     }
 
-    const digest = multihashFromIPNSRoutingKey(key)
+    const digest = Digest.decode(key.slice(IPNS_PREFIX.length))
     const cid = CID.createV1(0x72, digest)
-    const record = unmarshalIPNSRecord(value)
 
-    await this.client.putIPNS(cid, record, options)
+    await this.client.putIPNS(cid, value, options)
   }
 
   async get (key: Uint8Array, options?: RoutingOptions): Promise<Uint8Array> {
@@ -62,13 +61,11 @@ class DelegatedHTTPRouter implements Routing {
       throw new NotFoundError('Not found')
     }
 
-    const digest = multihashFromIPNSRoutingKey(key)
+    const digest = Digest.decode(key.slice(IPNS_PREFIX.length))
     const cid = CID.createV1(0x72, digest)
 
     try {
-      const record = await this.client.getIPNS(cid, options)
-
-      return marshalIPNSRecord(record)
+      return await this.client.getIPNS(cid, options)
     } catch (err: any) {
       // BadResponseError is thrown when the response had no body, which means
       // the record couldn't be found
@@ -81,7 +78,7 @@ class DelegatedHTTPRouter implements Routing {
   }
 
   async findPeer (peerId: PeerId, options?: RoutingOptions): Promise<PeerInfo> {
-    const peer = await first(this.client.getPeers(peerId, options))
+    const peer = await first(this.client.getPeers(peerId.toCID(), options))
 
     if (peer != null) {
       return {

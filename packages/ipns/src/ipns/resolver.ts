@@ -7,7 +7,7 @@ import { ipnsValidator } from '../validator.ts'
 import type { IPNSRecord, ResolveOptions, ResolveResult } from '../index.ts'
 import type { LocalStore } from '../local-store.ts'
 import type { IPNSRouting } from '../routing/index.ts'
-import type { Routing, CryptoKeyLoader } from '@helia/interface'
+import type { Routing, Keychain } from '@helia/interface'
 import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
@@ -16,7 +16,7 @@ export interface IPNSResolverComponents {
   datastore: Datastore
   routing: Routing
   logger: ComponentLogger
-  getCryptoKey: CryptoKeyLoader
+  keychain: Keychain
 }
 
 export interface IPNResolverInit {
@@ -28,13 +28,13 @@ export class IPNSResolver {
   public readonly routers: IPNSRouting[]
   private readonly localStore: LocalStore
   private readonly log: Logger
-  private getCryptoKey: CryptoKeyLoader
+  private keychain: Keychain
 
   constructor (components: IPNSResolverComponents, init: IPNResolverInit) {
     this.log = components.logger.forComponent('helia:ipns')
     this.localStore = init.localStore
     this.routers = init.routers
-    this.getCryptoKey = components.getCryptoKey
+    this.keychain = components.keychain
   }
 
   async * resolve (key: MultihashDigest, options: ResolveOptions = {}): AsyncGenerator<ResolveResult> {
@@ -74,7 +74,7 @@ export class IPNSResolver {
           this.log('record retrieved from cache')
 
           // unmarshal the record
-          const ipnsRecord = await unmarshalIPNSRecord(routingKey, marshaledIPNSRecord, this.getCryptoKey, options)
+          const ipnsRecord = await unmarshalIPNSRecord(routingKey, marshaledIPNSRecord, this.keychain, options)
 
           // validate the record
           await ipnsValidator(ipnsRecord, options)
@@ -144,7 +144,7 @@ export class IPNSResolver {
           // unmarshal ensures that (1) SignatureV2 and Data are present, (2) that ValidityType
           // and Validity are of valid types and have a value, (3) that CBOR data matches protobuf
           // if it's a V1+V2 record
-          const record = await unmarshalIPNSRecord(routingKey, marshaledIPNSRecord, this.getCryptoKey, options)
+          const record = await unmarshalIPNSRecord(routingKey, marshaledIPNSRecord, this.keychain, options)
 
           await ipnsValidator(record, options)
 

@@ -64,7 +64,6 @@ describe('@helia/ipns - http', () => {
     })
 
     const key = peerIdFromCID(CID.parse(res.name))
-    // @ts-expect-error @libp2p/peer-id needs new multiformats
     const result = await last(name.resolve(key.toMultihash()))
 
     if (result == null) {

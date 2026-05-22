@@ -211,11 +211,7 @@ const _create = async (privateKey: PrivateKey, value: Uint8Array, seq: number | 
   const data = createCborData(value, validityType, isoValidity, seq, ttl)
   const sigData = ipnsRecordDataForV2Sig(data)
   const signatureV2 = await privateKey.sign(sigData, options)
-  const publicKey = privateKey.publicKey
-
-  // if we cannot derive the public key from the IPNS name (e.g. RSA PeerIDs),
-  // we have to embed it in the IPNS record
-
+  const publicKey = shouldEmbedPublicKey(privateKey.publicKey) ? privateKey.publicKey : undefined
   let record: any
 
   if (options.v1Compatible === true) {
@@ -267,4 +263,11 @@ const signLegacyV1 = async (privateKey: PrivateKey, value: Uint8Array, validityT
     log.error('record signature creation failed', error)
     throw new SignatureCreationError('Record signature creation failed')
   }
+}
+
+/**
+ * Returns true if the public key multihash is not an identity hash
+ */
+function shouldEmbedPublicKey (key: PublicKey): boolean {
+  return key.toMultihash().code !== 0
 }

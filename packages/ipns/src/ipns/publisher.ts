@@ -1,4 +1,4 @@
-import { base58btc } from 'multiformats/bases/base58'
+import { base36 } from 'multiformats/bases/base36'
 import { CustomProgressEvent } from 'progress-events'
 import { DEFAULT_LIFETIME_MS, DEFAULT_TTL_NS } from '../constants.ts'
 import { createIPNSRecord } from '../records.ts'
@@ -6,7 +6,7 @@ import { marshalIPNSRecord, multihashToIPNSRoutingKey, unmarshalIPNSRecord } fro
 import type { PublishResult, PublishOptions } from '../index.ts'
 import type { LocalStore } from '../local-store.ts'
 import type { IPNSRouting } from '../routing/index.ts'
-import type { CryptoKeyLoader, Keychain, PrivateKey } from '@helia/interface'
+import type { Keychain, PrivateKey } from '@helia/interface'
 import type { AbortOptions, ComponentLogger } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 
@@ -14,7 +14,6 @@ export interface IPNSPublisherComponents {
   datastore: Datastore
   logger: ComponentLogger
   keychain: Keychain
-  getCryptoKey: CryptoKeyLoader
 }
 
 export interface IPNSPublisherInit {
@@ -26,13 +25,11 @@ export class IPNSPublisher {
   public readonly routers: IPNSRouting[]
   private readonly localStore: LocalStore
   private readonly keychain: Keychain
-  private readonly getCryptoKey: CryptoKeyLoader
 
   constructor (components: IPNSPublisherComponents, init: IPNSPublisherInit) {
     this.keychain = components.keychain
     this.localStore = init.localStore
     this.routers = init.routers
-    this.getCryptoKey = components.getCryptoKey
   }
 
   async publish (keyName: string, value: Uint8Array, options: PublishOptions = {}): Promise<PublishResult> {
@@ -45,7 +42,7 @@ export class IPNSPublisher {
       if (await this.localStore.has(routingKey, options)) {
         // if we have published under this key before, increment the sequence number
         const { record } = await this.localStore.get(routingKey, options)
-        const existingRecord = await unmarshalIPNSRecord(routingKey, record, this.getCryptoKey, options)
+        const existingRecord = await unmarshalIPNSRecord(routingKey, record, this.keychain, options)
         sequenceNumber = existingRecord.sequence + 1n
       }
 
@@ -66,9 +63,12 @@ export class IPNSPublisher {
       }
 
       return {
-        record,
-        name: `/ipns/${base58btc.encode(digest.bytes)}`,
-        publicKey: record.publicKey
+        record: {
+          ...record,
+          publicKey: key.publicKey
+        },
+        name: `/ipns/${key.publicKey.toCID().toString(base36)}`,
+        publicKey: key.publicKey
       }
     } catch (err: any) {
       options.onProgress?.(new CustomProgressEvent<Error>('ipns:publish:error', err))
@@ -86,7 +86,7 @@ export class IPNSPublisher {
     } catch (err: any) {
       if (err.name === 'NotFoundError') {
         // create a new key
-        return this.keychain.createKey(keyName, 'Ed25519', options)
+        return this.keychain.generateKey(keyName, options)
       } else {
         throw err
       }

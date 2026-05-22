@@ -6,7 +6,7 @@ import { path } from 'kubo'
 /** @type {import('aegir').PartialOptions} */
 export default {
   test: {
-    files: './dist/src/*.spec.js',
+    files: './src/*.spec.ts',
     before: async (options) => {
       if (options.runner !== 'node') {
         const ipfsdPort = await getPort()

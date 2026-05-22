@@ -59,20 +59,20 @@ describe('pubsub routing', () => {
       }
     })
 
-    pubsubRouter = new PubSubRouting({
-      datastore,
-      logger,
-      libp2p,
-      getCryptoKey
-    })
-
     keychain = new Keychain({
       datastore,
       logger,
       getCryptoKey
     })
 
-    privateKey = await keychain.createKey('test-key', 'Ed25519')
+    pubsubRouter = new PubSubRouting({
+      datastore,
+      logger,
+      libp2p,
+      keychain
+    })
+
+    privateKey = await keychain.generateKey('test-key')
     routingKey = multihashToIPNSRoutingKey(privateKey.publicKey.toMultihash())
     topic = `/record/${toString(routingKey, 'base64url')}`
     record = await createIPNSRecord(privateKey, uint8ArrayFromString('/test'), 1n, DEFAULT_LIFETIME_MS)
@@ -146,7 +146,7 @@ describe('pubsub routing', () => {
         await delay(100)
 
         const result = await store.get(routingKey)
-        const updatedRecord = await unmarshalIPNSRecord(routingKey, result.record, getCryptoKey)
+        const updatedRecord = await unmarshalIPNSRecord(routingKey, result.record, keychain)
         expect(updatedRecord.sequence).to.equal(2n)
         expect(uint8ArrayToString(updatedRecord.value)).to.equal('/test2')
       })

@@ -1,4 +1,4 @@
-import type { PrivateKey } from './index.ts'
+import type { PrivateKey, PublicKey } from './index.ts'
 import type { AbortOptions } from 'abort-error'
 
 export interface KeyInfo {
@@ -18,12 +18,22 @@ export interface KeyInfo {
   type?: 'Ed25519' | 'RSA' | string
 }
 
+export interface GenerateKeyOptions extends AbortOptions, Record<string, any> {
+  /**
+   * The type of key to generate
+   *
+   * @default 'Ed25519'
+   */
+  type?: 'Ed25519' | 'RSA' | string
+}
+
 export interface Keychain {
   /**
    * Create a key of the passed type and store it under the specified name. A
-   * cryptography implementation must be configured for the key type.
+   * cryptography implementation must be configured for the key type (defaults
+   * to Ed25519).
    */
-  createKey (name: string, type: 'Ed25519' | 'RSA' | string, options?: AbortOptions & Record<string, any>): Promise<PrivateKey>
+  generateKey (name: string, options?: AbortOptions & Record<string, any>): Promise<PrivateKey>
 
   /**
    * Import a new private key.
@@ -104,4 +114,10 @@ export interface Keychain {
    * ```
    */
   rotateKeychainPass(password: string, options?: AbortOptions): Promise<void>
+
+  /**
+   * Attempts to load a public key from a serialized protobuf message conforming
+   * to the `PublicKey` message.
+   */
+  loadPublicKeyFromProtobuf (buf: Uint8Array, options?: AbortOptions): Promise<PublicKey>
 }

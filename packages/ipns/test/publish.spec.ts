@@ -248,7 +248,14 @@ describe('publish', () => {
 
       const progressEvents: any[] = []
 
-      const putStub = Sinon.stub(result.datastore, 'get').rejects(new Error('Storage error'))
+      const originalGet = result.datastore.get.bind(result.datastore)
+      const getStub = Sinon.stub(result.datastore, 'get').callsFake(async (key, options) => {
+        if (key.toString().startsWith('/dht/record')) {
+          throw new Error('Storage error')
+        }
+
+        return originalGet(key, options)
+      })
       const hasStub = Sinon.stub(result.datastore, 'has').resolves(false)
 
       const keyName = 'test-key-progress-error'
@@ -257,8 +264,8 @@ describe('publish', () => {
         onProgress: (evt) => progressEvents.push(evt)
       })).to.be.rejectedWith('Storage error')
 
-      expect(hasStub.called).to.be.true()
-      expect(putStub.called).to.be.true()
+      expect(hasStub.called).to.be.true('has stub was not called')
+      expect(getStub.called).to.be.true('get stub was not called')
 
       // Check if error progress event was emitted by localStore
       const errorEvent = progressEvents.find(evt => evt.type === 'ipns:routing:datastore:error')

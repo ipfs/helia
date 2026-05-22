@@ -13,9 +13,8 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { DHT_EXPIRY_MS, REPUBLISH_THRESHOLD } from './constants.ts'
 import { InvalidEmbeddedPublicKeyError, InvalidRecordDataError, InvalidValueError, RecordTooLargeError, SignatureVerificationError, UnsupportedValidityError } from './errors.ts'
 import { IpnsEntry } from './pb/ipns.ts'
-import { PublicKey as PublicKeyPB } from './pb/keys.ts'
 import type { IPNSRecord, IPNSRecordV2, IPNSRecordData } from './records.ts'
-import type { CryptoKeyLoader, PublicKey } from '@helia/interface'
+import type { PublicKey, Keychain } from '@helia/interface'
 import type { AbortOptions } from '@libp2p/interface'
 import type { MultibaseDecoder } from 'multiformats/cid'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
@@ -126,20 +125,20 @@ export function marshalIPNSRecord (obj: IPNSRecord | IPNSRecordV2): Uint8Array {
       validity: uint8ArrayFromString(obj.validity),
       sequence: obj.sequence,
       ttl: obj.ttl,
-      publicKey: obj.publicKey?.raw != null ? new Uint8Array(obj.publicKey.raw) : undefined,
+      publicKey: obj.publicKey?.toProtobuf(),
       signatureV2: obj.signatureV2,
       data: obj.data
     })
   } else {
     return IpnsEntry.encode({
-      publicKey: obj.publicKey?.raw != null ? new Uint8Array(obj.publicKey.raw) : undefined,
+      publicKey: obj.publicKey?.toProtobuf(),
       signatureV2: obj.signatureV2,
       data: obj.data
     })
   }
 }
 
-export async function unmarshalIPNSRecord (routingKey: Uint8Array, marshalledRecord: Uint8Array, getCryptoKey: CryptoKeyLoader, options?: AbortOptions): Promise<IPNSRecord> {
+export async function unmarshalIPNSRecord (routingKey: Uint8Array, marshalledRecord: Uint8Array, keychain: Keychain, options?: AbortOptions): Promise<IPNSRecord> {
   if (marshalledRecord.byteLength > MAX_RECORD_SIZE) {
     throw new RecordTooLargeError('The record is too large')
   }
@@ -160,22 +159,15 @@ export async function unmarshalIPNSRecord (routingKey: Uint8Array, marshalledRec
 
   // try to extract public key from routing key
   const routingMultihash = multihashFromIPNSRoutingKey(routingKey)
-  let publicKeyPb: PublicKeyPB | undefined
 
   // identity hash
   if (isCodec(routingMultihash, 0x0)) {
-    publicKeyPb = PublicKeyPB.decode(routingMultihash.digest)
+    publicKey = await keychain.loadPublicKeyFromProtobuf(routingMultihash.digest, options)
   }
 
   // otherwise try to load key from message
-  if (publicKeyPb == null && message.publicKey != null) {
-    publicKeyPb = PublicKeyPB.decode(message.publicKey)
-  }
-
-  // load key implementation
-  if (publicKeyPb?.Type != null && publicKeyPb?.Data != null) {
-    const crypto = await getCryptoKey(publicKeyPb.Type, options)
-    publicKey = await crypto.publicKeyFromArray(publicKeyPb.Data)
+  if (publicKey == null && message.publicKey != null) {
+    publicKey = await keychain.loadPublicKeyFromProtobuf(message.publicKey, options)
   }
 
   if (publicKey == null) {
@@ -267,30 +259,6 @@ export function parseCborData (buf: Uint8Array): IPNSRecordData {
   }
 
   return data
-}
-
-export function normalizeByteValue (value: Uint8Array): string {
-  const string = uint8ArrayToString(value).trim()
-
-  // if we have a path, check it is a valid path
-  if (string.startsWith('/')) {
-    return string
-  }
-
-  // try parsing what we have as CID bytes or a CID string
-  try {
-    return `/ipfs/${CID.decode(value).toV1().toString()}`
-  } catch {
-    // fall through
-  }
-
-  try {
-    return `/ipfs/${CID.parse(string).toV1().toString()}`
-  } catch {
-    // fall through
-  }
-
-  throw new InvalidValueError('Value must be a valid content path starting with /')
 }
 
 /**

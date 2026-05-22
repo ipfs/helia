@@ -46,8 +46,10 @@ export async function createHeliaNode (libp2pOptions?: Libp2pOptions): Promise<H
   delete defaults.services.autoNAT
   // @ts-expect-error services.dcutr is not optional
   delete defaults.services.dcutr
-  // @ts-expect-error services.delegatedRouting is not optional
-  delete defaults.services.delegatedRouting
+  // @ts-expect-error services.delegatedContentRouting is not optional
+  delete defaults.services.delegatedContentRouting
+  // @ts-expect-error services.delegatedPeerRouting is not optional
+  delete defaults.services.delegatedPeerRouting
 
   return createHelia<Libp2p<DefaultLibp2pServices>>({
     blockBrokers: [

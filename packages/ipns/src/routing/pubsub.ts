@@ -17,7 +17,7 @@ import { IPNS_STRING_PREFIX, unmarshalIPNSRecord } from '../utils.ts'
 import { ipnsValidator } from '../validator.ts'
 import type { GetOptions, IPNSRouting, PutOptions } from './index.ts'
 import type { LocalStore } from '../local-store.ts'
-import type { CryptoKeyLoader } from '@helia/interface'
+import type { Keychain } from '@helia/interface'
 import type { Fetch } from '@libp2p/fetch'
 import type { PeerId, PublicKey, TypedEventTarget, ComponentLogger, Startable, AbortOptions, Metrics, Libp2p } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
@@ -63,7 +63,7 @@ export interface PubSub extends TypedEventTarget<PubSubEvents> {
 export interface PubsubRoutingComponents {
   datastore: Datastore
   logger: ComponentLogger
-  getCryptoKey: CryptoKeyLoader
+  keychain: Keychain
   metrics?: Metrics
   libp2p: Pick<Libp2p<{ pubsub: PubSub, fetch?: Fetch }>, 'peerId' | 'register' | 'unregister' | 'services'>
 }
@@ -107,7 +107,7 @@ export class PubSubRouting implements IPNSRouting, Startable {
   private readonly fetchPeers: PeerSet
   private shutdownController: AbortController
   private fetchTopologyId?: string
-  private getCryptoKey: CryptoKeyLoader
+  private keychain: Keychain
 
   constructor (components: PubsubRoutingComponents, init: PubsubRoutingInit = {}) {
     this.subscriptions = new Set()
@@ -118,7 +118,7 @@ export class PubSubRouting implements IPNSRouting, Startable {
     this.libp2p = components.libp2p
     this.fetchConcurrency = init.fetchConcurrency ?? 8
     this.fetchDelay = init.fetchDelay ?? 0
-    this.getCryptoKey = components.getCryptoKey
+    this.keychain = components.keychain
 
     // default libp2p-fetch timeout is 10 seconds - we should have an existing
     // connection to the peer so this can be shortened
@@ -239,13 +239,13 @@ export class PubSubRouting implements IPNSRouting, Startable {
   }
 
   async #handleRecord (topic: string, routingKey: Uint8Array, marshalledRecord: Uint8Array, publish: boolean, options?: AbortOptions): Promise<Uint8Array> {
-    const record = await unmarshalIPNSRecord(routingKey, marshalledRecord, this.getCryptoKey, options)
+    const record = await unmarshalIPNSRecord(routingKey, marshalledRecord, this.keychain, options)
     await ipnsValidator(record, options)
     this.shutdownController.signal.throwIfAborted()
 
     if (await this.localStore.has(routingKey)) {
       const { record: marshaledCurrentRecord } = await this.localStore.get(routingKey, options)
-      const currentRecord = await unmarshalIPNSRecord(routingKey, marshaledCurrentRecord, this.getCryptoKey, options)
+      const currentRecord = await unmarshalIPNSRecord(routingKey, marshaledCurrentRecord, this.keychain, options)
 
       if (uint8ArrayEquals(marshaledCurrentRecord, record.bytes)) {
         log.trace('found identical record for %m', routingKey)
@@ -370,7 +370,7 @@ export class PubSubRouting implements IPNSRouting, Startable {
    */
   cancel (key: PublicKey | MultihashDigest<0x00 | 0x12>): void {
     const digest = isPublicKey(key) ? key.toMultihash() : key
-    // @ts-expect-error @libp2p/crypto needs new multiformats
+    // @ ts-expect-error @libp2p/crypto needs new multiformats
     const routingKey = multihashToIPNSRoutingKey(digest)
     const topic = keyToTopic(routingKey)
 

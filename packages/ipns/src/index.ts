@@ -151,7 +151,7 @@ import { localStoreRouting } from './routing/local-store.ts'
 import type { IPNSResolverComponents } from './ipns/resolver.ts'
 import type { IPNSRecord } from './records.ts'
 import type { IPNSRouting, IPNSRoutingProgressEvents } from './routing/index.ts'
-import type { Routing, HeliaEvents, CryptoKeyLoader, Keychain, PublicKey } from '@helia/interface'
+import type { Routing, HeliaEvents, Keychain, PublicKey } from '@helia/interface'
 import type { ComponentLogger, TypedEventEmitter } from '@libp2p/interface'
 import type { AbortOptions } from 'abort-error'
 import type { Datastore } from 'interface-datastore'
@@ -328,7 +328,6 @@ export interface IPNSComponents {
   logger: ComponentLogger
   keychain: Keychain
   events: TypedEventEmitter<HeliaEvents> // Helia event bus
-  getCryptoKey: CryptoKeyLoader
 }
 
 export interface IPNSOptions {

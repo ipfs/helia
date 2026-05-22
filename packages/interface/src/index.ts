@@ -42,18 +42,13 @@ export interface PublicKey {
   /**
    * The type of the crypto implementation, e.g. `Ed15519`
    */
-  type: string
+  readonly type: string
 
   /**
    * The code that is used as the `Type` field in the protobuf representation of
    * the public/private keys
    */
-  code: number
-
-  /**
-   * The raw public key
-   */
-  raw: ArrayBuffer
+  readonly code: number
 
   /**
    * Return a MultihashDigest that represents this key
@@ -63,7 +58,12 @@ export interface PublicKey {
   /**
    * Return the libp2p-key CID that represents this key
    */
-  toCID (): CID<unknown, 0x72>
+  toCID (): CID<unknown, 0x72, number, 1>
+
+  /**
+   * Return this key encoded as a protobuf PublicKey message
+   */
+  toProtobuf (): Uint8Array<ArrayBuffer>
 
   /**
    * Verify the passed message against it's signature
@@ -83,23 +83,23 @@ export interface PrivateKey {
   /**
    * The type of the crypto implementation, e.g. `Ed15519`
    */
-  type: string
+  readonly type: string
 
   /**
    * The code that is used as the `Type` field in the protobuf representation of
    * the public/private keys
    */
-  code: number
-
-  /**
-   * The raw private key
-   */
-  raw: ArrayBuffer
+  readonly code: number
 
   /**
    * The public key that corresponds to this private key
    */
-  publicKey: PublicKey
+  readonly publicKey: PublicKey
+
+  /**
+   * Return this key encoded as a protobuf PrivateKey message
+   */
+  toProtobuf (): Uint8Array<ArrayBuffer>
 
   /**
    * Sign the passed message and return a signature
@@ -154,7 +154,7 @@ export interface CryptoKeyImplementation {
    * Convert the passed bytes into a public key. The bytes come from the `.Data`
    * field of a `PublicKey` protobuf message.
    */
-  publicKeyFromArray(key: ArrayBuffer | Uint8Array, options?: AbortOptions): PublicKey | Promise<PublicKey>
+  publicKeyFromProtobuf(buf: Uint8Array, options?: AbortOptions): PublicKey | Promise<PublicKey>
 
   /**
    * Convert a private key into a string suitable for storing in a datastore

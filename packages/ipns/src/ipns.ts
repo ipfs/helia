@@ -61,6 +61,26 @@ export class IPNS implements IPNSInterface, Startable {
     if (this.started) {
       this.republisher.start()
     }
+
+    for (const component of Object.values(this.components)) {
+      if (isLibp2p(component)) {
+        for (const service of Object.values(component.services)) {
+          if (isKadDHT(service)) {
+            // @ ts-expect-error https://github.com/libp2p/js-libp2p/pull/3506
+            service.selectors.ipns = async (key: Uint8Array, values: Uint8Array[]): Promise<number> => {
+              const records = await Promise.all(values.map(buf => unmarshalIPNSRecord(key, buf, this.components.keychain)))
+
+              return ipnsSelector(key, records)
+            }
+
+            service.validators.ipns = async (key: Uint8Array, value: Uint8Array): Promise<void> => {
+              const record = await unmarshalIPNSRecord(key, value, this.components.keychain)
+              await ipnsValidator(record)
+            }
+          }
+        }
+      }
+    }
   }
 
   start (): void {
@@ -70,26 +90,6 @@ export class IPNS implements IPNSInterface, Startable {
 
     this.started = true
     this.republisher.start()
-
-    for (const component of Object.values(this.components)) {
-      if (isLibp2p(component)) {
-        for (const service of Object.values(component.services)) {
-          if (isKadDHT(service)) {
-            // @ts-expect-error https://github.com/libp2p/js-libp2p/pull/3506
-            service.selectors.ipns = async (key: Uint8Array, values: Uint8Array[]): Promise<number> => {
-              const records = await Promise.all(values.map(buf => unmarshalIPNSRecord(key, buf, this.components.getCryptoKey)))
-
-              return ipnsSelector(key, records)
-            }
-
-            service.validators.ipns = async (key: Uint8Array, value: Uint8Array): Promise<void> => {
-              const record = await unmarshalIPNSRecord(key, value, this.components.getCryptoKey)
-              await ipnsValidator(record)
-            }
-          }
-        }
-      }
-    }
   }
 
   stop (): void {
