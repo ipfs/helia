@@ -333,6 +333,7 @@ function privateJWKToPublicJWK (jwk: JsonWebKey): JsonWebKey {
     alg: 'RS256',
     kty: 'RSA',
     n: jwk.n,
+    // cspell:ignore AQAB
     e: 'AQAB'
   }
 }
