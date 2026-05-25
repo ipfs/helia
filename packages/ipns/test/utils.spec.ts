@@ -142,6 +142,7 @@ describe('utils', () => {
       },
       'v1 Libp2p Key CID': {
         input: CID.parse('bafzaajqaeqeaceralaazlm56u23dyhpm7ztoo5x4dcus2ghpqwedhoezk4h6yijbl6rq'),
+        // spellchecker:disable-next-line
         output: '/ipns/k73ap3wtp70r7cd9ofyhwgogv1j96huvtvfnsof5spyfaaopkxmonumi4fckgguqr'
       },
 
@@ -151,21 +152,26 @@ describe('utils', () => {
         output: '/ipfs/bafybeidvkqhl6dwsdzx5km7tupo33ywt7czkl5topwogxx6lybko2d7pua/docs/readme.md'
       },
       '/ipns/CID path': {
+        // spellchecker:disable-next-line
         input: '/ipns/k51qzi5uqu5djni72pr40dt64kxlh0zb8baat8h7dtdvkov66euc2lho0oidr3',
+        // spellchecker:disable-next-line
         output: '/ipns/k51qzi5uqu5djni72pr40dt64kxlh0zb8baat8h7dtdvkov66euc2lho0oidr3'
       },
 
       // peer id input
       'Ed25519 Multihash': {
         input: Digest.decode(base58btc.decode('z12D3KooWKBpVwnRACfEsk6QME7dA5CZnFYVHQ7Zc927BEzuUekQe')),
+        // spellchecker:disable-next-line
         output: '/ipns/k0cllw0ah15bk13xeuy5m069zagn1tm7xh8fdaxu4uou6aep7ognucwiyan'
       },
       'secp256k1 PeerId': {
         input: Digest.decode(base58btc.decode('z16Uiu2HAkyBsAs6fPyJYVNq3pUDFxyFnUPTQYL2JpLMEViMUwEnp2')),
+        // spellchecker:disable-next-line
         output: '/ipns/k02k36k9symzr5c1hh3qclohff3q3ngnvc6nofpky1m1qs9urmhgx9ncre4eb'
       },
       'RSA PeerId': {
         input: Digest.decode(base58btc.decode('zQmPofjNRgPN3ndH5RbcSr3X5EekvpCRsUw1E8ji8kJaQJa')),
+        // spellchecker:disable-next-line
         output: '/ipns/kmue6a9clea7464nfp4yp4vmr7tk4bzbrihafi004r81kmcyhlmrz'
       },
 

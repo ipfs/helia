@@ -330,17 +330,17 @@ describe('records', function () {
     const routingKey = multihashToIPNSRoutingKey(privateKey.publicKey.toMultihash())
     const createdRecord = await createIPNSRecord(privateKey, contentPath, sequence, validity)
 
-    const marshalledData = marshalIPNSRecord(createdRecord)
-    const unmarshalledData = await unmarshalIPNSRecord(routingKey, marshalledData, keychain)
+    const marshaledData = marshalIPNSRecord(createdRecord)
+    const unmarshaledData = await unmarshalIPNSRecord(routingKey, marshaledData, keychain)
 
-    expect(createdRecord.value).to.equal(unmarshalledData.value)
-    expect(createdRecord.validity.toString()).to.equal(unmarshalledData.validity.toString())
-    expect(createdRecord.validityType).to.equal(unmarshalledData.validityType)
-    expect(createdRecord.signatureV1).to.equalBytes('signatureV1' in unmarshalledData ? unmarshalledData.signatureV1 : new Uint8Array(0))
-    expect(createdRecord.sequence).to.equal(unmarshalledData.sequence)
-    expect(createdRecord.ttl).to.equal(unmarshalledData.ttl)
-    expect(createdRecord.signatureV2).to.equalBytes(unmarshalledData.signatureV2)
-    expect(createdRecord.data).to.equalBytes(unmarshalledData.data)
+    expect(createdRecord.value).to.equal(unmarshaledData.value)
+    expect(createdRecord.validity.toString()).to.equal(unmarshaledData.validity.toString())
+    expect(createdRecord.validityType).to.equal(unmarshaledData.validityType)
+    expect(createdRecord.signatureV1).to.equalBytes('signatureV1' in unmarshaledData ? unmarshaledData.signatureV1 : new Uint8Array(0))
+    expect(createdRecord.sequence).to.equal(unmarshaledData.sequence)
+    expect(createdRecord.ttl).to.equal(unmarshaledData.ttl)
+    expect(createdRecord.signatureV2).to.equalBytes(unmarshaledData.signatureV2)
+    expect(createdRecord.data).to.equalBytes(unmarshaledData.data)
 
     await ipnsValidator(createdRecord)
   })
@@ -447,12 +447,12 @@ describe('records', function () {
     // uses microsecond precision. The value is a timestamp as defined by
     // rfc3339 which doesn't have a strong opinion on fractions of seconds so
     // both are valid but we must be able to round trip them intact.
-    const unmarshalled = await unmarshalIPNSRecord(routingKey, kuboRecord.bytes, keychain)
-    const remarhshalled = marshalIPNSRecord(unmarshalled)
+    const unmarshaled = await unmarshalIPNSRecord(routingKey, kuboRecord.bytes, keychain)
+    const reMarshaled = marshalIPNSRecord(unmarshaled)
 
-    const reUnmarshalled = await unmarshalIPNSRecord(routingKey, remarhshalled, keychain)
+    const reUnmarshaled = await unmarshalIPNSRecord(routingKey, reMarshaled, keychain)
 
-    expect(unmarshalled).to.deep.equal(reUnmarshalled)
-    expect(remarhshalled).to.equalBytes(kuboRecord.bytes)
+    expect(unmarshaled).to.deep.equal(reUnmarshaled)
+    expect(reMarshaled).to.equalBytes(kuboRecord.bytes)
   })
 })

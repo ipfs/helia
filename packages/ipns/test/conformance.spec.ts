@@ -1,6 +1,5 @@
 import { Keychain } from '@helia/utils'
 import { defaultLogger } from '@libp2p/logger'
-import { peerIdFromCID } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import loadFixture from 'aegir/fixtures'
 import { MemoryDatastore } from 'datastore-core'
@@ -36,12 +35,6 @@ describe('conformance', function () {
     const buf = loadFixture(`test/fixtures/${cid.toString(base36)}_v1-v2.ipns-record`)
     const routingKey = multihashToIPNSRoutingKey(cid.multihash)
     const record = await unmarshalIPNSRecord(routingKey, buf, keychain)
-
-    const peerId = peerIdFromCID(cid)
-
-    if (peerId.publicKey == null) {
-      throw new Error('Peer ID embedded in CID had no public key')
-    }
 
     await ipnsValidator(record)
 
@@ -94,6 +87,7 @@ describe('conformance', function () {
       fixture: 'test/fixtures/k51qzi5uqu5dlkw8pxuw9qmqayfdeh4kfebhmreauqdc6a7c3y7d5i9fi8mk9w_v1-v2.ipns-record'
     }, {
       cid: CID.parse('k51qzi5uqu5diamp7qnnvs1p1gzmku3eijkeijs3418j23j077zrkok63xdm8c'),
+      // spellchecker:disable-next-line
       fixture: 'test/fixtures/k51qzi5uqu5diamp7qnnvs1p1gzmku3eijkeijs3418j23j077zrkok63xdm8c_v1-v2-broken-signature-v2.ipns-record'
     }, {
       cid: CID.parse('k51qzi5uqu5dilgf7gorsh9vcqqq4myo6jd4zmqkuy9pxyxi5fua3uf7axph4y'),
