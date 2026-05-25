@@ -105,7 +105,7 @@ class Ed25519Crypto implements CryptoKeyImplementation {
   type = 'Ed25519'
   code = 1
 
-  async createPrivateKey (options?: AbortOptions & Record<string, any>): Promise<PrivateKey> {
+  async generatePrivateKey (options?: AbortOptions & Record<string, any>): Promise<PrivateKey> {
     const key = await crypto.subtle.generateKey('Ed25519', true, ['sign', 'verify'])
     const buf = await crypto.subtle.exportKey('pkcs8', key.privateKey)
 

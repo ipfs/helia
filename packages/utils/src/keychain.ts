@@ -231,7 +231,7 @@ export class Keychain implements KeychainInterface {
 
   async generateKey (name: string, options?: GenerateKeyOptions): Promise<PrivateKey> {
     const crypto = await this.components.getCryptoKey(options?.type ?? 'Ed25519', options)
-    const key = await crypto.createPrivateKey(options)
+    const key = await crypto.generatePrivateKey(options)
 
     return this.importKey(name, key, options)
   }

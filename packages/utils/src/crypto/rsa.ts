@@ -118,7 +118,7 @@ class RSACrypto implements CryptoKeyImplementation {
   public type = 'RSA'
   public code = 0
 
-  async createPrivateKey (options?: CreateRSAPrivateKeyOptions): Promise<PrivateKey> {
+  async generatePrivateKey (options?: CreateRSAPrivateKeyOptions): Promise<PrivateKey> {
     const keypair = await crypto.subtle.generateKey({
       name: 'RSASSA-PKCS1-v1_5',
       modulusLength: options?.bits ?? 2048,

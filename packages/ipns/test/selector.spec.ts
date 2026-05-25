@@ -12,7 +12,7 @@ describe('selector', function () {
 
   before(async () => {
     const crypto = rsaCrypto()
-    privateKey = await crypto.createPrivateKey()
+    privateKey = await crypto.generatePrivateKey()
   })
 
   it('should use validator.select to select the record with the highest sequence number', async () => {

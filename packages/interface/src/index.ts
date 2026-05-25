@@ -148,7 +148,7 @@ export interface CryptoKeyImplementation {
   /**
    * Create a new private key
    */
-  createPrivateKey(options?: AbortOptions & Record<string, any>): Promise<PrivateKey>
+  generatePrivateKey(options?: AbortOptions & Record<string, any>): Promise<PrivateKey>
 
   /**
    * Convert the passed bytes into a public key. The bytes come from the `.Data`

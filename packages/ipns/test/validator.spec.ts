@@ -19,8 +19,8 @@ describe('validator', function () {
 
   before(async () => {
     const crypto = rsaCrypto()
-    privateKey1 = await crypto.createPrivateKey()
-    privateKey2 = await crypto.createPrivateKey()
+    privateKey1 = await crypto.generatePrivateKey()
+    privateKey2 = await crypto.generatePrivateKey()
     keychain = new Keychain({
       datastore: new MemoryDatastore(),
       logger: defaultLogger(),

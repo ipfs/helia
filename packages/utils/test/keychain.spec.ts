@@ -47,7 +47,7 @@ describe('keychain', () => {
     await start(keychain)
 
     const crypto = await getCryptoKey('Ed25519')
-    const privateKey = await crypto.createPrivateKey()
+    const privateKey = await crypto.generatePrivateKey()
 
     await keychain.importKey(selfKey, privateKey)
     await expect(keychain.removeKey(selfKey)).to.eventually.be.rejected()
@@ -124,7 +124,7 @@ describe('keychain', () => {
     const name = `key-${Math.random()}`
 
     const crypto = await getCryptoKey('Ed25519')
-    const privateKey = await crypto.createPrivateKey()
+    const privateKey = await crypto.generatePrivateKey()
     await keychainWithPassword.importKey(name, privateKey)
 
     let keys = await all(keychainWithoutPassword.listKeys())
@@ -457,7 +457,7 @@ describe('keychain', () => {
 
       it('can export/import a key', async () => {
         const crypto = await getCryptoKey(type)
-        const privateKey = await crypto.createPrivateKey()
+        const privateKey = await crypto.generatePrivateKey()
 
         await keychain.importKey(keyName, privateKey)
 

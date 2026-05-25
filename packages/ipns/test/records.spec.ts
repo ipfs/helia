@@ -25,7 +25,7 @@ describe('records', function () {
 
   before(async () => {
     const crypto = rsaCrypto()
-    privateKey = await crypto.createPrivateKey()
+    privateKey = await crypto.generatePrivateKey()
     keychain = new Keychain({
       datastore: new MemoryDatastore(),
       logger: defaultLogger(),
@@ -193,7 +193,7 @@ describe('records', function () {
 
   it('should normalize value when creating a recursive ipns record (Ed25519 public key)', async () => {
     const crypto = ed25519Crypto()
-    const otherKey = await crypto.createPrivateKey()
+    const otherKey = await crypto.generatePrivateKey()
     const expectedValue = normalizeValue(otherKey.publicKey)
     const record = await createIPNSRecord(privateKey, expectedValue, 0, 1000000)
     expect(record.value).to.equal(expectedValue)
@@ -201,7 +201,7 @@ describe('records', function () {
 
   it('should normalize value when creating a recursive ipns record (RSA public key)', async () => {
     const crypto = rsaCrypto()
-    const otherKey = await crypto.createPrivateKey()
+    const otherKey = await crypto.generatePrivateKey()
     const expectedValue = normalizeValue(otherKey.publicKey)
     const record = await createIPNSRecord(privateKey, expectedValue, 0, 1000000)
     expect(record.value).to.equal(expectedValue)
@@ -209,7 +209,7 @@ describe('records', function () {
 
   it('should normalize value when creating a recursive ipns record (public key as CID)', async () => {
     const crypto = ed25519Crypto()
-    const otherKey = await crypto.createPrivateKey()
+    const otherKey = await crypto.generatePrivateKey()
     const expectedValue = normalizeValue(otherKey.publicKey.toCID())
     const record = await createIPNSRecord(privateKey, expectedValue, 0, 1000000)
     expect(record.value).to.equal(expectedValue)
@@ -382,7 +382,7 @@ describe('records', function () {
     const validity = 1000000
 
     const crypto = ed25519Crypto()
-    const privateKey = await crypto.createPrivateKey()
+    const privateKey = await crypto.generatePrivateKey()
     const record = await createIPNSRecord(privateKey, contentPath, sequence, validity)
 
     expect(record).to.not.have.property('pubKey') // ed25519 keys should not be embedded
@@ -439,7 +439,7 @@ describe('records', function () {
 
   it('should round trip kubo records to bytes and back', async () => {
     const crypto = ed25519Crypto()
-    const privateKey = await crypto.createPrivateKey()
+    const privateKey = await crypto.generatePrivateKey()
     const routingKey = multihashToIPNSRoutingKey(privateKey.publicKey.toMultihash())
 
     // the IPNS spec gives an example for the Validity field as
