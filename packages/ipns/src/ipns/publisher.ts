@@ -32,7 +32,7 @@ export class IPNSPublisher {
     this.routers = init.routers
   }
 
-  async publish (keyName: string, value: Uint8Array, options: PublishOptions = {}): Promise<PublishResult> {
+  async publish (keyName: string, value: string, options: PublishOptions = {}): Promise<PublishResult> {
     try {
       const key = await this.#loadOrCreateKey(keyName, options)
       const digest = key.publicKey.toMultihash()

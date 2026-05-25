@@ -6,7 +6,6 @@ import drain from 'it-drain'
 import last from 'it-last'
 import { CID } from 'multiformats/cid'
 import Sinon from 'sinon'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { createIPNSRecord, createIPNSRecordWithExpiration, marshalIPNSRecord, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from '../src/records.ts'
 import { createIPNS } from './fixtures/create-ipns.ts'
@@ -55,7 +54,7 @@ describe('resolve', () => {
       throw new Error('No results found')
     }
 
-    expect(uint8ArrayToString(result.record.value)).to.equal(`/ipfs/${cid.toV1()}`)
+    expect(result.record.value).to.equal(`/ipfs/${cid.toV1()}`)
 
     expect(heliaRouting.get.called).to.be.true()
     expect(customRouting.get.called).to.be.true()
@@ -76,7 +75,7 @@ describe('resolve', () => {
       throw new Error('No results found')
     }
 
-    expect(uint8ArrayToString(result.record.value)).to.equal(`/ipfs/${cid.toV1()}`)
+    expect(result.record.value).to.equal(`/ipfs/${cid.toV1()}`)
 
     expect(heliaRouting.get.called).to.be.true()
     expect(customRouting.get.called).to.be.true()
@@ -97,7 +96,7 @@ describe('resolve', () => {
       throw new Error('No results found')
     }
 
-    expect(uint8ArrayToString(result.record.value)).to.equal(`/ipfs/${cid.toV1()}`)
+    expect(result.record.value).to.equal(`/ipfs/${cid.toV1()}`)
 
     expect(heliaRouting.get.called).to.be.false()
     expect(customRouting.get.called).to.be.false()
@@ -120,7 +119,7 @@ describe('resolve', () => {
       throw new Error('No results found')
     }
 
-    expect(uint8ArrayToString(result.record.value)).to.equal(`/ipfs/${cid.toV1()}`)
+    expect(result.record.value).to.equal(`/ipfs/${cid.toV1()}`)
 
     expect(heliaRouting.get.called).to.be.true()
     expect(customRouting.get.called).to.be.true()
@@ -141,7 +140,7 @@ describe('resolve', () => {
       throw new Error('No results found')
     }
 
-    expect(uint8ArrayToString(result.record.value)).to.equal(`/ipfs/${cid.toV1()}`)
+    expect(result.record.value).to.equal(`/ipfs/${cid.toV1()}`)
 
     expect(heliaRouting.get.called).to.be.false()
     expect(customRouting.get.called).to.be.false()
@@ -161,7 +160,7 @@ describe('resolve', () => {
       throw new Error('No results found')
     }
 
-    expect(uint8ArrayToString(result.record.value)).to.equal(`/ipfs/${cid.toV1()}`)
+    expect(result.record.value).to.equal(`/ipfs/${cid.toV1()}`)
   })
 
   it('should resolve a recursive record with path', async () => {
@@ -177,7 +176,7 @@ describe('resolve', () => {
       throw new Error('No results found')
     }
 
-    expect(uint8ArrayToString(result.record.value)).to.equal(`/ipfs/${cid.toV1()}`)
+    expect(result.record.value).to.equal(`/ipfs/${cid.toV1()}`)
   })
 
   it('should emit progress events', async function () {
@@ -199,7 +198,7 @@ describe('resolve', () => {
 
     expect(datastore.has(dhtKey)).to.be.false('already had record')
 
-    const record = await createIPNSRecord(key, uint8ArrayFromString(`/ipfs/${cid.toV1()}`), 0n, 60000)
+    const record = await createIPNSRecord(key, `/ipfs/${cid.toV1()}`, 0n, 60000)
     const marshalledRecord = marshalIPNSRecord(record)
 
     customRouting.get.withArgs(customRoutingKey).resolves(marshalledRecord)
@@ -210,7 +209,7 @@ describe('resolve', () => {
       throw new Error('No results found')
     }
 
-    expect(uint8ArrayToString(result.record.value)).to.equal(`/ipfs/${cid.toV1()}`)
+    expect(result.record.value).to.equal(`/ipfs/${cid.toV1()}`)
 
     expect(datastore.has(dhtKey)).to.be.true('did not cache record locally')
   })
@@ -220,8 +219,8 @@ describe('resolve', () => {
     const customRoutingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
     const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
 
-    const marshalledRecordA = marshalIPNSRecord(await createIPNSRecord(key, uint8ArrayFromString(`/ipfs/${cid.toV1()}`), 0n, 60000))
-    const marshalledRecordB = marshalIPNSRecord(await createIPNSRecord(key, uint8ArrayFromString(`/ipfs/${cid.toV1()}`), 10n, 60000))
+    const marshalledRecordA = marshalIPNSRecord(await createIPNSRecord(key, `/ipfs/${cid.toV1()}`, 0n, 60000))
+    const marshalledRecordB = marshalIPNSRecord(await createIPNSRecord(key, `/ipfs/${cid.toV1()}`, 10n, 60000))
 
     // records should not match
     expect(marshalledRecordA).to.not.equalBytes(marshalledRecordB)
@@ -236,7 +235,7 @@ describe('resolve', () => {
       throw new Error('No results found')
     }
 
-    expect(uint8ArrayToString(result.record.value)).to.equal(`/ipfs/${cid.toV1()}`)
+    expect(result.record.value).to.equal(`/ipfs/${cid.toV1()}`)
 
     const cached = await datastore.get(dhtKey)
     const record = Record.deserialize(cached)
@@ -265,7 +264,7 @@ describe('resolve', () => {
     const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
 
     // create a record with a valid lifetime and a non-expired TTL
-    const ipnsRecord = await createIPNSRecord(key, uint8ArrayFromString(`/ipfs/${cid.toV1()}`), 1, Math.pow(2, 10), {
+    const ipnsRecord = await createIPNSRecord(key, `/ipfs/${cid.toV1()}`, 1, Math.pow(2, 10), {
       ttlNs: 10_000_000_000
     })
     const dhtRecord = new Record(customRoutingKey, marshalIPNSRecord(ipnsRecord), new Date(Date.now()))
@@ -285,7 +284,7 @@ describe('resolve', () => {
     const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
 
     // create a record with a valid lifetime but an expired ttl
-    const ipnsRecord = await createIPNSRecord(key, uint8ArrayFromString(`/ipfs/${cid.toV1()}`), 1, Math.pow(2, 10), {
+    const ipnsRecord = await createIPNSRecord(key, `/ipfs/${cid.toV1()}`, 1, Math.pow(2, 10), {
       ttlNs: 10
     })
     const dhtRecord = new Record(customRoutingKey, marshalIPNSRecord(ipnsRecord), new Date(Date.now() - 1000))
@@ -305,7 +304,7 @@ describe('resolve', () => {
     const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
 
     // create a record with a valid lifetime but an expired ttl
-    const ipnsRecord = await createIPNSRecord(key, uint8ArrayFromString(`/ipfs/${cid.toV1()}`), 10, Math.pow(2, 10), {
+    const ipnsRecord = await createIPNSRecord(key, `/ipfs/${cid.toV1()}`, 10, Math.pow(2, 10), {
       ttlNs: 10
     })
     const dhtRecord = new Record(customRoutingKey, marshalIPNSRecord(ipnsRecord), new Date(Date.now() - 1000))
@@ -313,7 +312,7 @@ describe('resolve', () => {
     await datastore.put(dhtKey, dhtRecord.serialize())
 
     // the routing returns a valid record with an higher sequence number
-    const ipnsRecordFromRouting = await createIPNSRecord(key, uint8ArrayFromString(`/ipfs/${cid.toV1()}`), 11, Math.pow(2, 10), {
+    const ipnsRecordFromRouting = await createIPNSRecord(key, `/ipfs/${cid.toV1()}`, 11, Math.pow(2, 10), {
       ttlNs: 10_000_000
     })
     customRouting.get.withArgs(customRoutingKey).resolves(marshalIPNSRecord(ipnsRecordFromRouting))
@@ -331,7 +330,7 @@ describe('resolve', () => {
     const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
 
     // create a record with an expired lifetime but valid TTL
-    const ipnsRecord = await createIPNSRecordWithExpiration(key, uint8ArrayFromString(`/ipfs/${cid.toV1()}`), 10, new Date(Date.now() - Math.pow(2, 10)).toString(), {
+    const ipnsRecord = await createIPNSRecordWithExpiration(key, `/ipfs/${cid.toV1()}`, 10, new Date(Date.now() - Math.pow(2, 10)).toString(), {
       ttlNs: 10_000_000
     })
     const dhtRecord = new Record(customRoutingKey, marshalIPNSRecord(ipnsRecord), new Date(Date.now()))
@@ -339,7 +338,7 @@ describe('resolve', () => {
     await datastore.put(dhtKey, dhtRecord.serialize())
 
     // the routing returns a valid record with an higher sequence number
-    const ipnsRecordFromRouting = await createIPNSRecord(key, uint8ArrayFromString(`/ipfs/${cid.toV1()}`), 11, Math.pow(2, 10), {
+    const ipnsRecordFromRouting = await createIPNSRecord(key, `/ipfs/${cid.toV1()}`, 11, Math.pow(2, 10), {
       ttlNs: 10_000_000
     })
     customRouting.get.withArgs(customRoutingKey).resolves(marshalIPNSRecord(ipnsRecordFromRouting))

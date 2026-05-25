@@ -101,10 +101,15 @@ export function isLibp2pCID (obj?: any): obj is CID<unknown, 0x72, 0x00 | 0x12, 
 /**
  * Utility for creating the record data for being signed
  */
-export function ipnsRecordDataForV1Sig (value: Uint8Array, validityType: IpnsEntry.ValidityType, validity: Uint8Array): Uint8Array {
+export function ipnsRecordDataForV1Sig (value: string, validityType: IpnsEntry.ValidityType, validity: Uint8Array): Uint8Array {
   const validityTypeBuffer = uint8ArrayFromString(validityType)
+  const valueBytes = uint8ArrayFromString(value)
 
-  return uint8ArrayConcat([value, validity, validityTypeBuffer])
+  return uint8ArrayConcat([
+    valueBytes,
+    validity,
+    validityTypeBuffer
+  ], valueBytes.byteLength + validity.byteLength + validityTypeBuffer.byteLength)
 }
 
 /**
@@ -117,25 +122,45 @@ export function ipnsRecordDataForV2Sig (data: Uint8Array): Uint8Array {
 }
 
 export function marshalIPNSRecord (obj: IPNSRecord | IPNSRecordV2): Uint8Array {
+  let publicKey: Uint8Array | undefined = obj.publicKey?.toProtobuf()
+
+  // do not embed public keys whose multihash is an identity hash as these can
+  // be derived from the routing key
+  if (obj.publicKey?.toMultihash().code === 0x00) {
+    publicKey = undefined
+  }
+
   if ('signatureV1' in obj) {
     return IpnsEntry.encode({
-      value: obj.value,
+      value: uint8ArrayFromString(obj.value),
       signatureV1: obj.signatureV1,
       validityType: obj.validityType,
       validity: uint8ArrayFromString(obj.validity),
       sequence: obj.sequence,
       ttl: obj.ttl,
-      publicKey: obj.publicKey?.toProtobuf(),
+      publicKey,
       signatureV2: obj.signatureV2,
       data: obj.data
     })
   } else {
     return IpnsEntry.encode({
-      publicKey: obj.publicKey?.toProtobuf(),
+      publicKey,
       signatureV2: obj.signatureV2,
       data: obj.data
     })
   }
+}
+
+function valueToString (value: Uint8Array): string {
+  // handle legacy case where record value is raw CID bytes
+  try {
+    const cid = CID.decode(value)
+    return `/ipfs/${cid}`
+  } catch {
+    // ignore error
+  }
+
+  return uint8ArrayToString(value)
 }
 
 export async function unmarshalIPNSRecord (routingKey: Uint8Array, marshalledRecord: Uint8Array, keychain: Keychain, options?: AbortOptions): Promise<IPNSRecord> {
@@ -179,7 +204,7 @@ export async function unmarshalIPNSRecord (routingKey: Uint8Array, marshalledRec
     validateCborDataMatchesPbData(message)
 
     return {
-      value: data.Value,
+      value: valueToString(data.Value),
       validityType: IpnsEntry.ValidityType.EOL,
       validity,
       sequence: data.Sequence,
@@ -193,7 +218,7 @@ export async function unmarshalIPNSRecord (routingKey: Uint8Array, marshalledRec
   } else if (message.signatureV2 != null) {
     // V2-only
     return {
-      value: data.Value,
+      value: valueToString(data.Value),
       validityType: IpnsEntry.ValidityType.EOL,
       validity,
       sequence: data.Sequence,
@@ -219,7 +244,7 @@ export function multihashFromIPNSRoutingKey (key: Uint8Array): MultihashDigest {
   return Digest.decode(key.slice(IPNS_PREFIX.length))
 }
 
-export function createCborData (value: Uint8Array, validityType: IpnsEntry.ValidityType, validity: Uint8Array, sequence: bigint, ttl: bigint): Uint8Array {
+export function createCborData (value: string, validityType: IpnsEntry.ValidityType, validity: Uint8Array, sequence: bigint, ttl: bigint): Uint8Array {
   let ValidityType
 
   if (validityType === IpnsEntry.ValidityType.EOL) {
@@ -229,7 +254,7 @@ export function createCborData (value: Uint8Array, validityType: IpnsEntry.Valid
   }
 
   const data = {
-    Value: value,
+    Value: uint8ArrayFromString(value),
     Validity: validity,
     ValidityType,
     Sequence: sequence,
@@ -281,7 +306,7 @@ export function normalizeValue (value?: PublicKey | CID | MultihashDigest | stri
         return `/ipns/${cid.toV1().toString(base36)}`
       }
 
-      return `/ipfs/${cid.toV1().toString()}`
+      return `/ipfs/${cid.toV1()}`
     }
 
     if (hasBytes(value)) {

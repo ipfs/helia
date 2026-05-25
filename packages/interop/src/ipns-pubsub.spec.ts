@@ -186,7 +186,7 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
         throw new Error('Failed to resolve CID')
       }
 
-      expect(uint8ArrayToString(resolveResult.record.value)).to.equal(`/ipfs/${cid}`)
+      expect(resolveResult.record.value).to.equal(`/ipfs/${cid}`)
     })
   })
 })

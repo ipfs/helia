@@ -4,7 +4,6 @@ import last from 'it-last'
 import { base36 } from 'multiformats/bases/base36'
 import { CID } from 'multiformats/cid'
 import Sinon from 'sinon'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { localStore } from '../src/local-store.ts'
 import { createIPNS } from './fixtures/create-ipns.ts'
 import type { CreateIPNSResult } from './fixtures/create-ipns.ts'
@@ -99,14 +98,14 @@ describe('publish', () => {
       offline: true
     })
 
-    expect(uint8ArrayToString(published.record.value)).to.equal(`/ipfs/${cid.toV1().toString()}`)
+    expect(published.record.value).to.equal(`/ipfs/${cid.toV1()}`)
 
     const keyName2 = 'test-key-7'
     const recursiveRecord = await name.publish(keyName2, published.publicKey, {
       offline: true
     })
 
-    expect(uint8ArrayToString(recursiveRecord.record.value)).to.equal(`/ipns/${published.publicKey.toCID().toString(base36)}`)
+    expect(recursiveRecord.record.value).to.equal(`/ipns/${published.publicKey.toCID().toString(base36)}`)
 
     const recursiveResult = await last(name.resolve(recursiveRecord.publicKey))
 
@@ -114,7 +113,7 @@ describe('publish', () => {
       throw new Error('No results found')
     }
 
-    expect(uint8ArrayToString(recursiveResult.record.value)).to.equal(`/ipfs/${cid.toV1()}`)
+    expect(recursiveResult.record.value).to.equal(`/ipfs/${cid.toV1()}`)
   })
 
   it('should publish recursively using a libp2p-key CID', async () => {
@@ -123,14 +122,14 @@ describe('publish', () => {
       offline: true
     })
 
-    expect(uint8ArrayToString(published.record.value)).to.equal(`/ipfs/${cid.toV1().toString()}`)
+    expect(published.record.value).to.equal(`/ipfs/${cid.toV1()}`)
 
     const keyName2 = 'test-key-7'
     const recursiveRecord = await name.publish(keyName2, published.publicKey.toCID(), {
       offline: true
     })
 
-    expect(uint8ArrayToString(recursiveRecord.record.value)).to.equal(`/ipns/${published.publicKey.toCID().toString(base36)}`)
+    expect(recursiveRecord.record.value).to.equal(`/ipns/${published.publicKey.toCID().toString(base36)}`)
 
     const recursiveResult = await last(name.resolve(recursiveRecord.publicKey))
 
@@ -138,7 +137,7 @@ describe('publish', () => {
       throw new Error('No results found')
     }
 
-    expect(uint8ArrayToString(recursiveResult.record.value)).to.equal(`/ipfs/${cid.toV1()}`)
+    expect(recursiveResult.record.value).to.equal(`/ipfs/${cid.toV1()}`)
   })
 
   it('should publish recursively using a multihash', async () => {
@@ -147,14 +146,14 @@ describe('publish', () => {
       offline: true
     })
 
-    expect(uint8ArrayToString(published.record.value)).to.equal(`/ipfs/${cid.toV1().toString()}`)
+    expect(published.record.value).to.equal(`/ipfs/${cid.toV1()}`)
 
     const keyName2 = 'test-key-9'
     const recursiveRecord = await name.publish(keyName2, published.publicKey.toMultihash(), {
       offline: true
     })
 
-    expect(uint8ArrayToString(recursiveRecord.record.value)).to.equal(`/ipns/${base36.encode(published.publicKey.toMultihash().bytes)}`)
+    expect(recursiveRecord.record.value).to.equal(`/ipns/${base36.encode(published.publicKey.toMultihash().bytes)}`)
 
     const recursiveResult = await last(name.resolve(recursiveRecord.publicKey))
 
@@ -162,7 +161,7 @@ describe('publish', () => {
       throw new Error('No results found')
     }
 
-    expect(uint8ArrayToString(recursiveResult.record.value)).to.equal(`/ipfs/${cid.toV1()}`)
+    expect(recursiveResult.record.value).to.equal(`/ipfs/${cid.toV1()}`)
   })
 
   it('should publish recursively using a string IPNS key', async () => {
@@ -171,14 +170,14 @@ describe('publish', () => {
       offline: true
     })
 
-    expect(uint8ArrayToString(published.record.value)).to.equal(`/ipfs/${cid.toV1().toString()}`)
+    expect(published.record.value).to.equal(`/ipfs/${cid.toV1()}`)
 
     const keyName2 = 'test-key-11'
     const recursiveRecord = await name.publish(keyName2, `/ipns/${published.publicKey.toCID().toString(base36)}`, {
       offline: true
     })
 
-    expect(uint8ArrayToString(recursiveRecord.record.value)).to.equal(`/ipns/${published.publicKey.toCID().toString(base36)}`)
+    expect(recursiveRecord.record.value).to.equal(`/ipns/${published.publicKey.toCID().toString(base36)}`)
 
     const recursiveResult = await last(name.resolve(recursiveRecord.publicKey))
 
@@ -186,7 +185,7 @@ describe('publish', () => {
       throw new Error('No results found')
     }
 
-    expect(uint8ArrayToString(recursiveResult.record.value)).to.equal(`/ipfs/${cid.toV1()}`)
+    expect(recursiveResult.record.value).to.equal(`/ipfs/${cid.toV1()}`)
   })
 
   it('should publish record with a path', async () => {
@@ -198,7 +197,7 @@ describe('publish', () => {
       offline: true
     })
 
-    expect(uint8ArrayToString(published.record.value)).to.equal(`/ipfs/${cid.toV1()}${path}`)
+    expect(published.record.value).to.equal(`/ipfs/${cid.toV1()}${path}`)
 
     const result = await last(name.resolve(published.publicKey))
 
@@ -206,7 +205,7 @@ describe('publish', () => {
       throw new Error('No results found')
     }
 
-    expect(uint8ArrayToString(result.record.value)).to.equal(`/ipfs/${cid.toV1()}${path}`)
+    expect(result.record.value).to.equal(`/ipfs/${cid.toV1()}${path}`)
   })
 
   describe('localStore error handling', () => {

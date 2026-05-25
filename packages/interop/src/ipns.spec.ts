@@ -8,7 +8,6 @@ import * as raw from 'multiformats/codecs/raw'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { isElectronMain } from 'wherearewe'
 import { connect } from './fixtures/connect.ts'
 import { createHeliaNode } from './fixtures/create-helia.ts'
@@ -191,7 +190,7 @@ keyTypes.forEach(type => {
         throw new Error('No result found')
       }
 
-      expect(uint8ArrayToString(result.record.value)).to.equal(`/ipfs/${cid}`)
+      expect(result.record.value).to.equal(`/ipfs/${cid}`)
       expect(result.record.ttl).to.equal(oneHourNS)
     })
   })

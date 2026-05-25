@@ -18,7 +18,7 @@ export interface IPNSRecordV1V2 {
   /**
    * value of the record
    */
-  value: Uint8Array
+  value: string
 
   /**
    * signature of the record
@@ -70,7 +70,7 @@ export interface IPNSRecordV2 {
   /**
    * value of the record
    */
-  value: Uint8Array
+  value: string
 
   /**
    * the v2 signature of the record
@@ -166,10 +166,10 @@ const defaultCreateOptions: CreateOptions = {
  * @param {number} lifetime - lifetime of the record (in milliseconds).
  * @param {CreateOptions} options - additional create options.
  */
-export async function createIPNSRecord (privateKey: PrivateKey, value: Uint8Array, seq: number | bigint, lifetime: number, options?: CreateV2OrV1Options): Promise<IPNSRecordV1V2>
-export async function createIPNSRecord (privateKey: PrivateKey, value: Uint8Array, seq: number | bigint, lifetime: number, options: CreateV2Options): Promise<IPNSRecordV2>
-export async function createIPNSRecord (privateKey: PrivateKey, value: Uint8Array, seq: number | bigint, lifetime: number, options: CreateOptions): Promise<IPNSRecordV1V2>
-export async function createIPNSRecord (privateKey: PrivateKey, value: Uint8Array, seq: number | bigint, lifetime: number, options: CreateOptions = defaultCreateOptions): Promise<IPNSRecord> {
+export async function createIPNSRecord (privateKey: PrivateKey, value: string, seq: number | bigint, lifetime: number, options?: CreateV2OrV1Options): Promise<IPNSRecordV1V2>
+export async function createIPNSRecord (privateKey: PrivateKey, value: string, seq: number | bigint, lifetime: number, options: CreateV2Options): Promise<IPNSRecordV2>
+export async function createIPNSRecord (privateKey: PrivateKey, value: string, seq: number | bigint, lifetime: number, options: CreateOptions): Promise<IPNSRecordV1V2>
+export async function createIPNSRecord (privateKey: PrivateKey, value: string, seq: number | bigint, lifetime: number, options: CreateOptions = defaultCreateOptions): Promise<IPNSRecord> {
   // Validity in ISOString with nanoseconds precision and validity type EOL
   const expirationDate = new NanoDate(Date.now() + Number(lifetime))
   const validityType = IpnsEntry.ValidityType.EOL
@@ -194,10 +194,10 @@ export async function createIPNSRecord (privateKey: PrivateKey, value: Uint8Arra
  * @param {string} expiration - expiration datetime for record in the [RFC3339]{@link https://www.ietf.org/rfc/rfc3339.txt} with nanoseconds precision.
  * @param {CreateOptions} options - additional creation options.
  */
-export async function createIPNSRecordWithExpiration (privateKey: PrivateKey, value: Uint8Array, seq: number | bigint, expiration: string, options?: CreateV2OrV1Options): Promise<IPNSRecordV1V2>
-export async function createIPNSRecordWithExpiration (privateKey: PrivateKey, value: Uint8Array, seq: number | bigint, expiration: string, options: CreateV2Options): Promise<IPNSRecordV2>
-export async function createIPNSRecordWithExpiration (privateKey: PrivateKey, value: Uint8Array, seq: number | bigint, expiration: string, options: CreateOptions): Promise<IPNSRecordV1V2>
-export async function createIPNSRecordWithExpiration (privateKey: PrivateKey, value: Uint8Array, seq: number | bigint, expiration: string, options: CreateOptions = defaultCreateOptions): Promise<IPNSRecord> {
+export async function createIPNSRecordWithExpiration (privateKey: PrivateKey, value: string, seq: number | bigint, expiration: string, options?: CreateV2OrV1Options): Promise<IPNSRecordV1V2>
+export async function createIPNSRecordWithExpiration (privateKey: PrivateKey, value: string, seq: number | bigint, expiration: string, options: CreateV2Options): Promise<IPNSRecordV2>
+export async function createIPNSRecordWithExpiration (privateKey: PrivateKey, value: string, seq: number | bigint, expiration: string, options: CreateOptions): Promise<IPNSRecordV1V2>
+export async function createIPNSRecordWithExpiration (privateKey: PrivateKey, value: string, seq: number | bigint, expiration: string, options: CreateOptions = defaultCreateOptions): Promise<IPNSRecord> {
   const expirationDate = NanoDate.fromString(expiration)
   const validityType = IpnsEntry.ValidityType.EOL
   const ttlNs = BigInt(options.ttlNs ?? DEFAULT_TTL_NS)
@@ -205,7 +205,7 @@ export async function createIPNSRecordWithExpiration (privateKey: PrivateKey, va
   return _create(privateKey, value, seq, validityType, expirationDate.toString(), ttlNs, options)
 }
 
-const _create = async (privateKey: PrivateKey, value: Uint8Array, seq: number | bigint, validityType: IpnsEntry.ValidityType, validity: string, ttl: bigint, options: CreateOptions = defaultCreateOptions): Promise<IPNSRecord> => {
+const _create = async (privateKey: PrivateKey, value: string, seq: number | bigint, validityType: IpnsEntry.ValidityType, validity: string, ttl: bigint, options: CreateOptions = defaultCreateOptions): Promise<IPNSRecord> => {
   seq = BigInt(seq)
   const isoValidity = uint8ArrayFromString(validity)
   const data = createCborData(value, validityType, isoValidity, seq, ttl)
@@ -254,7 +254,7 @@ export { multihashFromIPNSRoutingKey } from './utils.ts'
 /**
  * Sign ipns record data using the legacy V1 signature scheme
  */
-const signLegacyV1 = async (privateKey: PrivateKey, value: Uint8Array, validityType: IpnsEntry.ValidityType, validity: Uint8Array, options?: AbortOptions): Promise<Uint8Array> => {
+const signLegacyV1 = async (privateKey: PrivateKey, value: string, validityType: IpnsEntry.ValidityType, validity: Uint8Array, options?: AbortOptions): Promise<Uint8Array> => {
   try {
     const dataForSignature = ipnsRecordDataForV1Sig(value, validityType, validity)
 

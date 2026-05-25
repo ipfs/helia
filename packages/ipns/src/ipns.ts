@@ -1,5 +1,4 @@
 import { CID } from 'multiformats/cid'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { IPNSPublisher } from './ipns/publisher.ts'
 import { IPNSRepublisher } from './ipns/republisher.ts'
 import { IPNSResolver } from './ipns/resolver.ts'
@@ -102,10 +101,7 @@ export class IPNS implements IPNSInterface, Startable {
   }
 
   async publish (keyName: string, value: PublicKey | CID | MultihashDigest | string, options: PublishOptions = {}): Promise<PublishResult> {
-    const string = normalizeValue(value)
-    const bytes = uint8ArrayFromString(string)
-
-    return this.publisher.publish(keyName, bytes, options)
+    return this.publisher.publish(keyName, normalizeValue(value), options)
   }
 
   async * resolve (key: PublicKey | CID<unknown, 0x72> | MultihashDigest | string, options: ResolveOptions = {}): AsyncGenerator<ResolveResult> {

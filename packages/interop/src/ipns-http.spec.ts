@@ -5,7 +5,6 @@ import { peerIdFromCID } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import last from 'it-last'
 import { CID } from 'multiformats/cid'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { isNode } from 'wherearewe'
 import { createKuboNode } from './fixtures/create-kubo.ts'
 import type { Helia } from '@helia/interface'
@@ -70,6 +69,6 @@ describe('@helia/ipns - http', () => {
       throw new Error('No results found')
     }
 
-    expect(uint8ArrayToString(result.record.value)).to.equal(`/ipfs/${cid}`)
+    expect(result.record.value).to.equal(`/ipfs/${cid}`)
   })
 })

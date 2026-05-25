@@ -1,4 +1,3 @@
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { DEFAULT_TTL_NS } from '../constants.ts'
 import { RecordNotFoundError, RecordsFailedValidationError } from '../errors.ts'
 import { ipnsSelector } from '../selector.ts'
@@ -48,14 +47,12 @@ export class IPNSResolver {
         record
       }
 
-      const value = uint8ArrayToString(record.value)
-
-      if (!value.startsWith(IPNS_STRING_PREFIX)) {
+      if (!record.value.startsWith(IPNS_STRING_PREFIX)) {
         // not a recursive record
         break
       }
 
-      ({ digest } = normalizeKey(value))
+      ({ digest } = normalizeKey(record.value))
     }
   }
 

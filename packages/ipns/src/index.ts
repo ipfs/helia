@@ -24,7 +24,7 @@
  *
  * // resolve the name
  * for await (const result of name.resolve(publicKey)) {
- *   console.info(new TextDecoder().decode(result.record.value)) // /ipfs/QmFoo
+ *   console.info(result.record.value) // /ipfs/QmFoo
  * }
  * ```
  *
@@ -54,7 +54,7 @@
  *
  * // resolve the name recursively - it resolves until a CID is found
  * for await (const result of name.resolve(recursivePublicKey)) {
- *   console.info(new TextDecoder().decode(result.record.value)) // /ipfs/QmFoo../foo.txt
+ *   console.info(result.record.value) // /ipfs/QmFoo../foo.txt
  * }
  * ```
  *
@@ -84,7 +84,7 @@
  *
  * // resolve the name
  * for await (const result of name.resolve(publicKey)) {
- *   console.info(new TextDecoder().decode(result.record.value)) // /ipfs/QmFoo../foo.txt
+ *   console.info(result.record.value) // /ipfs/QmFoo../foo.txt
  * }
  * ```
  *
@@ -137,7 +137,7 @@
  *
  * // resolve the name
  * for await (const result of name.resolve(publicKey)) {
- *   console.info(new TextDecoder().decode(result.record.value))
+ *   console.info(result.record.value)
  * }
  * ```
  */
