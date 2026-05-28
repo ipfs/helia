@@ -173,12 +173,15 @@ It is sometimes useful to be able to republish an existing IPNS record
 without needing the private key. This allows you to extend the availability
 of a record that was created elsewhere.
 
+There should be only one republisher per IPNS key. Multiple machines
+republishing the same key will conflict on sequence numbers and flood the
+DHT with redundant writes.
+
 ```TypeScript
 import { createHelia } from 'helia'
-import { ipns, ipnsValidator } from '@helia/ipns'
+import { ipns } from '@helia/ipns'
 import { delegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
 import { CID } from 'multiformats/cid'
-import { multihashToIPNSRoutingKey, marshalIPNSRecord } from 'ipns'
 import { defaultLogger } from '@libp2p/logger'
 
 const helia = await createHelia()
@@ -193,18 +196,13 @@ const delegatedClient = delegatedRoutingV1HttpApiClient({
 })
 const record = await delegatedClient.getIPNS(parsedCid)
 
-const routingKey = multihashToIPNSRoutingKey(parsedCid.multihash)
-const marshaledRecord = marshalIPNSRecord(record)
+// republish to routing; throws RecordAlreadyPublishedError if a newer record
+// is already resolvable — pass `force: true` only if you know no one else is
+// republishing this key
+const { record: latestRecord } = await name.republish(parsedCid, { record })
 
-// validate that they key corresponds to the record
-await ipnsValidator(routingKey, marshaledRecord)
-
-// publish record to routing
-await Promise.all(
-  name.routers.map(async r => {
-    await r.put(routingKey, marshaledRecord)
-  })
-)
+// stop republishing a key
+await name.unpublish(parsedCid)
 ```
 
 # Install
