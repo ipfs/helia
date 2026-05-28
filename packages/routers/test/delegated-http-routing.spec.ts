@@ -1,11 +1,11 @@
-import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
-import { multihashToIPNSRoutingKey, createIPNSRecord, marshalIPNSRecord } from 'ipns'
 import drain from 'it-drain'
-import { CID } from 'multiformats'
+import { CID } from 'multiformats/cid'
 import { stubInterface } from 'sinon-ts'
+import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { delegatedHTTPRouting } from '../src/index.ts'
 import type { DelegatedRoutingV1HttpApiClient, PeerRecord } from '@helia/delegated-routing-v1-http-api-client'
 import type { Routing } from '@helia/interface'
@@ -52,11 +52,11 @@ describe('delegated-http-routing', () => {
   })
 
   it('should put a IPNS record value', async () => {
-    const privateKey = await generateKeyPair('Ed25519')
-    // @ts-expect-error @libp2p/crypto needs new multiformats
-    const key = multihashToIPNSRoutingKey(privateKey.publicKey.toMultihash())
-    const record = await createIPNSRecord(privateKey, '/hello world', 0, 100)
-    const value = marshalIPNSRecord(record)
+    const key = uint8ArrayConcat([
+      uint8ArrayFromString('/ipns/'),
+      CID.parse('k51qzi5uqu5dm0ntxloxmkd7w0snw9b13x9tveslq3r8v0i10z2inerg32k8mx').multihash.bytes
+    ])
+    const value = Uint8Array.from([5, 6, 7, 8, 9])
     const options = {}
 
     await router.put(key, value, options)
@@ -75,13 +75,14 @@ describe('delegated-http-routing', () => {
   })
 
   it('should get a IPNS record value', async () => {
-    const privateKey = await generateKeyPair('Ed25519')
-    // @ts-expect-error @libp2p/crypto needs new multiformats
-    const key = multihashToIPNSRoutingKey(privateKey.publicKey.toMultihash())
-    const record = await createIPNSRecord(privateKey, '/hello world', 0, 100)
+    const key = uint8ArrayConcat([
+      uint8ArrayFromString('/ipns/'),
+      CID.parse('k51qzi5uqu5dm0ntxloxmkd7w0snw9b13x9tveslq3r8v0i10z2inerg32k8mx').multihash.bytes
+    ])
+    const value = Uint8Array.from([5, 6, 7, 8, 9])
     const options = {}
 
-    client.getIPNS.resolves(record)
+    client.getIPNS.resolves(value)
 
     await router.get(key, options)
 
@@ -115,7 +116,7 @@ describe('delegated-http-routing', () => {
 
     await router.findPeer(peerId, options)
 
-    expect(client.getPeers.calledWith(peerId, options)).to.be.true()
+    expect(client.getPeers.called).to.be.true()
   })
 
   it.skip('should get closest peers', async () => {

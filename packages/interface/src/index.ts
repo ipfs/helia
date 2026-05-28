@@ -17,20 +17,26 @@
 import type { Blocks } from './blocks.ts'
 import type { Pins } from './pins.ts'
 import type { Routing } from './routing.ts'
-import type { AbortOptions, ComponentLogger, Libp2p, Metrics, TypedEventEmitter } from '@libp2p/interface'
+import type { CryptoLoader, Keychain } from '@ipshipyard/keychain'
+import type { ComponentLogger, Libp2p, Metrics, TypedEventEmitter } from '@libp2p/interface'
 import type { DNS } from '@multiformats/dns'
+import type { AbortOptions } from 'abort-error'
 import type { Datastore } from 'interface-datastore'
 import type { BlockCodec, MultihashHasher } from 'multiformats'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
 export interface CodecLoader {
-  <T = any, Code extends number = any>(code: Code): BlockCodec<Code, T> | Promise<BlockCodec<Code, T>>
+  <T = any, Code extends number = any>(code: Code, options?: AbortOptions): BlockCodec<Code, T> | Promise<BlockCodec<Code, T>>
 }
 
 export interface HasherLoader {
-  (code: number): MultihashHasher | Promise<MultihashHasher>
+  (code: number, options?: AbortOptions): MultihashHasher | Promise<MultihashHasher>
 }
+
+export type { CryptoLoader, Keychain } from '@ipshipyard/keychain'
+export type { Crypto, PrivateKey, PublicKey } from '@ipshipyard/crypto'
+export { isPrivateKey, isPublicKey } from '@ipshipyard/crypto'
 
 /**
  * The API presented by a Helia node
@@ -55,6 +61,11 @@ export interface Helia<T extends Libp2p = Libp2p> {
    * Event emitter for Helia start and stop events
    */
   events: TypedEventEmitter<HeliaEvents<T>>
+
+  /**
+   * Secure storage for private keys
+   */
+  keychain: Keychain
 
   /**
    * Pinning operations for blocks in the blockstore
@@ -111,6 +122,11 @@ export interface Helia<T extends Libp2p = Libp2p> {
    * the hasher is being fetched from the network.
    */
   getHasher: HasherLoader
+
+  /**
+   * Cryptography implementations securely sign and verify data
+   */
+  getCrypto: CryptoLoader
 }
 
 export type GcEvents =

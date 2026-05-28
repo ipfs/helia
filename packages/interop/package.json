@@ -68,11 +68,10 @@
     "@ipld/car": "^5.4.3",
     "@ipld/dag-cbor": "^10.0.0",
     "@ipld/dag-pb": "^4.1.5",
-    "@libp2p/crypto": "^5.1.15",
     "@libp2p/floodsub": "^11.0.16",
     "@libp2p/interface": "^3.2.0",
     "@libp2p/kad-dht": "^16.2.0",
-    "@libp2p/keychain": "^6.0.12",
+    "@libp2p/keychain": "^6.1.1",
     "@libp2p/peer-id": "^6.0.6",
     "@libp2p/utils": "^7.0.15",
     "@libp2p/websockets": "^10.1.8",
@@ -82,7 +81,6 @@
     "helia": "^6.1.4",
     "ipfs-unixfs-importer": "^17.0.0",
     "ipfsd-ctl": "^17.0.0",
-    "ipns": "^11.0.0",
     "it-all": "^3.0.11",
     "it-drain": "^3.0.12",
     "it-last": "^3.0.11",
@@ -96,8 +94,8 @@
     "wherearewe": "^2.0.1"
   },
   "browser": {
-    "./dist/src/fixtures/create-helia.js": "./dist/src/fixtures/create-helia.browser.js",
-    "./dist/src/fixtures/create-kubo.js": "./dist/src/fixtures/create-kubo.browser.js",
+    "./src/fixtures/create-helia.ts": "./src/fixtures/create-helia.browser.ts",
+    "./src/fixtures/create-kubo.ts": "./src/fixtures/create-kubo.browser.ts",
     "./dist/src/bin.js": "./dist/src/index.js",
     "kubo": false
   },

@@ -1,17 +1,18 @@
 import { Queue, repeatingTask } from '@libp2p/utils'
-import { createIPNSRecord, marshalIPNSRecord, unmarshalIPNSRecord } from 'ipns'
 import { DEFAULT_REPUBLISH_CONCURRENCY, DEFAULT_REPUBLISH_INTERVAL_MS, DEFAULT_TTL_NS } from '../constants.ts'
+import { createIPNSRecord } from '../records.ts'
+import { marshalIPNSRecord, unmarshalIPNSRecord } from '../utils.ts'
 import { shouldRepublish } from '../utils.ts'
+import type { IPNSRecord } from '../index.ts'
 import type { LocalStore } from '../local-store.ts'
 import type { IPNSRouting } from '../routing/index.ts'
-import type { AbortOptions, ComponentLogger, Libp2p, Logger, PrivateKey } from '@libp2p/interface'
-import type { Keychain } from '@libp2p/keychain'
+import type { Keychain, PrivateKey } from '@helia/interface'
+import type { AbortOptions, ComponentLogger, Logger } from '@libp2p/interface'
 import type { RepeatingTask } from '@libp2p/utils'
-import type { IPNSRecord } from 'ipns'
 
 export interface IPNSRepublisherComponents {
   logger: ComponentLogger
-  libp2p: Libp2p<{ keychain: Keychain }>
+  keychain: Keychain
 }
 
 export interface IPNSRepublisherInit {
@@ -33,9 +34,9 @@ export class IPNSRepublisher {
   constructor (components: IPNSRepublisherComponents, init: IPNSRepublisherInit) {
     this.log = components.logger.forComponent('helia:ipns')
     this.localStore = init.localStore
-    this.keychain = components.libp2p.services.keychain
+    this.keychain = components.keychain
     this.republishConcurrency = init.republishConcurrency || DEFAULT_REPUBLISH_CONCURRENCY
-    this.started = components.libp2p.status === 'started'
+    this.started = false
     this.routers = init.routers ?? []
 
     this.republishTask = repeatingTask(this.#republish.bind(this), init.republishInterval ?? DEFAULT_REPUBLISH_INTERVAL_MS, {
@@ -78,18 +79,21 @@ export class IPNSRepublisher {
 
     try {
       const recordsToRepublish: Array<{ routingKey: Uint8Array, record: IPNSRecord }> = []
+      let listed = 0
 
       // Find all records using the localStore.list method
       for await (const { routingKey, record, metadata, created } of this.localStore.list(options)) {
+        listed++
+
         if (metadata == null) {
           // Skip if no metadata is found from before we started
           // storing metadata or for records republished without a key
-          this.log(`no metadata found for record ${routingKey.toString()}, skipping`)
+          this.log('no metadata found for record %b, skipping', routingKey)
           continue
         }
         let ipnsRecord: IPNSRecord
         try {
-          ipnsRecord = unmarshalIPNSRecord(record)
+          ipnsRecord = await unmarshalIPNSRecord(routingKey, record, this.keychain, options)
         } catch (err: any) {
           this.log.error('error unmarshaling record - %e', err)
           continue
@@ -97,7 +101,7 @@ export class IPNSRepublisher {
 
         // Only republish records that are within the DHT or record expiry threshold
         if (!shouldRepublish(ipnsRecord, created)) {
-          this.log.trace(`skipping record ${routingKey.toString()}within republish threshold`)
+          this.log.trace('skipping record %b within republish threshold', routingKey)
           continue
         }
         const sequenceNumber = ipnsRecord.sequence + 1n
@@ -110,16 +114,23 @@ export class IPNSRepublisher {
           this.log.error('missing key %s, skipping republishing record - %e', metadata.keyName, err)
           continue
         }
+
         try {
-          const updatedRecord = await createIPNSRecord(privKey, ipnsRecord.value, sequenceNumber, metadata.lifetime, { ...options, ttlNs })
-          recordsToRepublish.push({ routingKey, record: updatedRecord })
+          const updatedRecord = await createIPNSRecord(privKey, ipnsRecord.value, sequenceNumber, metadata.lifetime, {
+            ...options,
+            ttlNs
+          })
+          recordsToRepublish.push({
+            routingKey,
+            record: updatedRecord
+          })
         } catch (err: any) {
           this.log.error('error creating updated IPNS record for %s - %e', routingKey, err)
           continue
         }
       }
 
-      this.log(`found ${recordsToRepublish.length} records to republish`)
+      this.log(`found ${recordsToRepublish.length}/${listed} records to republish`)
 
       // Republish each record
       for (const { routingKey, record } of recordsToRepublish) {

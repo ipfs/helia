@@ -52,8 +52,9 @@
     "@ipld/dag-cbor": "^10.0.0",
     "@ipld/dag-json": "^11.0.0",
     "@ipld/dag-pb": "^4.1.5",
+    "@ipshipyard/crypto": "^1.1.0",
+    "@ipshipyard/keychain": "^1.0.2",
     "@libp2p/interface": "^3.2.0",
-    "@libp2p/keychain": "^6.0.12",
     "@libp2p/utils": "^7.0.15",
     "@multiformats/dns": "^1.0.13",
     "@multiformats/multiaddr": "^13.0.1",
@@ -80,6 +81,7 @@
     "@libp2p/logger": "^6.2.4",
     "@libp2p/peer-id": "^6.0.6",
     "@types/sinon": "^21.0.1",
+    "abort-error": "^1.0.2",
     "aegir": "^48.0.4",
     "datastore-core": "^12.0.1",
     "delay": "^7.0.0",
@@ -87,9 +89,6 @@
     "it-map": "^3.1.5",
     "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0"
-  },
-  "browser": {
-    "./dist/src/utils/libp2p-defaults.js": "./dist/src/utils/libp2p-defaults.browser.js"
   },
   "sideEffects": false
 }

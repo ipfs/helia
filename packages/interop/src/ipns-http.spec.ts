@@ -3,6 +3,7 @@ import { ipns } from '@helia/ipns'
 import { delegatedHTTPRouting } from '@helia/routers'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
+import last from 'it-last'
 import { CID } from 'multiformats/cid'
 import { isNode } from 'wherearewe'
 import { createKuboNode } from './fixtures/create-kubo.ts'
@@ -62,8 +63,12 @@ describe('@helia/ipns - http', () => {
     })
 
     const key = peerIdFromCID(CID.parse(res.name))
-    // @ts-expect-error @libp2p/peer-id needs dep updates
-    const { cid: resolvedCid } = await name.resolve(key.toMultihash())
-    expect(resolvedCid.toString()).to.equal(cid.toString())
+    const result = await last(name.resolve(key.toMultihash()))
+
+    if (result == null) {
+      throw new Error('No results found')
+    }
+
+    expect(result.record.value).to.equal(`/ipfs/${cid}`)
   })
 })

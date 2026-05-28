@@ -1,6 +1,6 @@
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { delegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
+import { delegatedRoutingV1HttpApiClientContentRouting, delegatedRoutingV1HttpApiClientPeerRouting } from '@helia/delegated-routing-v1-http-api-client'
 import { delegatedHTTPRoutingDefaults } from '@helia/routers'
 import { autoTLS } from '@ipshipyard/libp2p-auto-tls'
 import { autoNAT } from '@libp2p/autonat'
@@ -19,8 +19,6 @@ import { tls } from '@libp2p/tls'
 import { uPnPNAT } from '@libp2p/upnp-nat'
 import { webRTC, webRTCDirect } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
-import { ipnsSelector } from 'ipns/selector'
-import { ipnsValidator } from 'ipns/validator'
 import { userAgent } from 'libp2p/user-agent'
 import { name, version } from '../version.ts'
 import { bootstrapConfig } from './bootstrappers.ts'
@@ -38,7 +36,8 @@ export interface DefaultLibp2pServices extends Record<string, unknown> {
   autoNAT: unknown
   autoTLS: AutoTLS
   dcutr: unknown
-  delegatedRouting: unknown
+  delegatedContentRouting: unknown
+  delegatedPeerRouting: unknown
   dht: KadDHT
   identify: Identify
   keychain: Keychain
@@ -116,15 +115,9 @@ export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOpti
       autoNAT: autoNAT(),
       autoTLS: autoTLS(),
       dcutr: dcutr(),
-      delegatedRouting: delegatedRoutingV1HttpApiClient(delegatedHTTPRoutingDefaults()),
-      dht: kadDHT({
-        validators: {
-          ipns: ipnsValidator
-        },
-        selectors: {
-          ipns: ipnsSelector
-        }
-      }),
+      delegatedPeerRouting: delegatedRoutingV1HttpApiClientPeerRouting(delegatedHTTPRoutingDefaults()),
+      delegatedContentRouting: delegatedRoutingV1HttpApiClientContentRouting(delegatedHTTPRoutingDefaults()),
+      dht: kadDHT(),
       identify: identify(),
       identifyPush: identifyPush(),
       keychain: keychain(options.keychain),

@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "@helia/block-brokers": "^5.2.4",
-    "@helia/delegated-routing-v1-http-api-client": "^6.0.1",
+    "@helia/delegated-routing-v1-http-api-client": "^7.0.1",
     "@helia/interface": "^6.2.1",
     "@helia/routers": "^5.1.1",
     "@helia/utils": "^2.5.2",

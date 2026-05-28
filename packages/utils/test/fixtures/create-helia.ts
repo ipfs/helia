@@ -11,7 +11,7 @@ import type { Libp2p } from '@libp2p/interface'
 export async function createHelia (opts: Partial<HeliaInit> = {}): Promise<Helia> {
   const datastore = new MemoryDatastore()
   const blockstore = new MemoryBlockstore()
-  let libp2p: Libp2p
+  let libp2p: any
 
   if (isLibp2p(opts.libp2p)) {
     libp2p = opts.libp2p

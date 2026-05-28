@@ -9,13 +9,10 @@ import { dcutr } from '@libp2p/dcutr'
 import { http } from '@libp2p/http'
 import { identify, identifyPush } from '@libp2p/identify'
 import { kadDHT } from '@libp2p/kad-dht'
-import { keychain } from '@libp2p/keychain'
 import { mplex } from '@libp2p/mplex'
 import { ping } from '@libp2p/ping'
 import { webRTC, webRTCDirect } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
-import { ipnsSelector } from 'ipns/selector'
-import { ipnsValidator } from 'ipns/validator'
 import { userAgent } from 'libp2p/user-agent'
 import { name, version } from '../version.ts'
 import { bootstrapConfig } from './bootstrappers.ts'
@@ -23,7 +20,6 @@ import type { Libp2pDefaultsOptions } from './libp2p.ts'
 import type { HTTP } from '@libp2p/http'
 import type { Identify } from '@libp2p/identify'
 import type { KadDHT } from '@libp2p/kad-dht'
-import type { Keychain } from '@libp2p/keychain'
 import type { Ping } from '@libp2p/ping'
 import type { Libp2pOptions } from 'libp2p'
 
@@ -33,7 +29,6 @@ export interface DefaultLibp2pServices extends Record<string, unknown> {
   delegatedRouting: unknown
   dht: KadDHT
   identify: Identify
-  keychain: Keychain
   ping: Ping
   http: HTTP
 }
@@ -74,17 +69,10 @@ export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOpti
       dcutr: dcutr(),
       delegatedRouting: delegatedRoutingV1HttpApiClient(delegatedHTTPRoutingDefaults()),
       dht: kadDHT({
-        clientMode: true,
-        validators: {
-          ipns: ipnsValidator
-        },
-        selectors: {
-          ipns: ipnsSelector
-        }
+        clientMode: true
       }),
       identify: identify(),
       identifyPush: identifyPush(),
-      keychain: keychain(options.keychain),
       ping: ping(),
       http: http()
     }
