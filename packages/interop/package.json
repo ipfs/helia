@@ -77,7 +77,7 @@
     "@libp2p/websockets": "^10.1.8",
     "@multiformats/multiaddr": "^13.0.1",
     "@multiformats/sha3": "^4.0.0",
-    "aegir": "^48.0.8",
+    "aegir": "^48.0.9",
     "helia": "^6.1.4",
     "ipfs-unixfs-importer": "^17.0.0",
     "ipfsd-ctl": "^17.0.0",

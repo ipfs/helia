@@ -61,7 +61,7 @@
   "devDependencies": {
     "@ipld/dag-pb": "^4.1.5",
     "@libp2p/logger": "^6.2.4",
-    "aegir": "^48.0.8",
+    "aegir": "^48.0.9",
     "blockstore-core": "^7.0.1",
     "datastore-core": "^12.0.1",
     "delay": "^7.0.0",
