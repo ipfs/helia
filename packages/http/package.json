@@ -63,7 +63,7 @@
     "libp2p": "^3.2.0"
   },
   "devDependencies": {
-    "aegir": "^48.0.4",
+    "aegir": "^48.0.8",
     "multiformats": "^14.0.0",
     "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0"

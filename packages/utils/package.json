@@ -82,7 +82,7 @@
     "@libp2p/peer-id": "^6.0.6",
     "@types/sinon": "^21.0.1",
     "abort-error": "^1.0.2",
-    "aegir": "^48.0.4",
+    "aegir": "^48.0.8",
     "datastore-core": "^12.0.1",
     "delay": "^7.0.0",
     "it-all": "^3.0.11",

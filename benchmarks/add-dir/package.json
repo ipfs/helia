@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "@helia/unixfs": "^5.0.2",
-    "aegir": "^48.0.4",
+    "aegir": "^48.0.8",
     "blockstore-core": "^6.1.1",
     "blockstore-fs": "^3.0.2",
     "datastore-core": "^11.0.2",
