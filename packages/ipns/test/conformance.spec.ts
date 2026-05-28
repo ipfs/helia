@@ -1,5 +1,4 @@
-import { Keychain } from '@helia/utils'
-import { defaultLogger } from '@libp2p/logger'
+import { keychain } from '@ipshipyard/keychain'
 import { expect } from 'aegir/chai'
 import loadFixture from 'aegir/fixtures'
 import { MemoryDatastore } from 'datastore-core'
@@ -8,16 +7,16 @@ import { CID } from 'multiformats/cid'
 import { SignatureVerificationError } from '../src/errors.ts'
 import { marshalIPNSRecord, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from '../src/records.ts'
 import { ipnsValidator } from '../src/validator.ts'
-import { getCryptoKey } from './fixtures/crypto-loader.ts'
+import { getCrypto } from './fixtures/get-crypto.ts'
+import type { Keychain } from '@ipshipyard/keychain'
 
 describe('conformance', function () {
-  let keychain: Keychain
+  let kc: Keychain
 
   beforeEach(() => {
-    keychain = new Keychain({
-      logger: defaultLogger(),
+    kc = keychain()({
       datastore: new MemoryDatastore(),
-      getCryptoKey
+      getCrypto
     })
   })
 
@@ -26,7 +25,7 @@ describe('conformance', function () {
     const buf = loadFixture(`test/fixtures/${cid.toString(base36)}_v1.ipns-record`)
     const routingKey = multihashToIPNSRoutingKey(cid.multihash)
 
-    await expect(unmarshalIPNSRecord(routingKey, buf, keychain)).to.be.rejectedWith(/Missing data or signatureV2/)
+    await expect(unmarshalIPNSRecord(routingKey, buf, kc)).to.be.rejectedWith(/Missing data or signatureV2/)
       .eventually.with.property('name', SignatureVerificationError.name)
   })
 
@@ -34,7 +33,7 @@ describe('conformance', function () {
     const cid = CID.parse('k51qzi5uqu5dlkw8pxuw9qmqayfdeh4kfebhmreauqdc6a7c3y7d5i9fi8mk9w')
     const buf = loadFixture(`test/fixtures/${cid.toString(base36)}_v1-v2.ipns-record`)
     const routingKey = multihashToIPNSRoutingKey(cid.multihash)
-    const record = await unmarshalIPNSRecord(routingKey, buf, keychain)
+    const record = await unmarshalIPNSRecord(routingKey, buf, kc)
 
     await ipnsValidator(record)
 
@@ -46,7 +45,7 @@ describe('conformance', function () {
     const buf = loadFixture(`test/fixtures/${cid.toString(base36)}_v1-v2-broken-v1-value.ipns-record`)
     const routingKey = multihashToIPNSRoutingKey(cid.multihash)
 
-    await expect(unmarshalIPNSRecord(routingKey, buf, keychain)).to.be.rejectedWith(/Field "value" did not match/)
+    await expect(unmarshalIPNSRecord(routingKey, buf, kc)).to.be.rejectedWith(/Field "value" did not match/)
       .eventually.with.property('name', SignatureVerificationError.name)
   })
 
@@ -54,7 +53,7 @@ describe('conformance', function () {
     const cid = CID.parse('k51qzi5uqu5diamp7qnnvs1p1gzmku3eijkeijs3418j23j077zrkok63xdm8c')
     const buf = loadFixture(`test/fixtures/${cid.toString(base36)}_v1-v2-broken-signature-v2.ipns-record`)
     const routingKey = multihashToIPNSRoutingKey(cid.multihash)
-    const record = await unmarshalIPNSRecord(routingKey, buf, keychain)
+    const record = await unmarshalIPNSRecord(routingKey, buf, kc)
 
     await expect(ipnsValidator(record)).to.eventually.be.rejectedWith(/Record signature verification failed/)
       .eventually.with.property('name', SignatureVerificationError.name)
@@ -65,7 +64,7 @@ describe('conformance', function () {
     const buf = loadFixture(`test/fixtures/${cid.toString(base36)}_v1-v2-broken-signature-v1.ipns-record`)
     const routingKey = multihashToIPNSRoutingKey(cid.multihash)
 
-    const record = await unmarshalIPNSRecord(routingKey, buf, keychain)
+    const record = await unmarshalIPNSRecord(routingKey, buf, kc)
 
     expect(record.value).to.equal('/ipfs/bafkqahtwgevxmmrao5uxi2bamjzg623fnyqhg2lhnzqxi5lsmuqhmmi')
   })
@@ -74,7 +73,7 @@ describe('conformance', function () {
     const cid = CID.parse('k51qzi5uqu5dit2ku9mutlfgwyz8u730on38kd10m97m36bjt66my99hb6103f')
     const buf = loadFixture(`test/fixtures/${cid.toString(base36)}_v2.ipns-record`)
     const routingKey = multihashToIPNSRoutingKey(cid.multihash)
-    const record = await unmarshalIPNSRecord(routingKey, buf, keychain)
+    const record = await unmarshalIPNSRecord(routingKey, buf, kc)
 
     await ipnsValidator(record)
 
@@ -100,7 +99,7 @@ describe('conformance', function () {
     for (const { cid, fixture } of fixtures) {
       const routingKey = multihashToIPNSRoutingKey(cid.multihash)
       const buf = loadFixture(fixture)
-      const record = await unmarshalIPNSRecord(routingKey, buf, keychain)
+      const record = await unmarshalIPNSRecord(routingKey, buf, kc)
       const marshalled = marshalIPNSRecord(record)
 
       expect(buf).to.equalBytes(marshalled, `Failed to round trip ${cid}`)

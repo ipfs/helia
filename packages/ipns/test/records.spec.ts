@@ -1,5 +1,5 @@
-import { ed25519Crypto, Keychain, rsaCrypto } from '@helia/utils'
-import { defaultLogger } from '@libp2p/logger'
+import { ed25519Crypto, rsaCrypto } from '@ipshipyard/crypto'
+import { keychain } from '@ipshipyard/keychain'
 import { expect } from 'aegir/chai'
 import * as cbor from 'cborg'
 import { MemoryDatastore } from 'datastore-core'
@@ -12,24 +12,23 @@ import { IpnsEntry } from '../src/pb/ipns.ts'
 import { createIPNSRecord, createIPNSRecordWithExpiration } from '../src/records.ts'
 import { parseCborData, createCborData, ipnsRecordDataForV2Sig, marshalIPNSRecord, unmarshalIPNSRecord, multihashToIPNSRoutingKey, multihashFromIPNSRoutingKey, normalizeValue } from '../src/utils.ts'
 import { ipnsValidator } from '../src/validator.ts'
-import { getCryptoKey } from './fixtures/crypto-loader.ts'
+import { getCrypto } from './fixtures/get-crypto.ts'
 import { kuboRecord } from './fixtures/records.ts'
-import type { PrivateKey } from '@helia/interface'
+import type { Keychain, PrivateKey } from '@helia/interface'
 
 describe('records', function () {
   this.timeout(20 * 1000)
 
   const contentPath = '/ipfs/bafkqae3imvwgy3zamzzg63janjzs22lqnzzqu'
   let privateKey: PrivateKey
-  let keychain: Keychain
+  let kc: Keychain
 
   before(async () => {
     const crypto = rsaCrypto()
     privateKey = await crypto.generatePrivateKey()
-    keychain = new Keychain({
+    kc = keychain()({
       datastore: new MemoryDatastore(),
-      logger: defaultLogger(),
-      getCryptoKey
+      getCrypto
     })
   })
 
@@ -241,7 +240,7 @@ describe('records', function () {
     pb.data = createCborData(inputValue, pb.validityType ?? IpnsEntry.ValidityType.EOL, pb.validity ?? new Uint8Array(0), pb.sequence ?? 0n, pb.ttl ?? 0n)
     pb.value = uint8ArrayFromString(inputValue)
 
-    const modifiedRecord = await unmarshalIPNSRecord(routingKey, IpnsEntry.encode(pb), keychain)
+    const modifiedRecord = await unmarshalIPNSRecord(routingKey, IpnsEntry.encode(pb), kc)
     expect(modifiedRecord.value).to.equal(expectedValue)
   })
 
@@ -255,7 +254,7 @@ describe('records', function () {
     pb.data = createCborData(inputValue, pb.validityType ?? IpnsEntry.ValidityType.EOL, pb.validity ?? new Uint8Array(0), pb.sequence ?? 0n, pb.ttl ?? 0n)
     pb.value = uint8ArrayFromString(inputValue)
 
-    const modifiedRecord = await unmarshalIPNSRecord(routingKey, IpnsEntry.encode(pb), keychain)
+    const modifiedRecord = await unmarshalIPNSRecord(routingKey, IpnsEntry.encode(pb), kc)
     expect(modifiedRecord.value).to.equal(expectedValue)
   })
 
@@ -331,7 +330,7 @@ describe('records', function () {
     const createdRecord = await createIPNSRecord(privateKey, contentPath, sequence, validity)
 
     const marshaledData = marshalIPNSRecord(createdRecord)
-    const unmarshaledData = await unmarshalIPNSRecord(routingKey, marshaledData, keychain)
+    const unmarshaledData = await unmarshalIPNSRecord(routingKey, marshaledData, kc)
 
     expect(createdRecord.value).to.equal(unmarshaledData.value)
     expect(createdRecord.validity.toString()).to.equal(unmarshaledData.validity.toString())
@@ -432,7 +431,7 @@ describe('records', function () {
     input.signatureV2 = await privateKey.sign(sigData)
 
     const buf = marshalIPNSRecord(input)
-    const record = await unmarshalIPNSRecord(routingKey, buf, keychain)
+    const record = await unmarshalIPNSRecord(routingKey, buf, kc)
 
     expect(record).to.have.property('value').that.equals('/ipfs/bafkqae3imvwgy3zamzzg63janjzs22lqnzzqu')
   })
@@ -447,10 +446,10 @@ describe('records', function () {
     // uses microsecond precision. The value is a timestamp as defined by
     // rfc3339 which doesn't have a strong opinion on fractions of seconds so
     // both are valid but we must be able to round trip them intact.
-    const unmarshaled = await unmarshalIPNSRecord(routingKey, kuboRecord.bytes, keychain)
+    const unmarshaled = await unmarshalIPNSRecord(routingKey, kuboRecord.bytes, kc)
     const reMarshaled = marshalIPNSRecord(unmarshaled)
 
-    const reUnmarshaled = await unmarshalIPNSRecord(routingKey, reMarshaled, keychain)
+    const reUnmarshaled = await unmarshalIPNSRecord(routingKey, reMarshaled, kc)
 
     expect(unmarshaled).to.deep.equal(reUnmarshaled)
     expect(reMarshaled).to.equalBytes(kuboRecord.bytes)

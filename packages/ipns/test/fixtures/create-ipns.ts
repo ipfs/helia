@@ -1,10 +1,10 @@
-import { Keychain as KeychainClass } from '@helia/utils'
+import { keychain } from '@ipshipyard/keychain'
 import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { MemoryDatastore } from 'datastore-core'
 import { stubInterface } from 'sinon-ts'
 import { IPNS } from '../../src/ipns.ts'
-import { getCryptoKey } from './crypto-loader.ts'
+import { getCrypto } from './get-crypto.ts'
 import type { IPNSRouting } from '../../src/index.ts'
 import type { HeliaEvents, Routing, Keychain } from '@helia/interface'
 import type { Logger } from '@libp2p/logger'
@@ -33,10 +33,9 @@ export async function createIPNS (): Promise<CreateIPNSResult> {
   const logger = defaultLogger()
   const events = new TypedEventEmitter<HeliaEvents>()
 
-  const keychain = new KeychainClass({
-    logger,
+  const kc = keychain()({
     datastore,
-    getCryptoKey
+    getCrypto
   })
 
   const name = new IPNS({
@@ -44,7 +43,7 @@ export async function createIPNS (): Promise<CreateIPNSResult> {
     routing: heliaRouting,
     logger,
     events,
-    keychain
+    keychain: kc
   }, {
     routers: [customRouting]
   })
@@ -53,7 +52,7 @@ export async function createIPNS (): Promise<CreateIPNSResult> {
     name,
     customRouting,
     heliaRouting,
-    keychain,
+    keychain: kc,
     datastore,
     log: logger.forComponent('helia:ipns:test'),
     events

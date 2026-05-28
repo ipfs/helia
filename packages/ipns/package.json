@@ -97,7 +97,8 @@
     "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
-    "@helia/utils": "^2.5.2",
+    "@ipshipyard/crypto": "^1.1.0",
+    "@ipshipyard/keychain": "^1.0.2",
     "aegir": "^48.0.4",
     "datastore-core": "^12.0.1",
     "it-drain": "^3.0.12",

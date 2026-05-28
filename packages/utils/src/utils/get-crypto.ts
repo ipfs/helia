@@ -1,12 +1,14 @@
 import { UnknownCryptoError } from '@helia/interface'
-import { ed25519Crypto, rsaCrypto } from '../crypto/index.ts'
+import { ecdsaCrypto, ed25519Crypto, rsaCrypto } from '@ipshipyard/crypto'
 import { isPromise } from './is-promise.ts'
-import type { CryptoKeyImplementation, CryptoKeyLoader } from '@helia/interface'
+import type { CryptoLoader } from '@helia/interface'
+import type { Crypto } from '@ipshipyard/crypto'
 
-export function getCryptoKey (initialCryptos: Array<CryptoKeyImplementation> = [], loadCrypto?: CryptoKeyLoader): CryptoKeyLoader {
-  const cryptos: Record<string | number, CryptoKeyImplementation> = {}
+export function getCrypto (initialCryptos: Array<Crypto> = [], loadCrypto?: CryptoLoader): CryptoLoader {
+  const cryptos: Record<string | number, Crypto> = {}
 
   initialCryptos = [
+    ecdsaCrypto(),
     ed25519Crypto(),
     rsaCrypto(),
     ...initialCryptos

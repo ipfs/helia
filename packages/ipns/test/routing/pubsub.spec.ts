@@ -1,4 +1,4 @@
-import { Keychain } from '@helia/utils'
+import { keychain } from '@ipshipyard/keychain'
 import { start, stop, TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
@@ -11,11 +11,11 @@ import { DEFAULT_LIFETIME_MS } from '../../src/constants.ts'
 import { localStore } from '../../src/local-store.ts'
 import { createIPNSRecord, marshalIPNSRecord, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from '../../src/records.ts'
 import { PubSubRouting } from '../../src/routing/pubsub.ts'
-import { getCryptoKey } from '../fixtures/crypto-loader.ts'
+import { getCrypto } from '../fixtures/get-crypto.ts'
 import type { IPNSRecord } from '../../src/index.ts'
 import type { LocalStore } from '../../src/local-store.ts'
 import type { Message, PubSub, PubSubEvents, Subscription } from '../../src/routing/pubsub.ts'
-import type { PrivateKey } from '@helia/interface'
+import type { Keychain, PrivateKey } from '@helia/interface'
 import type { Fetch } from '@libp2p/fetch'
 import type { Libp2p, PeerId } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
@@ -34,7 +34,7 @@ describe('pubsub routing', () => {
   let record: IPNSRecord
   let target: TypedEventEmitter<PubSubEvents>
   let libp2p: StubbedInstance<Libp2p<{ pubsub: StubbedInstance<PubSub>, fetch: StubbedInstance<Fetch> }>>
-  let keychain: Keychain
+  let kc: Keychain
 
   beforeEach(async () => {
     datastore = new MemoryDatastore()
@@ -57,20 +57,19 @@ describe('pubsub routing', () => {
       }
     })
 
-    keychain = new Keychain({
+    kc = keychain()({
       datastore,
-      logger,
-      getCryptoKey
+      getCrypto
     })
 
     pubsubRouter = new PubSubRouting({
       datastore,
       logger,
       libp2p,
-      keychain
+      keychain: kc
     })
 
-    privateKey = await keychain.generateKey('test-key')
+    privateKey = await kc.generateKey('test-key')
     routingKey = multihashToIPNSRoutingKey(privateKey.publicKey.toMultihash())
     topic = `/record/${toString(routingKey, 'base64url')}`
     record = await createIPNSRecord(privateKey, '/test', 1n, DEFAULT_LIFETIME_MS)
@@ -144,7 +143,7 @@ describe('pubsub routing', () => {
         await delay(100)
 
         const result = await store.get(routingKey)
-        const updatedRecord = await unmarshalIPNSRecord(routingKey, result.record, keychain)
+        const updatedRecord = await unmarshalIPNSRecord(routingKey, result.record, kc)
         expect(updatedRecord.sequence).to.equal(2n)
         expect(updatedRecord.value).to.equal('/test2')
       })

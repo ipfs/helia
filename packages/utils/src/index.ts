@@ -5,24 +5,24 @@
  * modules such as `helia`, `@helia/http`, etc.
  */
 
+import { keychain } from '@ipshipyard/keychain'
 import { contentRoutingSymbol, peerRoutingSymbol, start, stop, TypedEventEmitter } from '@libp2p/interface'
 import { dns } from '@multiformats/dns'
 import drain from 'it-drain'
 import { CustomProgressEvent } from 'progress-events'
-import { Keychain } from './keychain.ts'
 import { PinsImpl } from './pins.ts'
 import { Routing as RoutingClass } from './routing.ts'
 import { BlockStorage } from './storage.ts'
 import { assertDatastoreVersionIsCurrent } from './utils/datastore-version.ts'
 import { getCodec } from './utils/get-codec.ts'
-import { getCryptoKey } from './utils/get-crypto.ts'
+import { getCrypto } from './utils/get-crypto.ts'
 import { getHasher } from './utils/get-hasher.ts'
 import { NetworkedStorage } from './utils/networked-storage.ts'
-import type { KeychainInit } from './keychain.ts'
 import type { BlockStorageInit } from './storage.ts'
-import type { CodecLoader, GCOptions, HasherLoader, Helia as HeliaInterface, HeliaEvents, Routing, CryptoKeyLoader, CryptoKeyImplementation } from '@helia/interface'
+import type { CodecLoader, GCOptions, HasherLoader, Helia as HeliaInterface, HeliaEvents, Routing, CryptoLoader, Crypto } from '@helia/interface'
 import type { BlockBroker } from '@helia/interface/blocks'
 import type { Pins } from '@helia/interface/pins'
+import type { Keychain, KeychainInit } from '@ipshipyard/keychain'
 import type { ComponentLogger, ContentRouting, Libp2p, Logger, Metrics, PeerRouting } from '@libp2p/interface'
 import type { DNS } from '@multiformats/dns'
 import type { Blockstore } from 'interface-blockstore'
@@ -39,10 +39,6 @@ export type { BlockStorage, BlockStorageInit }
 
 export { breadthFirstWalker, depthFirstWalker, naturalOrderWalker } from './graph-walker.ts'
 export type { GraphWalkerComponents, GraphWalkerInit, GraphNode, GraphWalker } from './graph-walker.ts'
-
-export { ed25519Crypto } from './crypto/ed25519.ts'
-export { rsaCrypto } from './crypto/rsa.ts'
-export { Keychain } from './keychain.ts'
 
 /**
  * Options used to create a Helia node.
@@ -118,12 +114,12 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
   /**
    * A list of pre-supported public/private key implementations
    */
-  cryptoKeys?: Array<CryptoKeyImplementation>
+  cryptos?: Array<Crypto>
 
   /**
    * Dynamically load a cryptography implementation
    */
-  loadCrypto?: CryptoKeyLoader
+  loadCrypto?: CryptoLoader
 
   /**
    * Garbage collection requires preventing blockstore writes during searches
@@ -207,7 +203,7 @@ interface Components {
   metrics?: Metrics
   getCodec: CodecLoader
   getHasher: HasherLoader
-  getCryptoKey: CryptoKeyLoader
+  getCrypto: CryptoLoader
 }
 
 export class Helia<T extends Libp2p> implements HeliaInterface<T> {
@@ -220,7 +216,7 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
   public routing: Routing
   public getCodec: CodecLoader
   public getHasher: HasherLoader
-  public getCryptoKey: CryptoKeyLoader
+  public getCrypto: CryptoLoader
   public dns: DNS
   public keychain: Keychain
   public metrics?: Metrics
@@ -231,7 +227,7 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
     this.log = this.logger.forComponent('helia')
     this.getHasher = getHasher(init.hashers, init.loadHasher)
     this.getCodec = getCodec(init.codecs, init.loadCodec)
-    this.getCryptoKey = getCryptoKey(init.cryptoKeys, init.loadCrypto)
+    this.getCrypto = getCrypto(init.cryptos, init.loadCrypto)
     this.dns = init.dns ?? dns()
     this.metrics = init.metrics
     this.libp2p = init.libp2p
@@ -246,13 +242,13 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
       blockBrokers: [],
       getHasher: this.getHasher,
       getCodec: this.getCodec,
-      getCryptoKey: this.getCryptoKey,
+      getCrypto: this.getCrypto,
       dns: this.dns,
       metrics: this.metrics,
       ...(init.components ?? {})
     }
 
-    this.keychain = components.keychain = new Keychain(components, init.keychain)
+    this.keychain = components.keychain = keychain()(components)
 
     this.routing = components.routing = new RoutingClass(components, {
       routers: (init.routers ?? []).flatMap((router: Partial<Routing> | ((components: any) => Partial<Routing>)) => {

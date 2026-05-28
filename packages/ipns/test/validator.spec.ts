@@ -1,13 +1,13 @@
-import { Keychain, rsaCrypto } from '@helia/utils'
-import { defaultLogger } from '@libp2p/logger'
+import { rsaCrypto } from '@ipshipyard/crypto'
+import { keychain } from '@ipshipyard/keychain'
 import { expect } from 'aegir/chai'
 import * as cborg from 'cborg'
 import { MemoryDatastore } from 'datastore-core'
 import { InvalidEmbeddedPublicKeyError, RecordTooLargeError, SignatureVerificationError, UnsupportedValidityError } from '../src/errors.ts'
 import { createIPNSRecord, unmarshalIPNSRecord } from '../src/records.ts'
 import { ipnsValidator, validFor } from '../src/validator.ts'
-import { getCryptoKey } from './fixtures/crypto-loader.ts'
-import type { PrivateKey } from '@helia/interface'
+import { getCrypto } from './fixtures/get-crypto.ts'
+import type { Keychain, PrivateKey } from '@helia/interface'
 
 describe('validator', function () {
   this.timeout(20 * 1000)
@@ -15,16 +15,15 @@ describe('validator', function () {
   const contentPath = '/ipfs/bafkqae3imvwgy3zamzzg63janjzs22lqnzzqu'
   let privateKey1: PrivateKey
   let privateKey2: PrivateKey
-  let keychain: Keychain
+  let kc: Keychain
 
   before(async () => {
     const crypto = rsaCrypto()
     privateKey1 = await crypto.generatePrivateKey()
     privateKey2 = await crypto.generatePrivateKey()
-    keychain = new Keychain({
+    kc = keychain()({
       datastore: new MemoryDatastore(),
-      logger: defaultLogger(),
-      getCryptoKey
+      getCrypto
     })
   })
 
@@ -85,7 +84,7 @@ describe('validator', function () {
     const marshalledData = new Uint8Array(1024 * 1024)
     const key = new Uint8Array()
 
-    await expect(unmarshalIPNSRecord(key, marshalledData, keychain)).to.eventually.be.rejected()
+    await expect(unmarshalIPNSRecord(key, marshalledData, kc)).to.eventually.be.rejected()
       .with.property('name', RecordTooLargeError.name)
   })
 

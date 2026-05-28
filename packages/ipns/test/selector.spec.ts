@@ -1,4 +1,4 @@
-import { rsaCrypto } from '@helia/utils'
+import { rsaCrypto } from '@ipshipyard/crypto'
 import { expect } from 'aegir/chai'
 import { createIPNSRecord, multihashToIPNSRoutingKey } from '../src/records.ts'
 import { ipnsSelector } from '../src/selector.ts'

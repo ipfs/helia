@@ -15,15 +15,15 @@
  */
 
 import type { Blocks } from './blocks.ts'
-import type { Keychain } from './keychain.ts'
 import type { Pins } from './pins.ts'
 import type { Routing } from './routing.ts'
+import type { CryptoLoader, Keychain } from '@ipshipyard/keychain'
 import type { ComponentLogger, Libp2p, Metrics, TypedEventEmitter } from '@libp2p/interface'
 import type { DNS } from '@multiformats/dns'
 import type { AbortOptions } from 'abort-error'
 import type { Datastore } from 'interface-datastore'
 import type { BlockCodec, MultihashHasher } from 'multiformats'
-import type { CID, MultihashDigest } from 'multiformats/cid'
+import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
 export interface CodecLoader {
@@ -34,138 +34,9 @@ export interface HasherLoader {
   (code: number, options?: AbortOptions): MultihashHasher | Promise<MultihashHasher>
 }
 
-export interface CryptoKeyLoader {
-  (codeOrName: number | string, options?: AbortOptions): CryptoKeyImplementation | Promise<CryptoKeyImplementation>
-}
-
-export interface PublicKey {
-  /**
-   * The type of the crypto implementation, e.g. `Ed15519`
-   */
-  readonly type: string
-
-  /**
-   * The code that is used as the `Type` field in the protobuf representation of
-   * the public/private keys
-   */
-  readonly code: number
-
-  /**
-   * Return a MultihashDigest that represents this key
-   */
-  toMultihash (): MultihashDigest
-
-  /**
-   * Return the libp2p-key CID that represents this key
-   */
-  toCID (): CID<unknown, 0x72, number, 1>
-
-  /**
-   * Return this key encoded as a protobuf PublicKey message
-   */
-  toProtobuf (): Uint8Array<ArrayBuffer>
-
-  /**
-   * Verify the passed message against it's signature
-   */
-  verify(message: Uint8Array, signature: Uint8Array, options?: AbortOptions): boolean | Promise<boolean>
-}
-
-export function isPublicKey (obj?: any): obj is PublicKey {
-  if (obj == null) {
-    return false
-  }
-
-  return typeof obj.type === 'string' && typeof obj.code === 'number' && typeof obj.verify === 'function'
-}
-
-export interface PrivateKey {
-  /**
-   * The type of the crypto implementation, e.g. `Ed15519`
-   */
-  readonly type: string
-
-  /**
-   * The code that is used as the `Type` field in the protobuf representation of
-   * the public/private keys
-   */
-  readonly code: number
-
-  /**
-   * The public key that corresponds to this private key
-   */
-  readonly publicKey: PublicKey
-
-  /**
-   * Return this key encoded as a protobuf PrivateKey message
-   */
-  toProtobuf (): Uint8Array<ArrayBuffer>
-
-  /**
-   * Sign the passed message and return a signature
-   */
-  sign(message: Uint8Array, options?: AbortOptions): Uint8Array<ArrayBuffer> | Promise<Uint8Array<ArrayBuffer>>
-}
-
-export function isPrivateKey (obj?: any): obj is PrivateKey {
-  if (obj == null) {
-    return false
-  }
-
-  return typeof obj.type === 'string' && typeof obj.code === 'number' && typeof obj.sign === 'function' && isPublicKey(obj.publicKey)
-}
-
-export interface CipherOptions extends AbortOptions {
-  iterations?: number
-  hash?: string
-  keyLength?: number
-  algorithm?: string
-}
-
-export interface EncryptionResult {
-  salt: Uint8Array<ArrayBuffer>
-  iv: Uint8Array<ArrayBuffer>
-  cipherText: Uint8Array<ArrayBuffer>
-}
-
-export interface Cipher {
-  encrypt(data: Uint8Array, options?: AbortOptions): Promise<EncryptionResult>
-  decrypt(salt: Uint8Array, iv: Uint8Array, cipherText: Uint8Array, options?: CipherOptions): Promise<Uint8Array<ArrayBuffer>>
-}
-
-export interface CryptoKeyImplementation {
-  /**
-   * The type of the crypto implementation, e.g. `Ed15519`
-   */
-  type: string
-
-  /**
-   * The code that is used as the `Type` field in the protobuf representation of
-   * the public/private keys
-   */
-  code: number
-
-  /**
-   * Create a new private key
-   */
-  generatePrivateKey(options?: AbortOptions & Record<string, any>): Promise<PrivateKey>
-
-  /**
-   * Convert the passed bytes into a public key. The bytes come from the `.Data`
-   * field of a `PublicKey` protobuf message.
-   */
-  publicKeyFromProtobuf(buf: Uint8Array, options?: AbortOptions): PublicKey | Promise<PublicKey>
-
-  /**
-   * Convert a private key into a string suitable for storing in a datastore
-   */
-  serialize (key: PrivateKey, cipher: Cipher, options?: AbortOptions): Promise<string>
-
-  /**
-   * Convert a string from a datastore into a private key
-   */
-  deserialize (pem: string, cipher: Cipher, options?: AbortOptions): Promise<PrivateKey>
-}
+export type { CryptoLoader, Keychain } from '@ipshipyard/keychain'
+export type { Crypto, PrivateKey, PublicKey } from '@ipshipyard/crypto'
+export { isPrivateKey, isPublicKey } from '@ipshipyard/crypto'
 
 /**
  * The API presented by a Helia node
@@ -255,7 +126,7 @@ export interface Helia<T extends Libp2p = Libp2p> {
   /**
    * Cryptography implementations securely sign and verify data
    */
-  getCryptoKey: CryptoKeyLoader
+  getCrypto: CryptoLoader
 }
 
 export type GcEvents =
@@ -292,6 +163,5 @@ export interface HeliaEvents<T extends Libp2p = Libp2p> {
 
 export * from './blocks.ts'
 export * from './errors.ts'
-export * from './keychain.ts'
 export * from './pins.ts'
 export * from './routing.ts'

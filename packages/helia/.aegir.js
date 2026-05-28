@@ -2,8 +2,8 @@ import { circuitRelayServer } from '@libp2p/circuit-relay-v2'
 import { identify } from '@libp2p/identify'
 import { WebSockets } from '@multiformats/mafmt'
 import { CID } from 'multiformats/cid'
-import { sha256 } from 'multiformats/hashes/sha2'
 import * as raw from 'multiformats/codecs/raw'
+import { sha256 } from 'multiformats/hashes/sha2'
 
 /** @type {import('aegir').PartialOptions} */
 const options = {
@@ -20,7 +20,7 @@ const options = {
         libp2p: {
           addresses: {
             listen: [
-              `/ip4/127.0.0.1/tcp/0/ws`
+              '/ip4/127.0.0.1/tcp/0/ws'
             ]
           },
           connectionManager: {

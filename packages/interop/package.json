@@ -71,7 +71,7 @@
     "@libp2p/floodsub": "^11.0.16",
     "@libp2p/interface": "^3.2.0",
     "@libp2p/kad-dht": "^16.2.0",
-    "@libp2p/keychain": "^6.0.12",
+    "@libp2p/keychain": "^6.1.1",
     "@libp2p/peer-id": "^6.0.6",
     "@libp2p/utils": "^7.0.15",
     "@libp2p/websockets": "^10.1.8",
