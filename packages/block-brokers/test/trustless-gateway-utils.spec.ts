@@ -54,7 +54,7 @@ describe('trustless-gateway-block-broker-utils', () => {
   })
 
   it('filterNonHTTPMultiaddrs filters non-HTTP addresses', async function () {
-    const filtered = filterNonHTTPMultiaddrs([
+    const addrs = [
       multiaddr('/ip4/123.123.123.123/tcp/1234/ws'),
       multiaddr('/ip4/123.123.123.123/tcp/1234/wss'),
       multiaddr('/ip4/123.123.123.123/tcp/1234/tls/ws'),
@@ -67,9 +67,10 @@ describe('trustless-gateway-block-broker-utils', () => {
       multiaddr('/dns/localhost/wss'),
       multiaddr('/dns/localhost/quic-v1/webtransport/certhash/uEiDmNOgNuICfKiuNAz90dP2by6ti_0dyTB7FtgDXKDVbyQ'),
       multiaddr('/dns/localhost/udp/1234/quic-v1/webtransport/certhash/uEiDmNOgNuICfKiuNAz90dP2by6ti_0dyTB7FtgDXKDVbyQ')
-    ], true, true)
+    ]
 
-    expect(filtered.length).to.deep.equal(0)
+    expect(filterNonHTTPMultiaddrs(addrs, true, true)).to.have.lengthOf(0)
+    expect(filterNonHTTPMultiaddrs(addrs, false, true)).to.have.lengthOf(0)
   })
 
   it('limitedResponse throws an error when the content-length header is greater than the limit', async function () {
