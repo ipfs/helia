@@ -53,7 +53,7 @@ describe('trustless-gateway-block-broker-utils', () => {
     expect(filtered.length).to.deep.equal(1)
   })
 
-  it('filterNonHTTPMultiaddrs filters WebSocket addresses', async function () {
+  it('filterNonHTTPMultiaddrs filters non-HTTP addresses', async function () {
     const filtered = filterNonHTTPMultiaddrs([
       multiaddr('/ip4/123.123.123.123/tcp/1234/ws'),
       multiaddr('/ip4/123.123.123.123/tcp/1234/wss'),
@@ -64,7 +64,9 @@ describe('trustless-gateway-block-broker-utils', () => {
       multiaddr('/dns/localhost/https/ws'),
       multiaddr('/dns/localhost/tls/ws'),
       multiaddr('/dns/localhost/tcp/1234/wss'),
-      multiaddr('/dns/localhost/wss')
+      multiaddr('/dns/localhost/wss'),
+      multiaddr('/dns/localhost/quic-v1/webtransport/certhash/uEiDmNOgNuICfKiuNAz90dP2by6ti_0dyTB7FtgDXKDVbyQ'),
+      multiaddr('/dns/localhost/udp/1234/quic-v1/webtransport/certhash/uEiDmNOgNuICfKiuNAz90dP2by6ti_0dyTB7FtgDXKDVbyQ')
     ], true, true)
 
     expect(filtered.length).to.deep.equal(0)
