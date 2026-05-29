@@ -1,3 +1,4 @@
+import { multiaddr } from '@multiformats/multiaddr'
 import { uriToMultiaddr } from '@multiformats/uri-to-multiaddr'
 import { expect } from 'aegir/chai'
 import { filterNonHTTPMultiaddrs, limitedResponse } from '../src/trustless-gateway/utils.ts'
@@ -50,6 +51,23 @@ describe('trustless-gateway-block-broker-utils', () => {
     const filtered = filterNonHTTPMultiaddrs([localAddr], false, true)
 
     expect(filtered.length).to.deep.equal(1)
+  })
+
+  it('filterNonHTTPMultiaddrs filters WebSocket addresses', async function () {
+    const filtered = filterNonHTTPMultiaddrs([
+      multiaddr('/ip4/123.123.123.123/tcp/1234/ws'),
+      multiaddr('/ip4/123.123.123.123/tcp/1234/wss'),
+      multiaddr('/ip4/123.123.123.123/tcp/1234/tls/ws'),
+      multiaddr('/ip4/123.123.123.123/tls/ws'),
+      multiaddr('/dns/localhost/tcp/1234/ws'),
+      multiaddr('/dns/localhost/ws'),
+      multiaddr('/dns/localhost/https/ws'),
+      multiaddr('/dns/localhost/tls/ws'),
+      multiaddr('/dns/localhost/tcp/1234/wss'),
+      multiaddr('/dns/localhost/wss')
+    ], true, true)
+
+    expect(filtered.length).to.deep.equal(0)
   })
 
   it('limitedResponse throws an error when the content-length header is greater than the limit', async function () {
