@@ -66,6 +66,73 @@ describe('network', () => {
       .with.property('name', 'NotStartedError')
   })
 
+  it('should not wait for peer:identify when the peer is already known to speak bitswap', async () => {
+    // peer:identify is single-shot per peer. If the peer was already
+    // identified by another subsystem (e.g. pubsub mesh warmup) before
+    // bitswap calls connectTo, awaiting peer:identify hangs forever. When
+    // the peerStore already lists BITSWAP_120 for the peer the race is
+    // unnecessary and connectTo must resolve from dial() alone.
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const connection = stubInterface<Connection>()
+
+    components.libp2p.peerStore = stubInterface({
+      get: Sinon.stub().withArgs(peerId).resolves({
+        id: peerId,
+        addresses: [],
+        protocols: [BITSWAP_120],
+        metadata: new Map(),
+        tags: new Map()
+      })
+    }) as any
+
+    components.libp2p.dial.withArgs(peerId).resolves(connection)
+
+    const result = await network.connectTo(peerId)
+    expect(result).to.equal(connection)
+    expect(components.libp2p.dial.calledWith(peerId)).to.be.true()
+    // raceEvent listens via addEventListener; the fast path skips it entirely
+    const identifyListens = components.libp2p.addEventListener.getCalls()
+      .filter(call => call.args[0] === 'peer:identify')
+    expect(identifyListens, 'should not subscribe to peer:identify on the fast path').to.have.lengthOf(0)
+  })
+
+  it('should fall through to the identify race when the peer is not yet in peerStore', async () => {
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const connection = stubInterface<Connection>()
+    const peerStoreError = new Error('NotFoundError')
+    peerStoreError.name = 'NotFoundError'
+
+    components.libp2p.peerStore = stubInterface({
+      get: Sinon.stub().rejects(peerStoreError)
+    }) as any
+
+    components.libp2p.dial.callsFake(async () => {
+      // simulate identify firing after dial
+      setTimeout(() => {
+        const call = components.libp2p.addEventListener.getCalls()
+          .find(c => c.args[0] === 'peer:identify')
+        const callback = call?.args[1]
+        if (typeof callback === 'function') {
+          callback(new CustomEvent<IdentifyResult>('peer:identify', {
+            detail: {
+              peerId,
+              protocols: [BITSWAP_120],
+              listenAddrs: [],
+              connection
+            }
+          }))
+        }
+      }, 10)
+      return connection
+    })
+
+    await network.connectTo(peerId)
+
+    const identifyListens = components.libp2p.addEventListener.getCalls()
+      .filter(call => call.args[0] === 'peer:identify')
+    expect(identifyListens, 'should subscribe to peer:identify on the slow path').to.have.lengthOf.at.least(1)
+  })
+
   it('should register protocol handlers', () => {
     expect(components.libp2p.handle.called).to.be.true()
     expect(components.libp2p.register.calledWith(BITSWAP_120)).to.be.true()
