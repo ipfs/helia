@@ -13,7 +13,14 @@ import type { ProgressOptions } from 'progress-events'
 
 export function filterNonHTTPMultiaddrs (multiaddrs: Multiaddr[], allowInsecure: boolean, allowLocal: boolean): Multiaddr[] {
   return multiaddrs.filter(ma => {
-    if (HTTPS.matches(ma) || (allowInsecure && HTTP.matches(ma))) {
+    const isHttps = HTTPS.exactMatch(ma)
+    const isHttp = HTTP.exactMatch(ma)
+
+    if (!isHttps && !isHttp) {
+      return false
+    }
+
+    if (isHttps || (allowInsecure && isHttp)) {
       if (allowLocal) {
         return true
       }

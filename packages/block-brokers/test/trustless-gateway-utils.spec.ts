@@ -1,3 +1,4 @@
+import { multiaddr } from '@multiformats/multiaddr'
 import { uriToMultiaddr } from '@multiformats/uri-to-multiaddr'
 import { expect } from 'aegir/chai'
 import { filterNonHTTPMultiaddrs, limitedResponse } from '../src/trustless-gateway/utils.ts'
@@ -50,6 +51,26 @@ describe('trustless-gateway-block-broker-utils', () => {
     const filtered = filterNonHTTPMultiaddrs([localAddr], false, true)
 
     expect(filtered.length).to.deep.equal(1)
+  })
+
+  it('filterNonHTTPMultiaddrs filters non-HTTP addresses', async function () {
+    const addrs = [
+      multiaddr('/ip4/123.123.123.123/tcp/1234/ws'),
+      multiaddr('/ip4/123.123.123.123/tcp/1234/wss'),
+      multiaddr('/ip4/123.123.123.123/tcp/1234/tls/ws'),
+      multiaddr('/ip4/123.123.123.123/tls/ws'),
+      multiaddr('/dns/localhost/tcp/1234/ws'),
+      multiaddr('/dns/localhost/ws'),
+      multiaddr('/dns/localhost/https/ws'),
+      multiaddr('/dns/localhost/tls/ws'),
+      multiaddr('/dns/localhost/tcp/1234/wss'),
+      multiaddr('/dns/localhost/wss'),
+      multiaddr('/dns/localhost/quic-v1/webtransport/certhash/uEiDmNOgNuICfKiuNAz90dP2by6ti_0dyTB7FtgDXKDVbyQ'),
+      multiaddr('/dns/localhost/udp/1234/quic-v1/webtransport/certhash/uEiDmNOgNuICfKiuNAz90dP2by6ti_0dyTB7FtgDXKDVbyQ')
+    ]
+
+    expect(filterNonHTTPMultiaddrs(addrs, true, true)).to.have.lengthOf(0)
+    expect(filterNonHTTPMultiaddrs(addrs, false, true)).to.have.lengthOf(0)
   })
 
   it('limitedResponse throws an error when the content-length header is greater than the limit', async function () {
