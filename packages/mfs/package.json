@@ -1,6 +1,6 @@
 {
   "name": "@helia/mfs",
-  "version": "7.1.1",
+  "version": "8.0.0",
   "description": "A mutable filesystem powered by Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/mfs#readme",
@@ -48,7 +48,7 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@helia/unixfs": "^7.2.1",
+    "@helia/unixfs": "^8.0.0",
     "@libp2p/interface": "^3.2.0",
     "interface-blockstore": "^7.0.1",
     "interface-datastore": "^10.0.1",

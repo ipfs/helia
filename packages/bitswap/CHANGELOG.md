@@ -1,5 +1,25 @@
 # Changelog
 
+## [4.0.0](https://github.com/ipfs/helia/compare/bitswap-v3.2.3...bitswap-v4.0.0) (2026-05-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* returned instances of `CID` and `MultihashDigest` come from the `multiformats@14.x.x` module
+
+### Bug Fixes
+
+* update to multiformats@14.x.x ([#1039](https://github.com/ipfs/helia/issues/1039)) ([f6cc764](https://github.com/ipfs/helia/commit/f6cc7640840b77757c09d9463539b41e6ea33099))
+
+
+### Dependencies
+
+* bump aegir from 47.2.0 to 48.0.1 ([#1015](https://github.com/ipfs/helia/issues/1015)) ([ae98a4f](https://github.com/ipfs/helia/commit/ae98a4f4940310383c2a384cde64f99264326583))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.2.1 to ^7.0.0
+    * @helia/utils bumped from ^2.5.2 to ^3.0.0
+
 ## [3.2.3](https://github.com/ipfs/helia/compare/bitswap-v3.2.2...bitswap-v3.2.3) (2026-04-15)
 
 
