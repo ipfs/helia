@@ -51,6 +51,7 @@
     "@helia/bitswap": "^3.2.3",
     "@helia/interface": "^6.2.1",
     "@helia/utils": "^2.5.2",
+    "@ipld/car": "^5.4.3",
     "@libp2p/interface": "^3.2.0",
     "@libp2p/peer-id": "^6.0.6",
     "@libp2p/utils": "^7.0.15",
