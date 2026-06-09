@@ -1,3 +1,4 @@
+import { createTrustlessGatewayCarSession } from './car-session.ts'
 import { DEFAULT_ALLOW_INSECURE, DEFAULT_ALLOW_LOCAL } from './index.ts'
 import { createTrustlessGatewaySession } from './session.ts'
 import { findHttpGatewayProviders } from './utils.ts'
@@ -45,6 +46,7 @@ export class TrustlessGatewayBlockBroker implements BlockBroker<TrustlessGateway
   private readonly routing: Routing
   private readonly log: Logger
   private readonly logger: ComponentLogger
+  private readonly carStreamSessions: boolean
 
   constructor (components: TrustlessGatewayBlockBrokerComponents, init: TrustlessGatewayBlockBrokerInit = {}) {
     this.log = components.logger.forComponent('helia:trustless-gateway-block-broker')
@@ -53,6 +55,7 @@ export class TrustlessGatewayBlockBroker implements BlockBroker<TrustlessGateway
     this.allowInsecure = init.allowInsecure ?? DEFAULT_ALLOW_INSECURE
     this.allowLocal = init.allowLocal ?? DEFAULT_ALLOW_LOCAL
     this.transformRequestInit = init.transformRequestInit
+    this.carStreamSessions = init.carStreamSessions ?? false
   }
 
   async retrieve (cid: CID, options: BlockRetrievalOptions<TrustlessGatewayGetBlockProgressEvents> = {}): Promise<Uint8Array> {
@@ -99,7 +102,8 @@ export class TrustlessGatewayBlockBroker implements BlockBroker<TrustlessGateway
   }
 
   createSession (options: CreateTrustlessGatewaySessionOptions = {}): SessionBlockBroker<TrustlessGatewayGetBlockProgressEvents> {
-    return createTrustlessGatewaySession({
+    const create = this.carStreamSessions ? createTrustlessGatewayCarSession : createTrustlessGatewaySession
+    return create({
       logger: this.logger,
       routing: this.routing
     }, {

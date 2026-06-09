@@ -62,6 +62,18 @@ export interface TrustlessGatewayBlockBrokerInit {
    * Provide a function that will be called before querying trustless-gateways. This lets you modify the fetch options to pass custom headers or other necessary things.
    */
   transformRequestInit?: TransformRequestInit
+
+  /**
+   * When true, sessions created by this broker fetch the whole DAG over a single
+   * `?format=car` request to one gateway and serve each block from the stream,
+   * instead of one `?format=raw` request per block. This trades the default
+   * session's multi-gateway per-block racing for a single request, which is much
+   * faster for many-small-block DAGs. Blocks the CAR omits or that fail
+   * validation fall back to a single `?format=raw` fetch.
+   *
+   * @default false
+   */
+  carStreamSessions?: boolean
 }
 
 export interface TrustlessGatewayBlockBrokerComponents {

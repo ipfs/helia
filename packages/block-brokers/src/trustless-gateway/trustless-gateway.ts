@@ -225,6 +225,83 @@ HTTP/1.1 %d %s
   }
 
   /**
+   * Open a streaming CAR of the DAG rooted at `cid` from `this.url`, following
+   * the trustless gateway spec (`?format=car&dag-scope=all`). The query is
+   * pinned to a deterministic, deduplicated, depth-first CARv1 so the blocks
+   * arrive in the order a DAG walk asks for them. The response body is returned
+   * unconsumed for the caller to parse and verify block-by-block — unlike
+   * `getRawBlock` it is not size-limited here, since a CAR spans the whole DAG;
+   * the caller is responsible for verifying every block against its CID.
+   */
+  async getCar (cid: CID, options: GetRawBlockOptions = {}): Promise<ReadableStream<Uint8Array>> {
+    const gwUrl = new URL(this.url.toString())
+    gwUrl.pathname = `/ipfs/${cid.toString()}`
+    gwUrl.search = '?format=car&dag-scope=all&car-version=1&car-order=dfs&car-dups=n'
+
+    if (options.signal?.aborted === true) {
+      throw new Error(`Signal to fetch CAR for CID ${cid} from gateway ${this.url} was aborted prior to fetch`)
+    }
+
+    try {
+      this.#attempts++
+      const defaultReqInit: RequestInit = {
+        signal: options.signal,
+        headers: {
+          Accept: 'application/vnd.ipld.car'
+        },
+        cache: 'force-cache'
+      }
+
+      const reqInit: RequestInit = this.transformRequestInit != null ? await this.transformRequestInit(defaultReqInit) : defaultReqInit
+
+      options.onProgress?.(new CustomProgressEvent<BlockBrokerConnectProgressEvent>('helia:block-broker:connect', {
+        broker: 'trustless-gateway',
+        type: 'connect',
+        provider: this.peer,
+        cid
+      }))
+
+      const res = await fetch(gwUrl.toString(), reqInit)
+
+      if (!res.ok) {
+        this.#errors++
+        throw new Error(`Unable to fetch CAR for CID ${cid} from gateway ${this.url}, received ${res.status} ${res.statusText}`)
+      }
+
+      if (res.body == null) {
+        this.#errors++
+        throw new Error(`Unable to fetch CAR for CID ${cid} from gateway ${this.url}, response had no body`)
+      }
+
+      options.onProgress?.(new CustomProgressEvent<BlockBrokerConnectedProgressEvent>('helia:block-broker:connected', {
+        broker: 'trustless-gateway',
+        type: 'connected',
+        provider: this.peer,
+        address: uriToMultiaddr(gwUrl.toString()),
+        cid
+      }))
+
+      options.onProgress?.(new CustomProgressEvent<BlockBrokerRequestBlockProgressEvent>('helia:block-broker:request-block', {
+        broker: 'trustless-gateway',
+        type: 'request-block',
+        provider: this.peer,
+        cid
+      }))
+
+      this.#successes++
+      return res.body
+    } catch (cause: any) {
+      // @ts-expect-error - TS thinks signal?.aborted can only be false now
+      // because it was checked for true above.
+      if (options.signal?.aborted === true) {
+        throw new Error(`Fetching CAR for CID ${cid} from gateway ${this.url} was aborted`)
+      }
+      this.#errors++
+      throw new Error(`Unable to fetch CAR for CID ${cid} - ${cause.message}`)
+    }
+  }
+
+  /**
    * Encapsulate the logic for determining whether a gateway is considered
    * reliable, for prioritization. This is based on the number of successful attempts made
    * and the number of errors encountered.
