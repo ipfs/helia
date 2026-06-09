@@ -18,10 +18,12 @@ import type { Blocks } from './blocks.ts'
 import type { Pins } from './pins.ts'
 import type { Routing } from './routing.ts'
 import type { CryptoLoader, Keychain } from '@ipshipyard/keychain'
-import type { ComponentLogger, Libp2p, Metrics, TypedEventEmitter } from '@libp2p/interface'
+import type { Metrics } from '@libp2p/interface'
 import type { DNS } from '@multiformats/dns'
 import type { AbortOptions } from 'abort-error'
+import type { ComponentLogger } from 'birnam'
 import type { Datastore } from 'interface-datastore'
+import type { TypedEventEmitter } from 'main-event'
 import type { BlockCodec, MultihashHasher } from 'multiformats'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
@@ -41,12 +43,7 @@ export { isPrivateKey, isPublicKey } from '@ipshipyard/crypto'
 /**
  * The API presented by a Helia node
  */
-export interface Helia<T extends Libp2p = Libp2p> {
-  /**
-   * The libp2p instance
-   */
-  libp2p: T
-
+export interface Helia {
   /**
    * Where the blocks are stored
    */
@@ -60,7 +57,7 @@ export interface Helia<T extends Libp2p = Libp2p> {
   /**
    * Event emitter for Helia start and stop events
    */
-  events: TypedEventEmitter<HeliaEvents<T>>
+  events: TypedEventEmitter<HeliaEvents<this>>
 
   /**
    * Secure storage for private keys
@@ -137,7 +134,7 @@ export interface GCOptions extends AbortOptions, ProgressOptions<GcEvents> {
 
 }
 
-export interface HeliaEvents<T extends Libp2p = Libp2p> {
+export interface HeliaEvents<H extends Helia> {
   /**
    * This event notifies listeners that the node has started
    *
@@ -147,7 +144,7 @@ export interface HeliaEvents<T extends Libp2p = Libp2p> {
    * })
    * ```
    */
-  start: CustomEvent<Helia<T>>
+  start: CustomEvent<H>
 
   /**
    * This event notifies listeners that the node has stopped
@@ -158,7 +155,7 @@ export interface HeliaEvents<T extends Libp2p = Libp2p> {
    * })
    * ```
    */
-  stop: CustomEvent<Helia<T>>
+  stop: CustomEvent<H>
 }
 
 export * from './blocks.ts'
