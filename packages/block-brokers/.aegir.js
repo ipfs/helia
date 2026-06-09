@@ -155,10 +155,13 @@ const options = {
         res.end(JSON.stringify({ carRequests }))
       })
       carGateway.all('/ipfs/:cid', (req, res) => {
+        // no-store so the browser HTTP cache does not satisfy getCar's
+        // `cache: 'force-cache'` across tests, which would hide CAR requests
+        // from the counter below.
         const format = new URL(req.url, 'http://localhost').searchParams.get('format')
         if (format === 'car') {
           carRequests++
-          res.writeHead(200, { 'content-type': 'application/vnd.ipld.car' })
+          res.writeHead(200, { 'content-type': 'application/vnd.ipld.car', 'cache-control': 'no-store' })
           res.end(carBytes)
           return
         }
@@ -168,7 +171,7 @@ const options = {
           res.end()
           return
         }
-        res.writeHead(200, { 'content-type': 'application/vnd.ipld.raw', 'content-length': bytes.length })
+        res.writeHead(200, { 'content-type': 'application/vnd.ipld.raw', 'content-length': bytes.length, 'cache-control': 'no-store' })
         res.end(bytes)
       })
 
