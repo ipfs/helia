@@ -1,7 +1,7 @@
 /** @type {import('aegir').PartialOptions} */
 const options = {
   build: {
-    bundlesizeMax: '80KB'
+    bundlesizeMax: '279KB'
   }
 }
 

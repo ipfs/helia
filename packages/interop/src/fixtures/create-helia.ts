@@ -3,12 +3,11 @@ import { withLibp2p, libp2pDefaults } from '@helia/libp2p'
 import { kadDHT, removePublicAddressesMapper } from '@libp2p/kad-dht'
 import { sha3512 } from '@multiformats/sha3'
 import { createHelia } from 'helia'
-import type { HeliaWithLibp2p, DefaultLibp2pServices } from '@helia/libp2p'
-import type { Libp2pOptions } from 'libp2p'
+import type { HeliaWithLibp2p, DefaultLibp2pServices, CreateLibp2pOptions } from '@helia/libp2p'
 
 export async function createHeliaNode (): Promise<HeliaWithLibp2p<DefaultLibp2pServices>>
-export async function createHeliaNode <Services extends Record<string, unknown>> (libp2pOptions: Libp2pOptions<Services>): Promise<HeliaWithLibp2p<Services & DefaultLibp2pServices>>
-export async function createHeliaNode (libp2pOptions?: Libp2pOptions): Promise<HeliaWithLibp2p<DefaultLibp2pServices>> {
+export async function createHeliaNode <Services extends Record<string, unknown>> (libp2pOptions: CreateLibp2pOptions<Services>): Promise<HeliaWithLibp2p<Services & DefaultLibp2pServices>>
+export async function createHeliaNode (libp2pOptions?: CreateLibp2pOptions<any>): Promise<HeliaWithLibp2p<DefaultLibp2pServices>> {
   const defaults = libp2pDefaults()
   defaults.addresses = {
     listen: [

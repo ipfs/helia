@@ -118,7 +118,7 @@
  * import type { FloodSub } from '@libp2p/floodsub'
  * import type { Libp2p } from '@libp2p/interface'
  *
- * const libp2pOptions = libp2pDefaults()
+ * const libp2pOptions = libp2pDefaults() as any
  * libp2pOptions.services.pubsub = floodsub()
  *
  * const helia = await withLibp2p<Helia, { pubsub: FloodSub }>(createHelia(), libp2pOptions).start()

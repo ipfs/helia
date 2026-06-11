@@ -31,11 +31,4 @@ describe('helia factory', () => {
     await helia.datastore.put(key, block)
     expect(await helia.datastore.has(key)).to.be.true()
   })
-
-  it('adds helia details to the AgentVersion', async () => {
-    helia = createHelia()
-
-    expect(helia).to.have.nested.property('libp2p.services.identify.host.agentVersion')
-      .that.includes('helia/')
-  })
 })

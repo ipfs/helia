@@ -86,7 +86,8 @@
     "helia": "^6.1.4",
     "it-all": "^3.0.11",
     "it-drain": "^3.0.12",
-    "sinon-ts": "^2.0.0"
+    "sinon-ts": "^2.0.0",
+    "uint8arrays": "^6.1.1"
   },
   "browser": {
     "./dist/src/utils/libp2p-defaults.js": "./dist/src/utils/libp2p-defaults.browser.js"

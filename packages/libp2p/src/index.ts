@@ -26,6 +26,7 @@ import type { Libp2p, ServiceMap } from '@libp2p/interface'
 
 export { libp2pDefaults } from './utils/libp2p-defaults.ts'
 export type { DefaultLibp2pServices } from './utils/libp2p-defaults.ts'
+export type { CreateLibp2pOptions }
 
 export interface HeliaWithLibp2p<M extends ServiceMap = DefaultLibp2pServices> extends Helia {
   /**
@@ -34,17 +35,14 @@ export interface HeliaWithLibp2p<M extends ServiceMap = DefaultLibp2pServices> e
   libp2p: Libp2p<M>
 }
 
-function getLibp2p <H extends Helia, M extends ServiceMap = ServiceMap> (helia: H, opts?: CreateLibp2pOptions<M>): Promise<Libp2p<M>> {
+async function getLibp2p <H extends Helia, M extends ServiceMap = ServiceMap> (helia: H, opts?: CreateLibp2pOptions<M>): Promise<Libp2p<M>> {
   if (isLibp2p(opts)) {
     return opts as any
   }
 
   return createLibp2p(helia, {
     ...opts,
-    libp2p: {
-      ...opts?.libp2p,
-      dns: helia.dns
-    },
+    dns: helia.dns,
     logger: helia.logger,
     datastore: helia.datastore
   })
@@ -58,6 +56,19 @@ export function withLibp2p <H extends Helia, M extends ServiceMap = ServiceMap> 
 export function withLibp2p <H extends Helia, M extends ServiceMap = ServiceMap> (helia: H, opts?: CreateLibp2pOptions<M>): HeliaWithLibp2p {
   let libp2p: any
 
+  // add a getter that informs the user they need to start Helia
+  Object.defineProperty(helia, 'libp2p', {
+    configurable: true,
+    enumerable: true,
+    get () {
+      if (libp2p != null) {
+        return libp2p
+      }
+
+      throw new NotStartedError()
+    }
+  })
+
   const mixin: HeliaMixin<H & { libp2p?: Libp2p<M> }, H & { libp2p?: Libp2p<M> }> = {
     start: async (helia) => {
       if (libp2p == null) {
@@ -65,34 +76,27 @@ export function withLibp2p <H extends Helia, M extends ServiceMap = ServiceMap> 
       }
 
       try {
+        if (!helia.hasRouter('libp2p-router')) {
+          helia.addRouter(libp2pRouting(libp2p))
+        }
+
         if (isLibp2p(helia.libp2p)) {
-          // already configured libp2p, do nothing
+          // already configured libp2p
+          await helia.libp2p.start()
         }
       } catch (err: any) {
         if (err.name !== 'NotStartedError') {
           throw err
         }
-
-        helia.libp2p = libp2p
-        helia.addRouter(libp2pRouting(libp2p))
       }
     },
 
-    stop: async (helia) => {
-      await helia.libp2p?.stop()
+    stop: async () => {
+      await libp2p?.stop()
     }
   }
 
   helia.addMixin(mixin)
-
-  // add a temporary getter that informs the user they need to start Helia
-  Object.defineProperty(helia, 'libp2p', {
-    configurable: true,
-    enumerable: true,
-    get () {
-      throw new NotStartedError()
-    }
-  })
 
   // @ts-expect-error libp2p property is missing, even though we just defined it
   return helia

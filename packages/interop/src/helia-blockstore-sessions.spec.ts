@@ -111,6 +111,6 @@ describe('helia - blockstore sessions', () => {
     }))
 
     expect(output).to.equalBytes(input)
-    expect(foundProviders).to.have.deep.nested.property('[0].provider.id', peerIdFromString(kuboInfo.peerId ?? ''))
+    expect(foundProviders).to.have.deep.nested.property('[0].provider.id', peerIdFromString(kuboInfo.peerId ?? '').toCID())
   })
 })
