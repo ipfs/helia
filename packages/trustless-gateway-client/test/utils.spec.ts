@@ -1,7 +1,7 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { uriToMultiaddr } from '@multiformats/uri-to-multiaddr'
 import { expect } from 'aegir/chai'
-import { filterNonHTTPMultiaddrs, limitedResponse } from '../src/trustless-gateway/utils.ts'
+import { filterNonHTTPMultiaddrs, limitedResponse } from '../src/utils.ts'
 
 describe('trustless-gateway-block-broker-utils', () => {
   it('filterNonHTTPMultiaddrs respects allowInsecure multiaddrs correctly', async function () {

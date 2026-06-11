@@ -4,14 +4,14 @@
   </a>
 </p>
 
-# @helia/routers
+# @helia/delegated-routing-client
 
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
 [![codecov](https://img.shields.io/codecov/c/github/ipfs/helia.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia)
 [![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
 
-> Routers for Helia
+> Use HTTP Delegated Routers with Helia
 
 # About
 
@@ -35,27 +35,29 @@ Abstraction layer over different content and peer routing mechanisms.
 # Install
 
 ```console
-$ npm i @helia/routers
+$ npm i @helia/delegated-routing-client
 ```
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make its exports available as `HeliaRouters` in the global namespace.
+Loading this module through a script tag will make its exports available as `HeliaDelegatedRoutingClient` in the global namespace.
 
 ```html
-<script src="https://unpkg.com/@helia/routers/dist/index.min.js"></script>
+<script src="https://unpkg.com/@helia/delegated-routing-client/dist/index.min.js"></script>
 ```
+
+> Routers for Helia
 
 # API Docs
 
-- <https://ipfs.github.io/helia/modules/_helia_routers.html>
+- <https://ipfs.github.io/helia/modules/_helia_delegated-routing-client.html>
 
 # License
 
 Licensed under either of
 
-- Apache 2.0, ([LICENSE-APACHE](https://github.com/ipfs/helia/blob/main/packages/routers/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT ([LICENSE-MIT](https://github.com/ipfs/helia/blob/main/packages/routers/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+- Apache 2.0, ([LICENSE-APACHE](https://github.com/ipfs/helia/blob/main/packages/delegated-routing-client/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](https://github.com/ipfs/helia/blob/main/packages/delegated-routing-client/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
 # Contribute
 

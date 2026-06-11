@@ -53,20 +53,21 @@ fs.cat(CID.parse('bafyFoo'))
 
 ```typescript
 import { createHeliaHTTP } from '@helia/http'
-import { trustlessGateway } from '@helia/block-brokers'
-import { delegatedHTTPRouting, httpGatewayRouting } from '@helia/routers'
+import { trustlessGatewayBlockBroker } from '@helia/trustless-gateway-client'
+import { delegatedHTTPRouter } from '@helia/delegated-http-routing-client'
+import { fallbackRouter } from '@helia/fallback-router'
 import { unixfs } from '@helia/unixfs'
 import { CID } from 'multiformats/cid'
 
 const helia = await createHeliaHTTP({
   blockBrokers: [
-    trustlessGateway()
+    trustlessGatewayBlockBroker()
   ],
   routers: [
-    delegatedHTTPRouting({
+    delegatedHTTPRouter({
       url: 'https://delegated-ipfs.dev'
     }),
-    httpGatewayRouting({
+    fallbackRouter({
       gateways: ['https://cloudflare-ipfs.com', 'https://ipfs.io']
     })
   ]
@@ -79,29 +80,29 @@ fs.cat(CID.parse('bafyFoo'))
 # Install
 
 ```console
-$ npm i @helia/http
+$ npm i @helia/libp2p
 ```
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make its exports available as `HeliaHttp` in the global namespace.
+Loading this module through a script tag will make its exports available as `HeliaLibp2p` in the global namespace.
 
 ```html
-<script src="https://unpkg.com/@helia/http/dist/index.min.js"></script>
+<script src="https://unpkg.com/@helia/libp2p/dist/index.min.js"></script>
 ```
 
 # Helia-http
 
 # API Docs
 
-- <https://ipfs.github.io/helia/modules/_helia_http.html>
+- <https://ipfs.github.io/helia/modules/_helia_libp2p.html>
 
 # License
 
 Licensed under either of
 
-- Apache 2.0, ([LICENSE-APACHE](https://github.com/ipfs/helia/blob/main/packages/http/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT ([LICENSE-MIT](https://github.com/ipfs/helia/blob/main/packages/http/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+- Apache 2.0, ([LICENSE-APACHE](https://github.com/ipfs/helia/blob/main/packages/libp2p/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](https://github.com/ipfs/helia/blob/main/packages/libp2p/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
 # Contribute
 

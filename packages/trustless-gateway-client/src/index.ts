@@ -1,3 +1,10 @@
+/**
+ * @packageDocumentation
+ *
+ * A Trustless Gateway is an HTTP endpoint that can be used to download blocks
+ * or CAR files in a verifiable way.
+ */
+
 import { TrustlessGatewayBlockBroker } from './broker.ts'
 import type { TransformRequestInit } from './trustless-gateway.ts'
 import type { Routing, BlockBroker, RoutingFindProvidersProgressEvents, BlockBrokerGetBlockProgressEvents } from '@helia/interface'
@@ -69,6 +76,6 @@ export interface TrustlessGatewayBlockBrokerComponents {
   logger: ComponentLogger
 }
 
-export function trustlessGateway (init: TrustlessGatewayBlockBrokerInit = {}): (components: TrustlessGatewayBlockBrokerComponents) => BlockBroker<TrustlessGatewayGetBlockProgressEvents> {
+export function trustlessGatewayBlockBroker (init: TrustlessGatewayBlockBrokerInit = {}): (components: TrustlessGatewayBlockBrokerComponents) => BlockBroker<TrustlessGatewayGetBlockProgressEvents> {
   return (components) => new TrustlessGatewayBlockBroker(components, init)
 }

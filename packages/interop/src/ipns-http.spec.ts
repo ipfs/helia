@@ -1,5 +1,5 @@
+import { delegatedHTTPRouter } from '@helia/delegated-routing-client'
 import { ipns } from '@helia/ipns'
-import { delegatedHTTPRouting } from '@helia/routers'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { createHelia } from 'helia'
@@ -26,7 +26,7 @@ describe('@helia/ipns - http', () => {
     const kuboInfo = await kubo.info()
     helia = await createHelia({
       routers: [
-        delegatedHTTPRouting({
+        delegatedHTTPRouter({
           url: kuboInfo.gateway
         })
       ]

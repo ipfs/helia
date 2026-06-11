@@ -12,6 +12,9 @@
       "path": "../interface"
     },
     {
+      "path": "../libp2p"
+    },
+    {
       "path": "../utils"
     }
   ]

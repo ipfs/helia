@@ -4,14 +4,14 @@
   </a>
 </p>
 
-# @helia/block-brokers
+# @helia/fallback-router
 
 [![ipfs.tech](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.tech)
 [![Discuss](https://img.shields.io/discourse/https/discuss.ipfs.tech/posts.svg?style=flat-square)](https://discuss.ipfs.tech)
 [![codecov](https://img.shields.io/codecov/c/github/ipfs/helia.svg?style=flat-square)](https://codecov.io/gh/ipfs/helia)
 [![CI](https://img.shields.io/github/actions/workflow/status/ipfs/helia/main.yml?branch=main\&style=flat-square)](https://github.com/ipfs/helia/actions/workflows/main.yml?query=branch%3Amain)
 
-> Block brokers for Helia
+> A Helia router that yields hard coded providers
 
 # About
 
@@ -30,75 +30,47 @@ repo and examine the changes made.
 
 -->
 
-This module contains Helia block brokers, currently for [bitswap](https://docs.ipfs.tech/concepts/bitswap/)
-and [Trustless Gateways](https://specs.ipfs.tech/http-gateways/trustless-gateway/).
+Exports a `createHelia` function that returns an object that implements the Helia API.
 
-## Trustless Gateway Block Broker
+Pass it to other modules like @helia/unixfs to make files available on the distributed web.
 
-The TrustlessGatewayBlockBroker fetches blocks from HTTP gateways.
-
-## Example - Customizing fetch requests with custom headers
-
-It is possible to modify outgoing requests to (for example) include
-authentication information (such as a JWT token in a header).
+## Example
 
 ```typescript
 import { createHelia } from 'helia'
-import { trustlessGateway } from '@helia/block-brokers'
 import { unixfs } from '@helia/unixfs'
 import { CID } from 'multiformats/cid'
-import { concat } from 'uint8arrays/concat'
-import all from 'it-all'
 
-const helia = await createHelia({
-  blockBrokers: [
-    trustlessGateway({
-      transformRequestInit: (requestInit) => {
-        // modify the request init object as required
-        requestInit.headers = {
-          ...requestInit.headers,
-          'User-Agent': 'Helia Example Script'
-        }
-        return requestInit
-      }
-    })
-  ]
-})
+const helia = await createHelia()
 
-const cid = CID.parse('bafkreife2klsil6kaxqhvmhgldpsvk5yutzm4i5bgjoq6fydefwtihnesa')
 const fs = unixfs(helia)
-
-for await (const chunk of fs.cat(cid, {
-  signal: AbortSignal.timeout(10_000)
-})) {
-  console.info(chunk)
-}
+fs.cat(CID.parse('bafyFoo'))
 ```
 
 # Install
 
 ```console
-$ npm i @helia/block-brokers
+$ npm i @helia/fallback-router
 ```
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make its exports available as `HeliaBlockBrokers` in the global namespace.
+Loading this module through a script tag will make its exports available as `HeliaFallbackRouter` in the global namespace.
 
 ```html
-<script src="https://unpkg.com/@helia/block-brokers/dist/index.min.js"></script>
+<script src="https://unpkg.com/@helia/fallback-router/dist/index.min.js"></script>
 ```
 
 # API Docs
 
-- <https://ipfs.github.io/helia/modules/_helia_block-brokers.html>
+- <https://ipfs.github.io/helia/modules/_helia_fallback-router.html>
 
 # License
 
 Licensed under either of
 
-- Apache 2.0, ([LICENSE-APACHE](https://github.com/ipfs/helia/blob/main/packages/block-brokers/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT ([LICENSE-MIT](https://github.com/ipfs/helia/blob/main/packages/block-brokers/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+- Apache 2.0, ([LICENSE-APACHE](https://github.com/ipfs/helia/blob/main/packages/fallback-router/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](https://github.com/ipfs/helia/blob/main/packages/fallback-router/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
 # Contribute
 

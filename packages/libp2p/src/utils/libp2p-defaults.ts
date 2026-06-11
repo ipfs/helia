@@ -1,7 +1,7 @@
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { delegatedHTTPRoutingDefaults } from '@helia/delegated-routing-client'
 import { delegatedRoutingV1HttpApiClientContentRouting, delegatedRoutingV1HttpApiClientPeerRouting } from '@helia/delegated-routing-v1-http-api-client'
-import { delegatedHTTPRoutingDefaults } from '@helia/routers'
 import { autoTLS } from '@ipshipyard/libp2p-auto-tls'
 import { autoNAT } from '@libp2p/autonat'
 import { bootstrap } from '@libp2p/bootstrap'

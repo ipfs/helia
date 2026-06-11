@@ -9,16 +9,10 @@
   ],
   "references": [
     {
-      "path": "../block-brokers"
+      "path": "../helia"
     },
     {
       "path": "../interface"
-    },
-    {
-      "path": "../routers"
-    },
-    {
-      "path": "../utils"
     }
   ]
 }

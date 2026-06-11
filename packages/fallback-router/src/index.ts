@@ -16,7 +16,7 @@ export const DEFAULT_TRUSTLESS_GATEWAYS = [
   'https://4everland.io'
 ]
 
-export interface HTTPGatewayRouterInit {
+export interface FallbackRouterInit {
   gateways?: Array<URL | string>
   /**
    * Whether to shuffle the list of gateways
@@ -44,12 +44,12 @@ function toUrl (info: PeerInfo): URL {
   return new URL(uint8ArrayToString(info.id.toMultihash().digest))
 }
 
-class HTTPGatewayRouter implements Router {
-  public readonly name = 'http-gateway-router'
+class FallbackRouter implements Router {
+  public readonly name = 'fallback-router'
   private readonly gateways: PeerInfo[]
   private readonly shuffle: boolean
 
-  constructor (init: HTTPGatewayRouterInit = {}) {
+  constructor (init: FallbackRouterInit = {}) {
     this.gateways = (init.gateways ?? DEFAULT_TRUSTLESS_GATEWAYS).map(url => toPeerInfo(url))
     this.shuffle = init.shuffle ?? true
   }
@@ -78,6 +78,6 @@ class HTTPGatewayRouter implements Router {
 /**
  * Returns a static list of HTTP Gateways as providers
  */
-export function httpGatewayRouting (init: HTTPGatewayRouterInit = {}): Router {
-  return new HTTPGatewayRouter(init)
+export function fallbackRouter (init: FallbackRouterInit = {}): Router {
+  return new FallbackRouter(init)
 }

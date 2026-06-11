@@ -54,7 +54,7 @@
     "multiformats": "^14.0.0"
   },
   "devDependencies": {
-    "aegir": "^48.0.4",
+    "aegir": "^48.0.11",
     "interface-datastore": "^10.0.1"
   },
   "sideEffects": false

@@ -9,16 +9,19 @@
   ],
   "references": [
     {
-      "path": "../block-brokers"
+      "path": "../delegated-routing-client"
+    },
+    {
+      "path": "../fallback-router"
+    },
+    {
+      "path": "../helia"
     },
     {
       "path": "../interface"
     },
     {
-      "path": "../routers"
-    },
-    {
-      "path": "../utils"
+      "path": "../trustless-gateway-client"
     }
   ]
 }

@@ -6,9 +6,8 @@ import { CID } from 'multiformats/cid'
 import * as Digest from 'multiformats/hashes/digest'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { delegatedHTTPRoutingDefaults } from './utils/delegated-http-routing-defaults.ts'
 import type { DelegatedRoutingV1HttpApiClient, DelegatedRoutingV1HttpApiClientComponents, DelegatedRoutingV1HttpApiClientInit } from '@helia/delegated-routing-v1-http-api-client'
-import type { Peer, Provider, Routing, RoutingOptions } from '@helia/interface'
+import type { Peer, Provider, Router, RoutingOptions } from '@helia/interface'
 import type { Version } from 'multiformats'
 
 const IPNS_PREFIX = uint8ArrayFromString('/ipns/')
@@ -17,7 +16,7 @@ function isIPNSKey (key: Uint8Array): boolean {
   return uint8ArrayEquals(key.subarray(0, IPNS_PREFIX.byteLength), IPNS_PREFIX)
 }
 
-class DelegatedHTTPRouter implements Routing {
+export class DelegatedHTTPRouter implements Router {
   public readonly name = 'delegated-http-router'
   private readonly client: DelegatedRoutingV1HttpApiClient
 
@@ -96,11 +95,4 @@ class DelegatedHTTPRouter implements Routing {
   toString (): string {
     return `DelegatedHTTPRouter(${this.client.url})`
   }
-}
-
-/**
- * Creates a Helia Router that connects to an endpoint that supports the [Delegated Routing V1 HTTP API](https://specs.ipfs.tech/routing/http-routing-v1/) spec.
- */
-export function delegatedHTTPRouting (init: DelegatedRoutingV1HttpApiClientInit): (components: any) => Routing {
-  return (components: any) => new DelegatedHTTPRouter(components, delegatedHTTPRoutingDefaults(init))
 }

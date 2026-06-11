@@ -23,20 +23,20 @@
  *
  * ```typescript
  * import { createHeliaHTTP } from '@helia/http'
- * import { trustlessGateway } from '@helia/block-brokers'
- * import { delegatedHTTPRouting, httpGatewayRouting } from '@helia/routers'
+ * import { trustlessGatewayBlockBroker, trustlessGatewayRouter } from '@helia/trustless-gateway-client'
+ * import { delegatedHTTPRouter } from '@helia/delegated-http-routing-client'
  * import { unixfs } from '@helia/unixfs'
  * import { CID } from 'multiformats/cid'
  *
  * const helia = await createHeliaHTTP({
  *   blockBrokers: [
- *     trustlessGateway()
+ *     trustlessGatewayBlockBroker()
  *   ],
  *   routers: [
- *     delegatedHTTPRouting({
+ *     delegatedHTTPRouter({
  *       url: 'https://delegated-ipfs.dev'
  *     }),
- *     httpGatewayRouting({
+ *     trustlessGatewayRouter({
  *       gateways: ['https://cloudflare-ipfs.com', 'https://ipfs.io']
  *     })
  *   ]
@@ -47,8 +47,9 @@
  * ```
  */
 
-import { trustlessGateway } from '@helia/block-brokers'
-import { delegatedHTTPRouting, httpGatewayRouting } from '@helia/routers'
+import { delegatedHTTPRouter } from '@helia/delegated-routing-client'
+import { fallbackRouter } from '@helia/fallback-router'
+import { trustlessGatewayBlockBroker } from '@helia/trustless-gateway-client'
 import type { BlockBroker, Helia, Router } from '@helia/interface'
 
 export interface HTTPOptions {
@@ -61,8 +62,8 @@ export interface HTTPOptions {
  */
 export function withHTTP <H extends Helia> (helia: H, init?: HTTPOptions): H {
   init?.routers ?? [
-    httpGatewayRouting(),
-    delegatedHTTPRouting({
+    fallbackRouter(),
+    delegatedHTTPRouter({
       url: 'https://delegated-ipfs.dev'
     })
   ].forEach(router => {
@@ -70,7 +71,7 @@ export function withHTTP <H extends Helia> (helia: H, init?: HTTPOptions): H {
   })
 
   init?.blockBrokers ?? [
-    trustlessGateway()
+    trustlessGatewayBlockBroker()
   ].forEach(broker => {
     helia.addBlockBroker(broker)
   })

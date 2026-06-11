@@ -9,13 +9,7 @@
   ],
   "references": [
     {
-      "path": "../bitswap"
-    },
-    {
       "path": "../interface"
-    },
-    {
-      "path": "../utils"
     }
   ]
 }

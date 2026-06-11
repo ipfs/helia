@@ -6,19 +6,19 @@ import { CID } from 'multiformats/cid'
 import { stubInterface } from 'sinon-ts'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { delegatedHTTPRouting } from '../src/index.ts'
+import { delegatedHTTPRouter } from '../src/index.ts'
 import type { DelegatedRoutingV1HttpApiClient, PeerRecord } from '@helia/delegated-routing-v1-http-api-client'
-import type { Routing } from '@helia/interface'
+import type { Router } from '@helia/interface'
 import type { StubbedInstance } from 'sinon-ts'
 
 describe('delegated-http-routing', () => {
   let client: StubbedInstance<DelegatedRoutingV1HttpApiClient>
-  let router: Routing
+  let router: Router
 
   beforeEach(() => {
     client = stubInterface<DelegatedRoutingV1HttpApiClient>()
 
-    router = delegatedHTTPRouting({
+    router = delegatedHTTPRouter({
       url: 'http://127.0.0.1'
     })({
       logger: defaultLogger()
@@ -46,7 +46,7 @@ describe('delegated-http-routing', () => {
       yield * providers
     }())
 
-    await drain(router.findProviders(cid, options))
+    await drain(router.findProviders?.(cid, options) ?? [])
 
     expect(client.getProviders.calledWith(cid, options)).to.be.true()
   })
@@ -59,7 +59,7 @@ describe('delegated-http-routing', () => {
     const value = Uint8Array.from([5, 6, 7, 8, 9])
     const options = {}
 
-    await router.put(key, value, options)
+    await router.put?.(key, value, options)
 
     expect(client.putIPNS.called).to.be.true()
   })
@@ -69,7 +69,7 @@ describe('delegated-http-routing', () => {
     const value = Uint8Array.from([5, 6, 7, 8, 9])
     const options = {}
 
-    await router.put(key, value, options)
+    await router.put?.(key, value, options)
 
     expect(client.putIPNS.called).to.be.false()
   })
@@ -84,7 +84,7 @@ describe('delegated-http-routing', () => {
 
     client.getIPNS.resolves(value)
 
-    await router.get(key, options)
+    await router.get?.(key, options)
 
     expect(client.getIPNS.called).to.be.true()
   })
@@ -93,7 +93,7 @@ describe('delegated-http-routing', () => {
     const key = Uint8Array.from([0, 1, 2, 3, 4])
     const options = {}
 
-    await expect(router.get(key, options)).to.eventually.be.rejected
+    await expect(router.get?.(key, options)).to.eventually.be.rejected
       .with.property('name', 'NotFoundError')
 
     expect(client.getIPNS.called).to.be.false()
@@ -114,7 +114,7 @@ describe('delegated-http-routing', () => {
       yield * peers
     }())
 
-    await router.findPeer(peerId.toCID(), options)
+    await router.findPeer?.(peerId.toCID(), options)
 
     expect(client.getPeers.called).to.be.true()
   })

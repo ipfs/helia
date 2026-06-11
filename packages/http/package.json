@@ -48,13 +48,14 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@helia/block-brokers": "^5.2.4",
+    "@helia/delegated-routing-client": "^0.0.0",
+    "@helia/fallback-router": "^0.0.0",
     "@helia/interface": "^6.2.1",
-    "@helia/routers": "^5.1.1"
+    "@helia/trustless-gateway-client": "^0.0.0"
   },
   "devDependencies": {
     "@libp2p/interface": "^3.2.3",
-    "aegir": "^48.0.4",
+    "aegir": "^48.0.11",
     "helia": "^6.1.4",
     "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0"

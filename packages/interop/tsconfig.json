@@ -9,7 +9,7 @@
   ],
   "references": [
     {
-      "path": "../block-brokers"
+      "path": "../bitswap"
     },
     {
       "path": "../car"
@@ -27,9 +27,6 @@
       "path": "../helia"
     },
     {
-      "path": "../http"
-    },
-    {
       "path": "../interface"
     },
     {
@@ -39,10 +36,10 @@
       "path": "../json"
     },
     {
-      "path": "../mfs"
+      "path": "../libp2p"
     },
     {
-      "path": "../routers"
+      "path": "../mfs"
     },
     {
       "path": "../strings"
