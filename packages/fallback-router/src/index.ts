@@ -1,11 +1,20 @@
-import { peerIdFromCID } from '@libp2p/peer-id'
+/**
+ * @packageDocumentation
+ *
+ * A fallback router yields preconfigured providers to enable Helia to fallback
+ * to using a trustless gateway to fetch content from peers that support
+ * transports that may not be available in Helia's environment
+ *
+ * For example this allows browser peers to fetch content from network nodes
+ * that only support TCP or QUIC connections.
+ */
+
 import { uriToMultiaddr } from '@multiformats/uri-to-multiaddr'
 import { CID } from 'multiformats/cid'
 import { identity } from 'multiformats/hashes/identity'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { Provider, Router, RoutingOptions } from '@helia/interface'
-import type { PeerInfo } from '@libp2p/interface'
+import type { Peer, Provider, Router, RoutingOptions } from '@helia/interface'
 import type { Version } from 'multiformats'
 
 export const DEFAULT_TRUSTLESS_GATEWAYS = [
@@ -29,24 +38,24 @@ export interface FallbackRouterInit {
 // this value is from https://github.com/multiformats/multicodec/blob/master/table.csv
 const TRANSPORT_IPFS_GATEWAY_HTTP_CODE = 0x0920
 
-function toPeerInfo (url: string | URL): PeerInfo {
+function toPeerInfo (url: string | URL): Peer {
   url = url.toString()
 
   return {
-    id: peerIdFromCID(CID.createV1(TRANSPORT_IPFS_GATEWAY_HTTP_CODE, identity.digest(uint8ArrayFromString(url)))),
+    id: CID.createV1(TRANSPORT_IPFS_GATEWAY_HTTP_CODE, identity.digest(uint8ArrayFromString(url))),
     multiaddrs: [
       uriToMultiaddr(url)
     ]
   }
 }
 
-function toUrl (info: PeerInfo): URL {
-  return new URL(uint8ArrayToString(info.id.toMultihash().digest))
+function toUrl (info: Peer): URL {
+  return new URL(uint8ArrayToString(info.id.multihash.digest))
 }
 
 class FallbackRouter implements Router {
   public readonly name = 'fallback-router'
-  private readonly gateways: PeerInfo[]
+  private readonly gateways: Peer[]
   private readonly shuffle: boolean
 
   constructor (init: FallbackRouterInit = {}) {
@@ -61,7 +70,7 @@ class FallbackRouter implements Router {
     ).map(info => {
       const provider = {
         ...info,
-        id: info.id.toCID(),
+        id: info.id,
         protocols: ['transport-ipfs-gateway-http'],
         routing: 'http-gateway-routing'
       }

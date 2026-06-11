@@ -50,8 +50,6 @@
   },
   "dependencies": {
     "@helia/interface": "^6.2.1",
-    "@libp2p/interface": "^3.2.3",
-    "@libp2p/peer-id": "^6.0.10",
     "@multiformats/uri-to-multiaddr": "^10.0.0",
     "multiformats": "^14.0.0",
     "uint8arrays": "^6.1.1"

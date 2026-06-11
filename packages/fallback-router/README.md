@@ -30,22 +30,12 @@ repo and examine the changes made.
 
 -->
 
-Exports a `createHelia` function that returns an object that implements the Helia API.
+A fallback router yields preconfigured providers to enable Helia to fallback
+to using a trustless gateway to fetch content from peers that support
+transports that may not be available in Helia's environment
 
-Pass it to other modules like @helia/unixfs to make files available on the distributed web.
-
-## Example
-
-```typescript
-import { createHelia } from 'helia'
-import { unixfs } from '@helia/unixfs'
-import { CID } from 'multiformats/cid'
-
-const helia = await createHelia()
-
-const fs = unixfs(helia)
-fs.cat(CID.parse('bafyFoo'))
-```
+For example this allows browser peers to fetch content from network nodes
+that only support TCP or QUIC connections.
 
 # Install
 
