@@ -1,25 +1,25 @@
 import { expect } from 'aegir/chai'
+import { createHelia } from 'helia'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { createHeliaHTTP } from '../src/index.ts'
-import type { Helia, Routing } from '@helia/interface'
+import { withHTTP } from '../src/index.ts'
+import type { Helia, Router } from '@helia/interface'
 import type { Startable } from '@libp2p/interface'
 
 describe('@helia/http', () => {
   let helia: Helia
-  let routing: Routing
+  let routing: Router
 
   beforeEach(async () => {
-    routing = stubInterface<Routing & Startable>({
+    routing = stubInterface<Router & Startable>({
       start: Sinon.stub(),
       stop: Sinon.stub()
     })
-    helia = await createHeliaHTTP({
-      start: false,
+    helia = withHTTP(createHelia({
       routers: [
         routing
       ]
-    })
+    }))
   })
 
   afterEach(async () => {

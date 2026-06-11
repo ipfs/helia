@@ -114,7 +114,7 @@ describe('delegated-http-routing', () => {
       yield * peers
     }())
 
-    await router.findPeer(peerId, options)
+    await router.findPeer(peerId.toCID(), options)
 
     expect(client.getPeers.called).to.be.true()
   })

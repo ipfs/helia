@@ -8,8 +8,7 @@ import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { delegatedHTTPRoutingDefaults } from './utils/delegated-http-routing-defaults.ts'
 import type { DelegatedRoutingV1HttpApiClient, DelegatedRoutingV1HttpApiClientComponents, DelegatedRoutingV1HttpApiClientInit } from '@helia/delegated-routing-v1-http-api-client'
-import type { Provider, Routing, RoutingOptions } from '@helia/interface'
-import type { PeerId, PeerInfo } from '@libp2p/interface'
+import type { Peer, Provider, Routing, RoutingOptions } from '@helia/interface'
 import type { Version } from 'multiformats'
 
 const IPNS_PREFIX = uint8ArrayFromString('/ipns/')
@@ -37,7 +36,7 @@ class DelegatedHTTPRouter implements Routing {
   async * findProviders (cid: CID<unknown, number, number, Version>, options?: RoutingOptions): AsyncIterable<Provider> {
     yield * map(this.client.getProviders(cid, options), (record) => {
       return {
-        id: record.ID,
+        id: record.ID.toCID(),
         multiaddrs: record.Addrs,
         protocols: record.Protocols,
         routing: 'delegated-http-routing'
@@ -77,12 +76,12 @@ class DelegatedHTTPRouter implements Routing {
     }
   }
 
-  async findPeer (peerId: PeerId, options?: RoutingOptions): Promise<PeerInfo> {
-    const peer = await first(this.client.getPeers(peerId.toCID(), options))
+  async findPeer (peerId: CID, options?: RoutingOptions): Promise<Peer> {
+    const peer = await first(this.client.getPeers(peerId, options))
 
     if (peer != null) {
       return {
-        id: peer.ID,
+        id: peer.ID.toCID(),
         multiaddrs: peer.Addrs ?? []
       }
     }
@@ -90,7 +89,7 @@ class DelegatedHTTPRouter implements Routing {
     throw new NotFoundError('Not found')
   }
 
-  async * getClosestPeers (key: Uint8Array, options?: RoutingOptions): AsyncIterable<PeerInfo> {
+  async * getClosestPeers (key: Uint8Array, options?: RoutingOptions): AsyncIterable<Peer> {
     // noop
   }
 

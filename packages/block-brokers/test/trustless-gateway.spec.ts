@@ -29,14 +29,14 @@ describe('trustless-gateway-block-broker', () => {
     routing = stubInterface()
 
     badGatewayPeer = {
-      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
       multiaddrs: [
         uriToMultiaddr(process.env.BAD_TRUSTLESS_GATEWAY ?? '')
       ],
       routing: 'test-routing'
     }
     goodGatewayPeer = {
-      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
       multiaddrs: [
         uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
       ],
@@ -112,7 +112,7 @@ describe('trustless-gateway-block-broker', () => {
     routing.findProviders.returns(async function * () {
       // non-http provider
       yield {
-        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
         multiaddrs: [
           multiaddr('/ip4/132.32.25.6/tcp/1234')
         ],
@@ -120,13 +120,13 @@ describe('trustless-gateway-block-broker', () => {
       }
       // expired peer info
       yield {
-        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
         multiaddrs: [],
         routing: 'test-routing'
       }
       // http gateway
       yield {
-        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
         multiaddrs: [
           uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
         ],

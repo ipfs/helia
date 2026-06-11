@@ -20,7 +20,6 @@ import { uPnPNAT } from '@libp2p/upnp-nat'
 import { webRTC, webRTCDirect } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
 import { userAgent } from 'libp2p/user-agent'
-import { name, version } from '../version.ts'
 import { bootstrapConfig } from './bootstrappers.ts'
 import type { Libp2pDefaultsOptions } from './libp2p.ts'
 import type { AutoTLS } from '@ipshipyard/libp2p-auto-tls'
@@ -73,7 +72,11 @@ export interface DefaultLibp2pServices extends Record<string, unknown> {
  * ```
  */
 export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOptions<DefaultLibp2pServices> & Required<Pick<Libp2pOptions<DefaultLibp2pServices>, 'services'>> {
-  const agentVersion = `${name}/${version} ${userAgent()}`
+  let agentVersion: string | undefined
+
+  if (options.name != null && options.version != null) {
+    agentVersion = `${options.name}/${options.version} ${userAgent()}`
+  }
 
   return {
     privateKey: options.privateKey,

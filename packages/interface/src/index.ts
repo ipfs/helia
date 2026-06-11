@@ -14,9 +14,9 @@
  * ```
  */
 
-import type { Blocks } from './blocks.ts'
+import type { BlockBroker, Blocks } from './blocks.ts'
 import type { Pins } from './pins.ts'
-import type { Routing } from './routing.ts'
+import type { Router, Routing } from './routing.ts'
 import type { CryptoLoader, Keychain } from '@ipshipyard/keychain'
 import type { Metrics } from '@libp2p/interface'
 import type { DNS } from '@multiformats/dns'
@@ -40,10 +40,25 @@ export type { CryptoLoader, Keychain } from '@ipshipyard/keychain'
 export type { Crypto, PrivateKey, PublicKey } from '@ipshipyard/crypto'
 export { isPrivateKey, isPublicKey } from '@ipshipyard/crypto'
 
+export interface NodeInfo {
+  name: string
+  version: string
+}
+
+export interface HeliaMixin<Start extends Helia = Helia, Stop = Start> {
+  start?(helia: Start): Promise<void> | void
+  stop?(helia: Stop): Promise<void> | void
+}
+
 /**
  * The API presented by a Helia node
  */
 export interface Helia {
+  /**
+   * Runtime information about the node
+   */
+  info: NodeInfo
+
   /**
    * Where the blocks are stored
    */
@@ -93,14 +108,19 @@ export interface Helia {
   metrics?: Metrics
 
   /**
+   * The current status of the Helia node
+   */
+  status: 'starting' | 'started' | 'stopping' | 'stopped'
+
+  /**
    * Starts the Helia node
    */
-  start(): Promise<void>
+  start(options?: AbortOptions): Promise<this>
 
   /**
    * Stops the Helia node
    */
-  stop(): Promise<void>
+  stop(options?: AbortOptions): Promise<this>
 
   /**
    * Remove any unpinned blocks from the blockstore
@@ -124,6 +144,31 @@ export interface Helia {
    * Cryptography implementations securely sign and verify data
    */
   getCrypto: CryptoLoader
+
+  /**
+   * Returns `true` if a router with the passed name has been configured
+   */
+  hasRouter (name: string): boolean
+
+  /**
+   * Add a router
+   */
+  addRouter(router: Router): void
+
+  /**
+   * Returns `true` if a block broker with the passed name has been configured
+   */
+  hasBlockBroker (name: string): boolean
+
+  /**
+   * Add a block broker
+   */
+  addBlockBroker(blockBroker: BlockBroker): void
+
+  /**
+   * Add a mixin to extend runtime functionality
+   */
+  addMixin<T extends Helia = Helia & Record<string, any>>(mixin: HeliaMixin<T>): void
 }
 
 export type GcEvents =
@@ -134,7 +179,7 @@ export interface GCOptions extends AbortOptions, ProgressOptions<GcEvents> {
 
 }
 
-export interface HeliaEvents<H extends Helia> {
+export interface HeliaEvents<H extends Helia = Helia> {
   /**
    * This event notifies listeners that the node has started
    *

@@ -16,7 +16,7 @@ export interface ProviderOptions {
    * child blocks, a `findProviders` routing query will be run to find peers
    * that can supply the blocks.
    */
-  providers?: Array<CID<Uint8Array<ArrayBuffer>, 0x72, 0x00 | 0x12, 1> | Multiaddr | Multiaddr[]>
+  providers?: Array<CID | Multiaddr | Multiaddr[]>
 }
 
 /**
@@ -25,7 +25,7 @@ export interface ProviderOptions {
 export interface BlockBrokerConnectProgressEvent {
   broker: string
   type: 'connect'
-  provider: CID<Uint8Array<ArrayBuffer>, 0x72, 0x00 | 0x12, 1>
+  provider: CID
   cid: CID
 }
 
@@ -35,7 +35,7 @@ export interface BlockBrokerConnectProgressEvent {
 export interface BlockBrokerConnectedProgressEvent {
   broker: string
   type: 'connected'
-  provider: CID<Uint8Array<ArrayBuffer>, 0x72, 0x00 | 0x12, 1>
+  provider: CID
   address: Multiaddr
   cid: CID
 }
@@ -46,7 +46,7 @@ export interface BlockBrokerConnectedProgressEvent {
 export interface BlockBrokerRequestBlockProgressEvent {
   broker: string
   type: 'request-block'
-  provider: CID<Uint8Array<ArrayBuffer>, 0x72, 0x00 | 0x12, 1>
+  provider: CID
   cid: CID
 }
 
@@ -56,7 +56,7 @@ export interface BlockBrokerRequestBlockProgressEvent {
 export interface BlockBrokerReceiveBlockProgressEvent {
   broker: string
   type: 'receive-block'
-  provider: CID<Uint8Array<ArrayBuffer>, 0x72, 0x00 | 0x12, 1>
+  provider: CID
   cid: CID
 }
 
@@ -150,7 +150,7 @@ ProgressOptions<DeleteBlockProgressEvents>, ProgressOptions<DeleteManyBlocksProg
    * Adds a new peer to the session if they are supported and are either
    * not already in the session and have not been evicted previously.
    */
-  addPeer (peer: CID<Uint8Array<ArrayBuffer>, 0x72, 0x00 | 0x12, 1> | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<void>
+  addPeer (peer: CID | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<void>
 }
 
 export interface BlockRetrievalOptions <ProgressEvents extends ProgressEvent<any, any> = ProgressEvent<any, any>> extends AbortOptions, ProgressOptions<ProgressEvents>, ProviderOptions {
@@ -232,7 +232,7 @@ export interface SessionBlockBroker<RetrieveProgressEvents extends ProgressEvent
    * Adds a new peer to the session if they are supported and are either
    * not already in the session and have not been evicted previously.
    */
-  addPeer (peer: CID<Uint8Array<ArrayBuffer>, 0x72, 0x00 | 0x12, 1> | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<void>
+  addPeer (peer: CID | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<void>
 }
 
 export const DEFAULT_SESSION_MIN_PROVIDERS = 1

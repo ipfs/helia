@@ -40,7 +40,7 @@ describe('trustless-gateway sessions', () => {
 
     components.routing.findProviders.returns(async function * () {
       yield {
-        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
         multiaddrs: [
           uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
         ],
@@ -62,21 +62,21 @@ describe('trustless-gateway sessions', () => {
 
     components.routing.findProviders.returns(async function * () {
       yield {
-        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
         multiaddrs: [
           multiaddr('/ip4/127.0.0.1/tcp/1234')
         ],
         routing: 'test-routing'
       }
       yield {
-        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
         multiaddrs: [
           multiaddr('/ip4/127.0.0.1/udp/1234/quic-v1')
         ],
         routing: 'test-routing'
       }
       yield {
-        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
         multiaddrs: [
           uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
         ],
@@ -99,7 +99,7 @@ describe('trustless-gateway sessions', () => {
     const queryProviderSpy = Sinon.spy(session, 'queryProvider')
 
     const prov = {
-      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
       multiaddrs: [
         uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
       ],
@@ -133,7 +133,7 @@ describe('trustless-gateway sessions', () => {
 
     components.routing.findProviders.returns(async function * () {
       yield {
-        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
         multiaddrs: [
           uriToMultiaddr(process.env.BAD_TRUSTLESS_GATEWAY ?? '')
         ],
@@ -154,14 +154,14 @@ describe('trustless-gateway sessions', () => {
       allowLocal: true
     })
     const providers = [{
-      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
       multiaddrs: [
         uriToMultiaddr(process.env.BAD_TRUSTLESS_GATEWAY ?? '')
       ],
       routing: 'test-routing'
     },
     {
-      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
       multiaddrs: [
         uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
       ],

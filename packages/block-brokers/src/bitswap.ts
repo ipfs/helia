@@ -1,8 +1,9 @@
 import { createBitswap } from '@helia/bitswap'
-import { isPeerId } from '@libp2p/interface'
+import { isPeerId, start } from '@libp2p/interface'
 import { CustomProgressEvent } from 'progress-events'
 import type { BitswapOptions, Bitswap, BitswapWantBlockProgressEvents, BitswapNotifyProgressEvents } from '@helia/bitswap'
-import type { BlockAnnounceOptions, BlockBroker, BlockRetrievalOptions, CreateSessionOptions, Routing, HasherLoader, SessionBlockBroker, BlockBrokerConnectProgressEvent, BlockBrokerConnectedProgressEvent, BlockBrokerRequestBlockProgressEvent, BlockBrokerReceiveBlockProgressEvent } from '@helia/interface'
+import type { BlockAnnounceOptions, BlockBroker, BlockRetrievalOptions, CreateSessionOptions, Routing, HasherLoader, SessionBlockBroker, BlockBrokerConnectProgressEvent, BlockBrokerConnectedProgressEvent, BlockBrokerRequestBlockProgressEvent, BlockBrokerReceiveBlockProgressEvent, HeliaMixin } from '@helia/interface'
+import type { HeliaWithLibp2p } from '@helia/libp2p'
 import type { Libp2p, Startable, ComponentLogger } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
@@ -67,14 +68,14 @@ class BitswapBlockBroker implements BlockBroker<BitswapWantBlockProgressEvents, 
           options.onProgress(new CustomProgressEvent<BlockBrokerConnectProgressEvent>('helia:block-broker:connect', {
             broker: 'bitswap',
             type: 'connect',
-            provider: evt.detail,
+            provider: evt.detail.toCID(),
             cid
           }))
         } else if (evt.type === 'connection:opened') {
           options.onProgress(new CustomProgressEvent<BlockBrokerConnectedProgressEvent>('helia:block-broker:connected', {
             broker: 'bitswap',
             type: 'connected',
-            provider: evt.detail.remotePeer,
+            provider: evt.detail.remotePeer.toCID(),
             address: evt.detail.remoteAddr,
             cid
           }))
@@ -82,14 +83,14 @@ class BitswapBlockBroker implements BlockBroker<BitswapWantBlockProgressEvents, 
           options.onProgress(new CustomProgressEvent<BlockBrokerRequestBlockProgressEvent>('helia:block-broker:request-block', {
             broker: 'bitswap',
             type: 'request-block',
-            provider: evt.detail,
+            provider: evt.detail.toCID(),
             cid
           }))
         } else if (evt.type === 'bitswap:block') {
           options.onProgress(new CustomProgressEvent<BlockBrokerReceiveBlockProgressEvent>('helia:block-broker:receive-block', {
             broker: 'bitswap',
             type: 'receive-block',
-            provider: evt.detail.sender,
+            provider: evt.detail.sender.toCID(),
             cid
           }))
         }
@@ -124,4 +125,24 @@ class BitswapBlockBroker implements BlockBroker<BitswapWantBlockProgressEvents, 
  */
 export function bitswap (init: BitswapBlockBrokerInit = {}): (components: BitswapBlockBrokerComponents) => BlockBroker {
   return (components) => new BitswapBlockBroker(components, init)
+}
+
+/**
+ * Return a Helia node augmented with a libp2p instance
+ */
+export function withBitswap (helia: HeliaWithLibp2p, options: BitswapBlockBrokerInit = {}): HeliaWithLibp2p {
+  const mixin: HeliaMixin<HeliaWithLibp2p> = {
+    start: async (helia) => {
+      if (helia.status === 'starting' && !helia.hasBlockBroker('bitswap')) {
+        const broker = new BitswapBlockBroker(helia, options)
+        await start(broker)
+
+        helia.addBlockBroker(broker)
+      }
+    }
+  }
+
+  helia.addMixin(mixin)
+
+  return helia
 }

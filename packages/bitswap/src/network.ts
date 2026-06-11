@@ -1,5 +1,8 @@
-import { InvalidParametersError, NotStartedError, TimeoutError, TypedEventEmitter, UnsupportedProtocolError, setMaxListeners } from '@libp2p/interface'
+import { isCID } from '@helia/utils'
+import { InvalidParametersError, NotStartedError, TimeoutError, TypedEventEmitter, UnsupportedProtocolError, isPeerId, setMaxListeners } from '@libp2p/interface'
+import { peerIdFromCID } from '@libp2p/peer-id'
 import { PeerQueue } from '@libp2p/utils'
+import { isMultiaddr } from '@multiformats/multiaddr'
 import drain from 'it-drain'
 import * as lp from 'it-length-prefixed'
 import map from 'it-map'
@@ -100,6 +103,22 @@ export interface NetworkEvents {
 
 interface SendMessageJobOptions extends AbortOptions, ProgressOptions<BitswapNetworkWantProgressEvents>, PeerQueueJobOptions {
   message: QueuedBitswapMessage
+}
+
+function toDialable (peer: CID | PeerId | Multiaddr | Multiaddr[]): PeerId | Multiaddr | Multiaddr[] {
+  if (isPeerId(peer)) {
+    return peer
+  }
+
+  if (isCID(peer)) {
+    return peerIdFromCID(peer)
+  }
+
+  if (isMultiaddr(peer) || Array.isArray(peer)) {
+    return peer
+  }
+
+  throw new InvalidParametersError(`Peer ${peer} was not a CID, a Multiaddr or a Multiaddr[]`)
 }
 
 export class Network extends TypedEventEmitter<NetworkEvents> {
@@ -399,10 +418,12 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
   /**
    * Connects to another peer
    */
-  async connectTo (peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions & ProgressOptions<BitswapNetworkProgressEvents>): Promise<Connection> {
+  async connectTo (peer: CID | PeerId | Multiaddr | Multiaddr[], options?: AbortOptions & ProgressOptions<BitswapNetworkProgressEvents>): Promise<Connection> {
     if (!this.running) {
       throw new NotStartedError('Network isn\'t running')
     }
+
+    peer = toDialable(peer)
 
     options?.onProgress?.(new CustomProgressEvent<PeerId | Multiaddr | Multiaddr[]>('bitswap:dial', peer))
 

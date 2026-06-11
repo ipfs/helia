@@ -163,7 +163,7 @@ export class TrustlessGateway {
         options.onProgress?.(new CustomProgressEvent<BlockBrokerConnectProgressEvent>('helia:block-broker:connect', {
           broker: 'trustless-gateway',
           type: 'connect',
-          provider: this.peer,
+          provider: this.peer.toCID(),
           cid
         }))
 
@@ -181,7 +181,7 @@ HTTP/1.1 %d %s
           options.onProgress?.(new CustomProgressEvent<BlockBrokerConnectedProgressEvent>('helia:block-broker:connected', {
             broker: 'trustless-gateway',
             type: 'connected',
-            provider: this.peer,
+            provider: this.peer.toCID(),
             address: uriToMultiaddr(gwUrl.toString()),
             cid
           }))
@@ -189,7 +189,7 @@ HTTP/1.1 %d %s
           options.onProgress?.(new CustomProgressEvent<BlockBrokerRequestBlockProgressEvent>('helia:block-broker:request-block', {
             broker: 'trustless-gateway',
             type: 'request-block',
-            provider: this.peer,
+            provider: this.peer.toCID(),
             cid
           }))
 
@@ -200,7 +200,7 @@ HTTP/1.1 %d %s
           options.onProgress?.(new CustomProgressEvent<BlockBrokerReceiveBlockProgressEvent>('helia:block-broker:receive-block', {
             broker: 'trustless-gateway',
             type: 'receive-block',
-            provider: this.peer,
+            provider: this.peer.toCID(),
             cid
           }))
 

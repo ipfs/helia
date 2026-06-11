@@ -157,7 +157,7 @@ describe('network', () => {
     const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const providers = [{
-      id: peerId,
+      id: peerId.toCID(),
       multiaddrs: [
         multiaddr('/ip4/127.0.0.1/tcp/4001')
       ],
@@ -171,7 +171,7 @@ describe('network', () => {
     const output = await all(network.findProviders(cid))
 
     expect(output).to.have.lengthOf(1)
-    expect(output[0].id.toString()).to.equal(peerId.toString())
+    expect(output[0].id.toString()).to.equal(peerId.toCID().toString())
     expect(output[0].multiaddrs).to.have.lengthOf(1)
     expect(output[0].multiaddrs[0].toString()).to.equal('/ip4/127.0.0.1/tcp/4001')
   })
@@ -181,7 +181,7 @@ describe('network', () => {
     const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const providers = [{
-      id: peerId,
+      id: peerId.toCID(),
       multiaddrs: [
         multiaddr('/ip4/127.0.0.1/tcp/4001/p2p-circuit')
       ],
@@ -217,7 +217,7 @@ describe('network', () => {
     const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const providers = [{
-      id: peerId,
+      id: peerId.toCID(),
       multiaddrs: [
         multiaddr('/ip4/127.0.0.1/tcp/4001/p2p-circuit')
       ],
@@ -231,7 +231,7 @@ describe('network', () => {
     const output = await all(network.findProviders(cid))
 
     expect(output).to.have.lengthOf(1)
-    expect(output[0].id.toString()).to.equal(peerId.toString())
+    expect(output[0].id.toString()).to.equal(peerId.toCID().toString())
     expect(output[0].multiaddrs).to.have.lengthOf(1)
     expect(output[0].multiaddrs[0].toString()).to.equal('/ip4/127.0.0.1/tcp/4001/p2p-circuit')
   })
@@ -241,7 +241,7 @@ describe('network', () => {
     const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const providers = [{
-      id: peerId,
+      id: peerId.toCID(),
       multiaddrs: [
         multiaddr('/ip4/127.0.0.1/tcp/4001')
       ],
@@ -301,7 +301,7 @@ describe('network', () => {
     const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const providers = [{
-      id: peerId,
+      id: peerId.toCID(),
       multiaddrs: [
         multiaddr('/ip4/127.0.0.1/tcp/4001/p2p-circuit')
       ],

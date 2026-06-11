@@ -1,6 +1,6 @@
-import { AbstractSession } from '@helia/utils'
-import { isPeerId } from '@libp2p/interface'
+import { AbstractSession, isCID } from '@helia/utils'
 import { multiaddrToUri } from '@multiformats/multiaddr-to-uri'
+import { CID } from 'multiformats/cid'
 import { CustomProgressEvent } from 'progress-events'
 import { DEFAULT_ALLOW_INSECURE, DEFAULT_ALLOW_LOCAL } from './index.ts'
 import { TrustlessGateway } from './trustless-gateway.ts'
@@ -9,9 +9,8 @@ import type { CreateTrustlessGatewaySessionOptions } from './broker.ts'
 import type { TrustlessGatewayGetBlockProgressEvents, TrustlessGatewayProvider } from './index.ts'
 import type { TransformRequestInit } from './trustless-gateway.ts'
 import type { BlockRetrievalOptions, Routing } from '@helia/interface'
-import type { ComponentLogger, PeerId, AbortOptions } from '@libp2p/interface'
+import type { ComponentLogger, AbortOptions } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { CID } from 'multiformats/cid'
 
 export interface TrustlessGatewaySessionComponents {
   logger: ComponentLogger
@@ -78,8 +77,10 @@ class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, Trustles
     return providerA.url.toString() === providerB.url.toString()
   }
 
-  async convertToProvider (provider: PeerId | Multiaddr | Multiaddr[], routing: string, options?: AbortOptions): Promise<TrustlessGateway | undefined> {
-    if (isPeerId(provider)) {
+  async convertToProvider (provider: CID | Multiaddr | Multiaddr[], routing: string, options?: AbortOptions): Promise<TrustlessGateway | undefined> {
+    options?.signal?.throwIfAborted()
+
+    if (isCID(provider)) {
       return
     }
 

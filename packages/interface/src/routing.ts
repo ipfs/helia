@@ -44,7 +44,7 @@ export interface Peer {
   /**
    * The identifier of the remote peer
    */
-  id: CID<Uint8Array<ArrayBuffer>, 0x72, 0x00 | 0x12, 1>
+  id: CID
 
   /**
    * The multiaddrs a peer is listening on
@@ -57,9 +57,9 @@ export interface Peer {
  */
 export interface Provider {
   /**
-   * The identifier of the remote peer
+   * The identifier of the remote peer, a CID
    */
-  id: CID<Uint8Array<ArrayBuffer>, 0x72, 0x00 | 0x12, 1>
+  id: CID
 
   /**
    * The multiaddrs a peer is listening on
@@ -188,12 +188,12 @@ export type RoutingGetProgressEvents =
 
 export interface RoutingFindPeerStartEvent {
   routing: string
-  peerId: CID<Uint8Array<ArrayBuffer>, 0x72, 0x00 | 0x12, 1>
+  peerId: CID
 }
 
 export interface RoutingFindPeerEndEvent {
   routing: string
-  peerId: CID<Uint8Array<ArrayBuffer>, 0x72, 0x00 | 0x12, 1>
+  peerId: CID
 }
 
 export type RoutingFindPeerProgressEvents =
@@ -312,7 +312,7 @@ export interface Router {
    * })
    * ```
    */
-  findPeer?(peer: CID<Uint8Array<ArrayBuffer>, 0x72, 0x00 | 0x12, 1>, options?: RoutingOptions<RoutingFindPeerProgressEvents>): Promise<Peer>
+  findPeer?(peer: CID, options?: RoutingOptions<RoutingFindPeerProgressEvents>): Promise<Peer>
 
   /**
    * Search the network for peers that are closer to the passed key. Peer
@@ -332,9 +332,4 @@ export interface Router {
   getClosestPeers?(key: Uint8Array, options?: RoutingOptions<RoutingGetClosestPeersProgressEvents>): AsyncIterable<Peer>
 }
 
-export interface Routing extends Required<Omit<Router, 'name'>> {
-  /**
-   * Add a router to the routing
-   */
-  addRouter(router: Router): void
-}
+export type Routing = Required<Omit<Router, 'name'>>

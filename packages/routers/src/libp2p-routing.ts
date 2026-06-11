@@ -1,8 +1,17 @@
-import type { Provider, Routing, RoutingOptions } from '@helia/interface'
-import type { Libp2p, PeerId, PeerInfo } from '@libp2p/interface'
+import { peerIdFromCID } from '@libp2p/peer-id'
+import map from 'it-map'
+import type { Peer, Provider, Router, RoutingOptions } from '@helia/interface'
+import type { Libp2p, PeerInfo } from '@libp2p/interface'
 import type { CID } from 'multiformats'
 
-class Libp2pRouter implements Routing {
+function peerInfoToPeer (info: PeerInfo): Peer {
+  return {
+    ...info,
+    id: info.id.toCID()
+  }
+}
+
+class Libp2pRouter implements Router {
   public readonly name = 'libp2p-router'
   private readonly libp2p: Libp2p
 
@@ -19,7 +28,10 @@ class Libp2pRouter implements Routing {
   }
 
   async * findProviders (cid: CID, options?: RoutingOptions): AsyncIterable<Provider> {
-    yield * this.libp2p.contentRouting.findProviders(cid, options)
+    yield * map(this.libp2p.contentRouting.findProviders(cid, options), prov => ({
+      routing: this.name,
+      ...peerInfoToPeer(prov)
+    }))
   }
 
   async put (key: Uint8Array, value: Uint8Array, options?: RoutingOptions): Promise<void> {
@@ -30,12 +42,12 @@ class Libp2pRouter implements Routing {
     return this.libp2p.contentRouting.get(key, options)
   }
 
-  async findPeer (peerId: PeerId, options?: RoutingOptions): Promise<PeerInfo> {
-    return this.libp2p.peerRouting.findPeer(peerId, options)
+  async findPeer (peerId: CID, options?: RoutingOptions): Promise<Peer> {
+    return peerInfoToPeer(await this.libp2p.peerRouting.findPeer(peerIdFromCID(peerId), options))
   }
 
-  async * getClosestPeers (key: Uint8Array, options?: RoutingOptions): AsyncIterable<PeerInfo> {
-    yield * this.libp2p.peerRouting.getClosestPeers(key, options)
+  async * getClosestPeers (key: Uint8Array, options?: RoutingOptions): AsyncIterable<Peer> {
+    yield * map(this.libp2p.peerRouting.getClosestPeers(key, options), peerInfoToPeer)
   }
 
   toString (): string {
@@ -43,6 +55,6 @@ class Libp2pRouter implements Routing {
   }
 }
 
-export function libp2pRouting (libp2p: Libp2p): Routing {
+export function libp2pRouting (libp2p: Libp2p): Router {
   return new Libp2pRouter(libp2p)
 }

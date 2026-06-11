@@ -47,7 +47,7 @@
  * ```
  */
 
-export { bitswap } from './bitswap.ts'
+export { bitswap, withBitswap } from './bitswap.ts'
 export type { BitswapBlockBrokerInit, BitswapBlockBrokerComponents } from './bitswap.ts'
 export { trustlessGateway } from './trustless-gateway/index.ts'
 export type { TrustlessGatewayBlockBrokerInit, TrustlessGatewayBlockBrokerComponents, TrustlessGatewayGetBlockProgressEvents, TrustlessGatewayProvider } from './trustless-gateway/index.ts'

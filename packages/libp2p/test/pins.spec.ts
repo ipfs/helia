@@ -1,29 +1,29 @@
 import { webSockets } from '@libp2p/websockets'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import { createHelia } from 'helia'
 import all from 'it-all'
 import drain from 'it-drain'
+import { createLibp2p } from 'libp2p'
 import { CID } from 'multiformats/cid'
-import { createHelia } from '../src/index.ts'
-import type { Helia } from '@helia/interface'
+import { withLibp2p } from '../src/index.ts'
+import type { HeliaWithLibp2p } from '../src/index.ts'
 
 describe('pins', () => {
-  let helia: Helia
+  let helia: HeliaWithLibp2p<any>
 
   beforeEach(async () => {
-    helia = await createHelia({
-      libp2p: {
-        addresses: {
-          listen: []
-        },
-        connectionGater: {
-          denyDialMultiaddr: () => false
-        },
-        transports: [
-          webSockets()
-        ]
-      }
-    })
+    helia = await withLibp2p(createHelia(), await createLibp2p({
+      addresses: {
+        listen: []
+      },
+      connectionGater: {
+        denyDialMultiaddr: () => false
+      },
+      transports: [
+        webSockets()
+      ]
+    })).start()
   })
 
   afterEach(async () => {

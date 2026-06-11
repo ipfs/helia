@@ -2,20 +2,19 @@ import { expect } from 'aegir/chai'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { createHelia } from './fixtures/create-helia.ts'
-import type { Helia, Routing } from '@helia/interface'
+import type { Helia, Router } from '@helia/interface'
 import type { Startable, Metrics } from '@libp2p/interface'
 
 describe('helia', () => {
   let helia: Helia
-  let routing: Routing
+  let routing: Router
 
   beforeEach(async () => {
-    routing = stubInterface<Routing & Startable>({
+    routing = stubInterface<Router & Startable>({
       start: Sinon.stub(),
       stop: Sinon.stub()
     })
     helia = await createHelia({
-      start: false,
       routers: [
         routing
       ],

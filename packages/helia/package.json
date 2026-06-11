@@ -89,8 +89,5 @@
     "it-all": "^3.0.11",
     "it-drain": "^3.0.12"
   },
-  "browser": {
-    "./dist/src/utils/libp2p-defaults.js": "./dist/src/utils/libp2p-defaults.browser.js"
-  },
   "sideEffects": false
 }

@@ -4,7 +4,7 @@ import { CID } from 'multiformats/cid'
 import { identity } from 'multiformats/hashes/identity'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { Provider, Routing, RoutingOptions } from '@helia/interface'
+import type { Provider, Router, RoutingOptions } from '@helia/interface'
 import type { PeerInfo } from '@libp2p/interface'
 import type { Version } from 'multiformats'
 
@@ -44,7 +44,7 @@ function toUrl (info: PeerInfo): URL {
   return new URL(uint8ArrayToString(info.id.toMultihash().digest))
 }
 
-class HTTPGatewayRouter implements Partial<Routing> {
+class HTTPGatewayRouter implements Router {
   public readonly name = 'http-gateway-router'
   private readonly gateways: PeerInfo[]
   private readonly shuffle: boolean
@@ -61,6 +61,7 @@ class HTTPGatewayRouter implements Partial<Routing> {
     ).map(info => {
       const provider = {
         ...info,
+        id: info.id.toCID(),
         protocols: ['transport-ipfs-gateway-http'],
         routing: 'http-gateway-routing'
       }
@@ -77,6 +78,6 @@ class HTTPGatewayRouter implements Partial<Routing> {
 /**
  * Returns a static list of HTTP Gateways as providers
  */
-export function httpGatewayRouting (init: HTTPGatewayRouterInit = {}): Partial<Routing> {
+export function httpGatewayRouting (init: HTTPGatewayRouterInit = {}): Router {
   return new HTTPGatewayRouter(init)
 }
