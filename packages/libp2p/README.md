@@ -30,51 +30,17 @@ repo and examine the changes made.
 
 -->
 
-Exports a `createHeliaHTTP` function that returns an object that implements a lightweight version of the Helia API that functions only over HTTP.
-
-By default, content and peer routing are requests are resolved using the [Delegated HTTP Routing API](https://specs.ipfs.tech/routing/http-routing-v1/) and blocks are fetched from [Trustless Gateways](https://specs.ipfs.tech/http-gateways/trustless-gateway/).
-
-Pass it to other modules like @helia/unixfs to fetch files from the distributed web.
+Adds libp2p functionality to Helia
 
 ## Example
 
-```typescript
-import { createHeliaHTTP } from '@helia/http'
-import { unixfs } from '@helia/unixfs'
-import { CID } from 'multiformats/cid'
+```ts
+import { createHelia } from 'helia'
+import { withLibp2p } from '@helia/libp2p'
 
-const helia = await createHeliaHTTP()
+const node = await withLibp2p(createHelia()).start()
 
-const fs = unixfs(helia)
-fs.cat(CID.parse('bafyFoo'))
-```
-
-## Example - with custom gateways and delegated routing endpoints
-
-```typescript
-import { createHeliaHTTP } from '@helia/http'
-import { trustlessGatewayBlockBroker } from '@helia/trustless-gateway-client'
-import { delegatedHTTPRouter } from '@helia/delegated-http-routing-client'
-import { fallbackRouter } from '@helia/fallback-router'
-import { unixfs } from '@helia/unixfs'
-import { CID } from 'multiformats/cid'
-
-const helia = await createHeliaHTTP({
-  blockBrokers: [
-    trustlessGatewayBlockBroker()
-  ],
-  routers: [
-    delegatedHTTPRouter({
-      url: 'https://delegated-ipfs.dev'
-    }),
-    fallbackRouter({
-      gateways: ['https://cloudflare-ipfs.com', 'https://ipfs.io']
-    })
-  ]
-})
-
-const fs = unixfs(helia)
-fs.cat(CID.parse('bafyFoo'))
+console.info(node.libp2p.peerId) // 12D3Koo...
 ```
 
 # Install

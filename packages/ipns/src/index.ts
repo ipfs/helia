@@ -105,28 +105,29 @@
  * may fail to be published with "Insufficient peers" errors.
  *
  * ```TypeScript
- * import { createHelia, libp2pDefaults } from 'helia'
  * import { ipns } from '@helia/ipns'
  * import { pubsub } from '@helia/ipns/routing'
+ * import { withLibp2p, libp2pDefaults } from '@helia/libp2p'
  * import { unixfs } from '@helia/unixfs'
- * import { floodsub } from '@libp2p/floodsub'
  * import { generateKeyPair } from '@libp2p/crypto/keys'
+ * import { floodsub } from '@libp2p/floodsub'
+ * import { createHelia } from 'helia'
+ * import type { Helia } from '@helia/interface'
  * import type { PubSub } from '@helia/ipns/routing'
+ * import type { DefaultLibp2pServices } from '@helia/libp2p'
+ * import type { FloodSub } from '@libp2p/floodsub'
  * import type { Libp2p } from '@libp2p/interface'
- * import type { DefaultLibp2pServices } from 'helia'
  *
  * const libp2pOptions = libp2pDefaults()
  * libp2pOptions.services.pubsub = floodsub()
  *
- * const helia = await createHelia<Libp2p<DefaultLibp2pServices & { pubsub: PubSub }>>({
- *   libp2p: libp2pOptions
- * })
+ * const helia = await withLibp2p<Helia, { pubsub: FloodSub }>(createHelia(), libp2pOptions).start()
+ *
  * const name = ipns(helia, {
  *  routers: [
  *    pubsub(helia)
  *  ]
  * })
- *
  *
  * // store some data to publish
  * const fs = unixfs(helia)

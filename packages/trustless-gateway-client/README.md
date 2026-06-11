@@ -30,7 +30,8 @@ repo and examine the changes made.
 
 -->
 
-Abstraction layer over different content and peer routing mechanisms.
+A Trustless Gateway is an HTTP endpoint that can be used to download blocks
+or CAR files in a verifiable way.
 
 # Install
 

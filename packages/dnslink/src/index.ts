@@ -12,16 +12,14 @@
  * import { dnsLink } from '@helia/dnslink'
  * import { dns } from '@multiformats/dns'
  * import { dnsOverHttps } from '@multiformats/dns/resolvers'
- * import type { DefaultLibp2pServices } from 'helia'
- * import type { Libp2p } from '@libp2p/interface'
  *
- * const node = await createHelia<Libp2p<DefaultLibp2pServices>>({
+ * const node = await createHelia({
  *   dns: dns({
  *     resolvers: {
  *       '.': dnsOverHttps('https://private-dns-server.me/dns-query')
  *     }
  *   })
- * })
+ * }).start()
  * const name = dnsLink(node)
  *
  * const result = name.resolve('some-domain-with-dnslink-entry.com')
@@ -42,7 +40,7 @@
  * import { createHelia } from 'helia'
  * import { dnsLink } from '@helia/dnslink'
  *
- * const node = await createHelia()
+ * const node = await createHelia().start()
  * const name = dnsLink(node)
  *
  * const [{ answer }] = await name.resolve('blog.ipfs.tech')
@@ -64,16 +62,14 @@
  * import { dnsLink } from '@helia/dnslink'
  * import { dns } from '@multiformats/dns'
  * import { dnsOverHttps } from '@multiformats/dns/resolvers'
- * import type { DefaultLibp2pServices } from 'helia'
- * import type { Libp2p } from '@libp2p/interface'
  *
- * const node = await createHelia<Libp2p<DefaultLibp2pServices>>({
+ * const node = await createHelia({
  *   dns: dns({
  *     resolvers: {
  *       '.': dnsOverHttps('https://mozilla.cloudflare-dns.com/dns-query')
  *     }
  *   })
- * })
+ * }).start()
  * const name = dnsLink(node)
  *
  * const result = await name.resolve('blog.ipfs.tech')
@@ -89,16 +85,14 @@
  * import { dnsLink } from '@helia/dnslink'
  * import { dns } from '@multiformats/dns'
  * import { dnsJsonOverHttps } from '@multiformats/dns/resolvers'
- * import type { DefaultLibp2pServices } from 'helia'
- * import type { Libp2p } from '@libp2p/interface'
  *
- * const node = await createHelia<Libp2p<DefaultLibp2pServices>>({
+ * const node = await createHelia({
  *   dns: dns({
  *     resolvers: {
  *       '.': dnsJsonOverHttps('https://mozilla.cloudflare-dns.com/dns-query')
  *     }
  *   })
- * })
+ * }).start()
  * const name = dnsLink(node)
  *
  * const result = await name.resolve('blog.ipfs.tech')
