@@ -49,45 +49,13 @@
     "prepublishOnly": "node scripts/update-version.js && npm run build"
   },
   "dependencies": {
-    "@chainsafe/libp2p-noise": "^17.0.0",
-    "@chainsafe/libp2p-yamux": "^8.0.1",
-    "@helia/block-brokers": "^5.2.4",
-    "@helia/delegated-routing-v1-http-api-client": "^7.0.1",
     "@helia/interface": "^6.2.1",
-    "@helia/routers": "^5.1.1",
     "@helia/utils": "^2.5.2",
-    "@ipshipyard/libp2p-auto-tls": "^2.0.1",
-    "@libp2p/autonat": "^3.0.15",
-    "@libp2p/bootstrap": "^12.0.16",
-    "@libp2p/circuit-relay-v2": "^4.2.0",
-    "@libp2p/config": "^1.1.27",
-    "@libp2p/dcutr": "^3.0.15",
-    "@libp2p/http": "^2.0.1",
-    "@libp2p/identify": "^4.1.0",
-    "@libp2p/interface": "^3.2.0",
-    "@libp2p/kad-dht": "^16.2.0",
-    "@libp2p/keychain": "^6.0.12",
-    "@libp2p/mdns": "^12.0.16",
-    "@libp2p/mplex": "^12.0.16",
-    "@libp2p/ping": "^3.1.0",
-    "@libp2p/tcp": "^11.0.15",
-    "@libp2p/tls": "^3.0.15",
-    "@libp2p/upnp-nat": "^4.0.15",
-    "@libp2p/webrtc": "^6.0.16",
-    "@libp2p/websockets": "^10.1.8",
-    "@multiformats/dns": "^1.0.13",
-    "blockstore-core": "^7.0.1",
-    "datastore-core": "^12.0.1",
-    "interface-datastore": "^10.0.1",
-    "libp2p": "^3.2.0",
     "multiformats": "^14.0.0"
   },
   "devDependencies": {
-    "@multiformats/mafmt": "^12.1.6",
-    "@multiformats/multiaddr": "^13.0.1",
     "aegir": "^48.0.4",
-    "it-all": "^3.0.11",
-    "it-drain": "^3.0.12"
+    "interface-datastore": "^10.0.1"
   },
   "sideEffects": false
 }

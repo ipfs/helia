@@ -15,9 +15,9 @@
  * ```
  */
 
-import { libp2pRouting } from '@helia/routers'
 import { NotStartedError } from '@libp2p/interface'
 import { isLibp2p } from 'libp2p'
+import { libp2pRouting } from './routing.ts'
 import { createLibp2p } from './utils/libp2p.ts'
 import type { DefaultLibp2pServices } from './utils/libp2p-defaults.ts'
 import type { CreateLibp2pOptions } from './utils/libp2p.ts'

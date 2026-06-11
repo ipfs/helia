@@ -53,10 +53,12 @@
   },
   "dependencies": {
     "@helia/interface": "^6.2.1",
+    "@helia/libp2p": "^0.0.0",
     "@helia/utils": "^2.5.2",
     "@libp2p/interface": "^3.2.0",
     "@libp2p/logger": "^6.2.4",
     "@libp2p/peer-collections": "^7.0.15",
+    "@libp2p/peer-id": "^6.0.10",
     "@libp2p/utils": "^7.0.15",
     "@multiformats/multiaddr": "^13.0.1",
     "any-signal": "^4.2.0",
@@ -78,7 +80,6 @@
   },
   "devDependencies": {
     "@libp2p/crypto": "^5.1.15",
-    "@libp2p/peer-id": "^6.0.6",
     "@types/sinon": "^21.0.1",
     "aegir": "^48.0.4",
     "blockstore-core": "^7.0.1",
