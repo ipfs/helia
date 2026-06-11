@@ -1,4 +1,4 @@
-import { withBitswap } from '@helia/block-brokers'
+import { withBitswap } from '@helia/bitswap'
 import { withLibp2p, libp2pDefaults } from '@helia/libp2p'
 import { kadDHT, removePublicAddressesMapper } from '@libp2p/kad-dht'
 import { sha3512 } from '@multiformats/sha3'

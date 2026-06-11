@@ -52,7 +52,7 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@helia/block-brokers": "^5.2.4",
+    "@helia/bitswap": "^3.2.3",
     "@helia/car": "^5.4.2",
     "@helia/dag-cbor": "^5.1.1",
     "@helia/dag-json": "^5.1.1",
