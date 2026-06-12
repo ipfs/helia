@@ -1,9 +1,8 @@
-import { generateKeyPair } from '@libp2p/crypto/keys'
-import { defaultLogger } from '@libp2p/logger'
-import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { ed25519Crypto } from '@ipshipyard/crypto'
 import { multiaddr } from '@multiformats/multiaddr'
 import { uriToMultiaddr } from '@multiformats/uri-to-multiaddr'
 import { expect } from 'aegir/chai'
+import { defaultLogger } from 'birnam'
 import { CID } from 'multiformats/cid'
 import { raceSignal } from 'race-signal'
 import Sinon from 'sinon'
@@ -11,7 +10,7 @@ import { stubInterface } from 'sinon-ts'
 import { createTrustlessGatewaySession } from '../src/session.ts'
 import type { TrustlessGateway } from '../src/trustless-gateway.ts'
 import type { Routing } from '@helia/interface'
-import type { ComponentLogger } from '@libp2p/interface'
+import type { ComponentLogger } from 'birnam'
 import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedTrustlessGatewaySessionComponents {
@@ -40,7 +39,7 @@ describe('trustless-gateway sessions', () => {
 
     components.routing.findProviders.returns(async function * () {
       yield {
-        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
+        id: (await ed25519Crypto().generatePrivateKey()).publicKey.toCID(),
         multiaddrs: [
           uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
         ],
@@ -62,21 +61,21 @@ describe('trustless-gateway sessions', () => {
 
     components.routing.findProviders.returns(async function * () {
       yield {
-        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
+        id: (await ed25519Crypto().generatePrivateKey()).publicKey.toCID(),
         multiaddrs: [
           multiaddr('/ip4/127.0.0.1/tcp/1234')
         ],
         routing: 'test-routing'
       }
       yield {
-        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
+        id: (await ed25519Crypto().generatePrivateKey()).publicKey.toCID(),
         multiaddrs: [
           multiaddr('/ip4/127.0.0.1/udp/1234/quic-v1')
         ],
         routing: 'test-routing'
       }
       yield {
-        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
+        id: (await ed25519Crypto().generatePrivateKey()).publicKey.toCID(),
         multiaddrs: [
           uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
         ],
@@ -99,7 +98,7 @@ describe('trustless-gateway sessions', () => {
     const queryProviderSpy = Sinon.spy(session, 'queryProvider')
 
     const prov = {
-      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
+      id: (await ed25519Crypto().generatePrivateKey()).publicKey.toCID(),
       multiaddrs: [
         uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
       ],
@@ -133,7 +132,7 @@ describe('trustless-gateway sessions', () => {
 
     components.routing.findProviders.returns(async function * () {
       yield {
-        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
+        id: (await ed25519Crypto().generatePrivateKey()).publicKey.toCID(),
         multiaddrs: [
           uriToMultiaddr(process.env.BAD_TRUSTLESS_GATEWAY ?? '')
         ],
@@ -154,14 +153,14 @@ describe('trustless-gateway sessions', () => {
       allowLocal: true
     })
     const providers = [{
-      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
+      id: (await ed25519Crypto().generatePrivateKey()).publicKey.toCID(),
       multiaddrs: [
         uriToMultiaddr(process.env.BAD_TRUSTLESS_GATEWAY ?? '')
       ],
       routing: 'test-routing'
     },
     {
-      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
+      id: (await ed25519Crypto().generatePrivateKey()).publicKey.toCID(),
       multiaddrs: [
         uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
       ],

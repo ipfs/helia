@@ -4,7 +4,7 @@ import { findHttpGatewayProviders } from './utils.ts'
 import type { TrustlessGatewayBlockBrokerInit, TrustlessGatewayBlockBrokerComponents, TrustlessGatewayGetBlockProgressEvents } from './index.ts'
 import type { TransformRequestInit } from './trustless-gateway.ts'
 import type { Routing, BlockRetrievalOptions, BlockBroker, CreateSessionOptions, SessionBlockBroker } from '@helia/interface'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
+import type { ComponentLogger, Logger } from 'birnam'
 import type { CID } from 'multiformats/cid'
 
 export interface CreateTrustlessGatewaySessionOptions extends CreateSessionOptions<TrustlessGatewayGetBlockProgressEvents> {

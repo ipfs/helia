@@ -1,4 +1,3 @@
-import { peerIdFromCID } from '@libp2p/peer-id'
 import { uriToMultiaddr } from '@multiformats/uri-to-multiaddr'
 import { base64 } from 'multiformats/bases/base64'
 import { CID } from 'multiformats/cid'
@@ -8,7 +7,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DEFAULT_MAX_SIZE } from './index.ts'
 import { limitedResponse } from './utils.ts'
 import type { BlockBrokerConnectedProgressEvent, BlockBrokerConnectProgressEvent, BlockBrokerGetBlockProgressEvents, BlockBrokerReceiveBlockProgressEvent, BlockBrokerRequestBlockProgressEvent } from '@helia/interface'
-import type { ComponentLogger, Logger, PeerId } from '@libp2p/interface'
+import type { ComponentLogger, Logger } from 'birnam'
 import type { ProgressOptions } from 'progress-events'
 
 const TRANSPORT_IPFS_GATEWAY_HTTP_CODE = 0x0920
@@ -50,7 +49,7 @@ export interface GetRawBlockOptions extends ProgressOptions<BlockBrokerGetBlockP
  */
 export class TrustlessGateway {
   public readonly url: URL
-  private readonly peer: PeerId
+  private readonly peer: CID
 
   /**
    * The number of times this gateway has been attempted to be used to fetch a
@@ -97,7 +96,7 @@ export class TrustlessGateway {
     this.transformRequestInit = transformRequestInit
     this.log = logger.forComponent(`helia:trustless-gateway-block-broker:${this.url.host}`)
     this.routing = routing
-    this.peer = peerIdFromCID(CID.createV1(TRANSPORT_IPFS_GATEWAY_HTTP_CODE, identity.digest(uint8ArrayFromString(this.url.toString()))))
+    this.peer = CID.createV1(TRANSPORT_IPFS_GATEWAY_HTTP_CODE, identity.digest(uint8ArrayFromString(this.url.toString())))
   }
 
   /**
@@ -163,7 +162,7 @@ export class TrustlessGateway {
         options.onProgress?.(new CustomProgressEvent<BlockBrokerConnectProgressEvent>('helia:block-broker:connect', {
           broker: 'trustless-gateway',
           type: 'connect',
-          provider: this.peer.toCID(),
+          provider: this.peer,
           cid
         }))
 
@@ -181,7 +180,7 @@ HTTP/1.1 %d %s
           options.onProgress?.(new CustomProgressEvent<BlockBrokerConnectedProgressEvent>('helia:block-broker:connected', {
             broker: 'trustless-gateway',
             type: 'connected',
-            provider: this.peer.toCID(),
+            provider: this.peer,
             address: uriToMultiaddr(gwUrl.toString()),
             cid
           }))
@@ -189,7 +188,7 @@ HTTP/1.1 %d %s
           options.onProgress?.(new CustomProgressEvent<BlockBrokerRequestBlockProgressEvent>('helia:block-broker:request-block', {
             broker: 'trustless-gateway',
             type: 'request-block',
-            provider: this.peer.toCID(),
+            provider: this.peer,
             cid
           }))
 
@@ -200,7 +199,7 @@ HTTP/1.1 %d %s
           options.onProgress?.(new CustomProgressEvent<BlockBrokerReceiveBlockProgressEvent>('helia:block-broker:receive-block', {
             broker: 'trustless-gateway',
             type: 'receive-block',
-            provider: this.peer.toCID(),
+            provider: this.peer,
             cid
           }))
 

@@ -9,8 +9,9 @@ import type { CreateTrustlessGatewaySessionOptions } from './broker.ts'
 import type { TrustlessGatewayGetBlockProgressEvents, TrustlessGatewayProvider } from './index.ts'
 import type { TransformRequestInit } from './trustless-gateway.ts'
 import type { BlockRetrievalOptions, Routing } from '@helia/interface'
-import type { ComponentLogger, AbortOptions } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { AbortOptions } from 'abort-error'
+import type { ComponentLogger } from 'birnam'
 
 export interface TrustlessGatewaySessionComponents {
   logger: ComponentLogger

@@ -1,9 +1,8 @@
-import { generateKeyPair } from '@libp2p/crypto/keys'
-import { defaultLogger } from '@libp2p/logger'
-import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { ed25519Crypto } from '@ipshipyard/crypto'
 import { multiaddr } from '@multiformats/multiaddr'
 import { uriToMultiaddr } from '@multiformats/uri-to-multiaddr'
 import { expect } from 'aegir/chai'
+import { defaultLogger } from 'birnam'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { stubInterface } from 'sinon-ts'
@@ -29,14 +28,14 @@ describe('trustless-gateway-block-broker', () => {
     routing = stubInterface()
 
     badGatewayPeer = {
-      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
+      id: (await ed25519Crypto().generatePrivateKey()).publicKey.toCID(),
       multiaddrs: [
         uriToMultiaddr(process.env.BAD_TRUSTLESS_GATEWAY ?? '')
       ],
       routing: 'test-routing'
     }
     goodGatewayPeer = {
-      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
+      id: (await ed25519Crypto().generatePrivateKey()).publicKey.toCID(),
       multiaddrs: [
         uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
       ],
@@ -112,7 +111,7 @@ describe('trustless-gateway-block-broker', () => {
     routing.findProviders.returns(async function * () {
       // non-http provider
       yield {
-        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
+        id: (await ed25519Crypto().generatePrivateKey()).publicKey.toCID(),
         multiaddrs: [
           multiaddr('/ip4/132.32.25.6/tcp/1234')
         ],
@@ -120,13 +119,13 @@ describe('trustless-gateway-block-broker', () => {
       }
       // expired peer info
       yield {
-        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
+        id: (await ed25519Crypto().generatePrivateKey()).publicKey.toCID(),
         multiaddrs: [],
         routing: 'test-routing'
       }
       // http gateway
       yield {
-        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
+        id: (await ed25519Crypto().generatePrivateKey()).publicKey.toCID(),
         multiaddrs: [
           uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
         ],
