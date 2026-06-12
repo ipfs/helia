@@ -9,21 +9,25 @@
     { "type": "refactor", "section": "Refactors", "hidden": false }
   ],
   "packages": {
-    "packages/block-brokers": {},
     "packages/bitswap": {},
     "packages/car": {},
     "packages/dag-cbor": {},
     "packages/dag-json": {},
+    "packages/delegated-routing-client": {},
     "packages/dnslink": {},
+    "packages/fallback-router": {},
     "packages/helia": {},
     "packages/http": {},
     "packages/interface": {},
     "packages/interop": {},
     "packages/ipns": {},
     "packages/json": {},
+    "packages/keychain": {},
+    "packages/libp2p": {},
     "packages/mfs": {},
     "packages/routers": {},
     "packages/strings": {},
+    "packages/trustless-gateway-client": {},
     "packages/unixfs": {},
     "packages/utils": {}
   }

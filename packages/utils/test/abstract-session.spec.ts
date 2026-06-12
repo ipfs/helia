@@ -39,7 +39,7 @@ class Session extends AbstractSession<SessionPeer, ProgressEvent> {
     return a.id.equals(b.id)
   }
 
-  async convertToProvider (provider: PeerId | Multiaddr | Multiaddr[]): Promise<SessionPeer | undefined> {
+  async convertToProvider (provider: CID | Multiaddr | Multiaddr[]): Promise<SessionPeer | undefined> {
     if (isPeerId(provider)) {
       return {
         id: provider

@@ -4,13 +4,13 @@ import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import { createHeliaNode } from './fixtures/create-helia.ts'
 import { createKuboNode } from './fixtures/create-kubo.ts'
+import type { HeliaWithLibp2p } from '@helia/libp2p'
 import type { UnixFS } from '@helia/unixfs'
-import type { Helia } from 'helia'
 import type { ByteStream, FileCandidate } from 'ipfs-unixfs-importer'
 import type { KuboNode } from 'ipfsd-ctl'
 
 describe('@helia/unixfs - bitswap', () => {
-  let helia: Helia
+  let helia: HeliaWithLibp2p
   let unixFs: UnixFS
   let kubo: KuboNode
 

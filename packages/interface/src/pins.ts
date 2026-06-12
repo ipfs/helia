@@ -1,5 +1,5 @@
 import type { GetBlockProgressEvents } from './blocks.ts'
-import type { AbortOptions } from '@libp2p/interface'
+import type { AbortOptions } from 'abort-error'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 

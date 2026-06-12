@@ -5,12 +5,12 @@ import { CID } from 'multiformats/cid'
 import { createHeliaNode } from './fixtures/create-helia.ts'
 import { createKuboNode } from './fixtures/create-kubo.ts'
 import type { DAGCBOR, AddOptions } from '@helia/dag-cbor'
-import type { Helia } from 'helia'
+import type { HeliaWithLibp2p } from '@helia/libp2p'
 import type { KuboNode } from 'ipfsd-ctl'
 import type { AddOptions as KuboAddOptions } from 'kubo-rpc-client'
 
 describe('@helia/dag-cbor', () => {
-  let helia: Helia
+  let helia: HeliaWithLibp2p
   let d: DAGCBOR
   let kubo: KuboNode
 

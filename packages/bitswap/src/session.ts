@@ -1,13 +1,13 @@
-import { AbstractSession } from '@helia/utils'
-import { isPeerId } from '@libp2p/interface'
+import { AbstractSession, isCID } from '@helia/utils'
+import { peerIdFromCID } from '@libp2p/peer-id'
+import { CID } from 'multiformats/cid'
 import { CustomProgressEvent } from 'progress-events'
 import type { BitswapProvider, BitswapWantProgressEvents } from './index.ts'
 import type { Network } from './network.ts'
 import type { WantList } from './want-list.ts'
 import type { BlockRetrievalOptions, CreateSessionOptions } from '@helia/interface'
-import type { ComponentLogger, Libp2p, PeerId, AbortOptions } from '@libp2p/interface'
+import type { ComponentLogger, Libp2p, AbortOptions } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { CID } from 'multiformats/cid'
 
 export interface BitswapSessionComponents {
   network: Network
@@ -17,7 +17,7 @@ export interface BitswapSessionComponents {
 }
 
 interface ProviderPeer {
-  peerId: PeerId
+  peerId: CID
   routing: string
   toString(): string
 }
@@ -40,9 +40,11 @@ class BitswapSession extends AbstractSession<ProviderPeer, BitswapWantProgressEv
   }
 
   async queryProvider (cid: CID, provider: ProviderPeer, options: AbortOptions): Promise<Uint8Array> {
-    this.log('sending WANT-BLOCK for %c to %p', cid, provider)
+    const peerId = peerIdFromCID(provider.peerId)
 
-    const result = await this.wantList.wantSessionBlock(cid, provider.peerId, options)
+    this.log('sending WANT-BLOCK for %c to %p', cid, peerId)
+
+    const result = await this.wantList.wantSessionBlock(cid, peerId, options)
 
     this.log('%p %s %c', provider, result.has ? 'has' : 'does not have', cid)
 
@@ -68,15 +70,15 @@ class BitswapSession extends AbstractSession<ProviderPeer, BitswapWantProgressEv
   }
 
   toFilterKey (provider: ProviderPeer): Uint8Array | string {
-    return provider.peerId.toMultihash().bytes
+    return provider.peerId.multihash.bytes
   }
 
   equals (providerA: ProviderPeer, providerB: ProviderPeer): boolean {
     return providerA.peerId.equals(providerB.peerId)
   }
 
-  async convertToProvider (provider: PeerId | Multiaddr | Multiaddr[], routing: string, options?: AbortOptions): Promise<ProviderPeer | undefined> {
-    if (isPeerId(provider)) {
+  async convertToProvider (provider: CID | Multiaddr | Multiaddr[], routing: string, options?: AbortOptions): Promise<ProviderPeer | undefined> {
+    if (isCID(provider)) {
       return {
         peerId: provider,
         routing,
@@ -92,7 +94,7 @@ class BitswapSession extends AbstractSession<ProviderPeer, BitswapWantProgressEv
       const connection = await this.libp2p.dial(provider, options)
 
       return {
-        peerId: connection.remotePeer,
+        peerId: connection.remotePeer.toCID(),
         routing,
         toString: () => `Bitswap(${connection.remotePeer})`
       }

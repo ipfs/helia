@@ -14,14 +14,16 @@
  * ```
  */
 
-import type { Blocks } from './blocks.ts'
+import type { BlockBroker, Blocks } from './blocks.ts'
 import type { Pins } from './pins.ts'
-import type { Routing } from './routing.ts'
+import type { Router, Routing } from './routing.ts'
 import type { CryptoLoader, Keychain } from '@ipshipyard/keychain'
-import type { ComponentLogger, Libp2p, Metrics, TypedEventEmitter } from '@libp2p/interface'
+import type { Metrics } from '@libp2p/interface'
 import type { DNS } from '@multiformats/dns'
 import type { AbortOptions } from 'abort-error'
+import type { ComponentLogger } from 'birnam'
 import type { Datastore } from 'interface-datastore'
+import type { TypedEventEmitter } from 'main-event'
 import type { BlockCodec, MultihashHasher } from 'multiformats'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
@@ -38,14 +40,24 @@ export type { CryptoLoader, Keychain } from '@ipshipyard/keychain'
 export type { Crypto, PrivateKey, PublicKey } from '@ipshipyard/crypto'
 export { isPrivateKey, isPublicKey } from '@ipshipyard/crypto'
 
+export interface NodeInfo {
+  name: string
+  version: string
+}
+
+export interface HeliaMixin<Start extends Helia = Helia, Stop = Start> {
+  start?(helia: Start): Promise<void> | void
+  stop?(helia: Stop): Promise<void> | void
+}
+
 /**
  * The API presented by a Helia node
  */
-export interface Helia<T extends Libp2p = Libp2p> {
+export interface Helia {
   /**
-   * The libp2p instance
+   * Runtime information about the node
    */
-  libp2p: T
+  info: NodeInfo
 
   /**
    * Where the blocks are stored
@@ -60,7 +72,7 @@ export interface Helia<T extends Libp2p = Libp2p> {
   /**
    * Event emitter for Helia start and stop events
    */
-  events: TypedEventEmitter<HeliaEvents<T>>
+  events: TypedEventEmitter<HeliaEvents<this>>
 
   /**
    * Secure storage for private keys
@@ -96,14 +108,19 @@ export interface Helia<T extends Libp2p = Libp2p> {
   metrics?: Metrics
 
   /**
+   * The current status of the Helia node
+   */
+  status: 'starting' | 'started' | 'stopping' | 'stopped'
+
+  /**
    * Starts the Helia node
    */
-  start(): Promise<void>
+  start(options?: AbortOptions): Promise<this>
 
   /**
    * Stops the Helia node
    */
-  stop(): Promise<void>
+  stop(options?: AbortOptions): Promise<this>
 
   /**
    * Remove any unpinned blocks from the blockstore
@@ -127,6 +144,31 @@ export interface Helia<T extends Libp2p = Libp2p> {
    * Cryptography implementations securely sign and verify data
    */
   getCrypto: CryptoLoader
+
+  /**
+   * Returns `true` if a router with the passed name has been configured
+   */
+  hasRouter (name: string): boolean
+
+  /**
+   * Add a router
+   */
+  addRouter(router: Router): void
+
+  /**
+   * Returns `true` if a block broker with the passed name has been configured
+   */
+  hasBlockBroker (name: string): boolean
+
+  /**
+   * Add a block broker
+   */
+  addBlockBroker(blockBroker: BlockBroker): void
+
+  /**
+   * Add a mixin to extend runtime functionality
+   */
+  addMixin<T extends Helia = Helia & Record<string, any>>(mixin: HeliaMixin<T>): void
 }
 
 export type GcEvents =
@@ -137,7 +179,7 @@ export interface GCOptions extends AbortOptions, ProgressOptions<GcEvents> {
 
 }
 
-export interface HeliaEvents<T extends Libp2p = Libp2p> {
+export interface HeliaEvents<H extends Helia = Helia> {
   /**
    * This event notifies listeners that the node has started
    *
@@ -147,7 +189,7 @@ export interface HeliaEvents<T extends Libp2p = Libp2p> {
    * })
    * ```
    */
-  start: CustomEvent<Helia<T>>
+  start: CustomEvent<H>
 
   /**
    * This event notifies listeners that the node has stopped
@@ -158,7 +200,7 @@ export interface HeliaEvents<T extends Libp2p = Libp2p> {
    * })
    * ```
    */
-  stop: CustomEvent<Helia<T>>
+  stop: CustomEvent<H>
 }
 
 export * from './blocks.ts'

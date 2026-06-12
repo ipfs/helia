@@ -1,18 +1,19 @@
 import { NoRoutersAvailableError } from '@helia/interface'
 import { NotFoundError, start, stop } from '@libp2p/interface'
-import { PeerQueue } from '@libp2p/utils'
+import { Queue } from '@libp2p/utils'
 import merge from 'it-merge'
 import { CustomProgressEvent } from 'progress-events'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { GetFailedError } from './errors.ts'
-import type { Routing as RoutingInterface, Provider, RoutingOptions, RoutingFindProvidersProgressEvents, RoutingProvideProgressEvents, RoutingPutProgressEvents, RoutingGetProgressEvents, RoutingFindPeerProgressEvents, RoutingGetClosestPeersProgressEvents, RoutingCancelReprovideProgressEvents } from '@helia/interface'
-import type { ComponentLogger, Logger, Metrics, PeerId, PeerInfo, Startable } from '@libp2p/interface'
+import type { Routing as RoutingInterface, Provider, RoutingOptions, RoutingFindProvidersProgressEvents, RoutingProvideProgressEvents, RoutingPutProgressEvents, RoutingGetProgressEvents, RoutingFindPeerProgressEvents, RoutingGetClosestPeersProgressEvents, RoutingCancelReprovideProgressEvents, Router, Peer } from '@helia/interface'
+import type { ComponentLogger, Logger, Metrics, Startable } from '@libp2p/interface'
+import type { AbortOptions } from 'abort-error'
 import type { CID } from 'multiformats/cid'
 
 const DEFAULT_PROVIDER_LOOKUP_CONCURRENCY = 5
 
 export interface RoutingInit {
-  routers: Array<Partial<RoutingInterface>>
+  routers: Router[]
   providerLookupConcurrency?: number
 }
 
@@ -21,11 +22,15 @@ export interface RoutingComponents {
   metrics?: Metrics
 }
 
+interface PeerQueueOptions extends AbortOptions {
+  peer: CID
+}
+
 export class Routing implements RoutingInterface, Startable {
   public name: string
 
   private readonly log: Logger
-  private readonly routers: Array<Partial<RoutingInterface>>
+  private readonly routers: Router[]
   private readonly providerLookupConcurrency: number
 
   constructor (components: RoutingComponents, init: RoutingInit) {
@@ -65,6 +70,14 @@ export class Routing implements RoutingInterface, Startable {
     await stop(...this.routers)
   }
 
+  hasRouter (name: string): boolean {
+    return this.routers.findIndex(r => r.name === name) !== -1
+  }
+
+  addRouter (router: Router): void {
+    this.routers.push(router)
+  }
+
   /**
    * Iterates over all content routers in parallel to find providers of the
    * given key
@@ -78,7 +91,7 @@ export class Routing implements RoutingInterface, Startable {
     // back as an empty array - when this happens we have to do a FIND_PEER
     // query to get updated addresses, but we shouldn't block on this so use a
     // separate bounded queue to perform this lookup
-    const queue = new PeerQueue<Provider | null>({
+    const queue = new Queue<Provider | null, PeerQueueOptions>({
       concurrency: this.providerLookupConcurrency
     })
 
@@ -145,7 +158,7 @@ export class Routing implements RoutingInterface, Startable {
       // have to refresh peer info for this peer to get updated multiaddrs
       if (peer.multiaddrs.length === 0) {
         // already looking this peer up
-        if (queue.find(peer.id) != null) {
+        if (queue.queue.find(job => job.options.peer.equals(peer.id)) != null) {
           continue
         }
 
@@ -167,7 +180,7 @@ export class Routing implements RoutingInterface, Startable {
             return null
           }
         }, {
-          peerId: peer.id,
+          peer: peer.id,
           signal: options.signal
         })
           .catch(err => {
@@ -298,7 +311,7 @@ export class Routing implements RoutingInterface, Startable {
   /**
    * Iterates over all peer routers in parallel to find the given peer
    */
-  async findPeer (id: PeerId, options?: RoutingOptions<RoutingFindPeerProgressEvents>): Promise<PeerInfo> {
+  async findPeer (id: CID, options?: RoutingOptions<RoutingFindPeerProgressEvents>): Promise<Peer> {
     if (this.routers.length === 0) {
       throw new NoRoutersAvailableError('No peer routers available')
     }
@@ -339,7 +352,7 @@ export class Routing implements RoutingInterface, Startable {
   /**
    * Attempt to find the closest peers on the network to the given key
    */
-  async * getClosestPeers (key: Uint8Array, options: RoutingOptions<RoutingGetClosestPeersProgressEvents> = {}): AsyncIterable<PeerInfo> {
+  async * getClosestPeers (key: Uint8Array, options: RoutingOptions<RoutingGetClosestPeersProgressEvents> = {}): AsyncIterable<Peer> {
     if (this.routers.length === 0) {
       throw new NoRoutersAvailableError('No peer routers available')
     }
