@@ -36,7 +36,7 @@ describe('delegated-http-routing', () => {
     const options = {}
 
     const providers: PeerRecord[] = [{
-      ID: peerIdFromString('12D3KooWPPMkhpoWGA7WRUL8jDGduGT486aE3hHEf6sfDq8hTaFJ'),
+      ID: peerIdFromString('12D3KooWPPMkhpoWGA7WRUL8jDGduGT486aE3hHEf6sfDq8hTaFJ').toCID(),
       Schema: 'peer',
       Protocols: ['transport-bitswap'],
       Addrs: []
@@ -104,7 +104,7 @@ describe('delegated-http-routing', () => {
     const options = {}
 
     const peers: PeerRecord[] = [{
-      ID: peerId,
+      ID: peerId.toCID(),
       Schema: 'peer',
       Protocols: ['transport-bitswap'],
       Addrs: []

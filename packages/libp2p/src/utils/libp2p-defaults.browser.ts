@@ -1,7 +1,7 @@
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { delegatedHTTPRoutingDefaults } from '@helia/delegated-routing-client'
-import { delegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
+import { delegatedRoutingV1HttpApiClientContentRouting, delegatedRoutingV1HttpApiClientPeerRouting } from '@helia/delegated-routing-v1-http-api-client'
 import { autoNAT } from '@libp2p/autonat'
 import { bootstrap } from '@libp2p/bootstrap'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
@@ -25,7 +25,8 @@ import type { Libp2pOptions } from 'libp2p'
 export interface DefaultLibp2pServices extends Record<string, unknown> {
   autoNAT: unknown
   dcutr: unknown
-  delegatedRouting: unknown
+  delegatedContentRouting: unknown
+  delegatedPeerRouting: unknown
   dht: KadDHT
   identify: Identify
   ping: Ping
@@ -70,7 +71,8 @@ export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOpti
     services: {
       autoNAT: autoNAT(),
       dcutr: dcutr(),
-      delegatedRouting: delegatedRoutingV1HttpApiClient(delegatedHTTPRoutingDefaults()),
+      delegatedContentRouting: delegatedRoutingV1HttpApiClientContentRouting(delegatedHTTPRoutingDefaults()),
+      delegatedPeerRouting: delegatedRoutingV1HttpApiClientPeerRouting(delegatedHTTPRoutingDefaults()),
       dht: kadDHT({
         clientMode: true
       }),

@@ -35,7 +35,7 @@ export class DelegatedHTTPRouter implements Router {
   async * findProviders (cid: CID<unknown, number, number, Version>, options?: RoutingOptions): AsyncIterable<Provider> {
     yield * map(this.client.getProviders(cid, options), (record) => {
       return {
-        id: record.ID.toCID(),
+        id: record.ID,
         multiaddrs: record.Addrs,
         protocols: record.Protocols,
         routing: 'delegated-http-routing'
@@ -80,7 +80,7 @@ export class DelegatedHTTPRouter implements Router {
 
     if (peer != null) {
       return {
-        id: peer.ID.toCID(),
+        id: peer.ID,
         multiaddrs: peer.Addrs ?? []
       }
     }
