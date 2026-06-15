@@ -52,9 +52,9 @@ const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
 const { publicKey } = await name.publish('key-1', cid)
 
 // resolve the name
-const result = await name.resolve(publicKey)
-
-console.info(result.cid, result.path)
+for await (const result of name.resolve(publicKey)) {
+  console.info(result.record.value) // /ipfs/QmFoo
+}
 ```
 
 ## Example - Publishing a recursive record
@@ -82,8 +82,9 @@ const { publicKey } = await name.publish('key-1', cid)
 const { publicKey: recursivePublicKey } = await name.publish('key-2', publicKey)
 
 // resolve the name recursively - it resolves until a CID is found
-const result = await name.resolve(recursivePublicKey)
-console.info(result.cid.toString() === cid.toString()) // true
+for await (const result of name.resolve(recursivePublicKey)) {
+  console.info(result.record.value) // /ipfs/QmFoo../foo.txt
+}
 ```
 
 ## Example - Publishing a record with a path
@@ -111,9 +112,9 @@ const finalDirCid = await fs.cp(fileCid, dirCid, '/foo.txt')
 const { publicKey } = await name.publish('key-1', `/ipfs/${finalDirCid}/foo.txt`)
 
 // resolve the name
-const result = await name.resolve(publicKey)
-
-console.info(result.cid, result.path) // QmFoo.. 'foo.txt'
+for await (const result of name.resolve(publicKey)) {
+  console.info(result.record.value) // /ipfs/QmFoo../foo.txt
+}
 ```
 
 ## Example - Using custom PubSub router
@@ -133,28 +134,29 @@ and multiple peers are listening on the topic(s), otherwise update messages
 may fail to be published with "Insufficient peers" errors.
 
 ```TypeScript
-import { createHelia, libp2pDefaults } from 'helia'
 import { ipns } from '@helia/ipns'
 import { pubsub } from '@helia/ipns/routing'
+import { withLibp2p, libp2pDefaults } from '@helia/libp2p'
 import { unixfs } from '@helia/unixfs'
-import { floodsub } from '@libp2p/floodsub'
 import { generateKeyPair } from '@libp2p/crypto/keys'
+import { floodsub } from '@libp2p/floodsub'
+import { createHelia } from 'helia'
+import type { Helia } from '@helia/interface'
 import type { PubSub } from '@helia/ipns/routing'
+import type { DefaultLibp2pServices } from '@helia/libp2p'
+import type { FloodSub } from '@libp2p/floodsub'
 import type { Libp2p } from '@libp2p/interface'
-import type { DefaultLibp2pServices } from 'helia'
 
-const libp2pOptions = libp2pDefaults()
+const libp2pOptions = libp2pDefaults() as any
 libp2pOptions.services.pubsub = floodsub()
 
-const helia = await createHelia<Libp2p<DefaultLibp2pServices & { pubsub: PubSub }>>({
-  libp2p: libp2pOptions
-})
+const helia = await withLibp2p<Helia, { pubsub: FloodSub }>(createHelia(), libp2pOptions).start()
+
 const name = ipns(helia, {
  routers: [
    pubsub(helia)
  ]
 })
-
 
 // store some data to publish
 const fs = unixfs(helia)
@@ -164,47 +166,9 @@ const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3, 4]))
 const { publicKey } = await name.publish('key-1', cid)
 
 // resolve the name
-const result = await name.resolve(publicKey)
-```
-
-## Example - Republishing an existing IPNS record
-
-It is sometimes useful to be able to republish an existing IPNS record
-without needing the private key. This allows you to extend the availability
-of a record that was created elsewhere.
-
-```TypeScript
-import { createHelia } from 'helia'
-import { ipns, ipnsValidator } from '@helia/ipns'
-import { delegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
-import { CID } from 'multiformats/cid'
-import { multihashToIPNSRoutingKey, marshalIPNSRecord } from 'ipns'
-import { defaultLogger } from '@libp2p/logger'
-
-const helia = await createHelia()
-const name = ipns(helia)
-
-const ipnsName = 'k51qzi5uqu5dktsyfv7xz8h631pri4ct7osmb43nibxiojpttxzoft6hdyyzg4'
-const parsedCid: CID<unknown, 114, 0 | 18, 1> = CID.parse(ipnsName)
-const delegatedClient = delegatedRoutingV1HttpApiClient({
-  url: 'https://delegated-ipfs.dev'
-})({
-  logger: defaultLogger()
-})
-const record = await delegatedClient.getIPNS(parsedCid)
-
-const routingKey = multihashToIPNSRoutingKey(parsedCid.multihash)
-const marshaledRecord = marshalIPNSRecord(record)
-
-// validate that they key corresponds to the record
-await ipnsValidator(routingKey, marshaledRecord)
-
-// publish record to routing
-await Promise.all(
-  name.routers.map(async r => {
-    await r.put(routingKey, marshaledRecord)
-  })
-)
+for await (const result of name.resolve(publicKey)) {
+  console.info(result.record.value)
+}
 ```
 
 # Install

@@ -2,7 +2,6 @@
 
 import { ipns } from '@helia/ipns'
 import { pubsub } from '@helia/ipns/routing'
-import { generateKeyPair } from '@libp2p/crypto/keys'
 import { floodsub } from '@libp2p/floodsub'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
@@ -23,9 +22,8 @@ import { keyTypes } from './fixtures/key-types.ts'
 import { waitFor } from './fixtures/wait-for.ts'
 import type { IPNS, ResolveResult } from '@helia/ipns'
 import type { PubSub } from '@helia/ipns/routing'
-import type { Libp2p } from '@libp2p/interface'
+import type { HeliaWithLibp2p } from '@helia/libp2p'
 import type { Keychain } from '@libp2p/keychain'
-import type { Helia } from 'helia'
 import type { KuboNode } from 'ipfsd-ctl'
 
 // skip RSA tests because we need the DHT enabled to find the public key
@@ -33,7 +31,7 @@ import type { KuboNode } from 'ipfsd-ctl'
 // resolution because Kubo will use the DHT as well
 keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
   describe(`@helia/ipns - pubsub routing with ${keyType} keys`, () => {
-    let helia: Helia<Libp2p<{ pubsub: PubSub, keychain: Keychain }>>
+    let helia: HeliaWithLibp2p<{ pubsub: PubSub, keychain: Keychain }>
     let kubo: KuboNode
     let name: IPNS
 
@@ -70,13 +68,12 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
       const digest = await sha256.digest(input)
       const cid = CID.createV1(raw.code, digest)
 
-      const privateKey = await generateKeyPair('Ed25519')
       const keyName = 'my-ipns-key'
-      await helia.libp2p.services.keychain.importKey(keyName, privateKey)
+      const privateKey = await helia.keychain.generateKey(keyName)
 
       // first call to pubsub resolver will fail but we should trigger
       // subscribing pubsub for updates
-      await expect(last(kubo.api.name.resolve(privateKey.publicKey.toString(), {
+      await expect(last(kubo.api.name.resolve(`${privateKey.publicKey}`, {
         timeout: 100
       }))).to.eventually.be.undefined()
 
@@ -137,7 +134,7 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
       }
 
       // first call to pubsub resolver should fail but we should now be subscribed for updates
-      await expect(name.resolve(peerCid.multihash)).to.eventually.be.rejected()
+      await expect(last(name.resolve(peerCid.multihash))).to.eventually.be.rejected()
 
       // actual pubsub subscription name
       const subscriptionName = `/record/${uint8ArrayToString(uint8ArrayConcat([
@@ -173,7 +170,7 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
       // we should get an update eventually
       await waitFor(async () => {
         try {
-          resolveResult = await name.resolve(peerId.toMultihash())
+          resolveResult = await last(name.resolve(peerId.toMultihash()))
 
           return true
         } catch {
@@ -188,7 +185,7 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
         throw new Error('Failed to resolve CID')
       }
 
-      expect(resolveResult.cid.toString()).to.equal(cid.toString())
+      expect(resolveResult.record.value).to.equal(`/ipfs/${cid}`)
     })
   })
 })

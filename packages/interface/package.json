@@ -72,17 +72,21 @@
     "build": "aegir build"
   },
   "dependencies": {
-    "@libp2p/interface": "^3.2.0",
+    "@ipshipyard/crypto": "^1.1.0",
+    "@ipshipyard/keychain": "^1.0.2",
+    "@libp2p/interface": "^3.2.3",
     "@multiformats/dns": "^1.0.13",
-    "@multiformats/multiaddr": "^13.0.1",
-    "interface-blockstore": "^6.0.2",
-    "interface-datastore": "^9.0.3",
-    "interface-store": "^7.0.2",
-    "multiformats": "^13.4.2",
+    "@multiformats/multiaddr": "^13.0.3",
+    "abort-error": "^1.0.2",
+    "birnam": "^1.0.0",
+    "interface-blockstore": "^7.0.1",
+    "interface-datastore": "^10.0.1",
+    "main-event": "^1.0.4",
+    "multiformats": "^14.0.0",
     "progress-events": "^1.1.0"
   },
   "devDependencies": {
-    "aegir": "^47.1.5"
+    "aegir": "^48.0.11"
   },
   "sideEffects": false
 }

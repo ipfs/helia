@@ -5,7 +5,7 @@ import { dataFieldSerializedSize, linkSerializedSize, utf8ByteLength } from 'ipf
 import toBuffer from 'it-to-buffer'
 import { DEFAULT_SHARD_SPLIT_THRESHOLD_BYTES } from '../../constants.ts'
 import { hamtBucketBits } from './hamt-constants.ts'
-import type { GetStore } from '../../unixfs.js'
+import type { GetStore } from '../../unixfs.ts'
 import type { PBNode } from '@ipld/dag-pb'
 import type { AbortOptions } from '@libp2p/interface'
 import type { ImporterOptions, ShardSplitStrategy } from 'ipfs-unixfs-importer'

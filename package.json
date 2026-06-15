@@ -39,7 +39,7 @@
     "docs:no-publish": "aegir docs --publish false"
   },
   "devDependencies": {
-    "aegir": "^47.0.7",
+    "aegir": "^48.0.4",
     "npm-run-all": "^4.1.5"
   },
   "type": "module",
@@ -47,6 +47,9 @@
     "packages/*"
   ],
   "overrides": {
-    "playwright-core": "1.55.1"
+    "multiformats": "^14.0.0",
+    "uint8arrays": "^6.0.0",
+    "interface-datastore": "^10.0.1",
+    "uint8-varint": "^3.0.0"
   }
 }

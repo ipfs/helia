@@ -1,5 +1,4 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { isPeerId } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { pbStream, lpStream, streamPair } from '@libp2p/utils'
@@ -19,7 +18,7 @@ import { QueuedBitswapMessage } from '../src/utils/bitswap-message.ts'
 import { cidToPrefix } from '../src/utils/cid-prefix.ts'
 import type { BitswapMessageEventDetail } from '../src/network.ts'
 import type { Routing } from '@helia/interface/routing'
-import type { Connection, Libp2p, IdentifyResult } from '@libp2p/interface'
+import type { Connection, Libp2p } from '@libp2p/interface'
 import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedNetworkComponents {
@@ -156,7 +155,7 @@ describe('network', () => {
     const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const providers = [{
-      id: peerId,
+      id: peerId.toCID(),
       multiaddrs: [
         multiaddr('/ip4/127.0.0.1/tcp/4001')
       ],
@@ -170,7 +169,7 @@ describe('network', () => {
     const output = await all(network.findProviders(cid))
 
     expect(output).to.have.lengthOf(1)
-    expect(output[0].id.toString()).to.equal(peerId.toString())
+    expect(output[0].id.toString()).to.equal(peerId.toCID().toString())
     expect(output[0].multiaddrs).to.have.lengthOf(1)
     expect(output[0].multiaddrs[0].toString()).to.equal('/ip4/127.0.0.1/tcp/4001')
   })
@@ -180,7 +179,7 @@ describe('network', () => {
     const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const providers = [{
-      id: peerId,
+      id: peerId.toCID(),
       multiaddrs: [
         multiaddr('/ip4/127.0.0.1/tcp/4001/p2p-circuit')
       ],
@@ -216,7 +215,7 @@ describe('network', () => {
     const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const providers = [{
-      id: peerId,
+      id: peerId.toCID(),
       multiaddrs: [
         multiaddr('/ip4/127.0.0.1/tcp/4001/p2p-circuit')
       ],
@@ -230,7 +229,7 @@ describe('network', () => {
     const output = await all(network.findProviders(cid))
 
     expect(output).to.have.lengthOf(1)
-    expect(output[0].id.toString()).to.equal(peerId.toString())
+    expect(output[0].id.toString()).to.equal(peerId.toCID().toString())
     expect(output[0].multiaddrs).to.have.lengthOf(1)
     expect(output[0].multiaddrs[0].toString()).to.equal('/ip4/127.0.0.1/tcp/4001/p2p-circuit')
   })
@@ -240,7 +239,7 @@ describe('network', () => {
     const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const providers = [{
-      id: peerId,
+      id: peerId.toCID(),
       multiaddrs: [
         multiaddr('/ip4/127.0.0.1/tcp/4001')
       ],
@@ -255,30 +254,7 @@ describe('network', () => {
       // fake a network delay
       await delay(100)
 
-      const connection = stubInterface<Connection>()
-
-      // simulate identify having run
-      setTimeout(() => {
-        const call = components.libp2p.addEventListener.getCall(0)
-
-        expect(call.args[0]).to.equal('peer:identify')
-        const callback = call.args[1]
-
-        if (isPeerId(peerId) && typeof callback === 'function') {
-          callback(new CustomEvent<IdentifyResult>('peer:identify', {
-            detail: {
-              peerId,
-              protocols: [
-                BITSWAP_120
-              ],
-              listenAddrs: [],
-              connection
-            }
-          }))
-        }
-      }, 100)
-
-      return connection
+      return stubInterface<Connection>()
     })
 
     await network.findAndConnect(cid)
@@ -300,7 +276,7 @@ describe('network', () => {
     const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const providers = [{
-      id: peerId,
+      id: peerId.toCID(),
       multiaddrs: [
         multiaddr('/ip4/127.0.0.1/tcp/4001/p2p-circuit')
       ],
@@ -311,34 +287,11 @@ describe('network', () => {
       yield * providers
     })())
 
-    components.libp2p.dial.callsFake(async (peerId) => {
+    components.libp2p.dial.callsFake(async () => {
       // fake a network delay
       await delay(100)
 
-      const connection = stubInterface<Connection>()
-
-      // simulate identify having run
-      setTimeout(() => {
-        const call = components.libp2p.addEventListener.getCall(0)
-
-        expect(call.args[0]).to.equal('peer:identify')
-        const callback = call.args[1]
-
-        if (isPeerId(peerId) && typeof callback === 'function') {
-          callback(new CustomEvent<IdentifyResult>('peer:identify', {
-            detail: {
-              peerId,
-              protocols: [
-                BITSWAP_120
-              ],
-              listenAddrs: [],
-              connection
-            }
-          }))
-        }
-      }, 100)
-
-      return connection
+      return stubInterface<Connection>()
     })
 
     await network.findAndConnect(cid)

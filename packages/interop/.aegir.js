@@ -1,12 +1,12 @@
 import getPort from 'aegir/get-port'
 import { createServer } from 'ipfsd-ctl'
-import { create } from 'kubo-rpc-client'
 import { path } from 'kubo'
+import { create } from 'kubo-rpc-client'
 
 /** @type {import('aegir').PartialOptions} */
 export default {
   test: {
-    files: './dist/src/*.spec.js',
+    files: './src/*.spec.ts',
     before: async (options) => {
       if (options.runner !== 'node') {
         const ipfsdPort = await getPort()
@@ -22,8 +22,8 @@ export default {
             config: {
               Addresses: {
                 Swarm: [
-                  "/ip4/0.0.0.0/tcp/0",
-                  "/ip4/0.0.0.0/tcp/0/ws"
+                  '/ip4/0.0.0.0/tcp/0',
+                  '/ip4/0.0.0.0/tcp/0/ws'
                 ]
               }
             }

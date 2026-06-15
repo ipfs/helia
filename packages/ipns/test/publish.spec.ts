@@ -1,6 +1,6 @@
 import { start, stop } from '@libp2p/interface'
-import { peerIdFromCID } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
+import last from 'it-last'
 import { base36 } from 'multiformats/bases/base36'
 import { CID } from 'multiformats/cid'
 import Sinon from 'sinon'
@@ -94,97 +94,98 @@ describe('publish', () => {
 
   it('should publish recursively using a public key', async () => {
     const keyName1 = 'test-key-6'
-    const record = await name.publish(keyName1, cid, {
+    const published = await name.publish(keyName1, cid, {
       offline: true
     })
 
-    expect(record.record.value).to.equal(`/ipfs/${cid.toV1().toString()}`)
+    expect(published.record.value).to.equal(`/ipfs/${cid.toV1()}`)
 
     const keyName2 = 'test-key-7'
-    const recursiveRecord = await name.publish(keyName2, record.publicKey, {
+    const recursiveRecord = await name.publish(keyName2, published.publicKey, {
       offline: true
     })
 
-    expect(recursiveRecord.record.value).to.equal(`/ipns/${record.publicKey.toCID().toString(base36)}`)
+    expect(recursiveRecord.record.value).to.equal(`/ipns/${published.publicKey.toCID().toString(base36)}`)
 
-    const recursiveResult = await name.resolve(recursiveRecord.publicKey)
-    expect(recursiveResult.cid.toString()).to.equal(cid.toV1().toString())
+    const recursiveResult = await last(name.resolve(recursiveRecord.publicKey))
+
+    if (recursiveResult == null) {
+      throw new Error('No results found')
+    }
+
+    expect(recursiveResult.record.value).to.equal(`/ipfs/${cid.toV1()}`)
   })
 
   it('should publish recursively using a libp2p-key CID', async () => {
     const keyName1 = 'test-key-6'
-    const record = await name.publish(keyName1, cid, {
+    const published = await name.publish(keyName1, cid, {
       offline: true
     })
 
-    expect(record.record.value).to.equal(`/ipfs/${cid.toV1().toString()}`)
+    expect(published.record.value).to.equal(`/ipfs/${cid.toV1()}`)
 
     const keyName2 = 'test-key-7'
-    const recursiveRecord = await name.publish(keyName2, record.publicKey.toCID(), {
+    const recursiveRecord = await name.publish(keyName2, published.publicKey.toCID(), {
       offline: true
     })
 
-    expect(recursiveRecord.record.value).to.equal(`/ipns/${record.publicKey.toCID().toString(base36)}`)
+    expect(recursiveRecord.record.value).to.equal(`/ipns/${published.publicKey.toCID().toString(base36)}`)
 
-    const recursiveResult = await name.resolve(recursiveRecord.publicKey)
-    expect(recursiveResult.cid.toString()).to.equal(cid.toV1().toString())
+    const recursiveResult = await last(name.resolve(recursiveRecord.publicKey))
+
+    if (recursiveResult == null) {
+      throw new Error('No results found')
+    }
+
+    expect(recursiveResult.record.value).to.equal(`/ipfs/${cid.toV1()}`)
   })
 
   it('should publish recursively using a multihash', async () => {
     const keyName1 = 'test-key-8'
-    const record = await name.publish(keyName1, cid, {
+    const published = await name.publish(keyName1, cid, {
       offline: true
     })
 
-    expect(record.record.value).to.equal(`/ipfs/${cid.toV1().toString()}`)
+    expect(published.record.value).to.equal(`/ipfs/${cid.toV1()}`)
 
     const keyName2 = 'test-key-9'
-    const recursiveRecord = await name.publish(keyName2, record.publicKey.toCID().multihash, {
+    const recursiveRecord = await name.publish(keyName2, published.publicKey.toMultihash(), {
       offline: true
     })
 
-    expect(recursiveRecord.record.value).to.equal(`/ipns/${base36.encode(record.publicKey.toCID().multihash.bytes)}`)
+    expect(recursiveRecord.record.value).to.equal(`/ipns/${base36.encode(published.publicKey.toMultihash().bytes)}`)
 
-    const recursiveResult = await name.resolve(recursiveRecord.publicKey)
-    expect(recursiveResult.cid.toString()).to.equal(cid.toV1().toString())
-  })
+    const recursiveResult = await last(name.resolve(recursiveRecord.publicKey))
 
-  it('should publish recursively using a PeerId key', async () => {
-    const keyName1 = 'test-key-10'
-    const record = await name.publish(keyName1, cid, {
-      offline: true
-    })
+    if (recursiveResult == null) {
+      throw new Error('No results found')
+    }
 
-    expect(record.record.value).to.equal(`/ipfs/${cid.toV1().toString()}`)
-
-    const keyName2 = 'test-key-11'
-    const recursiveRecord = await name.publish(keyName2, peerIdFromCID(record.publicKey.toCID()), {
-      offline: true
-    })
-
-    expect(recursiveRecord.record.value).to.equal(`/ipns/${record.publicKey.toCID().toString(base36)}`)
-
-    const recursiveResult = await name.resolve(recursiveRecord.publicKey)
-    expect(recursiveResult.cid.toString()).to.equal(cid.toV1().toString())
+    expect(recursiveResult.record.value).to.equal(`/ipfs/${cid.toV1()}`)
   })
 
   it('should publish recursively using a string IPNS key', async () => {
     const keyName1 = 'test-key-10'
-    const record = await name.publish(keyName1, cid, {
+    const published = await name.publish(keyName1, cid, {
       offline: true
     })
 
-    expect(record.record.value).to.equal(`/ipfs/${cid.toV1().toString()}`)
+    expect(published.record.value).to.equal(`/ipfs/${cid.toV1()}`)
 
     const keyName2 = 'test-key-11'
-    const recursiveRecord = await name.publish(keyName2, `/ipns/${record.publicKey.toCID().toString(base36)}`, {
+    const recursiveRecord = await name.publish(keyName2, `/ipns/${published.publicKey.toCID().toString(base36)}`, {
       offline: true
     })
 
-    expect(recursiveRecord.record.value).to.equal(`/ipns/${record.publicKey.toCID().toString(base36)}`)
+    expect(recursiveRecord.record.value).to.equal(`/ipns/${published.publicKey.toCID().toString(base36)}`)
 
-    const recursiveResult = await name.resolve(recursiveRecord.publicKey)
-    expect(recursiveResult.cid.toString()).to.equal(cid.toV1().toString())
+    const recursiveResult = await last(name.resolve(recursiveRecord.publicKey))
+
+    if (recursiveResult == null) {
+      throw new Error('No results found')
+    }
+
+    expect(recursiveResult.record.value).to.equal(`/ipfs/${cid.toV1()}`)
   })
 
   it('should publish record with a path', async () => {
@@ -192,16 +193,19 @@ describe('publish', () => {
     const fullPath = `/ipfs/${cid}/${path}`
 
     const keyName = 'test-key-12'
-    const record = await name.publish(keyName, fullPath, {
+    const published = await name.publish(keyName, fullPath, {
       offline: true
     })
 
-    expect(record.record.value).to.equal(fullPath)
+    expect(published.record.value).to.equal(`/ipfs/${cid.toV1()}${path}`)
 
-    const result = await name.resolve(record.publicKey)
+    const result = await last(name.resolve(published.publicKey))
 
-    expect(result.cid.toString()).to.equal(cid.toString())
-    expect(result.path).to.equal(path)
+    if (result == null) {
+      throw new Error('No results found')
+    }
+
+    expect(result.record.value).to.equal(`/ipfs/${cid.toV1()}${path}`)
   })
 
   describe('localStore error handling', () => {
@@ -243,7 +247,14 @@ describe('publish', () => {
 
       const progressEvents: any[] = []
 
-      const putStub = Sinon.stub(result.datastore, 'get').rejects(new Error('Storage error'))
+      const originalGet = result.datastore.get.bind(result.datastore)
+      const getStub = Sinon.stub(result.datastore, 'get').callsFake(async (key, options) => {
+        if (key.toString().startsWith('/dht/record')) {
+          throw new Error('Storage error')
+        }
+
+        return originalGet(key, options)
+      })
       const hasStub = Sinon.stub(result.datastore, 'has').resolves(false)
 
       const keyName = 'test-key-progress-error'
@@ -252,8 +263,8 @@ describe('publish', () => {
         onProgress: (evt) => progressEvents.push(evt)
       })).to.be.rejectedWith('Storage error')
 
-      expect(hasStub.called).to.be.true()
-      expect(putStub.called).to.be.true()
+      expect(hasStub.called).to.be.true('has stub was not called')
+      expect(getStub.called).to.be.true('get stub was not called')
 
       // Check if error progress event was emitted by localStore
       const errorEvent = progressEvents.find(evt => evt.type === 'ipns:routing:datastore:error')

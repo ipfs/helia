@@ -1,18 +1,18 @@
-import { createHeliaHTTP } from '@helia/http'
+import { delegatedHTTPRouter } from '@helia/delegated-routing-client'
 import { ipns } from '@helia/ipns'
-import { delegatedHTTPRouting } from '@helia/routers'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
+import { createHelia } from 'helia'
+import last from 'it-last'
 import { CID } from 'multiformats/cid'
 import { isNode } from 'wherearewe'
 import { createKuboNode } from './fixtures/create-kubo.ts'
 import type { Helia } from '@helia/interface'
 import type { IPNS } from '@helia/ipns'
 import type { KuboNode } from 'ipfsd-ctl'
-import type { Libp2p } from 'libp2p'
 
 describe('@helia/ipns - http', () => {
-  let helia: Helia<Libp2p<any>>
+  let helia: Helia
   let kubo: KuboNode
   let name: IPNS
 
@@ -24,13 +24,14 @@ describe('@helia/ipns - http', () => {
   beforeEach(async () => {
     kubo = await createKuboNode()
     const kuboInfo = await kubo.info()
-    helia = await createHeliaHTTP({
+    helia = await createHelia({
       routers: [
-        delegatedHTTPRouting({
+        delegatedHTTPRouter({
           url: kuboInfo.gateway
         })
       ]
-    })
+    }).start()
+
     name = ipns(helia)
   })
 
@@ -62,7 +63,12 @@ describe('@helia/ipns - http', () => {
     })
 
     const key = peerIdFromCID(CID.parse(res.name))
-    const { cid: resolvedCid } = await name.resolve(key.toMultihash())
-    expect(resolvedCid.toString()).to.equal(cid.toString())
+    const result = await last(name.resolve(key.toMultihash()))
+
+    if (result == null) {
+      throw new Error('No results found')
+    }
+
+    expect(result.record.value).to.equal(`/ipfs/${cid}`)
   })
 })

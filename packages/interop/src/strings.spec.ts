@@ -5,13 +5,13 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { createHeliaNode } from './fixtures/create-helia.ts'
 import { createKuboNode } from './fixtures/create-kubo.ts'
+import type { HeliaWithLibp2p } from '@helia/libp2p'
 import type { Strings, AddOptions } from '@helia/strings'
-import type { Helia } from 'helia'
 import type { KuboNode } from 'ipfsd-ctl'
 import type { BlockPutOptions as KuboAddOptions } from 'kubo-rpc-client'
 
 describe('@helia/strings', () => {
-  let helia: Helia
+  let helia: HeliaWithLibp2p
   let str: Strings
   let kubo: KuboNode
 

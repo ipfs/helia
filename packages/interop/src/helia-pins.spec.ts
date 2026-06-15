@@ -6,11 +6,11 @@ import * as raw from 'multiformats/codecs/raw'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { createHeliaNode } from './fixtures/create-helia.ts'
 import { createKuboNode } from './fixtures/create-kubo.ts'
-import type { Helia } from 'helia'
+import type { HeliaWithLibp2p } from '@helia/libp2p'
 import type { KuboNode } from 'ipfsd-ctl'
 
 describe('helia - pins', () => {
-  let helia: Helia
+  let helia: HeliaWithLibp2p
   let kubo: KuboNode
 
   beforeEach(async () => {

@@ -11,14 +11,14 @@ import { CID } from 'multiformats/cid'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { createHeliaNode } from './fixtures/create-helia.ts'
 import { createKuboNode } from './fixtures/create-kubo.ts'
+import type { HeliaWithLibp2p } from '@helia/libp2p'
 import type { AddOptions, UnixFS } from '@helia/unixfs'
-import type { Helia } from 'helia'
 import type { ByteStream, ImportCandidateStream } from 'ipfs-unixfs-importer'
 import type { KuboNode } from 'ipfsd-ctl'
 import type { AddOptions as KuboAddOptions } from 'kubo-rpc-client'
 
 describe('@helia/unixfs - files', () => {
-  let helia: Helia
+  let helia: HeliaWithLibp2p
   let unixFs: UnixFS
   let kubo: KuboNode
 

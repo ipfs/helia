@@ -1,5 +1,8 @@
-import { InvalidParametersError, NotStartedError, TimeoutError, TypedEventEmitter, UnsupportedProtocolError, setMaxListeners } from '@libp2p/interface'
+import { isCID } from '@helia/utils'
+import { InvalidParametersError, NotStartedError, TimeoutError, TypedEventEmitter, isPeerId, setMaxListeners } from '@libp2p/interface'
+import { peerIdFromCID } from '@libp2p/peer-id'
 import { PeerQueue } from '@libp2p/utils'
+import { isMultiaddr } from '@multiformats/multiaddr'
 import drain from 'it-drain'
 import * as lp from 'it-length-prefixed'
 import map from 'it-map'
@@ -7,7 +10,6 @@ import { pushable } from 'it-pushable'
 import take from 'it-take'
 import { CID } from 'multiformats/cid'
 import { CustomProgressEvent } from 'progress-events'
-import { raceEvent } from 'race-event'
 import { BITSWAP_120, DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_INCOMING_MESSAGE_SIZE, DEFAULT_MAX_OUTBOUND_STREAMS, DEFAULT_MAX_OUTGOING_MESSAGE_SIZE, DEFAULT_MAX_PROVIDERS_PER_REQUEST, DEFAULT_MESSAGE_RECEIVE_TIMEOUT, DEFAULT_MESSAGE_SEND_CONCURRENCY, DEFAULT_MESSAGE_SEND_TIMEOUT, DEFAULT_RUN_ON_TRANSIENT_CONNECTIONS } from './constants.ts'
 import { BitswapMessage } from './pb/message.ts'
 import { mergeMessages } from './utils/merge-messages.ts'
@@ -17,7 +19,7 @@ import type { Block } from './pb/message.ts'
 import type { QueuedBitswapMessage } from './utils/bitswap-message.ts'
 import type { BlockBrokerGetBlockProgressEvents } from '@helia/interface'
 import type { Provider, Routing, RoutingFindProvidersProgressEvents } from '@helia/interface/routing'
-import type { Libp2p, AbortOptions, Connection, PeerId, Topology, ComponentLogger, IdentifyResult, Counter, Metrics, Stream, OpenConnectionProgressEvents, NewStreamProgressEvents } from '@libp2p/interface'
+import type { Libp2p, AbortOptions, Connection, PeerId, Topology, ComponentLogger, Counter, Metrics, Stream, OpenConnectionProgressEvents, NewStreamProgressEvents } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
 import type { PeerQueueJobOptions } from '@libp2p/utils'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -100,6 +102,22 @@ export interface NetworkEvents {
 
 interface SendMessageJobOptions extends AbortOptions, ProgressOptions<BitswapNetworkWantProgressEvents>, PeerQueueJobOptions {
   message: QueuedBitswapMessage
+}
+
+function toDialable (peer: CID | PeerId | Multiaddr | Multiaddr[]): PeerId | Multiaddr | Multiaddr[] {
+  if (isPeerId(peer)) {
+    return peer
+  }
+
+  if (isCID(peer)) {
+    return peerIdFromCID(peer)
+  }
+
+  if (isMultiaddr(peer) || Array.isArray(peer)) {
+    return peer
+  }
+
+  throw new InvalidParametersError(`Peer ${peer} was not a CID, a Multiaddr or a Multiaddr[]`)
 }
 
 export class Network extends TypedEventEmitter<NetworkEvents> {
@@ -315,7 +333,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
     // connect to initial session providers if supplied
     if (options?.providers != null) {
       await Promise.all(
-        options.providers.map(async prov => this.connectTo(prov)
+        options.providers.map(async prov => this.connectTo(prov, options)
           .catch(err => {
             this.log.error('could not connect to supplied provider - %e', err)
           }))
@@ -397,36 +415,16 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
   /**
    * Connects to another peer
    */
-  async connectTo (peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions & ProgressOptions<BitswapNetworkProgressEvents>): Promise<Connection> {
+  async connectTo (peer: CID | PeerId | Multiaddr | Multiaddr[], options?: AbortOptions & ProgressOptions<BitswapNetworkProgressEvents>): Promise<Connection> {
     if (!this.running) {
       throw new NotStartedError('Network isn\'t running')
     }
 
+    peer = toDialable(peer)
+
     options?.onProgress?.(new CustomProgressEvent<PeerId | Multiaddr | Multiaddr[]>('bitswap:dial', peer))
 
-    // dial and wait for identify - this is to avoid opening a protocol stream
-    // that we are not going to use but depends on the remote node running the
-    // identify protocol
-    const [
-      connection
-    ] = await Promise.all([
-      this.libp2p.dial(peer, options),
-      raceEvent(this.libp2p, 'peer:identify', options?.signal, {
-        filter: (evt: CustomEvent<IdentifyResult>): boolean => {
-          if (!evt.detail.peerId.equals(peer)) {
-            return false
-          }
-
-          if (evt.detail.protocols.includes(BITSWAP_120)) {
-            return true
-          }
-
-          throw new UnsupportedProtocolError(`${peer} did not support ${BITSWAP_120}`)
-        }
-      })
-    ])
-
-    return connection
+    return this.libp2p.dial(peer, options)
   }
 
   _updateSentStats (blocks: Map<string, Block>): void {

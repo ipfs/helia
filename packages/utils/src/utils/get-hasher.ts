@@ -2,10 +2,10 @@ import { UnknownHashAlgorithmError } from '@helia/interface'
 import { identity } from 'multiformats/hashes/identity'
 import { sha256, sha512 } from 'multiformats/hashes/sha2'
 import { isPromise } from './is-promise.ts'
-import type { Await } from '@helia/interface'
+import type { HasherLoader } from '@helia/interface'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 
-export function getHasher (initialHashers: MultihashHasher[] = [], loadHasher?: (code: number) => Await<MultihashHasher>): (code: number) => Await<MultihashHasher> {
+export function getHasher (initialHashers: MultihashHasher[] = [], loadHasher?: HasherLoader): HasherLoader {
   const hashers: Record<number, MultihashHasher> = {
     [sha256.code]: sha256,
     [sha512.code]: sha512,

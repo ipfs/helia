@@ -1,4 +1,3 @@
-import { randomBytes } from '@libp2p/crypto'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import toBuffer from 'it-to-buffer'
@@ -7,11 +6,11 @@ import * as raw from 'multiformats/codecs/raw'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { createHeliaNode } from './fixtures/create-helia.ts'
 import { createKuboNode } from './fixtures/create-kubo.ts'
-import type { Helia } from 'helia'
+import type { HeliaWithLibp2p } from '@helia/libp2p'
 import type { KuboInfo, KuboNode } from 'ipfsd-ctl'
 
 describe('helia - blockstore', () => {
-  let helia: Helia
+  let helia: HeliaWithLibp2p
   let kubo: KuboNode
   let kuboInfo: KuboInfo
 
@@ -35,7 +34,7 @@ describe('helia - blockstore', () => {
   })
 
   it('should be able to send a block', async () => {
-    const input = randomBytes(10)
+    const input = crypto.getRandomValues(new Uint8Array(10))
     const digest = await sha256.digest(input)
     const cid = CID.createV1(raw.code, digest)
     await helia.blockstore.put(cid, input)
@@ -45,7 +44,7 @@ describe('helia - blockstore', () => {
   })
 
   it('should be able to receive a block', async () => {
-    const input = randomBytes(10)
+    const input = crypto.getRandomValues(new Uint8Array(10))
     const { cid } = await kubo.api.add({ content: input }, {
       cidVersion: 1,
       rawLeaves: true
