@@ -22,7 +22,6 @@
     "packages/interop": {},
     "packages/ipns": {},
     "packages/json": {},
-    "packages/keychain": {},
     "packages/libp2p": {},
     "packages/mfs": {},
     "packages/routers": {},
