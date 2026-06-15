@@ -17,7 +17,7 @@ import { BitswapMessage, BlockPresenceType } from '../src/pb/message.ts'
 import { QueuedBitswapMessage } from '../src/utils/bitswap-message.ts'
 import { cidToPrefix } from '../src/utils/cid-prefix.ts'
 import type { BitswapMessageEventDetail } from '../src/network.ts'
-import type { Routing } from '@helia/interface/routing'
+import type { Routing } from '@helia/interface'
 import type { Connection, Libp2p } from '@libp2p/interface'
 import type { StubbedInstance } from 'sinon-ts'
 

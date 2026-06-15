@@ -13,7 +13,7 @@ import { BlockStorage } from '../src/storage.ts'
 import { getCodec } from '../src/utils/get-codec.ts'
 import { createBlock } from './fixtures/create-block.ts'
 import type { Blocks, Routing, SessionBlockstore } from '@helia/interface'
-import type { Pins } from '@helia/interface/pins'
+import type { Pins } from '@helia/interface'
 import type { CID } from 'multiformats/cid'
 import type { StubbedInstance } from 'sinon-ts'
 
