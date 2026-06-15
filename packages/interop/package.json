@@ -48,7 +48,7 @@
     "test:firefox": "aegir test -t browser -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
     "test:node": "aegir test -t node --cov -- --exit",
-    "test:electron-main": "aegir test -t electron-main -- --exit"
+    "test:electron-main": "aegir test -t electron-main --cov -- --exit"
   },
   "dependencies": {
     "@helia/bitswap": "^3.2.3",
