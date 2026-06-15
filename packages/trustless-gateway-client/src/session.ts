@@ -1,0 +1,119 @@
+import { AbstractSession, isCID } from '@helia/utils'
+import { multiaddrToUri } from '@multiformats/multiaddr-to-uri'
+import { CID } from 'multiformats/cid'
+import { CustomProgressEvent } from 'progress-events'
+import { DEFAULT_ALLOW_INSECURE, DEFAULT_ALLOW_LOCAL } from './index.ts'
+import { TrustlessGateway } from './trustless-gateway.ts'
+import { filterNonHTTPMultiaddrs, findHttpGatewayProviders } from './utils.ts'
+import type { CreateTrustlessGatewaySessionOptions } from './broker.ts'
+import type { TrustlessGatewayGetBlockProgressEvents, TrustlessGatewayProvider } from './index.ts'
+import type { TransformRequestInit } from './trustless-gateway.ts'
+import type { BlockRetrievalOptions, Routing } from '@helia/interface'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import type { AbortOptions } from 'abort-error'
+import type { ComponentLogger } from 'birnam'
+
+export interface TrustlessGatewaySessionComponents {
+  logger: ComponentLogger
+  routing: Routing
+}
+
+class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, TrustlessGatewayGetBlockProgressEvents> {
+  public readonly name = 'trustless-gateway-session'
+  private readonly routing: Routing
+  private readonly allowInsecure: boolean
+  private readonly allowLocal: boolean
+  private readonly transformRequestInit?: TransformRequestInit
+
+  constructor (components: TrustlessGatewaySessionComponents, init: CreateTrustlessGatewaySessionOptions) {
+    super(components, {
+      ...init,
+      name: 'helia:trustless-gateway:session'
+    })
+
+    this.routing = components.routing
+    this.allowInsecure = init.allowInsecure ?? DEFAULT_ALLOW_INSECURE
+    this.allowLocal = init.allowLocal ?? DEFAULT_ALLOW_LOCAL
+    this.transformRequestInit = init.transformRequestInit
+  }
+
+  async queryProvider (cid: CID, provider: TrustlessGateway, options: BlockRetrievalOptions): Promise<Uint8Array> {
+    this.log('fetching BLOCK for %c from %s', cid, provider.url)
+
+    options?.onProgress?.(new CustomProgressEvent('helia:block-brokers:query-provider:start', {
+      blockBroker: 'trustless-gateway',
+      provider: provider.url,
+      transport: 'http',
+      cid
+    }))
+
+    let block: Uint8Array
+
+    try {
+      block = await provider.getRawBlock(cid, options)
+      this.log.trace('got block for %c from %s', cid, provider.url)
+    } finally {
+      options?.onProgress?.(new CustomProgressEvent('helia:block-brokers:query-provider:end', {
+        blockBroker: 'trustless-gateway',
+        provider: provider.url,
+        transport: 'http',
+        cid
+      }))
+    }
+
+    await options.validateFn?.(block)
+
+    return block
+  }
+
+  async * findNewProviders (cid: CID, options: AbortOptions = {}): AsyncGenerator<TrustlessGateway> {
+    yield * findHttpGatewayProviders(cid, this.routing, this.logger, this.allowInsecure, this.allowLocal, { ...options, transformRequestInit: this.transformRequestInit })
+  }
+
+  toFilterKey (provider: TrustlessGateway): Uint8Array | string {
+    return provider.url.toString()
+  }
+
+  equals (providerA: TrustlessGateway, providerB: TrustlessGateway): boolean {
+    return providerA.url.toString() === providerB.url.toString()
+  }
+
+  async convertToProvider (provider: CID | Multiaddr | Multiaddr[], routing: string, options?: AbortOptions): Promise<TrustlessGateway | undefined> {
+    options?.signal?.throwIfAborted()
+
+    if (isCID(provider)) {
+      return
+    }
+
+    const httpAddresses = filterNonHTTPMultiaddrs(Array.isArray(provider) ? provider : [provider], this.allowInsecure, this.allowLocal)
+
+    if (httpAddresses.length === 0) {
+      return
+    }
+
+    // take first address?
+    // /ip4/x.x.x.x/tcp/31337/http
+    // /ip4/x.x.x.x/tcp/31337/https
+    // etc
+    const uri = multiaddrToUri(httpAddresses[0])
+
+    return new TrustlessGateway(uri, {
+      logger: this.logger,
+      transformRequestInit: this.transformRequestInit,
+      routing
+    })
+  }
+
+  emitFoundProviderProgressEvent (cid: CID, provider: TrustlessGateway, options: BlockRetrievalOptions<TrustlessGatewayGetBlockProgressEvents>): void {
+    options?.onProgress?.(new CustomProgressEvent<TrustlessGatewayProvider>('trustless-gateway:found-provider', {
+      type: 'trustless-gateway',
+      cid,
+      url: provider.url.toJSON(),
+      routing: provider.routing
+    }))
+  }
+}
+
+export function createTrustlessGatewaySession (components: TrustlessGatewaySessionComponents, init: CreateTrustlessGatewaySessionOptions): TrustlessGatewaySession {
+  return new TrustlessGatewaySession(components, init)
+}

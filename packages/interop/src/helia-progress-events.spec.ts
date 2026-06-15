@@ -1,4 +1,3 @@
-import { randomBytes } from '@libp2p/crypto'
 import { contentRoutingSymbol } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { CODE_P2P, multiaddr } from '@multiformats/multiaddr'
@@ -62,7 +61,7 @@ describe('helia - progress events', () => {
   })
 
   it('should yield routing events', async () => {
-    const input = randomBytes(10)
+    const input = crypto.getRandomValues(new Uint8Array(10))
     const { cid } = await kubo.api.add({ content: input }, {
       cidVersion: 1,
       rawLeaves: true
@@ -82,7 +81,7 @@ describe('helia - progress events', () => {
   })
 
   it('should yield block broker events', async () => {
-    const input = randomBytes(10)
+    const input = crypto.getRandomValues(new Uint8Array(10))
     const { cid } = await kubo.api.add({ content: input }, {
       cidVersion: 1,
       rawLeaves: true

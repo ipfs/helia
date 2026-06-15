@@ -1,11 +1,11 @@
 import { expect } from 'aegir/chai'
-import type { Helia } from 'helia'
+import type { HeliaWithLibp2p } from '@helia/libp2p'
 import type { KuboNode } from 'ipfsd-ctl'
 
 /**
  * Connect the two nodes by dialing a protocol stream
  */
-export async function connect (helia: Helia<any>, kubo: KuboNode, protocol: string): Promise<void> {
+export async function connect (helia: HeliaWithLibp2p<any>, kubo: KuboNode, protocol: string): Promise<void> {
   let connected = false
   const id = await kubo.api.id()
 

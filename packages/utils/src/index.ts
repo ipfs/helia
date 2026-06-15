@@ -5,8 +5,12 @@
  * modules such as `helia`, `@helia/http`, etc.
  */
 
-import { contentRoutingSymbol, peerRoutingSymbol, start, stop, TypedEventEmitter } from '@libp2p/interface'
+import { keychain } from '@ipshipyard/keychain'
+import { start, stop, TypedEventEmitter } from '@libp2p/interface'
 import { dns } from '@multiformats/dns'
+import { defaultLogger } from 'birnam'
+import { MemoryBlockstore } from 'blockstore-core'
+import { MemoryDatastore } from 'datastore-core'
 import drain from 'it-drain'
 import { CustomProgressEvent } from 'progress-events'
 import { PinsImpl } from './pins.ts'
@@ -14,24 +18,26 @@ import { Routing as RoutingClass } from './routing.ts'
 import { BlockStorage } from './storage.ts'
 import { assertDatastoreVersionIsCurrent } from './utils/datastore-version.ts'
 import { getCodec } from './utils/get-codec.ts'
+import { getCrypto } from './utils/get-crypto.ts'
 import { getHasher } from './utils/get-hasher.ts'
 import { NetworkedStorage } from './utils/networked-storage.ts'
 import type { BlockStorageInit } from './storage.ts'
-import type { CodecLoader, GCOptions, HasherLoader, Helia as HeliaInterface, HeliaEvents, Routing } from '@helia/interface'
+import type { CodecLoader, GCOptions, HasherLoader, Helia as HeliaInterface, HeliaEvents, Routing, CryptoLoader, Crypto, NodeInfo, Router, HeliaMixin } from '@helia/interface'
 import type { BlockBroker } from '@helia/interface/blocks'
 import type { Pins } from '@helia/interface/pins'
-import type { ComponentLogger, ContentRouting, Libp2p, Logger, Metrics, PeerRouting } from '@libp2p/interface'
-import type { KeychainInit } from '@libp2p/keychain'
+import type { Keychain, KeychainInit } from '@ipshipyard/keychain'
+import type { ComponentLogger, Logger, Metrics } from '@libp2p/interface'
 import type { DNS } from '@multiformats/dns'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
-import type { Libp2pOptions } from 'libp2p'
 import type { BlockCodec } from 'multiformats'
 import type { CID } from 'multiformats/cid'
 import type { MultihashHasher } from 'multiformats/hashes/interface'
 
 export { AbstractSession } from './abstract-session.ts'
 export type { AbstractCreateSessionOptions, BlockstoreSessionEvents, AbstractSessionComponents } from './abstract-session.ts'
+
+export { isCID } from './utils/is-cid.ts'
 
 export type { BlockStorage, BlockStorageInit }
 
@@ -41,26 +47,7 @@ export type { GraphWalkerComponents, GraphWalkerInit, GraphNode, GraphWalker } f
 /**
  * Options used to create a Helia node.
  */
-export interface HeliaInit<T extends Libp2p = Libp2p> {
-  /**
-   * A libp2p node is required to perform network operations. Either a
-   * pre-configured node or options to configure a node can be passed
-   * here.
-   *
-   * If node options are passed, they will be merged with the default
-   * config for the current platform. In this case all passed config
-   * keys will replace those from the default config.
-   *
-   * The libp2p `start` option is not supported, instead please pass `start` in
-   * the root of the HeliaInit object.
-   */
-  libp2p: T | Omit<Libp2pOptions<any>, 'start'>
-
-  /**
-   * Pass `false` to not start the Helia node
-   */
-  start?: boolean
-
+export interface HeliaInit {
   /**
    * By default Helia stores the node's PeerId in an encrypted form in a
    * libp2p keystore. These options control how that keystore is configured.
@@ -70,12 +57,12 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
   /**
    * The blockstore is where blocks are stored
    */
-  blockstore: Blockstore
+  blockstore?: Blockstore
 
   /**
    * The datastore is where data is stored
    */
-  datastore: Datastore
+  datastore?: Datastore
 
   /**
    * By default sha256, sha512 and identity hashes are supported for
@@ -104,10 +91,14 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
   loadCodec?(code: number): BlockCodec<any, any> | Promise<BlockCodec<any, any>>
 
   /**
-   * A list of strategies used to fetch blocks when they are not present in
-   * the local blockstore
+   * A list of pre-supported public/private key implementations
    */
-  blockBrokers: Array<(components: any) => BlockBroker>
+  cryptos?: Array<Crypto>
+
+  /**
+   * Dynamically load a cryptography implementation
+   */
+  loadCrypto?: CryptoLoader
 
   /**
    * Garbage collection requires preventing blockstore writes during searches
@@ -132,10 +123,16 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
   logger?: ComponentLogger
 
   /**
+   * A list of strategies used to fetch blocks when they are not present in
+   * the local blockstore
+   */
+  blockBrokers?: Array<BlockBroker | ((components: any) => BlockBroker)>
+
+  /**
    * Routers perform operations such as looking up content providers,
    * information about network peers or getting/putting records.
    */
-  routers?: Array<Partial<Routing> | ((components: any) => Partial<Routing>)>
+  routers?: Array<Router | ((components: any) => Router)>
 
   /**
    * During provider lookups, peers can be returned from routing implementations
@@ -180,58 +177,72 @@ export interface HeliaInit<T extends Libp2p = Libp2p> {
 }
 
 interface Components {
-  libp2p: Libp2p
   blockstore: Blockstore
   datastore: Datastore
   logger: ComponentLogger
   blockBrokers: BlockBroker[]
   routing: Routing
   dns: DNS
+  keychain: Keychain
   metrics?: Metrics
   getCodec: CodecLoader
   getHasher: HasherLoader
+  getCrypto: CryptoLoader
 }
 
-export class Helia<T extends Libp2p> implements HeliaInterface<T> {
-  public libp2p: T
+export class Helia implements HeliaInterface {
+  public info: NodeInfo
   public blockstore: BlockStorage
   public datastore: Datastore
-  public events: TypedEventEmitter<HeliaEvents<T>>
+  public events: TypedEventEmitter<HeliaEvents<this>>
   public pins: Pins
   public logger: ComponentLogger
-  public routing: Routing
+  public routing: RoutingClass
   public getCodec: CodecLoader
   public getHasher: HasherLoader
+  public getCrypto: CryptoLoader
   public dns: DNS
+  public keychain: Keychain
   public metrics?: Metrics
+  public status: 'stopped' | 'stopping' | 'starting' | 'started'
   private readonly log: Logger
+  private readonly blockBrokers: BlockBroker[]
+  private readonly mixins: HeliaMixin[]
 
-  constructor (init: Omit<HeliaInit, 'start' | 'libp2p'> & { libp2p: T }) {
-    this.logger = init.logger ?? init.libp2p.logger
+  constructor (init: HeliaInit & { name: string, version: string }) {
+    this.info = {
+      name: init.name,
+      version: init.version
+    }
+    this.logger = init.logger ?? defaultLogger()
     this.log = this.logger.forComponent('helia')
     this.getHasher = getHasher(init.hashers, init.loadHasher)
     this.getCodec = getCodec(init.codecs, init.loadCodec)
+    this.getCrypto = getCrypto(init.cryptos, init.loadCrypto)
     this.dns = init.dns ?? dns()
     this.metrics = init.metrics
-    this.libp2p = init.libp2p
-    this.events = new TypedEventEmitter<HeliaEvents<T>>()
+    this.events = new TypedEventEmitter<HeliaEvents<typeof this>>()
+    this.status = 'stopped'
+    this.mixins = []
 
-    // @ts-expect-error routing is not set
+    // @ts-expect-error routing and keychain are not set
     const components: Components = {
-      blockstore: init.blockstore,
-      datastore: init.datastore,
+      blockstore: init.blockstore ?? new MemoryBlockstore(),
+      datastore: init.datastore ?? new MemoryDatastore(),
       logger: this.logger,
-      libp2p: this.libp2p,
       blockBrokers: [],
       getHasher: this.getHasher,
       getCodec: this.getCodec,
+      getCrypto: this.getCrypto,
       dns: this.dns,
       metrics: this.metrics,
       ...(init.components ?? {})
     }
 
+    this.keychain = components.keychain = keychain()(components)
+
     this.routing = components.routing = new RoutingClass(components, {
-      routers: (init.routers ?? []).flatMap((router: Partial<Routing> | ((components: any) => Partial<Routing>)) => {
+      routers: (init.routers ?? []).flatMap((router: Router | ((components: any) => Router)) => {
         if (typeof router === 'function') {
           router = router(components)
         }
@@ -241,54 +252,86 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
           router
         ]
 
-        // if the router provides a libp2p-style ContentRouter
-        const contentRouting = asContentRouting(router)
-        if (contentRouting != null) {
-          routers.push(contentRouting)
-        }
-
-        // if the router provides a libp2p-style PeerRouter
-        const peerRouting = asPeerRouting(router)
-        if (peerRouting != null) {
-          routers.push(peerRouting)
-        }
-
         return routers
       }),
       providerLookupConcurrency: init.providerLookupConcurrency
     })
 
-    components.blockBrokers = init.blockBrokers.map((fn) => {
-      return fn(components)
+    this.blockBrokers = components.blockBrokers = (init.blockBrokers ?? []).map((broker) => {
+      if (typeof broker === 'function') {
+        broker = broker(components)
+      }
+
+      return broker
     })
 
     const networkedStorage = new NetworkedStorage(components, init)
-    this.pins = new PinsImpl(init.datastore, networkedStorage, this.getCodec)
+    this.pins = new PinsImpl(components.datastore, networkedStorage, this.getCodec)
     this.blockstore = new BlockStorage(networkedStorage, this.pins, this.routing, {
       holdGcLock: init.holdGcLock ?? true
     })
-    this.datastore = init.datastore
+    this.datastore = components.datastore
   }
 
-  async start (): Promise<void> {
+  hasRouter (name: string): boolean {
+    return this.routing.hasRouter(name)
+  }
+
+  addRouter (router: Router): void {
+    this.routing.addRouter(router)
+  }
+
+  hasBlockBroker (name: string): boolean {
+    return this.blockBrokers.findIndex(b => b.name === name) !== -1
+  }
+
+  addBlockBroker (blockBroker: BlockBroker): void {
+    this.blockBrokers.push(blockBroker)
+  }
+
+  addMixin (mixin: HeliaMixin): void {
+    this.mixins.push(mixin)
+  }
+
+  async start (): Promise<this> {
+    this.status = 'starting'
+
     await assertDatastoreVersionIsCurrent(this.datastore)
     await start(
       this.blockstore,
       this.datastore,
       this.routing,
-      this.libp2p
+      ...this.blockBrokers
     )
+
+    for (const mixin of this.mixins) {
+      await mixin.start?.(this)
+    }
+
+    this.status = 'started'
     this.events.dispatchEvent(new CustomEvent('start', { detail: this }))
+
+    return this
   }
 
-  async stop (): Promise<void> {
+  async stop (): Promise<this> {
+    this.status = 'stopping'
+
+    for (const mixin of this.mixins) {
+      await mixin.stop?.(this)
+    }
+
     await stop(
       this.blockstore,
       this.datastore,
       this.routing,
-      this.libp2p
+      ...this.blockBrokers
     )
+
+    this.status = 'stopped'
     this.events.dispatchEvent(new CustomEvent('stop', { detail: this }))
+
+    return this
   }
 
   async gc (options: GCOptions = {}): Promise<void> {
@@ -322,12 +365,4 @@ export class Helia<T extends Libp2p> implements HeliaInterface<T> {
 
     this.log('gc finished')
   }
-}
-
-function asContentRouting (obj?: any): ContentRouting | undefined {
-  return obj?.[contentRoutingSymbol]
-}
-
-function asPeerRouting (obj?: any): PeerRouting | undefined {
-  return obj?.[peerRoutingSymbol]
 }

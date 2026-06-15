@@ -5,10 +5,15 @@ import { IPNSResolver } from './ipns/resolver.ts'
 import { localStore } from './local-store.ts'
 import { helia } from './routing/helia.ts'
 import { localStoreRouting } from './routing/local-store.ts'
-import type { IPNSComponents, IPNS as IPNSInterface, IPNSOptions, IPNSPublishResult, IPNSResolveResult, PublishOptions, ResolveOptions } from './index.ts'
+import { ipnsSelector } from './selector.ts'
+import { normalizeKey, normalizeValue, unmarshalIPNSRecord } from './utils.ts'
+import { ipnsValidator } from './validator.ts'
+import type { IPNSComponents, IPNS as IPNSInterface, IPNSOptions, PublishResult, PublishOptions, ResolveOptions, ResolveResult } from './index.ts'
 import type { LocalStore } from './local-store.ts'
 import type { IPNSRouting } from './routing/index.ts'
-import type { AbortOptions, PeerId, PublicKey, Startable } from '@libp2p/interface'
+import type { PublicKey } from '@helia/interface'
+import type { AbortOptions, Libp2p, Startable } from '@libp2p/interface'
+import type { ValidateFn, SelectFn } from '@libp2p/kad-dht'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 
 export class IPNS implements IPNSInterface, Startable {
@@ -17,11 +22,13 @@ export class IPNS implements IPNSInterface, Startable {
   private readonly republisher: IPNSRepublisher
   private readonly resolver: IPNSResolver
   private readonly localStore: LocalStore
+  private readonly components: IPNSComponents
   private started: boolean
 
   constructor (components: IPNSComponents, init: IPNSOptions = {}) {
     this.localStore = localStore(components.datastore, components.logger.forComponent('helia:ipns:local-store'))
-    this.started = components.libp2p.status === 'started'
+    this.components = components
+    this.started = false
 
     this.routers = [
       localStoreRouting(this.localStore),
@@ -53,6 +60,26 @@ export class IPNS implements IPNSInterface, Startable {
     if (this.started) {
       this.republisher.start()
     }
+
+    for (const component of Object.values(this.components)) {
+      if (isLibp2p(component)) {
+        for (const service of Object.values(component.services)) {
+          if (isKadDHT(service)) {
+            // @ ts-expect-error https://github.com/libp2p/js-libp2p/pull/3506
+            service.selectors.ipns = async (key: Uint8Array, values: Uint8Array[]): Promise<number> => {
+              const records = await Promise.all(values.map(buf => unmarshalIPNSRecord(key, buf, this.components.keychain)))
+
+              return ipnsSelector(key, records)
+            }
+
+            service.validators.ipns = async (key: Uint8Array, value: Uint8Array): Promise<void> => {
+              const record = await unmarshalIPNSRecord(key, value, this.components.keychain)
+              await ipnsValidator(record)
+            }
+          }
+        }
+      }
+    }
   }
 
   start (): void {
@@ -73,15 +100,25 @@ export class IPNS implements IPNSInterface, Startable {
     this.republisher.stop()
   }
 
-  async publish (keyName: string, value: CID | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId | string, options: PublishOptions = {}): Promise<IPNSPublishResult> {
-    return this.publisher.publish(keyName, value, options)
+  async publish (keyName: string, value: PublicKey | CID | MultihashDigest | string, options: PublishOptions = {}): Promise<PublishResult> {
+    return this.publisher.publish(keyName, normalizeValue(value), options)
   }
 
-  async resolve (key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options: ResolveOptions = {}): Promise<IPNSResolveResult> {
-    return this.resolver.resolve(key, options)
+  async * resolve (key: PublicKey | CID<unknown, 0x72> | MultihashDigest | string, options: ResolveOptions = {}): AsyncGenerator<ResolveResult> {
+    const { digest } = normalizeKey(key)
+
+    yield * this.resolver.resolve(digest, options)
   }
 
   async unpublish (keyName: string, options?: AbortOptions): Promise<void> {
     return this.publisher.unpublish(keyName, options)
   }
+}
+
+function isLibp2p (obj?: any): obj is Libp2p {
+  return obj?.services != null
+}
+
+function isKadDHT (obj?: any): obj is { validators: Record<string, ValidateFn>, selectors: Record<string, SelectFn> } {
+  return obj?.validators != null && obj?.selectors != null
 }

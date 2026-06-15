@@ -1,13 +1,13 @@
-import { generateKeyPair } from '@libp2p/crypto/keys'
 import { start, stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
-import { createIPNSRecord, marshalIPNSRecord, unmarshalIPNSRecord, multihashToIPNSRoutingKey } from 'ipns'
 import { CID } from 'multiformats/cid'
 import sinon from 'sinon'
 import { localStore } from '../src/local-store.ts'
+import { createIPNSRecord, marshalIPNSRecord, unmarshalIPNSRecord, multihashToIPNSRoutingKey } from '../src/records.ts'
 import { createIPNS } from './fixtures/create-ipns.ts'
 import type { IPNS } from '../src/ipns.ts'
 import type { CreateIPNSResult } from './fixtures/create-ipns.ts'
+import type { Key } from 'interface-datastore'
 
 // Helper to await until a stub is called
 function waitForStubCall (stub: sinon.SinonStub, callCount = 1): Promise<void> {
@@ -23,11 +23,14 @@ function waitForStubCall (stub: sinon.SinonStub, callCount = 1): Promise<void> {
   })
 }
 
+// shorten the default validity so we are always within the republish window
+const SHORTENED_VALIDITY = 2 * 60 * 60 * 1000
+
 describe('republish', () => {
   const testCid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
   let name: IPNS
   let result: CreateIPNSResult
-  let putStubCustom: sinon.SinonStub
+  let putStubCustom: sinon.SinonStub<[Key, Uint8Array]>
   let putStubHelia: sinon.SinonStub
 
   beforeEach(async () => {
@@ -35,7 +38,7 @@ describe('republish', () => {
     name = result.name
 
     // Stub the routers by default
-    putStubCustom = sinon.stub().resolves()
+    putStubCustom = sinon.stub<[Key, Uint8Array]>().resolves()
     putStubHelia = sinon.stub().resolves()
     // @ts-ignore
     result.customRouting.put = putStubCustom
@@ -51,21 +54,19 @@ describe('republish', () => {
 
   describe('basic functionality', () => {
     it('should start republishing when called', async () => {
-      // Create a test record and store it in the real datastore
-      const key = await generateKeyPair('Ed25519')
-      const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
-      // @ts-expect-error @libp2p/crypto needs new multiformats
-      const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
-
       // Import the key into the real keychain
-      await result.ipnsKeychain.importKey('test-key', key)
+      const key = await result.keychain.generateKey('test-key')
+
+      // Create a test record and store it in the real datastore
+      const record = await createIPNSRecord(key, `/ipfs/${testCid.toV1()}`, 1n, SHORTENED_VALIDITY)
+      const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
       // Store the record in the real datastore using the localStore
       const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
         metadata: {
           keyName: 'test-key',
-          lifetime: 24 * 60 * 60 * 1000
+          lifetime: SHORTENED_VALIDITY
         }
       })
 
@@ -79,28 +80,25 @@ describe('republish', () => {
 
     it('should call all routers for republish', async () => {
       // Create a test record and store it in the real datastore
-      const key = await generateKeyPair('Ed25519')
-      const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
-      // @ts-expect-error @libp2p/crypto needs new multiformats
+      const key = await result.keychain.generateKey('test-key')
+      const record = await createIPNSRecord(key, `/ipfs/${testCid.toV1()}`, 1n, SHORTENED_VALIDITY)
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
-
-      // Import the key into the real keychain
-      await result.ipnsKeychain.importKey('test-key', key)
 
       // Store the record in the real datastore using the localStore
       const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
         metadata: {
           keyName: 'test-key',
-          lifetime: 24 * 60 * 60 * 1000
+          lifetime: SHORTENED_VALIDITY
         }
       })
-      // Start republishing
-      await start(name)
 
       await Promise.all([
         waitForStubCall(putStubCustom),
-        waitForStubCall(putStubHelia)
+        waitForStubCall(putStubHelia),
+
+        // Start republishing
+        start(name)
       ])
 
       // Check both routers
@@ -111,20 +109,16 @@ describe('republish', () => {
     })
 
     it('should republish records with valid metadata', async () => {
-      const key = await generateKeyPair('Ed25519')
-      const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
-      // @ts-expect-error @libp2p/crypto needs new multiformats
+      const key = await result.keychain.generateKey('test-key')
+      const record = await createIPNSRecord(key, `/ipfs/${testCid.toV1()}`, 1n, SHORTENED_VALIDITY)
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
-
-      // Import the key into the real keychain
-      await result.ipnsKeychain.importKey('test-key', key)
 
       // Store the record in the real datastore
       const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
         metadata: {
           keyName: 'test-key',
-          lifetime: 24 * 60 * 60 * 1000
+          lifetime: SHORTENED_VALIDITY
         }
       })
 
@@ -137,16 +131,15 @@ describe('republish', () => {
       const callArgs = putStubCustom.firstCall.args
       expect(callArgs[0]).to.deep.equal(routingKey)
 
-      const republishedRecord = unmarshalIPNSRecord(callArgs[1])
+      const republishedRecord = await unmarshalIPNSRecord(routingKey, callArgs[1], result.keychain)
       expect(republishedRecord.sequence).to.equal(2n) // Incremented from 1n
     })
   })
 
   describe('record processing', () => {
     it('should skip records without metadata', async () => {
-      const key = await generateKeyPair('Ed25519')
-      const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
-      // @ts-expect-error @libp2p/crypto needs new multiformats
+      const key = await result.keychain.generateKey('test-key')
+      const record = await createIPNSRecord(key, `/ipfs/${testCid.toV1()}`, 1n, SHORTENED_VALIDITY)
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
       // Store the record without metadata (simulate old records)
@@ -168,7 +161,7 @@ describe('republish', () => {
       await store.put(routingKey, new Uint8Array([255, 255, 255]), {
         metadata: {
           keyName: 'test-key',
-          lifetime: 24 * 60 * 60 * 1000
+          lifetime: SHORTENED_VALIDITY
         }
       })
 
@@ -180,20 +173,16 @@ describe('republish', () => {
     })
 
     it('should increment sequence numbers correctly', async () => {
-      const key = await generateKeyPair('Ed25519')
-      const record = await createIPNSRecord(key, testCid, 5n, 24 * 60 * 60 * 1000) // Start with sequence 5
-      // @ts-expect-error @libp2p/crypto needs new multiformats
+      const key = await result.keychain.generateKey('test-key')
+      const record = await createIPNSRecord(key, `/ipfs/${testCid.toV1()}`, 5n, SHORTENED_VALIDITY) // Start with sequence 5
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
-
-      // Import the key into the real keychain
-      await result.ipnsKeychain.importKey('test-key', key)
 
       // Store the record in the real datastore
       const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
         metadata: {
           keyName: 'test-key',
-          lifetime: 24 * 60 * 60 * 1000
+          lifetime: SHORTENED_VALIDITY
         }
       })
 
@@ -203,28 +192,24 @@ describe('republish', () => {
       expect(putStubCustom.called).to.be.true()
 
       const callArgs = putStubCustom.firstCall.args
-      const republishedRecord = unmarshalIPNSRecord(callArgs[1])
+      const republishedRecord = await unmarshalIPNSRecord(routingKey, callArgs[1], result.keychain)
       expect(republishedRecord.sequence).to.equal(6n) // Incremented from 5n
     })
   })
 
   describe('TTL and lifetime', () => {
     it('should use existing TTL from records', async () => {
-      const key = await generateKeyPair('Ed25519')
+      const key = await result.keychain.generateKey('test-key')
       const customTtl = BigInt(10 * 60 * 1000) * 1_000_000n // 10 minutes in nanoseconds
-      const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000, { ttlNs: customTtl })
-      // @ts-expect-error @libp2p/crypto needs new multiformats
+      const record = await createIPNSRecord(key, `/ipfs/${testCid.toV1()}`, 1n, SHORTENED_VALIDITY, { ttlNs: customTtl })
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
-
-      // Import the key into the real keychain
-      await result.ipnsKeychain.importKey('test-key', key)
 
       // Store the record in the real datastore
       const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
         metadata: {
           keyName: 'test-key',
-          lifetime: 24 * 60 * 60 * 1000
+          lifetime: SHORTENED_VALIDITY
         }
       })
 
@@ -236,26 +221,22 @@ describe('republish', () => {
       const callArgs = putStubCustom.firstCall.args
       expect(callArgs[0]).to.deep.equal(routingKey)
 
-      const republishedRecord = unmarshalIPNSRecord(callArgs[1])
+      const republishedRecord = await unmarshalIPNSRecord(routingKey, callArgs[1], result.keychain)
       expect(republishedRecord.sequence).to.equal(2n) // Incremented from 1n
       expect(republishedRecord.ttl).to.equal(customTtl)
     })
 
     it('should use default TTL when not present', async () => {
-      const key = await generateKeyPair('Ed25519')
-      const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
-      // @ts-expect-error @libp2p/crypto needs new multiformats
+      const key = await result.keychain.generateKey('test-key')
+      const record = await createIPNSRecord(key, `/ipfs/${testCid.toV1()}`, 1n, SHORTENED_VALIDITY)
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
-
-      // Import the key into the real keychain
-      await result.ipnsKeychain.importKey('test-key', key)
 
       // Store the record in the real datastore
       const store = localStore(result.datastore, result.log)
       await store.put(routingKey, marshalIPNSRecord(record), {
         metadata: {
           keyName: 'test-key',
-          lifetime: 24 * 60 * 60 * 1000
+          lifetime: SHORTENED_VALIDITY
         }
       })
 
@@ -264,19 +245,15 @@ describe('republish', () => {
 
       expect(putStubCustom.called).to.be.true()
       const callArgs = putStubCustom.firstCall.args
-      const republishedRecord = unmarshalIPNSRecord(callArgs[1])
+      const republishedRecord = await unmarshalIPNSRecord(routingKey, callArgs[1], result.keychain)
       expect(republishedRecord.ttl).to.equal(5n * 60n * 1000n * 1_000_000n) // Default TTL
     })
 
     it('should use metadata lifetime', async () => {
-      const key = await generateKeyPair('Ed25519')
+      const key = await result.keychain.generateKey('test-key')
       const customLifetime = 5 * 1000 // 5 seconds
-      const record = await createIPNSRecord(key, testCid, 1n, customLifetime)
-      // @ts-expect-error @libp2p/crypto needs new multiformats
+      const record = await createIPNSRecord(key, `/ipfs/${testCid.toV1()}`, 1n, customLifetime)
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
-
-      // Import the key into the real keychain
-      await result.ipnsKeychain.importKey('test-key', key)
 
       // Store the record in the real datastore
       const store = localStore(result.datastore, result.log)
@@ -295,7 +272,7 @@ describe('republish', () => {
       expect(putStubCustom.called).to.be.true()
 
       const callArgs = putStubCustom.firstCall.args
-      const republishedRecord = unmarshalIPNSRecord(callArgs[1])
+      const republishedRecord = await unmarshalIPNSRecord(routingKey, callArgs[1], result.keychain)
 
       // Check that the validity is set to the custom lifetime
       const actualValidity = new Date(republishedRecord.validity)
@@ -307,9 +284,8 @@ describe('republish', () => {
 
   describe('error handling', () => {
     it('should skip republishing records with missing key', async () => {
-      const key = await generateKeyPair('Ed25519')
-      const record = await createIPNSRecord(key, testCid, 1n, 24 * 60 * 60 * 1000)
-      // @ts-expect-error @libp2p/crypto needs new multiformats
+      const key = await result.keychain.generateKey('test-key')
+      const record = await createIPNSRecord(key, `/ipfs/${testCid.toV1()}`, 1n, SHORTENED_VALIDITY)
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
       // Store the record in the real datastore (but don't import the key)
@@ -317,7 +293,7 @@ describe('republish', () => {
       await store.put(routingKey, marshalIPNSRecord(record), {
         metadata: {
           keyName: 'missing-key',
-          lifetime: 24 * 60 * 60 * 1000
+          lifetime: SHORTENED_VALIDITY
         }
       })
 
@@ -384,12 +360,8 @@ describe('republish', () => {
     })
 
     it('should handle corrupt record data during republish iteration', async () => {
-      const key = await generateKeyPair('Ed25519')
-      // @ts-expect-error @libp2p/crypto needs new multiformats
+      const key = await result.keychain.generateKey('test-key')
       const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
-
-      // Import the key
-      await result.ipnsKeychain.importKey('test-key', key)
 
       const store = localStore(result.datastore, result.log)
 
@@ -397,7 +369,7 @@ describe('republish', () => {
       await store.put(routingKey, new Uint8Array([255, 255, 255]), {
         metadata: {
           keyName: 'test-key',
-          lifetime: 24 * 60 * 60 * 1000
+          lifetime: SHORTENED_VALIDITY
         }
       })
 
@@ -410,17 +382,11 @@ describe('republish', () => {
     })
 
     it('should continue republishing other records when one record fails', async () => {
-      const key1 = await generateKeyPair('Ed25519')
-      const key2 = await generateKeyPair('Ed25519')
-      const record2 = await createIPNSRecord(key2, testCid, 1n, 24 * 60 * 60 * 1000)
-      // @ts-expect-error @libp2p/crypto needs new multiformats
+      const key1 = await result.keychain.generateKey('test-key-1')
+      const key2 = await result.keychain.generateKey('test-key-2')
+      const record2 = await createIPNSRecord(key2, `/ipfs/${testCid.toV1()}`, 1n, SHORTENED_VALIDITY)
       const routingKey1 = multihashToIPNSRoutingKey(key1.publicKey.toMultihash())
-      // @ts-expect-error @libp2p/crypto needs new multiformats
       const routingKey2 = multihashToIPNSRoutingKey(key2.publicKey.toMultihash())
-
-      // Import both keys
-      await result.ipnsKeychain.importKey('test-key-1', key1)
-      await result.ipnsKeychain.importKey('test-key-2', key2)
 
       const store = localStore(result.datastore, result.log)
 
@@ -428,13 +394,13 @@ describe('republish', () => {
       await store.put(routingKey1, new Uint8Array([255, 255, 255]), {
         metadata: {
           keyName: 'test-key-1',
-          lifetime: 24 * 60 * 60 * 1000
+          lifetime: SHORTENED_VALIDITY
         }
       })
       await store.put(routingKey2, marshalIPNSRecord(record2), {
         metadata: {
           keyName: 'test-key-2',
-          lifetime: 24 * 60 * 60 * 1000
+          lifetime: SHORTENED_VALIDITY
         }
       })
 
