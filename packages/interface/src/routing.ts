@@ -1,4 +1,5 @@
-import type { AbortOptions, PeerId, PeerInfo, TraceOptions } from '@libp2p/interface'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import type { AbortOptions } from 'abort-error'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
@@ -8,7 +9,7 @@ import type { ProgressEvent, ProgressOptions } from 'progress-events'
  * local cache that may be used in preference over network calls, for example
  * when a record has a TTL.
  */
-export interface RoutingOptions<Event extends ProgressEvent = any> extends AbortOptions, ProgressOptions<Event>, TraceOptions {
+export interface RoutingOptions<Event extends ProgressEvent = any> extends AbortOptions, ProgressOptions<Event> {
   /**
    * Pass `false` to not use the network
    *
@@ -29,12 +30,42 @@ export interface RoutingOptions<Event extends ProgressEvent = any> extends Abort
    * @default true
    */
   validate?: boolean
+
+  /**
+   * Where tracing is used, this value carries tracing context
+   */
+  trace?: any
+}
+
+/**
+ * A Peer is another node on the network
+ */
+export interface Peer {
+  /**
+   * The identifier of the remote peer
+   */
+  id: CID
+
+  /**
+   * The multiaddrs a peer is listening on
+   */
+  multiaddrs: Multiaddr[]
 }
 
 /**
  * A provider can supply the content for a CID
  */
-export interface Provider extends PeerInfo {
+export interface Provider {
+  /**
+   * The identifier of the remote peer, a CID
+   */
+  id: CID
+
+  /**
+   * The multiaddrs a peer is listening on
+   */
+  multiaddrs: Multiaddr[]
+
   /**
    * If present these are the methods that the peer can supply the content via.
    *
@@ -69,7 +100,7 @@ export interface RoutingFindProvidersEndEvent {
 export interface RoutingFindProvidersHttpGatewayProvider {
   routing: 'http-gateway-router'
   cid: CID
-  provider: PeerInfo & {
+  provider: Peer & {
     protocols: ['transport-ipfs-gateway-http']
   }
 }
@@ -77,7 +108,7 @@ export interface RoutingFindProvidersHttpGatewayProvider {
 export interface RoutingFindProvidersDelegatedHttpRoutingProvider {
   routing: 'delegated-http-router'
   cid: CID
-  provider: PeerInfo & {
+  provider: Peer & {
     routing: 'delegated-http-routing'
     protocols: string[]
   }
@@ -86,7 +117,7 @@ export interface RoutingFindProvidersDelegatedHttpRoutingProvider {
 export interface RoutingFindProvidersLibp2pProvider {
   routing: 'libp2p-router'
   cid: CID
-  provider: PeerInfo
+  provider: Peer
 }
 
 export type RoutingFindProvidersProviderEvent = RoutingFindProvidersHttpGatewayProvider | RoutingFindProvidersDelegatedHttpRoutingProvider | RoutingFindProvidersLibp2pProvider
@@ -157,12 +188,12 @@ export type RoutingGetProgressEvents =
 
 export interface RoutingFindPeerStartEvent {
   routing: string
-  peerId: PeerId
+  peerId: CID
 }
 
 export interface RoutingFindPeerEndEvent {
   routing: string
-  peerId: PeerId
+  peerId: CID
 }
 
 export type RoutingFindPeerProgressEvents =
@@ -183,7 +214,7 @@ export type RoutingGetClosestPeersProgressEvents =
   ProgressEvent<'helia:routing:get-closest-peers:start', RoutingGetClosestPeersStartEvent> |
   ProgressEvent<'helia:routing:get-closest-peers:end', RoutingGetClosestPeersEndEvent>
 
-export interface Routing {
+export interface Router {
   /**
    * The name of this routing implementation
    */
@@ -197,10 +228,12 @@ export interface Routing {
    *
    * ```js
    * // ...
-   * await contentRouting.provide(cid)
+   * await contentRouting.provide(cid, {
+   *   signal: AbortSignal.timeout(5_000)
+   * })
    * ```
    */
-  provide(cid: CID, options?: RoutingOptions<RoutingProvideProgressEvents>): Promise<void>
+  provide?(cid: CID, options?: RoutingOptions<RoutingProvideProgressEvents>): Promise<void>
 
   /**
    * Helia will periodically re-provide every previously provided CID. Use this
@@ -210,10 +243,12 @@ export interface Routing {
    *
    * ```js
    * // ...
-   * await contentRouting.cancelReprovide(cid)
+   * await contentRouting.cancelReprovide(cid, {
+   *   signal: AbortSignal.timeout(5_000)
+   * })
    * ```
    */
-  cancelReprovide(key: CID, options?: AbortOptions): Promise<void>
+  cancelReprovide?(key: CID, options?: AbortOptions): Promise<void>
 
   /**
    * Find the providers of the passed CID.
@@ -222,12 +257,14 @@ export interface Routing {
    *
    * ```js
    * // Iterate over the providers found for the given cid
-   * for await (const provider of contentRouting.findProviders(cid)) {
+   * for await (const provider of contentRouting.findProviders(cid, {
+   *   signal: AbortSignal.timeout(5_000)
+   * })) {
    *  console.log(provider.id, provider.multiaddrs)
    * }
    * ```
    */
-  findProviders(cid: CID, options?: RoutingOptions<RoutingFindProvidersProgressEvents>): AsyncIterable<Provider>
+  findProviders?(cid: CID, options?: RoutingOptions<RoutingFindProvidersProgressEvents>): AsyncIterable<Provider>
 
   /**
    * Puts a value corresponding to the passed key in a way that can later be
@@ -237,13 +274,15 @@ export interface Routing {
    *
    * ```js
    * // ...
-   * const key = '/key'
+   * const key = uint8ArrayFromString('/key')
    * const value = uint8ArrayFromString('oh hello there')
    *
-   * await contentRouting.put(key, value)
+   * await contentRouting.put(key, value, {
+   *   signal: AbortSignal.timeout(5_000)
+   * })
    * ```
    */
-  put(key: Uint8Array, value: Uint8Array, options?: RoutingOptions<RoutingPutProgressEvents>): Promise<void>
+  put?(key: Uint8Array, value: Uint8Array, options?: RoutingOptions<RoutingPutProgressEvents>): Promise<void>
 
   /**
    * Retrieves a value from the network corresponding to the passed key.
@@ -253,11 +292,13 @@ export interface Routing {
    * ```js
    * // ...
    *
-   * const key = '/key'
-   * const value = await contentRouting.get(key)
+   * const key = uint8ArrayFromString('/key')
+   * const value = await contentRouting.get(key, {
+   *   signal: AbortSignal.timeout(5_000)
+   * })
    * ```
    */
-  get(key: Uint8Array, options?: RoutingOptions<RoutingGetProgressEvents>): Promise<Uint8Array>
+  get?(key: Uint8Array, options?: RoutingOptions<RoutingGetProgressEvents>): Promise<Uint8Array>
 
   /**
    * Searches the network for peer info corresponding to the passed peer id.
@@ -266,10 +307,12 @@ export interface Routing {
    *
    * ```js
    * // ...
-   * const peer = await peerRouting.findPeer(peerId, options)
+   * const peer = await peerRouting.findPeer(peerId, {
+   *   signal: AbortSignal.timeout(5_000)
+   * })
    * ```
    */
-  findPeer(peerId: PeerId, options?: RoutingOptions<RoutingFindPeerProgressEvents>): Promise<PeerInfo>
+  findPeer?(peer: CID, options?: RoutingOptions<RoutingFindPeerProgressEvents>): Promise<Peer>
 
   /**
    * Search the network for peers that are closer to the passed key. Peer
@@ -279,10 +322,14 @@ export interface Routing {
    *
    * ```js
    * // Iterate over the closest peers found for the given key
-   * for await (const peer of peerRouting.getClosestPeers(key)) {
+   * for await (const peer of peerRouting.getClosestPeers(key, {
+   *   signal: AbortSignal.timeout(5_000)
+   * })) {
    *   console.log(peer.id, peer.multiaddrs)
    * }
    * ```
    */
-  getClosestPeers(key: Uint8Array, options?: RoutingOptions<RoutingGetClosestPeersProgressEvents>): AsyncIterable<PeerInfo>
+  getClosestPeers?(key: Uint8Array, options?: RoutingOptions<RoutingGetClosestPeersProgressEvents>): AsyncIterable<Peer>
 }
+
+export type Routing = Required<Omit<Router, 'name'>>

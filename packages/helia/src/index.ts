@@ -20,13 +20,9 @@
  */
 
 import { Helia as HeliaClass } from '@helia/utils'
-import { heliaDefaults } from './utils/helia-defaults.ts'
-import { libp2pDefaults } from './utils/libp2p-defaults.ts'
-import type { DefaultLibp2pServices } from './utils/libp2p-defaults.ts'
-import type { Libp2pDefaultsOptions } from './utils/libp2p.ts'
+import { name, version } from './version.ts'
 import type { Helia } from '@helia/interface'
 import type { HeliaInit } from '@helia/utils'
-import type { Libp2p } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 
 // re-export interface types so people don't have to depend on @helia/interface
@@ -34,12 +30,6 @@ import type { CID } from 'multiformats/cid'
 export * from '@helia/interface'
 
 export type { HeliaInit }
-
-export type { DefaultLibp2pServices, Libp2pDefaultsOptions }
-
-// allow amending the default config
-export { libp2pDefaults }
-export { heliaDefaults }
 
 /**
  * DAGWalkers take a block and yield CIDs encoded in that block
@@ -70,15 +60,12 @@ export interface DAGWalker {
  * }
  * ```
  */
-export async function createHelia <T extends Libp2p> (init: Partial<HeliaInit<T>>): Promise<Helia<T>>
-export async function createHelia (init?: Partial<HeliaInit<Libp2p<DefaultLibp2pServices>>>): Promise<Helia<Libp2p<DefaultLibp2pServices>>>
-export async function createHelia (init: Partial<HeliaInit> = {}): Promise<Helia> {
-  const options = await heliaDefaults(init)
-  const helia = new HeliaClass(options)
-
-  if (options.start !== false) {
-    await helia.start()
-  }
+export function createHelia (init: HeliaInit = {}): Helia {
+  const helia = new HeliaClass({
+    name,
+    version,
+    ...init
+  })
 
   return helia
 }

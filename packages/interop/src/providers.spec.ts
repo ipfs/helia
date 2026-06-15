@@ -13,7 +13,6 @@ import { multiaddr } from 'kubo-rpc-client'
 import { CID } from 'multiformats/cid'
 import { createHeliaNode } from './fixtures/create-helia.ts'
 import { createKuboNode } from './fixtures/create-kubo.ts'
-import type { PeerId } from '@libp2p/interface'
 import type { Helia } from 'helia'
 import type { FileCandidate } from 'ipfs-unixfs-importer'
 import type { KuboInfo, KuboNode } from 'ipfsd-ctl'
@@ -68,7 +67,7 @@ describe('providers', () => {
   })
 
   it('should fetch raw using a provider', async () => {
-    let sender: PeerId | undefined
+    let sender: CID | undefined
 
     const buf = await toBuffer(helia.blockstore.get(cid, {
       providers: [
@@ -82,11 +81,11 @@ describe('providers', () => {
     }))
 
     expect(buf).to.have.lengthOf(1930)
-    expect(sender).to.deep.equal(peerIdFromString(kuboInfo.peerId?.toString() ?? ''))
+    expect(sender).to.deep.equal(peerIdFromString(kuboInfo.peerId?.toString() ?? '').toCID())
   })
 
   it('should fetch dag-cbor using a provider', async () => {
-    let sender: PeerId | undefined
+    let sender: CID | undefined
     const obj = { hello: 'world' }
     const cid = await kubo.api.dag.put(obj, {
       storeCodec: 'dag-cbor'
@@ -104,11 +103,11 @@ describe('providers', () => {
         }
       }
     })).to.eventually.deep.equal(obj)
-    expect(sender).to.deep.equal(peerIdFromString(kuboInfo.peerId?.toString() ?? ''))
+    expect(sender).to.deep.equal(peerIdFromString(kuboInfo.peerId?.toString() ?? '').toCID())
   })
 
   it('should fetch dag-json using a provider', async () => {
-    let sender: PeerId | undefined
+    let sender: CID | undefined
     const obj = { hello: 'world' }
     const cid = await kubo.api.dag.put(obj, {
       storeCodec: 'dag-json'
@@ -126,11 +125,11 @@ describe('providers', () => {
         }
       }
     })).to.eventually.deep.equal(obj)
-    expect(sender).to.deep.equal(peerIdFromString(kuboInfo.peerId?.toString() ?? ''))
+    expect(sender).to.deep.equal(peerIdFromString(kuboInfo.peerId?.toString() ?? '').toCID())
   })
 
   it('should fetch string using a provider', async () => {
-    let sender: PeerId | undefined
+    let sender: CID | undefined
     const obj = 'hello world'
     const cid = await kubo.api.dag.put(obj, {
       storeCodec: 'dag-json'
@@ -148,11 +147,11 @@ describe('providers', () => {
         }
       }
     })).to.eventually.equal(JSON.stringify(obj))
-    expect(sender).to.deep.equal(peerIdFromString(kuboInfo.peerId?.toString() ?? ''))
+    expect(sender).to.deep.equal(peerIdFromString(kuboInfo.peerId?.toString() ?? '').toCID())
   })
 
   it('should fetch via unixfs using a provider', async () => {
-    let sender: PeerId | undefined
+    let sender: CID | undefined
     const fs = unixfs(helia)
 
     const bytes = await toBuffer(fs.cat(cid, {
@@ -167,11 +166,11 @@ describe('providers', () => {
     }))
 
     expect(bytes).to.equalBytes(toBuffer(input))
-    expect(sender).to.deep.equal(peerIdFromString(kuboInfo.peerId?.toString() ?? ''))
+    expect(sender).to.deep.equal(peerIdFromString(kuboInfo.peerId?.toString() ?? '').toCID())
   })
 
   it('should fetch via mfs using a provider', async () => {
-    let sender: PeerId | undefined
+    let sender: CID | undefined
     const fs = mfs(helia)
 
     await fs.cp(cid, '/file.txt', {
@@ -188,11 +187,11 @@ describe('providers', () => {
     const bytes = await toBuffer(fs.cat('/file.txt'))
 
     expect(bytes).to.equalBytes(toBuffer(input))
-    expect(sender).to.deep.equal(peerIdFromString(kuboInfo.peerId?.toString() ?? ''))
+    expect(sender).to.deep.equal(peerIdFromString(kuboInfo.peerId?.toString() ?? '').toCID())
   })
 
   it('should fetch via car using a provider', async () => {
-    let sender: PeerId | undefined
+    let sender: CID | undefined
     const c = car(helia)
 
     expect(await toBuffer(
@@ -210,6 +209,6 @@ describe('providers', () => {
     ).to.equalBytes(await toBuffer(
       kubo.api.dag.export(cid)
     ))
-    expect(sender).to.deep.equal(peerIdFromString(kuboInfo.peerId?.toString() ?? ''))
+    expect(sender).to.deep.equal(peerIdFromString(kuboInfo.peerId?.toString() ?? '').toCID())
   })
 })

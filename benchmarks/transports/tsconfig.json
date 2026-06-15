@@ -8,13 +8,7 @@
   ],
   "references": [
     {
-      "path": "../../packages/block-brokers"
-    },
-    {
       "path": "../../packages/helia"
-    },
-    {
-      "path": "../../packages/routers"
     },
     {
       "path": "../../packages/unixfs"

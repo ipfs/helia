@@ -97,7 +97,6 @@ describe('network', () => {
 
     handler(inboundStream, connection)
 
-    // @ts-expect-error libp2p needs dep updates
     const pbstr = pbStream(outboundStream).pb(BitswapMessage)
     await pbstr.write({
       blockPresences: [],
@@ -157,7 +156,7 @@ describe('network', () => {
     const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const providers = [{
-      id: peerId,
+      id: peerId.toCID(),
       multiaddrs: [
         multiaddr('/ip4/127.0.0.1/tcp/4001')
       ],
@@ -171,7 +170,7 @@ describe('network', () => {
     const output = await all(network.findProviders(cid))
 
     expect(output).to.have.lengthOf(1)
-    expect(output[0].id.toString()).to.equal(peerId.toString())
+    expect(output[0].id.toString()).to.equal(peerId.toCID().toString())
     expect(output[0].multiaddrs).to.have.lengthOf(1)
     expect(output[0].multiaddrs[0].toString()).to.equal('/ip4/127.0.0.1/tcp/4001')
   })
@@ -181,7 +180,7 @@ describe('network', () => {
     const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const providers = [{
-      id: peerId,
+      id: peerId.toCID(),
       multiaddrs: [
         multiaddr('/ip4/127.0.0.1/tcp/4001/p2p-circuit')
       ],
@@ -217,7 +216,7 @@ describe('network', () => {
     const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const providers = [{
-      id: peerId,
+      id: peerId.toCID(),
       multiaddrs: [
         multiaddr('/ip4/127.0.0.1/tcp/4001/p2p-circuit')
       ],
@@ -231,7 +230,7 @@ describe('network', () => {
     const output = await all(network.findProviders(cid))
 
     expect(output).to.have.lengthOf(1)
-    expect(output[0].id.toString()).to.equal(peerId.toString())
+    expect(output[0].id.toString()).to.equal(peerId.toCID().toString())
     expect(output[0].multiaddrs).to.have.lengthOf(1)
     expect(output[0].multiaddrs[0].toString()).to.equal('/ip4/127.0.0.1/tcp/4001/p2p-circuit')
   })
@@ -241,7 +240,7 @@ describe('network', () => {
     const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const providers = [{
-      id: peerId,
+      id: peerId.toCID(),
       multiaddrs: [
         multiaddr('/ip4/127.0.0.1/tcp/4001')
       ],
@@ -301,7 +300,7 @@ describe('network', () => {
     const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const providers = [{
-      id: peerId,
+      id: peerId.toCID(),
       multiaddrs: [
         multiaddr('/ip4/127.0.0.1/tcp/4001/p2p-circuit')
       ],
@@ -355,7 +354,6 @@ describe('network', () => {
 
     void network.sendMessage(peerId, new QueuedBitswapMessage(true))
 
-    // @ts-expect-error libp2p needs dep updates
     const pbstr = pbStream(inboundStream).pb(BitswapMessage)
     const message = await pbstr.read()
 
@@ -457,7 +455,6 @@ describe('network', () => {
     // one dial for slowPeer, one for peerId
     expect(components.libp2p.dialProtocol).to.have.property('callCount', 2, 'made too many dials')
 
-    // @ts-expect-error libp2p needs dep updates
     const pbstr = pbStream(inboundStream).pb(BitswapMessage)
     const message = await pbstr.read()
 
