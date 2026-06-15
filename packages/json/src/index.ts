@@ -27,7 +27,7 @@
 
 import { CID } from 'multiformats/cid'
 import { JSON as JSONClass } from './json.ts'
-import type { GetBlockProgressEvents, PutBlockProgressEvents } from '@helia/interface/blocks'
+import type { GetBlockProgressEvents, PutBlockProgressEvents } from '@helia/interface'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { MultihashHasher } from 'multiformats/hashes/interface'

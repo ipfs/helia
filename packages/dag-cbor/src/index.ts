@@ -27,7 +27,7 @@
 
 import { CID } from 'multiformats/cid'
 import { DAGCBOR as DAGCBORClass } from './dag-cbor.ts'
-import type { GetBlockProgressEvents, ProviderOptions, PutBlockProgressEvents } from '@helia/interface/blocks'
+import type { GetBlockProgressEvents, ProviderOptions, PutBlockProgressEvents } from '@helia/interface'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { MultihashHasher } from 'multiformats/hashes/interface'

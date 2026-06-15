@@ -20,22 +20,6 @@
   ],
   "type": "module",
   "types": "./dist/src/index.d.ts",
-  "typesVersions": {
-    "*": {
-      "*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ],
-      "src/*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ]
-    }
-  },
   "files": [
     "src",
     "dist",
@@ -47,21 +31,6 @@
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js",
       "module-sync": "./dist/src/index.js"
-    },
-    "./blocks": {
-      "types": "./dist/src/blocks.d.ts",
-      "import": "./dist/src/blocks.js",
-      "module-sync": "./dist/src/blocks.js"
-    },
-    "./pins": {
-      "types": "./dist/src/pins.d.ts",
-      "import": "./dist/src/pins.js",
-      "module-sync": "./dist/src/pins.js"
-    },
-    "./routing": {
-      "types": "./dist/src/routing.d.ts",
-      "import": "./dist/src/routing.js",
-      "module-sync": "./dist/src/routing.js"
     }
   },
   "scripts": {
