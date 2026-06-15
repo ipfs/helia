@@ -205,5 +205,6 @@ export interface HeliaEvents<H extends Helia = Helia> {
 
 export * from './blocks.ts'
 export * from './errors.ts'
+export * from './graph-walker.ts'
 export * from './pins.ts'
 export * from './routing.ts'

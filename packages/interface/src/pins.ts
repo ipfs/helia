@@ -1,4 +1,5 @@
 import type { GetBlockProgressEvents } from './blocks.ts'
+import type { GraphWalkerFactory } from './graph-walker.ts'
 import type { AbortOptions } from 'abort-error'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
@@ -21,13 +22,21 @@ export interface AddOptions extends AbortOptions, ProgressOptions<AddPinEvents |
   depth?: number
 
   /**
+   * Walker factory used to traverse the DAG. Default: `depthFirstWalker()`.
+   */
+  walker?: GraphWalkerFactory
+
+  /**
    * Optional user-defined metadata to store with the pin
    */
   metadata?: Record<string, string | number | boolean>
 }
 
 export interface RmOptions extends AbortOptions {
-
+  /**
+   * Walker factory used to traverse the DAG. Default: `depthFirstWalker()`.
+   */
+  walker?: GraphWalkerFactory
 }
 
 export interface LsOptions extends AbortOptions {
