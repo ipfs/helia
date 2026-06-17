@@ -88,6 +88,7 @@
     "cborg": "^5.1.1",
     "delay": "^7.0.0",
     "interface-datastore": "^10.0.1",
+    "it-last": "^3.0.11",
     "multiformats": "^14.0.0",
     "progress-events": "^1.1.0",
     "protons-runtime": "^7.0.0",
@@ -102,7 +103,6 @@
     "aegir": "^48.0.11",
     "datastore-core": "^12.0.1",
     "it-drain": "^3.0.12",
-    "it-last": "^3.0.11",
     "protons": "^9.0.1",
     "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0"
