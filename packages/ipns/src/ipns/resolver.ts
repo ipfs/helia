@@ -1,33 +1,21 @@
-import { isPeerId, isPublicKey } from '@libp2p/interface'
-import { multihashToIPNSRoutingKey, unmarshalIPNSRecord } from 'ipns'
-import { ipnsSelector } from 'ipns/selector'
-import { ipnsValidator } from 'ipns/validator'
-import { base36 } from 'multiformats/bases/base36'
-import { base58btc } from 'multiformats/bases/base58'
-import { CID } from 'multiformats/cid'
-import * as Digest from 'multiformats/hashes/digest'
 import { DEFAULT_TTL_NS } from '../constants.ts'
-import { InvalidValueError, RecordNotFoundError, RecordsFailedValidationError, UnsupportedMultibasePrefixError, UnsupportedMultihashCodecError } from '../errors.ts'
-import { isCodec, IDENTITY_CODEC, SHA2_256_CODEC, isLibp2pCID } from '../utils.ts'
-import type { IPNSResolveResult, ResolveOptions, ResolveResult } from '../index.ts'
+import { RecordNotFoundError, RecordsFailedValidationError } from '../errors.ts'
+import { ipnsSelector } from '../selector.ts'
+import { multihashToIPNSRoutingKey, unmarshalIPNSRecord, normalizeKey, IPNS_STRING_PREFIX } from '../utils.ts'
+import { ipnsValidator } from '../validator.ts'
+import type { IPNSRecord, ResolveOptions, ResolveResult } from '../index.ts'
 import type { LocalStore } from '../local-store.ts'
 import type { IPNSRouting } from '../routing/index.ts'
-import type { Routing } from '@helia/interface'
-import type { ComponentLogger, Logger, PeerId, PublicKey } from '@libp2p/interface'
+import type { Routing, Keychain } from '@helia/interface'
+import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
-import type { IPNSRecord } from 'ipns'
-import type { MultibaseDecoder } from 'multiformats/bases/interface'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
-
-const bases: Record<string, MultibaseDecoder<string>> = {
-  [base36.prefix]: base36,
-  [base58btc.prefix]: base58btc
-}
 
 export interface IPNSResolverComponents {
   datastore: Datastore
   routing: Routing
   logger: ComponentLogger
+  keychain: Keychain
 }
 
 export interface IPNResolverInit {
@@ -39,81 +27,37 @@ export class IPNSResolver {
   public readonly routers: IPNSRouting[]
   private readonly localStore: LocalStore
   private readonly log: Logger
+  private keychain: Keychain
 
   constructor (components: IPNSResolverComponents, init: IPNResolverInit) {
     this.log = components.logger.forComponent('helia:ipns')
     this.localStore = init.localStore
     this.routers = init.routers
+    this.keychain = components.keychain
   }
 
-  async resolve (key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options: ResolveOptions = {}): Promise<IPNSResolveResult> {
-    const digest = isPublicKey(key) || isPeerId(key) ? key.toMultihash() : isLibp2pCID(key) ? key.multihash : key
-    // @ts-expect-error @libp2p/peer-id needs new multiformats
-    const routingKey = multihashToIPNSRoutingKey(digest)
-    const record = await this.#findIpnsRecord(routingKey, options)
+  async * resolve (key: MultihashDigest, options: ResolveOptions = {}): AsyncGenerator<ResolveResult> {
+    let { digest } = normalizeKey(key)
 
-    return {
-      ...(await this.#resolve(record.value, options)),
-      record
-    }
-  }
+    while (true) {
+      const routingKey = multihashToIPNSRoutingKey(digest)
+      const record = await this.#findIpnsRecord(routingKey, options)
 
-  async #resolve (ipfsPath: string, options: ResolveOptions = {}): Promise<ResolveResult> {
-    const parts = ipfsPath.split('/')
-    try {
-      const scheme = parts[1]
-
-      if (scheme === 'ipns') {
-        const str = parts[2]
-        const prefix = str.substring(0, 1)
-        let buf: Uint8Array | undefined
-
-        if (prefix === '1' || prefix === 'Q') {
-          buf = base58btc.decode(`z${str}`)
-        } else if (bases[prefix] != null) {
-          buf = bases[prefix].decode(str)
-        } else {
-          throw new UnsupportedMultibasePrefixError(`Unsupported multibase prefix "${prefix}"`)
-        }
-
-        let digest: MultihashDigest<number>
-
-        try {
-          digest = Digest.decode(buf)
-        } catch {
-          digest = CID.decode(buf).multihash
-        }
-
-        if (!isCodec(digest, IDENTITY_CODEC) && !isCodec(digest, SHA2_256_CODEC)) {
-          throw new UnsupportedMultihashCodecError(`Unsupported multihash codec "${digest.code}"`)
-        }
-
-        const { cid } = await this.resolve(digest, options)
-        const path = parts.slice(3).join('/')
-
-        return {
-          cid,
-          path: path === '' ? undefined : path
-        }
-      } else if (scheme === 'ipfs') {
-        const cid = CID.parse(parts[2])
-        const path = parts.slice(3).join('/')
-
-        return {
-          cid,
-          path: path === '' ? undefined : path
-        }
+      yield {
+        record
       }
-    } catch (err) {
-      this.log.error('error parsing ipfs path - %e', err)
-    }
 
-    this.log.error('invalid ipfs path %s', ipfsPath)
-    throw new InvalidValueError('Invalid value')
+      if (!record.value.startsWith(IPNS_STRING_PREFIX)) {
+        // not a recursive record
+        break
+      }
+
+      ({ digest } = normalizeKey(record.value))
+    }
   }
 
   async #findIpnsRecord (routingKey: Uint8Array, options: ResolveOptions = {}): Promise<IPNSRecord> {
-    const records: Uint8Array[] = []
+    const records: IPNSRecord[] = []
     const cached = await this.localStore.has(routingKey, options)
 
     if (cached) {
@@ -122,17 +66,19 @@ export class IPNSResolver {
       if (options.nocache !== true) {
         try {
           // check the local cache first
-          const { record, created } = await this.localStore.get(routingKey, options)
+          const { record: marshaledIPNSRecord, created } = await this.localStore.get(routingKey, options)
 
           this.log('record retrieved from cache')
 
+          // unmarshal the record
+          const ipnsRecord = await unmarshalIPNSRecord(routingKey, marshaledIPNSRecord, this.keychain, options)
+
           // validate the record
-          await ipnsValidator(routingKey, record)
+          await ipnsValidator(ipnsRecord, options)
 
           this.log('record was valid')
 
           // check the TTL
-          const ipnsRecord = unmarshalIPNSRecord(record)
 
           // IPNS TTL is in nanoseconds, convert to milliseconds, default to one
           // hour
@@ -156,7 +102,7 @@ export class IPNSResolver {
           // add the local record to our list of resolved record, and also
           // search the routing for updates - the most up to date record will be
           // returned
-          records.push(record)
+          records.push(ipnsRecord)
         } catch (err) {
           this.log('cached record was invalid - %e', err)
           await this.localStore.delete(routingKey, options)
@@ -177,7 +123,7 @@ export class IPNSResolver {
 
     await Promise.all(
       this.routers.map(async (router) => {
-        let record: Uint8Array
+        let marshaledIPNSRecord: Uint8Array
 
         // skip checking cache when nocache is true
         if (String(router) === 'LocalStoreRouting()' && options.nocache === true) {
@@ -185,7 +131,7 @@ export class IPNSResolver {
         }
 
         try {
-          record = await router.get(routingKey, {
+          marshaledIPNSRecord = await router.get(routingKey, {
             ...options,
             validate: false
           })
@@ -197,7 +143,12 @@ export class IPNSResolver {
         }
 
         try {
-          await ipnsValidator(routingKey, record)
+          // unmarshal ensures that (1) SignatureV2 and Data are present, (2) that ValidityType
+          // and Validity are of valid types and have a value, (3) that CBOR data matches protobuf
+          // if it's a V1+V2 record
+          const record = await unmarshalIPNSRecord(routingKey, marshaledIPNSRecord, this.keychain, options)
+
+          await ipnsValidator(record, options)
 
           records.push(record)
         } catch (err) {
@@ -218,8 +169,8 @@ export class IPNSResolver {
 
     const record = records[ipnsSelector(routingKey, records)]
 
-    await this.localStore.put(routingKey, record, options)
+    await this.localStore.put(routingKey, record.bytes, options)
 
-    return unmarshalIPNSRecord(record)
+    return record
   }
 }

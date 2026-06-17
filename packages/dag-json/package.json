@@ -50,14 +50,14 @@
   "dependencies": {
     "@helia/interface": "^6.2.1",
     "@ipld/dag-json": "^11.0.0",
-    "@libp2p/interface": "^3.2.0",
+    "@libp2p/interface": "^3.2.3",
     "interface-blockstore": "^7.0.1",
     "it-to-buffer": "^5.0.0",
     "multiformats": "^14.0.0",
     "progress-events": "^1.1.0"
   },
   "devDependencies": {
-    "aegir": "^48.0.4",
+    "aegir": "^48.0.11",
     "blockstore-core": "^7.0.1"
   },
   "sideEffects": false

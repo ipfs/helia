@@ -5,7 +5,7 @@ import { base64 } from 'multiformats/bases/base64'
 import pDefer from 'p-defer'
 import { raceSignal } from 'race-signal'
 import type { BlockBroker, BlockRetrievalOptions, CreateSessionOptions } from '@helia/interface'
-import type { AbortOptions, ComponentLogger, Logger, PeerId } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, Logger } from '@libp2p/interface'
 import type { Filter } from '@libp2p/utils'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { CID } from 'multiformats/cid'
@@ -41,7 +41,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
   private readonly maxProviders: number
   public readonly providers: Provider[]
   private readonly evictionFilter: Filter
-  private readonly initialProviders: Array<PeerId | Multiaddr | Multiaddr[]>
+  private readonly initialProviders: Array<CID | Multiaddr | Multiaddr[]>
   private readonly cidPeerFilterSize: number
 
   constructor (components: AbstractSessionComponents, init: AbstractCreateSessionOptions) {
@@ -277,7 +277,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
     return false
   }
 
-  async addPeer (peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<void> {
+  async addPeer (peer: CID | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<void> {
     const provider = await this.convertToProvider(peer, 'manually-added', options)
 
     if (provider == null || this.hasProvider(provider)) {
@@ -379,7 +379,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
    * into the format required or return `undefined` if the provider is not
    * compatible with this session implementation
    */
-  abstract convertToProvider (provider: PeerId | Multiaddr | Multiaddr[], routing: string, options?: AbortOptions): Promise<Provider | undefined>
+  abstract convertToProvider (provider: CID | Multiaddr | Multiaddr[], routing: string, options?: AbortOptions): Promise<Provider | undefined>
 
   /**
    * This method should search for new providers and yield them.

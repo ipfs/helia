@@ -3,7 +3,7 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
 import { UnsupportedProtocolError } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerMap } from '@libp2p/peer-collections'
-import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { peerIdFromCID, peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
@@ -49,7 +49,7 @@ describe('session', () => {
     const providers = await Promise.all(
       new Array(10).fill(0).map(async (_, i) => {
         return {
-          id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+          id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
           multiaddrs: [
             multiaddr(`/ip4/4${i}.4${i}.4${i}.4${i}/tcp/${1234 + i}`)
           ],
@@ -67,37 +67,37 @@ describe('session', () => {
 
     // stub first three provider responses, all but #3 have the block, second
     // provider sends the block in the response
-    components.wantList.wantSessionBlock.withArgs(cid, providers[0].id).resolves({
-      sender: providers[0].id,
+    components.wantList.wantSessionBlock.withArgs(cid, peerIdFromCID(providers[0].id)).resolves({
+      sender: peerIdFromCID(providers[0].id),
       has: true,
       cid,
       block
     })
-    components.wantList.wantSessionBlock.withArgs(cid, providers[1].id).resolves({
-      sender: providers[1].id,
+    components.wantList.wantSessionBlock.withArgs(cid, peerIdFromCID(providers[1].id)).resolves({
+      sender: peerIdFromCID(providers[1].id),
       has: true,
       cid,
       block
     })
-    components.wantList.wantSessionBlock.withArgs(cid, providers[2].id).resolves({
-      sender: providers[2].id,
+    components.wantList.wantSessionBlock.withArgs(cid, peerIdFromCID(providers[2].id)).resolves({
+      sender: peerIdFromCID(providers[2].id),
       has: true,
       cid,
       block
     })
-    components.wantList.wantSessionBlock.withArgs(cid, providers[3].id).resolves({
-      sender: providers[3].id,
+    components.wantList.wantSessionBlock.withArgs(cid, peerIdFromCID(providers[3].id)).resolves({
+      sender: peerIdFromCID(providers[3].id),
       has: false,
       cid
     })
-    components.wantList.wantSessionBlock.withArgs(cid, providers[4].id).resolves({
-      sender: providers[4].id,
+    components.wantList.wantSessionBlock.withArgs(cid, peerIdFromCID(providers[4].id)).resolves({
+      sender: peerIdFromCID(providers[4].id),
       has: true,
       cid,
       block
     })
-    components.wantList.wantSessionBlock.withArgs(cid, providers[5].id).resolves({
-      sender: providers[5].id,
+    components.wantList.wantSessionBlock.withArgs(cid, peerIdFromCID(providers[5].id)).resolves({
+      sender: peerIdFromCID(providers[5].id),
       has: true,
       cid,
       block
@@ -132,7 +132,7 @@ describe('session', () => {
   it('should error when creating a session when no providers have the block', async () => {
     // providers found via routing
     const providers = [{
-      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
       multiaddrs: [
         multiaddr('/ip4/41.41.41.41/tcp/1234')
       ],
@@ -143,8 +143,8 @@ describe('session', () => {
       yield * providers
     })())
 
-    components.wantList.wantSessionBlock.withArgs(cid, providers[0].id).resolves({
-      sender: providers[0].id,
+    components.wantList.wantSessionBlock.withArgs(cid, peerIdFromCID(providers[0].id)).resolves({
+      sender: peerIdFromCID(providers[0].id),
       has: false,
       cid
     })
@@ -158,13 +158,13 @@ describe('session', () => {
   it('should exclude non-bitswap providers from the session', async () => {
     // providers found via routing
     const providers = [{
-      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
       multiaddrs: [
         multiaddr('/ip4/41.41.41.41/tcp/1234')
       ],
       routing: 'test-routing'
     }, {
-      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
       multiaddrs: [
         multiaddr('/ip4/41.41.41.41/tcp/1235')
       ],
@@ -175,9 +175,9 @@ describe('session', () => {
       yield * providers
     })())
 
-    components.wantList.wantSessionBlock.withArgs(cid, providers[0].id).rejects(new UnsupportedProtocolError('Protocol negotiation failed'))
-    components.wantList.wantSessionBlock.withArgs(cid, providers[1].id).resolves({
-      sender: providers[1].id,
+    components.wantList.wantSessionBlock.withArgs(cid, peerIdFromCID(providers[0].id)).rejects(new UnsupportedProtocolError('Protocol negotiation failed'))
+    components.wantList.wantSessionBlock.withArgs(cid, peerIdFromCID(providers[1].id)).resolves({
+      sender: peerIdFromCID(providers[1].id),
       has: true,
       cid,
       block

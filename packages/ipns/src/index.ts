@@ -23,9 +23,9 @@
  * const { publicKey } = await name.publish('key-1', cid)
  *
  * // resolve the name
- * const result = await name.resolve(publicKey)
- *
- * console.info(result.cid, result.path)
+ * for await (const result of name.resolve(publicKey)) {
+ *   console.info(result.record.value) // /ipfs/QmFoo
+ * }
  * ```
  *
  * @example Publishing a recursive record
@@ -53,8 +53,9 @@
  * const { publicKey: recursivePublicKey } = await name.publish('key-2', publicKey)
  *
  * // resolve the name recursively - it resolves until a CID is found
- * const result = await name.resolve(recursivePublicKey)
- * console.info(result.cid.toString() === cid.toString()) // true
+ * for await (const result of name.resolve(recursivePublicKey)) {
+ *   console.info(result.record.value) // /ipfs/QmFoo../foo.txt
+ * }
  * ```
  *
  * @example Publishing a record with a path
@@ -82,9 +83,9 @@
  * const { publicKey } = await name.publish('key-1', `/ipfs/${finalDirCid}/foo.txt`)
  *
  * // resolve the name
- * const result = await name.resolve(publicKey)
- *
- * console.info(result.cid, result.path) // QmFoo.. 'foo.txt'
+ * for await (const result of name.resolve(publicKey)) {
+ *   console.info(result.record.value) // /ipfs/QmFoo../foo.txt
+ * }
  * ```
  *
  * @example Using custom PubSub router
@@ -104,28 +105,29 @@
  * may fail to be published with "Insufficient peers" errors.
  *
  * ```TypeScript
- * import { createHelia, libp2pDefaults } from 'helia'
  * import { ipns } from '@helia/ipns'
  * import { pubsub } from '@helia/ipns/routing'
+ * import { withLibp2p, libp2pDefaults } from '@helia/libp2p'
  * import { unixfs } from '@helia/unixfs'
- * import { floodsub } from '@libp2p/floodsub'
  * import { generateKeyPair } from '@libp2p/crypto/keys'
+ * import { floodsub } from '@libp2p/floodsub'
+ * import { createHelia } from 'helia'
+ * import type { Helia } from '@helia/interface'
  * import type { PubSub } from '@helia/ipns/routing'
+ * import type { DefaultLibp2pServices } from '@helia/libp2p'
+ * import type { FloodSub } from '@libp2p/floodsub'
  * import type { Libp2p } from '@libp2p/interface'
- * import type { DefaultLibp2pServices } from 'helia'
  *
- * const libp2pOptions = libp2pDefaults()
+ * const libp2pOptions = libp2pDefaults() as any
  * libp2pOptions.services.pubsub = floodsub()
  *
- * const helia = await createHelia<Libp2p<DefaultLibp2pServices & { pubsub: PubSub }>>({
- *   libp2p: libp2pOptions
- * })
+ * const helia = await withLibp2p<Helia, { pubsub: FloodSub }>(createHelia(), libp2pOptions).start()
+ *
  * const name = ipns(helia, {
  *  routers: [
  *    pubsub(helia)
  *  ]
  * })
- *
  *
  * // store some data to publish
  * const fs = unixfs(helia)
@@ -135,7 +137,9 @@
  * const { publicKey } = await name.publish('key-1', cid)
  *
  * // resolve the name
- * const result = await name.resolve(publicKey)
+ * for await (const result of name.resolve(publicKey)) {
+ *   console.info(result.record.value)
+ * }
  * ```
  *
  * @example Republishing an existing IPNS record
@@ -177,7 +181,6 @@
  * ```
  */
 
-import { ipnsValidator } from 'ipns/validator'
 import { CID } from 'multiformats/cid'
 import { IPNSResolver as IPNSResolverClass } from './ipns/resolver.ts'
 import { IPNS as IPNSClass } from './ipns.ts'
@@ -185,12 +188,12 @@ import { localStore } from './local-store.ts'
 import { helia } from './routing/index.ts'
 import { localStoreRouting } from './routing/local-store.ts'
 import type { IPNSResolverComponents } from './ipns/resolver.ts'
+import type { IPNSRecord } from './records.ts'
 import type { IPNSRouting, IPNSRoutingProgressEvents } from './routing/index.ts'
-import type { Routing, HeliaEvents } from '@helia/interface'
-import type { AbortOptions, ComponentLogger, Libp2p, PeerId, PublicKey, TypedEventEmitter } from '@libp2p/interface'
-import type { Keychain } from '@libp2p/keychain'
+import type { Routing, HeliaEvents, Keychain, PublicKey } from '@helia/interface'
+import type { ComponentLogger, TypedEventEmitter } from '@libp2p/interface'
+import type { AbortOptions } from 'abort-error'
 import type { Datastore } from 'interface-datastore'
-import type { IPNSRecord } from 'ipns'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
@@ -217,32 +220,42 @@ export type DatastoreProgressEvents =
 
 export interface PublishOptions extends AbortOptions, ProgressOptions<PublishProgressEvents | IPNSRoutingProgressEvents> {
   /**
-   * Time duration of the signature validity in ms (default: 48hrs)
+   * Time duration of the signature validity in ms
+   *
+   * @default 172_800_000
    */
   lifetime?: number
 
   /**
-   * Only publish to the local datastore, skipping the routers (default: false)
+   * Only publish to the local datastore, skipping the routers
+   *
+   * @default false
    */
   offline?: boolean
 
   /**
    * By default a IPNS V1 and a V2 signature is added to every record. Pass
-   * false here to only add a V2 signature. (default: true)
+   * false here to only add a V2 signature.
+   *
+   * @default true
    */
   v1Compatible?: boolean
 
   /**
-   * The TTL of the record in ms (default: 5 minutes)
+   * The TTL of the record in ms
+   *
+   * @default 300_000
    */
   ttl?: number
 
   /**
-   * Automated record upkeep policy. (default: "republish")
+   * Automated record upkeep policy.
    *
    * - `republish`: create a new record with a refreshed TTL
    * - `refresh`: publish the existing record until it expires
    * - `none`: disable automated publishing
+   *
+   * @default 'republish'
    */
   upkeep?: 'republish' | 'refresh' | 'none'
 }
@@ -270,70 +283,75 @@ export interface RepublishOptions extends AbortOptions, ProgressOptions<Republis
   record?: IPNSRecord
 
   /**
-   * Only republish to the local datastore, skipping the routers (default: false)
+   * Only republish to the local datastore, skipping the routers
+   *
+   * @default false
    */
   offline?: boolean
 
   /**
-   * Skip resolution of latest record before republishing (default: false)
+   * Skip resolution of latest record before republishing.
    *
    * It's important to resolve the latest record before republishing to routers
-   * Resolution should only be skipped when confident the latest record is already known
+   *
+   * Resolution should only be skipped when confident the latest record is
+   * already known.
+   *
+   * @default false
    */
   skipResolution?: boolean
 
   /**
-   * Force the record to be republished even when already resolvable (default: false)
+   * Force the record to be republished even when already resolvable.
    *
-   * It's important for republishing to be handled by a single machine
-   * Republishing should only be forced when confident the record is not being republished by other clients
+   * It's important for republishing to be handled by a single machine.
+   *
+   * Republishing should only be forced when confident the record is not being
+   * republished by other clients
+   *
+   * @default false
    */
   force?: boolean
 
   /**
-   * Automated record upkeep policy. (default: "refresh")
+   * Automated record upkeep policy.
    *
    * Defaults to `refresh` since `republish()` cannot sign new records without
    * the private key.
    *
    * - `refresh`: republish the existing record until it expires
    * - `none`: disable automated publishing
+   *
+   * @default 'refresh'
    */
   upkeep?: 'refresh' | 'none'
 }
 
 export interface ResolveResult {
   /**
-   * The CID that was resolved
-   */
-  cid: CID
-
-  /**
-   * Any path component that was part of the resolved record
-   */
-  path?: string
-}
-
-export interface IPNSResolveResult extends ResolveResult {
-  /**
    * The resolved record
    */
   record: IPNSRecord
 }
 
-export interface IPNSPublishResult {
+export interface PublishResult {
   /**
    * The published record
    */
   record: IPNSRecord
 
   /**
-   * The public key that was used to publish the record
+   * The IPNS name that can be used to resolve this record
+   */
+  name: string
+
+  /**
+   * The public key that was used to sign and publish the record
    */
   publicKey: PublicKey
 }
 
-export interface IPNSRepublishResult {
+export interface RepublishResult {
   /**
    * The published record
    */
@@ -348,7 +366,7 @@ export interface IPNSResolver {
    * Ed25519, secp256k1 or RSA PeerId and recursively resolves the IPNS record
    * corresponding to that key until a value is found.
    */
-  resolve(key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options?: ResolveOptions): Promise<IPNSResolveResult>
+  resolve(key: CID<unknown, 0x72> | MultihashDigest, options?: ResolveOptions): AsyncGenerator<ResolveResult>
 }
 
 export interface IPNS {
@@ -361,12 +379,14 @@ export interface IPNS {
    * Creates and publishes an IPNS record that will resolve the passed value
    * signed by a key stored in the libp2p keychain under the passed key name.
    *
+   * If the key does not exist, a new Ed25519 key will be created. To use a
+   * different key types, ensure the key is created and stored in the keychain
+   * before invoking this method.
+   *
    * It is possible to create a recursive IPNS record by passing:
    *
-   * - A PeerId,
-   * - A PublicKey
-   * - A CID with the libp2p-key codec and Identity or SHA256 hash algorithms
-   * - A Multihash with the Identity or SHA256 hash algorithms
+   * - A CID with the libp2p-key codec
+   * - A Multihash
    * - A string IPNS key (e.g. `/ipns/Qmfoo`)
    *
    * @example
@@ -385,16 +405,16 @@ export interface IPNS {
    * console.info(result) // { answer: ... }
    * ```
    */
-  publish(keyName: string, value: CID | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId | string, options?: PublishOptions): Promise<IPNSPublishResult>
+  publish(keyName: string, value: CID | PublicKey | MultihashDigest | string, options?: PublishOptions): Promise<PublishResult>
 
   /**
-   * Accepts a libp2p public key, a CID with the libp2p-key codec and either the
-   * identity hash (for Ed25519 and secp256k1 public keys) or a SHA256 hash (for
-   * RSA public keys), or the multihash of a libp2p-key encoded CID, or a
-   * Ed25519, secp256k1 or RSA PeerId and recursively resolves the IPNS record
-   * corresponding to that key until a value is found.
+   * Accepts a multihash of a public key, a libp2p-key CID containing the
+   * multihash of a public key, or an IPNS name in it's string representation
+   * and recursively resolves IPNS records until a non-recursive record is found
+   * (e.g. the value can be parsed as a string that does not start with
+   * `/ipns/`).
    */
-  resolve(key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options?: ResolveOptions): Promise<IPNSResolveResult>
+  resolve(name: CID<unknown, 0x72> | PublicKey | MultihashDigest | string, options?: ResolveOptions): AsyncGenerator<ResolveResult>
 
   /**
    * Stop republishing of an IPNS record
@@ -403,14 +423,15 @@ export interface IPNS {
    * name is passed, the key will remain in the keychain.
    *
    * Note that the record may still be resolved by other peers until it expires
-   * or is no longer valid.
+   * or is otherwise no longer valid.
    */
-  unpublish(keyName: string | CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options?: AbortOptions): Promise<void>
+  unpublish(key: CID<unknown, 0x72> | PublicKey | MultihashDigest | string, options?: AbortOptions): Promise<void>
 
   /**
    * Republish the latest known existing record to all routers
    *
-   * Updates the record's upkeep policy to `options.upkeep` (default: 'refresh').
+   * Updates the record's upkeep policy to `options.upkeep`.
+   *
    * The background republisher will then keep the record alive accordingly.
    *
    * Use `unpublish` to stop republishing a key.
@@ -418,18 +439,17 @@ export interface IPNS {
    * @throws {NotFoundError} when no existing records can be found
    * @throws {RecordAlreadyPublishedError} when a record is already published; pass `force: true` to bypass
    */
-  republish(key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options?: RepublishOptions): Promise<IPNSRepublishResult>
+  republish(key: CID<unknown, 0x72> | PublicKey | MultihashDigest | string, options?: RepublishOptions): Promise<RepublishResult>
 }
 
 export type { IPNSRouting } from './routing/index.ts'
-
-export type { IPNSRecord } from 'ipns'
+export type { IPNSRecord } from './records.ts'
 
 export interface IPNSComponents {
   datastore: Datastore
   routing: Routing
   logger: ComponentLogger
-  libp2p: Libp2p<{ keychain: Keychain }>
+  keychain: Keychain
   events: TypedEventEmitter<HeliaEvents> // Helia event bus
 }
 
@@ -480,5 +500,4 @@ export function ipnsResolver (components: IPNSResolverComponents, options: IPNSR
   })
 }
 
-export { ipnsValidator, type IPNSRoutingProgressEvents }
-export { ipnsSelector } from 'ipns/selector'
+export type { IPNSRoutingProgressEvents }

@@ -1,48 +1,28 @@
-import type { IPNSRecord } from 'ipns'
+import type { IPNSRecord } from './records.ts'
 
 export class RecordsFailedValidationError extends Error {
   static name = 'RecordsFailedValidationError'
-
-  constructor (message = 'Records failed validation') {
-    super(message)
-    this.name = 'RecordsFailedValidationError'
-  }
+  name = 'RecordsFailedValidationError'
 }
 
 export class UnsupportedMultibasePrefixError extends Error {
   static name = 'UnsupportedMultibasePrefixError'
-
-  constructor (message = 'Unsupported multibase prefix') {
-    super(message)
-    this.name = 'UnsupportedMultibasePrefixError'
-  }
+  name = 'UnsupportedMultibasePrefixError'
 }
 
 export class UnsupportedMultihashCodecError extends Error {
   static name = 'UnsupportedMultihashCodecError'
-
-  constructor (message = 'Unsupported multihash codec') {
-    super(message)
-    this.name = 'UnsupportedMultihashCodecError'
-  }
+  name = 'UnsupportedMultihashCodecError'
 }
 
 export class InvalidValueError extends Error {
   static name = 'InvalidValueError'
-
-  constructor (message = 'Invalid value') {
-    super(message)
-    this.name = 'InvalidValueError'
-  }
+  name = 'InvalidValueError'
 }
 
 export class InvalidTopicError extends Error {
   static name = 'InvalidTopicError'
-
-  constructor (message = 'Invalid topic') {
-    super(message)
-    this.name = 'InvalidTopicError'
-  }
+  name = 'InvalidTopicError'
 }
 
 export class RecordNotFoundError extends Error {
@@ -53,8 +33,46 @@ export class RecordNotFoundError extends Error {
 export class RecordAlreadyPublishedError extends Error {
   static name = 'RecordAlreadyPublishedError'
   name = 'RecordAlreadyPublishedError'
+  record: IPNSRecord
 
-  constructor (message: string, public readonly record: IPNSRecord) {
+  constructor (message: string, record: IPNSRecord) {
     super(message)
+
+    this.record = record
   }
+}
+
+export class SignatureCreationError extends Error {
+  static name = 'SignatureCreationError'
+  name = 'SignatureCreationError'
+}
+
+export class SignatureVerificationError extends Error {
+  static name = 'SignatureVerificationError'
+  name = 'SignatureVerificationError'
+}
+
+export class RecordExpiredError extends Error {
+  static name = 'RecordExpiredError'
+  name = 'RecordExpiredError'
+}
+
+export class UnsupportedValidityError extends Error {
+  static name = 'UnsupportedValidityError'
+  name = 'UnsupportedValidityError'
+}
+
+export class RecordTooLargeError extends Error {
+  static name = 'RecordTooLargeError'
+  name = 'RecordTooLargeError'
+}
+
+export class InvalidRecordDataError extends Error {
+  static name = 'InvalidRecordDataError'
+  name = 'InvalidRecordDataError'
+}
+
+export class InvalidEmbeddedPublicKeyError extends Error {
+  static name = 'InvalidEmbeddedPublicKeyError'
+  name = 'InvalidEmbeddedPublicKeyError'
 }

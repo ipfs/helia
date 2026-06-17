@@ -7,6 +7,7 @@ import drain from 'it-drain'
 import { CID } from 'multiformats/cid'
 import * as json from 'multiformats/codecs/json'
 import * as raw from 'multiformats/codecs/raw'
+import { breadthFirstWalker } from '../src/graph-walker.ts'
 import { createAndPutBlock } from './fixtures/create-block.ts'
 import { createHelia } from './fixtures/create-helia.ts'
 import type { Helia } from '@helia/interface'
@@ -234,5 +235,37 @@ describe('pins', () => {
 
     await expect(helia.pins.isPinned(cid1)).to.eventually.be.true()
     await expect(helia.pins.isPinned(cid2)).to.eventually.be.true()
+  })
+
+  it('pins in walker-defined order', async () => {
+    // root -> a, b
+    // a -> c
+    // b -> d
+    const c = await createAndPutBlock(dagCbor.code, dagCbor.encode({ name: 'c' }), helia.blockstore)
+    const d = await createAndPutBlock(dagCbor.code, dagCbor.encode({ name: 'd' }), helia.blockstore)
+    const a = await createAndPutBlock(dagCbor.code, dagCbor.encode({ name: 'a', children: [c] }), helia.blockstore)
+    const b = await createAndPutBlock(dagCbor.code, dagCbor.encode({ name: 'b', children: [d] }), helia.blockstore)
+    const root = await createAndPutBlock(dagCbor.code, dagCbor.encode({ name: 'root', children: [a, b] }), helia.blockstore)
+
+    const order = await all(helia.pins.add(root, {
+      walker: breadthFirstWalker()
+    }))
+
+    expect(order.map((c: any) => c.toString())).to.deep.equal([root, a, b, c, d].map(c => c.toString()))
+  })
+
+  it('unpins in walker-defined order', async () => {
+    const c = await createAndPutBlock(dagCbor.code, dagCbor.encode({ name: 'c' }), helia.blockstore)
+    const d = await createAndPutBlock(dagCbor.code, dagCbor.encode({ name: 'd' }), helia.blockstore)
+    const a = await createAndPutBlock(dagCbor.code, dagCbor.encode({ name: 'a', children: [c] }), helia.blockstore)
+    const b = await createAndPutBlock(dagCbor.code, dagCbor.encode({ name: 'b', children: [d] }), helia.blockstore)
+    const root = await createAndPutBlock(dagCbor.code, dagCbor.encode({ name: 'root', children: [a, b] }), helia.blockstore)
+
+    await drain(helia.pins.add(root))
+    const order = await all(helia.pins.rm(root, {
+      walker: breadthFirstWalker()
+    }))
+
+    expect(order.map((c: any) => c.toString())).to.deep.equal([root, a, b, c, d].map(c => c.toString()))
   })
 })

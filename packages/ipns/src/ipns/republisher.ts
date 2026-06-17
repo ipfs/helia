@@ -1,26 +1,27 @@
 import { NotFoundError } from '@libp2p/interface'
 import { Queue, repeatingTask } from '@libp2p/utils'
-import { createIPNSRecord, marshalIPNSRecord, multihashFromIPNSRoutingKey, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from 'ipns'
-import { ipnsValidator } from 'ipns/validator'
+import last from 'it-last'
 import { CustomProgressEvent } from 'progress-events'
 import { DEFAULT_REPUBLISH_CONCURRENCY, DEFAULT_REPUBLISH_INTERVAL_MS, DEFAULT_TTL_NS } from '../constants.ts'
 import { RecordAlreadyPublishedError } from '../errors.ts'
-import { ipnsSelector } from '../index.ts'
 import { Upkeep } from '../pb/metadata.ts'
-import { keyToMultihash, shouldRefresh, shouldRepublish } from '../utils.ts'
-import type { IPNSRepublishResult, RepublishOptions } from '../index.ts'
+import { createIPNSRecord } from '../records.ts'
+import { ipnsSelector } from '../selector.ts'
+import { marshalIPNSRecord, multihashFromIPNSRoutingKey, multihashToIPNSRoutingKey, shouldRefresh, unmarshalIPNSRecord } from '../utils.ts'
+import { shouldRepublish } from '../utils.ts'
+import { ipnsValidator } from '../validator.ts'
+import type { IPNSRecord, RepublishOptions, RepublishResult } from '../index.ts'
 import type { LocalStore } from '../local-store.ts'
 import type { IPNSResolver } from './resolver.ts'
 import type { IPNSRouting } from '../routing/index.ts'
-import type { AbortOptions, ComponentLogger, Libp2p, Logger, PeerId, PrivateKey, PublicKey } from '@libp2p/interface'
-import type { Keychain } from '@libp2p/keychain'
+import type { Keychain, PrivateKey } from '@helia/interface'
+import type { AbortOptions, ComponentLogger, Logger } from '@libp2p/interface'
 import type { RepeatingTask } from '@libp2p/utils'
-import type { IPNSRecord } from 'ipns'
-import type { CID, MultihashDigest } from 'multiformats/cid'
+import type { MultihashDigest } from 'multiformats'
 
 export interface IPNSRepublisherComponents {
   logger: ComponentLogger
-  libp2p: Libp2p<{ keychain: Keychain }>
+  keychain: Keychain
 }
 
 export interface IPNSRepublisherInit {
@@ -45,9 +46,9 @@ export class IPNSRepublisher {
     this.log = components.logger.forComponent('helia:ipns')
     this.localStore = init.localStore
     this.resolver = init.resolver
-    this.keychain = components.libp2p.services.keychain
+    this.keychain = components.keychain
     this.republishConcurrency = init.republishConcurrency || DEFAULT_REPUBLISH_CONCURRENCY
-    this.started = components.libp2p.status === 'started'
+    this.started = false
     this.routers = init.routers ?? []
 
     this.republishTask = repeatingTask(this.#republish.bind(this), init.republishInterval ?? DEFAULT_REPUBLISH_INTERVAL_MS, {
@@ -91,13 +92,16 @@ export class IPNSRepublisher {
     try {
       const recordsToRepublish: Array<{ routingKey: Uint8Array, record: IPNSRecord }> = []
       const keysToRepublish: Array<Uint8Array> = []
+      let listed = 0
 
       // Find all records using the localStore.list method
       for await (const { routingKey, record, metadata, created } of this.localStore.list(options)) {
+        listed++
+
         if (metadata == null) {
           // Skip if no metadata is found from before we started
           // storing metadata or for records republished without a key
-          this.log(`no metadata found for record ${routingKey.toString()}, skipping`)
+          this.log('no metadata found for record %b, skipping', routingKey)
           continue
         }
 
@@ -118,7 +122,7 @@ export class IPNSRepublisher {
 
         let ipnsRecord: IPNSRecord
         try {
-          ipnsRecord = unmarshalIPNSRecord(record)
+          ipnsRecord = await unmarshalIPNSRecord(routingKey, record, this.keychain, options)
         } catch (err: any) {
           this.log.error('error unmarshaling record - %e', err)
           continue
@@ -126,7 +130,7 @@ export class IPNSRepublisher {
 
         // Only republish records that are within the DHT or record expiry threshold
         if (!shouldRepublish(ipnsRecord, created)) {
-          this.log.trace('skipping record %m within republish threshold', routingKey)
+          this.log.trace('skipping record %b within republish threshold', routingKey)
           continue
         }
         const sequenceNumber = ipnsRecord.sequence + 1n
@@ -139,16 +143,23 @@ export class IPNSRepublisher {
           this.log.error('missing key %s, skipping republishing record - %e', metadata.keyName, err)
           continue
         }
+
         try {
-          const updatedRecord = await createIPNSRecord(privKey, ipnsRecord.value, sequenceNumber, metadata.lifetime, { ...options, ttlNs })
-          recordsToRepublish.push({ routingKey, record: updatedRecord })
+          const updatedRecord = await createIPNSRecord(privKey, ipnsRecord.value, sequenceNumber, metadata.lifetime, {
+            ...options,
+            ttlNs
+          })
+          recordsToRepublish.push({
+            routingKey,
+            record: updatedRecord
+          })
         } catch (err: any) {
           this.log.error('error creating updated IPNS record for %s - %e', routingKey, err)
           continue
         }
       }
 
-      this.log(`found ${recordsToRepublish.length} records to republish`)
+      this.log(`found ${recordsToRepublish.length}/${listed} records to republish`)
 
       // Republish each record
       for (const { routingKey, record } of recordsToRepublish) {
@@ -168,8 +179,13 @@ export class IPNSRepublisher {
         // resolve the latest record
         let latestRecord: IPNSRecord
         try {
-          const { record } = await this.resolver.resolve(multihashFromIPNSRoutingKey(routingKey))
-          latestRecord = record
+          const result = await last(this.resolver.resolve(multihashFromIPNSRoutingKey(routingKey)))
+
+          if (result == null) {
+            throw new Error('Could not resolve routing key, no records found')
+          }
+
+          latestRecord = result.record
         } catch (err: any) {
           this.log.error('unable to find existing record to republish - %e', err)
           continue
@@ -193,23 +209,34 @@ export class IPNSRepublisher {
     await queue.onIdle(options) // Wait for all jobs to complete
   }
 
-  async republish (key: CID<unknown, 0x72, 0x00 | 0x12, 1> | PublicKey | MultihashDigest<0x00 | 0x12> | PeerId, options: RepublishOptions = {}): Promise<IPNSRepublishResult> {
+  async republish (key: string | MultihashDigest, options: RepublishOptions = {}): Promise<RepublishResult> {
     const records: IPNSRecord[] = []
     let publishedRecord: IPNSRecord | null = null
-    const digest = keyToMultihash(key)
-    const routingKey = multihashToIPNSRoutingKey(digest)
+
+    if (typeof key === 'string') {
+      const privateKey = await this.keychain.exportKey(key, options)
+      key = privateKey.publicKey.toMultihash()
+    }
+
+    const routingKey = multihashToIPNSRoutingKey(key)
 
     try {
       // collect records for key
       if (options.record != null) {
         // user supplied record
-        await ipnsValidator(routingKey, marshalIPNSRecord(options.record))
+        await ipnsValidator(options.record)
         records.push(options.record)
       }
+
       try {
         // local record
-        const { record } = await this.resolver.resolve(key, { offline: true })
-        records.push(record)
+        const result = await last(this.resolver.resolve(key, {
+          offline: true
+        }))
+
+        if (result != null) {
+          records.push(result.record)
+        }
       } catch (err: any) {
         if (err.name !== 'RecordNotFoundError') {
           throw err
@@ -218,9 +245,14 @@ export class IPNSRepublisher {
       try {
         if (!options.skipResolution) {
           // published record
-          const { record } = await this.resolver.resolve(key, { nocache: true })
-          publishedRecord = record
-          records.push(record)
+          const result = await last(this.resolver.resolve(key, {
+            nocache: true
+          }))
+
+          if (result != null) {
+            publishedRecord = result.record
+            records.push(result.record)
+          }
         }
       } catch (err: any) {
         if (err.name !== 'RecordNotFoundError') {
@@ -236,15 +268,26 @@ export class IPNSRepublisher {
         throw new RecordAlreadyPublishedError('Record already published', publishedRecord)
       }
 
-      const selectedRecord = records[ipnsSelector(routingKey, records.map(marshalIPNSRecord))]
+      const selectedRecord = records[ipnsSelector(routingKey, records)]
       const marshaledRecord = marshalIPNSRecord(selectedRecord)
 
-      const metadata = { upkeep: Upkeep[options.upkeep ?? 'refresh'] }
+      const metadata = {
+        upkeep: Upkeep[options.upkeep ?? 'refresh']
+      }
+
       if (options.offline) {
-        await this.localStore.put(routingKey, marshaledRecord, { ...options, overwrite: true, metadata })
+        await this.localStore.put(routingKey, marshaledRecord, {
+          ...options,
+          overwrite: true,
+          metadata
+        })
       } else {
         await Promise.all(
-          this.routers.map(r => r.put(routingKey, marshaledRecord, { ...options, overwrite: true, metadata }))
+          this.routers.map(r => r.put(routingKey, marshaledRecord, {
+            ...options,
+            overwrite: true,
+            metadata
+          }))
         )
       }
 

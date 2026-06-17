@@ -1,13 +1,12 @@
 import { start, stop } from '@libp2p/interface'
-import { peerIdFromCID } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
-import { multihashToIPNSRoutingKey } from 'ipns'
+import last from 'it-last'
 import { base36 } from 'multiformats/bases/base36'
 import { CID } from 'multiformats/cid'
 import Sinon from 'sinon'
 import { localStore } from '../src/local-store.ts'
 import { IPNSPublishMetadata, Upkeep } from '../src/pb/metadata.ts'
-import { dhtRoutingKey, ipnsMetadataKey } from '../src/utils.ts'
+import { dhtRoutingKey, ipnsMetadataKey, multihashToIPNSRoutingKey } from '../src/utils.ts'
 import { createIPNS } from './fixtures/create-ipns.ts'
 import type { CreateIPNSResult } from './fixtures/create-ipns.ts'
 import type { IPNS } from '../src/ipns.ts'
@@ -97,99 +96,98 @@ describe('publish', () => {
 
   it('should publish recursively using a public key', async () => {
     const keyName1 = 'test-key-6'
-    const record = await name.publish(keyName1, cid, {
+    const published = await name.publish(keyName1, cid, {
       offline: true
     })
 
-    expect(record.record.value).to.equal(`/ipfs/${cid.toV1().toString()}`)
+    expect(published.record.value).to.equal(`/ipfs/${cid.toV1()}`)
 
     const keyName2 = 'test-key-7'
-    const recursiveRecord = await name.publish(keyName2, record.publicKey, {
+    const recursiveRecord = await name.publish(keyName2, published.publicKey, {
       offline: true
     })
 
-    expect(recursiveRecord.record.value).to.equal(`/ipns/${record.publicKey.toCID().toString(base36)}`)
+    expect(recursiveRecord.record.value).to.equal(`/ipns/${published.publicKey.toCID().toString(base36)}`)
 
-    const recursiveResult = await name.resolve(recursiveRecord.publicKey)
-    expect(recursiveResult.cid.toString()).to.equal(cid.toV1().toString())
+    const recursiveResult = await last(name.resolve(recursiveRecord.publicKey))
+
+    if (recursiveResult == null) {
+      throw new Error('No results found')
+    }
+
+    expect(recursiveResult.record.value).to.equal(`/ipfs/${cid.toV1()}`)
   })
 
   it('should publish recursively using a libp2p-key CID', async () => {
     const keyName1 = 'test-key-6'
-    const record = await name.publish(keyName1, cid, {
+    const published = await name.publish(keyName1, cid, {
       offline: true
     })
 
-    expect(record.record.value).to.equal(`/ipfs/${cid.toV1().toString()}`)
+    expect(published.record.value).to.equal(`/ipfs/${cid.toV1()}`)
 
     const keyName2 = 'test-key-7'
-    // @ts-expect-error @libp2p/crypto needs new multiformats
-    const recursiveRecord = await name.publish(keyName2, record.publicKey.toCID(), {
+    const recursiveRecord = await name.publish(keyName2, published.publicKey.toCID(), {
       offline: true
     })
 
-    expect(recursiveRecord.record.value).to.equal(`/ipns/${record.publicKey.toCID().toString(base36)}`)
+    expect(recursiveRecord.record.value).to.equal(`/ipns/${published.publicKey.toCID().toString(base36)}`)
 
-    const recursiveResult = await name.resolve(recursiveRecord.publicKey)
-    expect(recursiveResult.cid.toString()).to.equal(cid.toV1().toString())
+    const recursiveResult = await last(name.resolve(recursiveRecord.publicKey))
+
+    if (recursiveResult == null) {
+      throw new Error('No results found')
+    }
+
+    expect(recursiveResult.record.value).to.equal(`/ipfs/${cid.toV1()}`)
   })
 
   it('should publish recursively using a multihash', async () => {
     const keyName1 = 'test-key-8'
-    const record = await name.publish(keyName1, cid, {
+    const published = await name.publish(keyName1, cid, {
       offline: true
     })
 
-    expect(record.record.value).to.equal(`/ipfs/${cid.toV1().toString()}`)
+    expect(published.record.value).to.equal(`/ipfs/${cid.toV1()}`)
 
     const keyName2 = 'test-key-9'
-    // @ts-expect-error @libp2p/crypto needs new multiformats
-    const recursiveRecord = await name.publish(keyName2, record.publicKey.toCID().multihash, {
+    const recursiveRecord = await name.publish(keyName2, published.publicKey.toMultihash(), {
       offline: true
     })
 
-    expect(recursiveRecord.record.value).to.equal(`/ipns/${base36.encode(record.publicKey.toCID().multihash.bytes)}`)
+    expect(recursiveRecord.record.value).to.equal(`/ipns/${base36.encode(published.publicKey.toMultihash().bytes)}`)
 
-    const recursiveResult = await name.resolve(recursiveRecord.publicKey)
-    expect(recursiveResult.cid.toString()).to.equal(cid.toV1().toString())
-  })
+    const recursiveResult = await last(name.resolve(recursiveRecord.publicKey))
 
-  it('should publish recursively using a PeerId key', async () => {
-    const keyName1 = 'test-key-10'
-    const record = await name.publish(keyName1, cid, {
-      offline: true
-    })
+    if (recursiveResult == null) {
+      throw new Error('No results found')
+    }
 
-    expect(record.record.value).to.equal(`/ipfs/${cid.toV1().toString()}`)
-
-    const keyName2 = 'test-key-11'
-    const recursiveRecord = await name.publish(keyName2, peerIdFromCID(record.publicKey.toCID()), {
-      offline: true
-    })
-
-    expect(recursiveRecord.record.value).to.equal(`/ipns/${record.publicKey.toCID().toString(base36)}`)
-
-    const recursiveResult = await name.resolve(recursiveRecord.publicKey)
-    expect(recursiveResult.cid.toString()).to.equal(cid.toV1().toString())
+    expect(recursiveResult.record.value).to.equal(`/ipfs/${cid.toV1()}`)
   })
 
   it('should publish recursively using a string IPNS key', async () => {
     const keyName1 = 'test-key-10'
-    const record = await name.publish(keyName1, cid, {
+    const published = await name.publish(keyName1, cid, {
       offline: true
     })
 
-    expect(record.record.value).to.equal(`/ipfs/${cid.toV1().toString()}`)
+    expect(published.record.value).to.equal(`/ipfs/${cid.toV1()}`)
 
     const keyName2 = 'test-key-11'
-    const recursiveRecord = await name.publish(keyName2, `/ipns/${record.publicKey.toCID().toString(base36)}`, {
+    const recursiveRecord = await name.publish(keyName2, `/ipns/${published.publicKey.toCID().toString(base36)}`, {
       offline: true
     })
 
-    expect(recursiveRecord.record.value).to.equal(`/ipns/${record.publicKey.toCID().toString(base36)}`)
+    expect(recursiveRecord.record.value).to.equal(`/ipns/${published.publicKey.toCID().toString(base36)}`)
 
-    const recursiveResult = await name.resolve(recursiveRecord.publicKey)
-    expect(recursiveResult.cid.toString()).to.equal(cid.toV1().toString())
+    const recursiveResult = await last(name.resolve(recursiveRecord.publicKey))
+
+    if (recursiveResult == null) {
+      throw new Error('No results found')
+    }
+
+    expect(recursiveResult.record.value).to.equal(`/ipfs/${cid.toV1()}`)
   })
 
   it('should publish record with a path', async () => {
@@ -197,23 +195,25 @@ describe('publish', () => {
     const fullPath = `/ipfs/${cid}/${path}`
 
     const keyName = 'test-key-12'
-    const record = await name.publish(keyName, fullPath, {
+    const published = await name.publish(keyName, fullPath, {
       offline: true
     })
 
-    expect(record.record.value).to.equal(fullPath)
+    expect(published.record.value).to.equal(`/ipfs/${cid.toV1()}${path}`)
 
-    const result = await name.resolve(record.publicKey)
+    const result = await last(name.resolve(published.publicKey))
 
-    expect(result.cid.toString()).to.equal(cid.toString())
-    expect(result.path).to.equal(path)
+    if (result == null) {
+      throw new Error('No results found')
+    }
+
+    expect(result.record.value).to.equal(`/ipfs/${cid.toV1()}${path}`)
   })
 
   it('should round-trip the upkeep option through metadata', async () => {
     const cases: Array<'republish' | 'refresh' | 'none'> = ['republish', 'refresh', 'none']
     for (const upkeep of cases) {
       const { publicKey } = await name.publish(`test-key-upkeep-${upkeep}`, cid, { offline: true, upkeep })
-      // @ts-expect-error @libp2p/crypto needs new multiformats
       const routingKey = multihashToIPNSRoutingKey(publicKey.toMultihash())
       const metadataBuf = await result.datastore.get(ipnsMetadataKey(routingKey))
       expect(IPNSPublishMetadata.decode(metadataBuf).upkeep).to.equal(Upkeep[upkeep])
@@ -259,7 +259,14 @@ describe('publish', () => {
 
       const progressEvents: any[] = []
 
-      const putStub = Sinon.stub(result.datastore, 'get').rejects(new Error('Storage error'))
+      const originalGet = result.datastore.get.bind(result.datastore)
+      const getStub = Sinon.stub(result.datastore, 'get').callsFake(async (key, options) => {
+        if (key.toString().startsWith('/dht/record')) {
+          throw new Error('Storage error')
+        }
+
+        return originalGet(key, options)
+      })
       const hasStub = Sinon.stub(result.datastore, 'has').resolves(false)
 
       const keyName = 'test-key-progress-error'
@@ -268,8 +275,8 @@ describe('publish', () => {
         onProgress: (evt) => progressEvents.push(evt)
       })).to.be.rejectedWith('Storage error')
 
-      expect(hasStub.called).to.be.true()
-      expect(putStub.called).to.be.true()
+      expect(hasStub.called).to.be.true('has stub was not called')
+      expect(getStub.called).to.be.true('get stub was not called')
 
       // Check if error progress event was emitted by localStore
       const errorEvent = progressEvents.find(evt => evt.type === 'ipns:routing:datastore:error')
@@ -312,7 +319,6 @@ describe('unpublish', () => {
   it('should unpublish by string keyName', async () => {
     const keyName = 'test-key-unpublish-1'
     const { publicKey } = await name.publish(keyName, cid, { offline: true })
-    // @ts-expect-error @libp2p/crypto needs new multiformats
     const routingKey = multihashToIPNSRoutingKey(publicKey.toMultihash())
 
     expect(await result.datastore.has(dhtRoutingKey(routingKey))).to.be.true()
@@ -327,7 +333,7 @@ describe('unpublish', () => {
   it('should unpublish by PublicKey', async () => {
     const keyName = 'test-key-unpublish-2'
     const { publicKey } = await name.publish(keyName, cid, { offline: true })
-    // @ts-expect-error @libp2p/crypto needs new multiformats
+
     const routingKey = multihashToIPNSRoutingKey(publicKey.toMultihash())
 
     await name.unpublish(publicKey)
@@ -339,10 +345,8 @@ describe('unpublish', () => {
   it('should unpublish by libp2p-key CID', async () => {
     const keyName = 'test-key-unpublish-3'
     const { publicKey } = await name.publish(keyName, cid, { offline: true })
-    // @ts-expect-error @libp2p/crypto needs new multiformats
     const routingKey = multihashToIPNSRoutingKey(publicKey.toMultihash())
 
-    // @ts-expect-error @libp2p/crypto needs new multiformats
     await name.unpublish(publicKey.toCID())
 
     expect(await result.datastore.has(dhtRoutingKey(routingKey))).to.be.false()
@@ -352,23 +356,9 @@ describe('unpublish', () => {
   it('should unpublish by multihash', async () => {
     const keyName = 'test-key-unpublish-4'
     const { publicKey } = await name.publish(keyName, cid, { offline: true })
-    // @ts-expect-error @libp2p/crypto needs new multiformats
     const routingKey = multihashToIPNSRoutingKey(publicKey.toMultihash())
 
-    // @ts-expect-error @libp2p/crypto needs new multiformats
     await name.unpublish(publicKey.toMultihash())
-
-    expect(await result.datastore.has(dhtRoutingKey(routingKey))).to.be.false()
-    expect(await result.datastore.has(ipnsMetadataKey(routingKey))).to.be.false()
-  })
-
-  it('should unpublish by PeerId', async () => {
-    const keyName = 'test-key-unpublish-5'
-    const { publicKey } = await name.publish(keyName, cid, { offline: true })
-    // @ts-expect-error @libp2p/crypto needs new multiformats
-    const routingKey = multihashToIPNSRoutingKey(publicKey.toMultihash())
-
-    await name.unpublish(peerIdFromCID(publicKey.toCID()))
 
     expect(await result.datastore.has(dhtRoutingKey(routingKey))).to.be.false()
     expect(await result.datastore.has(ipnsMetadataKey(routingKey))).to.be.false()
