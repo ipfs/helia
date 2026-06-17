@@ -185,8 +185,8 @@ DHT with redundant writes.
 import { createHelia } from 'helia'
 import { ipns } from '@helia/ipns'
 import { delegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
+import { defaultLogger } from 'birnam'
 import { CID } from 'multiformats/cid'
-import { defaultLogger } from '@libp2p/logger'
 
 const helia = await createHelia()
 const name = ipns(helia)

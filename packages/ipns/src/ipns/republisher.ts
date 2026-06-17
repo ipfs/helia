@@ -223,9 +223,11 @@ export class IPNSRepublisher {
     try {
       // collect records for key
       if (options.record != null) {
+        const record = options.record instanceof Uint8Array ? await unmarshalIPNSRecord(routingKey, options.record, this.keychain, options) : options.record
+
         // user supplied record
-        await ipnsValidator(options.record)
-        records.push(options.record)
+        await ipnsValidator(record)
+        records.push(record)
       }
 
       try {

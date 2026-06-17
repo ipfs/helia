@@ -156,8 +156,8 @@
  * import { createHelia } from 'helia'
  * import { ipns } from '@helia/ipns'
  * import { delegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
+ * import { defaultLogger } from 'birnam'
  * import { CID } from 'multiformats/cid'
- * import { defaultLogger } from '@libp2p/logger'
  *
  * const helia = await createHelia()
  * const name = ipns(helia)
@@ -278,9 +278,10 @@ export interface ResolveOptions extends AbortOptions, ProgressOptions<ResolvePro
 
 export interface RepublishOptions extends AbortOptions, ProgressOptions<RepublishProgressEvents | IPNSRoutingProgressEvents> {
   /**
-   * A candidate IPNS record to use if no newer records are found
+   * A candidate IPNS record (either as an object or pre-marshaled) to use if no
+   * newer records are found
    */
-  record?: IPNSRecord
+  record?: IPNSRecord | Uint8Array
 
   /**
    * Only republish to the local datastore, skipping the routers
