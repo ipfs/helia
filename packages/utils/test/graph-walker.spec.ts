@@ -141,6 +141,42 @@ describe('graph-walker', () => {
         'root', 'a', 'd', 'e', 'f', 'b', 'c'
       ])
     })
+
+    it('should stop at the configured depth', async () => {
+      const walker = depthFirstWalker()({
+        blockstore,
+        getCodec
+      })
+
+      const result = await all(map(walker.walk(nodes.root.cid, {
+        depth: 1
+      }), (node) => {
+        const obj = dagCbor.decode<Node>(node.block.bytes)
+
+        return obj.name
+      }))
+
+      expect(result).to.deep.equal([
+        'root', 'a', 'b', 'c'
+      ])
+    })
+
+    it('should yield only the root when depth is 0', async () => {
+      const walker = depthFirstWalker()({
+        blockstore,
+        getCodec
+      })
+
+      const result = await all(map(walker.walk(nodes.root.cid, {
+        depth: 0
+      }), (node) => {
+        const obj = dagCbor.decode<Node>(node.block.bytes)
+
+        return obj.name
+      }))
+
+      expect(result).to.deep.equal(['root'])
+    })
   })
 
   describe('breadth-first', () => {
@@ -181,6 +217,42 @@ describe('graph-walker', () => {
         'root', 'a', 'b', 'c', 'd', 'e', 'f'
       ])
     })
+
+    it('should stop at the configured depth', async () => {
+      const walker = breadthFirstWalker()({
+        blockstore,
+        getCodec
+      })
+
+      const result = await all(map(walker.walk(nodes.root.cid, {
+        depth: 1
+      }), (node) => {
+        const obj = dagCbor.decode<Node>(node.block.bytes)
+
+        return obj.name
+      }))
+
+      expect(result).to.deep.equal([
+        'root', 'a', 'b', 'c'
+      ])
+    })
+
+    it('should yield only the root when depth is 0', async () => {
+      const walker = breadthFirstWalker()({
+        blockstore,
+        getCodec
+      })
+
+      const result = await all(map(walker.walk(nodes.root.cid, {
+        depth: 0
+      }), (node) => {
+        const obj = dagCbor.decode<Node>(node.block.bytes)
+
+        return obj.name
+      }))
+
+      expect(result).to.deep.equal(['root'])
+    })
   })
 
   describe('natural-order', () => {
@@ -220,6 +292,42 @@ describe('graph-walker', () => {
       expect(result).to.deep.equal([
         'root', 'a', 'b', 'c', 'd', 'e', 'f'
       ])
+    })
+
+    it('should stop at the configured depth', async () => {
+      const walker = naturalOrderWalker()({
+        blockstore,
+        getCodec
+      })
+
+      const result = await all(map(walker.walk(nodes.root.cid, {
+        depth: 1
+      }), (node) => {
+        const obj = dagCbor.decode<Node>(node.block.bytes)
+
+        return obj.name
+      }))
+
+      expect(result).to.deep.equal([
+        'root', 'a', 'b', 'c'
+      ])
+    })
+
+    it('should yield only the root when depth is 0', async () => {
+      const walker = naturalOrderWalker()({
+        blockstore,
+        getCodec
+      })
+
+      const result = await all(map(walker.walk(nodes.root.cid, {
+        depth: 0
+      }), (node) => {
+        const obj = dagCbor.decode<Node>(node.block.bytes)
+
+        return obj.name
+      }))
+
+      expect(result).to.deep.equal(['root'])
     })
   })
 })

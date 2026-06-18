@@ -128,7 +128,7 @@
 
 import { Car as CarClass } from './car.ts'
 import type { CodecLoader } from '@helia/interface'
-import type { PutManyBlocksProgressEvents, GetBlockProgressEvents, ProviderOptions } from '@helia/interface/blocks'
+import type { PutManyBlocksProgressEvents, GetBlockProgressEvents, ProviderOptions } from '@helia/interface'
 import type { CarReader } from '@ipld/car'
 import type { AbortOptions, ComponentLogger } from '@libp2p/interface'
 import type { Filter } from '@libp2p/utils'

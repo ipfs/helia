@@ -2,8 +2,8 @@ import { setMaxListeners } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
 import { Storage } from './storage.ts'
 import type { StorageComponents } from './storage.ts'
-import type { Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions, SessionBlockstore, SessionBlockBroker } from '@helia/interface/blocks'
-import type { AbortOptions, PeerId } from '@libp2p/interface'
+import type { Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions, SessionBlockstore, SessionBlockBroker } from '@helia/interface'
+import type { AbortOptions } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { InputPair } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
@@ -35,7 +35,7 @@ export class SessionStorage extends Storage<SessionBlockBroker> implements Sessi
     this.closeController.abort()
   }
 
-  async addPeer (peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<void> {
+  async addPeer (peer: CID | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<void> {
     await Promise.all(
       this.blockBrokers
         .map(broker => broker.addPeer(peer, options))

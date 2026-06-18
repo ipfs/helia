@@ -6,7 +6,7 @@ import { createDag } from './fixtures/create-dag.ts'
 import { createHelia } from './fixtures/create-helia.ts'
 import type { DAGNode } from './fixtures/create-dag.ts'
 import type { Helia } from '@helia/interface'
-import type { AddPinEvents } from '@helia/interface/pins'
+import type { AddPinEvents } from '@helia/interface'
 
 describe('pins (recursive)', () => {
   let helia: Helia

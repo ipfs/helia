@@ -6,12 +6,12 @@ import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import { createHeliaNode } from './fixtures/create-helia.ts'
 import { createKuboNode } from './fixtures/create-kubo.ts'
-import type { BitswapProvider } from '@helia/block-brokers'
-import type { Helia } from 'helia'
+import type { BitswapProvider } from '@helia/bitswap'
+import type { HeliaWithLibp2p } from '@helia/libp2p'
 import type { KuboInfo, KuboNode } from 'ipfsd-ctl'
 
 describe('helia - blockstore sessions', () => {
-  let helia: Helia
+  let helia: HeliaWithLibp2p
   let kubo: KuboNode
   let kuboInfo: KuboInfo
   let kubo2: KuboNode
@@ -111,6 +111,6 @@ describe('helia - blockstore sessions', () => {
     }))
 
     expect(output).to.equalBytes(input)
-    expect(foundProviders).to.have.deep.nested.property('[0].provider.id', peerIdFromString(kuboInfo.peerId ?? ''))
+    expect(foundProviders).to.have.deep.nested.property('[0].provider.id', peerIdFromString(kuboInfo.peerId ?? '').toCID())
   })
 })

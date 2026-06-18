@@ -19,7 +19,7 @@ import { NetworkedStorage } from '../../src/utils/networked-storage.ts'
 import { getCidBlockVerifierFunction } from '../../src/utils/storage.ts'
 import { createBlock } from '../fixtures/create-block.ts'
 import type { NetworkedStorageComponents } from '../../src/utils/networked-storage.ts'
-import type { BlockBroker } from '@helia/interface/blocks'
+import type { BlockBroker } from '@helia/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { StubbedInstance } from 'sinon-ts'
 

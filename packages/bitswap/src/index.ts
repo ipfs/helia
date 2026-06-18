@@ -6,11 +6,14 @@
  * It supersedes the older [ipfs-bitswap](https://www.npmjs.com/package/ipfs-bitswap) module with the aim of being smaller, faster, better integrated with libp2p/helia, having fewer dependencies and using standard JavaScript instead of Node.js APIs.
  */
 
-import { Bitswap as BitswapClass } from './bitswap.ts'
+import { start } from '@libp2p/interface'
+import { BitswapBlockBroker } from './block-broker.ts'
+import type { BitswapBlockBrokerInit } from './block-broker.ts'
 import type { BitswapNetworkNotifyProgressEvents, BitswapNetworkWantProgressEvents, BitswapNetworkProgressEvents } from './network.ts'
 import type { WantType } from './pb/message.ts'
-import type { BlockBrokerGetBlockProgressEvents, CreateSessionOptions, HasherLoader, ProviderOptions, SessionBlockBroker } from '@helia/interface'
-import type { Routing } from '@helia/interface/routing'
+import type { BlockBrokerGetBlockProgressEvents, CreateSessionOptions, HasherLoader, HeliaMixin, ProviderOptions, SessionBlockBroker } from '@helia/interface'
+import type { Routing } from '@helia/interface'
+import type { HeliaWithLibp2p } from '@helia/libp2p'
 import type { Libp2p, AbortOptions, Startable, ComponentLogger, Metrics, PeerId } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
@@ -34,6 +37,7 @@ export type { BitswapNetworkWantProgressEvents }
 export type { BitswapNetworkProgressEvents }
 export type { WantType }
 export type { BitswapProvider } from './network.ts'
+export type { BitswapBlockBrokerInit } from './block-broker.ts'
 
 export type WantStatus = 'want' | 'sending' | 'sent'
 
@@ -227,6 +231,22 @@ export interface BitswapOptions {
   maxWantlistSize?: number
 }
 
-export const createBitswap = (components: BitswapComponents, options: BitswapOptions = {}): Bitswap => {
-  return new BitswapClass(components, options)
+/**
+ * Return a Helia node augmented with a libp2p instance
+ */
+export function withBitswap (helia: HeliaWithLibp2p, options: BitswapBlockBrokerInit = {}): HeliaWithLibp2p {
+  const mixin: HeliaMixin<HeliaWithLibp2p> = {
+    start: async (helia) => {
+      if (helia.status === 'starting' && !helia.hasBlockBroker('bitswap')) {
+        const broker = new BitswapBlockBroker(helia, options)
+        await start(broker)
+
+        helia.addBlockBroker(broker)
+      }
+    }
+  }
+
+  helia.addMixin(mixin)
+
+  return helia
 }

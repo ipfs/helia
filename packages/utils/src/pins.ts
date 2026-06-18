@@ -1,22 +1,18 @@
 import { InvalidParametersError } from '@libp2p/interface'
-import { Queue } from '@libp2p/utils'
 import * as cborg from 'cborg'
 import { Key } from 'interface-datastore'
-import toBuffer from 'it-to-buffer'
 import { base36 } from 'multiformats/bases/base36'
-import { createUnsafe } from 'multiformats/block'
 import { CID } from 'multiformats/cid'
 import { CustomProgressEvent } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { AlreadyPinnedError } from './errors.ts'
+import { depthFirstWalker } from './graph-walker.ts'
 import type { CodecLoader } from '@helia/interface'
-import type { GetBlockProgressEvents } from '@helia/interface/blocks'
-import type { AddOptions, AddPinEvents, IsPinnedOptions, LsOptions, Pin, Pins, RmOptions } from '@helia/interface/pins'
+import type { AddOptions, IsPinnedOptions, LsOptions, Pin, Pins, RmOptions } from '@helia/interface'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { Version } from 'multiformats/cid'
-import type { ProgressOptions } from 'progress-events'
 
 interface DatastorePin {
   /**
@@ -49,11 +45,6 @@ interface WithPinnedBlockCallback {
 const DATASTORE_PIN_PREFIX = '/pin/'
 const DATASTORE_BLOCK_PREFIX = '/pinned-block/'
 const DATASTORE_ENCODING = base36
-const DAG_WALK_QUEUE_CONCURRENCY = 1
-
-interface WalkDagOptions extends AbortOptions, ProgressOptions<GetBlockProgressEvents | AddPinEvents> {
-  depth: number
-}
 
 function toDSKey (cid: CID): Key {
   if (cid.version === 0) {
@@ -87,15 +78,13 @@ export class PinsImpl implements Pins {
       throw new InvalidParametersError('Depth must be greater than or equal to 0')
     }
 
-    // use a queue to walk the DAG instead of recursion so we can traverse very large DAGs
-    const queue = new Queue<AsyncGenerator<CID>>({
-      concurrency: DAG_WALK_QUEUE_CONCURRENCY
+    const walker = (options.walker ?? depthFirstWalker())({
+      blockstore: this.blockstore,
+      getCodec: this.getCodec
     })
 
-    for await (const childCid of this.#walkDag(cid, queue, {
-      ...options,
-      depth
-    })) {
+    for await (const node of walker.walk(cid, { ...options, depth })) {
+      const childCid = node.block.cid
       await this.#updatePinnedBlock(childCid, (pinnedBlock: DatastorePinnedBlock) => {
         // do not update pinned block if this block is already pinned by this CID
         if (pinnedBlock.pinnedBy.find(c => uint8ArrayEquals(c, cid.bytes)) != null) {
@@ -116,31 +105,6 @@ export class PinsImpl implements Pins {
     }
 
     await this.datastore.put(pinKey, cborg.encode(pin), options)
-  }
-
-  /**
-   * Walk a DAG in an iterable fashion
-   */
-  async * #walkDag (cid: CID, queue: Queue<AsyncGenerator<CID>>, options: WalkDagOptions): AsyncGenerator<CID> {
-    if (options.depth === -1) {
-      return
-    }
-
-    const codec = await this.getCodec(cid.code)
-    const bytes = await toBuffer(this.blockstore.get(cid, options))
-    const block = createUnsafe({ bytes, cid, codec })
-
-    yield cid
-
-    // walk dag, ensure all blocks are present
-    for (const [,cid] of block.links()) {
-      yield * await queue.add(async () => {
-        return this.#walkDag(cid, queue, {
-          ...options,
-          depth: options.depth - 1
-        })
-      })
-    }
   }
 
   /**
@@ -186,15 +150,13 @@ export class PinsImpl implements Pins {
 
     await this.datastore.delete(pinKey, options)
 
-    // use a queue to walk the DAG instead of recursion so we can traverse very large DAGs
-    const queue = new Queue<AsyncGenerator<CID>>({
-      concurrency: DAG_WALK_QUEUE_CONCURRENCY
+    const walker = (options.walker ?? depthFirstWalker())({
+      blockstore: this.blockstore,
+      getCodec: this.getCodec
     })
 
-    for await (const childCid of this.#walkDag(cid, queue, {
-      ...options,
-      depth: pin.depth
-    })) {
+    for await (const node of walker.walk(cid, { ...options, depth: pin.depth })) {
+      const childCid = node.block.cid
       await this.#updatePinnedBlock(childCid, (pinnedBlock): boolean => {
         pinnedBlock.pinCount--
         pinnedBlock.pinnedBy = pinnedBlock.pinnedBy.filter(c => uint8ArrayEquals(c, cid.bytes))

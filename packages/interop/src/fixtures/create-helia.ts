@@ -1,14 +1,13 @@
-import { bitswap } from '@helia/block-brokers'
+import { withBitswap } from '@helia/bitswap'
+import { withLibp2p, libp2pDefaults } from '@helia/libp2p'
 import { kadDHT, removePublicAddressesMapper } from '@libp2p/kad-dht'
 import { sha3512 } from '@multiformats/sha3'
-import { createHelia, libp2pDefaults } from 'helia'
-import type { Libp2p } from '@libp2p/interface'
-import type { DefaultLibp2pServices, Helia } from 'helia'
-import type { Libp2pOptions } from 'libp2p'
+import { createHelia } from 'helia'
+import type { HeliaWithLibp2p, DefaultLibp2pServices, CreateLibp2pOptions } from '@helia/libp2p'
 
-export async function createHeliaNode (): Promise<Helia<Libp2p<DefaultLibp2pServices>>>
-export async function createHeliaNode <Services extends Record<string, unknown>> (libp2pOptions: Libp2pOptions<Services>): Promise<Helia<Libp2p<Services & DefaultLibp2pServices>>>
-export async function createHeliaNode (libp2pOptions?: Libp2pOptions): Promise<Helia<Libp2p<DefaultLibp2pServices>>> {
+export async function createHeliaNode (): Promise<HeliaWithLibp2p<DefaultLibp2pServices>>
+export async function createHeliaNode <Services extends Record<string, unknown>> (libp2pOptions: CreateLibp2pOptions<Services>): Promise<HeliaWithLibp2p<Services & DefaultLibp2pServices>>
+export async function createHeliaNode (libp2pOptions?: CreateLibp2pOptions<any>): Promise<HeliaWithLibp2p<DefaultLibp2pServices>> {
   const defaults = libp2pDefaults()
   defaults.addresses = {
     listen: [
@@ -42,13 +41,9 @@ export async function createHeliaNode (libp2pOptions?: Libp2pOptions): Promise<H
   // @ts-expect-error services.autoTLS is not optional
   delete defaults.services.autoTLS
 
-  return createHelia<Libp2p<DefaultLibp2pServices>>({
-    blockBrokers: [
-      bitswap()
-    ],
-    libp2p: defaults,
+  return withBitswap(withLibp2p(createHelia({
     hashers: [
       sha3512
     ]
-  })
+  }), defaults)).start()
 }

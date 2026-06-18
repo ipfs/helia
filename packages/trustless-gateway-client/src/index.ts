@@ -1,0 +1,81 @@
+/**
+ * @packageDocumentation
+ *
+ * A Trustless Gateway is an HTTP endpoint that can be used to download blocks
+ * or CAR files in a verifiable way.
+ */
+
+import { TrustlessGatewayBlockBroker } from './broker.ts'
+import type { TransformRequestInit } from './trustless-gateway.ts'
+import type { Routing, BlockBroker, RoutingFindProvidersProgressEvents, BlockBrokerGetBlockProgressEvents } from '@helia/interface'
+import type { ComponentLogger } from 'birnam'
+import type { CID } from 'multiformats'
+import type { ProgressEvent } from 'progress-events'
+
+export const DEFAULT_ALLOW_INSECURE = false
+export const DEFAULT_ALLOW_LOCAL = false
+/**
+ * The maximum number of bytes to allow when fetching a raw block.
+ *
+ * @see https://specs.ipfs.tech/bitswap-protocol/#block-sizes
+ */
+export const DEFAULT_MAX_SIZE = 2_097_152
+
+export interface TrustlessGatewayProvider {
+  /**
+   * The type of provider
+   */
+  type: 'trustless-gateway'
+
+  /**
+   * The CID that the provider can provide the block for
+   */
+  cid: CID
+
+  /**
+   * The provider's URL
+   */
+  url: string
+
+  /**
+   * Which routing implementation found the provider
+   */
+  routing: string
+}
+
+export type TrustlessGatewayGetBlockProgressEvents =
+  ProgressEvent<'trustless-gateway:get-block:fetch', URL> |
+  ProgressEvent<'trustless-gateway:found-provider', TrustlessGatewayProvider> |
+  RoutingFindProvidersProgressEvents |
+  BlockBrokerGetBlockProgressEvents
+
+export interface TrustlessGatewayBlockBrokerInit {
+  /**
+   * By default we will only connect to peers with HTTPS addresses, pass true
+   * to also connect to HTTP addresses.
+   *
+   * @default false
+   */
+  allowInsecure?: boolean
+
+  /**
+   * By default we will only connect to peers with public or DNS addresses, pass
+   * true to also connect to private addresses.
+   *
+   * @default false
+   */
+  allowLocal?: boolean
+  /**
+   * Provide a function that will be called before querying trustless-gateways. This lets you modify the fetch options to pass custom headers or other necessary things.
+   */
+  transformRequestInit?: TransformRequestInit
+}
+
+export interface TrustlessGatewayBlockBrokerComponents {
+  routing: Routing
+  logger: ComponentLogger
+}
+
+export function trustlessGatewayBlockBroker (init: TrustlessGatewayBlockBrokerInit = {}): (components: TrustlessGatewayBlockBrokerComponents) => BlockBroker<TrustlessGatewayGetBlockProgressEvents> {
+  return (components) => new TrustlessGatewayBlockBroker(components, init)
+}

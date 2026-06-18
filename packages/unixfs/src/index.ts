@@ -83,7 +83,7 @@
  */
 
 import { UnixFS as UnixFSClass } from './unixfs.ts'
-import type { GetBlockProgressEvents, ProviderOptions, PutBlockProgressEvents } from '@helia/interface/blocks'
+import type { GetBlockProgressEvents, ProviderOptions, PutBlockProgressEvents } from '@helia/interface'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Filter } from '@libp2p/utils'
 import type { Blockstore } from 'interface-blockstore'
