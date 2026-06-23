@@ -121,6 +121,7 @@ export class IPNSRepublisher {
         }
 
         let ipnsRecord: IPNSRecord
+
         try {
           ipnsRecord = await unmarshalIPNSRecord(routingKey, record, this.keychain, options)
         } catch (err: any) {
@@ -133,6 +134,7 @@ export class IPNSRepublisher {
           this.log.trace('skipping record %b within republish threshold', routingKey)
           continue
         }
+
         const sequenceNumber = ipnsRecord.sequence + 1n
         const ttlNs = ipnsRecord.ttl ?? DEFAULT_TTL_NS
         let privKey: PrivateKey
@@ -149,6 +151,7 @@ export class IPNSRepublisher {
             ...options,
             ttlNs
           })
+
           recordsToRepublish.push({
             routingKey,
             record: updatedRecord
@@ -167,6 +170,7 @@ export class IPNSRepublisher {
         queue.add(async () => {
           try {
             const marshaledRecord = marshalIPNSRecord(record)
+
             await Promise.all(
               this.routers.map(r => r.put(routingKey, marshaledRecord, options))
             )
@@ -175,6 +179,7 @@ export class IPNSRepublisher {
           }
         }, options)
       }
+
       for (const routingKey of keysToRepublish) {
         // resolve the latest record
         let latestRecord: IPNSRecord
@@ -211,7 +216,8 @@ export class IPNSRepublisher {
 
   async republish (key: string | MultihashDigest, options: RepublishOptions = {}): Promise<RepublishResult> {
     const records: IPNSRecord[] = []
-    let publishedRecord: IPNSRecord | null = null
+    let routingRecord: IPNSRecord | undefined
+    let localRecord: IPNSRecord | undefined
 
     if (typeof key === 'string') {
       const privateKey = await this.keychain.exportKey(key, options)
@@ -237,6 +243,7 @@ export class IPNSRepublisher {
         }))
 
         if (result != null) {
+          localRecord = result.record
           records.push(result.record)
         }
       } catch (err: any) {
@@ -244,6 +251,7 @@ export class IPNSRepublisher {
           throw err
         }
       }
+
       try {
         if (!options.skipResolution) {
           // published record
@@ -252,7 +260,7 @@ export class IPNSRepublisher {
           }))
 
           if (result != null) {
-            publishedRecord = result.record
+            routingRecord = result.record
             records.push(result.record)
           }
         }
@@ -261,13 +269,9 @@ export class IPNSRepublisher {
           throw err
         }
       }
+
       if (records.length === 0) {
         throw new NotFoundError('Found no existing records to republish')
-      }
-
-      // check if record is already published
-      if (options.force !== true && publishedRecord != null) {
-        throw new RecordAlreadyPublishedError('Record already published', publishedRecord)
       }
 
       const selectedRecord = records[ipnsSelector(routingKey, records)]
@@ -277,23 +281,43 @@ export class IPNSRepublisher {
         upkeep: Upkeep[options.upkeep ?? 'refresh']
       }
 
-      if (options.offline) {
-        await this.localStore.put(routingKey, marshaledRecord, {
-          ...options,
-          overwrite: true,
-          metadata
-        })
-      } else {
-        await Promise.all(
-          this.routers.map(r => r.put(routingKey, marshaledRecord, {
+      await Promise.all(
+        this.routers
+          .filter(r => {
+            // update all routings if force is true
+            if (options.force === true) {
+              return true
+            }
+
+            // only update local store if it did not have the record or the
+            // selected record is more recent than the local copy
+            if (r.toString() === 'LocalStoreRouting()') {
+              return localRecord == null || (selectedRecord.sequence > localRecord.sequence)
+            }
+
+            // update routing if not running in offline mode
+            return options.offline !== true
+          })
+          .map(r => r.put(routingKey, marshaledRecord, {
             ...options,
             overwrite: true,
             metadata
           }))
-        )
+      )
+
+      const localRecordSequence = localRecord?.sequence ?? 0n
+      const routingRecordSequence = routingRecord?.sequence ?? 0n
+
+      // if we tried to republish an out of date record, throw an error
+
+      // check if the latest version of the record came from the routing
+      if (options.force !== true && options.offline !== true && routingRecord != null && routingRecordSequence > localRecordSequence) {
+        throw new RecordAlreadyPublishedError('Record already published', routingRecord)
       }
 
-      return { record: selectedRecord }
+      return {
+        record: selectedRecord
+      }
     } catch (err: any) {
       options.onProgress?.(new CustomProgressEvent<Error>('ipns:republish:error', err))
       throw err

@@ -1,9 +1,10 @@
 import { ed25519Crypto } from '@ipshipyard/crypto'
-import { start, stop } from '@libp2p/interface'
+import { NotFoundError, start, stop } from '@libp2p/interface'
 import { Record } from '@libp2p/kad-dht'
 import { expect } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
 import sinon from 'sinon'
+import NanoDate from 'timestamp-nano'
 import { REPUBLISH_THRESHOLD } from '../src/constants.ts'
 import { localStore } from '../src/local-store.ts'
 import { IPNSPublishMetadata, Upkeep } from '../src/pb/metadata.ts'
@@ -563,11 +564,9 @@ describe('republish', () => {
         const record = await createIPNSRecord(key, `/ipfs/${testCid}`, 1n, 24 * 60 * 60 * 1000)
         const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
-        // Store the record in the real datastore
-        const store = localStore(result.datastore, result.log)
-        await store.put(routingKey, marshalIPNSRecord(record))
-
-        await name.republish(multihashFromIPNSRoutingKey(routingKey))
+        await name.republish(multihashFromIPNSRoutingKey(routingKey), {
+          record
+        })
 
         const metadataBuf = await result.datastore.get(ipnsMetadataKey(routingKey))
         const metadata = IPNSPublishMetadata.decode(metadataBuf)
@@ -582,10 +581,10 @@ describe('republish', () => {
           const record = await createIPNSRecord(key, `/ipfs/${testCid}`, 1n, 24 * 60 * 60 * 1000)
           const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
 
-          const store = localStore(result.datastore, result.log)
-          await store.put(routingKey, marshalIPNSRecord(record))
-
-          await name.republish(multihashFromIPNSRoutingKey(routingKey), { upkeep })
+          await name.republish(multihashFromIPNSRoutingKey(routingKey), {
+            record,
+            upkeep
+          })
 
           const metadataBuf = await result.datastore.get(ipnsMetadataKey(routingKey))
           expect(IPNSPublishMetadata.decode(metadataBuf).upkeep).to.equal(Upkeep[upkeep])
@@ -662,13 +661,16 @@ describe('republish', () => {
         // @ts-ignore
         const storePutSpy = sinon.spy(name.localStore, 'put')
 
-        const republished = await name.republish(multihashFromIPNSRoutingKey(routingKey), { force: true, offline: true, skipResolution: true })
+        const republished = await name.republish(multihashFromIPNSRoutingKey(routingKey), {
+          offline: true,
+          skipResolution: true
+        })
 
-        expect(storePutSpy.called).to.be.true()
-        expect(getStubCustom.called).to.be.false()
-        expect(getStubHelia.called).to.be.false()
-        expect(result.customRouting.put.called).to.be.false()
-        expect(result.heliaRouting.put.called).to.be.false()
+        expect(storePutSpy.called).to.be.false('updated the local store when it already contained the latest record')
+        expect(getStubCustom.called).to.be.false('searched custom routing')
+        expect(getStubHelia.called).to.be.false('searched Helia routing')
+        expect(result.customRouting.put.called).to.be.false('published to custom routing')
+        expect(result.heliaRouting.put.called).to.be.false('published to Helia routing')
         expect(republished.record.sequence).to.equal(1n)
       })
 
@@ -694,7 +696,10 @@ describe('republish', () => {
         // @ts-ignore
         const storePutSpy = sinon.spy(name.localStore, 'put')
 
-        const republished = await name.republish(multihashFromIPNSRoutingKey(routingKey), { force: true, skipResolution: true })
+        const republished = await name.republish(multihashFromIPNSRoutingKey(routingKey), {
+          force: true,
+          skipResolution: true
+        })
 
         expect(storePutSpy.called).to.be.true()
         expect(getStubCustom.called).to.be.false()
@@ -726,12 +731,63 @@ describe('republish', () => {
         // @ts-ignore
         const storePutSpy = sinon.spy(name.localStore, 'put')
 
-        const republished = await name.republish(multihashFromIPNSRoutingKey(routingKey), { force: true, offline: true })
+        await name.republish(multihashFromIPNSRoutingKey(routingKey), {
+          offline: true
+        })
 
-        expect(storePutSpy.called).to.be.true()
+        expect(storePutSpy.called).to.be.true('did not update the local record when a newer version was found in the routing')
         expect(result.customRouting.put.called).to.be.false()
         expect(result.heliaRouting.put.called).to.be.false()
-        expect(republished.record.sequence).to.equal(3n)
+      })
+
+      it('should publish a valid local record when no records are found in the routing', async () => {
+        const key = await result.keychain.generateKey('test-key')
+        const record = await createIPNSRecord(key, `/ipfs/${testCid}`, 1n, 24 * 60 * 60 * 1000)
+        const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+        // Store the record in the real datastore
+        const store = localStore(result.datastore, result.log)
+        await store.put(routingKey, marshalIPNSRecord(record))
+
+        // Stub router GETs to not find any records
+        result.customRouting.get = sinon.stub<any>().rejects(new NotFoundError())
+        result.heliaRouting.get = sinon.stub<any>().rejects(new NotFoundError())
+
+        // @ts-expect-error localStore property is private
+        const localStorePutSpy = sinon.spy(name.localStore, 'put')
+
+        const republished = await name.republish(multihashFromIPNSRoutingKey(routingKey))
+
+        expect(localStorePutSpy.called).to.be.false('updated local store when the serial number was the same')
+        expect(result.customRouting.put.called).to.be.true('did not publish cached record')
+        expect(result.heliaRouting.put.called).to.be.true('did not publish cached record')
+        expect(republished.record.sequence).to.equal(1n)
+      })
+
+      it('should not publish an expired local record when no records are found in the routing', async () => {
+        const key = await result.keychain.generateKey('test-key')
+        const record = await createIPNSRecord(key, `/ipfs/${testCid}`, 1n, -60_000)
+        const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+
+        expect(NanoDate.fromString(record.validity).getTimeT() * 1_000).to.be.lessThan(Date.now(), 'record was not expired')
+
+        // Store the record in the real datastore
+        const store = localStore(result.datastore, result.log)
+        await store.put(routingKey, marshalIPNSRecord(record))
+
+        // Stub router GETs to not find any records
+        result.customRouting.get = sinon.stub<any>().rejects(new NotFoundError())
+        result.heliaRouting.get = sinon.stub<any>().rejects(new NotFoundError())
+
+        // @ts-expect-error localStore property is private
+        const storePutSpy = sinon.spy(name.localStore, 'put')
+
+        await expect(name.republish(multihashFromIPNSRoutingKey(routingKey))).to.eventually.be.rejected
+          .with.property('name', 'NotFoundError')
+
+        expect(storePutSpy.called).to.be.false('updated local store')
+        expect(result.customRouting.put.called).to.be.false('published expired record')
+        expect(result.heliaRouting.put.called).to.be.false('published expired record')
       })
     })
 
@@ -770,7 +826,9 @@ describe('republish', () => {
         // @ts-ignore
         result.customRouting.get = getStubCustom
 
-        const err = await expect(name.republish(multihashFromIPNSRoutingKey(routingKey))).to.be.rejectedWith('Record already published')
+        const err = await expect(name.republish(multihashFromIPNSRoutingKey(routingKey))).to.eventually.be.rejected()
+
+        expect(err).to.have.property('name', 'RecordAlreadyPublishedError')
         expect(marshalIPNSRecord(err.record)).to.deep.equal(marshalIPNSRecord(record))
       })
 
