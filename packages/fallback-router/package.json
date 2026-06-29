@@ -1,6 +1,6 @@
 {
   "name": "@helia/fallback-router",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "A Helia router that yields hard coded providers",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/fallback-router#readme",
@@ -48,7 +48,7 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@helia/interface": "^6.2.1",
+    "@helia/interface": "^7.0.0",
     "@multiformats/uri-to-multiaddr": "^10.0.0",
     "multiformats": "^14.0.0",
     "uint8arrays": "^6.1.1"

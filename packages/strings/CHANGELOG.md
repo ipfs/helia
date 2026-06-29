@@ -1,5 +1,32 @@
 # Changelog
 
+## [6.0.0](https://github.com/ipfs/helia/compare/strings-v5.1.1...strings-v6.0.0) (2026-06-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* import from `@helia/interface` not `@helia/interface/foo`
+* make libp2p optional ([#1049](https://github.com/ipfs/helia/issues/1049))
+* returned instances of `CID` and `MultihashDigest` come from the `multiformats@14.x.x` module
+
+### Features
+
+* make libp2p optional ([#1049](https://github.com/ipfs/helia/issues/1049)) ([4b2aea6](https://github.com/ipfs/helia/commit/4b2aea6f6111ba12590384f80c1bc18650ea5d8e))
+
+
+### Bug Fixes
+
+* export all types at root of `@helia/interface` ([#1053](https://github.com/ipfs/helia/issues/1053)) ([a464d83](https://github.com/ipfs/helia/commit/a464d83a68eea5a6f9af8fa26bf95ef9c997af61))
+* update to multiformats@14.x.x ([#1039](https://github.com/ipfs/helia/issues/1039)) ([f6cc764](https://github.com/ipfs/helia/commit/f6cc7640840b77757c09d9463539b41e6ea33099))
+
+
+### Dependencies
+
+* bump aegir from 47.2.0 to 48.0.1 ([#1015](https://github.com/ipfs/helia/issues/1015)) ([ae98a4f](https://github.com/ipfs/helia/commit/ae98a4f4940310383c2a384cde64f99264326583))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^6.2.1 to ^7.0.0
+
 ## [5.1.1](https://github.com/ipfs/helia/compare/strings-v5.1.0...strings-v5.1.1) (2026-04-10)
 
 
