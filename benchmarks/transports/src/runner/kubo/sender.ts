@@ -5,6 +5,7 @@ import * as dagPB from '@ipld/dag-pb'
 import { fixedSize } from 'ipfs-unixfs-importer/chunker'
 import { balanced } from 'ipfs-unixfs-importer/layout'
 import bufferStream from 'it-buffer-stream'
+import toBuffer from 'it-to-buffer'
 import * as raw from 'multiformats/codecs/raw'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { getKubo } from './get-kubo.ts'
@@ -33,8 +34,8 @@ const kubo = await getKubo()
 // to 1MB block sizes
 const fs = unixfs({
   blockstore: {
-    async get (cid, options = {}) {
-      return kubo.api.block.get(cid, options)
+    async * get (cid, options = {}) {
+      yield kubo.api.block.get(cid, options)
     },
     async put (cid, block, options = {}) {
       const opts: BlockPutOptions = {
@@ -46,7 +47,12 @@ const fs = unixfs({
         opts.format = FORMAT_LOOKUP[cid.code]
       }
 
-      const putCid = await kubo.api.block.put(block, opts)
+      if (block instanceof Uint8Array) {
+        block = [block]
+      }
+
+      const buf = await toBuffer(block)
+      const putCid = await kubo.api.block.put(buf, opts)
 
       if (!uint8ArrayEquals(cid.multihash.bytes, putCid.multihash.bytes)) {
         throw new Error(`Put failed ${putCid} != ${cid}`)

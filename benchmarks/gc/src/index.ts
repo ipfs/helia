@@ -172,14 +172,14 @@ async function main (): Promise<void> {
   } else {
     console.table(suite.tasks.map(({ name, result }) => ({
       Implementation: name,
-      'ops/s': result?.hz.toFixed(RESULT_PRECISION),
-      'ms/op': result?.period.toFixed(RESULT_PRECISION),
-      runs: result?.samples.length
+      'ops/s': result.state === 'completed' ? result?.throughput.mean.toFixed(RESULT_PRECISION) : '???',
+      'ms/op': result.state === 'completed' ? result?.period.toFixed(RESULT_PRECISION) : '???',
+      runs: result.state === 'completed' ? result?.latency?.samples?.length : '???'
     })))
   }
 }
 
 main().catch(err => {
-  console.error(err) // eslint-disable-line no-console
+  console.error(err)
   process.exit(1)
 })

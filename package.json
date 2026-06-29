@@ -45,11 +45,5 @@
   "type": "module",
   "workspaces": [
     "packages/*"
-  ],
-  "overrides": {
-    "multiformats": "^14.0.0",
-    "uint8arrays": "^6.0.0",
-    "interface-datastore": "^10.0.1",
-    "uint8-varint": "^3.0.0"
-  }
+  ]
 }

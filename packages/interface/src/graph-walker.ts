@@ -1,4 +1,4 @@
-import type { CodecLoader } from './index.js'
+import type { CodecLoader } from './index.ts'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { BlockView, CID, Version } from 'multiformats'

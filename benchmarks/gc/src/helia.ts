@@ -1,8 +1,10 @@
 import os from 'node:os'
 import path from 'node:path'
+import { withBitswap } from '@helia/bitswap'
+import { withLibp2p } from '@helia/libp2p'
 import { FsBlockstore } from 'blockstore-fs'
 import { LevelDatastore } from 'datastore-level'
-import { createHelia } from 'helia'
+import { createHeliaLight } from 'helia'
 import all from 'it-all'
 import drain from 'it-drain'
 import map from 'it-map'
@@ -11,23 +13,21 @@ import type { GcBenchmark } from './index.ts'
 export async function createHeliaBenchmark (): Promise<GcBenchmark> {
   const repoPath = path.join(os.tmpdir(), `helia-${Math.random()}`)
 
-  const helia = await createHelia({
+  const helia = withBitswap(withLibp2p(createHeliaLight({
     blockstore: new FsBlockstore(`${repoPath}/blocks`),
-    datastore: new LevelDatastore(`${repoPath}/data`),
-    libp2p: {
-      addresses: {
-        listen: []
-      }
-    },
-    start: false
-  })
+    datastore: new LevelDatastore(`${repoPath}/data`)
+  }), {
+    addresses: {
+      listen: []
+    }
+  }))
 
   return {
     async gc () {
       await helia.gc()
     },
     async putBlocks (blocks) {
-      await drain(helia.blockstore.putMany(map(blocks, ({ key, value }) => ({ cid: key, block: value }))))
+      await drain(helia.blockstore.putMany(map(blocks, ({ key, value }) => ({ cid: key, bytes: value }))))
     },
     async pin (cid) {
       await drain(helia.pins.add(cid))

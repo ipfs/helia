@@ -1,7 +1,7 @@
 import fs, { promises as fsPromises } from 'node:fs'
 import os from 'node:os'
 import nodePath from 'node:path'
-import { type AddOptions, unixfs, globSource } from '@helia/unixfs'
+import { unixfs, globSource } from '@helia/unixfs'
 import { MemoryBlockstore } from 'blockstore-core'
 import { FsBlockstore } from 'blockstore-fs'
 import { MemoryDatastore } from 'datastore-core'
@@ -11,6 +11,7 @@ import { fixedSize } from 'ipfs-unixfs-importer/chunker'
 import { balanced } from 'ipfs-unixfs-importer/layout'
 import last from 'it-last'
 import type { AddDirBenchmark } from './index.ts'
+import type { AddOptions } from '@helia/unixfs'
 import type { CID } from 'multiformats/cid'
 
 const unixFsAddOptions: Partial<AddOptions> = {
@@ -32,10 +33,9 @@ interface HeliaBenchmarkOptions {
 export async function createHeliaBenchmark ({ blockstoreType = 'fs', datastoreType = 'fs' }: HeliaBenchmarkOptions = {}): Promise<AddDirBenchmark> {
   const repoPath = nodePath.join(os.tmpdir(), `helia-${Math.random()}`)
 
-  const helia = await createHelia({
+  const helia = createHelia({
     blockstore: blockstoreType === 'fs' ? new FsBlockstore(`${repoPath}/blocks`) : new MemoryBlockstore(),
-    datastore: datastoreType === 'fs' ? new LevelDatastore(`${repoPath}/data`) : new MemoryDatastore(),
-    start: false
+    datastore: datastoreType === 'fs' ? new LevelDatastore(`${repoPath}/data`) : new MemoryDatastore()
   })
   const unixFs = unixfs(helia)
 
