@@ -1,6 +1,6 @@
 {
   "name": "@helia/trustless-gateway-client",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Use Trustless HTTP Gateways with Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/trustless-gateway-client#readme",
@@ -48,8 +48,8 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@helia/interface": "^6.2.1",
-    "@helia/utils": "^2.5.2",
+    "@helia/interface": "^7.0.0",
+    "@helia/utils": "^3.0.0",
     "@libp2p/utils": "^7.2.2",
     "@multiformats/multiaddr": "^13.0.3",
     "@multiformats/multiaddr-matcher": "^3.0.2",

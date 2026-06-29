@@ -1,5 +1,47 @@
 # Changelog
 
+## [11.0.0](https://github.com/ipfs/helia/compare/interop-v10.2.5...interop-v11.0.0) (2026-06-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* make libp2p optional ([#1049](https://github.com/ipfs/helia/issues/1049))
+* `secp256k1` support has been removed from the default config, it must now be configured separately
+* returned instances of `CID` and `MultihashDigest` come from the `multiformats@14.x.x` module
+
+### Features
+
+* add light constructor ([#1058](https://github.com/ipfs/helia/issues/1058)) ([16d805e](https://github.com/ipfs/helia/commit/16d805e18f8ebbe4f3c7b255c274e8b82f4d520b))
+* keychain and configurable crypto ([#1041](https://github.com/ipfs/helia/issues/1041)) ([73a28ed](https://github.com/ipfs/helia/commit/73a28edaab2b1dcf056bfc9333cbebc811aa28db))
+* make libp2p optional ([#1049](https://github.com/ipfs/helia/issues/1049)) ([4b2aea6](https://github.com/ipfs/helia/commit/4b2aea6f6111ba12590384f80c1bc18650ea5d8e))
+
+
+### Bug Fixes
+
+* update to multiformats@14.x.x ([#1039](https://github.com/ipfs/helia/issues/1039)) ([f6cc764](https://github.com/ipfs/helia/commit/f6cc7640840b77757c09d9463539b41e6ea33099))
+
+
+### Dependencies
+
+* bump aegir from 47.2.0 to 48.0.1 ([#1015](https://github.com/ipfs/helia/issues/1015)) ([ae98a4f](https://github.com/ipfs/helia/commit/ae98a4f4940310383c2a384cde64f99264326583))
+* bump kubo from 0.40.1 to 0.41.0 in the kubo-deps group ([#1012](https://github.com/ipfs/helia/issues/1012)) ([658032d](https://github.com/ipfs/helia/commit/658032de3a364e8bbb1c999106a6c64dcb13b25d))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^3.2.3 to ^4.0.0
+    * @helia/car bumped from ^5.4.2 to ^6.0.0
+    * @helia/dag-cbor bumped from ^5.1.1 to ^6.0.0
+    * @helia/dag-json bumped from ^5.1.1 to ^6.0.0
+    * @helia/delegated-routing-client bumped from ^0.0.0 to ^1.0.0
+    * @helia/dnslink bumped from ^1.2.1 to ^2.0.0
+    * @helia/interface bumped from ^6.2.1 to ^7.0.0
+    * @helia/ipns bumped from ^9.2.1 to ^10.0.0
+    * @helia/json bumped from ^5.1.1 to ^6.0.0
+    * @helia/libp2p bumped from ^0.0.0 to ^1.0.0
+    * @helia/mfs bumped from ^7.1.1 to ^8.0.0
+    * @helia/strings bumped from ^5.1.1 to ^6.0.0
+    * @helia/unixfs bumped from ^7.2.1 to ^8.0.0
+    * helia bumped from ^6.1.4 to ^7.0.0
+
 ## [10.2.5](https://github.com/ipfs/helia/compare/interop-v10.2.4...interop-v10.2.5) (2026-04-15)
 
 
