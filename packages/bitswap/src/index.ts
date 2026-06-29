@@ -236,6 +236,7 @@ export interface BitswapOptions {
  */
 export function withBitswap (helia: HeliaWithLibp2p, options: BitswapBlockBrokerInit = {}): HeliaWithLibp2p {
   const mixin: HeliaMixin<HeliaWithLibp2p> = {
+    name: 'bitswap',
     start: async (helia) => {
       if (helia.status === 'starting' && !helia.hasBlockBroker('bitswap')) {
         const broker = new BitswapBlockBroker(helia, options)

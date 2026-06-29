@@ -1,7 +1,7 @@
+import { InvalidDatastoreVersionError } from '@helia/utils'
 import { Key } from 'interface-datastore'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { InvalidDatastoreVersionError } from '../errors.ts'
 import type { Datastore } from 'interface-datastore'
 
 const DS_VERSION_KEY = new Key('/version')

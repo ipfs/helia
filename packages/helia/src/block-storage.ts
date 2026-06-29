@@ -1,6 +1,6 @@
+import { BlockPinnedError } from '@helia/utils'
 import { start, stop } from '@libp2p/interface'
 import createMortice from 'mortice'
-import { BlockPinnedError } from './errors.ts'
 import type { Routing } from '@helia/interface'
 import type { Blocks, Pair, DeleteManyBlocksProgressEvents, DeleteBlockProgressEvents, GetBlockProgressEvents, GetManyBlocksProgressEvents, PutManyBlocksProgressEvents, PutBlockProgressEvents, GetAllBlocksProgressEvents, GetOfflineOptions, SessionBlockstore } from '@helia/interface'
 import type { Pins } from '@helia/interface'

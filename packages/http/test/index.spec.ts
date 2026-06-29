@@ -1,25 +1,14 @@
 import { expect } from 'aegir/chai'
-import { createHelia } from 'helia'
-import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { withHTTP } from '../src/index.ts'
-import type { Helia, Router } from '@helia/interface'
-import type { Startable } from '@libp2p/interface'
+import type { Helia } from '@helia/interface'
+import type { StubbedInstance } from 'sinon-ts'
 
 describe('@helia/http', () => {
-  let helia: Helia
-  let routing: Router
+  let helia: StubbedInstance<Helia>
 
   beforeEach(async () => {
-    routing = stubInterface<Router & Startable>({
-      start: Sinon.stub(),
-      stop: Sinon.stub()
-    })
-    helia = withHTTP(createHelia({
-      routers: [
-        routing
-      ]
-    }))
+    helia = withHTTP(stubInterface())
   })
 
   afterEach(async () => {
@@ -28,24 +17,11 @@ describe('@helia/http', () => {
     }
   })
 
-  it('stops and starts', async () => {
-    expect(routing).to.have.nested.property('start.called', false)
-
-    await helia.start()
-
-    expect(routing).to.have.nested.property('start.called', true)
-    expect(routing).to.have.nested.property('stop.called', false)
-
-    await helia.stop()
-
-    expect(routing).to.have.nested.property('stop.called', true)
+  it('adds routers', async () => {
+    expect(helia.addRouter.callCount).to.equal(2)
   })
 
-  it('should have a blockstore', async () => {
-    expect(helia).to.have.property('blockstore').that.is.ok()
-  })
-
-  it('should have a datastore', async () => {
-    expect(helia).to.have.property('datastore').that.is.ok()
+  it('adds block brokers', async () => {
+    expect(helia.addBlockBroker.callCount).to.equal(1)
   })
 })

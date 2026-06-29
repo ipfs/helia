@@ -1,6 +1,6 @@
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
-import { Helia as HeliaClass } from '../../src/index.ts'
+import { Helia as HeliaClass } from '../../src/helia.ts'
 import type { HeliaInit } from '../../src/index.ts'
 import type { Helia } from '@helia/interface'
 

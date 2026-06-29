@@ -1,20 +1,14 @@
 import { UnknownCodecError } from '@helia/interface'
-import * as dagCbor from '@ipld/dag-cbor'
-import * as dagJson from '@ipld/dag-json'
+import { isPromise } from '@helia/utils'
 import * as dagPb from '@ipld/dag-pb'
-import * as json from 'multiformats/codecs/json'
 import * as raw from 'multiformats/codecs/raw'
-import { isPromise } from './is-promise.ts'
 import type { CodecLoader } from '@helia/interface'
 import type { BlockCodec } from 'multiformats/codecs/interface'
 
 export function getCodec (initialCodecs: Array<BlockCodec<any, any>> = [], loadCodec?: CodecLoader): CodecLoader {
   const codecs: Record<number, BlockCodec<any, any>> = {
     [dagPb.code]: dagPb,
-    [raw.code]: raw,
-    [dagCbor.code]: dagCbor,
-    [dagJson.code]: dagJson,
-    [json.code]: json
+    [raw.code]: raw
   }
 
   initialCodecs.forEach(codec => {

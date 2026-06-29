@@ -1,3 +1,4 @@
+import * as dagCbor from '@ipld/dag-cbor'
 import { expect } from 'aegir/chai'
 import { MemoryBlockstore } from 'blockstore-core'
 import drain from 'it-drain'
@@ -20,7 +21,10 @@ describe('pins (depth limited)', () => {
 
     helia = await createHelia({
       blockstore,
-      blockBrokers: []
+      blockBrokers: [],
+      codecs: [
+        dagCbor
+      ]
     })
   })
 

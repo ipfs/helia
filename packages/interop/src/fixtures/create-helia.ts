@@ -1,8 +1,12 @@
 import { withBitswap } from '@helia/bitswap'
 import { withLibp2p, libp2pDefaults } from '@helia/libp2p'
+import * as dagCbor from '@ipld/dag-cbor'
+import * as dagJson from '@ipld/dag-json'
 import { kadDHT, removePublicAddressesMapper } from '@libp2p/kad-dht'
 import { sha3512 } from '@multiformats/sha3'
-import { createHelia } from 'helia'
+import { createHeliaLight } from 'helia'
+import * as json from 'multiformats/codecs/json'
+import { sha512 } from 'multiformats/hashes/sha2'
 import type { HeliaWithLibp2p, DefaultLibp2pServices, CreateLibp2pOptions } from '@helia/libp2p'
 
 export async function createHeliaNode (): Promise<HeliaWithLibp2p<DefaultLibp2pServices>>
@@ -41,8 +45,14 @@ export async function createHeliaNode (libp2pOptions?: CreateLibp2pOptions<any>)
   // @ts-expect-error services.autoTLS is not optional
   delete defaults.services.autoTLS
 
-  return withBitswap(withLibp2p(createHelia({
+  return withBitswap(withLibp2p(createHeliaLight({
+    codecs: [
+      dagCbor,
+      dagJson,
+      json
+    ],
     hashers: [
+      sha512,
       sha3512
     ]
   }), defaults)).start()
