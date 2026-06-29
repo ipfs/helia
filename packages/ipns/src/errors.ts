@@ -1,3 +1,5 @@
+import type { IPNSRecord } from './records.ts'
+
 export class RecordsFailedValidationError extends Error {
   static name = 'RecordsFailedValidationError'
   name = 'RecordsFailedValidationError'
@@ -26,6 +28,18 @@ export class InvalidTopicError extends Error {
 export class RecordNotFoundError extends Error {
   static name = 'RecordNotFoundError'
   name = 'RecordNotFoundError'
+}
+
+export class RecordAlreadyPublishedError extends Error {
+  static name = 'RecordAlreadyPublishedError'
+  name = 'RecordAlreadyPublishedError'
+  record: IPNSRecord
+
+  constructor (message: string, record: IPNSRecord) {
+    super(message)
+
+    this.record = record
+  }
 }
 
 export class SignatureCreationError extends Error {

@@ -211,7 +211,7 @@ const _create = async (privateKey: PrivateKey, value: string, seq: number | bigi
   const data = createCborData(value, validityType, isoValidity, seq, ttl)
   const sigData = ipnsRecordDataForV2Sig(data)
   const signatureV2 = await privateKey.sign(sigData, options)
-  const publicKey = shouldEmbedPublicKey(privateKey.publicKey) ? privateKey.publicKey : undefined
+  const publicKey = privateKey.publicKey
   let record: any
 
   if (options.v1Compatible === true) {
@@ -263,11 +263,4 @@ const signLegacyV1 = async (privateKey: PrivateKey, value: string, validityType:
     log.error('record signature creation failed', error)
     throw new SignatureCreationError('Record signature creation failed')
   }
-}
-
-/**
- * Returns true if the public key multihash is not an identity hash
- */
-function shouldEmbedPublicKey (key: PublicKey): boolean {
-  return key.toMultihash().code !== 0
 }

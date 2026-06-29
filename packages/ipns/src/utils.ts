@@ -62,16 +62,26 @@ export function ipnsMetadataKey (key: Uint8Array): Key {
 
 export function shouldRepublish (ipnsRecord: IPNSRecord, created: Date): boolean {
   const now = Date.now()
-  const dhtExpiry = created.getTime() + DHT_EXPIRY_MS
   const recordExpiry = new Date(ipnsRecord.validity).getTime()
 
-  // If the DHT expiry is within the threshold, republish it
-  if (dhtExpiry - now < REPUBLISH_THRESHOLD) {
+  if (shouldRefresh(created)) {
     return true
   }
 
   // If the record expiry (based on validity/lifetime) is within the threshold, republish it
   if (recordExpiry - now < REPUBLISH_THRESHOLD) {
+    return true
+  }
+
+  return false
+}
+
+export function shouldRefresh (created: Date): boolean {
+  const now = Date.now()
+  const dhtExpiry = created.getTime() + DHT_EXPIRY_MS
+
+  // If the DHT expiry is within the threshold, republish it
+  if (dhtExpiry - now < REPUBLISH_THRESHOLD) {
     return true
   }
 
@@ -122,7 +132,7 @@ export function ipnsRecordDataForV2Sig (data: Uint8Array): Uint8Array {
 }
 
 export function marshalIPNSRecord (obj: IPNSRecord | IPNSRecordV2): Uint8Array {
-  let publicKey: Uint8Array | undefined = obj.publicKey?.toProtobuf()
+  let publicKey: Uint8Array | undefined = obj.publicKey.toProtobuf()
 
   // do not embed public keys whose multihash is an identity hash as these can
   // be derived from the routing key
@@ -395,6 +405,14 @@ export function normalizeKey (key?: PublicKey | CID<unknown, 0x72> | MultihashDi
   }
 
   throw new InvalidValueError('Value must be a valid IPNS path starting with /')
+}
+
+export function normalizeKeyName (keyName: CID<unknown, 0x72> | PublicKey | MultihashDigest | string): MultihashDigest | string {
+  try {
+    return normalizeKey(keyName).digest
+  } catch {
+    return keyName.toString()
+  }
 }
 
 function validateCborDataMatchesPbData (entry: IpnsEntry): void {

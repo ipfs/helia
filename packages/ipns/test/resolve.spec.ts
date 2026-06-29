@@ -111,6 +111,9 @@ describe('resolve', () => {
 
     heliaRouting.get.resolves(marshalIPNSRecord(record))
 
+    // @ts-ignore cannot access private localStore property
+    const storeGetSpy = Sinon.spy(name.localStore, 'get')
+
     const result = await last(name.resolve(publicKey, {
       nocache: true
     }))
@@ -120,6 +123,9 @@ describe('resolve', () => {
     }
 
     expect(result.record.value).to.equal(`/ipfs/${cid.toV1()}`)
+
+    // check that localStore.get not called
+    expect(storeGetSpy.called).to.be.false()
 
     expect(heliaRouting.get.called).to.be.true()
     expect(customRouting.get.called).to.be.true()

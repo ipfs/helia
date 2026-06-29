@@ -6,9 +6,9 @@ import { localStore } from './local-store.ts'
 import { helia } from './routing/helia.ts'
 import { localStoreRouting } from './routing/local-store.ts'
 import { ipnsSelector } from './selector.ts'
-import { normalizeKey, normalizeValue, unmarshalIPNSRecord } from './utils.ts'
+import { normalizeKey, normalizeKeyName, normalizeValue, unmarshalIPNSRecord } from './utils.ts'
 import { ipnsValidator } from './validator.ts'
-import type { IPNSComponents, IPNS as IPNSInterface, IPNSOptions, PublishResult, PublishOptions, ResolveOptions, ResolveResult } from './index.ts'
+import type { IPNSComponents, IPNS as IPNSInterface, IPNSOptions, RepublishResult, PublishOptions, PublishResult, RepublishOptions, ResolveOptions, ResolveResult } from './index.ts'
 import type { LocalStore } from './local-store.ts'
 import type { IPNSRouting } from './routing/index.ts'
 import type { PublicKey } from '@helia/interface'
@@ -41,13 +41,14 @@ export class IPNS implements IPNSInterface, Startable {
       routers: this.routers,
       localStore: this.localStore
     })
-    this.republisher = new IPNSRepublisher(components, {
+    this.resolver = new IPNSResolver(components, {
       ...init,
       routers: this.routers,
       localStore: this.localStore
     })
-    this.resolver = new IPNSResolver(components, {
+    this.republisher = new IPNSRepublisher(components, {
       ...init,
+      resolver: this.resolver,
       routers: this.routers,
       localStore: this.localStore
     })
@@ -101,17 +102,27 @@ export class IPNS implements IPNSInterface, Startable {
   }
 
   async publish (keyName: string, value: PublicKey | CID | MultihashDigest | string, options: PublishOptions = {}): Promise<PublishResult> {
-    return this.publisher.publish(keyName, normalizeValue(value), options)
+    value = normalizeValue(value)
+
+    return this.publisher.publish(keyName, value, options)
   }
 
-  async * resolve (key: PublicKey | CID<unknown, 0x72> | MultihashDigest | string, options: ResolveOptions = {}): AsyncGenerator<ResolveResult> {
-    const { digest } = normalizeKey(key)
+  async * resolve (name: CID<unknown, 0x72> | PublicKey | MultihashDigest | string, options: ResolveOptions = {}): AsyncGenerator<ResolveResult> {
+    const { digest } = normalizeKey(name)
 
     yield * this.resolver.resolve(digest, options)
   }
 
-  async unpublish (keyName: string, options?: AbortOptions): Promise<void> {
+  async unpublish (keyName: CID<unknown, 0x72> | PublicKey | MultihashDigest | string, options?: AbortOptions): Promise<void> {
+    keyName = normalizeKeyName(keyName)
+
     return this.publisher.unpublish(keyName, options)
+  }
+
+  async republish (keyName: CID<unknown, 0x72> | PublicKey | MultihashDigest | string, options: RepublishOptions = {}): Promise<RepublishResult> {
+    keyName = normalizeKeyName(keyName)
+
+    return this.republisher.republish(keyName, options)
   }
 }
 
