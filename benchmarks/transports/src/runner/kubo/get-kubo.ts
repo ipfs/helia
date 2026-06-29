@@ -1,6 +1,7 @@
-import { createNode, type KuboNode } from 'ipfsd-ctl'
+import { createNode } from 'ipfsd-ctl'
 import { path as kuboPath } from 'kubo'
 import { create as kuboRpcClient } from 'kubo-rpc-client'
+import type { KuboNode } from 'ipfsd-ctl'
 
 export async function getKubo (): Promise<KuboNode> {
   const listen = `${process.env.HELIA_LISTEN ?? ''}`.split(',').filter(Boolean)

@@ -61,11 +61,11 @@ async function main (): Promise<void> {
     iterations: ITERATIONS,
     time: MIN_TIME,
     setup: async (task) => {
-      const impl = impls.find(({ name }) => task.name.includes(name))
+      const impl = impls.find(({ name }) => task?.name.includes(name))
       if (impl != null) {
         subject = await impl.create()
       } else {
-        throw new Error(`No implementation with name '${task.name}'`)
+        throw new Error(`No implementation with name '${task?.name}'`)
       }
     },
     teardown: async () => {
@@ -137,7 +137,7 @@ async function main (): Promise<void> {
       }
     }
     console.table(suite.tasks.map(({ name, result }) => {
-      if (result?.error != null) {
+      if (result.state === 'errored') {
         return {
           Implementation: name,
           'ops/s': 'error',
@@ -149,10 +149,10 @@ async function main (): Promise<void> {
       }
       return {
         Implementation: name,
-        'ops/s': result?.hz.toFixed(RESULT_PRECISION),
-        'ms/op': result?.period.toFixed(RESULT_PRECISION),
-        runs: result?.samples.length,
-        p99: result?.p99.toFixed(RESULT_PRECISION),
+        'ops/s': result.state === 'completed' ? result?.throughput.mean.toFixed(RESULT_PRECISION) : '???',
+        'ms/op': result.state === 'completed' ? result?.period.toFixed(RESULT_PRECISION) : '???',
+        runs: result.state === 'completed' ? result?.latency?.samples?.length : '???',
+        p99: result.state === 'completed' ? result?.latency?.p99?.toFixed(RESULT_PRECISION) : '???',
         CID: implCids[name]
       }
     }))
@@ -161,6 +161,6 @@ async function main (): Promise<void> {
 }
 
 main().catch(err => {
-  console.error(err) // eslint-disable-line no-console
+  console.error(err)
   process.exit(1)
 })

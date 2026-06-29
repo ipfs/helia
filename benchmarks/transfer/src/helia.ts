@@ -3,44 +3,44 @@ import os from 'node:os'
 import path from 'node:path'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { withBitswap } from '@helia/bitswap'
+import { withLibp2p } from '@helia/libp2p'
 import { unixfs } from '@helia/unixfs'
 import { identify } from '@libp2p/identify'
 import { tcp } from '@libp2p/tcp'
 import { FsBlockstore } from 'blockstore-fs'
 import { LevelDatastore } from 'datastore-level'
-import { createHelia } from 'helia'
+import { createHeliaLight } from 'helia'
 import { fixedSize } from 'ipfs-unixfs-importer/chunker'
 import { balanced } from 'ipfs-unixfs-importer/layout'
 import drain from 'it-drain'
-import { createLibp2p } from 'libp2p'
 import type { TransferBenchmark } from './index.ts'
 
 export async function createHeliaBenchmark (): Promise<TransferBenchmark> {
   const repoPath = path.join(os.tmpdir(), `helia-${Math.random()}`)
 
-  const helia = await createHelia({
+  const helia = withBitswap(withLibp2p(createHeliaLight({
     blockstore: new FsBlockstore(`${repoPath}/blocks`),
-    datastore: new LevelDatastore(`${repoPath}/data`),
-    libp2p: await createLibp2p({
-      addresses: {
-        listen: [
-          '/ip4/127.0.0.1/tcp/0'
-        ]
-      },
-      transports: [
-        tcp()
-      ],
-      connectionEncrypters: [
-        noise()
-      ],
-      streamMuxers: [
-        yamux()
-      ],
-      services: {
-        identify: identify()
-      }
-    })
-  })
+    datastore: new LevelDatastore(`${repoPath}/data`)
+  }), {
+    addresses: {
+      listen: [
+        '/ip4/127.0.0.1/tcp/0'
+      ]
+    },
+    transports: [
+      tcp()
+    ],
+    connectionEncrypters: [
+      noise()
+    ],
+    streamMuxers: [
+      yamux()
+    ],
+    services: {
+      identify: identify()
+    }
+  } as any))
 
   return {
     async teardown () {

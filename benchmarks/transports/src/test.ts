@@ -1,12 +1,11 @@
-/* eslint-disable no-console */
-
 import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import debug from 'debug'
-import { execa, type ExecaChildProcess } from 'execa'
+import { execa } from 'execa'
 import type { File } from './index.ts'
 import type { Test as TestInit } from './tests.ts'
+import type { Subprocess } from 'execa'
 
 const outLog = debug('test:stdout')
 const errorLog = debug('test:stderr')
@@ -15,8 +14,8 @@ const TEST_OUTPUT_PREFIX = 'TEST-OUTPUT:'
 
 export class Test {
   public name: string
-  private senderProc?: ExecaChildProcess<string>
-  private recipientProc?: ExecaChildProcess<string>
+  private senderProc?: Subprocess
+  private recipientProc?: Subprocess
   private readonly test: TestInit
 
   constructor (init: TestInit) {
@@ -108,7 +107,7 @@ export class Test {
     return result
   }
 
-  startSender (file: File, repo: string): ExecaChildProcess<string> {
+  startSender (file: File, repo: string): Subprocess {
     return execa(this.test.senderExec ?? 'node', [...(this.test.senderArgs ?? []), `./dist/src/runner/${this.test.senderImplementation}/sender.js`], {
       env: {
         HELIA_TYPE: 'sender',
@@ -120,7 +119,7 @@ export class Test {
     })
   }
 
-  startRecipient (cid: string, multiaddrs: string, repo: string): ExecaChildProcess<string> {
+  startRecipient (cid: string, multiaddrs: string, repo: string): Subprocess {
     return execa(this.test.recipientExec ?? 'node', [...(this.test.recipientArgs ?? []), `./dist/src/runner/${this.test.recipientImplementation}/recipient.js`], {
       env: {
         HELIA_TYPE: 'recipient',

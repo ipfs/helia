@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { createNode } from 'ipfsd-ctl'
 import all from 'it-all'
 import drain from 'it-drain'

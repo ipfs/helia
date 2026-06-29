@@ -4,11 +4,13 @@ import { fixedSize } from 'ipfs-unixfs-importer/chunker'
 import { balanced } from 'ipfs-unixfs-importer/layout'
 import { createNode } from 'ipfsd-ctl'
 import drain from 'it-drain'
+import toBuffer from 'it-to-buffer'
 import { path as kuboPath } from 'kubo'
-import { create as kuboRpcClient, type BlockPutOptions } from 'kubo-rpc-client'
+import { create as kuboRpcClient } from 'kubo-rpc-client'
 import * as raw from 'multiformats/codecs/raw'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import type { ImportOptions, TransferBenchmark } from './index.ts'
+import type { BlockPutOptions } from 'kubo-rpc-client'
 
 const FORMAT_LOOKUP: Record<number, string> = {
   [dagPB.code]: 'dag-pb',
@@ -43,8 +45,8 @@ export async function createKuboBenchmark (): Promise<TransferBenchmark> {
       // to 1MB block sizes
       const fs = unixfs({
         blockstore: {
-          async get (cid, options = {}) {
-            return controller.api.block.get(cid, options)
+          async * get (cid, options = {}) {
+            yield controller.api.block.get(cid, options)
           },
           async put (cid, block, options = {}) {
             const opts: BlockPutOptions = {
@@ -56,7 +58,12 @@ export async function createKuboBenchmark (): Promise<TransferBenchmark> {
               opts.format = FORMAT_LOOKUP[cid.code]
             }
 
-            const putCid = await controller.api.block.put(block, opts)
+            if (block instanceof Uint8Array) {
+              block = [block]
+            }
+
+            const buf = await toBuffer(block)
+            const putCid = await controller.api.block.put(buf, opts)
 
             if (!uint8ArrayEquals(cid.multihash.bytes, putCid.multihash.bytes)) {
               throw new Error(`Put failed ${putCid} != ${cid}`)

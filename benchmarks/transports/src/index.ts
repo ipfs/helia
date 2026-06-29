@@ -97,6 +97,6 @@ async function main (): Promise<void> {
 }
 
 main().catch(err => {
-  console.error(err) // eslint-disable-line no-console
+  console.error(err)
   process.exit(1)
 })
