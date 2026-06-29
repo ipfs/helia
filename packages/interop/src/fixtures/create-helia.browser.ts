@@ -1,9 +1,13 @@
 import { withBitswap } from '@helia/bitswap'
 import { libp2pDefaults, withLibp2p } from '@helia/libp2p'
+import * as dagCbor from '@ipld/dag-cbor'
+import * as dagJson from '@ipld/dag-json'
 import { kadDHT, removePublicAddressesMapper } from '@libp2p/kad-dht'
 import { webSockets } from '@libp2p/websockets'
 import { sha3512 } from '@multiformats/sha3'
-import { createHelia } from 'helia'
+import { createHeliaLight } from 'helia'
+import * as json from 'multiformats/codecs/json'
+import { sha512 } from 'multiformats/hashes/sha2'
 import type { DefaultLibp2pServices, HeliaWithLibp2p } from '@helia/libp2p'
 import type { Libp2pOptions } from 'libp2p'
 
@@ -48,8 +52,14 @@ export async function createHeliaNode (libp2pOptions?: Libp2pOptions): Promise<H
   // @ts-expect-error services.delegatedPeerRouting is not optional
   delete defaults.services.delegatedPeerRouting
 
-  return withBitswap(withLibp2p(createHelia({
+  return withBitswap(withLibp2p(createHeliaLight({
+    codecs: [
+      dagCbor,
+      dagJson,
+      json
+    ],
     hashers: [
+      sha512,
       sha3512
     ]
   }), defaults)).start()
