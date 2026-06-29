@@ -1,6 +1,6 @@
 import { UnknownCryptoError } from '@helia/interface'
+import { isPromise } from '@helia/utils'
 import { ecdsaCrypto, ed25519Crypto, rsaCrypto } from '@ipshipyard/crypto'
-import { isPromise } from './is-promise.ts'
 import type { CryptoLoader } from '@helia/interface'
 import type { Crypto } from '@ipshipyard/crypto'
 

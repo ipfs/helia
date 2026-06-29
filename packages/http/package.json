@@ -54,10 +54,7 @@
     "@helia/trustless-gateway-client": "^0.0.0"
   },
   "devDependencies": {
-    "@libp2p/interface": "^3.2.3",
     "aegir": "^48.0.11",
-    "helia": "^6.1.4",
-    "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0"
   },
   "sideEffects": false

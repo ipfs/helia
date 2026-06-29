@@ -12,7 +12,12 @@ describe('gc', () => {
   let helia: Helia
 
   beforeEach(async () => {
-    helia = await createHelia()
+    helia = await createHelia({
+      codecs: [
+        dagCbor,
+        dagJson
+      ]
+    })
   })
 
   afterEach(async () => {

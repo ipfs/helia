@@ -1,5 +1,5 @@
-import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
+import { defaultLogger } from 'birnam'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'
 import { stubInterface } from 'sinon-ts'

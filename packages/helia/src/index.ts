@@ -19,25 +19,23 @@
  * ```
  */
 
-import { Helia as HeliaClass } from '@helia/utils'
+import { withBitswap } from '@helia/bitswap'
+import { withHTTP } from '@helia/http'
+import { withLibp2p } from '@helia/libp2p'
+import * as dagCbor from '@ipld/dag-cbor'
+import * as dagJson from '@ipld/dag-json'
+import * as json from 'multiformats/codecs/json'
+import { sha512 } from 'multiformats/hashes/sha2'
+import { Helia as HeliaClass } from './helia.ts'
 import { name, version } from './version.ts'
+import type { HeliaInit } from './helia.ts'
 import type { Helia } from '@helia/interface'
-import type { HeliaInit } from '@helia/utils'
-import type { CID } from 'multiformats/cid'
 
 // re-export interface types so people don't have to depend on @helia/interface
 // if they don't want to
 export * from '@helia/interface'
 
 export type { HeliaInit }
-
-/**
- * DAGWalkers take a block and yield CIDs encoded in that block
- */
-export interface DAGWalker {
-  codec: number
-  walk(block: Uint8Array): Generator<CID, void, undefined>
-}
 
 /**
  * Create and return a Helia node
@@ -61,6 +59,49 @@ export interface DAGWalker {
  * ```
  */
 export function createHelia (init: HeliaInit = {}): Helia {
+  return withBitswap(withLibp2p(withHTTP(createHeliaLight({
+    ...init,
+    codecs: [
+      dagCbor,
+      dagJson,
+      json,
+      ...(init.codecs ?? [])
+    ],
+    hashers: [
+      sha512,
+      ...(init.hashers ?? [])
+    ]
+  }))))
+}
+
+/**
+ * Create and return a Helia node without and routing or block broker config.
+ *
+ * The only supported codecs are `dag-pb` and `raw`, and the only supported
+ * hashes are `sha2-256` and `identity`.
+ *
+ * This allows more flexible customization and the smallest possible bundle size
+ * in web browsers.
+ *
+ * @example Creating a Helia node
+ *
+ * ```ts
+ * import { createHeliaLight } from 'helia'
+ * import { unixfs } from '@helia/unixfs'
+ * import { CID } from 'multiformats/cid'
+ *
+ * const helia = await createHeliaLight()
+ * const fs = unixfs(helia)
+ * const cid = CID.parse('QmFoo...')
+ *
+ * for await (const buf of fs.cat(cid, {
+ *   signal: AbortSignal.timeout(5_000)
+ * })) {
+ *   console.info(buf)
+ * }
+ * ```
+ */
+export function createHeliaLight (init: HeliaInit = {}): Helia {
   const helia = new HeliaClass({
     name,
     version,

@@ -1,3 +1,4 @@
+import { breadthFirstWalker } from '@helia/utils'
 import * as dagCbor from '@ipld/dag-cbor'
 import * as dagJson from '@ipld/dag-json'
 import * as dagPb from '@ipld/dag-pb'
@@ -7,7 +8,6 @@ import drain from 'it-drain'
 import { CID } from 'multiformats/cid'
 import * as json from 'multiformats/codecs/json'
 import * as raw from 'multiformats/codecs/raw'
-import { breadthFirstWalker } from '../src/graph-walker.ts'
 import { createAndPutBlock } from './fixtures/create-block.ts'
 import { createHelia } from './fixtures/create-helia.ts'
 import type { Helia } from '@helia/interface'
@@ -17,7 +17,13 @@ describe('pins', () => {
   let helia: Helia
 
   beforeEach(async () => {
-    helia = await createHelia()
+    helia = await createHelia({
+      codecs: [
+        dagCbor,
+        dagJson,
+        json
+      ]
+    })
   })
 
   afterEach(async () => {

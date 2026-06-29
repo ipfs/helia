@@ -46,6 +46,7 @@ export interface NodeInfo {
 }
 
 export interface HeliaMixin<Start extends Helia = Helia, Stop = Start> {
+  name: string
   start?(helia: Start): Promise<void> | void
   stop?(helia: Stop): Promise<void> | void
 }

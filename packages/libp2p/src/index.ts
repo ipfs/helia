@@ -51,9 +51,9 @@ async function getLibp2p <H extends Helia, M extends ServiceMap = ServiceMap> (h
 /**
  * Return a Helia node augmented with a libp2p instance
  */
-export function withLibp2p <H extends Helia, M extends ServiceMap = ServiceMap, L extends Libp2p = Libp2p<M>> (helia: H, opts: L): HeliaWithLibp2p<M>
-export function withLibp2p <H extends Helia, M extends ServiceMap = ServiceMap> (helia: H, opts?: CreateLibp2pOptions<M>): HeliaWithLibp2p<M>
-export function withLibp2p <H extends Helia, M extends ServiceMap = ServiceMap> (helia: H, opts?: CreateLibp2pOptions<M>): HeliaWithLibp2p {
+export function withLibp2p <H extends Helia, M extends ServiceMap = ServiceMap, L extends Libp2p = Libp2p<M>> (helia: H, opts: L): H & HeliaWithLibp2p<M>
+export function withLibp2p <H extends Helia, M extends ServiceMap = ServiceMap> (helia: H, opts?: CreateLibp2pOptions<M>): H & HeliaWithLibp2p<M>
+export function withLibp2p <H extends Helia, M extends ServiceMap = ServiceMap> (helia: H, opts?: CreateLibp2pOptions<M>): H & HeliaWithLibp2p {
   let libp2p: any
 
   // add a getter that informs the user they need to start Helia
@@ -70,6 +70,7 @@ export function withLibp2p <H extends Helia, M extends ServiceMap = ServiceMap> 
   })
 
   const mixin: HeliaMixin<H & { libp2p?: Libp2p<M> }, H & { libp2p?: Libp2p<M> }> = {
+    name: 'libp2p',
     start: async (helia) => {
       if (libp2p == null) {
         libp2p = await getLibp2p(helia, opts)

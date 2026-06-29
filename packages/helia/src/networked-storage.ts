@@ -1,5 +1,5 @@
+import { InvalidConfigurationError } from '@helia/utils'
 import { start, stop } from '@libp2p/interface'
-import { InvalidConfigurationError } from '../errors.ts'
 import { SessionStorage } from './session-storage.ts'
 import { Storage } from './storage.ts'
 import type { StorageComponents, StorageInit } from './storage.ts'
