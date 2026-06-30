@@ -8,7 +8,7 @@ import { localStoreRouting } from './routing/local-store.ts'
 import { ipnsSelector } from './selector.ts'
 import { normalizeKey, normalizeValue, unmarshalIPNSRecord } from './utils.ts'
 import { ipnsValidator } from './validator.ts'
-import type { IPNSComponents, IPNS as IPNSInterface, IPNSOptions, PublishResult, PublishOptions, ResolveOptions, ResolveResult } from './index.ts'
+import type { IPNSComponents, IPNS as IPNSInterface, IPNSOptions, IPNSPublishResult, PublishOptions, IPNSResolveOptions, IPNSResolveResult } from './index.ts'
 import type { LocalStore } from './local-store.ts'
 import type { IPNSRouting } from './routing/index.ts'
 import type { PublicKey } from '@helia/interface'
@@ -100,11 +100,11 @@ export class IPNS implements IPNSInterface, Startable {
     this.republisher.stop()
   }
 
-  async publish (keyName: string, value: PublicKey | CID | MultihashDigest | string, options: PublishOptions = {}): Promise<PublishResult> {
+  async publish (keyName: string, value: PublicKey | CID | MultihashDigest | string, options: PublishOptions = {}): Promise<IPNSPublishResult> {
     return this.publisher.publish(keyName, normalizeValue(value), options)
   }
 
-  async * resolve (key: PublicKey | CID<unknown, 0x72> | MultihashDigest | string, options: ResolveOptions = {}): AsyncGenerator<ResolveResult> {
+  async * resolve (key: PublicKey | CID | MultihashDigest | string, options: IPNSResolveOptions = {}): AsyncGenerator<IPNSResolveResult> {
     const { digest } = normalizeKey(key)
 
     yield * this.resolver.resolve(digest, options)

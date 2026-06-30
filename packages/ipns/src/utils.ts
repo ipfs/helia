@@ -335,7 +335,7 @@ function isMultihashDigest (obj: any): obj is MultihashDigest {
   return typeof obj.code === 'number' && obj.digest instanceof Uint8Array && typeof obj.size === 'number' && obj.bytes instanceof Uint8Array
 }
 
-export function normalizeKey (key?: PublicKey | CID<unknown, 0x72> | MultihashDigest | string): { digest: MultihashDigest, path: string } {
+export function normalizeKey (key?: PublicKey | CID | MultihashDigest | string): { digest: MultihashDigest, path: string } {
   if (key != null) {
     if (isPublicKey(key)) {
       return {

@@ -3,7 +3,7 @@ import { CustomProgressEvent } from 'progress-events'
 import { DEFAULT_LIFETIME_MS, DEFAULT_TTL_NS } from '../constants.ts'
 import { createIPNSRecord } from '../records.ts'
 import { marshalIPNSRecord, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from '../utils.ts'
-import type { PublishResult, PublishOptions } from '../index.ts'
+import type { IPNSPublishResult, PublishOptions } from '../index.ts'
 import type { LocalStore } from '../local-store.ts'
 import type { IPNSRouting } from '../routing/index.ts'
 import type { Keychain, PrivateKey } from '@helia/interface'
@@ -32,7 +32,7 @@ export class IPNSPublisher {
     this.routers = init.routers
   }
 
-  async publish (keyName: string, value: string, options: PublishOptions = {}): Promise<PublishResult> {
+  async publish (keyName: string, value: string, options: PublishOptions = {}): Promise<IPNSPublishResult> {
     try {
       const key = await this.#loadOrCreateKey(keyName, options)
       const digest = key.publicKey.toMultihash()

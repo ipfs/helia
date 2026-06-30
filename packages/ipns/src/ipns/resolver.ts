@@ -3,7 +3,7 @@ import { RecordNotFoundError, RecordsFailedValidationError } from '../errors.ts'
 import { ipnsSelector } from '../selector.ts'
 import { multihashToIPNSRoutingKey, unmarshalIPNSRecord, normalizeKey, IPNS_STRING_PREFIX } from '../utils.ts'
 import { ipnsValidator } from '../validator.ts'
-import type { IPNSRecord, ResolveOptions, ResolveResult } from '../index.ts'
+import type { IPNSRecord, IPNSResolveOptions, IPNSResolveResult } from '../index.ts'
 import type { LocalStore } from '../local-store.ts'
 import type { IPNSRouting } from '../routing/index.ts'
 import type { Routing, Keychain } from '@helia/interface'
@@ -36,7 +36,7 @@ export class IPNSResolver {
     this.keychain = components.keychain
   }
 
-  async * resolve (key: MultihashDigest, options: ResolveOptions = {}): AsyncGenerator<ResolveResult> {
+  async * resolve (key: MultihashDigest, options: IPNSResolveOptions = {}): AsyncGenerator<IPNSResolveResult> {
     let { digest } = normalizeKey(key)
 
     while (true) {
@@ -56,7 +56,7 @@ export class IPNSResolver {
     }
   }
 
-  async #findIpnsRecord (routingKey: Uint8Array, options: ResolveOptions = {}): Promise<IPNSRecord> {
+  async #findIpnsRecord (routingKey: Uint8Array, options: IPNSResolveOptions = {}): Promise<IPNSRecord> {
     const records: IPNSRecord[] = []
     const cached = await this.localStore.has(routingKey, options)
 
