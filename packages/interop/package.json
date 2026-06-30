@@ -1,6 +1,6 @@
 {
   "name": "@helia/interop",
-  "version": "11.0.1",
+  "version": "11.0.2",
   "description": "Interop tests for Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/interop#readme",
@@ -56,7 +56,7 @@
     "@helia/dag-cbor": "^6.0.0",
     "@helia/dag-json": "^6.0.0",
     "@helia/delegated-routing-client": "^1.0.0",
-    "@helia/dnslink": "^2.0.0",
+    "@helia/dnslink": "^2.0.1",
     "@helia/interface": "^7.0.0",
     "@helia/ipns": "^10.0.1",
     "@helia/json": "^6.0.0",

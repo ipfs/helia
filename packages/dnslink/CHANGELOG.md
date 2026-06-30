@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/ipfs/helia/compare/dnslink-v2.0.0...dnslink-v2.0.1) (2026-06-30)
+
+
+### Bug Fixes
+
+* return multihash value instead of peer id ([#1062](https://github.com/ipfs/helia/issues/1062)) ([cee53d7](https://github.com/ipfs/helia/commit/cee53d7daa50af23f064681f07d75c24093aacbe))
+
 ## [2.0.0](https://github.com/ipfs/helia/compare/dnslink-v1.2.1...dnslink-v2.0.0) (2026-06-29)
 
 
