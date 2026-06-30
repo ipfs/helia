@@ -100,9 +100,9 @@
  */
 
 import { DNSLink as DNSLinkClass } from './dnslink.ts'
-import type { AbortOptions, ComponentLogger, PeerId } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger } from '@libp2p/interface'
 import type { Answer, DNS, ResolveDnsProgressEvents as ResolveProgressEvents } from '@multiformats/dns'
-import type { CID } from 'multiformats/cid'
+import type { CID, MultihashDigest } from 'multiformats/cid'
 import type { ProgressOptions } from 'progress-events'
 
 export type { ResolveProgressEvents }
@@ -167,7 +167,7 @@ export interface DNSLinkIPNSResult {
   /**
    * The resolved value
    */
-  peerId: PeerId
+  value: MultihashDigest
 
   /**
    * If the resolved value is an IPFS path, it will be present here
