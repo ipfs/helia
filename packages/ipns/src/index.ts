@@ -211,7 +211,7 @@ export interface IPNSRecordMetadata {
   lifetime: number
 }
 
-export interface ResolveOptions extends AbortOptions, ProgressOptions<ResolveProgressEvents | IPNSRoutingProgressEvents> {
+export interface IPNSResolveOptions extends AbortOptions, ProgressOptions<ResolveProgressEvents | IPNSRoutingProgressEvents> {
   /**
    * Do not query the network for the IPNS record
    *
@@ -227,14 +227,14 @@ export interface ResolveOptions extends AbortOptions, ProgressOptions<ResolvePro
   nocache?: boolean
 }
 
-export interface ResolveResult {
+export interface IPNSResolveResult {
   /**
    * The resolved record
    */
   record: IPNSRecord
 }
 
-export interface PublishResult {
+export interface IPNSPublishResult {
   /**
    * The published record
    */
@@ -253,13 +253,12 @@ export interface PublishResult {
 
 export interface IPNSResolver {
   /**
-   * Accepts a libp2p public key, a CID with the libp2p-key codec and either the
-   * identity hash (for Ed25519 and secp256k1 public keys) or a SHA256 hash (for
-   * RSA public keys), or the multihash of a libp2p-key encoded CID, or a
-   * Ed25519, secp256k1 or RSA PeerId and recursively resolves the IPNS record
-   * corresponding to that key until a value is found.
+   * Accepts a CID with the libp2p-key codec and either the identity hash (for
+   * Ed25519 and secp256k1 public keys) or a SHA256 hash (for RSA public keys),
+   * or the multihash of a libp2p-key encoded CID and recursively resolves the
+   * IPNS record corresponding to that key until a value is found.
    */
-  resolve(key: CID<unknown, 0x72> | MultihashDigest, options?: ResolveOptions): AsyncGenerator<ResolveResult>
+  resolve(key: CID | MultihashDigest, options?: IPNSResolveOptions): AsyncGenerator<IPNSResolveResult>
 }
 
 export interface IPNS {
@@ -298,7 +297,7 @@ export interface IPNS {
    * console.info(result) // { answer: ... }
    * ```
    */
-  publish(keyName: string, value: CID | PublicKey | MultihashDigest | string, options?: PublishOptions): Promise<PublishResult>
+  publish(keyName: string, value: CID | PublicKey | MultihashDigest | string, options?: PublishOptions): Promise<IPNSPublishResult>
 
   /**
    * Accepts a multihash of a public key, a libp2p-key CID containing the
@@ -307,7 +306,7 @@ export interface IPNS {
    * (e.g. the value can be parsed as a string that does not start with
    * `/ipns/`).
    */
-  resolve(name: CID<unknown, 0x72> | PublicKey | MultihashDigest | string, options?: ResolveOptions): AsyncGenerator<ResolveResult>
+  resolve(name: CID | PublicKey | MultihashDigest | string, options?: IPNSResolveOptions): AsyncGenerator<IPNSResolveResult>
 
   /**
    * Stop republishing of an IPNS record

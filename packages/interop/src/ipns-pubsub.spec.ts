@@ -20,7 +20,7 @@ import { createHeliaNode } from './fixtures/create-helia.ts'
 import { createKuboNode } from './fixtures/create-kubo.ts'
 import { keyTypes } from './fixtures/key-types.ts'
 import { waitFor } from './fixtures/wait-for.ts'
-import type { IPNS, ResolveResult } from '@helia/ipns'
+import type { IPNS, IPNSResolveResult } from '@helia/ipns'
 import type { PubSub } from '@helia/ipns/routing'
 import type { HeliaWithLibp2p } from '@helia/libp2p'
 import type { Keychain } from '@libp2p/keychain'
@@ -165,7 +165,7 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
         key: keyName
       })
 
-      let resolveResult: ResolveResult | undefined
+      let resolveResult: IPNSResolveResult | undefined
 
       // we should get an update eventually
       await waitFor(async () => {
