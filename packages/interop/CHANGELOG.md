@@ -1,5 +1,19 @@
 # Changelog
 
+## [11.0.1](https://github.com/ipfs/helia/compare/interop-v11.0.0...interop-v11.0.1) (2026-06-30)
+
+
+### Bug Fixes
+
+* relax CID input type for resolving IPNS names ([#1060](https://github.com/ipfs/helia/issues/1060)) ([3d869e9](https://github.com/ipfs/helia/commit/3d869e9d902706f0115393a25add89f07aff2c49))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/ipns bumped from ^10.0.0 to ^10.0.1
+
 ## [11.0.0](https://github.com/ipfs/helia/compare/interop-v10.2.5...interop-v11.0.0) (2026-06-29)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [10.0.1](https://github.com/ipfs/helia/compare/ipns-v10.0.0...ipns-v10.0.1) (2026-06-30)
+
+
+### Bug Fixes
+
+* relax CID input type for resolving IPNS names ([#1060](https://github.com/ipfs/helia/issues/1060)) ([3d869e9](https://github.com/ipfs/helia/commit/3d869e9d902706f0115393a25add89f07aff2c49))
+
 ## [10.0.0](https://github.com/ipfs/helia/compare/ipns-v9.2.1...ipns-v10.0.0) (2026-06-29)
 
 
