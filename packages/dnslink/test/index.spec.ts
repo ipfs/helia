@@ -5,7 +5,9 @@ import { RecordType } from '@multiformats/dns'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { base36 } from 'multiformats/bases/base36'
+import { base58btc } from 'multiformats/bases/base58'
 import { CID } from 'multiformats/cid'
+import * as Digest from 'multiformats/hashes/digest'
 import { stubInterface } from 'sinon-ts'
 import { dnsLink } from '../src/index.ts'
 import type { DNSLink, DNSLinkResolveResult } from '../src/index.ts'
@@ -228,7 +230,7 @@ describe('dnslink', () => {
       throw new Error('Did not resolve entry')
     }
 
-    expect(result).to.have.deep.nested.property('[0].peerId', peerId)
+    expect(result).to.have.deep.nested.property('[0].value', Digest.decode(base58btc.decode('zQmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')))
     expect(result).to.have.nested.property('[0].path', '/foobar/path/123')
   })
 
@@ -248,7 +250,7 @@ describe('dnslink', () => {
       throw new Error('Did not resolve entry')
     }
 
-    expect(result).to.have.deep.nested.property('[0].peerId', peerId)
+    expect(result).to.have.deep.nested.property('[0].value', Digest.decode(base58btc.decode('zQmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')))
     expect(result).to.have.nested.property('[0].path', '/foobar/path/123')
   })
 

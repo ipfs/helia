@@ -1,4 +1,4 @@
-import { peerIdFromString } from '@libp2p/peer-id'
+import { CID } from 'multiformats/cid'
 import { InvalidNamespaceError } from '../errors.ts'
 import type { DNSLinkParser, DNSLinkIPNSResult, DNSLinkDNSLinkResult } from '../index.ts'
 import type { Answer } from '@multiformats/dns'
@@ -14,7 +14,7 @@ export const ipns: DNSLinkParser<DNSLinkIPNSResult | DNSLinkDNSLinkResult> = (va
     // if the result parses as a PeerId, we've reached the end of the recursion
     return {
       namespace: 'ipns',
-      peerId: peerIdFromString(peerId),
+      value: CID.parse(peerId).multihash,
       path: rest.length > 0 ? `/${rest.join('/')}` : '',
       answer
     }
