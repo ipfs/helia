@@ -271,9 +271,9 @@ export class Routing implements RoutingInterface, Startable {
    * Get the value to the given key. The first value offered by any configured
    * router will be returned.
    */
-  async get (key: Uint8Array, options?: RoutingOptions<RoutingGetProgressEvents>): Promise<Uint8Array> {
+  async get (key: Uint8Array, options?: RoutingOptions<RoutingGetProgressEvents>): Promise<Uint8Array<ArrayBuffer>> {
     const errors: Error[] = []
-    let result: Uint8Array | undefined
+    let result: Uint8Array<ArrayBuffer> | undefined
 
     try {
       result = await Promise.any(

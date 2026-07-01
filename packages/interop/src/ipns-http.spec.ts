@@ -69,6 +69,6 @@ describe('@helia/ipns - http', () => {
       throw new Error('No results found')
     }
 
-    expect(result.record.value).to.equal(`/ipfs/${cid}`)
+    expect(result.value).to.equal(`/ipfs/${cid}`)
   })
 })

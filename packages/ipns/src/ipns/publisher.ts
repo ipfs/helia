@@ -1,8 +1,9 @@
 import { base36 } from 'multiformats/bases/base36'
 import { CustomProgressEvent } from 'progress-events'
-import { DEFAULT_LIFETIME_MS, DEFAULT_TTL_NS } from '../constants.ts'
+import { DEFAULT_LIFETIME_MS } from '../constants.ts'
+import { IPNSEntry } from '../pb/ipns.ts'
 import { createIPNSRecord } from '../records.ts'
-import { marshalIPNSRecord, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from '../utils.ts'
+import { decodeExtensibleData, multihashToIPNSRoutingKey } from '../utils.ts'
 import type { IPNSPublishResult, PublishOptions } from '../index.ts'
 import type { LocalStore } from '../local-store.ts'
 import type { IPNSRouting } from '../routing/index.ts'
@@ -42,31 +43,43 @@ export class IPNSPublisher {
       if (await this.localStore.has(routingKey, options)) {
         // if we have published under this key before, increment the sequence number
         const { record } = await this.localStore.get(routingKey, options)
-        const existingRecord = await unmarshalIPNSRecord(routingKey, record, this.keychain, options)
-        sequenceNumber = existingRecord.sequence + 1n
+        const existingRecord = IPNSEntry.decode(record)
+        const data = decodeExtensibleData(existingRecord.data)
+        sequenceNumber = (data.Sequence ?? 0n) + 1n
       }
 
-      // convert ttl from milliseconds to nanoseconds as createIPNSRecord expects
-      const ttlNs = options.ttl != null ? BigInt(options.ttl) * 1_000_000n : DEFAULT_TTL_NS
       const lifetime = options.lifetime ?? DEFAULT_LIFETIME_MS
-      const record = await createIPNSRecord(key, value, sequenceNumber, lifetime, { ...options, ttlNs })
-      const marshaledRecord = marshalIPNSRecord(record)
+      const record = await createIPNSRecord(key, value, sequenceNumber, lifetime, {
+        ...options,
+        // convert ttl from milliseconds to nanoseconds as createIPNSRecord expects
+        ttlNs: options.ttl != null ? BigInt(options.ttl) * 1_000_000n : undefined
+      })
+      const marshaledRecord = IPNSEntry.encode(record)
 
       if (options.offline === true) {
         // only store record locally
-        await this.localStore.put(routingKey, marshaledRecord, { ...options, metadata: { keyName, lifetime } })
+        await this.localStore.put(routingKey, marshaledRecord, {
+          ...options,
+          metadata: {
+            keyName,
+            lifetime
+          }
+        })
       } else {
         // publish record to routing (including the local store)
         await Promise.all(this.routers.map(async r => {
-          await r.put(routingKey, marshaledRecord, { ...options, metadata: { keyName, lifetime } })
+          await r.put(routingKey, marshaledRecord, {
+            ...options,
+            metadata: {
+              keyName,
+              lifetime
+            }
+          })
         }))
       }
 
       return {
-        record: {
-          ...record,
-          publicKey: key.publicKey
-        },
+        record,
         name: `/ipns/${key.publicKey.toCID().toString(base36)}`,
         publicKey: key.publicKey
       }

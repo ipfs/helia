@@ -76,7 +76,8 @@
     "@multiformats/dns": "^1.0.13",
     "it-map": "^3.1.6",
     "libp2p": "^3.3.3",
-    "multiformats": "^14.0.0"
+    "multiformats": "^14.0.0",
+    "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
     "aegir": "^48.0.11",

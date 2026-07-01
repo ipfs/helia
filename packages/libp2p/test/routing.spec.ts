@@ -68,6 +68,8 @@ describe('libp2p-routing', () => {
     const key = Uint8Array.from([0, 1, 2, 3, 4])
     const options = {}
 
+    contentRouting.get.resolves(key)
+
     await router.get?.(key, options)
 
     expect(contentRouting.get.calledWith(key, options)).to.be.true()

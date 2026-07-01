@@ -66,7 +66,6 @@ value.
 import { createHelia } from 'helia'
 import { ipns } from '@helia/ipns'
 import { unixfs } from '@helia/unixfs'
-import { generateKeyPair } from '@libp2p/crypto/keys'
 
 const helia = await createHelia()
 const name = ipns(helia)
@@ -95,7 +94,6 @@ It is possible to publish CIDs with an associated path.
 import { createHelia } from 'helia'
 import { ipns } from '@helia/ipns'
 import { unixfs } from '@helia/unixfs'
-import { generateKeyPair } from '@libp2p/crypto/keys'
 
 const helia = await createHelia()
 const name = ipns(helia)
@@ -134,15 +132,13 @@ and multiple peers are listening on the topic(s), otherwise update messages
 may fail to be published with "Insufficient peers" errors.
 
 ```TypeScript
-import { ipns } from '@helia/ipns'
-import { pubsub } from '@helia/ipns/routing'
+import { ipns, pubSubIPNSRouting } from '@helia/ipns'
 import { withLibp2p, libp2pDefaults } from '@helia/libp2p'
 import { unixfs } from '@helia/unixfs'
-import { generateKeyPair } from '@libp2p/crypto/keys'
 import { floodsub } from '@libp2p/floodsub'
 import { createHelia } from 'helia'
 import type { Helia } from '@helia/interface'
-import type { PubSub } from '@helia/ipns/routing'
+import type { PubSub } from '@helia/ipns'
 import type { DefaultLibp2pServices } from '@helia/libp2p'
 import type { FloodSub } from '@libp2p/floodsub'
 import type { Libp2p } from '@libp2p/interface'
@@ -154,7 +150,7 @@ const helia = await withLibp2p<Helia, { pubsub: FloodSub }>(createHelia(), libp2
 
 const name = ipns(helia, {
  routers: [
-   pubsub(helia)
+   pubSubIPNSRouting(helia)
  ]
 })
 

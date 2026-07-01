@@ -20,7 +20,7 @@ export namespace WantType {
 }
 
 export interface WantlistEntry {
-  cid: Uint8Array
+  cid: Uint8Array<ArrayBuffer>
   priority: number
   cancel?: boolean
   wantType?: WantType
@@ -161,7 +161,7 @@ export namespace WantlistEntry {
 
   export interface WantlistEntryCidFieldEvent {
     field: '$.cid'
-    value: Uint8Array
+    value: Uint8Array<ArrayBuffer>
   }
 
   export interface WantlistEntryPriorityFieldEvent {
@@ -310,7 +310,7 @@ export namespace Wantlist {
 
   export interface WantlistEntriesCidFieldEvent {
     field: '$.entries[].cid'
-    value: Uint8Array
+    value: Uint8Array<ArrayBuffer>
     index: number
   }
 
@@ -357,8 +357,8 @@ export namespace Wantlist {
 }
 
 export interface Block {
-  prefix: Uint8Array
-  data: Uint8Array
+  prefix: Uint8Array<ArrayBuffer>
+  data: Uint8Array<ArrayBuffer>
 }
 
 export namespace Block {
@@ -447,12 +447,12 @@ export namespace Block {
 
   export interface BlockPrefixFieldEvent {
     field: '$.prefix'
-    value: Uint8Array
+    value: Uint8Array<ArrayBuffer>
   }
 
   export interface BlockDataFieldEvent {
     field: '$.data'
-    value: Uint8Array
+    value: Uint8Array<ArrayBuffer>
   }
 
   export function encode (obj: Partial<Block>): Uint8Array<ArrayBuffer> {
@@ -485,7 +485,7 @@ export namespace BlockPresenceType {
 }
 
 export interface BlockPresence {
-  cid: Uint8Array
+  cid: Uint8Array<ArrayBuffer>
   type: BlockPresenceType
 }
 
@@ -575,7 +575,7 @@ export namespace BlockPresence {
 
   export interface BlockPresenceCidFieldEvent {
     field: '$.cid'
-    value: Uint8Array
+    value: Uint8Array<ArrayBuffer>
   }
 
   export interface BlockPresenceTypeFieldEvent {
@@ -767,7 +767,7 @@ export namespace BitswapMessage {
 
   export interface BitswapMessageWantlistEntriesCidFieldEvent {
     field: '$.wantlist.entries[].cid'
-    value: Uint8Array
+    value: Uint8Array<ArrayBuffer>
     index: number
   }
 
@@ -802,19 +802,19 @@ export namespace BitswapMessage {
 
   export interface BitswapMessageBlocksPrefixFieldEvent {
     field: '$.blocks[].prefix'
-    value: Uint8Array
+    value: Uint8Array<ArrayBuffer>
     index: number
   }
 
   export interface BitswapMessageBlocksDataFieldEvent {
     field: '$.blocks[].data'
-    value: Uint8Array
+    value: Uint8Array<ArrayBuffer>
     index: number
   }
 
   export interface BitswapMessageBlockPresencesCidFieldEvent {
     field: '$.blockPresences[].cid'
-    value: Uint8Array
+    value: Uint8Array<ArrayBuffer>
     index: number
   }
 

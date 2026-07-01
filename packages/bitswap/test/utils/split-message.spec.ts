@@ -12,7 +12,7 @@ import { cidToPrefix } from '../../src/utils/cid-prefix.ts'
 import { MAX_BLOCK_SIZE, splitMessage } from '../../src/utils/split-message.ts'
 import type { Block, BlockPresence, WantlistEntry } from '../../src/pb/message.ts'
 
-async function createBlock (size = 1024): Promise<{ cid: CID, data: Uint8Array }> {
+async function createBlock (size = 1024): Promise<{ cid: CID, data: Uint8Array<ArrayBuffer> }> {
   const randomLength = 1024
   const data = uint8ArrayConcat([randomBytes(randomLength), new Uint8Array(size)]).subarray(0, size)
   const digest = await sha256.digest(data)

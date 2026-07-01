@@ -20,22 +20,6 @@
   ],
   "type": "module",
   "types": "./dist/src/index.d.ts",
-  "typesVersions": {
-    "*": {
-      "*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ],
-      "src/*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ]
-    }
-  },
   "files": [
     "src",
     "dist",
@@ -47,16 +31,6 @@
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js",
       "module-sync": "./dist/src/index.js"
-    },
-    "./dns-resolvers": {
-      "types": "./dist/src/dns-resolvers/index.d.ts",
-      "import": "./dist/src/dns-resolvers/index.js",
-      "module-sync": "./dist/src/dns-resolvers/index.js"
-    },
-    "./routing": {
-      "types": "./dist/src/routing/index.d.ts",
-      "import": "./dist/src/routing/index.js",
-      "module-sync": "./dist/src/routing/index.js"
     }
   },
   "scripts": {
@@ -77,6 +51,8 @@
   },
   "dependencies": {
     "@helia/interface": "^7.0.0",
+    "@ipshipyard/crypto": "^1.1.0",
+    "@ipshipyard/keychain": "^1.0.2",
     "@libp2p/fetch": "^4.1.6",
     "@libp2p/interface": "^3.2.3",
     "@libp2p/kad-dht": "^16.3.2",
@@ -97,8 +73,6 @@
     "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
-    "@ipshipyard/crypto": "^1.1.0",
-    "@ipshipyard/keychain": "^1.0.2",
     "aegir": "^48.0.11",
     "datastore-core": "^12.0.1",
     "it-drain": "^3.0.12",

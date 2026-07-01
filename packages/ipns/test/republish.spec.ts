@@ -2,8 +2,11 @@ import { start, stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
 import sinon from 'sinon'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { localStore } from '../src/local-store.ts'
-import { createIPNSRecord, marshalIPNSRecord, unmarshalIPNSRecord, multihashToIPNSRoutingKey } from '../src/records.ts'
+import { IPNSEntry } from '../src/pb/ipns.ts'
+import { createIPNSRecord } from '../src/records.ts'
+import { decodeExtensibleData, multihashToIPNSRoutingKey } from '../src/utils.ts'
 import { createIPNS } from './fixtures/create-ipns.ts'
 import type { IPNS } from '../src/ipns.ts'
 import type { CreateIPNSResult } from './fixtures/create-ipns.ts'
@@ -63,7 +66,7 @@ describe('republish', () => {
 
       // Store the record in the real datastore using the localStore
       const store = localStore(result.datastore, result.log)
-      await store.put(routingKey, marshalIPNSRecord(record), {
+      await store.put(routingKey, IPNSEntry.encode(record), {
         metadata: {
           keyName: 'test-key',
           lifetime: SHORTENED_VALIDITY
@@ -86,7 +89,7 @@ describe('republish', () => {
 
       // Store the record in the real datastore using the localStore
       const store = localStore(result.datastore, result.log)
-      await store.put(routingKey, marshalIPNSRecord(record), {
+      await store.put(routingKey, IPNSEntry.encode(record), {
         metadata: {
           keyName: 'test-key',
           lifetime: SHORTENED_VALIDITY
@@ -115,7 +118,7 @@ describe('republish', () => {
 
       // Store the record in the real datastore
       const store = localStore(result.datastore, result.log)
-      await store.put(routingKey, marshalIPNSRecord(record), {
+      await store.put(routingKey, IPNSEntry.encode(record), {
         metadata: {
           keyName: 'test-key',
           lifetime: SHORTENED_VALIDITY
@@ -131,8 +134,9 @@ describe('republish', () => {
       const callArgs = putStubCustom.firstCall.args
       expect(callArgs[0]).to.deep.equal(routingKey)
 
-      const republishedRecord = await unmarshalIPNSRecord(routingKey, callArgs[1], result.keychain)
-      expect(republishedRecord.sequence).to.equal(2n) // Incremented from 1n
+      const republishedRecord = IPNSEntry.decode(callArgs[1])
+      const republishedRecordData = decodeExtensibleData(republishedRecord.data)
+      expect(republishedRecordData.Sequence).to.equal(2n) // Incremented from 1n
     })
   })
 
@@ -144,7 +148,7 @@ describe('republish', () => {
 
       // Store the record without metadata (simulate old records)
       const store = localStore(result.datastore, result.log)
-      await store.put(routingKey, marshalIPNSRecord(record)) // No metadata
+      await store.put(routingKey, IPNSEntry.encode(record)) // No metadata
 
       await start(name)
       await new Promise(resolve => setTimeout(resolve, 20))
@@ -179,7 +183,7 @@ describe('republish', () => {
 
       // Store the record in the real datastore
       const store = localStore(result.datastore, result.log)
-      await store.put(routingKey, marshalIPNSRecord(record), {
+      await store.put(routingKey, IPNSEntry.encode(record), {
         metadata: {
           keyName: 'test-key',
           lifetime: SHORTENED_VALIDITY
@@ -192,8 +196,9 @@ describe('republish', () => {
       expect(putStubCustom.called).to.be.true()
 
       const callArgs = putStubCustom.firstCall.args
-      const republishedRecord = await unmarshalIPNSRecord(routingKey, callArgs[1], result.keychain)
-      expect(republishedRecord.sequence).to.equal(6n) // Incremented from 5n
+      const republishedRecord = IPNSEntry.decode(callArgs[1])
+      const republishedRecordData = decodeExtensibleData(republishedRecord.data)
+      expect(republishedRecordData.Sequence).to.equal(6n) // Incremented from 5n
     })
   })
 
@@ -206,7 +211,7 @@ describe('republish', () => {
 
       // Store the record in the real datastore
       const store = localStore(result.datastore, result.log)
-      await store.put(routingKey, marshalIPNSRecord(record), {
+      await store.put(routingKey, IPNSEntry.encode(record), {
         metadata: {
           keyName: 'test-key',
           lifetime: SHORTENED_VALIDITY
@@ -221,9 +226,10 @@ describe('republish', () => {
       const callArgs = putStubCustom.firstCall.args
       expect(callArgs[0]).to.deep.equal(routingKey)
 
-      const republishedRecord = await unmarshalIPNSRecord(routingKey, callArgs[1], result.keychain)
-      expect(republishedRecord.sequence).to.equal(2n) // Incremented from 1n
-      expect(republishedRecord.ttl).to.equal(customTtl)
+      const republishedRecord = IPNSEntry.decode(callArgs[1])
+      const republishedRecordData = decodeExtensibleData(republishedRecord.data)
+      expect(republishedRecordData.Sequence).to.equal(2n) // Incremented from 1n
+      expect(republishedRecordData.TTL).to.equal(customTtl, 'incorrect TTL was used')
     })
 
     it('should use default TTL when not present', async () => {
@@ -233,7 +239,7 @@ describe('republish', () => {
 
       // Store the record in the real datastore
       const store = localStore(result.datastore, result.log)
-      await store.put(routingKey, marshalIPNSRecord(record), {
+      await store.put(routingKey, IPNSEntry.encode(record), {
         metadata: {
           keyName: 'test-key',
           lifetime: SHORTENED_VALIDITY
@@ -245,8 +251,9 @@ describe('republish', () => {
 
       expect(putStubCustom.called).to.be.true()
       const callArgs = putStubCustom.firstCall.args
-      const republishedRecord = await unmarshalIPNSRecord(routingKey, callArgs[1], result.keychain)
-      expect(republishedRecord.ttl).to.equal(5n * 60n * 1000n * 1_000_000n) // Default TTL
+      const republishedRecord = IPNSEntry.decode(callArgs[1])
+      const republishedRecordData = decodeExtensibleData(republishedRecord.data)
+      expect(republishedRecordData.TTL).to.equal(5n * 60n * 1000n * 1_000_000n) // Default TTL
     })
 
     it('should use metadata lifetime', async () => {
@@ -257,7 +264,7 @@ describe('republish', () => {
 
       // Store the record in the real datastore
       const store = localStore(result.datastore, result.log)
-      await store.put(routingKey, marshalIPNSRecord(record), {
+      await store.put(routingKey, IPNSEntry.encode(record), {
         metadata: {
           keyName: 'test-key',
           lifetime: customLifetime
@@ -272,10 +279,11 @@ describe('republish', () => {
       expect(putStubCustom.called).to.be.true()
 
       const callArgs = putStubCustom.firstCall.args
-      const republishedRecord = await unmarshalIPNSRecord(routingKey, callArgs[1], result.keychain)
+      const republishedRecord = IPNSEntry.decode(callArgs[1])
+      const republishedRecordData = decodeExtensibleData(republishedRecord.data)
 
       // Check that the validity is set to the custom lifetime
-      const actualValidity = new Date(republishedRecord.validity)
+      const actualValidity = new Date(uint8ArrayToString(republishedRecordData.Validity))
 
       const timeDiff = Math.abs(actualValidity.getTime() - expectedValidity)
       expect(timeDiff).to.be.lessThan(200)
@@ -290,7 +298,7 @@ describe('republish', () => {
 
       // Store the record in the real datastore (but don't import the key)
       const store = localStore(result.datastore, result.log)
-      await store.put(routingKey, marshalIPNSRecord(record), {
+      await store.put(routingKey, IPNSEntry.encode(record), {
         metadata: {
           keyName: 'missing-key',
           lifetime: SHORTENED_VALIDITY
@@ -397,7 +405,7 @@ describe('republish', () => {
           lifetime: SHORTENED_VALIDITY
         }
       })
-      await store.put(routingKey2, marshalIPNSRecord(record2), {
+      await store.put(routingKey2, IPNSEntry.encode(record2), {
         metadata: {
           keyName: 'test-key-2',
           lifetime: SHORTENED_VALIDITY

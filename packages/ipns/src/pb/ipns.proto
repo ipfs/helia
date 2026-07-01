@@ -2,7 +2,7 @@
 
 syntax = "proto3";
 
-message IpnsEntry {
+message IPNSEntry {
 	enum ValidityType {
 		// setting an EOL says "this record is valid until..."
 		EOL = 0;

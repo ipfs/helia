@@ -298,7 +298,7 @@ export interface Router {
    * })
    * ```
    */
-  get?(key: Uint8Array, options?: RoutingOptions<RoutingGetProgressEvents>): Promise<Uint8Array>
+  get?(key: Uint8Array, options?: RoutingOptions<RoutingGetProgressEvents>): Promise<Uint8Array<ArrayBuffer>>
 
   /**
    * Searches the network for peer info corresponding to the passed peer id.
