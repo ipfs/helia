@@ -1,6 +1,6 @@
 import { isPublicKey } from '@helia/interface'
+import * as dagCbor from '@ipld/dag-cbor'
 import { InvalidParametersError } from '@libp2p/interface'
-import * as cborg from 'cborg'
 import { Key } from 'interface-datastore'
 import { base36 } from 'multiformats/bases/base36'
 import { base58btc } from 'multiformats/bases/base58'
@@ -138,7 +138,7 @@ export function multihashFromIPNSRoutingKey (key: Uint8Array): MultihashDigest {
 }
 
 export function encodeExtensibleData (data?: IPNSRecordData): Uint8Array<ArrayBuffer> {
-  return withArrayBuffer(cborg.encode(data))
+  return withArrayBuffer(dagCbor.encode(data))
 }
 
 export function decodeExtensibleData (buf?: Uint8Array): IPNSRecordData {
@@ -146,8 +146,9 @@ export function decodeExtensibleData (buf?: Uint8Array): IPNSRecordData {
     throw new InvalidRecordDataError('Record data is missing')
   }
 
-  const data = cborg.decode(buf)
+  const data = dagCbor.decode<IPNSRecordData>(buf)
 
+  // @ts-expect-error TODO: remove typescript enums
   if (data.ValidityType === 0) {
     data.ValidityType = IPNSEntry.ValidityType.EOL
   }

@@ -51,6 +51,7 @@
   },
   "dependencies": {
     "@helia/interface": "^7.0.0",
+    "@ipld/dag-cbor": "^10.0.1",
     "@ipshipyard/crypto": "^1.1.0",
     "@ipshipyard/keychain": "^1.0.2",
     "@libp2p/fetch": "^4.1.6",
@@ -61,7 +62,6 @@
     "@libp2p/utils": "^7.2.2",
     "abort-error": "^1.0.2",
     "any-signal": "^4.2.0",
-    "cborg": "^5.1.1",
     "delay": "^7.0.0",
     "interface-datastore": "^10.0.1",
     "multiformats": "^14.0.0",
@@ -74,6 +74,7 @@
   },
   "devDependencies": {
     "aegir": "^48.0.11",
+    "cborg": "^5.1.5",
     "datastore-core": "^12.0.1",
     "it-drain": "^3.0.12",
     "it-last": "^3.0.11",
