@@ -3,8 +3,11 @@ import { keychain } from '@ipshipyard/keychain'
 import { expect } from 'aegir/chai'
 import * as cborg from 'cborg'
 import { MemoryDatastore } from 'datastore-core'
+import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { InvalidEmbeddedPublicKeyError, RecordTooLargeError, SignatureVerificationError, UnsupportedValidityError } from '../src/errors.ts'
-import { createIPNSRecord, unmarshalIPNSRecord } from '../src/records.ts'
+import { IPNSEntry } from '../src/pb/ipns.ts'
+import { createIPNSRecord } from '../src/records.ts'
+import { decodeExtensibleData, encodeExtensibleData, ipnsRecordDataForV2Sig, multihashToIPNSRoutingKey } from '../src/utils.ts'
 import { ipnsValidator, validFor } from '../src/validator.ts'
 import { getCrypto } from './fixtures/get-crypto.ts'
 import type { Keychain, PrivateKey } from '@helia/interface'
@@ -31,29 +34,36 @@ describe('validator', function () {
     const sequence = 0
     const validity = 1000000
     const record = await createIPNSRecord(privateKey1, contentPath, sequence, validity, { v1Compatible: false })
+    const routingKey = multihashToIPNSRoutingKey(privateKey1.publicKey.toMultihash())
+    const marshalledRecord = IPNSEntry.encode(record)
 
-    await ipnsValidator(record)
+    await ipnsValidator(routingKey, marshalledRecord, kc)
   })
 
   it('should validate a (V1+V2) record', async () => {
     const sequence = 0
     const validity = 1000000
     const record = await createIPNSRecord(privateKey1, contentPath, sequence, validity, { v1Compatible: true })
+    const routingKey = multihashToIPNSRoutingKey(privateKey1.publicKey.toMultihash())
+    const marshalledRecord = IPNSEntry.encode(record)
 
-    await ipnsValidator(record)
+    await ipnsValidator(routingKey, marshalledRecord, kc)
   })
 
   it('should use validator.validate to verify that a record is not valid', async () => {
     const sequence = 0
     const validity = 1000000
     const record = await createIPNSRecord(privateKey1, contentPath, sequence, validity)
+    const routingKey = multihashToIPNSRoutingKey(privateKey1.publicKey.toMultihash())
 
     // corrupt the record by changing the value to random bytes
-    const data = cborg.decode(record.data)
+    const data = decodeExtensibleData(record.data)
     data.Data = `not original value ${Math.random()}`
-    record.data = cborg.encode(data)
+    record.data = withArrayBuffer(cborg.encode(data))
 
-    await expect(ipnsValidator(record)).to.eventually.be.rejected()
+    const marshalledRecord = IPNSEntry.encode(record)
+
+    await expect(ipnsValidator(routingKey, marshalledRecord, kc)).to.eventually.be.rejected()
       .with.property('name', SignatureVerificationError.name)
   })
 
@@ -61,11 +71,13 @@ describe('validator', function () {
     const sequence = 0
     const validity = 1000000
     const record = await createIPNSRecord(privateKey1, contentPath, sequence, validity)
+    const routingKey = multihashToIPNSRoutingKey(privateKey1.publicKey.toMultihash())
 
-    // @ts-expect-error publicKey is not optional
     delete record.publicKey
 
-    await expect(ipnsValidator(record)).to.eventually.be.rejected()
+    const marshalledRecord = IPNSEntry.encode(record)
+
+    await expect(ipnsValidator(routingKey, marshalledRecord, kc)).to.eventually.be.rejected()
       .with.property('name', InvalidEmbeddedPublicKeyError.name)
   })
 
@@ -73,10 +85,13 @@ describe('validator', function () {
     const sequence = 0
     const validity = 1000000
     const record = await createIPNSRecord(privateKey1, contentPath, sequence, validity)
+    const routingKey = multihashToIPNSRoutingKey(privateKey1.publicKey.toMultihash())
 
-    record.publicKey = privateKey2.publicKey
+    record.publicKey = privateKey2.publicKey.toProtobuf()
 
-    await expect(ipnsValidator(record)).to.eventually.be.rejected()
+    const marshalledRecord = IPNSEntry.encode(record)
+
+    await expect(ipnsValidator(routingKey, marshalledRecord, kc)).to.eventually.be.rejected()
       .with.property('name', SignatureVerificationError.name)
   })
 
@@ -84,7 +99,7 @@ describe('validator', function () {
     const marshalledData = new Uint8Array(1024 * 1024)
     const key = new Uint8Array()
 
-    await expect(unmarshalIPNSRecord(key, marshalledData, kc)).to.eventually.be.rejected()
+    await expect(ipnsValidator(key, marshalledData, kc)).to.eventually.be.rejected()
       .with.property('name', RecordTooLargeError.name)
   })
 
@@ -103,14 +118,26 @@ describe('validator', function () {
 
     it('should throw UnsupportedValidityError for non-EOL validity types', async () => {
       const record = await createIPNSRecord(privateKey1, contentPath, 0, 1000000)
-      record.validityType = 5 as any
+      const data = decodeExtensibleData(record.data)
+      data.ValidityType = 5 as any
+
+      // re-sign record
+      record.data = encodeExtensibleData(data)
+      const sigData = ipnsRecordDataForV2Sig(record.data)
+      record.signatureV2 = await privateKey1.sign(sigData)
 
       expect(() => validFor(record)).to.throw(UnsupportedValidityError)
     })
 
     it('should throw UnsupportedValidityError for null validity', async () => {
       const record = await createIPNSRecord(privateKey1, contentPath, 0, 1000000)
-      record.validityType = null as any
+      const data = decodeExtensibleData(record.data)
+      data.ValidityType = null as any
+
+      // re-sign record
+      record.data = encodeExtensibleData(data)
+      const sigData = ipnsRecordDataForV2Sig(record.data)
+      record.signatureV2 = await privateKey1.sign(sigData)
 
       expect(() => validFor(record)).to.throw(UnsupportedValidityError)
     })

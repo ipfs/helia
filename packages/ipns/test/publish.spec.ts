@@ -4,7 +4,10 @@ import last from 'it-last'
 import { base36 } from 'multiformats/bases/base36'
 import { CID } from 'multiformats/cid'
 import Sinon from 'sinon'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { localStore } from '../src/local-store.ts'
+import { decodeExtensibleData } from '../src/utils.ts'
 import { createIPNS } from './fixtures/create-ipns.ts'
 import type { CreateIPNSResult } from './fixtures/create-ipns.ts'
 import type { IPNS } from '../src/ipns.ts'
@@ -34,8 +37,9 @@ describe('publish', () => {
     const keyName = 'test-key-1'
     const ipnsEntry = await name.publish(keyName, cid)
 
-    expect(ipnsEntry.record).to.have.property('sequence', 1n)
-    expect(ipnsEntry.record).to.have.property('ttl', 300_000_000_000n) // 5 minutes
+    const extensibleData = decodeExtensibleData(ipnsEntry.record.data)
+    expect(extensibleData).to.have.property('Sequence', 1n)
+    expect(extensibleData).to.have.property('TTL', 300_000_000_000n) // 5 minutes
   })
 
   it('should publish an IPNS record with a custom lifetime params', async function () {
@@ -45,11 +49,12 @@ describe('publish', () => {
       lifetime
     })
 
-    expect(ipnsEntry.record).to.have.property('sequence', 1n)
+    const extensibleData = decodeExtensibleData(ipnsEntry.record.data)
+    expect(extensibleData).to.have.property('Sequence', 1n)
 
     // Calculate expected validity as a Date object
     const expectedValidity = new Date(Date.now() + lifetime)
-    const actualValidity = new Date(ipnsEntry.record.validity)
+    const actualValidity = new Date(uint8ArrayToString(extensibleData.Validity))
     const timeDifference = Math.abs(actualValidity.getTime() - expectedValidity.getTime())
     expect(timeDifference).to.be.lessThan(1000)
 
@@ -65,8 +70,9 @@ describe('publish', () => {
       ttl
     })
 
-    expect(ipnsEntry.record).to.have.property('sequence', 1n)
-    expect(ipnsEntry.record).to.have.property('ttl', BigInt(ttl * 1e+6))
+    const extensibleData = decodeExtensibleData(ipnsEntry.record.data)
+    expect(extensibleData).to.have.property('Sequence', 1n)
+    expect(extensibleData).to.have.property('TTL', BigInt(ttl * 1e+6))
 
     expect(heliaRouting.put.called).to.be.true()
     expect(customRouting.put.called).to.be.true()
@@ -92,20 +98,36 @@ describe('publish', () => {
     expect(onProgress).to.have.property('called', true)
   })
 
+  it('should publish an IPNS record extensible metadata', async function () {
+    const keyName = 'test-key'
+    const ipnsEntry = await name.publish(keyName, cid, {
+      data: {
+        hello: 'world'
+      }
+    })
+
+    const extensibleData = decodeExtensibleData(ipnsEntry.record.data)
+    expect(extensibleData).to.have.property('Sequence', 1n)
+    expect(extensibleData).to.have.property('TTL', 300_000_000_000n) // 5 minutes
+    expect(extensibleData).to.have.property('hello', 'world') // 5 minutes
+  })
+
   it('should publish recursively using a public key', async () => {
     const keyName1 = 'test-key-6'
     const published = await name.publish(keyName1, cid, {
       offline: true
     })
 
-    expect(published.record.value).to.equal(`/ipfs/${cid.toV1()}`)
+    const extensibleData = decodeExtensibleData(published.record.data)
+    expect(extensibleData).to.have.property('Value').that.equalBytes(uint8ArrayFromString(`/ipfs/${cid.toV1()}`))
 
     const keyName2 = 'test-key-7'
     const recursiveRecord = await name.publish(keyName2, published.publicKey, {
       offline: true
     })
 
-    expect(recursiveRecord.record.value).to.equal(`/ipns/${published.publicKey.toCID().toString(base36)}`)
+    const recursiveExtensibleData = decodeExtensibleData(recursiveRecord.record.data)
+    expect(recursiveExtensibleData).to.have.property('Value').that.equalBytes(uint8ArrayFromString(`/ipns/${published.publicKey.toCID().toString(base36)}`))
 
     const recursiveResult = await last(name.resolve(recursiveRecord.publicKey))
 
@@ -113,7 +135,10 @@ describe('publish', () => {
       throw new Error('No results found')
     }
 
-    expect(recursiveResult.record.value).to.equal(`/ipfs/${cid.toV1()}`)
+    const recursiveResultExtensibleData = decodeExtensibleData(recursiveResult.record.data)
+    expect(recursiveResultExtensibleData).to.have.property('Value').that.equalBytes(uint8ArrayFromString(`/ipfs/${cid.toV1()}`))
+
+    expect(recursiveResult).to.have.property('value').that.equals(`/ipfs/${cid.toV1()}`)
   })
 
   it('should publish recursively using a libp2p-key CID', async () => {
@@ -122,14 +147,16 @@ describe('publish', () => {
       offline: true
     })
 
-    expect(published.record.value).to.equal(`/ipfs/${cid.toV1()}`)
+    const extensibleData = decodeExtensibleData(published.record.data)
+    expect(extensibleData).to.have.property('Value').that.equalBytes(uint8ArrayFromString(`/ipfs/${cid.toV1()}`))
 
     const keyName2 = 'test-key-7'
     const recursiveRecord = await name.publish(keyName2, published.publicKey.toCID(), {
       offline: true
     })
 
-    expect(recursiveRecord.record.value).to.equal(`/ipns/${published.publicKey.toCID().toString(base36)}`)
+    const recursiveExtensibleData = decodeExtensibleData(recursiveRecord.record.data)
+    expect(recursiveExtensibleData).to.have.property('Value').that.equalBytes(uint8ArrayFromString(`/ipns/${published.publicKey.toCID().toString(base36)}`))
 
     const recursiveResult = await last(name.resolve(recursiveRecord.publicKey))
 
@@ -137,7 +164,10 @@ describe('publish', () => {
       throw new Error('No results found')
     }
 
-    expect(recursiveResult.record.value).to.equal(`/ipfs/${cid.toV1()}`)
+    const recursiveResultExtensibleData = decodeExtensibleData(recursiveResult.record.data)
+    expect(recursiveResultExtensibleData).to.have.property('Value').that.equalBytes(uint8ArrayFromString(`/ipfs/${cid.toV1()}`))
+
+    expect(recursiveResult).to.have.property('value').that.equals(`/ipfs/${cid.toV1()}`)
   })
 
   it('should publish recursively using a multihash', async () => {
@@ -146,14 +176,16 @@ describe('publish', () => {
       offline: true
     })
 
-    expect(published.record.value).to.equal(`/ipfs/${cid.toV1()}`)
+    const extensibleData = decodeExtensibleData(published.record.data)
+    expect(extensibleData).to.have.property('Value').that.equalBytes(uint8ArrayFromString(`/ipfs/${cid.toV1()}`))
 
     const keyName2 = 'test-key-9'
     const recursiveRecord = await name.publish(keyName2, published.publicKey.toMultihash(), {
       offline: true
     })
 
-    expect(recursiveRecord.record.value).to.equal(`/ipns/${base36.encode(published.publicKey.toMultihash().bytes)}`)
+    const recursiveExtensibleData = decodeExtensibleData(recursiveRecord.record.data)
+    expect(recursiveExtensibleData).to.have.property('Value').that.equalBytes(uint8ArrayFromString(`/ipns/${base36.encode(published.publicKey.toMultihash().bytes)}`))
 
     const recursiveResult = await last(name.resolve(recursiveRecord.publicKey))
 
@@ -161,7 +193,10 @@ describe('publish', () => {
       throw new Error('No results found')
     }
 
-    expect(recursiveResult.record.value).to.equal(`/ipfs/${cid.toV1()}`)
+    const recursiveResultExtensibleData = decodeExtensibleData(recursiveResult.record.data)
+    expect(recursiveResultExtensibleData).to.have.property('Value').that.equalBytes(uint8ArrayFromString(`/ipfs/${cid.toV1()}`))
+
+    expect(recursiveResult).to.have.property('value').that.equals(`/ipfs/${cid.toV1()}`)
   })
 
   it('should publish recursively using a string IPNS key', async () => {
@@ -170,14 +205,16 @@ describe('publish', () => {
       offline: true
     })
 
-    expect(published.record.value).to.equal(`/ipfs/${cid.toV1()}`)
+    const extensibleData = decodeExtensibleData(published.record.data)
+    expect(extensibleData).to.have.property('Value').that.equalBytes(uint8ArrayFromString(`/ipfs/${cid.toV1()}`))
 
     const keyName2 = 'test-key-11'
     const recursiveRecord = await name.publish(keyName2, `/ipns/${published.publicKey.toCID().toString(base36)}`, {
       offline: true
     })
 
-    expect(recursiveRecord.record.value).to.equal(`/ipns/${published.publicKey.toCID().toString(base36)}`)
+    const recursiveExtensibleData = decodeExtensibleData(recursiveRecord.record.data)
+    expect(recursiveExtensibleData).to.have.property('Value').that.equalBytes(uint8ArrayFromString(`/ipns/${published.publicKey.toCID().toString(base36)}`))
 
     const recursiveResult = await last(name.resolve(recursiveRecord.publicKey))
 
@@ -185,7 +222,10 @@ describe('publish', () => {
       throw new Error('No results found')
     }
 
-    expect(recursiveResult.record.value).to.equal(`/ipfs/${cid.toV1()}`)
+    const recursiveResultExtensibleData = decodeExtensibleData(recursiveResult.record.data)
+    expect(recursiveResultExtensibleData).to.have.property('Value').that.equalBytes(uint8ArrayFromString(`/ipfs/${cid.toV1()}`))
+
+    expect(recursiveResult).to.have.property('value').that.equals(`/ipfs/${cid.toV1()}`)
   })
 
   it('should publish record with a path', async () => {
@@ -197,7 +237,8 @@ describe('publish', () => {
       offline: true
     })
 
-    expect(published.record.value).to.equal(`/ipfs/${cid.toV1()}${path}`)
+    const extensibleData = decodeExtensibleData(published.record.data)
+    expect(extensibleData).to.have.property('Value').that.equalBytes(uint8ArrayFromString(`/ipfs/${cid.toV1()}${path}`))
 
     const result = await last(name.resolve(published.publicKey))
 
@@ -205,7 +246,10 @@ describe('publish', () => {
       throw new Error('No results found')
     }
 
-    expect(result.record.value).to.equal(`/ipfs/${cid.toV1()}${path}`)
+    const resultExtensibleData = decodeExtensibleData(result.record.data)
+    expect(resultExtensibleData).to.have.property('Value').that.equalBytes(uint8ArrayFromString(`/ipfs/${cid.toV1()}${path}`))
+
+    expect(result).to.have.property('value').that.equals(`/ipfs/${cid.toV1()}${path}`)
   })
 
   describe('localStore error handling', () => {

@@ -4,16 +4,17 @@ import all from 'it-all'
 import { CID } from 'multiformats/cid'
 import { stubInterface } from 'sinon-ts'
 import { Routing } from '../src/routing.ts'
+import type { Router } from '@helia/interface'
 import type { StubbedInstance } from 'sinon-ts'
 
 describe('routing', () => {
   let routing: Routing
-  let routerA: StubbedInstance<Routing>
-  let routerB: StubbedInstance<Routing>
+  let routerA: StubbedInstance<Router>
+  let routerB: StubbedInstance<Router>
 
   beforeEach(() => {
-    routerA = stubInterface<Routing>()
-    routerB = stubInterface<Routing>()
+    routerA = stubInterface<Router>()
+    routerB = stubInterface<Router>()
 
     routing = new Routing({
       logger: defaultLogger()
@@ -28,8 +29,8 @@ describe('routing', () => {
   it('should end a provider lookup that finds no results', async () => {
     const key = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3E')
 
-    routerA.findProviders.returns((async function * () {})())
-    routerB.findProviders.returns((async function * () {})())
+    routerA.findProviders?.returns((async function * () {})())
+    routerB.findProviders?.returns((async function * () {})())
 
     await expect(all(routing.findProviders(key))).to.eventually.be.empty()
   })

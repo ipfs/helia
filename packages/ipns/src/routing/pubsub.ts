@@ -9,13 +9,13 @@ import { raceSignal } from 'race-signal'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { InvalidTopicError } from '../errors.ts'
 import { localStore } from '../local-store.ts'
-import { multihashToIPNSRoutingKey } from '../records.ts'
 import { ipnsSelector } from '../selector.ts'
-import { IPNS_STRING_PREFIX, unmarshalIPNSRecord } from '../utils.ts'
+import { IPNS_STRING_PREFIX, multihashToIPNSRoutingKey } from '../utils.ts'
 import { ipnsValidator } from '../validator.ts'
-import type { GetOptions, IPNSRouting, PutOptions } from './index.ts'
+import type { IPNSRoutingGetOptions, IPNSRouting, IPNSRoutingPutOptions } from './index.ts'
 import type { LocalStore } from '../local-store.ts'
 import type { Keychain } from '@helia/interface'
 import type { Fetch } from '@libp2p/fetch'
@@ -26,26 +26,26 @@ import type { ProgressEvent } from 'progress-events'
 
 const log = logger('helia:ipns:routing:pubsub')
 
-export interface Message {
+export interface PubSubMessage {
   type: 'signed' | 'unsigned'
   from: PeerId
   topic: string
   data: Uint8Array
 }
 
-export interface Subscription {
+export interface PubSubSubscription {
   topic: string
   subscribe: boolean
 }
 
-export interface SubscriptionChangeData {
+export interface PubSubSubscriptionChangeData {
   peerId: PeerId
-  subscriptions: Subscription[]
+  subscriptions: PubSubSubscription[]
 }
 
 export interface PubSubEvents {
-  'subscription-change': CustomEvent<SubscriptionChangeData>
-  message: CustomEvent<Message>
+  'subscription-change': CustomEvent<PubSubSubscriptionChangeData>
+  message: CustomEvent<PubSubMessage>
 }
 
 export interface PublishResult {
@@ -96,7 +96,7 @@ export type PubSubProgressEvents =
   ProgressEvent<'ipns:pubsub:subscribe', { topic: string }> |
   ProgressEvent<'ipns:pubsub:error', Error>
 
-export class PubSubRouting implements IPNSRouting, Startable {
+export class PubSubIPNSRouting implements IPNSRouting, Startable {
   private readonly subscriptions: Set<string>
   private readonly localStore: LocalStore
   private readonly libp2p: Pick<Libp2p<{ pubsub: PubSub, fetch?: Fetch }>, 'peerId' | 'register' | 'unregister' | 'services'>
@@ -196,7 +196,7 @@ export class PubSubRouting implements IPNSRouting, Startable {
     }
   }
 
-  async #processPubSubMessage (message: Message, options?: AbortOptions): Promise<void> {
+  async #processPubSubMessage (message: PubSubMessage, options?: AbortOptions): Promise<void> {
     log('message received for topic', message.topic)
 
     if (message.type !== 'signed') {
@@ -212,7 +212,7 @@ export class PubSubRouting implements IPNSRouting, Startable {
     await this.#handleRecord(message.topic, topicToKey(message.topic), message.data, false, options)
   }
 
-  async #fetchFromPeer (topic: string, routingKey: Uint8Array, peerId: PeerId, options?: AbortOptions): Promise<Uint8Array> {
+  async #fetchFromPeer (topic: string, routingKey: Uint8Array, peerId: PeerId, options?: AbortOptions): Promise<Uint8Array<ArrayBuffer>> {
     const marshalledRecord = await this.fetchQueue.add(async ({ signal }) => {
       log('fetching ipns record for %m from peer %s', routingKey, peerId)
 
@@ -238,18 +238,17 @@ export class PubSubRouting implements IPNSRouting, Startable {
     return this.#handleRecord(topic, routingKey, marshalledRecord, true, options)
   }
 
-  async #handleRecord (topic: string, routingKey: Uint8Array, marshalledRecord: Uint8Array, publish: boolean, options?: AbortOptions): Promise<Uint8Array> {
-    const record = await unmarshalIPNSRecord(routingKey, marshalledRecord, this.keychain, options)
-    await ipnsValidator(record, options)
+  async #handleRecord (topic: string, routingKey: Uint8Array, marshalledRecord: Uint8Array, publish: boolean, options?: AbortOptions): Promise<Uint8Array<ArrayBuffer>> {
+    const record = await ipnsValidator(routingKey, marshalledRecord, this.keychain, options)
     this.shutdownController.signal.throwIfAborted()
 
     if (await this.localStore.has(routingKey)) {
       const { record: marshaledCurrentRecord } = await this.localStore.get(routingKey, options)
-      const currentRecord = await unmarshalIPNSRecord(routingKey, marshaledCurrentRecord, this.keychain, options)
+      const currentRecord = await ipnsValidator(routingKey, marshaledCurrentRecord, this.keychain, options)
 
-      if (uint8ArrayEquals(marshaledCurrentRecord, record.bytes)) {
+      if (uint8ArrayEquals(marshaledCurrentRecord, marshalledRecord)) {
         log.trace('found identical record for %m', routingKey)
-        return currentRecord.bytes
+        return marshaledCurrentRecord
       }
 
       const records = [currentRecord, record]
@@ -257,7 +256,7 @@ export class PubSubRouting implements IPNSRouting, Startable {
 
       if (index === 0) {
         log.trace('found old record for %m', routingKey)
-        return currentRecord.bytes
+        return marshaledCurrentRecord
       }
     }
 
@@ -276,13 +275,13 @@ export class PubSubRouting implements IPNSRouting, Startable {
       }
     }
 
-    return marshalledRecord
+    return withArrayBuffer(marshalledRecord)
   }
 
   /**
    * Put a value to the pubsub datastore indexed by the received key properly encoded
    */
-  async put (routingKey: Uint8Array, marshaledRecord: Uint8Array, options: PutOptions = {}): Promise<void> {
+  async put (routingKey: Uint8Array, marshaledRecord: Uint8Array, options: IPNSRoutingPutOptions = {}): Promise<void> {
     try {
       const topic = keyToTopic(routingKey)
 
@@ -303,7 +302,7 @@ export class PubSubRouting implements IPNSRouting, Startable {
    * Also, the identifier topic is subscribed to and the pubsub datastore records will be
    * updated once new publishes occur
    */
-  async get (routingKey: Uint8Array, options: GetOptions = {}): Promise<Uint8Array> {
+  async get (routingKey: Uint8Array, options: IPNSRoutingGetOptions = {}): Promise<Uint8Array<ArrayBuffer>> {
     const topic = keyToTopic(routingKey)
 
     try {
@@ -324,7 +323,7 @@ export class PubSubRouting implements IPNSRouting, Startable {
     await raceSignal(delay(this.fetchDelay), this.shutdownController.signal)
 
     const fetchController = new AbortController()
-    const promises: Array<Promise<Uint8Array>> = []
+    const promises: Array<Promise<Uint8Array<ArrayBuffer>>> = []
 
     for (const peerId of this.libp2p.services.pubsub.getSubscribers(topic)) {
       const signal = anySignal([
@@ -447,6 +446,6 @@ function topicToKey (topic: string): Uint8Array {
  * updated records, so the first call to `.get` should be expected
  * to fail!
  */
-export function pubsub (components: PubsubRoutingComponents, init: PubsubRoutingInit = {}): IPNSRouting {
-  return new PubSubRouting(components, init)
+export function pubSubIPNSRouting (components: PubsubRoutingComponents, init: PubsubRoutingInit = {}): IPNSRouting {
+  return new PubSubIPNSRouting(components, init)
 }

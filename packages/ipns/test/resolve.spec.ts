@@ -7,7 +7,9 @@ import last from 'it-last'
 import { CID } from 'multiformats/cid'
 import Sinon from 'sinon'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { createIPNSRecord, createIPNSRecordWithExpiration, marshalIPNSRecord, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from '../src/records.ts'
+import { IPNSEntry } from '../src/pb/ipns.ts'
+import { createIPNSRecord } from '../src/records.ts'
+import { decodeExtensibleData, encodeExtensibleData, ipnsRecordDataForV2Sig, multihashToIPNSRoutingKey } from '../src/utils.ts'
 import { createIPNS } from './fixtures/create-ipns.ts'
 import type { IPNS } from '../src/index.ts'
 import type { Routing } from '@helia/interface'
@@ -46,7 +48,7 @@ describe('resolve', () => {
     // empty the datastore to ensure we resolve using the routing
     await drain(datastore.deleteMany(datastore.queryKeys({})))
 
-    heliaRouting.get.resolves(marshalIPNSRecord(record))
+    heliaRouting.get.resolves(IPNSEntry.encode(record))
 
     const result = await last(name.resolve(publicKey))
 
@@ -54,7 +56,7 @@ describe('resolve', () => {
       throw new Error('No results found')
     }
 
-    expect(result.record.value).to.equal(`/ipfs/${cid.toV1()}`)
+    expect(result.value).to.equal(`/ipfs/${cid.toV1()}`)
 
     expect(heliaRouting.get.called).to.be.true()
     expect(customRouting.get.called).to.be.true()
@@ -67,7 +69,7 @@ describe('resolve', () => {
     // empty the datastore to ensure we resolve using the routing
     await drain(datastore.deleteMany(datastore.queryKeys({})))
 
-    heliaRouting.get.resolves(marshalIPNSRecord(record))
+    heliaRouting.get.resolves(IPNSEntry.encode(record))
 
     const result = await last(name.resolve(publicKey.toCID()))
 
@@ -75,7 +77,7 @@ describe('resolve', () => {
       throw new Error('No results found')
     }
 
-    expect(result.record.value).to.equal(`/ipfs/${cid.toV1()}`)
+    expect(result.value).to.equal(`/ipfs/${cid.toV1()}`)
 
     expect(heliaRouting.get.called).to.be.true()
     expect(customRouting.get.called).to.be.true()
@@ -96,7 +98,7 @@ describe('resolve', () => {
       throw new Error('No results found')
     }
 
-    expect(result.record.value).to.equal(`/ipfs/${cid.toV1()}`)
+    expect(result.value).to.equal(`/ipfs/${cid.toV1()}`)
 
     expect(heliaRouting.get.called).to.be.false()
     expect(customRouting.get.called).to.be.false()
@@ -109,7 +111,7 @@ describe('resolve', () => {
     const keyName = 'test-key'
     const { record, publicKey } = await name.publish(keyName, cid)
 
-    heliaRouting.get.resolves(marshalIPNSRecord(record))
+    heliaRouting.get.resolves(IPNSEntry.encode(record))
 
     const result = await last(name.resolve(publicKey, {
       nocache: true
@@ -119,7 +121,7 @@ describe('resolve', () => {
       throw new Error('No results found')
     }
 
-    expect(result.record.value).to.equal(`/ipfs/${cid.toV1()}`)
+    expect(result.value).to.equal(`/ipfs/${cid.toV1()}`)
 
     expect(heliaRouting.get.called).to.be.true()
     expect(customRouting.get.called).to.be.true()
@@ -140,7 +142,7 @@ describe('resolve', () => {
       throw new Error('No results found')
     }
 
-    expect(result.record.value).to.equal(`/ipfs/${cid.toV1()}`)
+    expect(result.value).to.equal(`/ipfs/${cid.toV1()}`)
 
     expect(heliaRouting.get.called).to.be.false()
     expect(customRouting.get.called).to.be.false()
@@ -160,7 +162,7 @@ describe('resolve', () => {
       throw new Error('No results found')
     }
 
-    expect(result.record.value).to.equal(`/ipfs/${cid.toV1()}`)
+    expect(result.value).to.equal(`/ipfs/${cid.toV1()}`)
   })
 
   it('should resolve a recursive record with path', async () => {
@@ -176,7 +178,7 @@ describe('resolve', () => {
       throw new Error('No results found')
     }
 
-    expect(result.record.value).to.equal(`/ipfs/${cid.toV1()}`)
+    expect(result.value).to.equal(`/ipfs/${cid.toV1()}`)
   })
 
   it('should emit progress events', async function () {
@@ -199,7 +201,7 @@ describe('resolve', () => {
     expect(datastore.has(dhtKey)).to.be.false('already had record')
 
     const record = await createIPNSRecord(key, `/ipfs/${cid.toV1()}`, 0n, 60000)
-    const marshalledRecord = marshalIPNSRecord(record)
+    const marshalledRecord = IPNSEntry.encode(record)
 
     customRouting.get.withArgs(customRoutingKey).resolves(marshalledRecord)
 
@@ -209,7 +211,7 @@ describe('resolve', () => {
       throw new Error('No results found')
     }
 
-    expect(result.record.value).to.equal(`/ipfs/${cid.toV1()}`)
+    expect(result.value).to.equal(`/ipfs/${cid.toV1()}`)
 
     expect(datastore.has(dhtKey)).to.be.true('did not cache record locally')
   })
@@ -219,8 +221,8 @@ describe('resolve', () => {
     const customRoutingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
     const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
 
-    const marshalledRecordA = marshalIPNSRecord(await createIPNSRecord(key, `/ipfs/${cid.toV1()}`, 0n, 60000))
-    const marshalledRecordB = marshalIPNSRecord(await createIPNSRecord(key, `/ipfs/${cid.toV1()}`, 10n, 60000))
+    const marshalledRecordA = IPNSEntry.encode(await createIPNSRecord(key, `/ipfs/${cid.toV1()}`, 0n, 60000))
+    const marshalledRecordB = IPNSEntry.encode(await createIPNSRecord(key, `/ipfs/${cid.toV1()}`, 10n, 60000))
 
     // records should not match
     expect(marshalledRecordA).to.not.equalBytes(marshalledRecordB)
@@ -235,7 +237,7 @@ describe('resolve', () => {
       throw new Error('No results found')
     }
 
-    expect(result.record.value).to.equal(`/ipfs/${cid.toV1()}`)
+    expect(result.value).to.equal(`/ipfs/${cid.toV1()}`)
 
     const cached = await datastore.get(dhtKey)
     const record = Record.deserialize(cached)
@@ -255,7 +257,7 @@ describe('resolve', () => {
     }
 
     expect(result).to.have.property('record')
-    expect(marshalIPNSRecord(result.record)).to.deep.equal(marshalIPNSRecord(record))
+    expect(IPNSEntry.encode(result.record)).to.equalBytes(IPNSEntry.encode(record))
   })
 
   it('should not search the routing for updated IPNS records when a locally cached copy is within the TTL', async () => {
@@ -265,37 +267,39 @@ describe('resolve', () => {
 
     // create a record with a valid lifetime and a non-expired TTL
     const ipnsRecord = await createIPNSRecord(key, `/ipfs/${cid.toV1()}`, 1, Math.pow(2, 10), {
-      ttlNs: 10_000_000_000
+      ttlNs: 10_000_000_000n
     })
-    const dhtRecord = new Record(customRoutingKey, marshalIPNSRecord(ipnsRecord), new Date(Date.now()))
+    const dhtRecord = new Record(customRoutingKey, IPNSEntry.encode(ipnsRecord), new Date(Date.now()))
 
     await datastore.put(dhtKey, dhtRecord.serialize())
 
     const result = await last(name.resolve(key.publicKey))
-    expect(result).to.have.deep.property('record', await unmarshalIPNSRecord(customRoutingKey, marshalIPNSRecord(ipnsRecord), keychain))
+    expect(result).to.have.deep.property('record', ipnsRecord)
+    expect(result).to.have.property('value', `/ipfs/${cid.toV1()}`)
 
     // should not have searched the routing
-    expect(customRouting.get.called).to.be.false()
+    expect(customRouting.get.called).to.be.false('searched the routing for an updated record')
   })
 
   it('should search the routing for updated IPNS records when a locally cached copy has passed the TTL', async () => {
     const key = await keychain.generateKey('test-key')
-    const customRoutingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
-    const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
+    const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+    const dhtKey = new Key('/dht/record/' + uint8ArrayToString(routingKey, 'base32'), false)
 
     // create a record with a valid lifetime but an expired ttl
     const ipnsRecord = await createIPNSRecord(key, `/ipfs/${cid.toV1()}`, 1, Math.pow(2, 10), {
-      ttlNs: 10
+      ttlNs: 10n
     })
-    const dhtRecord = new Record(customRoutingKey, marshalIPNSRecord(ipnsRecord), new Date(Date.now() - 1000))
+    const dhtRecord = new Record(routingKey, IPNSEntry.encode(ipnsRecord), new Date(Date.now() - 1000))
 
     await datastore.put(dhtKey, dhtRecord.serialize())
 
     const result = await last(name.resolve(key.publicKey))
-    expect(result).to.have.deep.property('record', await unmarshalIPNSRecord(customRoutingKey, marshalIPNSRecord(ipnsRecord), keychain))
+    expect(result).to.have.deep.property('record', ipnsRecord)
+    expect(result).to.have.property('value', `/ipfs/${cid.toV1()}`)
 
     // should have searched the routing
-    expect(customRouting.get.called).to.be.true()
+    expect(customRouting.get.called).to.be.true('did not search the routing for an updated record')
   })
 
   it('should search the routing for updated IPNS records when a locally cached copy has passed the TTL and choose the record with a higher sequence number', async () => {
@@ -305,20 +309,20 @@ describe('resolve', () => {
 
     // create a record with a valid lifetime but an expired ttl
     const ipnsRecord = await createIPNSRecord(key, `/ipfs/${cid.toV1()}`, 10, Math.pow(2, 10), {
-      ttlNs: 10
+      ttlNs: 10n
     })
-    const dhtRecord = new Record(customRoutingKey, marshalIPNSRecord(ipnsRecord), new Date(Date.now() - 1000))
+    const dhtRecord = new Record(customRoutingKey, IPNSEntry.encode(ipnsRecord), new Date(Date.now() - 1000))
 
     await datastore.put(dhtKey, dhtRecord.serialize())
 
     // the routing returns a valid record with an higher sequence number
     const ipnsRecordFromRouting = await createIPNSRecord(key, `/ipfs/${cid.toV1()}`, 11, Math.pow(2, 10), {
-      ttlNs: 10_000_000
+      ttlNs: 10_000_000n
     })
-    customRouting.get.withArgs(customRoutingKey).resolves(marshalIPNSRecord(ipnsRecordFromRouting))
+    customRouting.get.withArgs(customRoutingKey).resolves(IPNSEntry.encode(ipnsRecordFromRouting))
 
     const result = await last(name.resolve(key.publicKey))
-    expect(result).to.have.deep.property('record', await unmarshalIPNSRecord(customRoutingKey, marshalIPNSRecord(ipnsRecordFromRouting), keychain))
+    expect(result).to.have.deep.property('record', ipnsRecordFromRouting)
 
     // should have searched the routing
     expect(customRouting.get.called).to.be.true()
@@ -330,23 +334,46 @@ describe('resolve', () => {
     const dhtKey = new Key('/dht/record/' + uint8ArrayToString(customRoutingKey, 'base32'), false)
 
     // create a record with an expired lifetime but valid TTL
-    const ipnsRecord = await createIPNSRecordWithExpiration(key, `/ipfs/${cid.toV1()}`, 10, new Date(Date.now() - Math.pow(2, 10)).toString(), {
-      ttlNs: 10_000_000
+    const ipnsRecord = await createIPNSRecord(key, `/ipfs/${cid.toV1()}`, 10, -Math.pow(2, 10), {
+      ttlNs: 10_000_000n
     })
-    const dhtRecord = new Record(customRoutingKey, marshalIPNSRecord(ipnsRecord), new Date(Date.now()))
+    const dhtRecord = new Record(customRoutingKey, IPNSEntry.encode(ipnsRecord), new Date(Date.now()))
 
     await datastore.put(dhtKey, dhtRecord.serialize())
 
     // the routing returns a valid record with an higher sequence number
     const ipnsRecordFromRouting = await createIPNSRecord(key, `/ipfs/${cid.toV1()}`, 11, Math.pow(2, 10), {
-      ttlNs: 10_000_000
+      ttlNs: 10_000_000n
     })
-    customRouting.get.withArgs(customRoutingKey).resolves(marshalIPNSRecord(ipnsRecordFromRouting))
+    customRouting.get.withArgs(customRoutingKey).resolves(IPNSEntry.encode(ipnsRecordFromRouting))
 
     const result = await last(name.resolve(key.publicKey))
-    expect(result).to.have.deep.property('record', await unmarshalIPNSRecord(customRoutingKey, marshalIPNSRecord(ipnsRecordFromRouting), keychain))
+    expect(result).to.have.deep.property('record', ipnsRecordFromRouting)
 
     // should have searched the routing
     expect(customRouting.get.called).to.be.true()
+  })
+
+  it('should resolve a legacy record with CID bytes as the value', async () => {
+    const privateKey = await keychain.generateKey('test-key')
+    const routingKey = multihashToIPNSRoutingKey(privateKey.publicKey.toMultihash())
+    const dhtKey = new Key('/dht/record/' + uint8ArrayToString(routingKey, 'base32'), false)
+
+    const record = await createIPNSRecord(privateKey, 'will-be-overwritten', 10, 30_000)
+    const data = decodeExtensibleData(record.data)
+    data.Value = cid.bytes
+    record.value = cid.bytes
+
+    // re-sign record
+    record.data = encodeExtensibleData(data)
+    const sigData = ipnsRecordDataForV2Sig(record.data)
+    record.signatureV2 = await privateKey.sign(sigData)
+
+    const dhtRecord = new Record(routingKey, IPNSEntry.encode(record), new Date(Date.now()))
+    await datastore.put(dhtKey, dhtRecord.serialize())
+
+    const result = await last(name.resolve(privateKey.publicKey))
+    expect(result).to.have.deep.property('record', record)
+    expect(result).to.have.property('value', `/ipfs/${cid}`)
   })
 })

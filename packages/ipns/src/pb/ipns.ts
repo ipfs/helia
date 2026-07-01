@@ -2,19 +2,19 @@ import { decodeMessage, encodeMessage, enumeration, message, streamMessage } fro
 import type { Codec, DecodeOptions } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
-export interface IpnsEntry {
-  value?: Uint8Array
-  signatureV1?: Uint8Array
-  validityType?: IpnsEntry.ValidityType
-  validity?: Uint8Array
+export interface IPNSEntry {
+  value?: Uint8Array<ArrayBuffer>
+  signatureV1?: Uint8Array<ArrayBuffer>
+  validityType?: IPNSEntry.ValidityType
+  validity?: Uint8Array<ArrayBuffer>
   sequence?: bigint
   ttl?: bigint
-  publicKey?: Uint8Array
-  signatureV2?: Uint8Array
-  data?: Uint8Array
+  publicKey?: Uint8Array<ArrayBuffer>
+  signatureV2?: Uint8Array<ArrayBuffer>
+  data?: Uint8Array<ArrayBuffer>
 }
 
-export namespace IpnsEntry {
+export namespace IPNSEntry {
   export enum ValidityType {
     EOL = 'EOL'
   }
@@ -29,11 +29,11 @@ export namespace IpnsEntry {
     }
   }
 
-  let _codec: Codec<IpnsEntry>
+  let _codec: Codec<IPNSEntry>
 
-  export const codec = (): Codec<IpnsEntry> => {
+  export const codec = (): Codec<IPNSEntry> => {
     if (_codec == null) {
-      _codec = message<IpnsEntry>((obj, w, opts = {}) => {
+      _codec = message<IPNSEntry>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
           w.fork()
         }
@@ -50,7 +50,7 @@ export namespace IpnsEntry {
 
         if (obj.validityType != null) {
           w.uint32(24)
-          IpnsEntry.ValidityType.codec().encode(obj.validityType, w)
+          IPNSEntry.ValidityType.codec().encode(obj.validityType, w)
         }
 
         if (obj.validity != null) {
@@ -104,7 +104,7 @@ export namespace IpnsEntry {
               break
             }
             case 3: {
-              obj.validityType = IpnsEntry.ValidityType.codec().decode(reader)
+              obj.validityType = IPNSEntry.ValidityType.codec().decode(reader)
               break
             }
             case 4: {
@@ -163,7 +163,7 @@ export namespace IpnsEntry {
             case 3: {
               yield {
                 field: `${prefix}.validityType`,
-                value: IpnsEntry.ValidityType.codec().decode(reader)
+                value: IPNSEntry.ValidityType.codec().decode(reader)
               }
               break
             }
@@ -221,60 +221,60 @@ export namespace IpnsEntry {
     return _codec
   }
 
-  export interface IpnsEntryValueFieldEvent {
+  export interface IPNSEntryValueFieldEvent {
     field: '$.value'
-    value: Uint8Array
+    value: Uint8Array<ArrayBuffer>
   }
 
-  export interface IpnsEntrySignatureV1FieldEvent {
+  export interface IPNSEntrySignatureV1FieldEvent {
     field: '$.signatureV1'
-    value: Uint8Array
+    value: Uint8Array<ArrayBuffer>
   }
 
-  export interface IpnsEntryValidityTypeFieldEvent {
+  export interface IPNSEntryValidityTypeFieldEvent {
     field: '$.validityType'
-    value: IpnsEntry.ValidityType
+    value: IPNSEntry.ValidityType
   }
 
-  export interface IpnsEntryValidityFieldEvent {
+  export interface IPNSEntryValidityFieldEvent {
     field: '$.validity'
-    value: Uint8Array
+    value: Uint8Array<ArrayBuffer>
   }
 
-  export interface IpnsEntrySequenceFieldEvent {
+  export interface IPNSEntrySequenceFieldEvent {
     field: '$.sequence'
     value: bigint
   }
 
-  export interface IpnsEntryTtlFieldEvent {
+  export interface IPNSEntryTtlFieldEvent {
     field: '$.ttl'
     value: bigint
   }
 
-  export interface IpnsEntryPublicKeyFieldEvent {
+  export interface IPNSEntryPublicKeyFieldEvent {
     field: '$.publicKey'
-    value: Uint8Array
+    value: Uint8Array<ArrayBuffer>
   }
 
-  export interface IpnsEntrySignatureV2FieldEvent {
+  export interface IPNSEntrySignatureV2FieldEvent {
     field: '$.signatureV2'
-    value: Uint8Array
+    value: Uint8Array<ArrayBuffer>
   }
 
-  export interface IpnsEntryDataFieldEvent {
+  export interface IPNSEntryDataFieldEvent {
     field: '$.data'
-    value: Uint8Array
+    value: Uint8Array<ArrayBuffer>
   }
 
-  export function encode (obj: Partial<IpnsEntry>): Uint8Array<ArrayBuffer> {
-    return encodeMessage(obj, IpnsEntry.codec())
+  export function encode (obj: Partial<IPNSEntry>): Uint8Array<ArrayBuffer> {
+    return encodeMessage(obj, IPNSEntry.codec())
   }
 
-  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<IpnsEntry>): IpnsEntry {
-    return decodeMessage(buf, IpnsEntry.codec(), opts)
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<IPNSEntry>): IPNSEntry {
+    return decodeMessage(buf, IPNSEntry.codec(), opts)
   }
 
-  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<IpnsEntry>): Generator<IpnsEntryValueFieldEvent | IpnsEntrySignatureV1FieldEvent | IpnsEntryValidityTypeFieldEvent | IpnsEntryValidityFieldEvent | IpnsEntrySequenceFieldEvent | IpnsEntryTtlFieldEvent | IpnsEntryPublicKeyFieldEvent | IpnsEntrySignatureV2FieldEvent | IpnsEntryDataFieldEvent> {
-    return streamMessage(buf, IpnsEntry.codec(), opts)
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<IPNSEntry>): Generator<IPNSEntryValueFieldEvent | IPNSEntrySignatureV1FieldEvent | IPNSEntryValidityTypeFieldEvent | IPNSEntryValidityFieldEvent | IPNSEntrySequenceFieldEvent | IPNSEntryTtlFieldEvent | IPNSEntryPublicKeyFieldEvent | IPNSEntrySignatureV2FieldEvent | IPNSEntryDataFieldEvent> {
+    return streamMessage(buf, IPNSEntry.codec(), opts)
   }
 }

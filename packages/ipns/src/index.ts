@@ -37,7 +37,6 @@
  * import { createHelia } from 'helia'
  * import { ipns } from '@helia/ipns'
  * import { unixfs } from '@helia/unixfs'
- * import { generateKeyPair } from '@libp2p/crypto/keys'
  *
  * const helia = await createHelia()
  * const name = ipns(helia)
@@ -66,7 +65,6 @@
  * import { createHelia } from 'helia'
  * import { ipns } from '@helia/ipns'
  * import { unixfs } from '@helia/unixfs'
- * import { generateKeyPair } from '@libp2p/crypto/keys'
  *
  * const helia = await createHelia()
  * const name = ipns(helia)
@@ -105,15 +103,13 @@
  * may fail to be published with "Insufficient peers" errors.
  *
  * ```TypeScript
- * import { ipns } from '@helia/ipns'
- * import { pubsub } from '@helia/ipns/routing'
+ * import { ipns, pubSubIPNSRouting } from '@helia/ipns'
  * import { withLibp2p, libp2pDefaults } from '@helia/libp2p'
  * import { unixfs } from '@helia/unixfs'
- * import { generateKeyPair } from '@libp2p/crypto/keys'
  * import { floodsub } from '@libp2p/floodsub'
  * import { createHelia } from 'helia'
  * import type { Helia } from '@helia/interface'
- * import type { PubSub } from '@helia/ipns/routing'
+ * import type { PubSub } from '@helia/ipns'
  * import type { DefaultLibp2pServices } from '@helia/libp2p'
  * import type { FloodSub } from '@libp2p/floodsub'
  * import type { Libp2p } from '@libp2p/interface'
@@ -125,7 +121,7 @@
  *
  * const name = ipns(helia, {
  *  routers: [
- *    pubsub(helia)
+ *    pubSubIPNSRouting(helia)
  *  ]
  * })
  *
@@ -147,10 +143,10 @@ import { CID } from 'multiformats/cid'
 import { IPNSResolver as IPNSResolverClass } from './ipns/resolver.ts'
 import { IPNS as IPNSClass } from './ipns.ts'
 import { localStore } from './local-store.ts'
-import { helia } from './routing/index.ts'
-import { localStoreRouting } from './routing/local-store.ts'
+import { heliaIPNSRouting } from './routing/index.ts'
+import { localStoreIPNSRouting } from './routing/local-store.ts'
 import type { IPNSResolverComponents } from './ipns/resolver.ts'
-import type { IPNSRecord } from './records.ts'
+import type { IPNSEntry } from './pb/ipns.ts'
 import type { IPNSRouting, IPNSRoutingProgressEvents } from './routing/index.ts'
 import type { Routing, HeliaEvents, Keychain, PublicKey } from '@helia/interface'
 import type { ComponentLogger, TypedEventEmitter } from '@libp2p/interface'
@@ -159,14 +155,29 @@ import type { Datastore } from 'interface-datastore'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
+export * from './routing/index.ts'
+export * from './pb/ipns.ts'
+
+export {
+  multihashFromIPNSRoutingKey,
+  multihashToIPNSRoutingKey
+} from './utils.ts'
+
+export {
+  createIPNSRecord
+} from './records.ts'
+export type {
+  CreateIPNSRecordOptions
+} from './records.ts'
+
 export type PublishProgressEvents =
   ProgressEvent<'ipns:publish:start'> |
-  ProgressEvent<'ipns:publish:success', IPNSRecord> |
+  ProgressEvent<'ipns:publish:success', IPNSEntry> |
   ProgressEvent<'ipns:publish:error', Error>
 
 export type ResolveProgressEvents =
   ProgressEvent<'ipns:resolve:start', unknown> |
-  ProgressEvent<'ipns:resolve:success', IPNSRecord> |
+  ProgressEvent<'ipns:resolve:success', IPNSEntry> |
   ProgressEvent<'ipns:resolve:error', Error>
 
 export type DatastoreProgressEvents =
@@ -177,7 +188,8 @@ export type DatastoreProgressEvents =
 
 export interface PublishOptions extends AbortOptions, ProgressOptions<PublishProgressEvents | IPNSRoutingProgressEvents> {
   /**
-   * Time duration of the signature validity in ms
+   * Time duration of the signature validity in ms - after this many ms have
+   * expired the record will be invalidated.
    *
    * @default 172_800_000
    */
@@ -199,16 +211,44 @@ export interface PublishOptions extends AbortOptions, ProgressOptions<PublishPro
   v1Compatible?: boolean
 
   /**
-   * The TTL of the record in ms
+   * The TTL of the record in ms - after this many ms have expired, resolving
+   * the record will query the routing for an updated version.
+   *
+   * Before this many ms have expired any locally stored copy will be treated as
+   * the latest version and the routing will not be queried.
    *
    * @default 300_000
    */
   ttl?: number
+
+  /**
+   * Extensible data that will be added to the IPNS record data and signed to
+   * verify it's integrity.
+   *
+   * Note that this data will be encoded as DAG-CBOR so it must be valid.
+   *
+   * It is recommended that any custom fields set here are prefixed with `_` to
+   * avoid collision with any mandatory fields added to future versions of the
+   * IPNS specification.
+   *
+   * @see https://specs.ipfs.tech/ipns/ipns-record/#extensible-data-dag-cbor
+   */
+  data?: Record<string, any>
 }
 
-export interface IPNSRecordMetadata {
-  keyName: string
-  lifetime: number
+/**
+ * Extensible data from the record `data` field.
+ *
+ * The wire format of this data is DAG-CBOR.
+ *
+ * @see https://specs.ipfs.tech/ipns/ipns-record/#extensible-data-dag-cbor
+ */
+export interface IPNSRecordData extends Record<string, any> {
+  Value: Uint8Array<ArrayBuffer>
+  Validity: Uint8Array<ArrayBuffer>
+  ValidityType: IPNSEntry.ValidityType
+  Sequence: bigint
+  TTL: bigint
 }
 
 export interface IPNSResolveOptions extends AbortOptions, ProgressOptions<ResolveProgressEvents | IPNSRoutingProgressEvents> {
@@ -225,20 +265,33 @@ export interface IPNSResolveOptions extends AbortOptions, ProgressOptions<Resolv
    * @default false
    */
   nocache?: boolean
+
+  /**
+   * If true, ensure the record fields and signature are valid. If false, just
+   * return the record.
+   *
+   * @default true
+   */
+  validate?: boolean
 }
 
 export interface IPNSResolveResult {
   /**
    * The resolved record
    */
-  record: IPNSRecord
+  record: IPNSEntry
+
+  /**
+   * The value contained within the IPNS record
+   */
+  value: string
 }
 
 export interface IPNSPublishResult {
   /**
    * The published record
    */
-  record: IPNSRecord
+  record: IPNSEntry
 
   /**
    * The IPNS name that can be used to resolve this record
@@ -309,7 +362,7 @@ export interface IPNS {
   resolve(name: CID | PublicKey | MultihashDigest | string, options?: IPNSResolveOptions): AsyncGenerator<IPNSResolveResult>
 
   /**
-   * Stop republishing of an IPNS record
+   * Stop republishing of an IPNS record.
    *
    * This will delete the last signed IPNS record from the datastore.
    *
@@ -318,9 +371,6 @@ export interface IPNS {
    */
   unpublish(keyName: string, options?: AbortOptions): Promise<void>
 }
-
-export type { IPNSRouting } from './routing/index.ts'
-export type { IPNSRecord } from './records.ts'
 
 export interface IPNSComponents {
   datastore: Datastore
@@ -366,8 +416,8 @@ export function ipns (components: IPNSComponents, options: IPNSOptions = {}): IP
 export function ipnsResolver (components: IPNSResolverComponents, options: IPNSResolverOptions = {}): IPNSResolver {
   const store = localStore(components.datastore, components.logger.forComponent('helia:ipns:local-store'))
   const routers = [
-    localStoreRouting(store),
-    helia(components.routing),
+    localStoreIPNSRouting(store),
+    heliaIPNSRouting(components.routing),
     ...(options.routers ?? [])
   ]
 

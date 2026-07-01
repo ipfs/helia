@@ -1,9 +1,11 @@
+import { base36 } from 'multiformats/bases/base36'
 import { DEFAULT_TTL_NS } from '../constants.ts'
-import { RecordNotFoundError, RecordsFailedValidationError } from '../errors.ts'
+import { InvalidValueError, RecordNotFoundError, RecordsFailedValidationError } from '../errors.ts'
+import { IPNSEntry } from '../pb/ipns.ts'
 import { ipnsSelector } from '../selector.ts'
-import { multihashToIPNSRoutingKey, unmarshalIPNSRecord, normalizeKey, IPNS_STRING_PREFIX } from '../utils.ts'
+import { multihashToIPNSRoutingKey, normalizeKey, IPNS_STRING_PREFIX, ipnsRecordValueToString, decodeExtensibleData } from '../utils.ts'
 import { ipnsValidator } from '../validator.ts'
-import type { IPNSRecord, IPNSResolveOptions, IPNSResolveResult } from '../index.ts'
+import type { IPNSResolveOptions, IPNSResolveResult } from '../index.ts'
 import type { LocalStore } from '../local-store.ts'
 import type { IPNSRouting } from '../routing/index.ts'
 import type { Routing, Keychain } from '@helia/interface'
@@ -42,22 +44,33 @@ export class IPNSResolver {
     while (true) {
       const routingKey = multihashToIPNSRoutingKey(digest)
       const record = await this.#findIpnsRecord(routingKey, options)
+      let value = ''
 
-      yield {
-        record
+      if (record.data != null) {
+        const data = decodeExtensibleData(record.data)
+        value = ipnsRecordValueToString(data.Value)
+      } else if (record.value != null) {
+        value = ipnsRecordValueToString(record.value)
+      } else {
+        throw new InvalidValueError(`Record for key ${base36.encode(digest.bytes)} contained no value`)
       }
 
-      if (!record.value.startsWith(IPNS_STRING_PREFIX)) {
+      yield {
+        record,
+        value
+      }
+
+      if (!value.startsWith(IPNS_STRING_PREFIX)) {
         // not a recursive record
         break
       }
 
-      ({ digest } = normalizeKey(record.value))
+      ({ digest } = normalizeKey(value))
     }
   }
 
-  async #findIpnsRecord (routingKey: Uint8Array, options: IPNSResolveOptions = {}): Promise<IPNSRecord> {
-    const records: IPNSRecord[] = []
+  async #findIpnsRecord (routingKey: Uint8Array, options: IPNSResolveOptions = {}): Promise<IPNSEntry> {
+    const records: IPNSEntry[] = []
     const cached = await this.localStore.has(routingKey, options)
 
     if (cached) {
@@ -70,19 +83,23 @@ export class IPNSResolver {
 
           this.log('record retrieved from cache')
 
-          // unmarshal the record
-          const ipnsRecord = await unmarshalIPNSRecord(routingKey, marshaledIPNSRecord, this.keychain, options)
+          // unmarshal and validate the record
+          let ipnsRecord: IPNSEntry
 
-          // validate the record
-          await ipnsValidator(ipnsRecord, options)
-
-          this.log('record was valid')
+          if (options.validate === false) {
+            ipnsRecord = IPNSEntry.decode(marshaledIPNSRecord)
+            this.log('skipped validation of record')
+          } else {
+            ipnsRecord = await ipnsValidator(routingKey, marshaledIPNSRecord, this.keychain, options)
+            this.log('record was valid')
+          }
 
           // check the TTL
+          const data = decodeExtensibleData(ipnsRecord.data)
 
           // IPNS TTL is in nanoseconds, convert to milliseconds, default to one
           // hour
-          const ttlMs = Number((ipnsRecord.ttl ?? DEFAULT_TTL_NS) / 1_000_000n)
+          const ttlMs = Number((data.TTL ?? DEFAULT_TTL_NS) / 1_000_000n)
           const ttlExpires = created.getTime() + ttlMs
 
           if (ttlExpires > Date.now()) {
@@ -138,12 +155,13 @@ export class IPNSResolver {
         }
 
         try {
-          // unmarshal ensures that (1) SignatureV2 and Data are present, (2) that ValidityType
-          // and Validity are of valid types and have a value, (3) that CBOR data matches protobuf
-          // if it's a V1+V2 record
-          const record = await unmarshalIPNSRecord(routingKey, marshaledIPNSRecord, this.keychain, options)
+          let record: IPNSEntry
 
-          await ipnsValidator(record, options)
+          if (options.validate === false) {
+            record = IPNSEntry.decode(marshaledIPNSRecord)
+          } else {
+            record = await ipnsValidator(routingKey, marshaledIPNSRecord, this.keychain, options)
+          }
 
           records.push(record)
         } catch (err) {
@@ -164,7 +182,7 @@ export class IPNSResolver {
 
     const record = records[ipnsSelector(routingKey, records)]
 
-    await this.localStore.put(routingKey, record.bytes, options)
+    await this.localStore.put(routingKey, IPNSEntry.encode(record), options)
 
     return record
   }

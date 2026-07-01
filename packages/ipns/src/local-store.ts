@@ -2,14 +2,15 @@ import { Record } from '@libp2p/kad-dht'
 import { CustomProgressEvent } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { IPNSPublishMetadata } from './pb/metadata.ts'
 import { dhtRoutingKey, DHT_RECORD_PREFIX, ipnsMetadataKey } from './utils.ts'
-import type { DatastoreProgressEvents, GetOptions, PutOptions } from './routing/index.ts'
+import type { DatastoreProgressEvents, IPNSRoutingGetOptions, IPNSRoutingPutOptions } from './routing/index.ts'
 import type { AbortOptions, Logger } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 
 export interface GetResult {
-  record: Uint8Array
+  record: Uint8Array<ArrayBuffer>
   created: Date
 }
 
@@ -32,8 +33,8 @@ export interface LocalStore {
    * @param marshaledRecord - The marshaled IPNS record
    * @param options - options for the put operation including metadata
    */
-  put(routingKey: Uint8Array, marshaledRecord: Uint8Array, options?: PutOptions): Promise<void>
-  get(routingKey: Uint8Array, options?: GetOptions): Promise<GetResult>
+  put(routingKey: Uint8Array, marshaledRecord: Uint8Array, options?: IPNSRoutingPutOptions): Promise<void>
+  get(routingKey: Uint8Array, options?: IPNSRoutingGetOptions): Promise<GetResult>
   has(routingKey: Uint8Array, options?: AbortOptions): Promise<boolean>
   delete(routingKey: Uint8Array, options?: AbortOptions): Promise<void>
   /**
@@ -50,7 +51,7 @@ export interface LocalStore {
  */
 export function localStore (datastore: Datastore, log: Logger): LocalStore {
   return {
-    async put (routingKey: Uint8Array, marshalledRecord: Uint8Array, options: PutOptions = {}) {
+    async put (routingKey: Uint8Array, marshalledRecord: Uint8Array, options: IPNSRoutingPutOptions = {}) {
       try {
         const key = dhtRoutingKey(routingKey)
 
@@ -86,7 +87,7 @@ export function localStore (datastore: Datastore, log: Logger): LocalStore {
         throw err
       }
     },
-    async get (routingKey: Uint8Array, options: GetOptions = {}): Promise<GetResult> {
+    async get (routingKey: Uint8Array, options: IPNSRoutingGetOptions = {}): Promise<GetResult> {
       try {
         const key = dhtRoutingKey(routingKey)
 
@@ -97,7 +98,7 @@ export function localStore (datastore: Datastore, log: Logger): LocalStore {
         const record = Record.deserialize(buf)
 
         return {
-          record: record.value,
+          record: withArrayBuffer(record.value),
           created: record.timeReceived
         }
       } catch (err: any) {

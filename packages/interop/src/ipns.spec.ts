@@ -176,8 +176,6 @@ keyTypes.forEach(type => {
       const json = await response.json()
       expect(json.Id).to.equal(key.publicKey.toCID().toString(base36), 'did not import key correctly')
 
-      const oneHourNS = BigInt(60 * 60 * 1e+9)
-
       await kubo.api.name.publish(cid, {
         key: keyName,
         ttl: '1h'
@@ -189,8 +187,7 @@ keyTypes.forEach(type => {
         throw new Error('No result found')
       }
 
-      expect(result.record.value).to.equal(`/ipfs/${cid}`)
-      expect(result.record.ttl).to.equal(oneHourNS)
+      expect(result.value).to.equal(`/ipfs/${cid}`)
     })
   })
 })

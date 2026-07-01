@@ -1,7 +1,8 @@
 import { rsaCrypto } from '@ipshipyard/crypto'
 import { expect } from 'aegir/chai'
-import { createIPNSRecord, multihashToIPNSRoutingKey } from '../src/records.ts'
+import { createIPNSRecord } from '../src/records.ts'
 import { ipnsSelector } from '../src/selector.ts'
+import { multihashToIPNSRoutingKey } from '../src/utils.ts'
 import type { PrivateKey } from '@helia/interface'
 
 describe('selector', function () {

@@ -1,12 +1,13 @@
 import { CID } from 'multiformats/cid'
+import { IPNSEntry } from './index.ts'
 import { IPNSPublisher } from './ipns/publisher.ts'
 import { IPNSRepublisher } from './ipns/republisher.ts'
 import { IPNSResolver } from './ipns/resolver.ts'
 import { localStore } from './local-store.ts'
-import { helia } from './routing/helia.ts'
-import { localStoreRouting } from './routing/local-store.ts'
+import { heliaIPNSRouting } from './routing/helia.ts'
+import { localStoreIPNSRouting } from './routing/local-store.ts'
 import { ipnsSelector } from './selector.ts'
-import { normalizeKey, normalizeValue, unmarshalIPNSRecord } from './utils.ts'
+import { normalizeKey, normalizeValue } from './utils.ts'
 import { ipnsValidator } from './validator.ts'
 import type { IPNSComponents, IPNS as IPNSInterface, IPNSOptions, IPNSPublishResult, PublishOptions, IPNSResolveOptions, IPNSResolveResult } from './index.ts'
 import type { LocalStore } from './local-store.ts'
@@ -31,8 +32,8 @@ export class IPNS implements IPNSInterface, Startable {
     this.started = false
 
     this.routers = [
-      localStoreRouting(this.localStore),
-      helia(components.routing),
+      localStoreIPNSRouting(this.localStore),
+      heliaIPNSRouting(components.routing),
       ...(init.routers ?? [])
     ]
 
@@ -67,14 +68,13 @@ export class IPNS implements IPNSInterface, Startable {
           if (isKadDHT(service)) {
             // @ ts-expect-error https://github.com/libp2p/js-libp2p/pull/3506
             service.selectors.ipns = async (key: Uint8Array, values: Uint8Array[]): Promise<number> => {
-              const records = await Promise.all(values.map(buf => unmarshalIPNSRecord(key, buf, this.components.keychain)))
+              const records = values.map(buf => IPNSEntry.decode(buf))
 
               return ipnsSelector(key, records)
             }
 
             service.validators.ipns = async (key: Uint8Array, value: Uint8Array): Promise<void> => {
-              const record = await unmarshalIPNSRecord(key, value, this.components.keychain)
-              await ipnsValidator(record)
+              await ipnsValidator(key, value, this.components.keychain)
             }
           }
         }

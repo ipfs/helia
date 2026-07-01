@@ -1,5 +1,5 @@
 import { CustomProgressEvent } from 'progress-events'
-import type { GetOptions, PutOptions } from './index.ts'
+import type { IPNSRoutingGetOptions, IPNSRoutingPutOptions } from './index.ts'
 import type { IPNSRouting } from '../index.ts'
 import type { Routing } from '@helia/interface'
 import type { ProgressEvent } from 'progress-events'
@@ -11,14 +11,14 @@ export interface HeliaRoutingComponents {
 export type HeliaRoutingProgressEvents =
   ProgressEvent<'ipns:routing:helia:error', Error>
 
-export class HeliaRouting implements IPNSRouting {
+export class HeliaIPNSRouting implements IPNSRouting {
   private readonly routing: Routing
 
   constructor (routing: Routing) {
     this.routing = routing
   }
 
-  async put (routingKey: Uint8Array, marshaledRecord: Uint8Array, options: PutOptions = {}): Promise<void> {
+  async put (routingKey: Uint8Array, marshaledRecord: Uint8Array, options: IPNSRoutingPutOptions = {}): Promise<void> {
     try {
       await this.routing.put(routingKey, marshaledRecord, options)
     } catch (err: any) {
@@ -27,7 +27,7 @@ export class HeliaRouting implements IPNSRouting {
     }
   }
 
-  async get (routingKey: Uint8Array, options: GetOptions = {}): Promise<Uint8Array> {
+  async get (routingKey: Uint8Array, options: IPNSRoutingGetOptions = {}): Promise<Uint8Array<ArrayBuffer>> {
     try {
       return await this.routing.get(routingKey, options)
     } catch (err: any) {
@@ -45,6 +45,6 @@ export class HeliaRouting implements IPNSRouting {
  * The helia routing uses any available Routers configured on the passed Helia
  * node. This could be libp2p, HTTP API Delegated Routing, etc.
  */
-export function helia (routing: Routing): IPNSRouting {
-  return new HeliaRouting(routing)
+export function heliaIPNSRouting (routing: Routing): IPNSRouting {
+  return new HeliaIPNSRouting(routing)
 }
