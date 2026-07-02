@@ -200,6 +200,7 @@ export class Helia implements HeliaInterface {
   private readonly log: Logger
   private readonly blockBrokers: BlockBroker[]
   private readonly mixins: HeliaMixin[]
+  private readonly components: Components
 
   constructor (init: HeliaInit & { name: string, version: string }) {
     this.info = {
@@ -218,7 +219,7 @@ export class Helia implements HeliaInterface {
     this.mixins = []
 
     // @ts-expect-error routing and keychain are not set
-    const components: Components = {
+    this.components = {
       blockstore: init.blockstore ?? new MemoryBlockstore(),
       datastore: init.datastore ?? new MemoryDatastore(),
       logger: this.logger,
@@ -231,12 +232,12 @@ export class Helia implements HeliaInterface {
       ...(init.components ?? {})
     }
 
-    this.keychain = components.keychain = keychain()(components)
+    this.keychain = this.components.keychain = keychain()(this.components)
 
-    this.routing = components.routing = new RoutingClass(components, {
+    this.routing = this.components.routing = new RoutingClass(this.components, {
       routers: (init.routers ?? []).flatMap((router: Router | ((components: any) => Router)) => {
         if (typeof router === 'function') {
-          router = router(components)
+          router = router(this.components)
         }
 
         // if the router itself is a router
@@ -249,27 +250,31 @@ export class Helia implements HeliaInterface {
       providerLookupConcurrency: init.providerLookupConcurrency
     })
 
-    this.blockBrokers = components.blockBrokers = (init.blockBrokers ?? []).map((broker) => {
+    this.blockBrokers = this.components.blockBrokers = (init.blockBrokers ?? []).map((broker) => {
       if (typeof broker === 'function') {
-        broker = broker(components)
+        broker = broker(this.components)
       }
 
       return broker
     })
 
-    const networkedStorage = new NetworkedStorage(components, init)
-    this.pins = new PinsImpl(components.datastore, networkedStorage, this.getCodec)
+    const networkedStorage = new NetworkedStorage(this.components, init)
+    this.pins = new PinsImpl(this.components.datastore, networkedStorage, this.getCodec)
     this.blockstore = new BlockStorage(networkedStorage, this.pins, this.routing, {
       holdGcLock: init.holdGcLock ?? true
     })
-    this.datastore = components.datastore
+    this.datastore = this.components.datastore
   }
 
   hasRouter (name: string): boolean {
     return this.routing.hasRouter(name)
   }
 
-  addRouter (router: Router): void {
+  addRouter (router: Router | ((components: any) => Router)): void {
+    if (typeof router === 'function') {
+      router = router(this.components)
+    }
+
     this.routing.addRouter(router)
   }
 
@@ -277,7 +282,11 @@ export class Helia implements HeliaInterface {
     return this.blockBrokers.findIndex(b => b.name === name) !== -1
   }
 
-  addBlockBroker (blockBroker: BlockBroker): void {
+  addBlockBroker (blockBroker: BlockBroker | ((components: any) => BlockBroker)): void {
+    if (typeof blockBroker === 'function') {
+      blockBroker = blockBroker(this.components)
+    }
+
     this.blockBrokers.push(blockBroker)
   }
 

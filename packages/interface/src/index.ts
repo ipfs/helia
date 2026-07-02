@@ -154,7 +154,7 @@ export interface Helia {
   /**
    * Add a router
    */
-  addRouter(router: Router): void
+  addRouter(router: Router | ((components: any) => Router)): void
 
   /**
    * Returns `true` if a block broker with the passed name has been configured
@@ -164,7 +164,7 @@ export interface Helia {
   /**
    * Add a block broker
    */
-  addBlockBroker(blockBroker: BlockBroker): void
+  addBlockBroker(blockBroker: BlockBroker | ((components: any) => BlockBroker)): void
 
   /**
    * Add a mixin to extend runtime functionality
