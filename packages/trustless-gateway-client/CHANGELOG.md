@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.2](https://github.com/ipfs/helia/compare/trustless-gateway-client-v1.0.1...trustless-gateway-client-v1.0.2) (2026-07-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^7.0.1 to ^7.0.2
+    * @helia/utils bumped from ^3.0.1 to ^3.0.2
+
 ## [1.0.1](https://github.com/ipfs/helia/compare/trustless-gateway-client-v1.0.0...trustless-gateway-client-v1.0.1) (2026-07-02)
 
 
