@@ -1,5 +1,32 @@
 # Changelog
 
+## [11.0.3](https://github.com/ipfs/helia/compare/interop-v11.0.2...interop-v11.0.3) (2026-07-02)
+
+
+### Bug Fixes
+
+* add value to ipns result and export util to create records ([#1065](https://github.com/ipfs/helia/issues/1065)) ([883ff05](https://github.com/ipfs/helia/commit/883ff053cefc4b9f7cf7fd6759bc79f68def9297))
+* restore .aegir.js in published module ([#1066](https://github.com/ipfs/helia/issues/1066)) ([a7ed96b](https://github.com/ipfs/helia/commit/a7ed96bc0b6b0f47fae98880108ad2971731fefc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^4.0.0 to ^4.0.1
+    * @helia/car bumped from ^6.0.0 to ^6.0.1
+    * @helia/dag-cbor bumped from ^6.0.0 to ^6.0.1
+    * @helia/dag-json bumped from ^6.0.0 to ^6.0.1
+    * @helia/delegated-routing-client bumped from ^1.0.0 to ^1.0.1
+    * @helia/interface bumped from ^7.0.0 to ^7.0.1
+    * @helia/ipns bumped from ^10.0.1 to ^10.0.2
+    * @helia/json bumped from ^6.0.0 to ^6.0.1
+    * @helia/libp2p bumped from ^1.0.0 to ^1.0.1
+    * @helia/mfs bumped from ^8.0.0 to ^8.0.1
+    * @helia/strings bumped from ^6.0.0 to ^6.0.1
+    * @helia/unixfs bumped from ^8.0.0 to ^8.0.1
+    * helia bumped from ^7.0.0 to ^7.0.1
+
 ## [11.0.2](https://github.com/ipfs/helia/compare/interop-v11.0.1...interop-v11.0.2) (2026-06-30)
 
 

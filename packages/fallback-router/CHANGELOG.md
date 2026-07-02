@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.1](https://github.com/ipfs/helia/compare/fallback-router-v1.0.0...fallback-router-v1.0.1) (2026-07-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^7.0.0 to ^7.0.1
+
 ## 1.0.0 (2026-06-29)
 
 
