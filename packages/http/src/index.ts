@@ -96,7 +96,7 @@ export interface HTTPOptions {
   recursiveGateways?: string[]
 
   /**
-   * Init arg passed to the trusless gateway block broker
+   * Init arg passed to the trustless gateway block broker
    *
    * @see https://docs.ipfs.tech/reference/http/gateway/#trusted-vs-trustless
    */
