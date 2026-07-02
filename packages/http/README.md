@@ -41,10 +41,18 @@ Pass it to other modules like @helia/unixfs to fetch files from the distributed 
 ```typescript
 import { withHTTP } from '@helia/http'
 import { unixfs } from '@helia/unixfs'
-import { createHelia } from 'helia'
+import { createHeliaLight } from 'helia'
 import { CID } from 'multiformats/cid'
 
-const helia = await withHTTP(createHelia()).start()
+const helia = await withHTTP(createHeliaLight(), {
+  delegatedRouters: [
+    'https://delegated-ipfs.dev'
+  ],
+  recursiveGateways: [
+    'https://trustless-gateway.link',
+    'https://4everland.io'
+  ]
+}).start()
 
 const fs = unixfs(helia)
 fs.cat(CID.parse('bafyFoo'))
@@ -55,14 +63,14 @@ fs.cat(CID.parse('bafyFoo'))
 It's possible to manually configure your node without using this module.
 
 ```typescript
-import { createHelia } from 'helia'
+import { createHeliaLight } from 'helia'
 import { trustlessGatewayBlockBroker } from '@helia/trustless-gateway-client'
 import { fallbackRouter } from '@helia/fallback-router'
 import { delegatedHTTPRouter } from '@helia/delegated-http-routing-client'
 import { unixfs } from '@helia/unixfs'
 import { CID } from 'multiformats/cid'
 
-const helia = await createHelia({
+const helia = await createHeliaLight({
   blockBrokers: [
     trustlessGatewayBlockBroker()
   ],
@@ -71,7 +79,7 @@ const helia = await createHelia({
       url: 'https://delegated-ipfs.dev'
     }),
     fallbackRouter({
-      gateways: ['https://cloudflare-ipfs.com', 'https://ipfs.io']
+      gateways: ['https://trustless-gateway.link', 'https://4everland.io']
     })
   ]
 }).start()

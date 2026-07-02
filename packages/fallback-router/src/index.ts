@@ -17,16 +17,12 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { Peer, Provider, Router, RoutingOptions } from '@helia/interface'
 import type { Version } from 'multiformats'
 
-export const DEFAULT_TRUSTLESS_GATEWAYS = [
-  // 2023-10-03: IPNS, Origin, and Block/CAR support from https://ipfs.github.io/public-gateway-checker/
-  'https://trustless-gateway.link',
-
-  // 2023-10-03: IPNS, Origin, and Block/CAR support from https://ipfs.github.io/public-gateway-checker/
-  'https://4everland.io'
-]
-
 export interface FallbackRouterInit {
-  gateways?: Array<URL | string>
+  /**
+   * Where to send requests
+   */
+  gateways: Array<URL | string>
+
   /**
    * Whether to shuffle the list of gateways
    *
@@ -58,8 +54,8 @@ class FallbackRouter implements Router {
   private readonly gateways: Peer[]
   private readonly shuffle: boolean
 
-  constructor (init: FallbackRouterInit = {}) {
-    this.gateways = (init.gateways ?? DEFAULT_TRUSTLESS_GATEWAYS).map(url => toPeerInfo(url))
+  constructor (init: FallbackRouterInit) {
+    this.gateways = init.gateways.map(url => toPeerInfo(url)) ?? []
     this.shuffle = init.shuffle ?? true
   }
 
@@ -87,6 +83,6 @@ class FallbackRouter implements Router {
 /**
  * Returns a static list of HTTP Gateways as providers
  */
-export function fallbackRouter (init: FallbackRouterInit = {}): Router {
+export function fallbackRouter (init: FallbackRouterInit): Router {
   return new FallbackRouter(init)
 }

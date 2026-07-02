@@ -12,10 +12,18 @@
  * ```typescript
  * import { withHTTP } from '@helia/http'
  * import { unixfs } from '@helia/unixfs'
- * import { createHelia } from 'helia'
+ * import { createHeliaLight } from 'helia'
  * import { CID } from 'multiformats/cid'
  *
- * const helia = await withHTTP(createHelia()).start()
+ * const helia = await withHTTP(createHeliaLight(), {
+ *   delegatedRouters: [
+ *     'https://delegated-ipfs.dev'
+ *   ],
+ *   recursiveGateways: [
+ *     'https://trustless-gateway.link',
+ *     'https://4everland.io'
+ *   ]
+ * }).start()
  *
  * const fs = unixfs(helia)
  * fs.cat(CID.parse('bafyFoo'))
@@ -25,14 +33,14 @@
  * It's possible to manually configure your node without using this module.
  *
  * ```typescript
- * import { createHelia } from 'helia'
+ * import { createHeliaLight } from 'helia'
  * import { trustlessGatewayBlockBroker } from '@helia/trustless-gateway-client'
  * import { fallbackRouter } from '@helia/fallback-router'
  * import { delegatedHTTPRouter } from '@helia/delegated-http-routing-client'
  * import { unixfs } from '@helia/unixfs'
  * import { CID } from 'multiformats/cid'
  *
- * const helia = await createHelia({
+ * const helia = await createHeliaLight({
  *   blockBrokers: [
  *     trustlessGatewayBlockBroker()
  *   ],
@@ -41,7 +49,7 @@
  *       url: 'https://delegated-ipfs.dev'
  *     }),
  *     fallbackRouter({
- *       gateways: ['https://cloudflare-ipfs.com', 'https://ipfs.io']
+ *       gateways: ['https://trustless-gateway.link', 'https://4everland.io']
  *     })
  *   ]
  * }).start()
@@ -54,31 +62,67 @@
 import { delegatedHTTPRouter } from '@helia/delegated-routing-client'
 import { fallbackRouter } from '@helia/fallback-router'
 import { trustlessGatewayBlockBroker } from '@helia/trustless-gateway-client'
-import type { BlockBroker, Helia, Router } from '@helia/interface'
+import type { Helia } from '@helia/interface'
+import type { TrustlessGatewayBlockBrokerInit } from '@helia/trustless-gateway-client'
+
+export const DEFAULT_TRUSTLESS_GATEWAYS = [
+  // 2023-10-03: IPNS, Origin, and Block/CAR support from https://ipfs.github.io/public-gateway-checker/
+  'https://trustless-gateway.link',
+
+  // 2023-10-03: IPNS, Origin, and Block/CAR support from https://ipfs.github.io/public-gateway-checker/
+  'https://4everland.io'
+]
 
 export interface HTTPOptions {
-  routers?: Router[]
-  blockBrokers?: BlockBroker[]
+  /**
+   * Delegated routers are servers that make routing requests on behalf of peers
+   * with less capable network connectivity.
+   *
+   * @see https://specs.ipfs.tech/routing/http-routing-v1/
+   * @default ['https://delegated-ipfs.dev']
+   */
+  delegatedRouters?: string[]
+
+  /**
+   * A recursive gateway is one that will fetch content on behalf of peers with
+   * less capable network connectivity. For example it may fetch content from a
+   * node that supports transport(s) which the requesting peer does not.
+   *
+   * These are used as fallback routers which will always claim to be providers
+   * of a given block.
+   *
+   * @see https://docs.ipfs.tech/concepts/ipfs-gateway/#recursive-vs-non-recursive-gateways
+   */
+  recursiveGateways?: string[]
+
+  /**
+   * Init arg passed to the trustless gateway block broker
+   *
+   * @see https://docs.ipfs.tech/reference/http/gateway/#trusted-vs-trustless
+   */
+  trustlessGatewayBlockBrokerInit?: TrustlessGatewayBlockBrokerInit
 }
 
 /**
  * Augment a Helia node with HTTP routers and block brokers
  */
 export function withHTTP <H extends Helia> (helia: H, init?: HTTPOptions): H {
-  init?.routers ?? [
-    fallbackRouter(),
-    delegatedHTTPRouter({
-      url: 'https://delegated-ipfs.dev'
-    })
-  ].forEach(router => {
-    helia.addRouter(router)
+  init?.delegatedRouters ?? [
+    'https://delegated-ipfs.dev'
+  ].forEach(url => {
+    helia.addRouter(delegatedHTTPRouter({
+      url
+    }))
   })
 
-  init?.blockBrokers ?? [
-    trustlessGatewayBlockBroker()
-  ].forEach(broker => {
-    helia.addBlockBroker(broker)
-  })
+  helia.addRouter(fallbackRouter({
+    gateways: init?.recursiveGateways ?? DEFAULT_TRUSTLESS_GATEWAYS
+  }))
+
+  // add trustless gateway block broker
+  if (!helia.hasBlockBroker('trustless-gateway')) {
+    helia.addBlockBroker(trustlessGatewayBlockBroker(init?.trustlessGatewayBlockBrokerInit))
+  }
 
   return helia
 }
