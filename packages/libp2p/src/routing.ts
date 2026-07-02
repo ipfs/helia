@@ -1,5 +1,6 @@
 import { peerIdFromCID } from '@libp2p/peer-id'
 import map from 'it-map'
+import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
 import type { Peer, Provider, Router, RoutingOptions } from '@helia/interface'
 import type { Libp2p, PeerInfo } from '@libp2p/interface'
 import type { CID } from 'multiformats'
@@ -38,8 +39,8 @@ class Libp2pRouter implements Router {
     await this.libp2p.contentRouting.put(key, value, options)
   }
 
-  async get (key: Uint8Array, options?: RoutingOptions): Promise<Uint8Array> {
-    return this.libp2p.contentRouting.get(key, options)
+  async get (key: Uint8Array, options?: RoutingOptions): Promise<Uint8Array<ArrayBuffer>> {
+    return withArrayBuffer(await this.libp2p.contentRouting.get(key, options))
   }
 
   async findPeer (peerId: CID, options?: RoutingOptions): Promise<Peer> {

@@ -1,9 +1,10 @@
 import { Queue, repeatingTask } from '@libp2p/utils'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { DEFAULT_REPUBLISH_CONCURRENCY, DEFAULT_REPUBLISH_INTERVAL_MS, DEFAULT_TTL_NS } from '../constants.ts'
+import { IPNSEntry } from '../pb/ipns.ts'
 import { createIPNSRecord } from '../records.ts'
-import { marshalIPNSRecord, unmarshalIPNSRecord } from '../utils.ts'
-import { shouldRepublish } from '../utils.ts'
-import type { IPNSRecord } from '../index.ts'
+import { decodeExtensibleData, shouldRepublish } from '../utils.ts'
+import type { IPNSRecordData } from '../index.ts'
 import type { LocalStore } from '../local-store.ts'
 import type { IPNSRouting } from '../routing/index.ts'
 import type { Keychain, PrivateKey } from '@helia/interface'
@@ -78,7 +79,7 @@ export class IPNSRepublisher {
     })
 
     try {
-      const recordsToRepublish: Array<{ routingKey: Uint8Array, record: IPNSRecord }> = []
+      const recordsToRepublish: Array<{ routingKey: Uint8Array, record: IPNSEntry }> = []
       let listed = 0
 
       // Find all records using the localStore.list method
@@ -91,21 +92,38 @@ export class IPNSRepublisher {
           this.log('no metadata found for record %b, skipping', routingKey)
           continue
         }
-        let ipnsRecord: IPNSRecord
+
+        let ipnsRecord: IPNSEntry
+
         try {
-          ipnsRecord = await unmarshalIPNSRecord(routingKey, record, this.keychain, options)
-        } catch (err: any) {
-          this.log.error('error unmarshaling record - %e', err)
+          ipnsRecord = IPNSEntry.decode(record)
+        } catch (err) {
+          this.log.trace('skipping invalid record %b because could not decode', routingKey)
+          continue
+        }
+
+        if (ipnsRecord.data == null) {
+          this.log.trace('skipping record %b because data was missing', routingKey)
+          continue
+        }
+
+        let data: IPNSRecordData
+
+        try {
+          data = decodeExtensibleData(ipnsRecord.data)
+        } catch {
+          this.log.trace('skipping record %b because could not decode data', routingKey)
           continue
         }
 
         // Only republish records that are within the DHT or record expiry threshold
-        if (!shouldRepublish(ipnsRecord, created)) {
+        if (!shouldRepublish(created, new Date(uint8ArrayToString(data.Validity)))) {
           this.log.trace('skipping record %b within republish threshold', routingKey)
           continue
         }
-        const sequenceNumber = ipnsRecord.sequence + 1n
-        const ttlNs = ipnsRecord.ttl ?? DEFAULT_TTL_NS
+
+        const sequenceNumber = data.Sequence + 1n
+        const ttlNs = data.TTL ?? DEFAULT_TTL_NS
         let privKey: PrivateKey
 
         try {
@@ -116,7 +134,7 @@ export class IPNSRepublisher {
         }
 
         try {
-          const updatedRecord = await createIPNSRecord(privKey, ipnsRecord.value, sequenceNumber, metadata.lifetime, {
+          const updatedRecord = await createIPNSRecord(privKey, uint8ArrayToString(data.Value), sequenceNumber, metadata.lifetime, {
             ...options,
             ttlNs
           })
@@ -137,7 +155,7 @@ export class IPNSRepublisher {
         // Add job to queue to republish the record to all routers
         queue.add(async () => {
           try {
-            const marshaledRecord = marshalIPNSRecord(record)
+            const marshaledRecord = IPNSEntry.encode(record)
             await Promise.all(
               this.routers.map(r => r.put(routingKey, marshaledRecord, options))
             )

@@ -35,7 +35,7 @@ describe('bitswap', () => {
   let components: StubbedBitswapComponents
   let bitswap: Bitswap
   let cids: CID[]
-  let blocks: Uint8Array[]
+  let blocks: Uint8Array<ArrayBuffer>[]
   let getHasher: ReturnType<typeof Sinon.stub>
   let remotePeer: PeerId
 

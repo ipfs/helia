@@ -54,7 +54,7 @@ export class DelegatedHTTPRouter implements Router {
     await this.client.putIPNS(cid, value, options)
   }
 
-  async get (key: Uint8Array, options?: RoutingOptions): Promise<Uint8Array> {
+  async get (key: Uint8Array, options?: RoutingOptions): Promise<Uint8Array<ArrayBuffer>> {
     if (!isIPNSKey(key)) {
       throw new NotFoundError('Not found')
     }

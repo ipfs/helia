@@ -1,6 +1,6 @@
 import { isPublicKey } from '@helia/interface'
+import * as dagCbor from '@ipld/dag-cbor'
 import { InvalidParametersError } from '@libp2p/interface'
-import * as cborg from 'cborg'
 import { Key } from 'interface-datastore'
 import { base36 } from 'multiformats/bases/base36'
 import { base58btc } from 'multiformats/bases/base58'
@@ -10,23 +10,18 @@ import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { DHT_EXPIRY_MS, REPUBLISH_THRESHOLD } from './constants.ts'
-import { InvalidEmbeddedPublicKeyError, InvalidRecordDataError, InvalidValueError, RecordTooLargeError, SignatureVerificationError, UnsupportedValidityError } from './errors.ts'
-import { IpnsEntry } from './pb/ipns.ts'
-import type { IPNSRecord, IPNSRecordV2, IPNSRecordData } from './records.ts'
-import type { PublicKey, Keychain } from '@helia/interface'
-import type { AbortOptions } from '@libp2p/interface'
+import { InvalidRecordDataError, InvalidValueError, SignatureVerificationError, UnsupportedValidityError } from './errors.ts'
+import { IPNSEntry } from './pb/ipns.ts'
+import type { IPNSRecordData } from './index.ts'
+import type { PublicKey } from '@helia/interface'
 import type { MultibaseDecoder } from 'multiformats/cid'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 
 export const LIBP2P_KEY_CODEC = 0x72
 export const IDENTITY_CODEC = 0x0
 export const SHA2_256_CODEC = 0x12
-
-/**
- * Limit valid IPNS record sizes to 10kb
- */
-const MAX_RECORD_SIZE = 1024 * 10
 
 const IPNS_PREFIX = uint8ArrayFromString('/ipns/')
 export const IPNS_STRING_PREFIX = '/ipns/'
@@ -60,10 +55,9 @@ export function ipnsMetadataKey (key: Uint8Array): Key {
   return new Key(IPNS_METADATA_PREFIX + uint8ArrayToString(key, 'base32'), false)
 }
 
-export function shouldRepublish (ipnsRecord: IPNSRecord, created: Date): boolean {
+export function shouldRepublish (created: Date, expiry: Date): boolean {
   const now = Date.now()
   const dhtExpiry = created.getTime() + DHT_EXPIRY_MS
-  const recordExpiry = new Date(ipnsRecord.validity).getTime()
 
   // If the DHT expiry is within the threshold, republish it
   if (dhtExpiry - now < REPUBLISH_THRESHOLD) {
@@ -71,7 +65,7 @@ export function shouldRepublish (ipnsRecord: IPNSRecord, created: Date): boolean
   }
 
   // If the record expiry (based on validity/lifetime) is within the threshold, republish it
-  if (recordExpiry - now < REPUBLISH_THRESHOLD) {
+  if (expiry.getTime() - now < REPUBLISH_THRESHOLD) {
     return true
   }
 
@@ -101,15 +95,14 @@ export function isLibp2pCID (obj?: any): obj is CID<unknown, 0x72, 0x00 | 0x12, 
 /**
  * Utility for creating the record data for being signed
  */
-export function ipnsRecordDataForV1Sig (value: string, validityType: IpnsEntry.ValidityType, validity: Uint8Array): Uint8Array {
+export function ipnsRecordDataForV1Sig (value: Uint8Array, validityType: IPNSEntry.ValidityType, validity: Uint8Array): Uint8Array {
   const validityTypeBuffer = uint8ArrayFromString(validityType)
-  const valueBytes = uint8ArrayFromString(value)
 
   return uint8ArrayConcat([
-    valueBytes,
+    value,
     validity,
     validityTypeBuffer
-  ], valueBytes.byteLength + validity.byteLength + validityTypeBuffer.byteLength)
+  ], value.byteLength + validity.byteLength + validityTypeBuffer.byteLength)
 }
 
 /**
@@ -121,37 +114,7 @@ export function ipnsRecordDataForV2Sig (data: Uint8Array): Uint8Array {
   return uint8ArrayConcat([entryData, data])
 }
 
-export function marshalIPNSRecord (obj: IPNSRecord | IPNSRecordV2): Uint8Array {
-  let publicKey: Uint8Array | undefined = obj.publicKey?.toProtobuf()
-
-  // do not embed public keys whose multihash is an identity hash as these can
-  // be derived from the routing key
-  if (obj.publicKey?.toMultihash().code === 0x00) {
-    publicKey = undefined
-  }
-
-  if ('signatureV1' in obj) {
-    return IpnsEntry.encode({
-      value: uint8ArrayFromString(obj.value),
-      signatureV1: obj.signatureV1,
-      validityType: obj.validityType,
-      validity: uint8ArrayFromString(obj.validity),
-      sequence: obj.sequence,
-      ttl: obj.ttl,
-      publicKey,
-      signatureV2: obj.signatureV2,
-      data: obj.data
-    })
-  } else {
-    return IpnsEntry.encode({
-      publicKey,
-      signatureV2: obj.signatureV2,
-      data: obj.data
-    })
-  }
-}
-
-function valueToString (value: Uint8Array): string {
+export function ipnsRecordValueToString (value: Uint8Array): string {
   // handle legacy case where record value is raw CID bytes
   try {
     const cid = CID.decode(value)
@@ -161,76 +124,6 @@ function valueToString (value: Uint8Array): string {
   }
 
   return uint8ArrayToString(value)
-}
-
-export async function unmarshalIPNSRecord (routingKey: Uint8Array, marshalledRecord: Uint8Array, keychain: Keychain, options?: AbortOptions): Promise<IPNSRecord> {
-  if (marshalledRecord.byteLength > MAX_RECORD_SIZE) {
-    throw new RecordTooLargeError('The record is too large')
-  }
-
-  const message = IpnsEntry.decode(marshalledRecord)
-
-  // Check if we have the data field. If we don't, we fail. We've been producing
-  // V1+V2 records for quite a while and we don't support V1-only records during
-  // validation any more
-  if (message.signatureV2 == null || message.data == null) {
-    throw new SignatureVerificationError('Missing data or signatureV2')
-  }
-
-  const data = parseCborData(message.data)
-  const validity = uint8ArrayToString(data.Validity)
-
-  let publicKey: PublicKey | undefined
-
-  // try to extract public key from routing key
-  const routingMultihash = multihashFromIPNSRoutingKey(routingKey)
-
-  // identity hash
-  if (isCodec(routingMultihash, 0x0)) {
-    publicKey = await keychain.loadPublicKeyFromProtobuf(routingMultihash.digest, options)
-  }
-
-  // otherwise try to load key from message
-  if (publicKey == null && message.publicKey != null) {
-    publicKey = await keychain.loadPublicKeyFromProtobuf(message.publicKey, options)
-  }
-
-  if (publicKey == null) {
-    throw new InvalidEmbeddedPublicKeyError('Could not extract public key from IPNS record or routing key')
-  }
-
-  if (message.value != null && message.signatureV1 != null) {
-    // V1+V2
-    validateCborDataMatchesPbData(message)
-
-    return {
-      value: valueToString(data.Value),
-      validityType: IpnsEntry.ValidityType.EOL,
-      validity,
-      sequence: data.Sequence,
-      ttl: data.TTL,
-      publicKey,
-      signatureV1: message.signatureV1,
-      signatureV2: message.signatureV2,
-      data: message.data,
-      bytes: marshalledRecord
-    }
-  } else if (message.signatureV2 != null) {
-    // V2-only
-    return {
-      value: valueToString(data.Value),
-      validityType: IpnsEntry.ValidityType.EOL,
-      validity,
-      sequence: data.Sequence,
-      ttl: data.TTL,
-      publicKey,
-      signatureV2: message.signatureV2,
-      data: message.data,
-      bytes: marshalledRecord
-    }
-  } else {
-    throw new Error('invalid record: does not include signatureV1 or signatureV2')
-  }
 }
 
 export function multihashToIPNSRoutingKey (digest: MultihashDigest): Uint8Array {
@@ -244,32 +137,23 @@ export function multihashFromIPNSRoutingKey (key: Uint8Array): MultihashDigest {
   return Digest.decode(key.slice(IPNS_PREFIX.length))
 }
 
-export function createCborData (value: string, validityType: IpnsEntry.ValidityType, validity: Uint8Array, sequence: bigint, ttl: bigint): Uint8Array {
-  let ValidityType
-
-  if (validityType === IpnsEntry.ValidityType.EOL) {
-    ValidityType = 0
-  } else {
-    throw new UnsupportedValidityError('The validity type is unsupported')
-  }
-
-  const data = {
-    Value: uint8ArrayFromString(value),
-    Validity: validity,
-    ValidityType,
-    Sequence: sequence,
-    TTL: ttl
-  }
-
-  return cborg.encode(data)
+export function encodeExtensibleData (data?: IPNSRecordData): Uint8Array<ArrayBuffer> {
+  return withArrayBuffer(dagCbor.encode(data))
 }
 
-export function parseCborData (buf: Uint8Array): IPNSRecordData {
-  const data = cborg.decode(buf)
+export function decodeExtensibleData (buf?: Uint8Array): IPNSRecordData {
+  if (buf == null) {
+    throw new InvalidRecordDataError('Record data is missing')
+  }
 
+  const data = dagCbor.decode<IPNSRecordData>(buf)
+
+  // @ts-expect-error TODO: remove typescript enums
   if (data.ValidityType === 0) {
-    data.ValidityType = IpnsEntry.ValidityType.EOL
-  } else {
+    data.ValidityType = IPNSEntry.ValidityType.EOL
+  }
+
+  if (data.ValidityType !== IPNSEntry.ValidityType.EOL) {
     throw new UnsupportedValidityError('The validity type is unsupported')
   }
 
@@ -397,13 +281,7 @@ export function normalizeKey (key?: PublicKey | CID | MultihashDigest | string):
   throw new InvalidValueError('Value must be a valid IPNS path starting with /')
 }
 
-function validateCborDataMatchesPbData (entry: IpnsEntry): void {
-  if (entry.data == null) {
-    throw new InvalidRecordDataError('Record data is missing')
-  }
-
-  const data = parseCborData(entry.data)
-
+export function validateCborDataMatchesPbData (entry: IPNSEntry, data: IPNSRecordData): void {
   if (!uint8ArrayEquals(data.Value, entry.value ?? new Uint8Array(0))) {
     throw new SignatureVerificationError('Field "value" did not match between protobuf and CBOR')
   }

@@ -1,7 +1,7 @@
 /* eslint max-nested-callbacks: ["error", 5] */
 
 import { ipns } from '@helia/ipns'
-import { pubsub } from '@helia/ipns/routing'
+import { pubSubIPNSRouting } from '@helia/ipns'
 import { floodsub } from '@libp2p/floodsub'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
@@ -21,7 +21,7 @@ import { createKuboNode } from './fixtures/create-kubo.ts'
 import { keyTypes } from './fixtures/key-types.ts'
 import { waitFor } from './fixtures/wait-for.ts'
 import type { IPNS, IPNSResolveResult } from '@helia/ipns'
-import type { PubSub } from '@helia/ipns/routing'
+import type { PubSub } from '@helia/ipns'
 import type { HeliaWithLibp2p } from '@helia/libp2p'
 import type { Keychain } from '@libp2p/keychain'
 import type { KuboNode } from 'ipfsd-ctl'
@@ -48,7 +48,7 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
 
       name = ipns(helia, {
         routers: [
-          pubsub(helia)
+          pubSubIPNSRouting(helia)
         ]
       })
     })
@@ -185,7 +185,7 @@ keyTypes.filter(keyType => keyType !== 'RSA').forEach(keyType => {
         throw new Error('Failed to resolve CID')
       }
 
-      expect(resolveResult.record.value).to.equal(`/ipfs/${cid}`)
+      expect(resolveResult.value).to.equal(`/ipfs/${cid}`)
     })
   })
 })

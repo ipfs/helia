@@ -2,259 +2,106 @@ import { logger } from '@libp2p/logger'
 import NanoDate from 'timestamp-nano'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { SignatureCreationError } from './errors.ts'
-import { IpnsEntry } from './pb/ipns.ts'
-import { createCborData, ipnsRecordDataForV1Sig, ipnsRecordDataForV2Sig, marshalIPNSRecord } from './utils.ts'
+import { IPNSEntry } from './pb/ipns.ts'
+import { encodeExtensibleData, IDENTITY_CODEC, ipnsRecordDataForV1Sig, ipnsRecordDataForV2Sig } from './utils.ts'
 import type { PrivateKey, PublicKey } from '@helia/interface'
 import type { AbortOptions } from 'abort-error'
-import type { Key } from 'interface-datastore/key'
 
 const log = logger('ipns')
-const DEFAULT_TTL_NS = 5 * 60 * 1e+9 // 5 Minutes or 300 Seconds, as suggested by https://specs.ipfs.tech/ipns/ipns-record/#ttl-uint64
+const DEFAULT_TTL_NS = 300_000_000_000n // 5 Minutes or 300 Seconds, as suggested by https://specs.ipfs.tech/ipns/ipns-record/#ttl-uint64
 
-export const namespace = '/ipns/'
-export const namespaceLength = namespace.length
-
-export interface IPNSRecordV1V2 {
+export interface CreateIPNSRecordOptions extends AbortOptions {
   /**
-   * value of the record
+   * By default a IPNS V1 and a V2 signature is added to every record. Pass
+   * false here to only add a V2 signature.
+   *
+   * @default true
    */
-  value: string
-
-  /**
-   * signature of the record
-   */
-  signatureV1: Uint8Array
-
-  /**
-   * Type of validation being used
-   */
-  validityType: IpnsEntry.ValidityType
-
-  /**
-   * expiration datetime for the record in RFC3339 format
-   */
-  validity: string
-
-  /**
-   * number representing the version of the record
-   */
-  sequence: bigint
-
-  /**
-   * ttl in nanoseconds
-   */
-  ttl?: bigint
-
-  /**
-   * the public portion of the key that signed this record
-   */
-  publicKey: PublicKey
-
-  /**
-   * the v2 signature of the record
-   */
-  signatureV2: Uint8Array
-
-  /**
-   * extensible data
-   */
-  data: Uint8Array
-
-  /**
-   * The marshalled record
-   */
-  bytes: Uint8Array
-}
-
-export interface IPNSRecordV2 {
-  /**
-   * value of the record
-   */
-  value: string
-
-  /**
-   * the v2 signature of the record
-   */
-  signatureV2: Uint8Array
-
-  /**
-   * Type of validation being used
-   */
-  validityType: IpnsEntry.ValidityType
-
-  /**
-   * If the validity type is EOL, this is the expiration datetime for the record
-   * in RFC3339 format
-   */
-  validity: string
-
-  /**
-   * number representing the version of the record
-   */
-  sequence: bigint
-
-  /**
-   * ttl in nanoseconds
-   */
-  ttl?: bigint
-
-  /**
-   * the public portion of the key that signed this record
-   */
-  publicKey: PublicKey
-
-  /**
-   * extensible data
-   */
-  data: Uint8Array
-
-  /**
-   * The marshalled record
-   */
-  bytes: Uint8Array
-}
-
-export type IPNSRecord = IPNSRecordV1V2 | IPNSRecordV2
-
-export interface IPNSRecordData {
-  Value: Uint8Array
-  Validity: Uint8Array
-  ValidityType: IpnsEntry.ValidityType
-  Sequence: bigint
-  TTL: bigint
-}
-
-export interface IDKeys {
-  routingPubKey: Key
-  pkKey: Key
-  routingKey: Key
-  ipnsKey: Key
-}
-
-export interface CreateOptions extends AbortOptions {
-  ttlNs?: number | bigint
   v1Compatible?: boolean
-}
 
-export interface CreateV2OrV1Options extends AbortOptions {
-  v1Compatible: true
-}
+  /**
+   * The TTL of the record in ms - after this many ms have expired, resolving
+   * the record will query the routing for an updated version.
+   *
+   * Before this many ms have expired any locally stored copy will be treated as
+   * the latest version and the routing will not be queried.
+   *
+   * @default 300_000_000_000n
+   */
+  ttlNs?: bigint
 
-export interface CreateV2Options extends AbortOptions {
-  v1Compatible: false
-}
-
-const defaultCreateOptions: CreateOptions = {
-  v1Compatible: true,
-  ttlNs: DEFAULT_TTL_NS
+  /**
+   * Extensible data that will be added to the IPNS record data and signed to
+   * verify it's integrity.
+   *
+   * Note that this data will be encoded as DAG-CBOR so it must be valid.
+   */
+  data?: Record<string, any>
 }
 
 /**
- * Creates a new IPNS record and signs it with the given private key.
- * The IPNS Record validity should follow the [RFC3339]{@link https://www.ietf.org/rfc/rfc3339.txt} with nanoseconds precision.
- * Note: This function does not embed the public key. If you want to do that, use `EmbedPublicKey`.
+ * A low-level function that creates a new IPNS record and signs it with the
+ * passed private key.
  *
- * The passed value can be a CID, a PublicKey or an arbitrary string path e.g. `/ipfs/...` or `/ipns/...`.
+ * The IPNS Record validity should follow the [RFC3339]{@link https://www.ietf.org/rfc/rfc3339.txt}
+ * with nanosecond precision.
  *
- * CIDs will be converted to v1 and stored in the record as a string similar to: `/ipfs/${cid}`
- * PublicKeys will create recursive records, eg. the record value will be `/ipns/${cidV1Libp2pKey}`
- * String paths will be stored in the record as-is, but they must start with `"/"`
- *
- * @param {PrivateKey} privateKey - the private key for signing the record.
- * @param {CID | PublicKey | string} value - content to be stored in the record.
- * @param {number | bigint} seq - number representing the current version of the record.
- * @param {number} lifetime - lifetime of the record (in milliseconds).
- * @param {CreateOptions} options - additional create options.
+ * The passed value should be a string path e.g. `/ipfs/...` or `/ipns/...`.
  */
-export async function createIPNSRecord (privateKey: PrivateKey, value: string, seq: number | bigint, lifetime: number, options?: CreateV2OrV1Options): Promise<IPNSRecordV1V2>
-export async function createIPNSRecord (privateKey: PrivateKey, value: string, seq: number | bigint, lifetime: number, options: CreateV2Options): Promise<IPNSRecordV2>
-export async function createIPNSRecord (privateKey: PrivateKey, value: string, seq: number | bigint, lifetime: number, options: CreateOptions): Promise<IPNSRecordV1V2>
-export async function createIPNSRecord (privateKey: PrivateKey, value: string, seq: number | bigint, lifetime: number, options: CreateOptions = defaultCreateOptions): Promise<IPNSRecord> {
+export async function createIPNSRecord (privateKey: PrivateKey, val: string, seq: number | bigint, lifetime: number, options?: CreateIPNSRecordOptions): Promise<IPNSEntry> {
+  seq = BigInt(seq)
+  const value = uint8ArrayFromString(val)
+  // convert ttl from milliseconds to nanoseconds as createIPNSRecord expects
+  const ttlNs = options?.ttlNs ?? DEFAULT_TTL_NS
+
   // Validity in ISOString with nanoseconds precision and validity type EOL
   const expirationDate = new NanoDate(Date.now() + Number(lifetime))
-  const validityType = IpnsEntry.ValidityType.EOL
-  const ttlNs = BigInt(options.ttlNs ?? DEFAULT_TTL_NS)
+  const validityType = IPNSEntry.ValidityType.EOL
+  const validity = uint8ArrayFromString(expirationDate.toString())
 
-  return _create(privateKey, value, seq, validityType, expirationDate.toString(), ttlNs, options)
-}
+  const data = encodeExtensibleData({
+    ...(options?.data ?? {}),
+    Value: value,
+    Validity: validity,
+    // @ts-expect-error should be a number
+    ValidityType: 0,
+    Sequence: seq,
+    TTL: ttlNs
+  })
 
-/**
- * Same as create(), but instead of generating a new Date, it receives the intended expiration time
- * WARNING: nano precision is not standard, make sure the value in seconds is 9 orders of magnitude lesser than the one provided.
- *
- * The passed value can be a CID, a PublicKey or an arbitrary string path e.g. `/ipfs/...` or `/ipns/...`.
- *
- * CIDs will be converted to v1 and stored in the record as a string similar to: `/ipfs/${cid}`
- * PublicKeys will create recursive records, eg. the record value will be `/ipns/${cidV1Libp2pKey}`
- * String paths will be stored in the record as-is, but they must start with `"/"`
- *
- * @param {PrivateKey} privateKey - the private key for signing the record.
- * @param {CID | PublicKey | string} value - content to be stored in the record.
- * @param {number | bigint} seq - number representing the current version of the record.
- * @param {string} expiration - expiration datetime for record in the [RFC3339]{@link https://www.ietf.org/rfc/rfc3339.txt} with nanoseconds precision.
- * @param {CreateOptions} options - additional creation options.
- */
-export async function createIPNSRecordWithExpiration (privateKey: PrivateKey, value: string, seq: number | bigint, expiration: string, options?: CreateV2OrV1Options): Promise<IPNSRecordV1V2>
-export async function createIPNSRecordWithExpiration (privateKey: PrivateKey, value: string, seq: number | bigint, expiration: string, options: CreateV2Options): Promise<IPNSRecordV2>
-export async function createIPNSRecordWithExpiration (privateKey: PrivateKey, value: string, seq: number | bigint, expiration: string, options: CreateOptions): Promise<IPNSRecordV1V2>
-export async function createIPNSRecordWithExpiration (privateKey: PrivateKey, value: string, seq: number | bigint, expiration: string, options: CreateOptions = defaultCreateOptions): Promise<IPNSRecord> {
-  const expirationDate = NanoDate.fromString(expiration)
-  const validityType = IpnsEntry.ValidityType.EOL
-  const ttlNs = BigInt(options.ttlNs ?? DEFAULT_TTL_NS)
-
-  return _create(privateKey, value, seq, validityType, expirationDate.toString(), ttlNs, options)
-}
-
-const _create = async (privateKey: PrivateKey, value: string, seq: number | bigint, validityType: IpnsEntry.ValidityType, validity: string, ttl: bigint, options: CreateOptions = defaultCreateOptions): Promise<IPNSRecord> => {
-  seq = BigInt(seq)
-  const isoValidity = uint8ArrayFromString(validity)
-  const data = createCborData(value, validityType, isoValidity, seq, ttl)
   const sigData = ipnsRecordDataForV2Sig(data)
   const signatureV2 = await privateKey.sign(sigData, options)
-  const publicKey = shouldEmbedPublicKey(privateKey.publicKey) ? privateKey.publicKey : undefined
-  let record: any
+  let record: IPNSEntry
 
-  if (options.v1Compatible === true) {
-    const signatureV1 = await signLegacyV1(privateKey, value, validityType, isoValidity)
-
+  if (options?.v1Compatible === false) {
     record = {
-      value,
-      signatureV1,
-      validity,
-      validityType,
-      sequence: seq,
-      ttl,
       signatureV2,
-      data,
-      publicKey
+      data
     }
   } else {
     record = {
       value,
-      validity,
+      signatureV1: await signLegacyV1(privateKey, value, validityType, validity),
       validityType,
+      validity,
       sequence: seq,
-      ttl,
+      ttl: ttlNs,
       signatureV2,
-      data,
-      publicKey
+      data
     }
   }
 
-  record.bytes = marshalIPNSRecord(record)
+  if (shouldEmbedPublicKey(privateKey.publicKey)) {
+    record.publicKey = privateKey.publicKey.toProtobuf()
+  }
 
   return record
 }
 
-export { unmarshalIPNSRecord } from './utils.ts'
-export { marshalIPNSRecord } from './utils.ts'
-export { multihashToIPNSRoutingKey } from './utils.ts'
-export { multihashFromIPNSRoutingKey } from './utils.ts'
-
 /**
  * Sign ipns record data using the legacy V1 signature scheme
  */
-const signLegacyV1 = async (privateKey: PrivateKey, value: string, validityType: IpnsEntry.ValidityType, validity: Uint8Array, options?: AbortOptions): Promise<Uint8Array> => {
+const signLegacyV1 = async (privateKey: PrivateKey, value: Uint8Array, validityType: IPNSEntry.ValidityType, validity: Uint8Array, options?: AbortOptions): Promise<Uint8Array<ArrayBuffer>> => {
   try {
     const dataForSignature = ipnsRecordDataForV1Sig(value, validityType, validity)
 
@@ -269,5 +116,5 @@ const signLegacyV1 = async (privateKey: PrivateKey, value: string, validityType:
  * Returns true if the public key multihash is not an identity hash
  */
 function shouldEmbedPublicKey (key: PublicKey): boolean {
-  return key.toMultihash().code !== 0
+  return key.toMultihash().code !== IDENTITY_CODEC
 }

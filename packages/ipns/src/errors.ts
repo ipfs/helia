@@ -3,16 +3,6 @@ export class RecordsFailedValidationError extends Error {
   name = 'RecordsFailedValidationError'
 }
 
-export class UnsupportedMultibasePrefixError extends Error {
-  static name = 'UnsupportedMultibasePrefixError'
-  name = 'UnsupportedMultibasePrefixError'
-}
-
-export class UnsupportedMultihashCodecError extends Error {
-  static name = 'UnsupportedMultihashCodecError'
-  name = 'UnsupportedMultihashCodecError'
-}
-
 export class InvalidValueError extends Error {
   static name = 'InvalidValueError'
   name = 'InvalidValueError'

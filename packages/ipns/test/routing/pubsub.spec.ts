@@ -7,14 +7,17 @@ import delay from 'delay'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { toString } from 'uint8arrays'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DEFAULT_LIFETIME_MS } from '../../src/constants.ts'
 import { localStore } from '../../src/local-store.ts'
-import { createIPNSRecord, marshalIPNSRecord, multihashToIPNSRoutingKey, unmarshalIPNSRecord } from '../../src/records.ts'
-import { PubSubRouting } from '../../src/routing/pubsub.ts'
+import { IPNSEntry } from '../../src/pb/ipns.ts'
+import { createIPNSRecord } from '../../src/records.ts'
+import { PubSubIPNSRouting } from '../../src/routing/pubsub.ts'
+import { decodeExtensibleData, multihashToIPNSRoutingKey } from '../../src/utils.ts'
+import { ipnsValidator } from '../../src/validator.ts'
 import { getCrypto } from '../fixtures/get-crypto.ts'
-import type { IPNSRecord } from '../../src/index.ts'
 import type { LocalStore } from '../../src/local-store.ts'
-import type { Message, PubSub, PubSubEvents, Subscription } from '../../src/routing/pubsub.ts'
+import type { PubSubMessage, PubSub, PubSubEvents, PubSubSubscription } from '../../src/routing/pubsub.ts'
 import type { Keychain, PrivateKey } from '@helia/interface'
 import type { Fetch } from '@libp2p/fetch'
 import type { Libp2p, PeerId } from '@libp2p/interface'
@@ -27,11 +30,11 @@ describe('pubsub routing', () => {
   let peerId: StubbedInstance<PeerId>
   let pubsub: StubbedInstance<PubSub>
   let fetch: StubbedInstance<Fetch>
-  let pubsubRouter: PubSubRouting
+  let pubsubRouter: PubSubIPNSRouting
   let routingKey: Uint8Array
   let topic: string
   let privateKey: PrivateKey
-  let record: IPNSRecord
+  let record: IPNSEntry
   let target: TypedEventEmitter<PubSubEvents>
   let libp2p: StubbedInstance<Libp2p<{ pubsub: StubbedInstance<PubSub>, fetch: StubbedInstance<Fetch> }>>
   let kc: Keychain
@@ -62,7 +65,7 @@ describe('pubsub routing', () => {
       getCrypto
     })
 
-    pubsubRouter = new PubSubRouting({
+    pubsubRouter = new PubSubIPNSRouting({
       datastore,
       logger,
       libp2p,
@@ -82,7 +85,7 @@ describe('pubsub routing', () => {
   })
 
   describe('message', () => {
-    let message: StubbedInstance<Message>
+    let message: StubbedInstance<PubSubMessage>
     let event: PubSubEvents['message']
 
     beforeEach(() => {
@@ -90,7 +93,7 @@ describe('pubsub routing', () => {
       message.topic = topic
       message.type = 'signed'
       message.from.equals = () => false
-      message.data = marshalIPNSRecord(record)
+      message.data = IPNSEntry.encode(record)
 
       event = new CustomEvent('message', { detail: message })
     })
@@ -107,7 +110,7 @@ describe('pubsub routing', () => {
         recipients: []
       })
 
-      const marshaledRecord = marshalIPNSRecord(record)
+      const marshaledRecord = IPNSEntry.encode(record)
       fetch.fetch.withArgs(peerId).resolves(marshaledRecord)
 
       const result = await pubsubRouter.get(routingKey)
@@ -137,15 +140,16 @@ describe('pubsub routing', () => {
 
         const newRecord = await createIPNSRecord(privateKey, '/test2', 2n, DEFAULT_LIFETIME_MS)
 
-        message.data = marshalIPNSRecord(newRecord)
+        message.data = IPNSEntry.encode(newRecord)
         target.safeDispatchEvent('message', event)
 
         await delay(100)
 
         const result = await store.get(routingKey)
-        const updatedRecord = await unmarshalIPNSRecord(routingKey, result.record, kc)
-        expect(updatedRecord.sequence).to.equal(2n)
-        expect(updatedRecord.value).to.equal('/test2')
+        const updatedRecord = await ipnsValidator(routingKey, result.record, kc)
+        const data = decodeExtensibleData(updatedRecord.data)
+        expect(data.Sequence).to.equal(2n)
+        expect(data.Value).to.equalBytes(uint8ArrayFromString('/test2'))
       })
 
       it('skips the message if duplicate record', async () => {
@@ -153,7 +157,7 @@ describe('pubsub routing', () => {
 
         await expect(pubsubRouter.get(routingKey)).to.eventually.be.rejected
           .with.property('name', 'NotFoundError')
-        await store.put(routingKey, marshalIPNSRecord(record))
+        await store.put(routingKey, IPNSEntry.encode(record))
 
         const batchSpy = Sinon.spy(datastore.batch)
 
@@ -210,7 +214,7 @@ describe('pubsub routing', () => {
 
   describe('subscription-change', () => {
     let peerId: StubbedInstance<PeerId>
-    let subscription: StubbedInstance<Subscription>
+    let subscription: StubbedInstance<PubSubSubscription>
     let event: PubSubEvents['subscription-change']
 
     beforeEach(async () => {
@@ -229,7 +233,7 @@ describe('pubsub routing', () => {
         }
       })
 
-      fetch.fetch.callsFake(async () => marshalIPNSRecord(record))
+      fetch.fetch.callsFake(async () => IPNSEntry.encode(record))
 
       // the peer supports fetch
       libp2p.register.getCall(0).args[1]?.onConnect?.(peerId, stubInterface())

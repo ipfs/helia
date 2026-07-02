@@ -1,6 +1,7 @@
 import NanoDate from 'timestamp-nano'
-import { IpnsEntry } from './pb/ipns.ts'
-import type { IPNSRecord } from './records.ts'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { IPNSEntry } from './pb/ipns.ts'
+import { decodeExtensibleData } from './utils.ts'
 
 /**
  * Selects the latest valid IPNS record from an array of marshalled IPNS records.
@@ -13,19 +14,21 @@ import type { IPNSRecord } from './records.ts'
  * @param data - Array of marshalled IPNS records to select from
  * @returns The index of the most valid record from the input array
  */
-export function ipnsSelector (key: Uint8Array, data: IPNSRecord[]): number {
+export function ipnsSelector (key: Uint8Array, data: IPNSEntry[]): number {
   const entries = data.map((record, index) => ({
     record,
     index
   }))
 
   entries.sort((a, b) => {
-    // Before we'd sort based on the signature version. Unmarshal now fails if
-    // a record does not have SignatureV2, so that is no longer needed. V1-only
-    // records haven't been issues in a long time.
+    // Before we'd sort based on the signature version. Validation fails if a
+    // record does not have SignatureV2, so that is no longer needed. V1-only
+    // records will have all expired by this point.
+    const aData = decodeExtensibleData(a.record.data)
+    const bData = decodeExtensibleData(b.record.data)
 
-    const aSeq = a.record.sequence
-    const bSeq = b.record.sequence
+    const aSeq = aData.Sequence
+    const bSeq = bData.Sequence
 
     // choose later sequence number
     if (aSeq > bSeq) {
@@ -34,10 +37,10 @@ export function ipnsSelector (key: Uint8Array, data: IPNSRecord[]): number {
       return 1
     }
 
-    if (a.record.validityType === IpnsEntry.ValidityType.EOL && b.record.validityType === IpnsEntry.ValidityType.EOL) {
+    if (aData.ValidityType === IPNSEntry.ValidityType.EOL && bData.ValidityType === IPNSEntry.ValidityType.EOL) {
       // choose longer lived record if sequence numbers the same
-      const recordAValidityDate = NanoDate.fromString(a.record.validity).toDate()
-      const recordBValidityDate = NanoDate.fromString(b.record.validity).toDate()
+      const recordAValidityDate = NanoDate.fromString(uint8ArrayToString(aData.Validity)).toDate()
+      const recordBValidityDate = NanoDate.fromString(uint8ArrayToString(bData.Validity)).toDate()
 
       if (recordAValidityDate.getTime() > recordBValidityDate.getTime()) {
         return -1
