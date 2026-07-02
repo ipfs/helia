@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.0.3](https://github.com/ipfs/helia/compare/bitswap-v4.0.2...bitswap-v4.0.3) (2026-07-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/libp2p bumped from ^1.0.2 to ^1.0.3
+
 ## [4.0.2](https://github.com/ipfs/helia/compare/bitswap-v4.0.1...bitswap-v4.0.2) (2026-07-02)
 
 

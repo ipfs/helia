@@ -1,12 +1,12 @@
 {
-  "packages/bitswap": "4.0.2",
+  "packages/bitswap": "4.0.3",
   "packages/car": "6.0.2",
   "packages/dag-cbor": "6.0.2",
   "packages/dag-json": "6.0.2",
   "packages/dnslink": "2.0.1",
-  "packages/helia": "7.0.2",
+  "packages/helia": "7.0.3",
   "packages/interface": "7.0.2",
-  "packages/interop": "11.0.4",
+  "packages/interop": "11.0.5",
   "packages/ipns": "10.0.3",
   "packages/json": "6.0.2",
   "packages/mfs": "8.0.2",
@@ -16,6 +16,6 @@
   "packages/http": "4.0.2",
   "packages/delegated-routing-client": "1.0.2",
   "packages/fallback-router": "1.0.2",
-  "packages/libp2p": "1.0.2",
+  "packages/libp2p": "1.0.3",
   "packages/trustless-gateway-client": "1.0.2"
 }
