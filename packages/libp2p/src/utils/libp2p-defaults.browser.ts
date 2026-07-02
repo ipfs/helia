@@ -9,6 +9,7 @@ import { dcutr } from '@libp2p/dcutr'
 import { http } from '@libp2p/http'
 import { identify, identifyPush } from '@libp2p/identify'
 import { kadDHT } from '@libp2p/kad-dht'
+import { keychain } from '@libp2p/keychain'
 import { mplex } from '@libp2p/mplex'
 import { ping } from '@libp2p/ping'
 import { webRTC, webRTCDirect } from '@libp2p/webrtc'
@@ -78,6 +79,7 @@ export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOpti
       }),
       identify: identify(),
       identifyPush: identifyPush(),
+      keychain: keychain(options.keychain),
       ping: ping(),
       http: http()
     }
