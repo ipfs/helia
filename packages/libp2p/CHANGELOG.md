@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/ipfs/helia/compare/libp2p-v1.0.2...libp2p-v1.0.3) (2026-07-02)
+
+
+### Bug Fixes
+
+* include keychain in browser ([4f47203](https://github.com/ipfs/helia/commit/4f4720349230404954fdf8fe759a990e555bc77b))
+
 ## [1.0.2](https://github.com/ipfs/helia/compare/libp2p-v1.0.1...libp2p-v1.0.2) (2026-07-02)
 
 
