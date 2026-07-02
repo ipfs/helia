@@ -5,6 +5,13 @@
 
 * expose .dns property on @helia/interface ([#465](https://github.com/ipfs/helia/issues/465)) ([8c9bb7d](https://github.com/ipfs/helia/commit/8c9bb7d224a1b786cba1fba18bffe07001a3b95d))
 
+## [7.0.2](https://github.com/ipfs/helia/compare/interface-v7.0.1...interface-v7.0.2) (2026-07-02)
+
+
+### Bug Fixes
+
+* init added block brokers and routers ([#1068](https://github.com/ipfs/helia/issues/1068)) ([e488bd1](https://github.com/ipfs/helia/commit/e488bd17d755d108378d00ecbc6b6725490ff183))
+
 ## [7.0.1](https://github.com/ipfs/helia/compare/interface-v7.0.0...interface-v7.0.1) (2026-07-02)
 
 

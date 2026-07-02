@@ -1,5 +1,22 @@
 # Changelog
 
+## [4.0.2](https://github.com/ipfs/helia/compare/http-v4.0.1...http-v4.0.2) (2026-07-02)
+
+
+### Bug Fixes
+
+* split http args ([#1069](https://github.com/ipfs/helia/issues/1069)) ([ef258e7](https://github.com/ipfs/helia/commit/ef258e7e7d0bcd10143137d953b60471daab60d9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/delegated-routing-client bumped from ^1.0.1 to ^1.0.2
+    * @helia/fallback-router bumped from ^1.0.1 to ^1.0.2
+    * @helia/interface bumped from ^7.0.1 to ^7.0.2
+    * @helia/trustless-gateway-client bumped from ^1.0.1 to ^1.0.2
+
 ## [4.0.1](https://github.com/ipfs/helia/compare/http-v4.0.0...http-v4.0.1) (2026-07-02)
 
 

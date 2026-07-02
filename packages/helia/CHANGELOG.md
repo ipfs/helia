@@ -1,5 +1,23 @@
 # Changelog
 
+## [7.0.2](https://github.com/ipfs/helia/compare/helia-v7.0.1...helia-v7.0.2) (2026-07-02)
+
+
+### Bug Fixes
+
+* init added block brokers and routers ([#1068](https://github.com/ipfs/helia/issues/1068)) ([e488bd1](https://github.com/ipfs/helia/commit/e488bd17d755d108378d00ecbc6b6725490ff183))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^4.0.1 to ^4.0.2
+    * @helia/http bumped from ^4.0.1 to ^4.0.2
+    * @helia/interface bumped from ^7.0.1 to ^7.0.2
+    * @helia/libp2p bumped from ^1.0.1 to ^1.0.2
+    * @helia/utils bumped from ^3.0.1 to ^3.0.2
+
 ## [7.0.1](https://github.com/ipfs/helia/compare/helia-v7.0.0...helia-v7.0.1) (2026-07-02)
 
 
