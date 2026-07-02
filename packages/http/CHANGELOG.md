@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.0.1](https://github.com/ipfs/helia/compare/http-v4.0.0...http-v4.0.1) (2026-07-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/delegated-routing-client bumped from ^1.0.0 to ^1.0.1
+    * @helia/fallback-router bumped from ^1.0.0 to ^1.0.1
+    * @helia/interface bumped from ^7.0.0 to ^7.0.1
+    * @helia/trustless-gateway-client bumped from ^1.0.0 to ^1.0.1
+
 ## [4.0.0](https://github.com/ipfs/helia/compare/http-v3.1.4...http-v4.0.0) (2026-06-29)
 
 

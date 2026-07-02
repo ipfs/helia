@@ -1,6 +1,6 @@
 {
   "name": "@helia/delegated-routing-client",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Use HTTP Delegated Routers with Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/delegated-routing-client#readme",
@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "@helia/delegated-routing-v1-http-api-client": "^8.0.0",
-    "@helia/interface": "^7.0.0",
+    "@helia/interface": "^7.0.1",
     "@libp2p/interface": "^3.2.3",
     "it-first": "^3.0.11",
     "it-map": "^3.1.6",

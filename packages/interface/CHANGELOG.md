@@ -5,6 +5,13 @@
 
 * expose .dns property on @helia/interface ([#465](https://github.com/ipfs/helia/issues/465)) ([8c9bb7d](https://github.com/ipfs/helia/commit/8c9bb7d224a1b786cba1fba18bffe07001a3b95d))
 
+## [7.0.1](https://github.com/ipfs/helia/compare/interface-v7.0.0...interface-v7.0.1) (2026-07-02)
+
+
+### Bug Fixes
+
+* add value to ipns result and export util to create records ([#1065](https://github.com/ipfs/helia/issues/1065)) ([883ff05](https://github.com/ipfs/helia/commit/883ff053cefc4b9f7cf7fd6759bc79f68def9297))
+
 ## [7.0.0](https://github.com/ipfs/helia/compare/interface-v6.2.1...interface-v7.0.0) (2026-06-29)
 
 
