@@ -289,6 +289,7 @@ export class Routing implements RoutingInterface, Startable {
             } catch (err: any) {
               this.log('router %s failed with %e', router, err)
               errors.push(err)
+              throw err
             } finally {
               options?.onProgress?.(new CustomProgressEvent('helia:routing:get:end', {
                 routing: router.name,
