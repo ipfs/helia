@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.0.3](https://github.com/ipfs/helia/compare/http-v4.0.2...http-v4.0.3) (2026-07-03)
+
+
+### Bug Fixes
+
+* pass args to delegated routing correctly ([#1073](https://github.com/ipfs/helia/issues/1073)) ([18c27bc](https://github.com/ipfs/helia/commit/18c27bc944782cd1e1073736fd67aac393cfe2ad))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/delegated-routing-client bumped from ^1.0.2 to ^1.0.3
+
 ## [4.0.2](https://github.com/ipfs/helia/compare/http-v4.0.1...http-v4.0.2) (2026-07-02)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/ipfs/helia/compare/delegated-routing-client-v1.0.2...delegated-routing-client-v1.0.3) (2026-07-03)
+
+
+### Bug Fixes
+
+* override defaults in browsers ([#1074](https://github.com/ipfs/helia/issues/1074)) ([257989d](https://github.com/ipfs/helia/commit/257989da8c5b573e3eddd13d6834bc8853530f0c))
+
 ## [1.0.2](https://github.com/ipfs/helia/compare/delegated-routing-client-v1.0.1...delegated-routing-client-v1.0.2) (2026-07-02)
 
 

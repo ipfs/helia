@@ -1,5 +1,18 @@
 # Changelog
 
+## [11.0.6](https://github.com/ipfs/helia/compare/interop-v11.0.5...interop-v11.0.6) (2026-07-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^4.0.3 to ^4.0.4
+    * @helia/delegated-routing-client bumped from ^1.0.2 to ^1.0.3
+    * @helia/dnslink bumped from ^2.0.1 to ^2.0.2
+    * @helia/libp2p bumped from ^1.0.3 to ^1.0.4
+    * helia bumped from ^7.0.3 to ^7.0.4
+
 ## [11.0.5](https://github.com/ipfs/helia/compare/interop-v11.0.4...interop-v11.0.5) (2026-07-02)
 
 
