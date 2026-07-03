@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/ipfs/helia/compare/dnslink-v2.0.1...dnslink-v2.0.2) (2026-07-03)
+
+
+### Bug Fixes
+
+* handle multihashes in dns link results ([#1072](https://github.com/ipfs/helia/issues/1072)) ([f4eb7d2](https://github.com/ipfs/helia/commit/f4eb7d27ca159f4908c607ead0b9859f93af8df2))
+
 ## [2.0.1](https://github.com/ipfs/helia/compare/dnslink-v2.0.0...dnslink-v2.0.1) (2026-06-30)
 
 

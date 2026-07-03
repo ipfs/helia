@@ -1,6 +1,6 @@
 {
   "name": "@helia/libp2p",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "libp2p functionality for Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/libp2p#readme",
@@ -50,7 +50,7 @@
   "dependencies": {
     "@chainsafe/libp2p-noise": "^17.0.0",
     "@chainsafe/libp2p-yamux": "^8.0.1",
-    "@helia/delegated-routing-client": "^1.0.2",
+    "@helia/delegated-routing-client": "^1.0.3",
     "@helia/delegated-routing-v1-http-api-client": "^9.0.0",
     "@helia/interface": "^7.0.2",
     "@ipshipyard/libp2p-auto-tls": "^2.0.1",

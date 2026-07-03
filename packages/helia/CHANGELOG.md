@@ -1,5 +1,21 @@
 # Changelog
 
+## [7.0.4](https://github.com/ipfs/helia/compare/helia-v7.0.3...helia-v7.0.4) (2026-07-03)
+
+
+### Bug Fixes
+
+* fall through to other routings ([#1075](https://github.com/ipfs/helia/issues/1075)) ([05d3bc8](https://github.com/ipfs/helia/commit/05d3bc8e8653dd032a8ec78761b53748b2fa0d88))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^4.0.3 to ^4.0.4
+    * @helia/http bumped from ^4.0.2 to ^4.0.3
+    * @helia/libp2p bumped from ^1.0.3 to ^1.0.4
+
 ## [7.0.3](https://github.com/ipfs/helia/compare/helia-v7.0.2...helia-v7.0.3) (2026-07-02)
 
 
