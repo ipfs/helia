@@ -73,7 +73,7 @@ export const DEFAULT_TRUSTLESS_GATEWAYS = [
   'https://4everland.io'
 ]
 
-export interface HTTPOptions {
+export interface HTTPOptions extends TrustlessGatewayBlockBrokerInit {
   /**
    * Delegated routers are servers that make routing requests on behalf of peers
    * with less capable network connectivity.
@@ -94,24 +94,19 @@ export interface HTTPOptions {
    * @see https://docs.ipfs.tech/concepts/ipfs-gateway/#recursive-vs-non-recursive-gateways
    */
   recursiveGateways?: string[]
-
-  /**
-   * Init arg passed to the trustless gateway block broker
-   *
-   * @see https://docs.ipfs.tech/reference/http/gateway/#trusted-vs-trustless
-   */
-  trustlessGatewayBlockBrokerInit?: TrustlessGatewayBlockBrokerInit
 }
 
 /**
  * Augment a Helia node with HTTP routers and block brokers
  */
 export function withHTTP <H extends Helia> (helia: H, init?: HTTPOptions): H {
-  init?.delegatedRouters ?? [
+  (init?.delegatedRouters ?? [
     'https://delegated-ipfs.dev'
-  ].forEach(url => {
+  ]).forEach(url => {
     helia.addRouter(delegatedHTTPRouter({
-      url
+      url,
+      filterProtocols: ['unknown', 'transport-ipfs-gateway-http'],
+      filterAddrs: ['https', ...(init?.allowInsecure === true ? ['http'] : [])]
     }))
   })
 
@@ -121,7 +116,7 @@ export function withHTTP <H extends Helia> (helia: H, init?: HTTPOptions): H {
 
   // add trustless gateway block broker
   if (!helia.hasBlockBroker('trustless-gateway')) {
-    helia.addBlockBroker(trustlessGatewayBlockBroker(init?.trustlessGatewayBlockBrokerInit))
+    helia.addBlockBroker(trustlessGatewayBlockBroker(init))
   }
 
   return helia
