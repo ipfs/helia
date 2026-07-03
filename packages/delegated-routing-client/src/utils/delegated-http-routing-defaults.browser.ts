@@ -4,6 +4,7 @@ export function delegatedHTTPRoutingDefaults (init?: DelegatedRoutingV1HttpApiCl
   return {
     url: 'https://delegated-ipfs.dev',
     filterProtocols: ['unknown', 'transport-bitswap', 'transport-ipfs-gateway-http'],
-    filterAddrs: ['https', 'webtransport', 'webrtc', 'webrtc-direct', 'wss', 'tls']
+    filterAddrs: ['https', 'webtransport', 'webrtc', 'webrtc-direct', 'wss', 'tls'],
+    ...(init ?? {})
   }
 }
