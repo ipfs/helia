@@ -1,10 +1,8 @@
 import { NotFoundError } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { peerIdFromString } from '@libp2p/peer-id'
 import { RecordType } from '@multiformats/dns'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
-import { base36 } from 'multiformats/bases/base36'
 import { base58btc } from 'multiformats/bases/base58'
 import { CID } from 'multiformats/cid'
 import * as Digest from 'multiformats/hashes/digest'
@@ -214,14 +212,14 @@ describe('dnslink', () => {
     expect(result).to.have.nested.property('[0].path', '/foobar/path/123')
   })
 
-  it('should resolve recursive dnslink -> <peerId>/<path>', async () => {
-    const peerId = peerIdFromString('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
+  it('should resolve recursive dnslink -> <Qm_PeerId>/<path>', async () => {
+    const multihash = 'QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'
 
     dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
       name: 'foobar.baz.',
       TTL: 60,
       type: RecordType.TXT,
-      data: `dnslink=/ipns/${peerId.toString()}/foobar/path/123`
+      data: `dnslink=/ipns/${multihash}/foobar/path/123`
     }]))
 
     const result = await name.resolve('foobar.baz')
@@ -230,18 +228,38 @@ describe('dnslink', () => {
       throw new Error('Did not resolve entry')
     }
 
-    expect(result).to.have.deep.nested.property('[0].value', Digest.decode(base58btc.decode('zQmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')))
+    expect(result).to.have.deep.nested.property('[0].value', Digest.decode(base58btc.baseDecode(multihash)))
+    expect(result).to.have.nested.property('[0].path', '/foobar/path/123')
+  })
+
+  it('should resolve recursive dnslink -> <12D3Koo_PeerId>/<path>', async () => {
+    const multihash = '12D3KooWDUyFJTGJADckWJdfh2haqj6ckaXFWi1DReJ4RP8KsHg5'
+
+    dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
+      name: 'foobar.baz.',
+      TTL: 60,
+      type: RecordType.TXT,
+      data: `dnslink=/ipns/${multihash}/foobar/path/123`
+    }]))
+
+    const result = await name.resolve('foobar.baz')
+
+    if (result == null) {
+      throw new Error('Did not resolve entry')
+    }
+
+    expect(result).to.have.deep.nested.property('[0].value', Digest.decode(base58btc.baseDecode(multihash)))
     expect(result).to.have.nested.property('[0].path', '/foobar/path/123')
   })
 
   it('should resolve recursive dnslink -> <IPNS_base36_CID>/<path>', async () => {
-    const peerId = peerIdFromString('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
-    const peerIdBase36CID = peerId.toCID().toString(base36)
+    const cid = 'k51qzi5uqu5dhjghbwdvbo6mi40htrq6e2z4pwgp15pgv3ho1azvidttzh8yy2'
+
     dns.query.withArgs('_dnslink.foobar.baz').resolves(dnsResponse([{
       name: 'foobar.baz.',
       TTL: 60,
       type: RecordType.TXT,
-      data: `dnslink=/ipns/${peerIdBase36CID}/foobar/path/123`
+      data: `dnslink=/ipns/${cid}/foobar/path/123`
     }]))
 
     const result = await name.resolve('foobar.baz')
@@ -250,7 +268,7 @@ describe('dnslink', () => {
       throw new Error('Did not resolve entry')
     }
 
-    expect(result).to.have.deep.nested.property('[0].value', Digest.decode(base58btc.decode('zQmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')))
+    expect(result).to.have.deep.nested.property('[0].value', CID.parse(cid).multihash)
     expect(result).to.have.nested.property('[0].path', '/foobar/path/123')
   })
 
