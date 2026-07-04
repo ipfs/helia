@@ -94,6 +94,24 @@ export interface HTTPOptions extends TrustlessGatewayBlockBrokerInit {
    * @see https://docs.ipfs.tech/concepts/ipfs-gateway/#recursive-vs-non-recursive-gateways
    */
   recursiveGateways?: string[]
+
+  /**
+   * List of protocols to filter in the PeerRecords as defined in IPIP-484
+   * If undefined, PeerRecords are not filtered by protocol
+   *
+   * @see https://github.com/ipfs/specs/pull/484
+   * @default undefined
+   */
+  filterProtocols?: string[]
+
+  /**
+   * Array of address filters to filter PeerRecords's addresses as defined in IPIP-484
+   * If undefined, PeerRecords are not filtered by address
+   *
+   * @see https://github.com/ipfs/specs/pull/484
+   * @default undefined
+   */
+  filterAddrs?: string[]
 }
 
 /**
@@ -104,15 +122,18 @@ export function withHTTP <H extends Helia> (helia: H, init?: HTTPOptions): H {
     'https://delegated-ipfs.dev'
   ]).forEach(url => {
     helia.addRouter(delegatedHTTPRouter({
-      url,
-      filterProtocols: ['unknown', 'transport-ipfs-gateway-http'],
-      filterAddrs: ['https', ...(init?.allowInsecure === true ? ['http'] : [])]
+      ...init,
+      url
     }))
   })
 
-  helia.addRouter(fallbackRouter({
-    gateways: init?.recursiveGateways ?? DEFAULT_TRUSTLESS_GATEWAYS
-  }))
+  // add recursive gateways as fallback if configured
+  const recursiveGateways = init?.recursiveGateways ?? DEFAULT_TRUSTLESS_GATEWAYS
+  if (recursiveGateways.length > 0) {
+    helia.addRouter(fallbackRouter({
+      gateways: recursiveGateways
+    }))
+  }
 
   // add trustless gateway block broker
   if (!helia.hasBlockBroker('trustless-gateway')) {
