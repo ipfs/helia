@@ -1,7 +1,8 @@
 import { NoRoutersAvailableError } from '@helia/interface'
 import { GetFailedError } from '@helia/utils'
-import { NotFoundError, start, stop } from '@libp2p/interface'
+import { NotFoundError, setMaxListeners, start, stop } from '@libp2p/interface'
 import { Queue } from '@libp2p/utils'
+import { anySignal } from 'any-signal'
 import merge from 'it-merge'
 import { CustomProgressEvent } from 'progress-events'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
@@ -275,6 +276,11 @@ export class Routing implements RoutingInterface, Startable {
     const errors: Error[] = []
     let result: Uint8Array<ArrayBuffer> | undefined
 
+    // allow aborting other requests
+    const controller = new AbortController()
+    const signal = anySignal([controller.signal, options?.signal])
+    setMaxListeners(Infinity, signal)
+
     try {
       result = await Promise.any(
         supports(this.routers, 'get')
@@ -285,7 +291,10 @@ export class Routing implements RoutingInterface, Startable {
             }))
 
             try {
-              return await router.get(key, options)
+              return await router.get(key, {
+                ...options,
+                signal
+              })
             } catch (err: any) {
               this.log('router %s failed with %e', router, err)
               errors.push(err)
@@ -300,6 +309,10 @@ export class Routing implements RoutingInterface, Startable {
       )
     } catch {
       // ignore AggregateError as we will throw a better-named one
+    } finally {
+      // abort any in-flight requests
+      controller.abort()
+      signal.clear()
     }
 
     if (result == null) {
@@ -317,6 +330,11 @@ export class Routing implements RoutingInterface, Startable {
       throw new NoRoutersAvailableError('No peer routers available')
     }
 
+    // allow aborting other requests
+    const controller = new AbortController()
+    const signal = anySignal([controller.signal, options?.signal])
+    setMaxListeners(Infinity, signal)
+
     const self = this
     const source = merge(
       ...supports(this.routers, 'findPeer')
@@ -327,7 +345,10 @@ export class Routing implements RoutingInterface, Startable {
           }))
 
           try {
-            yield await router.findPeer(id, options)
+            yield await router.findPeer(id, {
+              ...options,
+              signal
+            })
           } catch (err) {
             self.log.error(err)
           } finally {
@@ -339,12 +360,18 @@ export class Routing implements RoutingInterface, Startable {
         })())
     )
 
-    for await (const peer of source) {
-      if (peer == null) {
-        continue
-      }
+    try {
+      for await (const peer of source) {
+        if (peer == null) {
+          continue
+        }
 
-      return peer
+        return peer
+      }
+    } finally {
+      // abort any in-flight requests
+      controller.abort()
+      signal.clear()
     }
 
     throw new NotFoundError('Could not find peer in routing')
