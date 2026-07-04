@@ -5,6 +5,14 @@
 
 * expose .dns property on @helia/interface ([#465](https://github.com/ipfs/helia/issues/465)) ([8c9bb7d](https://github.com/ipfs/helia/commit/8c9bb7d224a1b786cba1fba18bffe07001a3b95d))
 
+## [7.0.3](https://github.com/ipfs/helia/compare/interface-v7.0.2...interface-v7.0.3) (2026-07-04)
+
+
+### Bug Fixes
+
+* include which router found the peer in get peer ([#1077](https://github.com/ipfs/helia/issues/1077)) ([0cc31cd](https://github.com/ipfs/helia/commit/0cc31cd61e6585adfc10b7946f6d71d16a509709))
+* the routing is made up of routers ([da4aa40](https://github.com/ipfs/helia/commit/da4aa40a30b8958e7fd9dcb1a82f7133443cb9fb))
+
 ## [7.0.2](https://github.com/ipfs/helia/compare/interface-v7.0.1...interface-v7.0.2) (2026-07-02)
 
 

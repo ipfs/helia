@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.0.5](https://github.com/ipfs/helia/compare/libp2p-v1.0.4...libp2p-v1.0.5) (2026-07-04)
+
+
+### Bug Fixes
+
+* include which router found the peer in get peer ([#1077](https://github.com/ipfs/helia/issues/1077)) ([0cc31cd](https://github.com/ipfs/helia/commit/0cc31cd61e6585adfc10b7946f6d71d16a509709))
+* override routing operations ([#1080](https://github.com/ipfs/helia/issues/1080)) ([f028ccf](https://github.com/ipfs/helia/commit/f028ccf8ab5343eba29e005d6dc0c8950fd8c674))
+* the routing is made up of routers ([da4aa40](https://github.com/ipfs/helia/commit/da4aa40a30b8958e7fd9dcb1a82f7133443cb9fb))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/delegated-routing-client bumped from ^1.0.3 to ^1.0.4
+    * @helia/interface bumped from ^7.0.2 to ^7.0.3
+
 ## [1.0.4](https://github.com/ipfs/helia/compare/libp2p-v1.0.3...libp2p-v1.0.4) (2026-07-03)
 
 

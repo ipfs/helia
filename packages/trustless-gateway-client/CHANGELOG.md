@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.0.3](https://github.com/ipfs/helia/compare/trustless-gateway-client-v1.0.2...trustless-gateway-client-v1.0.3) (2026-07-04)
+
+
+### Bug Fixes
+
+* the routing is made up of routers ([da4aa40](https://github.com/ipfs/helia/commit/da4aa40a30b8958e7fd9dcb1a82f7133443cb9fb))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^7.0.2 to ^7.0.3
+    * @helia/utils bumped from ^3.0.2 to ^3.0.3
+
 ## [1.0.2](https://github.com/ipfs/helia/compare/trustless-gateway-client-v1.0.1...trustless-gateway-client-v1.0.2) (2026-07-02)
 
 

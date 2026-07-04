@@ -1,5 +1,22 @@
 # Changelog
 
+## [4.0.4](https://github.com/ipfs/helia/compare/http-v4.0.3...http-v4.0.4) (2026-07-04)
+
+
+### Bug Fixes
+
+* allow configuring transports and protocols ([#1078](https://github.com/ipfs/helia/issues/1078)) ([c0c34ad](https://github.com/ipfs/helia/commit/c0c34ad13d4593c045b4e13df65552a7135dea6c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/delegated-routing-client bumped from ^1.0.3 to ^1.0.4
+    * @helia/fallback-router bumped from ^1.0.2 to ^1.0.3
+    * @helia/interface bumped from ^7.0.2 to ^7.0.3
+    * @helia/trustless-gateway-client bumped from ^1.0.2 to ^1.0.3
+
 ## [4.0.3](https://github.com/ipfs/helia/compare/http-v4.0.2...http-v4.0.3) (2026-07-03)
 
 
