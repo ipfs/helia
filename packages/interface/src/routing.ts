@@ -50,6 +50,11 @@ export interface Peer {
    * The multiaddrs a peer is listening on
    */
   multiaddrs: Multiaddr[]
+
+  /**
+   * The name of the routing implementation that found the peer
+   */
+  routing: string
 }
 
 /**

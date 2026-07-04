@@ -38,7 +38,7 @@ export class DelegatedHTTPRouter implements Router {
         id: record.ID,
         multiaddrs: record.Addrs,
         protocols: record.Protocols,
-        routing: 'delegated-http-routing'
+        routing: this.name
       }
     })
   }
@@ -81,7 +81,8 @@ export class DelegatedHTTPRouter implements Router {
     if (peer != null) {
       return {
         id: peer.ID,
-        multiaddrs: peer.Addrs ?? []
+        multiaddrs: peer.Addrs ?? [],
+        routing: this.name
       }
     }
 
