@@ -74,6 +74,8 @@
     "@libp2p/webrtc": "^6.0.24",
     "@libp2p/websockets": "^10.1.14",
     "@multiformats/dns": "^1.0.13",
+    "@multiformats/multiaddr": "^13.0.3",
+    "it-foreach": "^2.1.7",
     "it-map": "^3.1.6",
     "libp2p": "^3.3.3",
     "multiformats": "^14.0.0",
