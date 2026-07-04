@@ -13,7 +13,8 @@ describe('@helia/libp2p', () => {
   beforeEach(() => {
     helia = withLibp2p(stubInterface<any>({
       datastore: new MemoryDatastore(),
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      routing: stubInterface()
     }))
   })
 
@@ -35,7 +36,8 @@ describe('@helia/libp2p', () => {
 
     helia = withLibp2p(stubInterface<any>({
       datastore: new MemoryDatastore(),
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      routing: stubInterface()
     }), libp2p)
 
     await helia.addMixin.getCall(0).args[0]?.start?.(helia)
