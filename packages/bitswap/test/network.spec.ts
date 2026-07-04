@@ -159,7 +159,7 @@ describe('network', () => {
       multiaddrs: [
         multiaddr('/ip4/127.0.0.1/tcp/4001')
       ],
-      routing: 'test-routing'
+      router: 'test-routing'
     }]
 
     components.routing.findProviders.withArgs(cid).returns((async function * () {
@@ -183,7 +183,7 @@ describe('network', () => {
       multiaddrs: [
         multiaddr('/ip4/127.0.0.1/tcp/4001/p2p-circuit')
       ],
-      routing: 'test-routing'
+      router: 'test-routing'
     }]
 
     components.routing.findProviders.withArgs(cid).returns((async function * () {
@@ -219,7 +219,7 @@ describe('network', () => {
       multiaddrs: [
         multiaddr('/ip4/127.0.0.1/tcp/4001/p2p-circuit')
       ],
-      routing: 'test-routing'
+      router: 'test-routing'
     }]
 
     components.routing.findProviders.withArgs(cid).returns((async function * () {
@@ -243,7 +243,7 @@ describe('network', () => {
       multiaddrs: [
         multiaddr('/ip4/127.0.0.1/tcp/4001')
       ],
-      routing: 'test-routing'
+      router: 'test-routing'
     }]
 
     components.routing.findProviders.withArgs(cid).returns((async function * () {
@@ -280,7 +280,7 @@ describe('network', () => {
       multiaddrs: [
         multiaddr('/ip4/127.0.0.1/tcp/4001/p2p-circuit')
       ],
-      routing: 'test-routing'
+      router: 'test-routing'
     }]
 
     components.routing.findProviders.withArgs(cid).returns((async function * () {

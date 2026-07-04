@@ -43,7 +43,7 @@ describe('trustless-gateway sessions', () => {
         multiaddrs: [
           uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
         ],
-        routing: 'test-routing'
+        router: 'test-routing'
       }
     }())
 
@@ -65,21 +65,21 @@ describe('trustless-gateway sessions', () => {
         multiaddrs: [
           multiaddr('/ip4/127.0.0.1/tcp/1234')
         ],
-        routing: 'test-routing'
+        router: 'test-routing'
       }
       yield {
         id: (await ed25519Crypto().generatePrivateKey()).publicKey.toCID(),
         multiaddrs: [
           multiaddr('/ip4/127.0.0.1/udp/1234/quic-v1')
         ],
-        routing: 'test-routing'
+        router: 'test-routing'
       }
       yield {
         id: (await ed25519Crypto().generatePrivateKey()).publicKey.toCID(),
         multiaddrs: [
           uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
         ],
-        routing: 'test-routing'
+        router: 'test-routing'
       }
     }())
 
@@ -102,7 +102,7 @@ describe('trustless-gateway sessions', () => {
       multiaddrs: [
         uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
       ],
-      routing: 'test-routing'
+      router: 'test-routing'
     }
 
     components.routing.findProviders.returns(async function * () {
@@ -136,7 +136,7 @@ describe('trustless-gateway sessions', () => {
         multiaddrs: [
           uriToMultiaddr(process.env.BAD_TRUSTLESS_GATEWAY ?? '')
         ],
-        routing: 'test-routing'
+        router: 'test-routing'
       }
     }())
 
@@ -157,14 +157,14 @@ describe('trustless-gateway sessions', () => {
       multiaddrs: [
         uriToMultiaddr(process.env.BAD_TRUSTLESS_GATEWAY ?? '')
       ],
-      routing: 'test-routing'
+      router: 'test-routing'
     },
     {
       id: (await ed25519Crypto().generatePrivateKey()).publicKey.toCID(),
       multiaddrs: [
         uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
       ],
-      routing: 'test-routing'
+      router: 'test-routing'
     }]
 
     components.routing.findProviders.returns(async function * () {

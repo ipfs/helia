@@ -18,7 +18,7 @@ export interface BitswapSessionComponents {
 
 interface ProviderPeer {
   peerId: CID
-  routing: string
+  router: string
   toString(): string
 }
 
@@ -63,7 +63,7 @@ class BitswapSession extends AbstractSession<ProviderPeer, BitswapWantProgressEv
     for await (const provider of this.network.findProviders(cid, options)) {
       yield {
         peerId: provider.id,
-        routing: provider.routing,
+        router: provider.router,
         toString: () => `Bitswap(${provider.id})`
       }
     }
@@ -77,11 +77,11 @@ class BitswapSession extends AbstractSession<ProviderPeer, BitswapWantProgressEv
     return providerA.peerId.equals(providerB.peerId)
   }
 
-  async convertToProvider (provider: CID | Multiaddr | Multiaddr[], routing: string, options?: AbortOptions): Promise<ProviderPeer | undefined> {
+  async convertToProvider (provider: CID | Multiaddr | Multiaddr[], router: string, options?: AbortOptions): Promise<ProviderPeer | undefined> {
     if (isCID(provider)) {
       return {
         peerId: provider,
-        routing,
+        router,
         toString: () => `Bitswap(${provider})`
       }
     }
@@ -95,7 +95,7 @@ class BitswapSession extends AbstractSession<ProviderPeer, BitswapWantProgressEv
 
       return {
         peerId: connection.remotePeer.toCID(),
-        routing,
+        router,
         toString: () => `Bitswap(${connection.remotePeer})`
       }
     } catch {}
@@ -108,9 +108,9 @@ class BitswapSession extends AbstractSession<ProviderPeer, BitswapWantProgressEv
       provider: {
         id: provider.peerId,
         multiaddrs: [],
-        routing: provider.routing
+        router: provider.router
       },
-      routing: provider.routing
+      router: provider.router
     }))
   }
 }

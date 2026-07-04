@@ -108,7 +108,7 @@ export class Routing implements RoutingInterface, Startable {
         let foundProviders = 0
 
         options?.onProgress?.(new CustomProgressEvent('helia:routing:find-providers:start', {
-          routing: router.name,
+          router: router.name,
           cid: key
         }))
 
@@ -118,7 +118,7 @@ export class Routing implements RoutingInterface, Startable {
 
             // @ts-expect-error router.name is a string, needs to be specific
             options?.onProgress?.(new CustomProgressEvent('helia:routing:find-providers:provider', {
-              routing: router.name,
+              router: router.name,
               cid: key,
               provider: prov
             }))
@@ -131,7 +131,7 @@ export class Routing implements RoutingInterface, Startable {
           self.log('router %s found %d providers for %c', router, foundProviders, key)
 
           options?.onProgress?.(new CustomProgressEvent('helia:routing:find-providers:end', {
-            routing: router.name,
+            router: router.name,
             cid: key,
             found: foundProviders
           }))
@@ -174,7 +174,7 @@ export class Routing implements RoutingInterface, Startable {
             return {
               ...provider,
               protocols: peer.protocols,
-              routing: peer.routing
+              router: peer.router
             }
           } catch (err) {
             this.log.error('could not load multiaddrs for peer %p - %e', peer.id, err)
@@ -211,14 +211,14 @@ export class Routing implements RoutingInterface, Startable {
       supports(this.routers, 'provide')
         .map(async (router) => {
           options?.onProgress?.(new CustomProgressEvent('helia:routing:provide:start', {
-            routing: router.name,
+            router: router.name,
             cid: key
           }))
 
           await router.provide(key, options)
 
           options?.onProgress?.(new CustomProgressEvent('helia:routing:provide:end', {
-            routing: router.name,
+            router: router.name,
             cid: key
           }))
         })
@@ -230,14 +230,14 @@ export class Routing implements RoutingInterface, Startable {
       supports(this.routers, 'cancelReprovide')
         .map(async (router) => {
           options?.onProgress?.(new CustomProgressEvent('helia:routing:cancel-reprovide:start', {
-            routing: router.name,
+            router: router.name,
             cid: key
           }))
 
           await router.cancelReprovide(key, options)
 
           options?.onProgress?.(new CustomProgressEvent('helia:routing:cancel-reprovide:end', {
-            routing: router.name,
+            router: router.name,
             cid: key
           }))
         })
@@ -252,7 +252,7 @@ export class Routing implements RoutingInterface, Startable {
       supports(this.routers, 'put')
         .map(async (router) => {
           options?.onProgress?.(new CustomProgressEvent('helia:routing:put:start', {
-            routing: router.name,
+            router: router.name,
             key,
             value
           }))
@@ -260,7 +260,7 @@ export class Routing implements RoutingInterface, Startable {
           await router.put(key, value, options)
 
           options?.onProgress?.(new CustomProgressEvent('helia:routing:put:end', {
-            routing: router.name,
+            router: router.name,
             key,
             value
           }))
@@ -286,7 +286,7 @@ export class Routing implements RoutingInterface, Startable {
         supports(this.routers, 'get')
           .map(async (router) => {
             options?.onProgress?.(new CustomProgressEvent('helia:routing:get:start', {
-              routing: router.name,
+              router: router.name,
               key
             }))
 
@@ -301,7 +301,7 @@ export class Routing implements RoutingInterface, Startable {
               throw err
             } finally {
               options?.onProgress?.(new CustomProgressEvent('helia:routing:get:end', {
-                routing: router.name,
+                router: router.name,
                 key
               }))
             }
@@ -340,7 +340,7 @@ export class Routing implements RoutingInterface, Startable {
       ...supports(this.routers, 'findPeer')
         .map(router => (async function * () {
           options?.onProgress?.(new CustomProgressEvent('helia:routing:find-peer:start', {
-            routing: router.name,
+            router: router.name,
             peerId: id
           }))
 
@@ -353,7 +353,7 @@ export class Routing implements RoutingInterface, Startable {
             self.log.error(err)
           } finally {
             options?.onProgress?.(new CustomProgressEvent('helia:routing:find-peer:end', {
-              routing: router.name,
+              router: router.name,
               peerId: id
             }))
           }
@@ -389,7 +389,7 @@ export class Routing implements RoutingInterface, Startable {
       ...supports(this.routers, 'getClosestPeers')
         .map(async function * (router) {
           options?.onProgress?.(new CustomProgressEvent('helia:routing:get-closest-peers:start', {
-            routing: router.name,
+            router: router.name,
             key
           }))
 
@@ -397,7 +397,7 @@ export class Routing implements RoutingInterface, Startable {
             yield * router.getClosestPeers(key, options)
           } finally {
             options?.onProgress?.(new CustomProgressEvent('helia:routing:get-closest-peers:end', {
-              routing: router.name,
+              router: router.name,
               key
             }))
           }

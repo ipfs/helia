@@ -32,14 +32,14 @@ describe('trustless-gateway-block-broker', () => {
       multiaddrs: [
         uriToMultiaddr(process.env.BAD_TRUSTLESS_GATEWAY ?? '')
       ],
-      routing: 'test-routing'
+      router: 'test-routing'
     }
     goodGatewayPeer = {
       id: (await ed25519Crypto().generatePrivateKey()).publicKey.toCID(),
       multiaddrs: [
         uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
       ],
-      routing: 'test-routing'
+      router: 'test-routing'
     }
 
     gatewayBlockBroker = new TrustlessGatewayBlockBroker({
@@ -115,13 +115,13 @@ describe('trustless-gateway-block-broker', () => {
         multiaddrs: [
           multiaddr('/ip4/132.32.25.6/tcp/1234')
         ],
-        routing: 'test-routing'
+        router: 'test-routing'
       }
       // expired peer info
       yield {
         id: (await ed25519Crypto().generatePrivateKey()).publicKey.toCID(),
         multiaddrs: [],
-        routing: 'test-routing'
+        router: 'test-routing'
       }
       // http gateway
       yield {
@@ -129,7 +129,7 @@ describe('trustless-gateway-block-broker', () => {
         multiaddrs: [
           uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
         ],
-        routing: 'test-routing'
+        router: 'test-routing'
       }
     }())
 
@@ -152,7 +152,7 @@ describe('trustless-gateway-block-broker', () => {
     }
     const trustlessGateway = new TrustlessGateway(process.env.TRUSTLESS_GATEWAY, {
       logger: defaultLogger(),
-      routing: 'test'
+      router: 'test'
     })
 
     // Call getRawBlock multiple times with the same CID
@@ -184,7 +184,7 @@ describe('trustless-gateway-block-broker', () => {
 
     const trustlessGateway = new TrustlessGateway(process.env.TRUSTLESS_GATEWAY, {
       logger: defaultLogger(),
-      routing: 'test',
+      router: 'test',
       transformRequestInit: (requestInit) => {
         requestInit.headers = {
           ...requestInit.headers,

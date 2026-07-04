@@ -84,7 +84,7 @@ export function withLibp2p <H extends Helia, M extends ServiceMap = ServiceMap> 
         const findProviders = helia.routing.findProviders.bind(helia.routing)
         helia.routing.findProviders = async function * (cid, options): AsyncIterable<Peer> {
           yield * forEach(findProviders.call(helia.routing, cid, options), async (peer) => {
-            if (peer.routing !== 'libp2p-router') {
+            if (peer.router !== 'libp2p-router') {
               // only need to do this for peers not found via the libp2p router
               const info = toPeerInfo(peer)
               await libp2p.peerStore.merge(info.id, info)
@@ -96,7 +96,7 @@ export function withLibp2p <H extends Helia, M extends ServiceMap = ServiceMap> 
         helia.routing.findPeer = async function (cid, options): Promise<Peer> {
           const peer = await findPeer(cid, options)
 
-          if (peer.routing !== 'libp2p-router') {
+          if (peer.router !== 'libp2p-router') {
             // only need to do this for peers not found via the libp2p router
             const info = toPeerInfo(peer)
             await libp2p.peerStore.merge(info.id, info)
@@ -110,7 +110,7 @@ export function withLibp2p <H extends Helia, M extends ServiceMap = ServiceMap> 
         const getClosestPeers = helia.routing.getClosestPeers.bind(helia.routing)
         helia.routing.getClosestPeers = async function * (cid, options): AsyncIterable<Peer> {
           yield * forEach(getClosestPeers.call(helia.routing, cid, options), async (peer) => {
-            if (peer.routing !== 'libp2p-router') {
+            if (peer.router !== 'libp2p-router') {
               // only need to do this for peers not found via the libp2p router
               const info = toPeerInfo(peer)
               await libp2p.peerStore.merge(info.id, info)

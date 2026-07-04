@@ -9,7 +9,7 @@ function peerInfoToPeer (info: PeerInfo): Peer {
   return {
     ...info,
     id: info.id.toCID(),
-    routing: 'libp2p-router'
+    router: 'libp2p-router'
   }
 }
 

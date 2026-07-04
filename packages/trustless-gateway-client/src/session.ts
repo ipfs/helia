@@ -78,7 +78,7 @@ class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, Trustles
     return providerA.url.toString() === providerB.url.toString()
   }
 
-  async convertToProvider (provider: CID | Multiaddr | Multiaddr[], routing: string, options?: AbortOptions): Promise<TrustlessGateway | undefined> {
+  async convertToProvider (provider: CID | Multiaddr | Multiaddr[], router: string, options?: AbortOptions): Promise<TrustlessGateway | undefined> {
     options?.signal?.throwIfAborted()
 
     if (isCID(provider)) {
@@ -100,7 +100,7 @@ class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, Trustles
     return new TrustlessGateway(uri, {
       logger: this.logger,
       transformRequestInit: this.transformRequestInit,
-      routing
+      router
     })
   }
 
@@ -109,7 +109,7 @@ class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, Trustles
       type: 'trustless-gateway',
       cid,
       url: provider.url.toJSON(),
-      routing: provider.routing
+      router: provider.router
     }))
   }
 }

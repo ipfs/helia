@@ -42,7 +42,7 @@ function toPeerInfo (url: string | URL): Peer {
     multiaddrs: [
       uriToMultiaddr(url)
     ],
-    routing: 'fallback-router'
+    router: 'fallback-router'
   }
 }
 
@@ -69,7 +69,7 @@ class FallbackRouter implements Router {
         ...info,
         id: info.id,
         protocols: ['transport-ipfs-gateway-http'],
-        routing: 'fallback-router'
+        router: 'fallback-router'
       }
 
       return provider

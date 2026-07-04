@@ -27,7 +27,7 @@ export interface TransformRequestInit {
 export interface TrustlessGatewayComponents {
   logger: ComponentLogger
   transformRequestInit?: TransformRequestInit
-  routing: string
+  router: string
 }
 
 export interface GetRawBlockOptions extends ProgressOptions<BlockBrokerGetBlockProgressEvents> {
@@ -89,13 +89,13 @@ export class TrustlessGateway {
   private readonly log: Logger
   private readonly transformRequestInit?: TransformRequestInit
 
-  public readonly routing: string
+  public readonly router: string
 
-  constructor (url: URL | string, { logger, transformRequestInit, routing }: TrustlessGatewayComponents) {
+  constructor (url: URL | string, { logger, transformRequestInit, router }: TrustlessGatewayComponents) {
     this.url = url instanceof URL ? url : new URL(url)
     this.transformRequestInit = transformRequestInit
     this.log = logger.forComponent(`helia:trustless-gateway-block-broker:${this.url.host}`)
-    this.routing = routing
+    this.router = router
     this.peer = CID.createV1(TRANSPORT_IPFS_GATEWAY_HTTP_CODE, identity.digest(uint8ArrayFromString(this.url.toString())))
   }
 

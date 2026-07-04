@@ -54,7 +54,7 @@ export interface Peer {
   /**
    * The name of the routing implementation that found the peer
    */
-  routing: string
+  router: string
 }
 
 /**
@@ -88,22 +88,22 @@ export interface Provider {
   /**
    * The name of the routing implementation that found the provider
    */
-  routing: string
+  router: string
 }
 
 export interface RoutingFindProvidersStartEvent {
-  routing: string
+  router: string
   cid: CID
 }
 
 export interface RoutingFindProvidersEndEvent {
-  routing: string
+  router: string
   cid: CID
   found: number
 }
 
 export interface RoutingFindProvidersHttpGatewayProvider {
-  routing: 'http-gateway-router'
+  router: 'http-gateway-router'
   cid: CID
   provider: Peer & {
     protocols: ['transport-ipfs-gateway-http']
@@ -111,16 +111,16 @@ export interface RoutingFindProvidersHttpGatewayProvider {
 }
 
 export interface RoutingFindProvidersDelegatedHttpRoutingProvider {
-  routing: 'delegated-http-router'
+  router: 'delegated-http-router'
   cid: CID
   provider: Peer & {
-    routing: 'delegated-http-routing'
+    router: 'delegated-http-routing'
     protocols: string[]
   }
 }
 
 export interface RoutingFindProvidersLibp2pProvider {
-  routing: 'libp2p-router'
+  router: 'libp2p-router'
   cid: CID
   provider: Peer
 }
@@ -134,12 +134,12 @@ export type RoutingFindProvidersProgressEvents =
   RoutingFindPeerProgressEvents
 
 export interface RoutingProvideStartEvent {
-  routing: string
+  router: string
   cid: CID
 }
 
 export interface RoutingProvideEndEvent {
-  routing: string
+  router: string
   cid: CID
 }
 
@@ -148,12 +148,12 @@ export type RoutingProvideProgressEvents =
   ProgressEvent<'helia:routing:provide:end', RoutingProvideEndEvent>
 
 export interface RoutingCancelReprovideStartEvent {
-  routing: string
+  router: string
   cid: CID
 }
 
 export interface RoutingCancelReprovideEndEvent {
-  routing: string
+  router: string
   cid: CID
 }
 
@@ -162,13 +162,13 @@ export type RoutingCancelReprovideProgressEvents =
   ProgressEvent<'helia:routing:cancel-reprovide:end', RoutingCancelReprovideEndEvent>
 
 export interface RoutingPutStartEvent {
-  routing: string
+  router: string
   key: Uint8Array
   value: Uint8Array
 }
 
 export interface RoutingPutEndEvent {
-  routing: string
+  router: string
   key: Uint8Array
   value: Uint8Array
 }
@@ -178,12 +178,12 @@ export type RoutingPutProgressEvents =
   ProgressEvent<'helia:routing:put:end', RoutingPutEndEvent>
 
 export interface RoutingGetStartEvent {
-  routing: string
+  router: string
   key: Uint8Array
 }
 
 export interface RoutingGetEndEvent {
-  routing: string
+  router: string
   key: Uint8Array
 }
 
@@ -192,12 +192,12 @@ export type RoutingGetProgressEvents =
   ProgressEvent<'helia:routing:get:end', RoutingGetEndEvent>
 
 export interface RoutingFindPeerStartEvent {
-  routing: string
+  router: string
   peerId: CID
 }
 
 export interface RoutingFindPeerEndEvent {
-  routing: string
+  router: string
   peerId: CID
 }
 
@@ -206,12 +206,12 @@ export type RoutingFindPeerProgressEvents =
   ProgressEvent<'helia:routing:find-peer:end', RoutingFindPeerEndEvent>
 
 export interface RoutingGetClosestPeersStartEvent {
-  routing: string
+  router: string
   key: Uint8Array
 }
 
 export interface RoutingGetClosestPeersEndEvent {
-  routing: string
+  router: string
   key: Uint8Array
 }
 

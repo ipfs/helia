@@ -69,7 +69,7 @@ export async function * findHttpGatewayProviders (cid: CID, routing: Routing, lo
     yield new TrustlessGateway(uri, {
       logger,
       transformRequestInit: options.transformRequestInit,
-      routing: provider.routing
+      router: provider.router
     })
   }
 }

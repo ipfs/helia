@@ -45,7 +45,7 @@ export interface BitswapProvider {
   /**
    * Which routing subsystem found the provider
    */
-  routing: string
+  router: string
 }
 
 export type BitswapNetworkProgressEvents =
@@ -319,7 +319,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
         type: 'bitswap',
         cid,
         provider,
-        routing: provider.routing
+        router: provider.router
       }))
 
       yield provider
