@@ -1,5 +1,21 @@
 # Changelog
 
+## [4.0.5](https://github.com/ipfs/helia/compare/bitswap-v4.0.4...bitswap-v4.0.5) (2026-07-04)
+
+
+### Bug Fixes
+
+* the routing is made up of routers ([da4aa40](https://github.com/ipfs/helia/commit/da4aa40a30b8958e7fd9dcb1a82f7133443cb9fb))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^7.0.2 to ^7.0.3
+    * @helia/libp2p bumped from ^1.0.4 to ^1.0.5
+    * @helia/utils bumped from ^3.0.2 to ^3.0.3
+
 ## [4.0.4](https://github.com/ipfs/helia/compare/bitswap-v4.0.3...bitswap-v4.0.4) (2026-07-03)
 
 

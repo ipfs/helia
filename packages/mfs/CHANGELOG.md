@@ -1,5 +1,14 @@
 # Changelog
 
+## [8.0.3](https://github.com/ipfs/helia/compare/mfs-v8.0.2...mfs-v8.0.3) (2026-07-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/unixfs bumped from ^8.0.2 to ^8.0.3
+
 ## [8.0.2](https://github.com/ipfs/helia/compare/mfs-v8.0.1...mfs-v8.0.2) (2026-07-02)
 
 

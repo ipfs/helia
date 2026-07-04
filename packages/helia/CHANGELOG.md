@@ -1,5 +1,24 @@
 # Changelog
 
+## [7.0.5](https://github.com/ipfs/helia/compare/helia-v7.0.4...helia-v7.0.5) (2026-07-04)
+
+
+### Bug Fixes
+
+* abort routing operations ([#1079](https://github.com/ipfs/helia/issues/1079)) ([f4c49cc](https://github.com/ipfs/helia/commit/f4c49cc82ac5b6864df1d31977056e9639aa81fe))
+* the routing is made up of routers ([da4aa40](https://github.com/ipfs/helia/commit/da4aa40a30b8958e7fd9dcb1a82f7133443cb9fb))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^4.0.4 to ^4.0.5
+    * @helia/http bumped from ^4.0.3 to ^4.0.4
+    * @helia/interface bumped from ^7.0.2 to ^7.0.3
+    * @helia/libp2p bumped from ^1.0.4 to ^1.0.5
+    * @helia/utils bumped from ^3.0.2 to ^3.0.3
+
 ## [7.0.4](https://github.com/ipfs/helia/compare/helia-v7.0.3...helia-v7.0.4) (2026-07-03)
 
 
