@@ -41,7 +41,8 @@ function toPeerInfo (url: string | URL): Peer {
     id: CID.createV1(TRANSPORT_IPFS_GATEWAY_HTTP_CODE, identity.digest(uint8ArrayFromString(url))),
     multiaddrs: [
       uriToMultiaddr(url)
-    ]
+    ],
+    routing: 'fallback-router'
   }
 }
 
@@ -68,7 +69,7 @@ class FallbackRouter implements Router {
         ...info,
         id: info.id,
         protocols: ['transport-ipfs-gateway-http'],
-        routing: 'http-gateway-routing'
+        routing: 'fallback-router'
       }
 
       return provider
@@ -76,7 +77,7 @@ class FallbackRouter implements Router {
   }
 
   toString (): string {
-    return `HTTPGatewayRouter([${this.gateways.map(info => toUrl(info)).join(', ')}])`
+    return `FallbackRouter([${this.gateways.map(info => toUrl(info)).join(', ')}])`
   }
 }
 

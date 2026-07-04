@@ -8,7 +8,8 @@ import type { CID } from 'multiformats'
 function peerInfoToPeer (info: PeerInfo): Peer {
   return {
     ...info,
-    id: info.id.toCID()
+    id: info.id.toCID(),
+    routing: 'libp2p-router'
   }
 }
 
@@ -30,7 +31,6 @@ class Libp2pRouter implements Router {
 
   async * findProviders (cid: CID, options?: RoutingOptions): AsyncIterable<Provider> {
     yield * map(this.libp2p.contentRouting.findProviders(cid, options), prov => ({
-      routing: this.name,
       ...peerInfoToPeer(prov)
     }))
   }
