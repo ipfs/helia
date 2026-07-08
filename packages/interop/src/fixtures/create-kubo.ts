@@ -10,6 +10,12 @@ export async function createKuboNode (): Promise<KuboNode> {
     bin: kuboPath(),
     test: true,
     init: {
+      // Pin the unixfs-v1-2025 import profile (IPIP-499,
+      // https://specs.ipfs.tech/ipips/ipip-0499/) so every interop test uses
+      // the same CIDv1 / 1 MiB-chunk import settings regardless of the Kubo
+      // version's default (Kubo <= 0.42 defaults to CIDv0). Keeps CID-based
+      // assertions deterministic; the profile has existed since Kubo v0.40.
+      profiles: ['unixfs-v1-2025'],
       config: {
         Addresses: {
           Swarm: [

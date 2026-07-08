@@ -9,6 +9,9 @@ export async function createKuboNode (): Promise<KuboNode> {
     test: true,
     endpoint: process.env.IPFSD_SERVER,
     init: {
+      // Mirror create-kubo.ts: pin the unixfs-v1-2025 import profile (IPIP-499)
+      // so browser-mode interop produces the same deterministic CIDs.
+      profiles: ['unixfs-v1-2025'],
       config: {
         Addresses: {
           Swarm: [
