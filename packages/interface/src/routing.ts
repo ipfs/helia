@@ -219,11 +219,15 @@ export type RoutingGetClosestPeersProgressEvents =
   ProgressEvent<'helia:routing:get-closest-peers:start', RoutingGetClosestPeersStartEvent> |
   ProgressEvent<'helia:routing:get-closest-peers:end', RoutingGetClosestPeersEndEvent>
 
+export type Capability = 'fallback'
+
 export interface Router {
   /**
    * The name of this routing implementation
    */
   name: string
+
+  capabilities?(): Capability[]
 
   /**
    * The implementation of this method should ensure that network peers know the
@@ -337,4 +341,4 @@ export interface Router {
   getClosestPeers?(key: Uint8Array, options?: RoutingOptions<RoutingGetClosestPeersProgressEvents>): AsyncIterable<Peer>
 }
 
-export type Routing = Required<Omit<Router, 'name'>>
+export type Routing = Required<Omit<Router, 'name' | 'capabilities'>>

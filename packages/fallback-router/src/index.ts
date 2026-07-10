@@ -14,7 +14,7 @@ import { CID } from 'multiformats/cid'
 import { identity } from 'multiformats/hashes/identity'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { Peer, Provider, Router, RoutingOptions } from '@helia/interface'
+import type { Capability, Peer, Provider, Router, RoutingOptions } from '@helia/interface'
 import type { Version } from 'multiformats'
 
 export interface FallbackRouterInit {
@@ -58,6 +58,12 @@ class FallbackRouter implements Router {
   constructor (init: FallbackRouterInit) {
     this.gateways = init.gateways.map(url => toPeerInfo(url)) ?? []
     this.shuffle = init.shuffle ?? true
+  }
+
+  capabilities (): Capability[] {
+    return [
+      'fallback'
+    ]
   }
 
   async * findProviders (cid: CID<unknown, number, number, Version>, options?: RoutingOptions | undefined): AsyncIterable<Provider> {
