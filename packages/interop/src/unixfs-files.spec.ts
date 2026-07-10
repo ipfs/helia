@@ -56,14 +56,14 @@ describe('@helia/unixfs - files', () => {
 
   async function expectSameCid (data: () => ByteStream, heliaOpts: Partial<AddOptions> = {}, kuboOpts: KuboAddOptions = {}): Promise<void> {
     const heliaCid = await importToHelia(data(), {
-      // these are the default kubo options
-      cidVersion: 0,
-      rawLeaves: false,
+      // these are the modern CIDv1 options (unixfs-v1-2025 profile, IPIP-499)
+      cidVersion: 1,
+      rawLeaves: true,
       layout: balanced({
-        maxChildrenPerNode: 174
+        maxChildrenPerNode: 1024
       }),
       chunker: fixedSize({
-        chunkSize: 262144
+        chunkSize: 1048576
       }),
 
       ...heliaOpts
@@ -169,15 +169,15 @@ describe('@helia/unixfs - files', () => {
     const block = await toBuffer(helia.blockstore.get(largeFileCid))
     const node = dagPb.decode(block)
 
-    expect(node.Links).to.have.lengthOf(40)
+    expect(node.Links).to.have.lengthOf(10)
 
     const stats = await unixFs.stat(largeFileCid, {
       extended: true
     })
 
     expect(stats.unixfs?.fileSize()).to.equal(10485760n)
-    expect(stats.blocks).to.equal(41n)
-    expect(stats.dagSize).to.equal(10488250n)
+    expect(stats.blocks).to.equal(11n)
+    expect(stats.dagSize).to.equal(10486269n)
     expect(stats.localSize).to.equal(10485760n)
 
     // remove one of the blocks so we now have an incomplete DAG
@@ -190,9 +190,9 @@ describe('@helia/unixfs - files', () => {
     })
 
     expect(updatedStats.unixfs?.fileSize()).to.equal(10485760n)
-    expect(updatedStats.blocks).to.equal(40n)
-    expect(updatedStats.dagSize).to.equal(10226092n)
-    expect(updatedStats.localSize).to.equal(10223616n)
+    expect(updatedStats.blocks).to.equal(10n)
+    expect(updatedStats.dagSize).to.equal(9437693n)
+    expect(updatedStats.localSize).to.equal(9437184n)
 
     await new Promise<void>((resolve) => {
       setTimeout(() => {

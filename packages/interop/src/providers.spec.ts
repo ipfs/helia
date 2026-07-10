@@ -80,7 +80,10 @@ describe('providers', () => {
       }
     }))
 
-    expect(buf).to.have.lengthOf(1930)
+    // The Kubo node uses the unixfs-v1-2025 profile (see create-kubo.ts), so a
+    // 10 MiB file is 1 MiB chunks -> 10 raw CIDv1 leaf links -> 509-byte dag-pb
+    // root (the legacy CIDv0 / 256 KiB defaults gave 40 links / 1930).
+    expect(buf).to.have.lengthOf(509)
     expect(sender).to.deep.equal(peerIdFromString(kuboInfo.peerId?.toString() ?? '').toCID())
   })
 
