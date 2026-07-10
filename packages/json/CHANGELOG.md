@@ -1,5 +1,14 @@
 # Changelog
 
+## [6.0.4](https://github.com/ipfs/helia/compare/json-v6.0.3...json-v6.0.4) (2026-07-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^7.0.3 to ^7.1.0
+
 ## [6.0.3](https://github.com/ipfs/helia/compare/json-v6.0.2...json-v6.0.3) (2026-07-04)
 
 

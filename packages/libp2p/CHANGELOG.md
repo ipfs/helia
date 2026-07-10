@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.6](https://github.com/ipfs/helia/compare/libp2p-v1.0.5...libp2p-v1.0.6) (2026-07-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/delegated-routing-client bumped from ^1.0.4 to ^1.0.5
+    * @helia/interface bumped from ^7.0.3 to ^7.1.0
+
 ## [1.0.5](https://github.com/ipfs/helia/compare/libp2p-v1.0.4...libp2p-v1.0.5) (2026-07-04)
 
 

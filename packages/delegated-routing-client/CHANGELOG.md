@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.5](https://github.com/ipfs/helia/compare/delegated-routing-client-v1.0.4...delegated-routing-client-v1.0.5) (2026-07-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^7.0.3 to ^7.1.0
+
 ## [1.0.4](https://github.com/ipfs/helia/compare/delegated-routing-client-v1.0.3...delegated-routing-client-v1.0.4) (2026-07-04)
 
 
