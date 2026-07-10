@@ -88,23 +88,14 @@ export class Routing implements RoutingInterface, Startable {
       throw new NoRoutersAvailableError('No content routers available')
     }
 
-    // provider multiaddrs are only cached for a limited time, so they can come
-    // back as an empty array - when this happens we have to do a FIND_PEER
-    // query to get updated addresses, but we shouldn't block on this so use a
-    // separate bounded queue to perform this lookup
-    const queue = new Queue<Provider | null, PeerQueueOptions>({
-      concurrency: this.providerLookupConcurrency
-    })
-
     let foundProviders = 0
     const errors: Error[] = []
     const self = this
-    let routersFinished = 0
 
-    this.log('findProviders for %c start using routers %s', key, this.routers.map(r => r.toString()).join(', '))
+    async function * findProviders (routers: Required<Pick<Router, 'findProviders' | 'name'>>[]): AsyncGenerator<Provider> {
+      let routersFinished = 0
 
-    const routers = supports(this.routers, 'findProviders')
-      .map(async function * (router) {
+      const streams = routers.map(async function * (router) {
         let foundProviders = 0
 
         options?.onProgress?.(new CustomProgressEvent('helia:routing:find-providers:start', {
@@ -128,7 +119,7 @@ export class Routing implements RoutingInterface, Startable {
         } catch (err: any) {
           errors.push(err)
         } finally {
-          self.log('router %s found %d providers for %c', router, foundProviders, key)
+          self.log('router %s found %d providers for %c', router.name, foundProviders, key)
 
           options?.onProgress?.(new CustomProgressEvent('helia:routing:find-providers:end', {
             router: router.name,
@@ -146,53 +137,77 @@ export class Routing implements RoutingInterface, Startable {
         }
       })
 
-    for await (const peer of merge(
-      queue.toGenerator(),
-      ...routers)
-    ) {
-      // the peer was yielded by a content router without multiaddrs and we
-      // failed to load them
-      if (peer == null) {
-        continue
-      }
+      // provider multiaddrs are only cached for a limited time, so they can come
+      // back as an empty array - when this happens we have to do a FIND_PEER
+      // query to get updated addresses, but we shouldn't block on this so use a
+      // separate bounded queue to perform this lookup
+      const queue = new Queue<Provider | null, PeerQueueOptions>({
+        concurrency: self.providerLookupConcurrency
+      })
 
-      // have to refresh peer info for this peer to get updated multiaddrs
-      if (peer.multiaddrs.length === 0) {
-        // already looking this peer up
-        if (queue.queue.find(job => job.options.peer.equals(peer.id)) != null) {
+      for await (const peer of merge(
+        queue.toGenerator(),
+        ...streams)
+      ) {
+        // the peer was yielded by a content router without multiaddrs and we
+        // failed to load them
+        if (peer == null) {
           continue
         }
 
-        queue.add(async () => {
-          try {
-            const provider = await this.findPeer(peer.id, options)
+        // have to refresh peer info for this peer to get updated multiaddrs
+        if (peer.multiaddrs.length === 0) {
+          // already looking this peer up
+          if (queue.queue.find(job => job.options.peer.equals(peer.id)) != null) {
+            continue
+          }
 
-            if (provider.multiaddrs.length === 0) {
+          queue.add(async () => {
+            try {
+              const provider = await self.findPeer(peer.id, options)
+
+              if (provider.multiaddrs.length === 0) {
+                return null
+              }
+
+              return {
+                ...provider,
+                protocols: peer.protocols,
+                router: peer.router
+              }
+            } catch (err) {
+              self.log.error('could not load multiaddrs for peer %p - %e', peer.id, err)
               return null
             }
-
-            return {
-              ...provider,
-              protocols: peer.protocols,
-              router: peer.router
-            }
-          } catch (err) {
-            this.log.error('could not load multiaddrs for peer %p - %e', peer.id, err)
-            return null
-          }
-        }, {
-          peer: peer.id,
-          signal: options.signal
-        })
-          .catch(err => {
-            this.log.error('could not load multiaddrs for peer %p - %e', peer.id, err)
+          }, {
+            peer: peer.id,
+            signal: options.signal
           })
+            .catch(err => {
+              self.log.error('could not load multiaddrs for peer %p - %e', peer.id, err)
+            })
 
-        continue
+          continue
+        }
+
+        foundProviders++
+        yield peer
       }
+    }
 
-      foundProviders++
-      yield peer
+    const routers = supports(this.routers, 'findProviders')
+    const defaultRouters = routers.filter(r => r.capabilities == null || !r.capabilities().includes('fallback'))
+    const fallbackRouters = routers.filter(r => r.capabilities?.().includes('fallback') === true)
+
+    this.log('findProviders for %c start using routers %s', key, defaultRouters.map(r => r.name).join(', '))
+
+    // use non-fallback routers first
+    yield * findProviders(defaultRouters)
+
+    // only use fallback routers if no providers have been found
+    if (foundProviders === 0 && fallbackRouters.length > 0) {
+      this.log('findProviders for %c using fallback routers %s', key, fallbackRouters.map(r => r.name).join(', '))
+      yield * findProviders(fallbackRouters)
     }
 
     this.log('findProviders finished, found %d providers for %c', foundProviders, key)
@@ -296,7 +311,7 @@ export class Routing implements RoutingInterface, Startable {
                 signal
               })
             } catch (err: any) {
-              this.log('router %s failed with %e', router, err)
+              this.log('router %s failed with %e', router.name, err)
               errors.push(err)
               throw err
             } finally {
@@ -412,6 +427,6 @@ export class Routing implements RoutingInterface, Startable {
   }
 }
 
-function supports <Operation extends keyof Routing> (routers: any[], key: Operation): Array<Pick<Routing, Operation | 'name'>> {
+function supports <Operation extends keyof Router> (routers: any[], key: Operation): Array<Required<Pick<Router, Operation | 'name'>> & Pick<Router, 'capabilities'>> {
   return routers.filter(router => router[key] != null)
 }
