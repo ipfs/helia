@@ -1,5 +1,23 @@
 # Changelog
 
+## [7.1.0](https://github.com/ipfs/helia/compare/helia-v7.0.5...helia-v7.1.0) (2026-07-10)
+
+
+### Features
+
+* add router capabilities for fallback routers ([#1084](https://github.com/ipfs/helia/issues/1084)) ([aea1416](https://github.com/ipfs/helia/commit/aea1416dda67a0d76e31efb9e75d0ec287fa63ea))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^4.0.5 to ^4.0.6
+    * @helia/http bumped from ^4.0.4 to ^4.0.5
+    * @helia/interface bumped from ^7.0.3 to ^7.1.0
+    * @helia/libp2p bumped from ^1.0.5 to ^1.0.6
+    * @helia/utils bumped from ^3.0.3 to ^3.0.4
+
 ## [7.0.5](https://github.com/ipfs/helia/compare/helia-v7.0.4...helia-v7.0.5) (2026-07-04)
 
 

@@ -5,6 +5,13 @@
 
 * expose .dns property on @helia/interface ([#465](https://github.com/ipfs/helia/issues/465)) ([8c9bb7d](https://github.com/ipfs/helia/commit/8c9bb7d224a1b786cba1fba18bffe07001a3b95d))
 
+## [7.1.0](https://github.com/ipfs/helia/compare/interface-v7.0.3...interface-v7.1.0) (2026-07-10)
+
+
+### Features
+
+* add router capabilities for fallback routers ([#1084](https://github.com/ipfs/helia/issues/1084)) ([aea1416](https://github.com/ipfs/helia/commit/aea1416dda67a0d76e31efb9e75d0ec287fa63ea))
+
 ## [7.0.3](https://github.com/ipfs/helia/compare/interface-v7.0.2...interface-v7.0.3) (2026-07-04)
 
 

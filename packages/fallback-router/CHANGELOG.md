@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.1.0](https://github.com/ipfs/helia/compare/fallback-router-v1.0.3...fallback-router-v1.1.0) (2026-07-10)
+
+
+### Features
+
+* add router capabilities for fallback routers ([#1084](https://github.com/ipfs/helia/issues/1084)) ([aea1416](https://github.com/ipfs/helia/commit/aea1416dda67a0d76e31efb9e75d0ec287fa63ea))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^7.0.3 to ^7.1.0
+
 ## [1.0.3](https://github.com/ipfs/helia/compare/fallback-router-v1.0.2...fallback-router-v1.0.3) (2026-07-04)
 
 

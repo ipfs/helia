@@ -1,6 +1,6 @@
 {
   "name": "@helia/ipns",
-  "version": "10.0.4",
+  "version": "10.0.5",
   "description": "An implementation of IPNS for Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/ipns#readme",
@@ -50,7 +50,7 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@helia/interface": "^7.0.3",
+    "@helia/interface": "^7.1.0",
     "@ipld/dag-cbor": "^10.0.1",
     "@ipshipyard/crypto": "^1.1.0",
     "@ipshipyard/keychain": "^1.0.2",
