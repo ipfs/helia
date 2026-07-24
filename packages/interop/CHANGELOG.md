@@ -1,5 +1,14 @@
 # Changelog
 
+## [11.0.9](https://github.com/ipfs/helia/compare/interop-v11.0.8...interop-v11.0.9) (2026-07-24)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * helia bumped from ^7.1.0 to ^7.1.1
+
 ## [11.0.8](https://github.com/ipfs/helia/compare/interop-v11.0.7...interop-v11.0.8) (2026-07-10)
 
 
