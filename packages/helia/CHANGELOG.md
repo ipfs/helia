@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.1.1](https://github.com/ipfs/helia/compare/helia-v7.1.0...helia-v7.1.1) (2026-07-24)
+
+
+### Bug Fixes
+
+* always use fallback routers ([#1089](https://github.com/ipfs/helia/issues/1089)) ([f3e5d98](https://github.com/ipfs/helia/commit/f3e5d98d365c581b2eb62808932d93c38dc44008))
+
 ## [7.1.0](https://github.com/ipfs/helia/compare/helia-v7.0.5...helia-v7.1.0) (2026-07-10)
 
 
