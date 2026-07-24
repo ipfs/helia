@@ -204,8 +204,8 @@ export class Routing implements RoutingInterface, Startable {
     // use non-fallback routers first
     yield * findProviders(defaultRouters)
 
-    // only use fallback routers if no providers have been found
-    if (foundProviders === 0 && fallbackRouters.length > 0) {
+    // use fallback routers last
+    if (fallbackRouters.length > 0) {
       this.log('findProviders for %c using fallback routers %s', key, fallbackRouters.map(r => r.name).join(', '))
       yield * findProviders(fallbackRouters)
     }
