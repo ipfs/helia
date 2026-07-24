@@ -89,10 +89,14 @@ describe('routing', () => {
     expect(firstRouter).to.equal('b')
   })
 
-  it('should not use a fallback router if a regular router finds providers', async () => {
+  it('should use a fallback router even if a regular router finds providers', async () => {
     const key = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3E')
 
-    routerA.findProviders?.returns((async function * () {})())
+    routerA.findProviders?.returns((async function * () {
+      yield stubInterface<Provider>({
+        multiaddrs: [stubInterface<Multiaddr>()]
+      })
+    })())
     routerB.findProviders?.returns((async function * () {
       yield stubInterface<Provider>({
         multiaddrs: [stubInterface<Multiaddr>()]
@@ -101,8 +105,8 @@ describe('routing', () => {
 
     routerA.capabilities?.returns(['fallback'])
 
-    await expect(all(routing.findProviders(key))).to.eventually.have.lengthOf(1, 'did not find provider')
-    expect(routerA.findProviders?.called).to.be.false('called fallback router')
+    await expect(all(routing.findProviders(key))).to.eventually.have.lengthOf(2, 'did not find regular and fallback providers')
+    expect(routerA.findProviders?.called).to.be.true('did not call fallback router')
     expect(routerB.findProviders?.called).to.be.true('did not call regular router')
   })
 })
