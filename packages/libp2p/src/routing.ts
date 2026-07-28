@@ -13,6 +13,15 @@ function peerInfoToPeer (info: PeerInfo): Peer {
   }
 }
 
+function peerInfoToProvider (info: PeerInfo): Provider {
+  return {
+    ...info,
+    id: info.id.toCID(),
+    router: 'libp2p-router',
+    fallback: false
+  }
+}
+
 class Libp2pRouter implements Router {
   public readonly name = 'libp2p-router'
   private readonly libp2p: Libp2p
@@ -31,7 +40,7 @@ class Libp2pRouter implements Router {
 
   async * findProviders (cid: CID, options?: RoutingOptions): AsyncIterable<Provider> {
     yield * map(this.libp2p.contentRouting.findProviders(cid, options), prov => ({
-      ...peerInfoToPeer(prov)
+      ...peerInfoToProvider(prov)
     }))
   }
 

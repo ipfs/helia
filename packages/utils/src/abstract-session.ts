@@ -24,13 +24,17 @@ export interface BlockstoreSessionEvents<Provider> {
   provider: CustomEvent<Provider>
 }
 
+export interface SessionProvider {
+  fallback: boolean
+}
+
 interface Request {
   promise: Promise<Uint8Array>
   observers: number
   queryFilter: Filter
 }
 
-export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents extends ProgressEvent> extends TypedEventEmitter<BlockstoreSessionEvents<Provider>> implements BlockBroker<RetrieveBlockProgressEvents> {
+export abstract class AbstractSession<Provider extends SessionProvider, RetrieveBlockProgressEvents extends ProgressEvent> extends TypedEventEmitter<BlockstoreSessionEvents<Provider>> implements BlockBroker<RetrieveBlockProgressEvents> {
   public abstract name: string
   private initialPeerSearchComplete?: Promise<void>
   private readonly requests: Map<string, Request>
@@ -97,12 +101,18 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
       concurrency: this.maxProviders
     })
     queue.addEventListener('failure', (evt) => {
-      if (evt.detail.error.name === 'NoEvictionError') {
-        this.log.error('error querying provider %s - %e', evt.detail.job.options.provider, evt.detail.error)
-      } else {
-        this.log.error('error querying provider %s, evicting from session - %e', evt.detail.job.options.provider, evt.detail.error)
-        this.evict(evt.detail.job.options.provider)
+      if (evt.detail.job.options.provider.fallback) {
+        this.log.error('error querying fallback provider %s - %e', evt.detail.job.options.provider, evt.detail.error)
+        return
       }
+
+      if (evt.detail.error.name === 'NoEvictionError') {
+        this.log.error('no-eviction error querying provider %s - %e', evt.detail.job.options.provider, evt.detail.error)
+        return
+      }
+
+      this.log.error('error querying provider %s, evicting from session - %e', evt.detail.job.options.provider, evt.detail.error)
+      this.evict(evt.detail.job.options.provider)
     })
     queue.addEventListener('success', (evt) => {
       // peer has sent block, return it to the caller
@@ -133,6 +143,12 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
             }
 
             const provider = this.providers[Math.floor(Math.random() * this.providers.length)]
+
+            // do not evict fallback peer
+            if (provider.fallback) {
+              continue
+            }
+
             this.log('evicting %s to make room for more providers', provider)
             this.evict(provider)
           }

@@ -32,14 +32,16 @@ describe('trustless-gateway-block-broker', () => {
       multiaddrs: [
         uriToMultiaddr(process.env.BAD_TRUSTLESS_GATEWAY ?? '')
       ],
-      router: 'test-routing'
+      router: 'test-routing',
+      fallback: false
     }
     goodGatewayPeer = {
       id: (await ed25519Crypto().generatePrivateKey()).publicKey.toCID(),
       multiaddrs: [
         uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
       ],
-      router: 'test-routing'
+      router: 'test-routing',
+      fallback: false
     }
 
     gatewayBlockBroker = new TrustlessGatewayBlockBroker({
@@ -115,13 +117,15 @@ describe('trustless-gateway-block-broker', () => {
         multiaddrs: [
           multiaddr('/ip4/132.32.25.6/tcp/1234')
         ],
-        router: 'test-routing'
+        router: 'test-routing',
+        fallback: false
       }
       // expired peer info
       yield {
         id: (await ed25519Crypto().generatePrivateKey()).publicKey.toCID(),
         multiaddrs: [],
-        router: 'test-routing'
+        router: 'test-routing',
+        fallback: false
       }
       // http gateway
       yield {
@@ -129,7 +133,8 @@ describe('trustless-gateway-block-broker', () => {
         multiaddrs: [
           uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
         ],
-        router: 'test-routing'
+        router: 'test-routing',
+        fallback: false
       }
     }())
 
@@ -150,7 +155,7 @@ describe('trustless-gateway-block-broker', () => {
     if (process.env.TRUSTLESS_GATEWAY == null) {
       return this.skip()
     }
-    const trustlessGateway = new TrustlessGateway(process.env.TRUSTLESS_GATEWAY, {
+    const trustlessGateway = new TrustlessGateway(process.env.TRUSTLESS_GATEWAY, false, {
       logger: defaultLogger(),
       router: 'test'
     })
@@ -182,7 +187,7 @@ describe('trustless-gateway-block-broker', () => {
     }
     const cid = CID.parse('bafybeic3q4y65yxu3yckr76q63bcvanhklwf6cwxuacnrot6v3gykrgsvq')
 
-    const trustlessGateway = new TrustlessGateway(process.env.TRUSTLESS_GATEWAY, {
+    const trustlessGateway = new TrustlessGateway(process.env.TRUSTLESS_GATEWAY, false, {
       logger: defaultLogger(),
       router: 'test',
       transformRequestInit: (requestInit) => {

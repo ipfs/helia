@@ -89,6 +89,13 @@ export interface Provider {
    * The name of the routing implementation that found the provider
    */
   router: string
+
+  /**
+   * If true, this is a fallback provider that can fetch blocks on our behalf.
+   *
+   * Fallback providers will remain in sessions.
+   */
+  fallback: boolean
 }
 
 export interface RoutingFindProvidersStartEvent {

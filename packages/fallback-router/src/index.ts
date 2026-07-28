@@ -20,6 +20,11 @@ import type { Version } from 'multiformats'
 export interface FallbackRouterInit {
   /**
    * Where to send requests
+   *
+   * Important - fallback providers are never evicted from block broker sessions
+   * so you should not configure more than five gateways here otherwise the
+   * routing will never be queried for additional providers, or you should
+   * increase `maxProviders` in the session init args.
    */
   gateways: Array<URL | string>
 
@@ -75,7 +80,8 @@ class FallbackRouter implements Router {
         ...info,
         id: info.id,
         protocols: ['transport-ipfs-gateway-http'],
-        router: 'fallback-router'
+        router: 'fallback-router',
+        fallback: true
       }
 
       return provider

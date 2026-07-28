@@ -66,7 +66,7 @@ export async function * findHttpGatewayProviders (cid: CID, routing: Routing, lo
     // etc
     const uri = new URL(multiaddrToUri(httpAddresses[0]))
 
-    yield new TrustlessGateway(uri, {
+    yield new TrustlessGateway(uri, provider.fallback, {
       logger,
       transformRequestInit: options.transformRequestInit,
       router: provider.router

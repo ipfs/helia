@@ -23,7 +23,7 @@ import { libp2pRouting } from './routing.ts'
 import { createLibp2p } from './utils/libp2p.ts'
 import type { DefaultLibp2pServices } from './utils/libp2p-defaults.ts'
 import type { CreateLibp2pOptions } from './utils/libp2p.ts'
-import type { Helia, HeliaMixin, Peer } from '@helia/interface'
+import type { Helia, HeliaMixin, Peer, Provider } from '@helia/interface'
 import type { Libp2p, PeerInfo, ServiceMap } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { CID } from 'multiformats'
@@ -82,7 +82,7 @@ export function withLibp2p <H extends Helia, M extends ServiceMap = ServiceMap> 
         // override peer discovery methods to ensure we persist peer data in the
         // peer store, otherwise we can't dial by peer id without extra lookups
         const findProviders = helia.routing.findProviders.bind(helia.routing)
-        helia.routing.findProviders = async function * (cid, options): AsyncIterable<Peer> {
+        helia.routing.findProviders = async function * (cid, options): AsyncIterable<Provider> {
           yield * forEach(findProviders.call(helia.routing, cid, options), async (peer) => {
             if (peer.router !== 'libp2p-router') {
               // only need to do this for peers not found via the libp2p router

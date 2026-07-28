@@ -16,6 +16,7 @@ import type { ProgressEvent } from 'progress-events'
 
 interface SessionPeer {
   id: PeerId
+  fallback: boolean
 }
 
 class Session extends AbstractSession<SessionPeer, ProgressEvent> {
@@ -43,7 +44,8 @@ class Session extends AbstractSession<SessionPeer, ProgressEvent> {
   async convertToProvider (provider: CID | Multiaddr | Multiaddr[]): Promise<SessionPeer | undefined> {
     if (isPeerId(provider)) {
       return {
-        id: provider
+        id: provider,
+        fallback: false
       }
     }
   }
@@ -77,9 +79,11 @@ describe('abstract-session', () => {
     const block = Uint8Array.from([0, 1, 2, 3])
 
     const providers: SessionPeer[] = [{
-      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      fallback: false
     }, {
-      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      fallback: false
     }]
 
     session.findNewProviders.callsFake(async function * () {
@@ -111,9 +115,11 @@ describe('abstract-session', () => {
     const block = Uint8Array.from([0, 1, 2, 3])
 
     const providers: SessionPeer[] = [{
-      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      fallback: false
     }, {
-      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      fallback: false
     }]
 
     session.findNewProviders.callsFake(async function * () {
@@ -137,9 +143,11 @@ describe('abstract-session', () => {
     const block = Uint8Array.from([0, 1, 2, 3])
 
     const providers: SessionPeer[] = [{
-      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      fallback: false
     }, {
-      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      fallback: false
     }]
 
     session.findNewProviders.callsFake(async function * () {
@@ -147,6 +155,35 @@ describe('abstract-session', () => {
     })
     session.queryProvider.withArgs(cid, providers[0]).callsFake(async () => {
       throw new NoEvictionError('Urk!')
+    })
+    session.queryProvider.withArgs(cid, providers[1]).callsFake(async () => {
+      return block
+    })
+
+    await expect(session.retrieve(cid)).to.eventually.deep.equal(block)
+    expect(session.providers.includes(providers[0])).to.be.true()
+    expect(session.providers.includes(providers[1])).to.be.true()
+  })
+
+  it('should not evict fallback session providers', async () => {
+    const session = new Session()
+
+    const cid = CID.parse('bafybeifaymukvfkyw6xgh4th7tsctiifr4ea2btoznf46y6b2fnvikdczi')
+    const block = Uint8Array.from([0, 1, 2, 3])
+
+    const providers: SessionPeer[] = [{
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      fallback: true
+    }, {
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      fallback: false
+    }]
+
+    session.findNewProviders.callsFake(async function * () {
+      yield * providers
+    })
+    session.queryProvider.withArgs(cid, providers[0]).callsFake(async () => {
+      throw new Error('Urk!')
     })
     session.queryProvider.withArgs(cid, providers[1]).callsFake(async () => {
       return block
@@ -220,9 +257,11 @@ describe('abstract-session', () => {
     const block = Uint8Array.from([0, 1, 2, 3])
 
     const providers: SessionPeer[] = [{
-      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      fallback: false
     }, {
-      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      fallback: false
     }]
 
     session.findNewProviders.onFirstCall().callsFake(async function * () {
@@ -250,9 +289,11 @@ describe('abstract-session', () => {
     const block = Uint8Array.from([0, 1, 2, 3])
 
     const providers: SessionPeer[] = [{
-      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      fallback: false
     }, {
-      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      fallback: false
     }]
 
     session.findNewProviders.onFirstCall().callsFake(async function * () {
@@ -333,9 +374,11 @@ describe('abstract-session', () => {
     const block = Uint8Array.from([0, 1, 2, 3])
 
     const providers: SessionPeer[] = [{
-      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      fallback: false
     }, {
-      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      fallback: false
     }]
 
     session.findNewProviders.callsFake(async function * () {

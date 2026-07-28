@@ -53,7 +53,8 @@ describe('session', () => {
           multiaddrs: [
             multiaddr(`/ip4/4${i}.4${i}.4${i}.4${i}/tcp/${1234 + i}`)
           ],
-          router: 'test-routing'
+          router: 'test-routing',
+          fallback: false
         }
       })
     )
@@ -136,7 +137,8 @@ describe('session', () => {
       multiaddrs: [
         multiaddr('/ip4/41.41.41.41/tcp/1234')
       ],
-      router: 'test-routing'
+      router: 'test-routing',
+      fallback: false
     }]
 
     components.network.findProviders.withArgs(cid).returns((async function * () {
@@ -162,13 +164,15 @@ describe('session', () => {
       multiaddrs: [
         multiaddr('/ip4/41.41.41.41/tcp/1234')
       ],
-      router: 'test-routing'
+      router: 'test-routing',
+      fallback: false
     }, {
       id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toCID(),
       multiaddrs: [
         multiaddr('/ip4/41.41.41.41/tcp/1235')
       ],
-      router: 'test-routing'
+      router: 'test-routing',
+      fallback: false
     }]
 
     components.network.findProviders.withArgs(cid).returns((async function * () {

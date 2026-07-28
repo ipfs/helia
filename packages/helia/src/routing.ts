@@ -173,7 +173,8 @@ export class Routing implements RoutingInterface, Startable {
               return {
                 ...provider,
                 protocols: peer.protocols,
-                router: peer.router
+                router: peer.router,
+                fallback: peer.fallback
               }
             } catch (err) {
               self.log.error('could not load multiaddrs for peer %p - %e', peer.id, err)
