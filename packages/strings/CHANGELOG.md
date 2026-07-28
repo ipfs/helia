@@ -1,5 +1,14 @@
 # Changelog
 
+## [6.0.5](https://github.com/ipfs/helia/compare/strings-v6.0.4...strings-v6.0.5) (2026-07-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^7.1.0 to ^7.1.1
+
 ## [6.0.4](https://github.com/ipfs/helia/compare/strings-v6.0.3...strings-v6.0.4) (2026-07-10)
 
 

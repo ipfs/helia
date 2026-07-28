@@ -1,5 +1,23 @@
 # Changelog
 
+## [7.1.2](https://github.com/ipfs/helia/compare/helia-v7.1.1...helia-v7.1.2) (2026-07-28)
+
+
+### Bug Fixes
+
+* do not evict fallback providers from session ([#1092](https://github.com/ipfs/helia/issues/1092)) ([f713369](https://github.com/ipfs/helia/commit/f713369d232dc9a09b1fbac5672e9053649a6579))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^4.0.6 to ^4.0.7
+    * @helia/http bumped from ^4.0.5 to ^4.0.6
+    * @helia/interface bumped from ^7.1.0 to ^7.1.1
+    * @helia/libp2p bumped from ^1.0.6 to ^1.0.7
+    * @helia/utils bumped from ^3.0.4 to ^3.0.5
+
 ## [7.1.1](https://github.com/ipfs/helia/compare/helia-v7.1.0...helia-v7.1.1) (2026-07-24)
 
 

@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.0.6](https://github.com/ipfs/helia/compare/delegated-routing-client-v1.0.5...delegated-routing-client-v1.0.6) (2026-07-28)
+
+
+### Bug Fixes
+
+* do not evict fallback providers from session ([#1092](https://github.com/ipfs/helia/issues/1092)) ([f713369](https://github.com/ipfs/helia/commit/f713369d232dc9a09b1fbac5672e9053649a6579))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^7.1.0 to ^7.1.1
+
 ## [1.0.5](https://github.com/ipfs/helia/compare/delegated-routing-client-v1.0.4...delegated-routing-client-v1.0.5) (2026-07-10)
 
 
