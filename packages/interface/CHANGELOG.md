@@ -5,6 +5,14 @@
 
 * expose .dns property on @helia/interface ([#465](https://github.com/ipfs/helia/issues/465)) ([8c9bb7d](https://github.com/ipfs/helia/commit/8c9bb7d224a1b786cba1fba18bffe07001a3b95d))
 
+## [7.1.1](https://github.com/ipfs/helia/compare/interface-v7.1.0...interface-v7.1.1) (2026-07-28)
+
+
+### Bug Fixes
+
+* do not evict fallback providers from session ([#1092](https://github.com/ipfs/helia/issues/1092)) ([f713369](https://github.com/ipfs/helia/commit/f713369d232dc9a09b1fbac5672e9053649a6579))
+* do not evict session peers before querying them ([#1091](https://github.com/ipfs/helia/issues/1091)) ([244f77c](https://github.com/ipfs/helia/commit/244f77cf94be175c3dd44569910919e3b5e6eedc))
+
 ## [7.1.0](https://github.com/ipfs/helia/compare/interface-v7.0.3...interface-v7.1.0) (2026-07-10)
 
 

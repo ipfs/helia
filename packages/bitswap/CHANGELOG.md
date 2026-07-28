@@ -1,5 +1,22 @@
 # Changelog
 
+## [4.0.7](https://github.com/ipfs/helia/compare/bitswap-v4.0.6...bitswap-v4.0.7) (2026-07-28)
+
+
+### Bug Fixes
+
+* do not evict fallback providers from session ([#1092](https://github.com/ipfs/helia/issues/1092)) ([f713369](https://github.com/ipfs/helia/commit/f713369d232dc9a09b1fbac5672e9053649a6579))
+* do not evict session peers before querying them ([#1091](https://github.com/ipfs/helia/issues/1091)) ([244f77c](https://github.com/ipfs/helia/commit/244f77cf94be175c3dd44569910919e3b5e6eedc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^7.1.0 to ^7.1.1
+    * @helia/libp2p bumped from ^1.0.6 to ^1.0.7
+    * @helia/utils bumped from ^3.0.4 to ^3.0.5
+
 ## [4.0.6](https://github.com/ipfs/helia/compare/bitswap-v4.0.5...bitswap-v4.0.6) (2026-07-10)
 
 

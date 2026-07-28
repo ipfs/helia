@@ -1,5 +1,26 @@
 # Changelog
 
+## [11.0.10](https://github.com/ipfs/helia/compare/interop-v11.0.9...interop-v11.0.10) (2026-07-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^4.0.6 to ^4.0.7
+    * @helia/car bumped from ^6.0.4 to ^6.0.5
+    * @helia/dag-cbor bumped from ^6.0.4 to ^6.0.5
+    * @helia/dag-json bumped from ^6.0.4 to ^6.0.5
+    * @helia/delegated-routing-client bumped from ^1.0.5 to ^1.0.6
+    * @helia/interface bumped from ^7.1.0 to ^7.1.1
+    * @helia/ipns bumped from ^10.0.5 to ^10.0.6
+    * @helia/json bumped from ^6.0.4 to ^6.0.5
+    * @helia/libp2p bumped from ^1.0.6 to ^1.0.7
+    * @helia/mfs bumped from ^8.0.4 to ^8.0.5
+    * @helia/strings bumped from ^6.0.4 to ^6.0.5
+    * @helia/unixfs bumped from ^8.0.4 to ^8.0.5
+    * helia bumped from ^7.1.1 to ^7.1.2
+
 ## [11.0.9](https://github.com/ipfs/helia/compare/interop-v11.0.8...interop-v11.0.9) (2026-07-24)
 
 
