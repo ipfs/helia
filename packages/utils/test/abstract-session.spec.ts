@@ -1,3 +1,4 @@
+import { NoEvictionError } from '@helia/interface'
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { isPeerId } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
@@ -127,6 +128,33 @@ describe('abstract-session', () => {
 
     await expect(session.retrieve(cid)).to.eventually.deep.equal(block)
     expect(session.providers.includes(providers[0])).to.be.false()
+  })
+
+  it('should not evict session providers when a NoEvictionError error is thrown', async () => {
+    const session = new Session()
+
+    const cid = CID.parse('bafybeifaymukvfkyw6xgh4th7tsctiifr4ea2btoznf46y6b2fnvikdczi')
+    const block = Uint8Array.from([0, 1, 2, 3])
+
+    const providers: SessionPeer[] = [{
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    }, {
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    }]
+
+    session.findNewProviders.callsFake(async function * () {
+      yield * providers
+    })
+    session.queryProvider.withArgs(cid, providers[0]).callsFake(async () => {
+      throw new NoEvictionError('Urk!')
+    })
+    session.queryProvider.withArgs(cid, providers[1]).callsFake(async () => {
+      return block
+    })
+
+    await expect(session.retrieve(cid)).to.eventually.deep.equal(block)
+    expect(session.providers.includes(providers[0])).to.be.true()
+    expect(session.providers.includes(providers[1])).to.be.true()
   })
 
   it('should join existing CID request', async () => {

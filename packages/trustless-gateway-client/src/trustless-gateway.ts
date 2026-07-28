@@ -1,3 +1,4 @@
+import { NoEvictionError } from '@helia/interface'
 import { uriToMultiaddr } from '@multiformats/uri-to-multiaddr'
 import { base64 } from 'multiformats/bases/base64'
 import { CID } from 'multiformats/cid'
@@ -127,7 +128,7 @@ export class TrustlessGateway {
     gwUrl.search = '?format=raw'
 
     if (options.signal?.aborted === true) {
-      throw new Error(`Signal to fetch raw block for CID ${cid} from gateway ${this.url} was aborted prior to fetch`)
+      throw new NoEvictionError(`Signal to fetch raw block for CID ${cid} from gateway ${this.url} was aborted prior to fetch`)
     }
 
     const blockId = this.#uniqueBlockId(cid)

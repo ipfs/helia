@@ -1,3 +1,4 @@
+import { NoEvictionError } from '@helia/interface'
 import { AbstractSession, isCID } from '@helia/utils'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import { CID } from 'multiformats/cid'
@@ -40,6 +41,10 @@ class BitswapSession extends AbstractSession<ProviderPeer, BitswapWantProgressEv
   }
 
   async queryProvider (cid: CID, provider: ProviderPeer, options: AbortOptions): Promise<Uint8Array> {
+    if (options.signal?.aborted === true) {
+      throw new NoEvictionError(`Signal to want session block for CID ${cid} from peer ${provider} was aborted prior to want`)
+    }
+
     const peerId = peerIdFromCID(provider.peerId)
 
     this.log('sending WANT-BLOCK for %c to %p', cid, peerId)
