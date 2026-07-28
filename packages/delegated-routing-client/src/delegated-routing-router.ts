@@ -38,7 +38,8 @@ export class DelegatedHTTPRouter implements Router {
         id: record.ID,
         multiaddrs: record.Addrs,
         protocols: record.Protocols,
-        router: this.name
+        router: this.name,
+        fallback: false
       }
     })
   }

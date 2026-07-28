@@ -21,6 +21,7 @@ interface ProviderPeer {
   peerId: CID
   router: string
   toString(): string
+  fallback: boolean
 }
 
 class BitswapSession extends AbstractSession<ProviderPeer, BitswapWantProgressEvents> {
@@ -69,7 +70,8 @@ class BitswapSession extends AbstractSession<ProviderPeer, BitswapWantProgressEv
       yield {
         peerId: provider.id,
         router: provider.router,
-        toString: () => `Bitswap(${provider.id})`
+        toString: () => `Bitswap(${provider.id})`,
+        fallback: provider.fallback
       }
     }
   }
@@ -87,7 +89,8 @@ class BitswapSession extends AbstractSession<ProviderPeer, BitswapWantProgressEv
       return {
         peerId: provider,
         router,
-        toString: () => `Bitswap(${provider})`
+        toString: () => `Bitswap(${provider})`,
+        fallback: false
       }
     }
 
@@ -101,7 +104,8 @@ class BitswapSession extends AbstractSession<ProviderPeer, BitswapWantProgressEv
       return {
         peerId: connection.remotePeer.toCID(),
         router,
-        toString: () => `Bitswap(${connection.remotePeer})`
+        toString: () => `Bitswap(${connection.remotePeer})`,
+        fallback: false
       }
     } catch {}
   }
@@ -113,7 +117,8 @@ class BitswapSession extends AbstractSession<ProviderPeer, BitswapWantProgressEv
       provider: {
         id: provider.peerId,
         multiaddrs: [],
-        router: provider.router
+        router: provider.router,
+        fallback: provider.fallback
       },
       router: provider.router
     }))

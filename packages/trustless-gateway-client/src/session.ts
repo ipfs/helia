@@ -97,7 +97,7 @@ class TrustlessGatewaySession extends AbstractSession<TrustlessGateway, Trustles
     // etc
     const uri = multiaddrToUri(httpAddresses[0])
 
-    return new TrustlessGateway(uri, {
+    return new TrustlessGateway(uri, false, {
       logger: this.logger,
       transformRequestInit: this.transformRequestInit,
       router

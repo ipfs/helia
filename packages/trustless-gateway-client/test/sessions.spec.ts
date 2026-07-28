@@ -43,7 +43,8 @@ describe('trustless-gateway sessions', () => {
         multiaddrs: [
           uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
         ],
-        router: 'test-routing'
+        router: 'test-routing',
+        fallback: false
       }
     }())
 
@@ -65,21 +66,24 @@ describe('trustless-gateway sessions', () => {
         multiaddrs: [
           multiaddr('/ip4/127.0.0.1/tcp/1234')
         ],
-        router: 'test-routing'
+        router: 'test-routing',
+        fallback: false
       }
       yield {
         id: (await ed25519Crypto().generatePrivateKey()).publicKey.toCID(),
         multiaddrs: [
           multiaddr('/ip4/127.0.0.1/udp/1234/quic-v1')
         ],
-        router: 'test-routing'
+        router: 'test-routing',
+        fallback: false
       }
       yield {
         id: (await ed25519Crypto().generatePrivateKey()).publicKey.toCID(),
         multiaddrs: [
           uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
         ],
-        router: 'test-routing'
+        router: 'test-routing',
+        fallback: false
       }
     }())
 
@@ -102,7 +106,8 @@ describe('trustless-gateway sessions', () => {
       multiaddrs: [
         uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
       ],
-      router: 'test-routing'
+      router: 'test-routing',
+      fallback: false
     }
 
     components.routing.findProviders.returns(async function * () {
@@ -136,7 +141,8 @@ describe('trustless-gateway sessions', () => {
         multiaddrs: [
           uriToMultiaddr(process.env.BAD_TRUSTLESS_GATEWAY ?? '')
         ],
-        router: 'test-routing'
+        router: 'test-routing',
+        fallback: false
       }
     }())
 
@@ -157,14 +163,16 @@ describe('trustless-gateway sessions', () => {
       multiaddrs: [
         uriToMultiaddr(process.env.BAD_TRUSTLESS_GATEWAY ?? '')
       ],
-      router: 'test-routing'
+      router: 'test-routing',
+      fallback: false
     },
     {
       id: (await ed25519Crypto().generatePrivateKey()).publicKey.toCID(),
       multiaddrs: [
         uriToMultiaddr(process.env.TRUSTLESS_GATEWAY ?? '')
       ],
-      router: 'test-routing'
+      router: 'test-routing',
+      fallback: false
     }]
 
     components.routing.findProviders.returns(async function * () {

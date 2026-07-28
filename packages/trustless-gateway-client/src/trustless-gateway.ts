@@ -50,6 +50,7 @@ export interface GetRawBlockOptions extends ProgressOptions<BlockBrokerGetBlockP
  */
 export class TrustlessGateway {
   public readonly url: URL
+  public readonly fallback: boolean
   private readonly peer: CID
 
   /**
@@ -92,8 +93,9 @@ export class TrustlessGateway {
 
   public readonly router: string
 
-  constructor (url: URL | string, { logger, transformRequestInit, router }: TrustlessGatewayComponents) {
+  constructor (url: URL | string, fallback: boolean, { logger, transformRequestInit, router }: TrustlessGatewayComponents) {
     this.url = url instanceof URL ? url : new URL(url)
+    this.fallback = fallback
     this.transformRequestInit = transformRequestInit
     this.log = logger.forComponent(`helia:trustless-gateway-block-broker:${this.url.host}`)
     this.router = router
