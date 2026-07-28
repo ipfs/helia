@@ -97,8 +97,12 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
       concurrency: this.maxProviders
     })
     queue.addEventListener('failure', (evt) => {
-      this.log.error('error querying provider %s, evicting from session - %e', evt.detail.job.options.provider, evt.detail.error)
-      this.evict(evt.detail.job.options.provider)
+      if (evt.detail.error.name === 'NoEvictionError') {
+        this.log.error('error querying provider %s - %e', evt.detail.job.options.provider, evt.detail.error)
+      } else {
+        this.log.error('error querying provider %s, evicting from session - %e', evt.detail.job.options.provider, evt.detail.error)
+        this.evict(evt.detail.job.options.provider)
+      }
     })
     queue.addEventListener('success', (evt) => {
       // peer has sent block, return it to the caller
@@ -129,6 +133,7 @@ export abstract class AbstractSession<Provider, RetrieveBlockProgressEvents exte
             }
 
             const provider = this.providers[Math.floor(Math.random() * this.providers.length)]
+            this.log('evicting %s to make room for more providers', provider)
             this.evict(provider)
           }
 

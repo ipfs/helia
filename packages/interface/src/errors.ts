@@ -47,3 +47,15 @@ export class UnknownCryptoError extends Error {
   static name = 'UnknownCryptoError'
   name = 'UnknownCryptoError'
 }
+
+/**
+ * Normally when retrieving a block from a session peer fails, that peer is
+ * evicted from the session.
+ *
+ * This error is thrown when the retrieval failed for a reason not related to
+ * that peer, so they should remain in the session.
+ */
+export class NoEvictionError extends Error {
+  static name = 'NoEvictionError'
+  name = 'NoEvictionError'
+}
