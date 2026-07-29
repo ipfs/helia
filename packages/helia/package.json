@@ -67,7 +67,7 @@
     "any-signal": "^4.2.0",
     "birnam": "^1.0.0",
     "blockstore-core": "^7.0.1",
-    "cborg": "^5.1.4",
+    "cborg": "^6.0.0",
     "datastore-core": "^12.0.1",
     "interface-blockstore": "^7.0.1",
     "interface-datastore": "^10.0.1",
