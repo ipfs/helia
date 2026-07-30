@@ -74,7 +74,7 @@
   },
   "devDependencies": {
     "aegir": "^48.0.11",
-    "cborg": "^5.1.5",
+    "cborg": "^6.1.1",
     "datastore-core": "^12.0.1",
     "it-drain": "^3.0.12",
     "it-last": "^3.0.11",
