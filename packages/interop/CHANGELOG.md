@@ -1,5 +1,17 @@
 # Changelog
 
+## [11.0.11](https://github.com/ipfs/helia/compare/interop-v11.0.10...interop-v11.0.11) (2026-07-31)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^4.0.7 to ^4.0.8
+    * @helia/ipns bumped from ^10.0.6 to ^10.0.7
+    * @helia/libp2p bumped from ^1.0.7 to ^1.0.8
+    * helia bumped from ^7.1.2 to ^7.1.3
+
 ## [11.0.10](https://github.com/ipfs/helia/compare/interop-v11.0.9...interop-v11.0.10) (2026-07-28)
 
 
