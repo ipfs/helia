@@ -40,16 +40,42 @@ export interface HeliaWithLibp2p<M extends ServiceMap = DefaultLibp2pServices> e
 }
 
 async function getLibp2p <H extends Helia, M extends ServiceMap = ServiceMap> (helia: H, opts?: CreateLibp2pOptions<M>): Promise<Libp2p<M>> {
+  let node: Libp2p<M>
+
   if (isLibp2p(opts)) {
-    return opts as any
+    node = opts as any
+  } else {
+    node = await createLibp2p(helia, {
+      ...opts,
+      dns: helia.dns,
+      logger: helia.logger,
+      datastore: helia.datastore
+    })
   }
 
-  return createLibp2p(helia, {
-    ...opts,
-    dns: helia.dns,
-    logger: helia.logger,
-    datastore: helia.datastore
-  })
+  return addHeliaVersion(node, helia)
+}
+
+function addHeliaVersion (libp2p: Libp2p<any>, helia: Helia): Libp2p<any> {
+  function isIdentify (service: any): service is { host: { agentVersion: string } } {
+    return typeof service?.host?.agentVersion === 'string'
+  }
+
+  const userAgent = `${helia.info.name}/${helia.info.version}`
+
+  // @ts-expect-error private field
+  if (libp2p.components?.nodeInfo?.userAgent?.includes(userAgent) === false) {
+    // @ts-expect-error private field
+    libp2p.components.nodeInfo.userAgent = `${userAgent} ${libp2p.components.nodeInfo.userAgent}`
+  }
+
+  for (const service of Object.values(libp2p.services)) {
+    if (isIdentify(service) && service.host.agentVersion.includes(userAgent) === false) {
+      service.host.agentVersion = `${userAgent} ${service.host.agentVersion}`
+    }
+  }
+
+  return libp2p
 }
 
 /**
