@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.8](https://github.com/ipfs/helia/compare/libp2p-v1.0.7...libp2p-v1.0.8) (2026-07-31)
+
+
+### Bug Fixes
+
+* add helia user agent to libp2p ([#1097](https://github.com/ipfs/helia/issues/1097)) ([a87d6d8](https://github.com/ipfs/helia/commit/a87d6d8de1bd6841770901cecdec4f84353b6dd3))
+
 ## [1.0.7](https://github.com/ipfs/helia/compare/libp2p-v1.0.6...libp2p-v1.0.7) (2026-07-28)
 
 

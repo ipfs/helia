@@ -1,5 +1,12 @@
 # Changelog
 
+## [10.0.7](https://github.com/ipfs/helia/compare/ipns-v10.0.6...ipns-v10.0.7) (2026-07-31)
+
+
+### Dependencies
+
+* bump cborg from 5.1.11 to 6.1.1 ([#1095](https://github.com/ipfs/helia/issues/1095)) ([81d9624](https://github.com/ipfs/helia/commit/81d96244c432fa5ad8e121d2462f40c0dcd61531))
+
 ## [10.0.6](https://github.com/ipfs/helia/compare/ipns-v10.0.5...ipns-v10.0.6) (2026-07-28)
 
 

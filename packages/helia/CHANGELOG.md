@@ -1,5 +1,16 @@
 # Changelog
 
+## [7.1.3](https://github.com/ipfs/helia/compare/helia-v7.1.2...helia-v7.1.3) (2026-07-31)
+
+
+### Dependencies
+
+* bump cborg from 5.1.11 to 6.1.1 ([#1095](https://github.com/ipfs/helia/issues/1095)) ([81d9624](https://github.com/ipfs/helia/commit/81d96244c432fa5ad8e121d2462f40c0dcd61531))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^4.0.7 to ^4.0.8
+    * @helia/libp2p bumped from ^1.0.7 to ^1.0.8
+
 ## [7.1.2](https://github.com/ipfs/helia/compare/helia-v7.1.1...helia-v7.1.2) (2026-07-28)
 
 
