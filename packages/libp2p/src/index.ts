@@ -19,6 +19,7 @@ import { NotStartedError } from '@libp2p/interface'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import forEach from 'it-foreach'
 import { isLibp2p } from 'libp2p'
+import { userAgent } from 'libp2p/user-agent'
 import { libp2pRouting } from './routing.ts'
 import { createLibp2p } from './utils/libp2p.ts'
 import type { DefaultLibp2pServices } from './utils/libp2p-defaults.ts'
@@ -61,17 +62,17 @@ function addHeliaVersion (libp2p: Libp2p<any>, helia: Helia): Libp2p<any> {
     return typeof service?.host?.agentVersion === 'string'
   }
 
-  const userAgent = `${helia.info.name}/${helia.info.version}`
+  const heliaAgent = `${helia.info.name}/${helia.info.version}`
 
   // @ts-expect-error private field
-  if (libp2p.components?.nodeInfo?.userAgent?.includes(userAgent) === false) {
+  if (libp2p.components?.nodeInfo?.userAgent === userAgent()) {
     // @ts-expect-error private field
-    libp2p.components.nodeInfo.userAgent = `${userAgent} ${libp2p.components.nodeInfo.userAgent}`
+    libp2p.components.nodeInfo.userAgent = `${heliaAgent} ${libp2p.components.nodeInfo.userAgent}`
   }
 
   for (const service of Object.values(libp2p.services)) {
-    if (isIdentify(service) && service.host.agentVersion.includes(userAgent) === false) {
-      service.host.agentVersion = `${userAgent} ${service.host.agentVersion}`
+    if (isIdentify(service) && service.host.agentVersion === userAgent()) {
+      service.host.agentVersion = `${heliaAgent} ${service.host.agentVersion}`
     }
   }
 
