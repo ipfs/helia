@@ -6,7 +6,7 @@ import pDefer from 'p-defer'
 import { raceSignal } from 'race-signal'
 import type { BlockBroker, BlockRetrievalOptions, CreateSessionOptions } from '@helia/interface'
 import type { AbortOptions, ComponentLogger, Logger } from '@libp2p/interface'
-import type { Filter } from '@libp2p/utils'
+import type { Filter, QueueJobFailure, QueueJobSuccess } from '@libp2p/utils'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { CID } from 'multiformats/cid'
 import type { DeferredPromise } from 'p-defer'
@@ -97,10 +97,12 @@ export abstract class AbstractSession<Provider extends SessionProvider, Retrieve
     // this queue manages outgoing requests - as new peers are added to the
     // session they will be added to the queue so we can request the current
     // block from multiple peers as they are discovered
-    const queue = new Queue<Uint8Array, { provider: Provider, priority?: number } & AbortOptions>({
+    type QueueJobOptions = { provider: Provider, priority?: number } & AbortOptions
+
+    const queue = new Queue<Uint8Array, QueueJobOptions>({
       concurrency: this.maxProviders
     })
-    queue.addEventListener('failure', (evt) => {
+    const queueFailureListener = (evt: CustomEvent<QueueJobFailure<Uint8Array, QueueJobOptions>>): void => {
       if (evt.detail.job.options.provider.fallback) {
         this.log.error('error querying fallback provider %s - %e', evt.detail.job.options.provider, evt.detail.error)
         return
@@ -113,13 +115,17 @@ export abstract class AbstractSession<Provider extends SessionProvider, Retrieve
 
       this.log.error('error querying provider %s, evicting from session - %e', evt.detail.job.options.provider, evt.detail.error)
       this.evict(evt.detail.job.options.provider)
-    })
-    queue.addEventListener('success', (evt) => {
+    }
+    queue.addEventListener('failure', queueFailureListener)
+
+    const queueSuccessListener = (evt: CustomEvent<QueueJobSuccess<Uint8Array, QueueJobOptions>>): void => {
       // peer has sent block, return it to the caller
       foundBlock = true
       deferred.resolve(evt.detail.result)
-    })
-    queue.addEventListener('idle', () => {
+    }
+    queue.addEventListener('success', queueSuccessListener)
+
+    const queueIdleListener = (): void => {
       if (foundBlock) {
         this.log.trace('session idle, found block')
         // we either found the block or the user gave up
@@ -165,7 +171,8 @@ export abstract class AbstractSession<Provider extends SessionProvider, Retrieve
           this.log.error('could not find new providers for %c - %e', cid, err)
           deferred.reject(err)
         })
-    })
+    }
+    queue.addEventListener('idle', queueIdleListener)
 
     const peerAddedToSessionListener = (event: CustomEvent<Provider>): void => {
       const filterKey = this.toFilterKey(event.detail)
@@ -264,6 +271,14 @@ export abstract class AbstractSession<Provider extends SessionProvider, Retrieve
     } finally {
       this.removeEventListener('provider', peerAddedToSessionListener)
       options.signal?.removeEventListener('abort', signalAbortedListener)
+      // a new Queue is created for every retrieve() call, so its listeners have to
+      // be detached too. Queue extends TypedEventEmitter, which extends the native
+      // EventTarget - in a browser a listener-bearing EventTarget is kept alive by
+      // its own wrapper, so without this every queue ever created stays a GC root
+      // along with the jobs, provider records and promise chains it captured.
+      queue.removeEventListener('failure', queueFailureListener)
+      queue.removeEventListener('success', queueSuccessListener)
+      queue.removeEventListener('idle', queueIdleListener)
       queue.clear()
       this.requests.delete(cidStr)
     }
