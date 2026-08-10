@@ -172,6 +172,7 @@ export type {
 
 export type PublishProgressEvents =
   ProgressEvent<'ipns:publish:start'> |
+  ProgressEvent<'ipns:publish:strategy:success', IPNSPublishStrategyResult> |
   ProgressEvent<'ipns:publish:success', IPNSEntry> |
   ProgressEvent<'ipns:publish:error', Error>
 
@@ -302,6 +303,23 @@ export interface IPNSPublishResult {
    * The public key that was used to sign and publish the record
    */
   publicKey: PublicKey
+}
+
+export interface IPNSPublishStrategyResult {
+  /**
+   * The name of the publishing strategy that completed.
+   */
+  strategy: string
+
+  /**
+   * The routing key the IPNS record was published under.
+   */
+  routingKey: Uint8Array
+
+  /**
+   * The published record.
+   */
+  record: IPNSEntry
 }
 
 export interface IPNSResolver {

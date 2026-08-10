@@ -4,7 +4,7 @@ import { DEFAULT_LIFETIME_MS } from '../constants.ts'
 import { IPNSEntry } from '../pb/ipns.ts'
 import { createIPNSRecord } from '../records.ts'
 import { decodeExtensibleData, multihashToIPNSRoutingKey } from '../utils.ts'
-import type { IPNSPublishResult, PublishOptions } from '../index.ts'
+import type { IPNSPublishResult, IPNSPublishStrategyResult, PublishOptions } from '../index.ts'
 import type { LocalStore } from '../local-store.ts'
 import type { IPNSRouting } from '../routing/index.ts'
 import type { Keychain, PrivateKey } from '@helia/interface'
@@ -35,6 +35,8 @@ export class IPNSPublisher {
 
   async publish (keyName: string, value: string, options: PublishOptions = {}): Promise<IPNSPublishResult> {
     try {
+      options.onProgress?.(new CustomProgressEvent('ipns:publish:start'))
+
       const key = await this.#loadOrCreateKey(keyName, options)
       const digest = key.publicKey.toMultihash()
       const routingKey = multihashToIPNSRoutingKey(digest)
@@ -65,6 +67,8 @@ export class IPNSPublisher {
             lifetime
           }
         })
+
+        this.#publishStrategySuccess('LocalStoreRouting()', routingKey, record, options)
       } else {
         // publish record to routing (including the local store)
         await Promise.all(this.routers.map(async r => {
@@ -75,8 +79,12 @@ export class IPNSPublisher {
               lifetime
             }
           })
+
+          this.#publishStrategySuccess(this.#strategyName(r), routingKey, record, options)
         }))
       }
+
+      options.onProgress?.(new CustomProgressEvent<IPNSEntry>('ipns:publish:success', record))
 
       return {
         record,
@@ -104,6 +112,28 @@ export class IPNSPublisher {
         throw err
       }
     }
+  }
+
+  #publishStrategySuccess (strategy: string, routingKey: Uint8Array, record: IPNSEntry, options: PublishOptions): void {
+    options.onProgress?.(new CustomProgressEvent<IPNSPublishStrategyResult>('ipns:publish:strategy:success', {
+      strategy,
+      routingKey,
+      record
+    }))
+  }
+
+  #strategyName (router: IPNSRouting): string {
+    if (router.toString === Object.prototype.toString) {
+      return 'CustomRouting()'
+    }
+
+    const strategy = router.toString()
+
+    if (typeof strategy !== 'string' || strategy === '') {
+      return 'CustomRouting()'
+    }
+
+    return strategy
   }
 
   async unpublish (keyName: string, options?: AbortOptions): Promise<void> {
