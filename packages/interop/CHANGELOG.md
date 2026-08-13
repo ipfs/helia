@@ -1,5 +1,15 @@
 # Changelog
 
+## [11.0.12](https://github.com/ipfs/helia/compare/interop-v11.0.11...interop-v11.0.12) (2026-08-13)
+
+
+### Dependencies
+
+* bump kubo from 0.42.0 to 0.43.0 in the kubo-deps group ([#1100](https://github.com/ipfs/helia/issues/1100)) ([7167f9f](https://github.com/ipfs/helia/commit/7167f9f1b78f69cc3e68f2a13888b9bd1afcfadb))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/ipns bumped from ^10.0.7 to ^10.0.8
+
 ## [11.0.11](https://github.com/ipfs/helia/compare/interop-v11.0.10...interop-v11.0.11) (2026-07-31)
 
 
