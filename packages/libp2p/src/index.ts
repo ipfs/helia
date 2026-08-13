@@ -41,50 +41,23 @@ export interface HeliaWithLibp2p<M extends ServiceMap = DefaultLibp2pServices> e
 }
 
 async function getLibp2p <H extends Helia, M extends ServiceMap = ServiceMap> (helia: H, opts?: CreateLibp2pOptions<M>): Promise<Libp2p<M>> {
-  let node: Libp2p<M>
+  const heliaAgent = `${helia.info.name}/${helia.info.version} ${userAgent()}`
 
-  if (isLibp2p(opts)) {
-    node = opts as any
-  } else {
-    node = await createLibp2p(helia, {
-      ...opts,
-      dns: helia.dns,
-      logger: helia.logger,
-      datastore: helia.datastore
-    })
-  }
-
-  return addHeliaVersion(node, helia)
-}
-
-function addHeliaVersion (libp2p: Libp2p<any>, helia: Helia): Libp2p<any> {
-  function isIdentify (service: any): service is { host: { agentVersion: string } } {
-    return typeof service?.host?.agentVersion === 'string'
-  }
-
-  const heliaAgent = `${helia.info.name}/${helia.info.version}`
-
-  // @ts-expect-error private field
-  if (libp2p.components?.nodeInfo?.userAgent === userAgent()) {
-    // @ts-expect-error private field
-    libp2p.components.nodeInfo.userAgent = `${heliaAgent} ${libp2p.components.nodeInfo.userAgent}`
-  }
-
-  for (const service of Object.values(libp2p.services)) {
-    if (isIdentify(service) && service.host.agentVersion === userAgent()) {
-      service.host.agentVersion = `${heliaAgent} ${service.host.agentVersion}`
+  return createLibp2p(helia, {
+    ...opts,
+    dns: helia.dns,
+    logger: helia.logger,
+    datastore: helia.datastore,
+    nodeInfo: {
+      userAgent: opts?.nodeInfo?.userAgent ?? heliaAgent
     }
-  }
-
-  return libp2p
+  })
 }
 
 /**
  * Return a Helia node augmented with a libp2p instance
  */
-export function withLibp2p <H extends Helia, M extends ServiceMap = ServiceMap, L extends Libp2p = Libp2p<M>> (helia: H, opts: L): H & HeliaWithLibp2p<M>
-export function withLibp2p <H extends Helia, M extends ServiceMap = ServiceMap> (helia: H, opts?: CreateLibp2pOptions<M>): H & HeliaWithLibp2p<M>
-export function withLibp2p <H extends Helia, M extends ServiceMap = ServiceMap> (helia: H, opts?: CreateLibp2pOptions<M>): H & HeliaWithLibp2p {
+export function withLibp2p <H extends Helia, M extends ServiceMap = ServiceMap> (helia: H, opts?: CreateLibp2pOptions<M>): H & HeliaWithLibp2p<M> {
   let libp2p: Libp2p
 
   // add a getter that informs the user they need to start Helia

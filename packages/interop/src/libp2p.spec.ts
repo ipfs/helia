@@ -3,7 +3,7 @@ import { identify } from '@libp2p/identify'
 import { webSockets } from '@libp2p/websockets'
 import { expect } from 'aegir/chai'
 import { createHeliaLight } from 'helia'
-import { createLibp2p, isLibp2p } from 'libp2p'
+import { isLibp2p } from 'libp2p'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { HeliaWithLibp2p } from '@helia/libp2p'
 
@@ -47,7 +47,7 @@ describe('@helia/libp2p', () => {
   })
 
   it('does not add helia details to the AgentVersion when it has been overridden', async () => {
-    helia = await withLibp2p(createHeliaLight(), await createLibp2p({
+    helia = await withLibp2p(createHeliaLight(), {
       nodeInfo: {
         userAgent: 'my custom user agent'
       },
@@ -57,7 +57,7 @@ describe('@helia/libp2p', () => {
       services: {
         identify: identify()
       }
-    })).start()
+    }).start()
 
     expect(helia).to.have.nested.property('libp2p.services.identify.host.agentVersion')
       .that.does.not.include('helia/')
@@ -88,14 +88,6 @@ describe('@helia/libp2p', () => {
     }).start()
 
     expect(helia.libp2p.peerId.toString()).to.equal(peerId.toString())
-  })
-
-  it('allows passing a libp2p node', async () => {
-    const libp2p = await createLibp2p()
-
-    helia = await withLibp2p(createHeliaLight(), libp2p).start()
-
-    expect(helia.libp2p).to.equal(libp2p)
   })
 
   it('adds helia details to the AgentVersion', async () => {
