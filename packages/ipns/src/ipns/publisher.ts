@@ -7,9 +7,11 @@ import { decodeExtensibleData, multihashToIPNSRoutingKey } from '../utils.ts'
 import type { IPNSPublishResult, PublishOptions } from '../index.ts'
 import type { LocalStore } from '../local-store.ts'
 import type { IPNSRouting } from '../routing/index.ts'
-import type { Keychain, PrivateKey } from '@helia/interface'
+import type { Keychain, PrivateKey, PublicKey } from '@helia/interface'
 import type { AbortOptions, ComponentLogger } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
+import type { CID } from 'multiformats/cid'
+import type { MultihashDigest } from 'multiformats/hashes/interface'
 
 export interface IPNSPublisherComponents {
   datastore: Datastore
@@ -33,7 +35,7 @@ export class IPNSPublisher {
     this.routers = init.routers
   }
 
-  async publish (keyName: string, value: string, options: PublishOptions = {}): Promise<IPNSPublishResult> {
+  async publish (keyName: string, value: PublicKey | CID | MultihashDigest | string, options: PublishOptions = {}): Promise<IPNSPublishResult> {
     try {
       const key = await this.#loadOrCreateKey(keyName, options)
       const digest = key.publicKey.toMultihash()

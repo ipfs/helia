@@ -3,9 +3,11 @@ import NanoDate from 'timestamp-nano'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { SignatureCreationError } from './errors.ts'
 import { IPNSEntry } from './pb/ipns.ts'
-import { encodeExtensibleData, IDENTITY_CODEC, ipnsRecordDataForV1Sig, ipnsRecordDataForV2Sig } from './utils.ts'
+import { encodeExtensibleData, IDENTITY_CODEC, ipnsRecordDataForV1Sig, ipnsRecordDataForV2Sig, normalizeValue } from './utils.ts'
 import type { PrivateKey, PublicKey } from '@helia/interface'
 import type { AbortOptions } from 'abort-error'
+import type { CID } from 'multiformats/cid'
+import type { MultihashDigest } from 'multiformats/hashes/interface'
 
 const log = logger('ipns')
 const DEFAULT_TTL_NS = 300_000_000_000n // 5 Minutes or 300 Seconds, as suggested by https://specs.ipfs.tech/ipns/ipns-record/#ttl-uint64
@@ -37,6 +39,14 @@ export interface CreateIPNSRecordOptions extends AbortOptions {
    * Note that this data will be encoded as DAG-CBOR so it must be valid.
    */
   data?: Record<string, any>
+
+  /**
+   * When to calculate the TTL/Validity fields from. Useful for testing and
+   * investigations.
+   *
+   * @default Date.now()
+   */
+  now?: number
 }
 
 /**
@@ -48,14 +58,15 @@ export interface CreateIPNSRecordOptions extends AbortOptions {
  *
  * The passed value should be a string path e.g. `/ipfs/...` or `/ipns/...`.
  */
-export async function createIPNSRecord (privateKey: PrivateKey, val: string, seq: number | bigint, lifetime: number, options?: CreateIPNSRecordOptions): Promise<IPNSEntry> {
+export async function createIPNSRecord (privateKey: PrivateKey, val: PublicKey | CID | MultihashDigest | string, seq: number | bigint, lifetime: number, options?: CreateIPNSRecordOptions): Promise<IPNSEntry> {
   seq = BigInt(seq)
+  val = normalizeValue(val)
   const value = uint8ArrayFromString(val)
   // convert ttl from milliseconds to nanoseconds as createIPNSRecord expects
   const ttlNs = options?.ttlNs ?? DEFAULT_TTL_NS
 
   // Validity in ISOString with nanoseconds precision and validity type EOL
-  const expirationDate = new NanoDate(Date.now() + Number(lifetime))
+  const expirationDate = new NanoDate((options?.now ?? Date.now()) + Number(lifetime))
   const validityType = IPNSEntry.ValidityType.EOL
   const validity = uint8ArrayFromString(expirationDate.toString())
 

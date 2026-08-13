@@ -66,7 +66,6 @@ export class IPNS implements IPNSInterface, Startable {
       if (isLibp2p(component)) {
         for (const service of Object.values(component.services)) {
           if (isKadDHT(service)) {
-            // @ ts-expect-error https://github.com/libp2p/js-libp2p/pull/3506
             service.selectors.ipns = async (key: Uint8Array, values: Uint8Array[]): Promise<number> => {
               const records = values.map(buf => IPNSEntry.decode(buf))
 
