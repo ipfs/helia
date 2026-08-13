@@ -429,3 +429,4 @@ export function ipnsResolver (components: IPNSResolverComponents, options: IPNSR
 
 export type { IPNSRoutingProgressEvents }
 export { ipnsValidator } from './validator.ts'
+export { ipnsSelector } from './selector.ts'

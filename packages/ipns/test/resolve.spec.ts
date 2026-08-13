@@ -359,7 +359,7 @@ describe('resolve', () => {
     const routingKey = multihashToIPNSRoutingKey(privateKey.publicKey.toMultihash())
     const dhtKey = new Key('/dht/record/' + uint8ArrayToString(routingKey, 'base32'), false)
 
-    const record = await createIPNSRecord(privateKey, 'will-be-overwritten', 10, 30_000)
+    const record = await createIPNSRecord(privateKey, '/ipns/will-be-overwritten', 10, 30_000)
     const data = decodeExtensibleData(record.data)
     data.Value = cid.bytes
     record.value = cid.bytes
