@@ -152,6 +152,8 @@ describe('peer-want-lists', () => {
       }
     })
 
+    await wantLists.ledgerForPeer(remotePeer)?.sendQueue.onIdle()
+
     let entries = wantLists.wantListForPeer(remotePeer)
 
     expect(entries?.map(entry => entry.cid.toString())).to.include(cid1.toString())
@@ -176,6 +178,8 @@ describe('peer-want-lists', () => {
         }
       }
     })
+
+    await wantLists.ledgerForPeer(remotePeer)?.sendQueue.onIdle()
 
     entries = wantLists.wantListForPeer(remotePeer)
 
@@ -211,6 +215,8 @@ describe('peer-want-lists', () => {
       }
     })
 
+    await wantLists.ledgerForPeer(remotePeer)?.sendQueue.onIdle()
+
     let entries = wantLists.wantListForPeer(remotePeer)
 
     expect(entries?.map(entry => entry.cid.toString())).to.include(cid1.toString())
@@ -234,6 +240,8 @@ describe('peer-want-lists', () => {
         }
       }
     })
+
+    await wantLists.ledgerForPeer(remotePeer)?.sendQueue.onIdle()
 
     entries = wantLists.wantListForPeer(remotePeer)
 
@@ -539,6 +547,8 @@ describe('peer-want-lists', () => {
       }
     })
 
+    await wantLists.ledgerForPeer(remotePeer)?.sendQueue.onIdle()
+
     expect(wantLists.wantListForPeer(remotePeer)?.map(entry => entry.cid.toString())).to.include(cid.toString())
 
     network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
@@ -561,6 +571,8 @@ describe('peer-want-lists', () => {
         }
       }
     })
+
+    await wantLists.ledgerForPeer(remotePeer)?.sendQueue.onIdle()
 
     expect(wantLists.wantListForPeer(remotePeer)?.map(entry => entry.cid.toString())).to.not.include(cid.toString())
   })
@@ -593,6 +605,8 @@ describe('peer-want-lists', () => {
         }
       }
     })
+
+    await wantLists.ledgerForPeer(remotePeer)?.sendQueue.onIdle()
 
     expect(wantLists.ledgerForPeer(remotePeer)).to.be.ok()
     expect(wantLists.wantListForPeer(remotePeer)).to.be.ok()
@@ -628,6 +642,8 @@ describe('peer-want-lists', () => {
       }
     })
 
+    await wantLists.ledgerForPeer(remotePeer)?.sendQueue.onIdle()
+
     expect(wantLists.peers().map(p => p.toString())).to.include(remotePeer.toString())
   })
 
@@ -657,6 +673,8 @@ describe('peer-want-lists', () => {
         }
       }
     })
+
+    await wantLists.ledgerForPeer(remotePeer)?.sendQueue.onIdle()
 
     expect(wantLists.wantListForPeer(remotePeer)?.map(e => e.cid.toString())).to.include(cid.toString())
 
@@ -819,6 +837,8 @@ describe('peer-want-lists', () => {
       cid: cids[2].bytes,
       priority: 10
     }])
+
+    await wantLists.ledgerForPeer(remotePeer)?.sendQueue.onIdle()
 
     const entry0 = wantLists.wantListForPeer(remotePeer)?.find(entry => entry.cid.equals(cids[0]))
 

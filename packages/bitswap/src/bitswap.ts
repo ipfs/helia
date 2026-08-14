@@ -144,6 +144,7 @@ export class Bitswap implements BitswapInterface {
    */
   async stop (): Promise<void> {
     this.wantList.stop()
+    this.peerWantLists.stop()
     await this.network.stop()
   }
 }

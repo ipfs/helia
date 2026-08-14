@@ -43,7 +43,7 @@ describe('bitswap', () => {
     blocks = []
     cids = []
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 50; i++) {
       const block = new Uint8Array(DEFAULT_MAX_SIZE_REPLACE_HAS_WITH_BLOCK + 1).fill(i)
       const cid = CID.createV0(await sha256.digest(block)).toV1()
 
@@ -332,9 +332,9 @@ describe('bitswap', () => {
 
       expect(sendMessageStub.getCalls()).to.have.property('length', 0)
 
-      await delay(1_000)
+      await bitswap.peerWantLists.ledgerForPeer(remotePeer)?.sendQueue.onIdle()
 
-      expect(sendMessageStub.getCalls()).to.have.property('length', 1)
+      expect(sendMessageStub.getCalls()).to.have.property('length', 1, 'incorrect number of send calls')
       expect(sendMessageStub.getCall(0).args[0].equals(remotePeer)).to.be.true()
       expect(sendMessageStub.getCall(0).args[1].blocks.has(base64.encode(cids[0].multihash.bytes))).to.be.true()
     })
@@ -483,7 +483,7 @@ describe('bitswap', () => {
         }
       })
 
-      expect(sendMessageStub.getCalls()).to.have.property('length', 0)
+      expect(sendMessageStub.getCalls()).to.have.property('length', 0, 'sent message before WantBlock arrived')
 
       // peer sends a WantBlock for the second block and upgrades the WantHave
       // to a WantBlock for the first
@@ -513,20 +513,16 @@ describe('bitswap', () => {
         }
       })
 
-      await delay(1_000)
+      await bitswap.peerWantLists.ledgerForPeer(remotePeer)?.sendQueue.onIdle()
 
-      expect(sendMessageStub.getCalls()).to.have.property('length', 2)
+      expect(sendMessageStub.getCalls()).to.have.property('length', 1, 'Sent wrong number of messages')
 
       // the WantHave for cid1 was converted to a WantBlock while it was being
       // sent
-      expect(sendMessageStub.getCall(0).args[1].blocks.has(base64.encode(cids[0].multihash.bytes))).to.be.true()
+      expect(sendMessageStub.getCall(0).args[1].blocks.has(base64.encode(cids[0].multihash.bytes))).to.be.true('Did not send block for cid1')
 
-      // the WantHave for cid2 is honoured as part of the second message
-      expect(sendMessageStub.getCall(1).args[1].blocks.has(base64.encode(cids[1].multihash.bytes))).to.be.true()
-
-      // the block for cid1 was not sent again as it was sent in the first
-      // message
-      expect(sendMessageStub.getCall(1).args[1].blocks.has(base64.encode(cids[0].multihash.bytes))).to.be.false()
+      // the WantHave for cid2 is honoured
+      expect(sendMessageStub.getCall(0).args[1].blocks.has(base64.encode(cids[1].multihash.bytes))).to.be.true('Did not send block for cid2')
     })
 
     it('should send a WantBlock after a WantHave', async () => {
@@ -600,14 +596,63 @@ describe('bitswap', () => {
 
       await delay(1_000)
 
-      expect(sendMessageStub.getCalls()).to.have.property('length', 2)
+      expect(sendMessageStub.getCalls()).to.have.property('length', 2, 'Send wrong number of messages')
 
-      // the second message has fewer blocks so is processed faster and sent
-      // before the first
-      expect(sendMessageStub.getCall(0).args[1].blocks.has(base64.encode(cids[2].multihash.bytes))).to.be.true()
+      // cid 1 was only ever WantHas
+      expect(sendMessageStub.getCall(0).args[1].blockPresences.has(base64.encode(cids[1].multihash.bytes))).to.be.true('Did not send block presence for cid 1')
 
-      expect(sendMessageStub.getCall(1).args[1].blocks.has(base64.encode(cids[0].multihash.bytes))).to.be.true()
-      expect(sendMessageStub.getCall(1).args[1].blockPresences.has(base64.encode(cids[1].multihash.bytes))).to.be.true()
+      // cid 0 and 2 were upgraded to WantBlock
+      expect(sendMessageStub.getCall(1).args[1].blocks.has(base64.encode(cids[0].multihash.bytes))).to.be.true('Did not send block for cid 0')
+      expect(sendMessageStub.getCall(1).args[1].blocks.has(base64.encode(cids[2].multihash.bytes))).to.be.true('Did not send block for cid 2')
+    })
+
+    it('should service more WantBlock operations than the send queue allows', async () => {
+      // we have the blocks
+      for (let i = 0; i < cids.length; i++) {
+        await components.blockstore.put(cids[i], blocks[i])
+      }
+
+      const sendMessageStub = bitswap.network.sendMessage = Sinon.stub()
+
+      // send many small WantBlocks, overwhelming the send queue
+      for (let i = 0; i < cids.length; i++) {
+        bitswap.network.safeDispatchEvent<BitswapMessageEventDetail>('bitswap:message', {
+          detail: {
+            peer: remotePeer,
+            connection: stubInterface<Connection>({
+              remotePeer
+            }),
+            message: {
+              wantlist: {
+                full: false,
+                entries: [{
+                  cid: cids[i].bytes,
+                  priority: 100,
+                  wantType: WantType.WantBlock
+                }]
+              },
+              blockPresences: [],
+              blocks: [],
+              pendingBytes: 0
+            }
+          }
+        })
+      }
+
+      await delay(1_000)
+
+      const receivedBlocks = new Set<string>()
+
+      for (const call of sendMessageStub.getCalls()) {
+        for (const key of call.args[1].blocks.keys()) {
+          receivedBlocks.add(key)
+        }
+      }
+
+      // should have sent all blocks
+      for (let i = 0; i < cids.length; i++) {
+        expect(receivedBlocks.has(base64.encode(cids[i].multihash.bytes))).to.be.true(`Did not send block for cid ${i}`)
+      }
     })
   })
 })
