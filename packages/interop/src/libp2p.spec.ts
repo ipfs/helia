@@ -1,6 +1,4 @@
 import { withLibp2p } from '@helia/libp2p'
-import { identify } from '@libp2p/identify'
-import { webSockets } from '@libp2p/websockets'
 import { expect } from 'aegir/chai'
 import { createHeliaLight } from 'helia'
 import { isLibp2p } from 'libp2p'
@@ -50,12 +48,6 @@ describe('@helia/libp2p', () => {
     helia = await withLibp2p(createHeliaLight(), {
       nodeInfo: {
         userAgent: 'my custom user agent'
-      },
-      transports: [
-        webSockets()
-      ],
-      services: {
-        identify: identify()
       }
     }).start()
 
