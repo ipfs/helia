@@ -128,7 +128,7 @@ export interface BitswapOptions {
 
   /**
    * When sending messages to peers (our wantlist updates, blocks from their
-   * wantlists), how many messages to send at once
+   * wantlist), how many messages to send at once
    *
    * @default 50
    */
@@ -164,7 +164,7 @@ export interface BitswapOptions {
    *
    * Once the queue exceeds this length no further message send operations will
    * be queued. Local wantlists are updated synchronously so the updated wants
-   * should be handled by subsequent send operations.
+   * should be handled by send operations still in the queue.
    *
    * @default 10
    */
