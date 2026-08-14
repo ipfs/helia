@@ -1,14 +1,18 @@
+import { Queue } from '@libp2p/utils'
+import { NotFoundError } from 'interface-store'
 import toBuffer from 'it-to-buffer'
 import { CID } from 'multiformats/cid'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { DEFAULT_MAX_SIZE_REPLACE_HAS_WITH_BLOCK, DEFAULT_DO_NOT_RESEND_BLOCK_WINDOW, DEFAULT_MAX_WANTLIST_SIZE } from '../constants.ts'
+import { DEFAULT_MAX_SIZE_REPLACE_HAS_WITH_BLOCK, DEFAULT_DO_NOT_RESEND_BLOCK_WINDOW, DEFAULT_MAX_WANTLIST_SIZE, DEFAULT_PEER_MESSAGE_SEND_CONCURRENCY, DEFAULT_PEER_MAX_MESSAGE_SEND_QUEUE_LENGTH } from '../constants.ts'
 import { BlockPresenceType, WantType } from '../pb/message.ts'
 import { QueuedBitswapMessage } from '../utils/bitswap-message.ts'
 import { cidToPrefix } from '../utils/cid-prefix.ts'
+import type { BitswapNotifyProgressEvents } from '../index.ts'
 import type { Network } from '../network.ts'
-import type { Wantlist } from '../pb/message.ts'
+import type { BitswapMessage, Wantlist } from '../pb/message.ts'
 import type { AbortOptions, ComponentLogger, Logger, PeerId } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
+import type { ProgressOptions } from 'progress-events'
 
 export interface LedgerComponents {
   peerId: PeerId
@@ -21,6 +25,9 @@ export interface LedgerInit {
   maxSizeReplaceHasWithBlock?: number
   doNotResendBlockWindow?: number
   maxWantListSize?: number
+  sendBlocksConcurrency?: number
+  sendBlocksMaxQueueLength?: number
+  sendBlocksTimeout?: number
 }
 
 export interface PeerWantListEntry {
@@ -89,6 +96,7 @@ export class Ledger {
   public bytesSent: number
   public bytesReceived: number
   public lastExchange?: number
+  public readonly sendQueue: Queue
   private readonly maxSizeReplaceHasWithBlock: number
   private readonly log: Logger
   private readonly doNotResendBlockWindow: number
@@ -107,6 +115,15 @@ export class Ledger {
     this.maxSizeReplaceHasWithBlock = init.maxSizeReplaceHasWithBlock ?? DEFAULT_MAX_SIZE_REPLACE_HAS_WITH_BLOCK
     this.doNotResendBlockWindow = init.doNotResendBlockWindow ?? DEFAULT_DO_NOT_RESEND_BLOCK_WINDOW
     this.maxWantListSize = init.maxWantListSize ?? DEFAULT_MAX_WANTLIST_SIZE
+
+    this.sendQueue = new Queue({
+      concurrency: init.sendBlocksConcurrency ?? DEFAULT_PEER_MESSAGE_SEND_CONCURRENCY,
+      maxSize: init.sendBlocksMaxQueueLength ?? DEFAULT_PEER_MAX_MESSAGE_SEND_QUEUE_LENGTH
+    })
+  }
+
+  stop (): void {
+    this.sendQueue.abort()
   }
 
   sentBytes (n: number): void {
@@ -261,7 +278,30 @@ export class Ledger {
     return this.wants.has(cidStr)
   }
 
-  public async sendBlocksToPeer (options?: AbortOptions): Promise<void> {
+  public queueSendOperation (message?: BitswapMessage, options?: ProgressOptions<BitswapNotifyProgressEvents> & AbortOptions): void {
+    if (message != null) {
+      // record the amount of block data received
+      this.receivedBytes(message.blocks?.reduce((acc, curr) => acc + curr.data.byteLength, 0) ?? 0)
+
+      // add new wants
+      this.addWants(message.wantlist)
+    }
+
+    try {
+      this.sendQueue.add(async (options) => {
+        this.log('send blocks to peer')
+        await this.sendBlocksToPeer(options)
+      }, options)
+    } catch (err: any) {
+      if (err.name === 'QueueFullError') {
+        this.log.error('Dropping bitswap message as peer send queue is full')
+      } else {
+        throw err
+      }
+    }
+  }
+
+  private async sendBlocksToPeer (options?: AbortOptions): Promise<void> {
     const message = new QueuedBitswapMessage()
     const sentBlocks = new Set<string>()
 
@@ -270,7 +310,15 @@ export class Ledger {
 
     // pick unsent wants
     const unsent = [...this.wants.entries()]
-      .filter(([key, value]) => value.status === 'want')
+      .filter(([key, value]) => {
+        // don't process the same want more than once per send iteration
+        return value.status === 'want'
+      })
+
+    // break out of the for loop early if we have no work to do
+    if (unsent.length === 0) {
+      return
+    }
 
     // update status, ensure we don't send the same blocks repeatedly
     unsent.forEach(([key, value]) => {
@@ -279,6 +327,15 @@ export class Ledger {
 
     for (const [key, entry] of unsent) {
       try {
+        // call `.has` and not `.get` because `.get` can cause network
+        // operations to occur
+        const has = await this.blockstore.has(entry.cid, options)
+
+        if (!has) {
+          // can't sent a block we don't have
+          throw new NotFoundError()
+        }
+
         const block = await toBuffer(this.blockstore.get(entry.cid, options))
 
         // ensure we still need to send the block/status, status may have

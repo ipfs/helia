@@ -332,9 +332,9 @@ describe('bitswap', () => {
 
       expect(sendMessageStub.getCalls()).to.have.property('length', 0)
 
-      await delay(1_000)
+      await bitswap.peerWantLists.ledgerForPeer(remotePeer)?.sendQueue.onIdle()
 
-      expect(sendMessageStub.getCalls()).to.have.property('length', 1)
+      expect(sendMessageStub.getCalls()).to.have.property('length', 1, 'incorrect number of send calls')
       expect(sendMessageStub.getCall(0).args[0].equals(remotePeer)).to.be.true()
       expect(sendMessageStub.getCall(0).args[1].blocks.has(base64.encode(cids[0].multihash.bytes))).to.be.true()
     })
@@ -483,7 +483,7 @@ describe('bitswap', () => {
         }
       })
 
-      expect(sendMessageStub.getCalls()).to.have.property('length', 0)
+      expect(sendMessageStub.getCalls()).to.have.property('length', 0, 'sent message before WantBlock arrived')
 
       // peer sends a WantBlock for the second block and upgrades the WantHave
       // to a WantBlock for the first
@@ -513,20 +513,16 @@ describe('bitswap', () => {
         }
       })
 
-      await delay(1_000)
+      await bitswap.peerWantLists.ledgerForPeer(remotePeer)?.sendQueue.onIdle()
 
-      expect(sendMessageStub.getCalls()).to.have.property('length', 2)
+      expect(sendMessageStub.getCalls()).to.have.property('length', 1, 'Sent wrong number of messages')
 
       // the WantHave for cid1 was converted to a WantBlock while it was being
       // sent
-      expect(sendMessageStub.getCall(0).args[1].blocks.has(base64.encode(cids[0].multihash.bytes))).to.be.true()
+      expect(sendMessageStub.getCall(0).args[1].blocks.has(base64.encode(cids[0].multihash.bytes))).to.be.true('Did not send block for cid1')
 
-      // the WantHave for cid2 is honoured as part of the second message
-      expect(sendMessageStub.getCall(1).args[1].blocks.has(base64.encode(cids[1].multihash.bytes))).to.be.true()
-
-      // the block for cid1 was not sent again as it was sent in the first
-      // message
-      expect(sendMessageStub.getCall(1).args[1].blocks.has(base64.encode(cids[0].multihash.bytes))).to.be.false()
+      // the WantHave for cid2 is honoured
+      expect(sendMessageStub.getCall(0).args[1].blocks.has(base64.encode(cids[1].multihash.bytes))).to.be.true('Did not send block for cid2')
     })
 
     it('should send a WantBlock after a WantHave', async () => {
@@ -600,14 +596,14 @@ describe('bitswap', () => {
 
       await delay(1_000)
 
-      expect(sendMessageStub.getCalls()).to.have.property('length', 2)
+      expect(sendMessageStub.getCalls()).to.have.property('length', 2, 'Send wrong number of messages')
 
-      // the second message has fewer blocks so is processed faster and sent
-      // before the first
-      expect(sendMessageStub.getCall(0).args[1].blocks.has(base64.encode(cids[2].multihash.bytes))).to.be.true()
+      // cid 1 was only ever WantHas
+      expect(sendMessageStub.getCall(0).args[1].blockPresences.has(base64.encode(cids[1].multihash.bytes))).to.be.true('Did not send block presence for cid 1')
 
-      expect(sendMessageStub.getCall(1).args[1].blocks.has(base64.encode(cids[0].multihash.bytes))).to.be.true()
-      expect(sendMessageStub.getCall(1).args[1].blockPresences.has(base64.encode(cids[1].multihash.bytes))).to.be.true()
+      // cid 0 and 2 were upgraded to WantBlock
+      expect(sendMessageStub.getCall(1).args[1].blocks.has(base64.encode(cids[0].multihash.bytes))).to.be.true('Did not send block for cid 0')
+      expect(sendMessageStub.getCall(1).args[1].blocks.has(base64.encode(cids[2].multihash.bytes))).to.be.true('Did not send block for cid 2')
     })
   })
 })

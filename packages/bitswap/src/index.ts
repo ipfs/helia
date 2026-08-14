@@ -127,7 +127,8 @@ export interface BitswapOptions {
   protocol?: string
 
   /**
-   * When sending want list updates to peers, how many messages to send at once
+   * When sending messages to peers (our wantlist updates, blocks from their
+   * wantlists), how many messages to send at once
    *
    * @default 50
    */
@@ -149,11 +150,25 @@ export interface BitswapOptions {
   messageReceiveTimeout?: number
 
   /**
-   * When sending blocks to peers, how many messages to send at once
+   * When sending blocks to individual peers, how many messages to send at once.
+   * This should be left as the default.
    *
-   * @default 50
+   * @default 1
    */
   sendBlocksConcurrency?: number
+
+  /**
+   * Sending blocks is triggered by an incoming Bitswap message from the peer.
+   * To prevent runaway message sending, message send operations are stored in
+   * a queue. This setting defines the maximum queue length.
+   *
+   * Once the queue exceeds this length no further message send operations will
+   * be queued. Local wantlists are updated synchronously so the updated wants
+   * should be handled by subsequent send operations.
+   *
+   * @default 10
+   */
+  sendBlocksMaxQueueLength?: number
 
   /**
    * When sending blocks to peers, timeout after this many milliseconds.

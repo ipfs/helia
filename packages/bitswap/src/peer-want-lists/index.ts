@@ -4,8 +4,9 @@ import { Ledger } from './ledger.ts'
 import type { BitswapNotifyProgressEvents, PeerWantListEntry } from '../index.ts'
 import type { Network } from '../network.ts'
 import type { BitswapMessage } from '../pb/message.ts'
-import type { AbortOptions, ComponentLogger, Libp2p, Logger, Metrics, PeerId } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, Libp2p, Logger, Metrics, PeerId, Startable } from '@libp2p/interface'
 import type { PeerMap } from '@libp2p/peer-collections'
+import type { Queue } from '@libp2p/utils'
 import type { Blockstore } from 'interface-blockstore'
 import type { ProgressOptions } from 'progress-events'
 
@@ -13,6 +14,8 @@ export interface PeerWantListsInit {
   maxSizeReplaceHasWithBlock?: number
   doNotResendBlockWindow?: number
   maxWantListSize?: number
+  sendBlocksConcurrency?: number
+  sendBlocksMaxQueueLength?: number
 }
 
 export interface PeerWantListsComponents {
@@ -29,15 +32,18 @@ export interface PeerLedger {
   sent: number
   received: number
   exchanged: number
+  sendQueue: Queue
 }
 
-export class PeerWantLists {
+export class PeerWantLists implements Startable {
   public blockstore: Blockstore
   public network: Network
   public readonly ledgerMap: PeerMap<Ledger>
   private readonly maxSizeReplaceHasWithBlock?: number
   private readonly doNotResendBlockWindow?: number
   private readonly maxWantListSize?: number
+  private readonly sendBlocksConcurrency?: number
+  private readonly sendBlocksMaxQueueLength?: number
   private readonly log: Logger
   private readonly logger: ComponentLogger
 
@@ -47,6 +53,8 @@ export class PeerWantLists {
     this.maxSizeReplaceHasWithBlock = init.maxSizeReplaceHasWithBlock
     this.doNotResendBlockWindow = init.doNotResendBlockWindow
     this.maxWantListSize = init.maxWantListSize
+    this.sendBlocksConcurrency = init.sendBlocksConcurrency
+    this.sendBlocksMaxQueueLength = init.sendBlocksMaxQueueLength
     this.log = components.logger.forComponent('helia:bitswap:peer-want-lists')
     this.logger = components.logger
 
@@ -56,13 +64,24 @@ export class PeerWantLists {
     })
 
     this.network.addEventListener('bitswap:message', (evt) => {
-      this.receiveMessage(evt.detail.connection.remotePeer, evt.detail.message)
-        .catch(err => {
-          this.log.error('error receiving bitswap message from %p - %e', evt.detail.connection.remotePeer, err)
-        })
+      try {
+        this.receiveMessage(evt.detail.connection.remotePeer, evt.detail.message)
+      } catch (err) {
+        this.log.error('error receiving bitswap message from %p - %e', evt.detail.connection.remotePeer, err)
+      }
     })
     this.network.addEventListener('peer:disconnected', evt => {
       this.peerDisconnected(evt.detail)
+    })
+  }
+
+  start (): void {
+
+  }
+
+  stop (): void {
+    this.ledgerMap.forEach(ledger => {
+      ledger.stop()
     })
   }
 
@@ -78,7 +97,8 @@ export class PeerWantLists {
       value: ledger.debtRatio(),
       sent: ledger.bytesSent,
       received: ledger.bytesReceived,
-      exchanged: ledger.exchangeCount
+      exchanged: ledger.exchangeCount,
+      sendQueue: ledger.sendQueue
     }
   }
 
@@ -102,7 +122,7 @@ export class PeerWantLists {
   /**
    * Handle incoming messages
    */
-  async receiveMessage (peerId: PeerId, message: BitswapMessage): Promise<void> {
+  receiveMessage (peerId: PeerId, message: BitswapMessage): void {
     let ledger = this.ledgerMap.get(peerId)
 
     if (ledger == null) {
@@ -114,22 +134,14 @@ export class PeerWantLists {
       }, {
         maxSizeReplaceHasWithBlock: this.maxSizeReplaceHasWithBlock,
         doNotResendBlockWindow: this.doNotResendBlockWindow,
-        maxWantListSize: this.maxWantListSize
+        maxWantListSize: this.maxWantListSize,
+        sendBlocksConcurrency: this.sendBlocksConcurrency,
+        sendBlocksMaxQueueLength: this.sendBlocksMaxQueueLength
       })
       this.ledgerMap.set(peerId, ledger)
     }
 
-    // record the amount of block data received
-    ledger.receivedBytes(message.blocks?.reduce((acc, curr) => acc + curr.data.byteLength, 0) ?? 0)
-
-    // remove any expired wants
-    ledger.removeExpiredWants()
-
-    // add new wants
-    ledger.addWants(message.wantlist)
-
-    this.log('send blocks to peer')
-    await ledger.sendBlocksToPeer()
+    ledger.queueSendOperation(message)
   }
 
   async receivedBlock (cid: CID, options: ProgressOptions<BitswapNotifyProgressEvents> & AbortOptions): Promise<void> {
@@ -142,7 +154,7 @@ export class PeerWantLists {
     }
 
     await Promise.all(
-      ledgers.map(async (ledger) => ledger.sendBlocksToPeer(options))
+      ledgers.map(async (ledger) => ledger.queueSendOperation(undefined, options))
     )
   }
 
