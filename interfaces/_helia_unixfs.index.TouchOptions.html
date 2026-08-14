@@ -16,7 +16,7 @@
 <div class="tsd-comment tsd-typography"><p>Options to pass to the touch command</p>
 </div></section>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">TouchOptions</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#mtime">mtime</a><span class="tsd-signature-symbol">?:</span> <a href="https://ipfs.github.io/js-ipfs-unixfs/interfaces/ipfs-unixfs.Mtime.html" class="tsd-signature-type external" target="_blank">Mtime</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#offline">offline</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#onprogress">onProgress</a><span class="tsd-signature-symbol">?:</span> <a href="https://achingbrain.github.io/progress-events/interfaces/ProgressEventListener.html" class="tsd-signature-type external" target="_blank">ProgressEventListener</a><span class="tsd-signature-symbol">&lt;</span><a href="../types/helia.PutBlockProgressEvents.html" class="tsd-signature-type tsd-kind-type-alias">PutBlockProgressEvents</a> <span class="tsd-signature-symbol">|</span> <a href="../types/_helia_unixfs.index.GetEvents.html" class="tsd-signature-type tsd-kind-type-alias">GetEvents</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#path">path</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#recursive">recursive</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#signal">signal</a><span class="tsd-signature-symbol">?:</span> <a href="https://developer.mozilla.org/docs/Web/API/AbortSignal" class="tsd-signature-type external" target="_blank">AbortSignal</a><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div>
-<section class="tsd-panel tsd-hierarchy" data-refl="5967">
+<section class="tsd-panel tsd-hierarchy" data-refl="5989">
 <h4>Hierarchy</h4>
 <ul class="tsd-hierarchy">
 <li class="tsd-hierarchy-item"><a href="https://libp2p.github.io/js-libp2p/interfaces/_libp2p_interface.AbortOptions.html" class="tsd-signature-type external" target="_blank">AbortOptions</a></li>
@@ -24,7 +24,7 @@
 <ul class="tsd-hierarchy">
 <li class="tsd-hierarchy-item"><span class="tsd-hierarchy-target">TouchOptions</span></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/86a1a9d2bc69f34ec0f049234efa9ac9082d2872/packages/unixfs/src/index.ts#L411">packages/unixfs/src/index.ts:411</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/2656817c2786046879b48ddb4eb0532491bf741b/packages/unixfs/src/index.ts#L411">packages/unixfs/src/index.ts:411</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -48,7 +48,7 @@
 <div class="tsd-comment tsd-typography"><p>Optional mtime to set on the DAG root, defaults to the current time</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/86a1a9d2bc69f34ec0f049234efa9ac9082d2872/packages/unixfs/src/index.ts#L415">packages/unixfs/src/index.ts:415</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/2656817c2786046879b48ddb4eb0532491bf741b/packages/unixfs/src/index.ts#L415">packages/unixfs/src/index.ts:415</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="offline"><code class="tsd-tag">Optional</code><span>offline</span><a href="#offline" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">offline</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
@@ -56,7 +56,7 @@
 missing from the local store. (default: false)</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/86a1a9d2bc69f34ec0f049234efa9ac9082d2872/packages/unixfs/src/index.ts#L431">packages/unixfs/src/index.ts:431</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/2656817c2786046879b48ddb4eb0532491bf741b/packages/unixfs/src/index.ts#L431">packages/unixfs/src/index.ts:431</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited tsd-is-external">
 <h3 class="tsd-anchor-link" id="onprogress"><code class="tsd-tag">Optional</code><span>on<wbr/>Progress</span><a href="#onprogress" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">onProgress</span><span class="tsd-signature-symbol">?:</span> <a href="https://achingbrain.github.io/progress-events/interfaces/ProgressEventListener.html" class="tsd-signature-type external" target="_blank">ProgressEventListener</a><span class="tsd-signature-symbol">&lt;</span><a href="../types/helia.PutBlockProgressEvents.html" class="tsd-signature-type tsd-kind-type-alias">PutBlockProgressEvents</a> <span class="tsd-signature-symbol">|</span> <a href="../types/_helia_unixfs.index.GetEvents.html" class="tsd-signature-type tsd-kind-type-alias">GetEvents</a><span class="tsd-signature-symbol">&gt;</span></div><aside class="tsd-sources">
@@ -69,14 +69,14 @@ missing from the local store. (default: false)</p>
 <div class="tsd-comment tsd-typography"><p>Optional path to set mtime on directory contents</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/86a1a9d2bc69f34ec0f049234efa9ac9082d2872/packages/unixfs/src/index.ts#L420">packages/unixfs/src/index.ts:420</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/2656817c2786046879b48ddb4eb0532491bf741b/packages/unixfs/src/index.ts#L420">packages/unixfs/src/index.ts:420</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="recursive"><code class="tsd-tag">Optional</code><span>recursive</span><a href="#recursive" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">recursive</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
 <div class="tsd-comment tsd-typography"><p>If the DAG is a directory and this is true, update the mtime on all contents</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/86a1a9d2bc69f34ec0f049234efa9ac9082d2872/packages/unixfs/src/index.ts#L425">packages/unixfs/src/index.ts:425</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/2656817c2786046879b48ddb4eb0532491bf741b/packages/unixfs/src/index.ts#L425">packages/unixfs/src/index.ts:425</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited tsd-is-external">
 <h3 class="tsd-anchor-link" id="signal"><code class="tsd-tag">Optional</code><span>signal</span><a href="#signal" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">signal</span><span class="tsd-signature-symbol">?:</span> <a href="https://developer.mozilla.org/docs/Web/API/AbortSignal" class="tsd-signature-type external" target="_blank">AbortSignal</a></div><aside class="tsd-sources">

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html class="default" lang="en" data-base="../"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>codec | helia</title><meta name="description" content="Documentation for helia"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><script defer src="../assets/main.js"></script><script async src="../assets/icons.js" id="tsd-icons-script"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script><script async src="../assets/hierarchy.js" id="tsd-hierarchy-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar">
+<!DOCTYPE html><html class="default" lang="en" data-base="../"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>ipnsSelector | helia</title><meta name="description" content="Documentation for helia"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><script defer src="../assets/main.js"></script><script async src="../assets/icons.js" id="tsd-icons-script"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script><script async src="../assets/hierarchy.js" id="tsd-hierarchy-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar">
 <div class="tsd-toolbar-contents container"><a href="../index.html" class="title">helia</a>
 <div id="tsd-toolbar-links"></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-search"></use></svg></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/>
 <ul role="listbox" id="tsd-search-results"></ul>
@@ -8,18 +8,34 @@
 <div class="col-content">
 <div class="tsd-page-title">
 <ul class="tsd-breadcrumb" aria-label="Breadcrumb">
-<li><a href="../modules/_helia_bitswap.html">@helia/bitswap</a></li>
-<li><a href="../modules/_helia_bitswap.WantType.html">WantType</a></li>
-<li><a href="" aria-current="page">codec</a></li></ul>
-<h1>Function codec</h1></div>
+<li><a href="../modules/_helia_ipns.html">@helia/ipns</a></li>
+<li><a href="" aria-current="page">ipnsSelector</a></li></ul>
+<h1>Function ipnsSelector</h1></div>
 <section class="tsd-panel">
 <ul class="tsd-signatures">
 <li class="">
-<div class="tsd-signature tsd-anchor-link" id="codec"><span class="tsd-kind-call-signature">codec</span><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span> <a href="https://ipfs.github.io/protons/interfaces/protons-runtime.Codec.html" class="tsd-signature-type external" target="_blank">Codec</a><span class="tsd-signature-symbol">&lt;</span><a href="../enums/_helia_bitswap.WantType.html" class="tsd-signature-type tsd-kind-enum">WantType</a><span class="tsd-signature-symbol">&gt;</span><a href="#codec" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-signature tsd-anchor-link" id="ipnsselector"><span class="tsd-kind-call-signature">ipnsSelector</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">key</span><span class="tsd-signature-symbol">:</span> <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array" class="tsd-signature-type external" target="_blank">Uint8Array</a><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">data</span><span class="tsd-signature-symbol">:</span> <a href="../interfaces/_helia_ipns.IPNSEntry.html" class="tsd-signature-type tsd-kind-interface">IPNSEntry</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><a href="#ipnsselector" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
 <div class="tsd-description">
-<h4 class="tsd-returns-title">Returns <a href="https://ipfs.github.io/protons/interfaces/protons-runtime.Codec.html" class="tsd-signature-type external" target="_blank">Codec</a><span class="tsd-signature-symbol">&lt;</span><a href="../enums/_helia_bitswap.WantType.html" class="tsd-signature-type tsd-kind-enum">WantType</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
+<div class="tsd-comment tsd-typography"><p>Selects the latest valid IPNS record from an array of marshalled IPNS records.</p>
+<p>Records are sorted by:</p>
+<ol>
+<li>Sequence number (higher takes precedence)</li>
+<li>Validity time for EOL records with same sequence number (longer lived record takes precedence)</li>
+</ol>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">key</span>: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array" class="tsd-signature-type external" target="_blank">Uint8Array</a></span>
+<div class="tsd-comment tsd-typography"><p>The routing key for the IPNS record</p>
+</div></li>
+<li><span><span class="tsd-kind-parameter">data</span>: <a href="../interfaces/_helia_ipns.IPNSEntry.html" class="tsd-signature-type tsd-kind-interface">IPNSEntry</a><span class="tsd-signature-symbol">[]</span></span>
+<div class="tsd-comment tsd-typography"><p>Array of marshalled IPNS records to select from</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4><p>The index of the most valid record from the input array</p>
+<aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/2656817c2786046879b48ddb4eb0532491bf741b/packages/bitswap/src/pb/message.ts#L17">packages/bitswap/src/pb/message.ts:17</a></li></ul></aside></div></li></ul></section></div>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/2656817c2786046879b48ddb4eb0532491bf741b/packages/ipns/src/selector.ts#L17">packages/ipns/src/selector.ts:17</a></li></ul></aside></div></li></ul></section></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
