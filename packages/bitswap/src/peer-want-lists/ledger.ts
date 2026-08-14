@@ -292,6 +292,13 @@ export class Ledger {
         this.log('send blocks to peer')
         await this.sendBlocksToPeer(options)
       }, options)
+        .catch(err => {
+          if (err.name === 'QueueFullError') {
+            this.log.error('Dropping bitswap message as peer send queue is full')
+          } else {
+            this.log.error('Error when trying to add queue a send operation')
+          }
+        })
     } catch (err: any) {
       if (err.name === 'QueueFullError') {
         this.log.error('Dropping bitswap message as peer send queue is full')
