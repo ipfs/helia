@@ -1,6 +1,6 @@
 {
   "name": "@helia/interop",
-  "version": "11.0.11",
+  "version": "11.0.12",
   "description": "Interop tests for Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/interop#readme",
@@ -59,7 +59,7 @@
     "@helia/delegated-routing-client": "^1.0.6",
     "@helia/dnslink": "^2.0.2",
     "@helia/interface": "^7.1.1",
-    "@helia/ipns": "^10.0.7",
+    "@helia/ipns": "^10.0.8",
     "@helia/json": "^6.0.5",
     "@helia/libp2p": "^1.0.8",
     "@helia/mfs": "^8.0.5",

@@ -1,5 +1,13 @@
 # Changelog
 
+## [10.0.8](https://github.com/ipfs/helia/compare/ipns-v10.0.7...ipns-v10.0.8) (2026-08-13)
+
+
+### Bug Fixes
+
+* export ipns selector ([#1105](https://github.com/ipfs/helia/issues/1105)) ([0b5ca22](https://github.com/ipfs/helia/commit/0b5ca22f588e581f2e9abf1f12e45a7946e60287))
+* export ipns validator function ([#1099](https://github.com/ipfs/helia/issues/1099)) ([a3e7d23](https://github.com/ipfs/helia/commit/a3e7d235e32135b5d9d7f85cb0338dd128e30f33))
+
 ## [10.0.7](https://github.com/ipfs/helia/compare/ipns-v10.0.6...ipns-v10.0.7) (2026-07-31)
 
 
