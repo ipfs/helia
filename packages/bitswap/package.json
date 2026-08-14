@@ -1,6 +1,6 @@
 {
   "name": "@helia/bitswap",
-  "version": "4.0.8",
+  "version": "4.0.9",
   "description": "JavaScript implementation of the Bitswap data exchange protocol used by Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/bitswap#readme",
