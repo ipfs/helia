@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.0.10](https://github.com/ipfs/helia/compare/bitswap-v4.0.9...bitswap-v4.0.10) (2026-08-15)
+
+
+### Bug Fixes
+
+* update bitswap sig to allow custom libp2p services ([3aeb397](https://github.com/ipfs/helia/commit/3aeb3977515bcd10b8ba488d095daf2529d29719))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/libp2p bumped from ^1.0.8 to ^2.0.0
+
 ## [4.0.9](https://github.com/ipfs/helia/compare/bitswap-v4.0.8...bitswap-v4.0.9) (2026-08-14)
 
 

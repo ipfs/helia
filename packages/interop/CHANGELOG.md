@@ -1,5 +1,25 @@
 # Changelog
 
+## [12.0.0](https://github.com/ipfs/helia/compare/interop-v11.0.13...interop-v12.0.0) (2026-08-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* pass libp2p config to withLibp2p, not a running node
+
+### Bug Fixes
+
+* only accept libp2p config, not running nodes ([#1106](https://github.com/ipfs/helia/issues/1106)) ([56f87f0](https://github.com/ipfs/helia/commit/56f87f0356cd3cbf2842189ffd811f2cc7d978fc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^4.0.9 to ^4.0.10
+    * @helia/libp2p bumped from ^1.0.8 to ^2.0.0
+    * helia bumped from ^7.1.4 to ^7.1.5
+
 ## [11.0.13](https://github.com/ipfs/helia/compare/interop-v11.0.12...interop-v11.0.13) (2026-08-14)
 
 

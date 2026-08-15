@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.0.0](https://github.com/ipfs/helia/compare/libp2p-v1.0.8...libp2p-v2.0.0) (2026-08-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* pass libp2p config to withLibp2p, not a running node
+
+### Bug Fixes
+
+* include identify push in default services ([ca4dee6](https://github.com/ipfs/helia/commit/ca4dee6f4a2146d0bfe1cf95514938148fd709dc))
+* only accept libp2p config, not running nodes ([#1106](https://github.com/ipfs/helia/issues/1106)) ([56f87f0](https://github.com/ipfs/helia/commit/56f87f0356cd3cbf2842189ffd811f2cc7d978fc))
+
 ## [1.0.8](https://github.com/ipfs/helia/compare/libp2p-v1.0.7...libp2p-v1.0.8) (2026-07-31)
 
 
