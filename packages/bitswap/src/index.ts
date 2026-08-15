@@ -14,7 +14,7 @@ import type { WantType } from './pb/message.ts'
 import type { BlockBrokerGetBlockProgressEvents, CreateSessionOptions, HasherLoader, HeliaMixin, ProviderOptions, SessionBlockBroker } from '@helia/interface'
 import type { Routing } from '@helia/interface'
 import type { HeliaWithLibp2p } from '@helia/libp2p'
-import type { Libp2p, AbortOptions, Startable, ComponentLogger, Metrics, PeerId } from '@libp2p/interface'
+import type { Libp2p, AbortOptions, Startable, ComponentLogger, Metrics, PeerId, ServiceMap } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
@@ -249,7 +249,7 @@ export interface BitswapOptions {
 /**
  * Return a Helia node augmented with a libp2p instance
  */
-export function withBitswap (helia: HeliaWithLibp2p, options: BitswapBlockBrokerInit = {}): HeliaWithLibp2p {
+export function withBitswap <M extends ServiceMap = ServiceMap> (helia: HeliaWithLibp2p<M>, options: BitswapBlockBrokerInit = {}): HeliaWithLibp2p<M> {
   const mixin: HeliaMixin<HeliaWithLibp2p> = {
     name: 'bitswap',
     start: async (helia) => {
