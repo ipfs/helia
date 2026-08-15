@@ -25,7 +25,7 @@ import type { Libp2pDefaultsOptions } from './libp2p.ts'
 import type { AutoTLS } from '@ipshipyard/libp2p-auto-tls'
 import type { CircuitRelayService } from '@libp2p/circuit-relay-v2'
 import type { HTTP } from '@libp2p/http'
-import type { Identify } from '@libp2p/identify'
+import type { Identify, IdentifyPush } from '@libp2p/identify'
 import type { KadDHT } from '@libp2p/kad-dht'
 import type { Keychain } from '@libp2p/keychain'
 import type { Ping } from '@libp2p/ping'
@@ -39,6 +39,7 @@ export interface DefaultLibp2pServices extends Record<string, unknown> {
   delegatedPeerRouting: unknown
   dht: KadDHT
   identify: Identify
+  identifyPush: IdentifyPush
   keychain: Keychain
   ping: Ping
   relay: CircuitRelayService

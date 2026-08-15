@@ -18,7 +18,7 @@ import { userAgent } from 'libp2p/user-agent'
 import { bootstrapConfig } from './bootstrappers.ts'
 import type { Libp2pDefaultsOptions } from './libp2p.ts'
 import type { HTTP } from '@libp2p/http'
-import type { Identify } from '@libp2p/identify'
+import type { Identify, IdentifyPush } from '@libp2p/identify'
 import type { KadDHT } from '@libp2p/kad-dht'
 import type { Ping } from '@libp2p/ping'
 import type { Libp2pOptions } from 'libp2p'
@@ -30,6 +30,7 @@ export interface DefaultLibp2pServices extends Record<string, unknown> {
   delegatedPeerRouting: unknown
   dht: KadDHT
   identify: Identify
+  identifyPush: IdentifyPush
   ping: Ping
   http: HTTP
 }
