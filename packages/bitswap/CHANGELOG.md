@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.9](https://github.com/ipfs/helia/compare/bitswap-v4.0.8...bitswap-v4.0.9) (2026-08-14)
+
+
+### Bug Fixes
+
+* use per-peer queue for incoming wantlist updates ([#1107](https://github.com/ipfs/helia/issues/1107)) ([0873bb5](https://github.com/ipfs/helia/commit/0873bb5f57daff610f4a8f416f2cdb2775d84f24))
+
 ## [4.0.8](https://github.com/ipfs/helia/compare/bitswap-v4.0.7...bitswap-v4.0.8) (2026-07-31)
 
 
