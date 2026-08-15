@@ -1,5 +1,15 @@
 # Changelog
 
+## [7.1.5](https://github.com/ipfs/helia/compare/helia-v7.1.4...helia-v7.1.5) (2026-08-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^4.0.9 to ^4.0.10
+    * @helia/libp2p bumped from ^1.0.8 to ^2.0.0
+
 ## [7.1.4](https://github.com/ipfs/helia/compare/helia-v7.1.3...helia-v7.1.4) (2026-08-14)
 
 
