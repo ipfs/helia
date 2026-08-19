@@ -1,5 +1,22 @@
 # Changelog
 
+## [12.1.0](https://github.com/ipfs/helia/compare/interop-v12.0.0...interop-v12.1.0) (2026-08-19)
+
+
+### Features
+
+* add withLibp2pLight function ([#1110](https://github.com/ipfs/helia/issues/1110)) ([c9f35da](https://github.com/ipfs/helia/commit/c9f35dabc828991fc10056aa8d149645aaea8f3e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^4.0.10 to ^4.0.11
+    * @helia/ipns bumped from ^10.0.8 to ^10.1.0
+    * @helia/libp2p bumped from ^2.0.0 to ^2.1.0
+    * helia bumped from ^7.1.5 to ^7.1.6
+
 ## [12.0.0](https://github.com/ipfs/helia/compare/interop-v11.0.13...interop-v12.0.0) (2026-08-15)
 
 

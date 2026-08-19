@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/ipfs/helia/compare/libp2p-v2.0.0...libp2p-v2.1.0) (2026-08-19)
+
+
+### Features
+
+* add withLibp2pLight function ([#1110](https://github.com/ipfs/helia/issues/1110)) ([c9f35da](https://github.com/ipfs/helia/commit/c9f35dabc828991fc10056aa8d149645aaea8f3e))
+
 ## [2.0.0](https://github.com/ipfs/helia/compare/libp2p-v1.0.8...libp2p-v2.0.0) (2026-08-15)
 
 
