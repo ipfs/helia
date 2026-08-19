@@ -15,6 +15,7 @@ import { createKuboNode } from './fixtures/create-kubo.ts'
 import { sortClosestPeers } from './fixtures/create-peer-ids.ts'
 import { keyTypes } from './fixtures/key-types.ts'
 import { waitFor } from './fixtures/wait-for.ts'
+import type { Libp2pTestServices } from './fixtures/create-helia.ts'
 import type { PrivateKey } from '@helia/interface'
 import type { IPNS } from '@helia/ipns'
 import type { HeliaWithLibp2p } from '@helia/libp2p'
@@ -30,7 +31,7 @@ function multihashToIPNSRoutingKey (digest: MultihashDigest): Uint8Array<ArrayBu
 
 keyTypes.forEach(type => {
   describe(`@helia/ipns - default routing with ${type} keys`, () => {
-    let helia: HeliaWithLibp2p
+    let helia: HeliaWithLibp2p<Libp2pTestServices>
     let kubo: KuboNode
     let name: IPNS
 

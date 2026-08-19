@@ -19,13 +19,13 @@ import { tls } from '@libp2p/tls'
 import { uPnPNAT } from '@libp2p/upnp-nat'
 import { webRTC, webRTCDirect } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
-import { userAgent } from 'libp2p/user-agent'
 import { bootstrapConfig } from './bootstrappers.ts'
-import type { Libp2pDefaultsOptions } from './libp2p.ts'
+import type { CreateLibp2pOptions } from '../index.ts'
 import type { AutoTLS } from '@ipshipyard/libp2p-auto-tls'
 import type { CircuitRelayService } from '@libp2p/circuit-relay-v2'
 import type { HTTP } from '@libp2p/http'
 import type { Identify, IdentifyPush } from '@libp2p/identify'
+import type { ServiceMap } from '@libp2p/interface'
 import type { KadDHT } from '@libp2p/kad-dht'
 import type { Keychain } from '@libp2p/keychain'
 import type { Ping } from '@libp2p/ping'
@@ -72,19 +72,13 @@ export interface DefaultLibp2pServices extends Record<string, unknown> {
  * helia.libp2p.services.myService.serviceMethod()
  * ```
  */
-export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOptions<DefaultLibp2pServices> & Required<Pick<Libp2pOptions<DefaultLibp2pServices>, 'services'>> {
-  let agentVersion: string | undefined
-
-  if (options.name != null && options.version != null) {
-    agentVersion = `${options.name}/${options.version} ${userAgent()}`
-  }
-
+export function libp2pDefaults <M extends ServiceMap = ServiceMap> (options: CreateLibp2pOptions<M> = {}): Libp2pOptions<DefaultLibp2pServices & M> {
   return {
+    nodeInfo: {
+      ...options.nodeInfo
+    },
     privateKey: options.privateKey,
     dns: options.dns,
-    nodeInfo: {
-      userAgent: agentVersion
-    },
     addresses: {
       listen: [
         '/ip4/0.0.0.0/tcp/0',
@@ -128,7 +122,8 @@ export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOpti
       ping: ping(),
       relay: circuitRelayServer(),
       upnp: uPnPNAT(),
-      http: http()
-    }
+      http: http(),
+      ...options.services
+    } as any
   }
 }

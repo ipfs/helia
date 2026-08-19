@@ -1,6 +1,7 @@
 import { dnsLink } from '@helia/dnslink'
 import { expect } from 'aegir/chai'
 import { createHeliaNode } from './fixtures/create-helia.ts'
+import type { Libp2pTestServices } from './fixtures/create-helia.ts'
 import type { DNSLink } from '@helia/dnslink'
 import type { HeliaWithLibp2p } from '@helia/libp2p'
 
@@ -11,7 +12,7 @@ const TEST_DOMAINS: string[] = [
 ]
 
 describe('@helia/dnslink', () => {
-  let helia: HeliaWithLibp2p
+  let helia: HeliaWithLibp2p<Libp2pTestServices>
   let name: DNSLink
 
   beforeEach(async () => {

@@ -4,7 +4,7 @@ import { defaultLogger } from 'birnam'
 import { MemoryDatastore } from 'datastore-core'
 import { isLibp2p } from 'libp2p'
 import { stubInterface } from 'sinon-ts'
-import { withLibp2p } from '../src/index.ts'
+import { withLibp2p, withLibp2pLight } from '../src/index.ts'
 import type { HeliaWithLibp2p } from '../src/index.ts'
 import type { StubbedInstance } from 'sinon-ts'
 
@@ -33,7 +33,7 @@ describe('@helia/libp2p', () => {
   })
 
   it('should add helia version to identify agent', async () => {
-    helia = withLibp2p(stubInterface<any>({
+    helia = withLibp2pLight(stubInterface<any>({
       datastore: new MemoryDatastore(),
       logger: defaultLogger(),
       routing: stubInterface(),

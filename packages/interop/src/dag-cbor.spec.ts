@@ -4,13 +4,14 @@ import { expect } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
 import { createHeliaNode } from './fixtures/create-helia.ts'
 import { createKuboNode } from './fixtures/create-kubo.ts'
+import type { Libp2pTestServices } from './fixtures/create-helia.ts'
 import type { DAGCBOR, AddOptions } from '@helia/dag-cbor'
 import type { HeliaWithLibp2p } from '@helia/libp2p'
 import type { KuboNode } from 'ipfsd-ctl'
 import type { AddOptions as KuboAddOptions } from 'kubo-rpc-client'
 
 describe('@helia/dag-cbor', () => {
-  let helia: HeliaWithLibp2p
+  let helia: HeliaWithLibp2p<Libp2pTestServices>
   let d: DAGCBOR
   let kubo: KuboNode
 

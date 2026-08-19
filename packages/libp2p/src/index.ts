@@ -3,7 +3,7 @@
  *
  * Adds libp2p functionality to Helia
  *
- * @example
+ * @example With default config
  *
  * ```ts
  * import { createHelia } from 'helia'
@@ -13,25 +13,49 @@
  *
  * console.info(node.libp2p.peerId) // 12D3Koo...
  * ```
+ *
+ * @example Custom config
+ *
+ * By default `withLibp2p` configures a libp2p node for the current environment.
+ *
+ * Any options passed will be merged with the default config.
+ *
+ * For full control over your node (and the bundle size), use `withLibp2pLight`:
+ *
+ * ```ts
+ * import { createHelia } from 'helia'
+ * import { withLibp2pLight } from '@helia/libp2p'
+ *
+ * const node = await withLibp2pLight(createHelia(), {
+ *   //... libp2p config here
+ * }).start()
+ *
+ * console.info(node.libp2p.peerId) // 12D3Koo...
+ * ```
  */
 
+import { loadOrCreateSelfKey } from '@libp2p/config'
 import { NotStartedError } from '@libp2p/interface'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import forEach from 'it-foreach'
-import { isLibp2p } from 'libp2p'
+import { createLibp2p, isLibp2p } from 'libp2p'
 import { userAgent } from 'libp2p/user-agent'
 import { libp2pRouting } from './routing.ts'
-import { createLibp2p } from './utils/libp2p.ts'
+import { libp2pDefaults } from './utils/libp2p-defaults.ts'
 import type { DefaultLibp2pServices } from './utils/libp2p-defaults.ts'
-import type { CreateLibp2pOptions } from './utils/libp2p.ts'
 import type { Helia, HeliaMixin, Peer, Provider } from '@helia/interface'
 import type { Libp2p, PeerInfo, ServiceMap } from '@libp2p/interface'
+import type { KeychainInit } from '@libp2p/keychain'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Libp2pOptions } from 'libp2p'
 import type { CID } from 'multiformats'
 
 export { libp2pDefaults } from './utils/libp2p-defaults.ts'
 export type { DefaultLibp2pServices } from './utils/libp2p-defaults.ts'
-export type { CreateLibp2pOptions }
+
+export interface CreateLibp2pOptions<T extends ServiceMap> extends Libp2pOptions<T> {
+  keychain?: KeychainInit
+}
 
 export interface HeliaWithLibp2p<M extends ServiceMap = DefaultLibp2pServices> extends Helia {
   /**
@@ -40,24 +64,20 @@ export interface HeliaWithLibp2p<M extends ServiceMap = DefaultLibp2pServices> e
   libp2p: Libp2p<M>
 }
 
-async function getLibp2p <H extends Helia, M extends ServiceMap = ServiceMap> (helia: H, opts?: CreateLibp2pOptions<M>): Promise<Libp2p<M>> {
-  const heliaAgent = `${helia.info.name}/${helia.info.version} ${userAgent()}`
-
-  return createLibp2p(helia, {
-    ...opts,
-    dns: helia.dns,
-    logger: helia.logger,
-    datastore: helia.datastore,
-    nodeInfo: {
-      userAgent: opts?.nodeInfo?.userAgent ?? heliaAgent
-    }
-  })
-}
-
 /**
  * Return a Helia node augmented with a libp2p instance
  */
-export function withLibp2p <H extends Helia, M extends ServiceMap = ServiceMap> (helia: H, opts?: CreateLibp2pOptions<M>): H & HeliaWithLibp2p<M> {
+export function withLibp2p <H extends Helia, M extends ServiceMap> (helia: H, opts?: CreateLibp2pOptions<M>): H & HeliaWithLibp2p<DefaultLibp2pServices & M> {
+  return withLibp2pLight(helia, libp2pDefaults(opts))
+}
+
+/**
+ * Return a Helia node augmented with a libp2p instance. The passed
+ * configuration is passed to `createLibp2p` without adding any default config.
+ *
+ * Use this if you do not wish to have any extra config added.
+ */
+export function withLibp2pLight <H extends Helia, M extends ServiceMap = ServiceMap> (helia: H, opts: CreateLibp2pOptions<M>): H & HeliaWithLibp2p<M> {
   let libp2p: Libp2p
 
   // add a getter that informs the user they need to start Helia
@@ -77,7 +97,20 @@ export function withLibp2p <H extends Helia, M extends ServiceMap = ServiceMap> 
     name: 'libp2p',
     start: async (helia) => {
       if (libp2p == null) {
-        libp2p = await getLibp2p(helia, opts)
+        // if no peer id was passed, try to load it from the keychain
+        if (opts.privateKey == null) {
+          opts.privateKey = await loadOrCreateSelfKey(helia.datastore, opts.keychain)
+        }
+
+        // copy options from Helia node
+        opts.nodeInfo ??= {}
+        opts.nodeInfo.name ??= helia.info.name
+        opts.nodeInfo.version ??= helia.info.version
+        opts.nodeInfo.userAgent ??= `${helia.info.name}/${helia.info.version} ${userAgent()}`
+
+        opts.datastore ??= helia.datastore
+
+        libp2p = await createLibp2p(opts)
 
         // override peer discovery methods to ensure we persist peer data in the
         // peer store, otherwise we can't dial by peer id without extra lookups

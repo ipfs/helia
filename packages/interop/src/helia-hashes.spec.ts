@@ -6,11 +6,12 @@ import * as raw from 'multiformats/codecs/raw'
 import { identity } from 'multiformats/hashes/identity'
 import { createHeliaNode } from './fixtures/create-helia.ts'
 import { createKuboNode } from './fixtures/create-kubo.ts'
+import type { Libp2pTestServices } from './fixtures/create-helia.ts'
 import type { HeliaWithLibp2p } from '@helia/libp2p'
 import type { KuboNode } from 'ipfsd-ctl'
 
 describe('helia - hashes', () => {
-  let helia: HeliaWithLibp2p
+  let helia: HeliaWithLibp2p<Libp2pTestServices>
   let kubo: KuboNode
 
   beforeEach(async () => {
