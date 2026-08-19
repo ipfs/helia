@@ -74,6 +74,9 @@ export interface DefaultLibp2pServices extends Record<string, unknown> {
  */
 export function libp2pDefaults <M extends ServiceMap = ServiceMap> (options: CreateLibp2pOptions<M> = {}): Libp2pOptions<DefaultLibp2pServices & M> {
   return {
+    nodeInfo: {
+      ...options.nodeInfo
+    },
     privateKey: options.privateKey,
     dns: options.dns,
     addresses: {
