@@ -1,5 +1,12 @@
 # Changelog
 
+## [10.1.0](https://github.com/ipfs/helia/compare/ipns-v10.0.8...ipns-v10.1.0) (2026-08-19)
+
+
+### Features
+
+* add withLibp2pLight function ([#1110](https://github.com/ipfs/helia/issues/1110)) ([c9f35da](https://github.com/ipfs/helia/commit/c9f35dabc828991fc10056aa8d149645aaea8f3e))
+
 ## [10.0.8](https://github.com/ipfs/helia/compare/ipns-v10.0.7...ipns-v10.0.8) (2026-08-13)
 
 
