@@ -32,8 +32,6 @@ export async function createHeliaNode <Services extends ServiceMap> (libp2pOptio
   const defaults = libp2pDefaults()
 
   const config: Libp2pOptions<any> = {
-    privateKey: libp2pOptions?.privateKey,
-    dns: libp2pOptions?.dns,
     addresses: {
       listen: [
         '/ip4/0.0.0.0/tcp/0'
@@ -46,8 +44,8 @@ export async function createHeliaNode <Services extends ServiceMap> (libp2pOptio
     peerDiscovery: [],
     // allow dialing loopback
     connectionGater: {
-      ...libp2pOptions?.connectionGater,
-      denyDialMultiaddr: () => false
+      denyDialMultiaddr: () => false,
+      ...libp2pOptions?.connectionGater
     },
     ...libp2pOptions,
     services: {

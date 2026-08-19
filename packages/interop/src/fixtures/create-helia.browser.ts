@@ -34,8 +34,10 @@ export async function createHeliaNode <Services extends ServiceMap> (libp2pOptio
     peerDiscovery: [],
     // allow dialing loopback
     connectionGater: {
-      denyDialMultiaddr: () => false
+      denyDialMultiaddr: () => false,
+      ...libp2pOptions?.connectionGater
     },
+    ...libp2pOptions,
     services: {
       // use LAN DHT
       dht: kadDHT({
@@ -48,8 +50,7 @@ export async function createHeliaNode <Services extends ServiceMap> (libp2pOptio
       keychain: keychain(),
       ping: ping(),
       ...libp2pOptions?.services
-    },
-    ...libp2pOptions
+    }
   }
 
   return withBitswap(withLibp2pLight(createHeliaLight({
