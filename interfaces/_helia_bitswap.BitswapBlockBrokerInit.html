@@ -12,14 +12,14 @@
 <li><a href="" aria-current="page">BitswapBlockBrokerInit</a></li></ul>
 <h1>Interface BitswapBlockBrokerInit</h1></div>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">BitswapBlockBrokerInit</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#donotresendblockwindow">doNotResendBlockWindow</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#incomingstreamtimeout">incomingStreamTimeout</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#maxinboundstreams">maxInboundStreams</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#maxincomingmessagesize">maxIncomingMessageSize</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#maxoutboundstreams">maxOutboundStreams</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#maxoutgoingmessagesize">maxOutgoingMessageSize</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#maxsizereplacehaswithblock">maxSizeReplaceHasWithBlock</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#maxwantlistsize">maxWantlistSize</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#messagereceivetimeout">messageReceiveTimeout</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#messagesendconcurrency">messageSendConcurrency</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#messagesendtimeout">messageSendTimeout</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#protocol">protocol</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#runonlimitedconnections">runOnLimitedConnections</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#sendblocksconcurrency">sendBlocksConcurrency</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#sendblocksdebounce">sendBlocksDebounce</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#sendblocksmaxqueuelength">sendBlocksMaxQueueLength</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#sendblockstimeout">sendBlocksTimeout</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#sendwantlistdebounce">sendWantlistDebounce</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div>
-<section class="tsd-panel tsd-hierarchy" data-refl="3246">
+<section class="tsd-panel tsd-hierarchy" data-refl="3251">
 <h4>Hierarchy (<a href="../hierarchy.html#@helia/bitswap.BitswapBlockBrokerInit">View Summary</a>)</h4>
 <ul class="tsd-hierarchy">
 <li class="tsd-hierarchy-item"><a href="_helia_bitswap.BitswapOptions.html" class="tsd-signature-type tsd-kind-interface">BitswapOptions</a>
 <ul class="tsd-hierarchy">
 <li class="tsd-hierarchy-item"><span class="tsd-hierarchy-target">BitswapBlockBrokerInit</span></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/3618a6c8e9404d6efa648e39b6dc8b11cd458be4/packages/bitswap/src/block-broker.ts#L18">packages/bitswap/src/block-broker.ts:18</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/2f58b0986d1801f63e1710efea3eecb6c41cd898/packages/bitswap/src/block-broker.ts#L18">packages/bitswap/src/block-broker.ts:18</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -63,7 +63,7 @@ peer, do not send it again until this many ms have elapsed</p>
 </div></div><aside class="tsd-sources">
 <p>Inherited from <a href="_helia_bitswap.BitswapOptions.html">BitswapOptions</a>.<a href="_helia_bitswap.BitswapOptions.html#donotresendblockwindow">doNotResendBlockWindow</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/3618a6c8e9404d6efa648e39b6dc8b11cd458be4/packages/bitswap/src/index.ts#L239">packages/bitswap/src/index.ts:239</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/2f58b0986d1801f63e1710efea3eecb6c41cd898/packages/bitswap/src/index.ts#L239">packages/bitswap/src/index.ts:239</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="incomingstreamtimeout"><code class="tsd-tag">Optional</code><span>incoming<wbr/>Stream<wbr/>Timeout</span><a href="#incomingstreamtimeout" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">incomingStreamTimeout</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -77,7 +77,7 @@ peer, do not send it again until this many ms have elapsed</p>
 </div></div><aside class="tsd-sources">
 <p>Inherited from <a href="_helia_bitswap.BitswapOptions.html">BitswapOptions</a>.<a href="_helia_bitswap.BitswapOptions.html#incomingstreamtimeout">incomingStreamTimeout</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/3618a6c8e9404d6efa648e39b6dc8b11cd458be4/packages/bitswap/src/index.ts#L113">packages/bitswap/src/index.ts:113</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/2f58b0986d1801f63e1710efea3eecb6c41cd898/packages/bitswap/src/index.ts#L113">packages/bitswap/src/index.ts:113</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="maxinboundstreams"><code class="tsd-tag">Optional</code><span>max<wbr/>Inbound<wbr/>Streams</span><a href="#maxinboundstreams" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">maxInboundStreams</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -92,7 +92,7 @@ allowed</p>
 </div></div><aside class="tsd-sources">
 <p>Inherited from <a href="_helia_bitswap.BitswapOptions.html">BitswapOptions</a>.<a href="_helia_bitswap.BitswapOptions.html#maxinboundstreams">maxInboundStreams</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/3618a6c8e9404d6efa648e39b6dc8b11cd458be4/packages/bitswap/src/index.ts#L98">packages/bitswap/src/index.ts:98</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/2f58b0986d1801f63e1710efea3eecb6c41cd898/packages/bitswap/src/index.ts#L98">packages/bitswap/src/index.ts:98</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="maxincomingmessagesize"><code class="tsd-tag">Optional</code><span>max<wbr/>Incoming<wbr/>Message<wbr/>Size</span><a href="#maxincomingmessagesize" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">maxIncomingMessageSize</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -108,7 +108,7 @@ allowed</p>
 </div></div><aside class="tsd-sources">
 <p>Inherited from <a href="_helia_bitswap.BitswapOptions.html">BitswapOptions</a>.<a href="_helia_bitswap.BitswapOptions.html#maxincomingmessagesize">maxIncomingMessageSize</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/3618a6c8e9404d6efa648e39b6dc8b11cd458be4/packages/bitswap/src/index.ts#L231">packages/bitswap/src/index.ts:231</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/2f58b0986d1801f63e1710efea3eecb6c41cd898/packages/bitswap/src/index.ts#L231">packages/bitswap/src/index.ts:231</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="maxoutboundstreams"><code class="tsd-tag">Optional</code><span>max<wbr/>Outbound<wbr/>Streams</span><a href="#maxoutboundstreams" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">maxOutboundStreams</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -123,7 +123,7 @@ allowed</p>
 </div></div><aside class="tsd-sources">
 <p>Inherited from <a href="_helia_bitswap.BitswapOptions.html">BitswapOptions</a>.<a href="_helia_bitswap.BitswapOptions.html#maxoutboundstreams">maxOutboundStreams</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/3618a6c8e9404d6efa648e39b6dc8b11cd458be4/packages/bitswap/src/index.ts#L106">packages/bitswap/src/index.ts:106</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/2f58b0986d1801f63e1710efea3eecb6c41cd898/packages/bitswap/src/index.ts#L106">packages/bitswap/src/index.ts:106</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="maxoutgoingmessagesize"><code class="tsd-tag">Optional</code><span>max<wbr/>Outgoing<wbr/>Message<wbr/>Size</span><a href="#maxoutgoingmessagesize" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">maxOutgoingMessageSize</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -142,7 +142,7 @@ broken up into several smaller messages that are under this size.</p>
 </div></div><aside class="tsd-sources">
 <p>Inherited from <a href="_helia_bitswap.BitswapOptions.html">BitswapOptions</a>.<a href="_helia_bitswap.BitswapOptions.html#maxoutgoingmessagesize">maxOutgoingMessageSize</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/3618a6c8e9404d6efa648e39b6dc8b11cd458be4/packages/bitswap/src/index.ts#L220">packages/bitswap/src/index.ts:220</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/2f58b0986d1801f63e1710efea3eecb6c41cd898/packages/bitswap/src/index.ts#L220">packages/bitswap/src/index.ts:220</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="maxsizereplacehaswithblock"><code class="tsd-tag">Optional</code><span>max<wbr/>Size<wbr/>Replace<wbr/>Has<wbr/>With<wbr/>Block</span><a href="#maxsizereplacehaswithblock" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">maxSizeReplaceHasWithBlock</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -159,7 +159,7 @@ itself, rather than sending a HAVE.</p>
 </div></div><aside class="tsd-sources">
 <p>Inherited from <a href="_helia_bitswap.BitswapOptions.html">BitswapOptions</a>.<a href="_helia_bitswap.BitswapOptions.html#maxsizereplacehaswithblock">maxSizeReplaceHasWithBlock</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/3618a6c8e9404d6efa648e39b6dc8b11cd458be4/packages/bitswap/src/index.ts#L209">packages/bitswap/src/index.ts:209</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/2f58b0986d1801f63e1710efea3eecb6c41cd898/packages/bitswap/src/index.ts#L209">packages/bitswap/src/index.ts:209</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="maxwantlistsize"><code class="tsd-tag">Optional</code><span>max<wbr/>Wantlist<wbr/>Size</span><a href="#maxwantlistsize" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">maxWantlistSize</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -173,7 +173,7 @@ itself, rather than sending a HAVE.</p>
 </div></div><aside class="tsd-sources">
 <p>Inherited from <a href="_helia_bitswap.BitswapOptions.html">BitswapOptions</a>.<a href="_helia_bitswap.BitswapOptions.html#maxwantlistsize">maxWantlistSize</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/3618a6c8e9404d6efa648e39b6dc8b11cd458be4/packages/bitswap/src/index.ts#L246">packages/bitswap/src/index.ts:246</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/2f58b0986d1801f63e1710efea3eecb6c41cd898/packages/bitswap/src/index.ts#L246">packages/bitswap/src/index.ts:246</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="messagereceivetimeout"><code class="tsd-tag">Optional</code><span>message<wbr/>Receive<wbr/>Timeout</span><a href="#messagereceivetimeout" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">messageReceiveTimeout</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -188,7 +188,7 @@ many milliseconds</p>
 </div></div><aside class="tsd-sources">
 <p>Inherited from <a href="_helia_bitswap.BitswapOptions.html">BitswapOptions</a>.<a href="_helia_bitswap.BitswapOptions.html#messagereceivetimeout">messageReceiveTimeout</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/3618a6c8e9404d6efa648e39b6dc8b11cd458be4/packages/bitswap/src/index.ts#L150">packages/bitswap/src/index.ts:150</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/2f58b0986d1801f63e1710efea3eecb6c41cd898/packages/bitswap/src/index.ts#L150">packages/bitswap/src/index.ts:150</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="messagesendconcurrency"><code class="tsd-tag">Optional</code><span>message<wbr/>Send<wbr/>Concurrency</span><a href="#messagesendconcurrency" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">messageSendConcurrency</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -203,7 +203,7 @@ wantlist), how many messages to send at once</p>
 </div></div><aside class="tsd-sources">
 <p>Inherited from <a href="_helia_bitswap.BitswapOptions.html">BitswapOptions</a>.<a href="_helia_bitswap.BitswapOptions.html#messagesendconcurrency">messageSendConcurrency</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/3618a6c8e9404d6efa648e39b6dc8b11cd458be4/packages/bitswap/src/index.ts#L135">packages/bitswap/src/index.ts:135</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/2f58b0986d1801f63e1710efea3eecb6c41cd898/packages/bitswap/src/index.ts#L135">packages/bitswap/src/index.ts:135</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="messagesendtimeout"><code class="tsd-tag">Optional</code><span>message<wbr/>Send<wbr/>Timeout</span><a href="#messagesendtimeout" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">messageSendTimeout</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -217,7 +217,7 @@ wantlist), how many messages to send at once</p>
 </div></div><aside class="tsd-sources">
 <p>Inherited from <a href="_helia_bitswap.BitswapOptions.html">BitswapOptions</a>.<a href="_helia_bitswap.BitswapOptions.html#messagesendtimeout">messageSendTimeout</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/3618a6c8e9404d6efa648e39b6dc8b11cd458be4/packages/bitswap/src/index.ts#L142">packages/bitswap/src/index.ts:142</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/2f58b0986d1801f63e1710efea3eecb6c41cd898/packages/bitswap/src/index.ts#L142">packages/bitswap/src/index.ts:142</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="protocol"><code class="tsd-tag">Optional</code><span>protocol</span><a href="#protocol" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">protocol</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span></div>
@@ -231,7 +231,7 @@ wantlist), how many messages to send at once</p>
 </div></div><aside class="tsd-sources">
 <p>Inherited from <a href="_helia_bitswap.BitswapOptions.html">BitswapOptions</a>.<a href="_helia_bitswap.BitswapOptions.html#protocol">protocol</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/3618a6c8e9404d6efa648e39b6dc8b11cd458be4/packages/bitswap/src/index.ts#L127">packages/bitswap/src/index.ts:127</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/2f58b0986d1801f63e1710efea3eecb6c41cd898/packages/bitswap/src/index.ts#L127">packages/bitswap/src/index.ts:127</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="runonlimitedconnections"><code class="tsd-tag">Optional</code><span>run<wbr/>On<wbr/>Limited<wbr/>Connections</span><a href="#runonlimitedconnections" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">runOnLimitedConnections</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
@@ -245,7 +245,7 @@ wantlist), how many messages to send at once</p>
 </div></div><aside class="tsd-sources">
 <p>Inherited from <a href="_helia_bitswap.BitswapOptions.html">BitswapOptions</a>.<a href="_helia_bitswap.BitswapOptions.html#runonlimitedconnections">runOnLimitedConnections</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/3618a6c8e9404d6efa648e39b6dc8b11cd458be4/packages/bitswap/src/index.ts#L120">packages/bitswap/src/index.ts:120</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/2f58b0986d1801f63e1710efea3eecb6c41cd898/packages/bitswap/src/index.ts#L120">packages/bitswap/src/index.ts:120</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="sendblocksconcurrency"><code class="tsd-tag">Optional</code><span>send<wbr/>Blocks<wbr/>Concurrency</span><a href="#sendblocksconcurrency" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">sendBlocksConcurrency</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -260,7 +260,7 @@ This should be left as the default.</p>
 </div></div><aside class="tsd-sources">
 <p>Inherited from <a href="_helia_bitswap.BitswapOptions.html">BitswapOptions</a>.<a href="_helia_bitswap.BitswapOptions.html#sendblocksconcurrency">sendBlocksConcurrency</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/3618a6c8e9404d6efa648e39b6dc8b11cd458be4/packages/bitswap/src/index.ts#L158">packages/bitswap/src/index.ts:158</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/2f58b0986d1801f63e1710efea3eecb6c41cd898/packages/bitswap/src/index.ts#L158">packages/bitswap/src/index.ts:158</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="sendblocksdebounce"><code class="tsd-tag">Optional</code><span>send<wbr/>Blocks<wbr/>Debounce</span><a href="#sendblocksdebounce" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">sendBlocksDebounce</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -276,7 +276,7 @@ queueing the send job in case more blocks are added that they want</p>
 </div></div><aside class="tsd-sources">
 <p>Inherited from <a href="_helia_bitswap.BitswapOptions.html">BitswapOptions</a>.<a href="_helia_bitswap.BitswapOptions.html#sendblocksdebounce">sendBlocksDebounce</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/3618a6c8e9404d6efa648e39b6dc8b11cd458be4/packages/bitswap/src/index.ts#L189">packages/bitswap/src/index.ts:189</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/2f58b0986d1801f63e1710efea3eecb6c41cd898/packages/bitswap/src/index.ts#L189">packages/bitswap/src/index.ts:189</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="sendblocksmaxqueuelength"><code class="tsd-tag">Optional</code><span>send<wbr/>Blocks<wbr/>Max<wbr/>Queue<wbr/>Length</span><a href="#sendblocksmaxqueuelength" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">sendBlocksMaxQueueLength</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -295,7 +295,7 @@ should be handled by send operations still in the queue.</p>
 </div></div><aside class="tsd-sources">
 <p>Inherited from <a href="_helia_bitswap.BitswapOptions.html">BitswapOptions</a>.<a href="_helia_bitswap.BitswapOptions.html#sendblocksmaxqueuelength">sendBlocksMaxQueueLength</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/3618a6c8e9404d6efa648e39b6dc8b11cd458be4/packages/bitswap/src/index.ts#L171">packages/bitswap/src/index.ts:171</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/2f58b0986d1801f63e1710efea3eecb6c41cd898/packages/bitswap/src/index.ts#L171">packages/bitswap/src/index.ts:171</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="sendblockstimeout"><code class="tsd-tag">Optional</code><span>send<wbr/>Blocks<wbr/>Timeout</span><a href="#sendblockstimeout" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">sendBlocksTimeout</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -311,7 +311,7 @@ your bandwidth/streams.</p>
 </div></div><aside class="tsd-sources">
 <p>Inherited from <a href="_helia_bitswap.BitswapOptions.html">BitswapOptions</a>.<a href="_helia_bitswap.BitswapOptions.html#sendblockstimeout">sendBlocksTimeout</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/3618a6c8e9404d6efa648e39b6dc8b11cd458be4/packages/bitswap/src/index.ts#L180">packages/bitswap/src/index.ts:180</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/2f58b0986d1801f63e1710efea3eecb6c41cd898/packages/bitswap/src/index.ts#L180">packages/bitswap/src/index.ts:180</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="sendwantlistdebounce"><code class="tsd-tag">Optional</code><span>send<wbr/>Wantlist<wbr/>Debounce</span><a href="#sendwantlistdebounce" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">sendWantlistDebounce</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -327,7 +327,7 @@ wants are about to be added</p>
 </div></div><aside class="tsd-sources">
 <p>Inherited from <a href="_helia_bitswap.BitswapOptions.html">BitswapOptions</a>.<a href="_helia_bitswap.BitswapOptions.html#sendwantlistdebounce">sendWantlistDebounce</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/3618a6c8e9404d6efa648e39b6dc8b11cd458be4/packages/bitswap/src/index.ts#L198">packages/bitswap/src/index.ts:198</a></li></ul></aside></section></section></details></div>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/2f58b0986d1801f63e1710efea3eecb6c41cd898/packages/bitswap/src/index.ts#L198">packages/bitswap/src/index.ts:198</a></li></ul></aside></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
