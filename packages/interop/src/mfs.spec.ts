@@ -2,12 +2,13 @@ import { mfs } from '@helia/mfs'
 import { expect } from 'aegir/chai'
 import { createHeliaNode } from './fixtures/create-helia.ts'
 import { createKuboNode } from './fixtures/create-kubo.ts'
+import type { Libp2pTestServices } from './fixtures/create-helia.ts'
+import type { HeliaWithLibp2p } from '@helia/libp2p'
 import type { MFS } from '@helia/mfs'
-import type { Helia } from 'helia'
 import type { KuboNode } from 'ipfsd-ctl'
 
 describe('@helia/mfs', () => {
-  let helia: Helia
+  let helia: HeliaWithLibp2p<Libp2pTestServices>
   let fs: MFS
   let kubo: KuboNode
 

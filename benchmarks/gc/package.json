@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "@ipld/dag-pb": "^4.0.6",
-    "@helia/libp2p": "^1.0.0",
+    "@helia/libp2p": "^2.0.0",
     "aegir": "^48.0.4",
     "blockstore-fs": "^4.0.1",
     "datastore-level": "^13.0.1",

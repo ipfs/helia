@@ -6,12 +6,13 @@ import drain from 'it-drain'
 import { CID } from 'multiformats/cid'
 import { createHeliaNode } from './fixtures/create-helia.ts'
 import { createKuboNode } from './fixtures/create-kubo.ts'
+import type { Libp2pTestServices } from './fixtures/create-helia.ts'
+import type { HeliaWithLibp2p } from '@helia/libp2p'
 import type { Provider, RoutingOptions } from '@libp2p/interface'
-import type { Helia } from 'helia'
 import type { KuboInfo, KuboNode } from 'ipfsd-ctl'
 
 describe('helia - progress events', () => {
-  let helia: Helia
+  let helia: HeliaWithLibp2p<Libp2pTestServices>
   let kubo: KuboNode
   let kuboInfo: KuboInfo
 

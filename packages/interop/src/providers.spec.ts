@@ -13,12 +13,13 @@ import { multiaddr } from 'kubo-rpc-client'
 import { CID } from 'multiformats/cid'
 import { createHeliaNode } from './fixtures/create-helia.ts'
 import { createKuboNode } from './fixtures/create-kubo.ts'
-import type { Helia } from 'helia'
+import type { Libp2pTestServices } from './fixtures/create-helia.ts'
+import type { HeliaWithLibp2p } from '@helia/libp2p'
 import type { FileCandidate } from 'ipfs-unixfs-importer'
 import type { KuboInfo, KuboNode } from 'ipfsd-ctl'
 
 describe('providers', () => {
-  let helia: Helia
+  let helia: HeliaWithLibp2p<Libp2pTestServices>
   let kubo: KuboNode
   let cid: CID
   let kuboInfo: KuboInfo

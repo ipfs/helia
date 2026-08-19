@@ -133,25 +133,23 @@ may fail to be published with "Insufficient peers" errors.
 
 ```TypeScript
 import { ipns, pubSubIPNSRouting } from '@helia/ipns'
-import { withLibp2p, libp2pDefaults } from '@helia/libp2p'
+import { withLibp2p } from '@helia/libp2p'
 import { unixfs } from '@helia/unixfs'
+import { fetch } from '@libp2p/fetch'
 import { floodsub } from '@libp2p/floodsub'
 import { createHelia } from 'helia'
-import type { Helia } from '@helia/interface'
-import type { PubSub } from '@helia/ipns'
-import type { DefaultLibp2pServices } from '@helia/libp2p'
-import type { FloodSub } from '@libp2p/floodsub'
-import type { Libp2p } from '@libp2p/interface'
 
-const libp2pOptions = libp2pDefaults() as any
-libp2pOptions.services.pubsub = floodsub()
-
-const helia = await withLibp2p<Helia, { pubsub: FloodSub }>(createHelia(), libp2pOptions).start()
+const helia = await withLibp2p(createHelia(), {
+  services: {
+    fetch: fetch(),
+    pubsub: floodsub()
+  }
+}).start()
 
 const name = ipns(helia, {
- routers: [
-   pubSubIPNSRouting(helia)
- ]
+  routers: [
+    pubSubIPNSRouting(helia)
+  ]
 })
 
 // store some data to publish

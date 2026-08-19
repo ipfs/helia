@@ -32,13 +32,32 @@ repo and examine the changes made.
 
 Adds libp2p functionality to Helia
 
-## Example
+## Example - With default config
 
 ```ts
 import { createHelia } from 'helia'
 import { withLibp2p } from '@helia/libp2p'
 
 const node = await withLibp2p(createHelia()).start()
+
+console.info(node.libp2p.peerId) // 12D3Koo...
+```
+
+## Example - Custom config
+
+By default `withLibp2p` configures a libp2p node for the current environment.
+
+Any options passed will be merged with the default config.
+
+For full control over your node (and the bundle size), use `withLibp2pLight`:
+
+```ts
+import { createHelia } from 'helia'
+import { withLibp2pLight } from '@helia/libp2p'
+
+const node = await withLibp2pLight(createHelia(), {
+  //... libp2p config here
+}).start()
 
 console.info(node.libp2p.peerId) // 12D3Koo...
 ```

@@ -4,13 +4,14 @@ import { CID } from 'multiformats/cid'
 import * as jsonCodec from 'multiformats/codecs/json'
 import { createHeliaNode } from './fixtures/create-helia.ts'
 import { createKuboNode } from './fixtures/create-kubo.ts'
+import type { Libp2pTestServices } from './fixtures/create-helia.ts'
 import type { JSON, AddOptions } from '@helia/json'
 import type { HeliaWithLibp2p } from '@helia/libp2p'
 import type { KuboNode } from 'ipfsd-ctl'
 import type { BlockPutOptions as KuboAddOptions } from 'kubo-rpc-client'
 
 describe('@helia/json', () => {
-  let helia: HeliaWithLibp2p
+  let helia: HeliaWithLibp2p<Libp2pTestServices>
   let j: JSON
   let kubo: KuboNode
 
