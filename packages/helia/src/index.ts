@@ -29,7 +29,11 @@ import { sha512 } from 'multiformats/hashes/sha2'
 import { Helia as HeliaClass } from './helia.ts'
 import { name, version } from './version.ts'
 import type { HeliaInit } from './helia.ts'
+import type { BitswapOptions } from '@helia/bitswap'
+import type { HTTPOptions } from '@helia/http'
 import type { Helia } from '@helia/interface'
+import type { CreateLibp2pOptions } from '@helia/libp2p'
+import type { ServiceMap } from '@libp2p/interface'
 
 // re-export interface types so people don't have to depend on @helia/interface
 // if they don't want to
@@ -38,7 +42,10 @@ export * from '@helia/interface'
 export type { HeliaInit }
 
 /**
- * Create and return a Helia node
+ * Create and return a Helia node using the default configuration including
+ * libp2p and HTTP routing.
+ *
+ * For full control, and smaller bundle sizes use `createHeliaLight`.
  *
  * @example Creating a Helia node
  *
@@ -58,7 +65,7 @@ export type { HeliaInit }
  * }
  * ```
  */
-export function createHelia (init: HeliaInit = {}): Helia {
+export function createHelia <M extends ServiceMap> (init: HeliaInit & { libp2p?: CreateLibp2pOptions<M>, http?: HTTPOptions, bitswap?: BitswapOptions } = {}): Helia {
   return withBitswap(withLibp2p(withHTTP(createHeliaLight({
     ...init,
     codecs: [
@@ -71,7 +78,7 @@ export function createHelia (init: HeliaInit = {}): Helia {
       sha512,
       ...(init.hashers ?? [])
     ]
-  }))))
+  }), init.http), init.libp2p), init.bitswap)
 }
 
 /**

@@ -59,9 +59,8 @@ export interface HeliaInit {
   datastore?: Datastore
 
   /**
-   * By default sha256, sha512 and identity hashes are supported for
-   * bitswap operations. To bitswap blocks with CIDs using other hashes
-   * pass appropriate MultihashHashers here.
+   * By default sha256, and identity hashes are supported. To bitswap blocks
+   * with CIDs using other hashes pass appropriate MultihashHashers here.
    */
   hashers?: MultihashHasher[]
 
