@@ -12,7 +12,7 @@
 <li><a href="" aria-current="page">ExportCarOptions</a></li></ul>
 <h1>Interface ExportCarOptions</h1></div>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">ExportCarOptions</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#blockfilter">blockFilter</a><span class="tsd-signature-symbol">?:</span> <a href="https://libp2p.github.io/js-libp2p/interfaces/_libp2p_utils.Filter.html" class="tsd-signature-type external" target="_blank">Filter</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#exporter">exporter</a><span class="tsd-signature-symbol">?:</span> <a href="_helia_car.ExportStrategy.html" class="tsd-signature-type tsd-kind-interface">ExportStrategy</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#includetraversalblocks">includeTraversalBlocks</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#offline">offline</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#onprogress">onProgress</a><span class="tsd-signature-symbol">?:</span> <a href="https://achingbrain.github.io/progress-events/interfaces/ProgressEventListener.html" class="tsd-signature-type external" target="_blank">ProgressEventListener</a><span class="tsd-signature-symbol">&lt;</span><a href="../types/helia.GetBlockProgressEvents.html" class="tsd-signature-type tsd-kind-type-alias">GetBlockProgressEvents</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#providers">providers</a><span class="tsd-signature-symbol">?:</span> (<br/>        <a href="https://multiformats.github.io/js-multiformats/classes/cid.CID.html" class="tsd-signature-type external" target="_blank">CID</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">,</span> <a href="https://multiformats.github.io/js-multiformats/types/link_interface.Version.html" class="tsd-signature-type external" target="_blank">Version</a><span class="tsd-signature-symbol">&gt;</span><br/>        <span class="tsd-signature-symbol">|</span> <a href="https://multiformats.github.io/js-multiaddr/interfaces/Multiaddr.html" class="tsd-signature-type external" target="_blank">Multiaddr</a><br/>        <span class="tsd-signature-symbol">|</span> <a href="https://multiformats.github.io/js-multiaddr/interfaces/Multiaddr.html" class="tsd-signature-type external" target="_blank">Multiaddr</a><span class="tsd-signature-symbol">[]</span><br/>    )<span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#signal">signal</a><span class="tsd-signature-symbol">?:</span> <a href="https://developer.mozilla.org/docs/Web/API/AbortSignal" class="tsd-signature-type external" target="_blank">AbortSignal</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#traversal">traversal</a><span class="tsd-signature-symbol">?:</span> <a href="_helia_car.TraversalStrategy.html" class="tsd-signature-type tsd-kind-interface">TraversalStrategy</a><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div>
-<section class="tsd-panel tsd-hierarchy" data-refl="3409">
+<section class="tsd-panel tsd-hierarchy" data-refl="3414">
 <h4>Hierarchy (<a href="../hierarchy.html#@helia/car.ExportCarOptions">View Summary</a>)</h4>
 <ul class="tsd-hierarchy">
 <li class="tsd-hierarchy-item"><a href="https://libp2p.github.io/js-libp2p/interfaces/_libp2p_interface.AbortOptions.html" class="tsd-signature-type external" target="_blank">AbortOptions</a></li>
@@ -21,7 +21,7 @@
 <ul class="tsd-hierarchy">
 <li class="tsd-hierarchy-item"><span class="tsd-hierarchy-target">ExportCarOptions</span></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/2f58b0986d1801f63e1710efea3eecb6c41cd898/packages/car/src/index.ts#L178">packages/car/src/index.ts:178</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/4dede3350a2218f440fed071976c5d75e151de85/packages/car/src/index.ts#L178">packages/car/src/index.ts:178</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -48,7 +48,7 @@
 car file</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/2f58b0986d1801f63e1710efea3eecb6c41cd898/packages/car/src/index.ts#L190">packages/car/src/index.ts:190</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/4dede3350a2218f440fed071976c5d75e151de85/packages/car/src/index.ts#L190">packages/car/src/index.ts:190</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="exporter"><code class="tsd-tag">Optional</code><span>exporter</span><a href="#exporter" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">exporter</span><span class="tsd-signature-symbol">?:</span> <a href="_helia_car.ExportStrategy.html" class="tsd-signature-type tsd-kind-interface">ExportStrategy</a></div>
@@ -56,7 +56,7 @@ car file</p>
 blocks included in the exported car file. (e.g. <a href="https://specs.ipfs.tech/http-gateways/trustless-gateway/#dag-scope-request-query-parameter">https://specs.ipfs.tech/http-gateways/trustless-gateway/#dag-scope-request-query-parameter</a>)</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/2f58b0986d1801f63e1710efea3eecb6c41cd898/packages/car/src/index.ts#L202">packages/car/src/index.ts:202</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/4dede3350a2218f440fed071976c5d75e151de85/packages/car/src/index.ts#L202">packages/car/src/index.ts:202</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="includetraversalblocks"><code class="tsd-tag">Optional</code><span>include<wbr/>Traversal<wbr/>Blocks</span><a href="#includetraversalblocks" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">includeTraversalBlocks</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
@@ -70,7 +70,7 @@ traversed blocks in the CAR file before the root and subsequent blocks</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/2f58b0986d1801f63e1710efea3eecb6c41cd898/packages/car/src/index.ts#L210">packages/car/src/index.ts:210</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/4dede3350a2218f440fed071976c5d75e151de85/packages/car/src/index.ts#L210">packages/car/src/index.ts:210</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="offline"><code class="tsd-tag">Optional</code><span>offline</span><a href="#offline" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">offline</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
@@ -83,7 +83,7 @@ traversed blocks in the CAR file before the root and subsequent blocks</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/2f58b0986d1801f63e1710efea3eecb6c41cd898/packages/car/src/index.ts#L184">packages/car/src/index.ts:184</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/4dede3350a2218f440fed071976c5d75e151de85/packages/car/src/index.ts#L184">packages/car/src/index.ts:184</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited tsd-is-external">
 <h3 class="tsd-anchor-link" id="onprogress"><code class="tsd-tag">Optional</code><span>on<wbr/>Progress</span><a href="#onprogress" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">onProgress</span><span class="tsd-signature-symbol">?:</span> <a href="https://achingbrain.github.io/progress-events/interfaces/ProgressEventListener.html" class="tsd-signature-type external" target="_blank">ProgressEventListener</a><span class="tsd-signature-symbol">&lt;</span><a href="../types/helia.GetBlockProgressEvents.html" class="tsd-signature-type tsd-kind-type-alias">GetBlockProgressEvents</a><span class="tsd-signature-symbol">&gt;</span></div><aside class="tsd-sources">
@@ -115,7 +115,7 @@ that can supply the blocks.</p>
 is traversed: either depth first, breadth first, or a custom strategy.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/2f58b0986d1801f63e1710efea3eecb6c41cd898/packages/car/src/index.ts#L196">packages/car/src/index.ts:196</a></li></ul></aside></section></section></details></div>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/4dede3350a2218f440fed071976c5d75e151de85/packages/car/src/index.ts#L196">packages/car/src/index.ts:196</a></li></ul></aside></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
