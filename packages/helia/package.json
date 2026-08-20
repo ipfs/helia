@@ -1,6 +1,6 @@
 {
   "name": "helia",
-  "version": "7.1.6",
+  "version": "7.1.7",
   "description": "An implementation of IPFS in JavaScript",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/helia#readme",

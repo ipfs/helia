@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.1.7](https://github.com/ipfs/helia/compare/helia-v7.1.6...helia-v7.1.7) (2026-08-20)
+
+
+### Bug Fixes
+
+* allow passing libp2p, http, and bitswap options ([#1112](https://github.com/ipfs/helia/issues/1112)) ([cd1c4a7](https://github.com/ipfs/helia/commit/cd1c4a76d8ce790dcbcb494e32c37794723bbe69))
+
 ## [7.1.6](https://github.com/ipfs/helia/compare/helia-v7.1.5...helia-v7.1.6) (2026-08-19)
 
 
