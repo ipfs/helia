@@ -15,6 +15,7 @@ import { ping } from '@libp2p/ping'
 import { webRTC, webRTCDirect } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
 import { bootstrapConfig } from './bootstrappers.ts'
+import { merge, replace } from './config.ts'
 import type { CreateLibp2pOptions } from '../index.ts'
 import type { HTTP } from '@libp2p/http'
 import type { Identify, IdentifyPush } from '@libp2p/identify'
@@ -40,35 +41,28 @@ export type DefaultLibp2pOptions = Libp2pOptions<DefaultLibp2pServices> & Requir
 export function libp2pDefaults (): DefaultLibp2pOptions
 export function libp2pDefaults <M extends ServiceMap, Options extends CreateLibp2pOptions<M>> (options: Options): DefaultLibp2pOptions & Options
 export function libp2pDefaults (options?: any): any {
-  return {
-    ...options,
+  const defaults = {
     addresses: {
-      ...options?.addresses,
       listen: [
         '/p2p-circuit',
-        '/webrtc',
-        ...(options?.addresses?.listen ?? [])
+        '/webrtc'
       ]
     },
     transports: [
       circuitRelayTransport(),
       webRTC(),
       webRTCDirect(),
-      webSockets(),
-      ...(options?.transports ?? [])
+      webSockets()
     ],
     connectionEncrypters: [
-      noise(),
-      ...(options?.connectionEncrypters ?? [])
+      noise()
     ],
     streamMuxers: [
       yamux(),
-      mplex(),
-      ...(options?.streamMuxers ?? [])
+      mplex()
     ],
     peerDiscovery: [
-      bootstrap(bootstrapConfig),
-      ...(options?.peerDiscovery ?? [])
+      bootstrap(bootstrapConfig)
     ],
     services: {
       autoNAT: autoNAT(),
@@ -82,8 +76,17 @@ export function libp2pDefaults (options?: any): any {
       identifyPush: identifyPush(),
       keychain: keychain(options?.keychain),
       ping: ping(),
-      http: http(),
-      ...options?.services
+      http: http()
     }
   }
+
+  if (options == null) {
+    return defaults
+  }
+
+  if (options?.config === 'merge') {
+    return merge(defaults, options)
+  }
+
+  return replace(defaults, options)
 }

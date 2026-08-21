@@ -20,6 +20,7 @@ import { uPnPNAT } from '@libp2p/upnp-nat'
 import { webRTC, webRTCDirect } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
 import { bootstrapConfig } from './bootstrappers.ts'
+import { merge, replace } from './config.ts'
 import type { CreateLibp2pOptions } from '../index.ts'
 import type { AutoTLS } from '@ipshipyard/libp2p-auto-tls'
 import type { CircuitRelayService } from '@libp2p/circuit-relay-v2'
@@ -78,10 +79,8 @@ export type DefaultLibp2pOptions = Libp2pOptions<DefaultLibp2pServices> & Requir
 export function libp2pDefaults (): DefaultLibp2pOptions
 export function libp2pDefaults <M extends ServiceMap, Options extends CreateLibp2pOptions<M>> (options: Options): DefaultLibp2pOptions & Options
 export function libp2pDefaults (options?: any): any {
-  return {
-    ...options,
+  const defaults = {
     addresses: {
-      ...options?.addresses,
       listen: [
         '/ip4/0.0.0.0/tcp/0',
         '/ip4/0.0.0.0/tcp/0/ws',
@@ -89,8 +88,7 @@ export function libp2pDefaults (options?: any): any {
         '/ip6/::/tcp/0',
         '/ip6/::/tcp/0/ws',
         '/ip6/::/udp/0/webrtc-direct',
-        '/p2p-circuit',
-        ...(options?.addresses?.listen ?? [])
+        '/p2p-circuit'
       ]
     },
     transports: [
@@ -98,23 +96,19 @@ export function libp2pDefaults (options?: any): any {
       tcp(),
       webRTC(),
       webRTCDirect(),
-      webSockets(),
-      ...(options?.transports ?? [])
+      webSockets()
     ],
     connectionEncrypters: [
       noise(),
-      tls(),
-      ...(options?.connectionEncrypters ?? [])
+      tls()
     ],
     streamMuxers: [
       yamux(),
-      mplex(),
-      ...(options?.streamMuxers ?? [])
+      mplex()
     ],
     peerDiscovery: [
       mdns(),
-      bootstrap(bootstrapConfig),
-      ...(options?.peerDiscovery ?? [])
+      bootstrap(bootstrapConfig)
     ],
     services: {
       autoNAT: autoNAT(),
@@ -129,8 +123,17 @@ export function libp2pDefaults (options?: any): any {
       ping: ping(),
       relay: circuitRelayServer(),
       upnp: uPnPNAT(),
-      http: http(),
-      ...options?.services
+      http: http()
     }
   }
+
+  if (options == null) {
+    return defaults
+  }
+
+  if (options?.config === 'merge') {
+    return merge(defaults, options)
+  }
+
+  return replace(defaults, options)
 }
