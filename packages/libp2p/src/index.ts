@@ -53,7 +53,12 @@ import type { CID } from 'multiformats'
 export { libp2pDefaults } from './utils/libp2p-defaults.ts'
 export type { DefaultLibp2pServices } from './utils/libp2p-defaults.ts'
 
-export interface CreateLibp2pOptions<T extends ServiceMap> extends Libp2pOptions<T> {
+export interface CreateLibp2pOptions<T extends ServiceMap = ServiceMap> extends Libp2pOptions<T> {
+  /**
+   * If 'merge', any passed config will be merged into the default set. If
+   * 'replace' any passed config will replace the default set.
+   */
+  config?: 'merge' | 'replace'
   keychain?: KeychainInit
 }
 
