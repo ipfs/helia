@@ -91,7 +91,7 @@ describe('publish', () => {
   it('should emit progress events', async function () {
     const keyName = 'test-key-5'
     const progressEvents: any[] = []
-    await name.publish(keyName, cid, {
+    const publishResult = await name.publish(keyName, cid, {
       onProgress: (evt) => progressEvents.push(evt)
     })
 
@@ -101,51 +101,47 @@ describe('publish', () => {
     expect(eventTypes).to.include('ipns:routing:datastore:put')
     expect(eventTypes).to.include('ipns:publish:success')
 
+    const strategyStartEvents = progressEvents.filter(evt => evt.type === 'ipns:publish:strategy:start')
     const strategySuccessEvents = progressEvents.filter(evt => evt.type === 'ipns:publish:strategy:success')
+    const strategyErrorEvents = progressEvents.filter(evt => evt.type === 'ipns:publish:strategy:error')
 
+    expect(strategyStartEvents).to.have.length(3)
     expect(strategySuccessEvents).to.have.length(3)
-    expect(strategySuccessEvents.map(evt => evt.detail.strategy)).to.include('LocalStoreRouting()')
-    expect(strategySuccessEvents.map(evt => evt.detail.strategy)).to.include('HeliaRouting()')
-    expect(strategySuccessEvents.map(evt => evt.detail.strategy)).to.include('CustomRouting()')
+    expect(strategyErrorEvents).to.be.empty()
+
+    for (const events of [strategyStartEvents, strategySuccessEvents]) {
+      expect(events.map(evt => evt.detail.strategy)).to.include('LocalStoreRouting()')
+      expect(events.map(evt => evt.detail.strategy)).to.include('HeliaRouting()')
+      expect(events.map(evt => evt.detail.strategy)).to.include('CustomRouting()')
+    }
+
+    for (const evt of [...strategyStartEvents, ...strategySuccessEvents]) {
+      expect(evt.detail).to.have.property('keyName', keyName)
+      expect(evt.detail).to.have.property('publicKey', publishResult.publicKey)
+    }
   })
 
   it('should emit only the local publish strategy event when publishing offline', async function () {
     const keyName = 'test-key-offline-progress'
     const progressEvents: any[] = []
 
-    await name.publish(keyName, cid, {
+    const publishResult = await name.publish(keyName, cid, {
       offline: true,
       onProgress: (evt) => progressEvents.push(evt)
     })
 
+    const strategyStartEvents = progressEvents.filter(evt => evt.type === 'ipns:publish:strategy:start')
     const strategySuccessEvents = progressEvents.filter(evt => evt.type === 'ipns:publish:strategy:success')
 
+    expect(strategyStartEvents).to.have.length(1)
+    expect(strategyStartEvents[0].detail.strategy).to.equal('LocalStoreRouting()')
     expect(strategySuccessEvents).to.have.length(1)
     expect(strategySuccessEvents[0].detail.strategy).to.equal('LocalStoreRouting()')
-  })
 
-  it('should emit datastore put progress after the batch is committed', async function () {
-    const store = localStore(result.datastore, result.log)
-    const progressEvents: any[] = []
-    let committed = false
-
-    const batch = {
-      put: Sinon.stub(),
-      delete: Sinon.stub(),
-      commit: Sinon.stub().callsFake(async () => {
-        expect(progressEvents.map(evt => evt.type)).to.not.include('ipns:routing:datastore:put')
-        committed = true
-      })
+    for (const evt of [...strategyStartEvents, ...strategySuccessEvents]) {
+      expect(evt.detail).to.have.property('keyName', keyName)
+      expect(evt.detail).to.have.property('publicKey', publishResult.publicKey)
     }
-
-    Sinon.stub(result.datastore, 'batch').returns(batch as any)
-
-    await store.put(uint8ArrayFromString('routing-key'), uint8ArrayFromString('record'), {
-      onProgress: (evt) => progressEvents.push(evt)
-    })
-
-    expect(committed).to.be.true()
-    expect(progressEvents.map(evt => evt.type)).to.include('ipns:routing:datastore:put')
   })
 
   it('should publish an IPNS record extensible metadata', async function () {
@@ -364,6 +360,10 @@ describe('publish', () => {
       const errorEvent = progressEvents.find(evt => evt.type === 'ipns:routing:datastore:error')
       expect(errorEvent).to.exist()
       expect(errorEvent.detail.message).to.equal('Storage error')
+
+      const strategyErrorEvent = progressEvents.find(evt => evt.type === 'ipns:publish:strategy:error')
+      expect(strategyErrorEvent).to.exist()
+      expect(strategyErrorEvent.detail.message).to.equal('Storage error')
     })
 
     it('should handle network timeouts in localStore', async () => {

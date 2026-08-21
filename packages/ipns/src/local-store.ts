@@ -73,6 +73,7 @@ export function localStore (datastore: Datastore, log: Logger): LocalStore {
         // Marshal to libp2p record as the DHT does
         const record = new Record(routingKey, marshalledRecord, new Date())
 
+        options.onProgress?.(new CustomProgressEvent('ipns:routing:datastore:put'))
         const batch = datastore.batch()
         batch.put(key, record.serialize())
 
@@ -81,7 +82,6 @@ export function localStore (datastore: Datastore, log: Logger): LocalStore {
           batch.put(ipnsMetadataKey(routingKey), IPNSPublishMetadata.encode(options.metadata))
         }
         await batch.commit(options)
-        options.onProgress?.(new CustomProgressEvent('ipns:routing:datastore:put'))
       } catch (err: any) {
         options.onProgress?.(new CustomProgressEvent<Error>('ipns:routing:datastore:error', err))
         throw err

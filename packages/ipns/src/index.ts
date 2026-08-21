@@ -170,9 +170,13 @@ export type {
   CreateIPNSRecordOptions
 } from './records.ts'
 
+export type PublishStrategyProgressEvents =
+  ProgressEvent<'ipns:publish:strategy:start', IPNSPublishStrategyDetail> |
+  ProgressEvent<'ipns:publish:strategy:success', IPNSPublishStrategyDetail> |
+  ProgressEvent<'ipns:publish:strategy:error', Error>
+
 export type PublishProgressEvents =
   ProgressEvent<'ipns:publish:start'> |
-  ProgressEvent<'ipns:publish:strategy:success', IPNSPublishStrategyResult> |
   ProgressEvent<'ipns:publish:success', IPNSEntry> |
   ProgressEvent<'ipns:publish:error', Error>
 
@@ -187,7 +191,7 @@ export type DatastoreProgressEvents =
   ProgressEvent<'ipns:routing:datastore:list'> |
   ProgressEvent<'ipns:routing:datastore:error', Error>
 
-export interface PublishOptions extends AbortOptions, ProgressOptions<PublishProgressEvents | IPNSRoutingProgressEvents> {
+export interface PublishOptions extends AbortOptions, ProgressOptions<PublishProgressEvents | PublishStrategyProgressEvents | IPNSRoutingProgressEvents> {
   /**
    * Time duration of the signature validity in ms - after this many ms have
    * expired the record will be invalidated.
@@ -305,16 +309,21 @@ export interface IPNSPublishResult {
   publicKey: PublicKey
 }
 
-export interface IPNSPublishStrategyResult {
+export interface IPNSPublishStrategyDetail {
   /**
-   * The name of the publishing strategy that completed.
+   * The name of the publishing strategy.
    */
   strategy: string
 
   /**
-   * The routing key the IPNS record was published under.
+   * The key name used to publish the record.
    */
-  routingKey: Uint8Array
+  keyName: string
+
+  /**
+   * The public key that was used to sign and publish the record.
+   */
+  publicKey: PublicKey
 
   /**
    * The published record.
