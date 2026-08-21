@@ -47,7 +47,7 @@ export interface DefaultLibp2pServices extends Record<string, unknown> {
   http: HTTP
 }
 
-export type DefaultLibp2pOptions<M extends ServiceMap> = Libp2pOptions<DefaultLibp2pServices & M> & Required<Pick<Libp2pOptions<DefaultLibp2pServices & M>, 'nodeInfo' | 'addresses' | 'transports' | 'connectionEncrypters' | 'streamMuxers' | 'peerDiscovery' | 'services'>>
+export type DefaultLibp2pOptions = Libp2pOptions<DefaultLibp2pServices> & Required<Pick<Libp2pOptions<DefaultLibp2pServices>, 'nodeInfo' | 'addresses' | 'transports' | 'connectionEncrypters' | 'streamMuxers' | 'peerDiscovery' | 'services'>>
 
 /**
  * Returns the default libp2p config used by Helia which can then be modified or
@@ -75,14 +75,13 @@ export type DefaultLibp2pOptions<M extends ServiceMap> = Libp2pOptions<DefaultLi
  * helia.libp2p.services.myService.serviceMethod()
  * ```
  */
-export function libp2pDefaults <M extends ServiceMap = ServiceMap> (options: CreateLibp2pOptions<M> = {}): DefaultLibp2pOptions<M> {
+export function libp2pDefaults (): DefaultLibp2pOptions
+export function libp2pDefaults <M extends ServiceMap, Options extends CreateLibp2pOptions<M>> (options: Options): DefaultLibp2pOptions & Options
+export function libp2pDefaults (options?: any): any {
   return {
-    nodeInfo: {
-      ...options.nodeInfo
-    },
-    privateKey: options.privateKey,
-    dns: options.dns,
+    ...options,
     addresses: {
+      ...options?.addresses,
       listen: [
         '/ip4/0.0.0.0/tcp/0',
         '/ip4/0.0.0.0/tcp/0/ws',
@@ -90,7 +89,8 @@ export function libp2pDefaults <M extends ServiceMap = ServiceMap> (options: Cre
         '/ip6/::/tcp/0',
         '/ip6/::/tcp/0/ws',
         '/ip6/::/udp/0/webrtc-direct',
-        '/p2p-circuit'
+        '/p2p-circuit',
+        ...(options?.addresses?.listen ?? [])
       ]
     },
     transports: [
@@ -98,19 +98,23 @@ export function libp2pDefaults <M extends ServiceMap = ServiceMap> (options: Cre
       tcp(),
       webRTC(),
       webRTCDirect(),
-      webSockets()
+      webSockets(),
+      ...(options?.transports ?? [])
     ],
     connectionEncrypters: [
       noise(),
-      tls()
+      tls(),
+      ...(options?.connectionEncrypters ?? [])
     ],
     streamMuxers: [
       yamux(),
-      mplex()
+      mplex(),
+      ...(options?.streamMuxers ?? [])
     ],
     peerDiscovery: [
       mdns(),
-      bootstrap(bootstrapConfig)
+      bootstrap(bootstrapConfig),
+      ...(options?.peerDiscovery ?? [])
     ],
     services: {
       autoNAT: autoNAT(),
@@ -121,12 +125,12 @@ export function libp2pDefaults <M extends ServiceMap = ServiceMap> (options: Cre
       dht: kadDHT(),
       identify: identify(),
       identifyPush: identifyPush(),
-      keychain: keychain(options.keychain),
+      keychain: keychain(options?.keychain),
       ping: ping(),
       relay: circuitRelayServer(),
       upnp: uPnPNAT(),
       http: http(),
-      ...options.services
-    } as any
+      ...options?.services
+    }
   }
 }
