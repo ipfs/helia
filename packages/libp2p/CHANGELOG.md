@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.1.1](https://github.com/ipfs/helia/compare/libp2p-v2.1.0...libp2p-v2.1.1) (2026-08-21)
+
+
+### Bug Fixes
+
+* detect libp2p option type ([#1117](https://github.com/ipfs/helia/issues/1117)) ([dc9e15b](https://github.com/ipfs/helia/commit/dc9e15bc228bbfbc563fc2fd25dbb84224642455))
+* specify fields present in libp2p defaults ([#1115](https://github.com/ipfs/helia/issues/1115)) ([ae012cf](https://github.com/ipfs/helia/commit/ae012cf99e82f3a26502343046ab65f00d9e3f15))
+
 ## [2.1.0](https://github.com/ipfs/helia/compare/libp2p-v2.0.0...libp2p-v2.1.0) (2026-08-19)
 
 
