@@ -90,12 +90,62 @@ describe('publish', () => {
 
   it('should emit progress events', async function () {
     const keyName = 'test-key-5'
-    const onProgress = Sinon.stub()
+    const progressEvents: any[] = []
     await name.publish(keyName, cid, {
-      onProgress
+      onProgress: (evt) => progressEvents.push(evt)
     })
 
-    expect(onProgress).to.have.property('called', true)
+    const eventTypes = progressEvents.map(evt => evt.type)
+
+    expect(eventTypes).to.include('ipns:publish:start')
+    expect(eventTypes).to.include('ipns:routing:datastore:put')
+    expect(eventTypes).to.include('ipns:publish:success')
+
+    const strategySuccessEvents = progressEvents.filter(evt => evt.type === 'ipns:publish:strategy:success')
+
+    expect(strategySuccessEvents).to.have.length(3)
+    expect(strategySuccessEvents.map(evt => evt.detail.strategy)).to.include('LocalStoreRouting()')
+    expect(strategySuccessEvents.map(evt => evt.detail.strategy)).to.include('HeliaRouting()')
+    expect(strategySuccessEvents.map(evt => evt.detail.strategy)).to.include('CustomRouting()')
+  })
+
+  it('should emit only the local publish strategy event when publishing offline', async function () {
+    const keyName = 'test-key-offline-progress'
+    const progressEvents: any[] = []
+
+    await name.publish(keyName, cid, {
+      offline: true,
+      onProgress: (evt) => progressEvents.push(evt)
+    })
+
+    const strategySuccessEvents = progressEvents.filter(evt => evt.type === 'ipns:publish:strategy:success')
+
+    expect(strategySuccessEvents).to.have.length(1)
+    expect(strategySuccessEvents[0].detail.strategy).to.equal('LocalStoreRouting()')
+  })
+
+  it('should emit datastore put progress after the batch is committed', async function () {
+    const store = localStore(result.datastore, result.log)
+    const progressEvents: any[] = []
+    let committed = false
+
+    const batch = {
+      put: Sinon.stub(),
+      delete: Sinon.stub(),
+      commit: Sinon.stub().callsFake(async () => {
+        expect(progressEvents.map(evt => evt.type)).to.not.include('ipns:routing:datastore:put')
+        committed = true
+      })
+    }
+
+    Sinon.stub(result.datastore, 'batch').returns(batch as any)
+
+    await store.put(uint8ArrayFromString('routing-key'), uint8ArrayFromString('record'), {
+      onProgress: (evt) => progressEvents.push(evt)
+    })
+
+    expect(committed).to.be.true()
+    expect(progressEvents.map(evt => evt.type)).to.include('ipns:routing:datastore:put')
   })
 
   it('should publish an IPNS record extensible metadata', async function () {
