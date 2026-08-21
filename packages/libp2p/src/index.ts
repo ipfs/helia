@@ -67,7 +67,9 @@ export interface HeliaWithLibp2p<M extends ServiceMap = DefaultLibp2pServices> e
 /**
  * Return a Helia node augmented with a libp2p instance
  */
-export function withLibp2p <H extends Helia, M extends ServiceMap> (helia: H, opts?: CreateLibp2pOptions<M>): H & HeliaWithLibp2p<DefaultLibp2pServices & M> {
+export function withLibp2p <H extends Helia> (helia: H): H & HeliaWithLibp2p<DefaultLibp2pServices>
+export function withLibp2p <H extends Helia, M extends ServiceMap> (helia: H, opts?: CreateLibp2pOptions<M>): H & HeliaWithLibp2p<DefaultLibp2pServices & M>
+export function withLibp2p <H extends Helia> (helia: H, opts?: any): H & HeliaWithLibp2p<DefaultLibp2pServices> {
   return withLibp2pLight(helia, libp2pDefaults(opts))
 }
 

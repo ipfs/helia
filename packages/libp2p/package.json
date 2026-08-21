@@ -73,7 +73,6 @@
     "@libp2p/upnp-nat": "^4.0.21",
     "@libp2p/webrtc": "^6.0.24",
     "@libp2p/websockets": "^10.1.14",
-    "@multiformats/dns": "^1.0.13",
     "@multiformats/multiaddr": "^13.0.3",
     "it-foreach": "^2.1.7",
     "it-map": "^3.1.6",
@@ -82,6 +81,7 @@
     "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
+    "@multiformats/dns": "^1.0.13",
     "aegir": "^48.0.11",
     "birnam": "^1.0.0",
     "datastore-core": "^12.0.1",

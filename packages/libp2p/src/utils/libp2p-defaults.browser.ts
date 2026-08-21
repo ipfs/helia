@@ -35,36 +35,40 @@ export interface DefaultLibp2pServices extends Record<string, unknown> {
   http: HTTP
 }
 
-export type DefaultLibp2pOptions<M extends ServiceMap> = Libp2pOptions<DefaultLibp2pServices & M> & Required<Pick<Libp2pOptions<DefaultLibp2pServices & M>, 'nodeInfo' | 'addresses' | 'transports' | 'connectionEncrypters' | 'streamMuxers' | 'peerDiscovery' | 'services'>>
+export type DefaultLibp2pOptions = Libp2pOptions<DefaultLibp2pServices> & Required<Pick<Libp2pOptions<DefaultLibp2pServices>, 'nodeInfo' | 'addresses' | 'transports' | 'connectionEncrypters' | 'streamMuxers' | 'peerDiscovery' | 'services'>>
 
-export function libp2pDefaults <M extends ServiceMap = ServiceMap> (options: CreateLibp2pOptions<M> = {}): DefaultLibp2pOptions<M> {
+export function libp2pDefaults (): DefaultLibp2pOptions
+export function libp2pDefaults <M extends ServiceMap, Options extends CreateLibp2pOptions<M>> (options: Options): DefaultLibp2pOptions & Options
+export function libp2pDefaults (options?: any): any {
   return {
-    nodeInfo: {
-      ...options.nodeInfo
-    },
-    privateKey: options.privateKey,
-    dns: options.dns,
+    ...options,
     addresses: {
+      ...options?.addresses,
       listen: [
         '/p2p-circuit',
-        '/webrtc'
+        '/webrtc',
+        ...(options?.addresses?.listen ?? [])
       ]
     },
     transports: [
       circuitRelayTransport(),
       webRTC(),
       webRTCDirect(),
-      webSockets()
+      webSockets(),
+      ...(options?.transports ?? [])
     ],
     connectionEncrypters: [
-      noise()
+      noise(),
+      ...(options?.connectionEncrypters ?? [])
     ],
     streamMuxers: [
       yamux(),
-      mplex()
+      mplex(),
+      ...(options?.streamMuxers ?? [])
     ],
     peerDiscovery: [
-      bootstrap(bootstrapConfig)
+      bootstrap(bootstrapConfig),
+      ...(options?.peerDiscovery ?? [])
     ],
     services: {
       autoNAT: autoNAT(),
@@ -76,10 +80,10 @@ export function libp2pDefaults <M extends ServiceMap = ServiceMap> (options: Cre
       }),
       identify: identify(),
       identifyPush: identifyPush(),
-      keychain: keychain(options.keychain),
+      keychain: keychain(options?.keychain),
       ping: ping(),
       http: http(),
-      ...options.services
-    } as any
+      ...options?.services
+    }
   }
 }
