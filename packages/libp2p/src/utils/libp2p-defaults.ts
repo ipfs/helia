@@ -47,6 +47,8 @@ export interface DefaultLibp2pServices extends Record<string, unknown> {
   http: HTTP
 }
 
+export type DefaultLibp2pOptions<M extends ServiceMap> = Libp2pOptions<DefaultLibp2pServices & M> & Required<Pick<Libp2pOptions<DefaultLibp2pServices & M>, 'nodeInfo' | 'addresses' | 'transports' | 'connectionEncrypters' | 'streamMuxers' | 'peerDiscovery' | 'services'>>
+
 /**
  * Returns the default libp2p config used by Helia which can then be modified or
  * extended to suit individual applications.
@@ -55,7 +57,8 @@ export interface DefaultLibp2pServices extends Record<string, unknown> {
  *
  * ```ts
  * import { myService } from '@example/my-service'
- * import { createHelia, libp2pDefaults } from 'helia'
+ * import { createHelia } from 'helia'
+ * import { libp2pDefaults } from '@helia/libp2p'
  *
  * // get a copy of the default libp2p config
  * const libp2p = libp2pDefaults()
@@ -72,7 +75,7 @@ export interface DefaultLibp2pServices extends Record<string, unknown> {
  * helia.libp2p.services.myService.serviceMethod()
  * ```
  */
-export function libp2pDefaults <M extends ServiceMap = ServiceMap> (options: CreateLibp2pOptions<M> = {}): Libp2pOptions<DefaultLibp2pServices & M> {
+export function libp2pDefaults <M extends ServiceMap = ServiceMap> (options: CreateLibp2pOptions<M> = {}): DefaultLibp2pOptions<M> {
   return {
     nodeInfo: {
       ...options.nodeInfo

@@ -35,7 +35,9 @@ export interface DefaultLibp2pServices extends Record<string, unknown> {
   http: HTTP
 }
 
-export function libp2pDefaults <M extends ServiceMap = ServiceMap> (options: CreateLibp2pOptions<M> = {}): Libp2pOptions<DefaultLibp2pServices & M> {
+export type DefaultLibp2pOptions<M extends ServiceMap> = Libp2pOptions<DefaultLibp2pServices & M> & Required<Pick<Libp2pOptions<DefaultLibp2pServices & M>, 'nodeInfo' | 'addresses' | 'transports' | 'connectionEncrypters' | 'streamMuxers' | 'peerDiscovery' | 'services'>>
+
+export function libp2pDefaults <M extends ServiceMap = ServiceMap> (options: CreateLibp2pOptions<M> = {}): DefaultLibp2pOptions<M> {
   return {
     nodeInfo: {
       ...options.nodeInfo
