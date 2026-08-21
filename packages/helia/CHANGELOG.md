@@ -1,5 +1,20 @@
 # Changelog
 
+## [7.1.8](https://github.com/ipfs/helia/compare/helia-v7.1.7...helia-v7.1.8) (2026-08-21)
+
+
+### Bug Fixes
+
+* detect libp2p option type ([#1117](https://github.com/ipfs/helia/issues/1117)) ([dc9e15b](https://github.com/ipfs/helia/commit/dc9e15bc228bbfbc563fc2fd25dbb84224642455))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^4.0.11 to ^4.0.12
+    * @helia/libp2p bumped from ^2.1.0 to ^2.1.1
+
 ## [7.1.7](https://github.com/ipfs/helia/compare/helia-v7.1.6...helia-v7.1.7) (2026-08-20)
 
 
