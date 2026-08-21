@@ -1,6 +1,6 @@
 {
   "name": "helia",
-  "version": "7.1.8",
+  "version": "7.1.9",
   "description": "An implementation of IPFS in JavaScript",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/helia#readme",
@@ -49,10 +49,10 @@
     "prepublishOnly": "node scripts/update-version.js && npm run build"
   },
   "dependencies": {
-    "@helia/bitswap": "^4.0.12",
+    "@helia/bitswap": "^4.0.13",
     "@helia/http": "^4.0.6",
     "@helia/interface": "^7.1.1",
-    "@helia/libp2p": "^2.1.1",
+    "@helia/libp2p": "^2.1.2",
     "@helia/utils": "^3.0.5",
     "@ipld/dag-cbor": "^10.0.1",
     "@ipld/dag-json": "^11.0.0",
