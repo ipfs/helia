@@ -23,7 +23,7 @@
 <ul class="tsd-hierarchy">
 <li class="tsd-hierarchy-item"><span class="tsd-hierarchy-target">CreateLibp2pOptions</span></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/1126e9c9618c971a81ec6e136be23f6d64b72ea4/packages/libp2p/src/index.ts#L56">packages/libp2p/src/index.ts:56</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/1351ea99bd0b4a567e2efba64dde528d517ab29f/packages/libp2p/src/index.ts#L56">packages/libp2p/src/index.ts:56</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -73,10 +73,16 @@
 <h3 class="tsd-anchor-link" id="config"><code class="tsd-tag">Optional</code><span>config</span><a href="#config" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">config</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">&quot;replace&quot;</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">&quot;merge&quot;</span></div>
 <div class="tsd-comment tsd-typography"><p>If 'merge', any passed config will be merged into the default set. If
-'replace' any passed config will replace the default set.</p>
-</div><aside class="tsd-sources">
+'replace' any passed config keys will replace those in the default set.</p>
+</div>
+<div class="tsd-comment tsd-typography">
+<div class="tsd-tag-default">
+<h4 class="tsd-anchor-link" id="default">Default<a href="#default" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-3">&#39;replace&#39;</span>
+</code><button type="button">Copy</button></pre>
+
+</div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/1126e9c9618c971a81ec6e136be23f6d64b72ea4/packages/libp2p/src/index.ts#L61">packages/libp2p/src/index.ts:61</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/1351ea99bd0b4a567e2efba64dde528d517ab29f/packages/libp2p/src/index.ts#L63">packages/libp2p/src/index.ts:63</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited tsd-is-external">
 <h3 class="tsd-anchor-link" id="connectionencrypters"><code class="tsd-tag">Optional</code><span>connection<wbr/>Encrypters</span><a href="#connectionencrypters" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">connectionEncrypters</span><span class="tsd-signature-symbol">?:</span> (<span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">components</span><span class="tsd-signature-symbol">:</span> <a href="https://www.npmjs.com/package/libp2p" class="tsd-signature-type external" target="_blank">Components</a><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <a href="https://libp2p.github.io/js-libp2p/interfaces/_libp2p_interface.ConnectionEncrypter.html" class="tsd-signature-type external" target="_blank">ConnectionEncrypter</a>)<span class="tsd-signature-symbol">[]</span></div>
@@ -142,7 +148,7 @@ DNS-JSON-over-HTTPS for browsers using Google and Cloudflare servers.</p>
 <h3 class="tsd-anchor-link" id="keychain"><code class="tsd-tag">Optional</code><span>keychain</span><a href="#keychain" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">keychain</span><span class="tsd-signature-symbol">?:</span> <a href="https://libp2p.github.io/js-libp2p/interfaces/_libp2p_keychain.KeychainInit.html" class="tsd-signature-type external" target="_blank">KeychainInit</a></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ipfs/helia/blob/1126e9c9618c971a81ec6e136be23f6d64b72ea4/packages/libp2p/src/index.ts#L62">packages/libp2p/src/index.ts:62</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ipfs/helia/blob/1351ea99bd0b4a567e2efba64dde528d517ab29f/packages/libp2p/src/index.ts#L64">packages/libp2p/src/index.ts:64</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited tsd-is-external">
 <h3 class="tsd-anchor-link" id="logger"><code class="tsd-tag">Optional</code><span>logger</span><a href="#logger" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">logger</span><span class="tsd-signature-symbol">?:</span> <a href="https://libp2p.github.io/js-libp2p/interfaces/_libp2p_interface.ComponentLogger.html" class="tsd-signature-type external" target="_blank">ComponentLogger</a></div>
