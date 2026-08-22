@@ -5,8 +5,8 @@ function isPrimitive (value: any): boolean {
     typeof value === 'bigint'
 }
 
-export function merge <T> (target: T, ...sources: T[]): T {
-  const output = target as any
+export function merge <T> (...sources: T[]): T {
+  const output: any = {}
 
   for (const source of sources) {
     Object.entries(source as any).forEach(([key, value]) => {
@@ -25,27 +25,17 @@ export function merge <T> (target: T, ...sources: T[]): T {
     })
   }
 
-  return target
+  return output
 }
 
-export function replace <T> (target: T, ...sources: T[]): T {
-  const output = target as any
+export function replace <T> (...sources: T[]): T {
+  const output: any = {}
 
   for (const source of sources) {
     Object.entries(source as any).forEach(([key, value]) => {
-      if (Array.isArray(value) || Array.isArray(output[key])) {
-        output[key] = value
-        return
-      }
-
-      if (isPrimitive(value) || output[key] == null) {
-        output[key] = value
-        return
-      }
-
-      replace(output[key], value)
+      output[key] = value
     })
   }
 
-  return target
+  return output
 }
