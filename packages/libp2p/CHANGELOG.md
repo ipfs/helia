@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.3](https://github.com/ipfs/helia/compare/libp2p-v2.1.2...libp2p-v2.1.3) (2026-08-22)
+
+
+### Bug Fixes
+
+* replace all config fields ([#1120](https://github.com/ipfs/helia/issues/1120)) ([6c96dd3](https://github.com/ipfs/helia/commit/6c96dd38b999f55475133fed65e97f4cbe5d7d41))
+
 ## [2.1.2](https://github.com/ipfs/helia/compare/libp2p-v2.1.1...libp2p-v2.1.2) (2026-08-21)
 
 
