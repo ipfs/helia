@@ -56,7 +56,9 @@ export type { DefaultLibp2pServices } from './utils/libp2p-defaults.ts'
 export interface CreateLibp2pOptions<T extends ServiceMap = ServiceMap> extends Libp2pOptions<T> {
   /**
    * If 'merge', any passed config will be merged into the default set. If
-   * 'replace' any passed config will replace the default set.
+   * 'replace' any passed config keys will replace those in the default set.
+   *
+   * @default 'replace'
    */
   config?: 'merge' | 'replace'
   keychain?: KeychainInit
