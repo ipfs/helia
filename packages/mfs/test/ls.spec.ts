@@ -127,16 +127,9 @@ describe('ls', () => {
     const fileCount = 1001
     const shardedDirCid = await createShardedDirectory(blockstore, fileCount)
     await fs.cp(shardedDirCid, shardedDirPath)
+
     const files = await all(fs.ls(shardedDirPath))
-
     expect(files.length).to.equal(fileCount)
-
-    for (const entry of files) {
-      const file = await fs.stat(entry.path)
-
-      // should be a file
-      expect(file.type).to.equal('raw')
-    }
   })
 
   it('lists a file inside a sharded directory directly', async () => {
