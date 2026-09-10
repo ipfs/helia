@@ -58,8 +58,16 @@ export namespace IPNSPublishMetadata {
         }
 
         return obj
-      }, function * (reader, length, prefix, opts = {}) {
+      }, function * (reader, prefix, length, opts = {}) {
         const end = length == null ? reader.len : reader.pos + length
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'start',
+            message: 'IPNSPublishMetadata'
+          }
+        }
 
         while (reader.pos < end) {
           const tag = reader.uint32()
@@ -67,14 +75,14 @@ export namespace IPNSPublishMetadata {
           switch (tag >>> 3) {
             case 1: {
               yield {
-                field: `${prefix}.keyName`,
+                field: `${prefix}keyName`,
                 value: reader.string()
               }
               break
             }
             case 2: {
               yield {
-                field: `${prefix}.lifetime`,
+                field: `${prefix}lifetime`,
                 value: reader.uint32()
               }
               break
@@ -85,6 +93,14 @@ export namespace IPNSPublishMetadata {
             }
           }
         }
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'end',
+            message: 'IPNSPublishMetadata'
+          }
+        }
       })
     }
 
@@ -92,12 +108,12 @@ export namespace IPNSPublishMetadata {
   }
 
   export interface IPNSPublishMetadataKeyNameFieldEvent {
-    field: '$.keyName'
+    field: '.keyName'
     value: string
   }
 
   export interface IPNSPublishMetadataLifetimeFieldEvent {
-    field: '$.lifetime'
+    field: '.lifetime'
     value: number
   }
 

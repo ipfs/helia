@@ -139,8 +139,16 @@ export namespace IPNSEntry {
         }
 
         return obj
-      }, function * (reader, length, prefix, opts = {}) {
+      }, function * (reader, prefix, length, opts = {}) {
         const end = length == null ? reader.len : reader.pos + length
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'start',
+            message: 'IPNSEntry'
+          }
+        }
 
         while (reader.pos < end) {
           const tag = reader.uint32()
@@ -148,63 +156,63 @@ export namespace IPNSEntry {
           switch (tag >>> 3) {
             case 1: {
               yield {
-                field: `${prefix}.value`,
+                field: `${prefix}value`,
                 value: reader.bytes()
               }
               break
             }
             case 2: {
               yield {
-                field: `${prefix}.signatureV1`,
+                field: `${prefix}signatureV1`,
                 value: reader.bytes()
               }
               break
             }
             case 3: {
               yield {
-                field: `${prefix}.validityType`,
+                field: `${prefix}validityType`,
                 value: IPNSEntry.ValidityType.codec().decode(reader)
               }
               break
             }
             case 4: {
               yield {
-                field: `${prefix}.validity`,
+                field: `${prefix}validity`,
                 value: reader.bytes()
               }
               break
             }
             case 5: {
               yield {
-                field: `${prefix}.sequence`,
+                field: `${prefix}sequence`,
                 value: reader.uint64()
               }
               break
             }
             case 6: {
               yield {
-                field: `${prefix}.ttl`,
+                field: `${prefix}ttl`,
                 value: reader.uint64()
               }
               break
             }
             case 7: {
               yield {
-                field: `${prefix}.publicKey`,
+                field: `${prefix}publicKey`,
                 value: reader.bytes()
               }
               break
             }
             case 8: {
               yield {
-                field: `${prefix}.signatureV2`,
+                field: `${prefix}signatureV2`,
                 value: reader.bytes()
               }
               break
             }
             case 9: {
               yield {
-                field: `${prefix}.data`,
+                field: `${prefix}data`,
                 value: reader.bytes()
               }
               break
@@ -215,6 +223,14 @@ export namespace IPNSEntry {
             }
           }
         }
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'end',
+            message: 'IPNSEntry'
+          }
+        }
       })
     }
 
@@ -222,47 +238,47 @@ export namespace IPNSEntry {
   }
 
   export interface IPNSEntryValueFieldEvent {
-    field: '$.value'
+    field: '.value'
     value: Uint8Array<ArrayBuffer>
   }
 
   export interface IPNSEntrySignatureV1FieldEvent {
-    field: '$.signatureV1'
+    field: '.signatureV1'
     value: Uint8Array<ArrayBuffer>
   }
 
   export interface IPNSEntryValidityTypeFieldEvent {
-    field: '$.validityType'
+    field: '.validityType'
     value: IPNSEntry.ValidityType
   }
 
   export interface IPNSEntryValidityFieldEvent {
-    field: '$.validity'
+    field: '.validity'
     value: Uint8Array<ArrayBuffer>
   }
 
   export interface IPNSEntrySequenceFieldEvent {
-    field: '$.sequence'
+    field: '.sequence'
     value: bigint
   }
 
   export interface IPNSEntryTtlFieldEvent {
-    field: '$.ttl'
+    field: '.ttl'
     value: bigint
   }
 
   export interface IPNSEntryPublicKeyFieldEvent {
-    field: '$.publicKey'
+    field: '.publicKey'
     value: Uint8Array<ArrayBuffer>
   }
 
   export interface IPNSEntrySignatureV2FieldEvent {
-    field: '$.signatureV2'
+    field: '.signatureV2'
     value: Uint8Array<ArrayBuffer>
   }
 
   export interface IPNSEntryDataFieldEvent {
-    field: '$.data'
+    field: '.data'
     value: Uint8Array<ArrayBuffer>
   }
 

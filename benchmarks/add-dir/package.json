@@ -21,7 +21,7 @@
     "datastore-level": "^13.0.1",
     "execa": "^9.5.3",
     "helia": "^7.0.0",
-    "ipfs-unixfs-importer": "^17.0.1",
+    "ipfs-unixfs-importer": "^17.1.1",
     "ipfsd-ctl": "^17.0.0",
     "it-last": "^3.0.6",
     "kubo": "^0.42.0",

@@ -52,9 +52,9 @@
     "@libp2p/interface": "^3.2.3",
     "interface-blockstore": "^7.0.1",
     "interface-datastore": "^10.0.1",
-    "ipfs-unixfs": "^13.0.0",
-    "ipfs-unixfs-exporter": "^16.0.2",
-    "ipfs-unixfs-importer": "^17.0.1",
+    "ipfs-unixfs": "^13.1.0",
+    "ipfs-unixfs-exporter": "^16.2.0",
+    "ipfs-unixfs-importer": "^17.1.1",
     "it-map": "^3.1.6",
     "multiformats": "^14.0.0"
   },

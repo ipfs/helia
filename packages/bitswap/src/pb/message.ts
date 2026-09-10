@@ -105,8 +105,16 @@ export namespace WantlistEntry {
         }
 
         return obj
-      }, function * (reader, length, prefix, opts = {}) {
+      }, function * (reader, prefix, length, opts = {}) {
         const end = length == null ? reader.len : reader.pos + length
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'start',
+            message: 'WantlistEntry'
+          }
+        }
 
         while (reader.pos < end) {
           const tag = reader.uint32()
@@ -114,35 +122,35 @@ export namespace WantlistEntry {
           switch (tag >>> 3) {
             case 1: {
               yield {
-                field: `${prefix}.cid`,
+                field: `${prefix}cid`,
                 value: reader.bytes()
               }
               break
             }
             case 2: {
               yield {
-                field: `${prefix}.priority`,
+                field: `${prefix}priority`,
                 value: reader.int32()
               }
               break
             }
             case 3: {
               yield {
-                field: `${prefix}.cancel`,
+                field: `${prefix}cancel`,
                 value: reader.bool()
               }
               break
             }
             case 4: {
               yield {
-                field: `${prefix}.wantType`,
+                field: `${prefix}wantType`,
                 value: WantType.codec().decode(reader)
               }
               break
             }
             case 5: {
               yield {
-                field: `${prefix}.sendDontHave`,
+                field: `${prefix}sendDontHave`,
                 value: reader.bool()
               }
               break
@@ -153,6 +161,14 @@ export namespace WantlistEntry {
             }
           }
         }
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'end',
+            message: 'WantlistEntry'
+          }
+        }
       })
     }
 
@@ -160,27 +176,27 @@ export namespace WantlistEntry {
   }
 
   export interface WantlistEntryCidFieldEvent {
-    field: '$.cid'
+    field: '.cid'
     value: Uint8Array<ArrayBuffer>
   }
 
   export interface WantlistEntryPriorityFieldEvent {
-    field: '$.priority'
+    field: '.priority'
     value: number
   }
 
   export interface WantlistEntryCancelFieldEvent {
-    field: '$.cancel'
+    field: '.cancel'
     value: boolean
   }
 
   export interface WantlistEntryWantTypeFieldEvent {
-    field: '$.wantType'
+    field: '.wantType'
     value: WantType
   }
 
   export interface WantlistEntrySendDontHaveFieldEvent {
-    field: '$.sendDontHave'
+    field: '.sendDontHave'
     value: boolean
   }
 
@@ -260,12 +276,20 @@ export namespace Wantlist {
         }
 
         return obj
-      }, function * (reader, length, prefix, opts = {}) {
+      }, function * (reader, prefix, length, opts = {}) {
         const obj = {
           entries: 0
         }
 
         const end = length == null ? reader.len : reader.pos + length
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'start',
+            message: 'Wantlist'
+          }
+        }
 
         while (reader.pos < end) {
           const tag = reader.uint32()
@@ -276,7 +300,7 @@ export namespace Wantlist {
                 throw new MaxLengthError('Streaming decode error - repeated field "entries" had too many elements')
               }
 
-              for (const evt of WantlistEntry.codec().stream(reader, reader.uint32(), `${prefix}.entries[]`, {
+              for (const evt of WantlistEntry.codec().stream(reader, `${prefix}entries[].`, reader.uint32(), {
                 limits: opts.limits?.entries$
               })) {
                 yield {
@@ -291,7 +315,7 @@ export namespace Wantlist {
             }
             case 2: {
               yield {
-                field: `${prefix}.full`,
+                field: `${prefix}full`,
                 value: reader.bool()
               }
               break
@@ -302,6 +326,14 @@ export namespace Wantlist {
             }
           }
         }
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'end',
+            message: 'Wantlist'
+          }
+        }
       })
     }
 
@@ -309,37 +341,51 @@ export namespace Wantlist {
   }
 
   export interface WantlistEntriesCidFieldEvent {
-    field: '$.entries[].cid'
+    field: '.entries[].cid'
     value: Uint8Array<ArrayBuffer>
     index: number
   }
 
   export interface WantlistEntriesPriorityFieldEvent {
-    field: '$.entries[].priority'
+    field: '.entries[].priority'
     value: number
     index: number
   }
 
   export interface WantlistEntriesCancelFieldEvent {
-    field: '$.entries[].cancel'
+    field: '.entries[].cancel'
     value: boolean
     index: number
   }
 
   export interface WantlistEntriesWantTypeFieldEvent {
-    field: '$.entries[].wantType'
+    field: '.entries[].wantType'
     value: WantType
     index: number
   }
 
   export interface WantlistEntriesSendDontHaveFieldEvent {
-    field: '$.entries[].sendDontHave'
+    field: '.entries[].sendDontHave'
     value: boolean
     index: number
   }
 
+  export interface WantlistEntriesMessageStartEvent {
+    field: '.entries[]'
+    index: number
+    type: 'start'
+    message: string
+  }
+
+  export interface WantlistEntriesMessageEndEvent {
+    field: '.entries[]'
+    index: number
+    type: 'end'
+    message: string
+  }
+
   export interface WantlistFullFieldEvent {
-    field: '$.full'
+    field: '.full'
     value: boolean
   }
 
@@ -351,7 +397,7 @@ export namespace Wantlist {
     return decodeMessage(buf, Wantlist.codec(), opts)
   }
 
-  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Wantlist>): Generator<WantlistEntriesCidFieldEvent | WantlistEntriesPriorityFieldEvent | WantlistEntriesCancelFieldEvent | WantlistEntriesWantTypeFieldEvent | WantlistEntriesSendDontHaveFieldEvent | WantlistFullFieldEvent> {
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Wantlist>): Generator<WantlistEntriesCidFieldEvent | WantlistEntriesPriorityFieldEvent | WantlistEntriesCancelFieldEvent | WantlistEntriesWantTypeFieldEvent | WantlistEntriesSendDontHaveFieldEvent | WantlistEntriesMessageStartEvent | WantlistEntriesMessageEndEvent | WantlistFullFieldEvent> {
     return streamMessage(buf, Wantlist.codec(), opts)
   }
 }
@@ -412,8 +458,16 @@ export namespace Block {
         }
 
         return obj
-      }, function * (reader, length, prefix, opts = {}) {
+      }, function * (reader, prefix, length, opts = {}) {
         const end = length == null ? reader.len : reader.pos + length
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'start',
+            message: 'Block'
+          }
+        }
 
         while (reader.pos < end) {
           const tag = reader.uint32()
@@ -421,14 +475,14 @@ export namespace Block {
           switch (tag >>> 3) {
             case 1: {
               yield {
-                field: `${prefix}.prefix`,
+                field: `${prefix}prefix`,
                 value: reader.bytes()
               }
               break
             }
             case 2: {
               yield {
-                field: `${prefix}.data`,
+                field: `${prefix}data`,
                 value: reader.bytes()
               }
               break
@@ -439,6 +493,14 @@ export namespace Block {
             }
           }
         }
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'end',
+            message: 'Block'
+          }
+        }
       })
     }
 
@@ -446,12 +508,12 @@ export namespace Block {
   }
 
   export interface BlockPrefixFieldEvent {
-    field: '$.prefix'
+    field: '.prefix'
     value: Uint8Array<ArrayBuffer>
   }
 
   export interface BlockDataFieldEvent {
-    field: '$.data'
+    field: '.data'
     value: Uint8Array<ArrayBuffer>
   }
 
@@ -540,8 +602,16 @@ export namespace BlockPresence {
         }
 
         return obj
-      }, function * (reader, length, prefix, opts = {}) {
+      }, function * (reader, prefix, length, opts = {}) {
         const end = length == null ? reader.len : reader.pos + length
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'start',
+            message: 'BlockPresence'
+          }
+        }
 
         while (reader.pos < end) {
           const tag = reader.uint32()
@@ -549,14 +619,14 @@ export namespace BlockPresence {
           switch (tag >>> 3) {
             case 1: {
               yield {
-                field: `${prefix}.cid`,
+                field: `${prefix}cid`,
                 value: reader.bytes()
               }
               break
             }
             case 2: {
               yield {
-                field: `${prefix}.type`,
+                field: `${prefix}type`,
                 value: BlockPresenceType.codec().decode(reader)
               }
               break
@@ -567,6 +637,14 @@ export namespace BlockPresence {
             }
           }
         }
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'end',
+            message: 'BlockPresence'
+          }
+        }
       })
     }
 
@@ -574,12 +652,12 @@ export namespace BlockPresence {
   }
 
   export interface BlockPresenceCidFieldEvent {
-    field: '$.cid'
+    field: '.cid'
     value: Uint8Array<ArrayBuffer>
   }
 
   export interface BlockPresenceTypeFieldEvent {
-    field: '$.type'
+    field: '.type'
     value: BlockPresenceType
   }
 
@@ -691,7 +769,7 @@ export namespace BitswapMessage {
         }
 
         return obj
-      }, function * (reader, length, prefix, opts = {}) {
+      }, function * (reader, prefix, length, opts = {}) {
         const obj = {
           blocks: 0,
           blockPresences: 0
@@ -699,12 +777,20 @@ export namespace BitswapMessage {
 
         const end = length == null ? reader.len : reader.pos + length
 
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'start',
+            message: 'BitswapMessage'
+          }
+        }
+
         while (reader.pos < end) {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
             case 1: {
-              yield * Wantlist.codec().stream(reader, reader.uint32(), `${prefix}.wantlist`, {
+              yield * Wantlist.codec().stream(reader, `${prefix}wantlist.`, reader.uint32(), {
                 limits: opts.limits?.wantlist
               })
 
@@ -715,7 +801,7 @@ export namespace BitswapMessage {
                 throw new MaxLengthError('Streaming decode error - repeated field "blocks" had too many elements')
               }
 
-              for (const evt of Block.codec().stream(reader, reader.uint32(), `${prefix}.blocks[]`, {
+              for (const evt of Block.codec().stream(reader, `${prefix}blocks[].`, reader.uint32(), {
                 limits: opts.limits?.blocks$
               })) {
                 yield {
@@ -733,7 +819,7 @@ export namespace BitswapMessage {
                 throw new MaxLengthError('Streaming decode error - repeated field "blockPresences" had too many elements')
               }
 
-              for (const evt of BlockPresence.codec().stream(reader, reader.uint32(), `${prefix}.blockPresences[]`, {
+              for (const evt of BlockPresence.codec().stream(reader, `${prefix}blockPresences[].`, reader.uint32(), {
                 limits: opts.limits?.blockPresences$
               })) {
                 yield {
@@ -748,7 +834,7 @@ export namespace BitswapMessage {
             }
             case 5: {
               yield {
-                field: `${prefix}.pendingBytes`,
+                field: `${prefix}pendingBytes`,
                 value: reader.int32()
               }
               break
@@ -759,73 +845,133 @@ export namespace BitswapMessage {
             }
           }
         }
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'end',
+            message: 'BitswapMessage'
+          }
+        }
       })
     }
 
     return _codec
   }
 
+  export interface BitswapMessageWantlistMessageStart {
+    field: '.wantlist'
+    type: 'start'
+  }
+
+  export interface BitswapMessageWantlistMessageEnd {
+    field: '.wantlist'
+    type: 'end'
+  }
+
   export interface BitswapMessageWantlistEntriesCidFieldEvent {
-    field: '$.wantlist.entries[].cid'
+    field: '.wantlist.entries[].cid'
     value: Uint8Array<ArrayBuffer>
     index: number
   }
 
   export interface BitswapMessageWantlistEntriesPriorityFieldEvent {
-    field: '$.wantlist.entries[].priority'
+    field: '.wantlist.entries[].priority'
     value: number
     index: number
   }
 
   export interface BitswapMessageWantlistEntriesCancelFieldEvent {
-    field: '$.wantlist.entries[].cancel'
+    field: '.wantlist.entries[].cancel'
     value: boolean
     index: number
   }
 
   export interface BitswapMessageWantlistEntriesWantTypeFieldEvent {
-    field: '$.wantlist.entries[].wantType'
+    field: '.wantlist.entries[].wantType'
     value: WantType
     index: number
   }
 
   export interface BitswapMessageWantlistEntriesSendDontHaveFieldEvent {
-    field: '$.wantlist.entries[].sendDontHave'
+    field: '.wantlist.entries[].sendDontHave'
     value: boolean
     index: number
   }
 
+  export interface BitswapMessageWantlistEntriesMessageStartEvent {
+    field: '.wantlist.entries[]'
+    index: number
+    type: 'start'
+    message: string
+  }
+
+  export interface BitswapMessageWantlistEntriesMessageEndEvent {
+    field: '.wantlist.entries[]'
+    index: number
+    type: 'end'
+    message: string
+  }
+
   export interface BitswapMessageWantlistFullFieldEvent {
-    field: '$.wantlist.full'
+    field: '.wantlist.full'
     value: boolean
   }
 
   export interface BitswapMessageBlocksPrefixFieldEvent {
-    field: '$.blocks[].prefix'
+    field: '.blocks[].prefix'
     value: Uint8Array<ArrayBuffer>
     index: number
   }
 
   export interface BitswapMessageBlocksDataFieldEvent {
-    field: '$.blocks[].data'
+    field: '.blocks[].data'
     value: Uint8Array<ArrayBuffer>
     index: number
   }
 
+  export interface BitswapMessageBlocksMessageStartEvent {
+    field: '.blocks[]'
+    index: number
+    type: 'start'
+    message: string
+  }
+
+  export interface BitswapMessageBlocksMessageEndEvent {
+    field: '.blocks[]'
+    index: number
+    type: 'end'
+    message: string
+  }
+
   export interface BitswapMessageBlockPresencesCidFieldEvent {
-    field: '$.blockPresences[].cid'
+    field: '.blockPresences[].cid'
     value: Uint8Array<ArrayBuffer>
     index: number
   }
 
   export interface BitswapMessageBlockPresencesTypeFieldEvent {
-    field: '$.blockPresences[].type'
+    field: '.blockPresences[].type'
     value: BlockPresenceType
     index: number
   }
 
+  export interface BitswapMessageBlockPresencesMessageStartEvent {
+    field: '.blockPresences[]'
+    index: number
+    type: 'start'
+    message: string
+  }
+
+  export interface BitswapMessageBlockPresencesMessageEndEvent {
+    field: '.blockPresences[]'
+    index: number
+    type: 'end'
+    message: string
+  }
+
   export interface BitswapMessagePendingBytesFieldEvent {
-    field: '$.pendingBytes'
+    field: '.pendingBytes'
     value: number
   }
 
@@ -837,7 +983,7 @@ export namespace BitswapMessage {
     return decodeMessage(buf, BitswapMessage.codec(), opts)
   }
 
-  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<BitswapMessage>): Generator<BitswapMessageWantlistEntriesCidFieldEvent | BitswapMessageWantlistEntriesPriorityFieldEvent | BitswapMessageWantlistEntriesCancelFieldEvent | BitswapMessageWantlistEntriesWantTypeFieldEvent | BitswapMessageWantlistEntriesSendDontHaveFieldEvent | BitswapMessageWantlistFullFieldEvent | BitswapMessageBlocksPrefixFieldEvent | BitswapMessageBlocksDataFieldEvent | BitswapMessageBlockPresencesCidFieldEvent | BitswapMessageBlockPresencesTypeFieldEvent | BitswapMessagePendingBytesFieldEvent> {
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<BitswapMessage>): Generator<BitswapMessageWantlistMessageStart | BitswapMessageWantlistMessageEnd | BitswapMessageWantlistEntriesCidFieldEvent | BitswapMessageWantlistEntriesPriorityFieldEvent | BitswapMessageWantlistEntriesCancelFieldEvent | BitswapMessageWantlistEntriesWantTypeFieldEvent | BitswapMessageWantlistEntriesSendDontHaveFieldEvent | BitswapMessageWantlistEntriesMessageStartEvent | BitswapMessageWantlistEntriesMessageEndEvent | BitswapMessageWantlistFullFieldEvent | BitswapMessageBlocksPrefixFieldEvent | BitswapMessageBlocksDataFieldEvent | BitswapMessageBlocksMessageStartEvent | BitswapMessageBlocksMessageEndEvent | BitswapMessageBlockPresencesCidFieldEvent | BitswapMessageBlockPresencesTypeFieldEvent | BitswapMessageBlockPresencesMessageStartEvent | BitswapMessageBlockPresencesMessageEndEvent | BitswapMessagePendingBytesFieldEvent> {
     return streamMessage(buf, BitswapMessage.codec(), opts)
   }
 }

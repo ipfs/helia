@@ -81,7 +81,7 @@
     "@multiformats/sha3": "^4.0.0",
     "aegir": "^48.0.11",
     "helia": "^7.1.10",
-    "ipfs-unixfs-importer": "^17.0.1",
+    "ipfs-unixfs-importer": "^17.1.1",
     "ipfsd-ctl": "^17.0.0",
     "it-all": "^3.0.11",
     "it-drain": "^3.0.12",
