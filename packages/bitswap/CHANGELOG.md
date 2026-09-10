@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.15](https://github.com/ipfs/helia/compare/bitswap-v4.0.14...bitswap-v4.0.15) (2026-09-10)
+
+
+### Bug Fixes
+
+* update unixfs deps to allow for streaming dags ([#1125](https://github.com/ipfs/helia/issues/1125)) ([16fc74d](https://github.com/ipfs/helia/commit/16fc74d30cded1773e9ac18b0a62ca4582f7eab9))
+
 ## [4.0.14](https://github.com/ipfs/helia/compare/bitswap-v4.0.13...bitswap-v4.0.14) (2026-08-22)
 
 

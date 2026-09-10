@@ -1,5 +1,24 @@
 # Changelog
 
+## [12.1.5](https://github.com/ipfs/helia/compare/interop-v12.1.4...interop-v12.1.5) (2026-09-10)
+
+
+### Bug Fixes
+
+* update unixfs deps to allow for streaming dags ([#1125](https://github.com/ipfs/helia/issues/1125)) ([16fc74d](https://github.com/ipfs/helia/commit/16fc74d30cded1773e9ac18b0a62ca4582f7eab9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^4.0.14 to ^4.0.15
+    * @helia/car bumped from ^6.0.5 to ^6.0.6
+    * @helia/ipns bumped from ^10.1.0 to ^10.1.1
+    * @helia/mfs bumped from ^8.0.5 to ^8.0.6
+    * @helia/unixfs bumped from ^8.0.5 to ^8.0.6
+    * helia bumped from ^7.1.10 to ^7.1.11
+
 ## [12.1.4](https://github.com/ipfs/helia/compare/interop-v12.1.3...interop-v12.1.4) (2026-08-22)
 
 

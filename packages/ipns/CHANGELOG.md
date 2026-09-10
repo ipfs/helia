@@ -1,5 +1,12 @@
 # Changelog
 
+## [10.1.1](https://github.com/ipfs/helia/compare/ipns-v10.1.0...ipns-v10.1.1) (2026-09-10)
+
+
+### Bug Fixes
+
+* update unixfs deps to allow for streaming dags ([#1125](https://github.com/ipfs/helia/issues/1125)) ([16fc74d](https://github.com/ipfs/helia/commit/16fc74d30cded1773e9ac18b0a62ca4582f7eab9))
+
 ## [10.1.0](https://github.com/ipfs/helia/compare/ipns-v10.0.8...ipns-v10.1.0) (2026-08-19)
 
 

@@ -1,5 +1,20 @@
 # Changelog
 
+## [6.0.6](https://github.com/ipfs/helia/compare/car-v6.0.5...car-v6.0.6) (2026-09-10)
+
+
+### Bug Fixes
+
+* update unixfs deps to allow for streaming dags ([#1125](https://github.com/ipfs/helia/issues/1125)) ([16fc74d](https://github.com/ipfs/helia/commit/16fc74d30cded1773e9ac18b0a62ca4582f7eab9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @helia/mfs bumped from ^8.0.5 to ^8.0.6
+    * @helia/unixfs bumped from ^8.0.5 to ^8.0.6
+
 ## [6.0.5](https://github.com/ipfs/helia/compare/car-v6.0.4...car-v6.0.5) (2026-07-28)
 
 
