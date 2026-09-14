@@ -2,6 +2,7 @@ import { base36 } from 'multiformats/bases/base36'
 import { DEFAULT_TTL_NS } from '../constants.ts'
 import { InvalidValueError, RecordNotFoundError, RecordsFailedValidationError } from '../errors.ts'
 import { IPNSEntry } from '../pb/ipns.ts'
+import { isLocalStoreRouting, routerName } from '../routing/index.ts'
 import { ipnsSelector } from '../selector.ts'
 import { multihashToIPNSRoutingKey, normalizeKey, IPNS_STRING_PREFIX, ipnsRecordValueToString, decodeExtensibleData } from '../utils.ts'
 import { ipnsValidator } from '../validator.ts'
@@ -9,7 +10,7 @@ import type { IPNSResolveOptions, IPNSResolveResult } from '../index.ts'
 import type { LocalStore } from '../local-store.ts'
 import type { IPNSRouting } from '../routing/index.ts'
 import type { Routing, Keychain } from '@helia/interface'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, Logger } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 
@@ -135,42 +136,15 @@ export class IPNSResolver {
 
     this.log('did not have record locally')
 
-    let foundInvalid = 0
-    const errors: Error[] = []
-
-    await Promise.all(
-      this.routers.map(async (router) => {
-        let marshaledIPNSRecord: Uint8Array
-
-        try {
-          marshaledIPNSRecord = await router.get(routingKey, {
-            ...options,
-            validate: false
-          })
-        } catch (err: any) {
-          this.log.error('error finding IPNS record using router %s - %e', router.toString(), err)
-          errors.push(err)
-
-          return
-        }
-
-        try {
-          let record: IPNSEntry
-
-          if (options.validate === false) {
-            record = IPNSEntry.decode(marshaledIPNSRecord)
-          } else {
-            record = await ipnsValidator(routingKey, marshaledIPNSRecord, this.keychain, options)
-          }
-
-          records.push(record)
-        } catch (err) {
-          // we found a record, but the validator rejected it
-          foundInvalid++
-          this.log.error('error validating IPNS record from router %s - %e', router.toString(), err)
-        }
-      })
+    const { records: networkRecords, foundInvalid } = await findRoutingRecords(
+      this.routers,
+      routingKey,
+      this.keychain,
+      this.log,
+      options,
+      options.validate !== false
     )
+    records.push(...networkRecords)
 
     if (records.length === 0) {
       if (foundInvalid > 0) {
@@ -186,4 +160,48 @@ export class IPNSResolver {
 
     return record
   }
+}
+
+/**
+ * Query the network routers for the records stored under a routing key, plus a
+ * count of records that were fetched but failed validation/decoding. Does not
+ * touch the local store; the caller selects the record it wants with
+ * `ipnsSelector`. Records are validated unless `validate` is false, in which
+ * case they are returned decoded without validation.
+ */
+export async function findRoutingRecords (routers: IPNSRouting[], routingKey: Uint8Array, keychain: Keychain, log: Logger, options: AbortOptions = {}, validate = true): Promise<{ records: IPNSEntry[], foundInvalid: number }> {
+  const records: IPNSEntry[] = []
+  let foundInvalid = 0
+
+  await Promise.all(
+    routers.map(async (router) => {
+      // the local store is not the network
+      if (isLocalStoreRouting(router)) {
+        return
+      }
+
+      let marshaledRecord: Uint8Array
+
+      try {
+        marshaledRecord = await router.get(routingKey, { ...options, validate: false })
+      } catch (err: any) {
+        log.error('error finding IPNS record using router %s - %e', routerName(router), err)
+        return
+      }
+
+      try {
+        // when the caller opts out of validation, return the record as decoded
+        const record = validate
+          ? await ipnsValidator(routingKey, marshaledRecord, keychain, options)
+          : IPNSEntry.decode(marshaledRecord)
+
+        records.push(record)
+      } catch (err) {
+        foundInvalid++
+        log.error('error reading IPNS record from router %s - %e', routerName(router), err)
+      }
+    })
+  )
+
+  return { records, foundInvalid }
 }

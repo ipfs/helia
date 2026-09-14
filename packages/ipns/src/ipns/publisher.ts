@@ -2,9 +2,10 @@ import { base36 } from 'multiformats/bases/base36'
 import { CustomProgressEvent } from 'progress-events'
 import { DEFAULT_LIFETIME_MS } from '../constants.ts'
 import { IPNSEntry } from '../pb/ipns.ts'
+import { Upkeep } from '../pb/metadata.ts'
 import { createIPNSRecord } from '../records.ts'
 import { decodeExtensibleData, multihashToIPNSRoutingKey } from '../utils.ts'
-import type { IPNSPublishResult, PublishOptions } from '../index.ts'
+import type { IPNSPublishResult, PublishOptions, UnpublishOptions } from '../index.ts'
 import type { LocalStore } from '../local-store.ts'
 import type { IPNSRouting } from '../routing/index.ts'
 import type { Keychain, PrivateKey, PublicKey } from '@helia/interface'
@@ -58,25 +59,14 @@ export class IPNSPublisher {
       })
       const marshaledRecord = IPNSEntry.encode(record)
 
+      const metadata = { keyName, lifetime, upkeep: Upkeep[options.upkeep ?? 'reissue'] }
       if (options.offline === true) {
         // only store record locally
-        await this.localStore.put(routingKey, marshaledRecord, {
-          ...options,
-          metadata: {
-            keyName,
-            lifetime
-          }
-        })
+        await this.localStore.put(routingKey, marshaledRecord, { ...options, metadata })
       } else {
         // publish record to routing (including the local store)
         await Promise.all(this.routers.map(async r => {
-          await r.put(routingKey, marshaledRecord, {
-            ...options,
-            metadata: {
-              keyName,
-              lifetime
-            }
-          })
+          await r.put(routingKey, marshaledRecord, { ...options, metadata })
         }))
       }
 
@@ -108,10 +98,22 @@ export class IPNSPublisher {
     }
   }
 
-  async unpublish (keyName: string, options?: AbortOptions): Promise<void> {
-    const key = await this.keychain.exportKey(keyName, options)
-    const digest = key.publicKey.toMultihash()
-    const routingKey = multihashToIPNSRoutingKey(digest)
-    await this.localStore.delete(routingKey, options)
+  async unpublish (keyName: string | MultihashDigest, options?: UnpublishOptions): Promise<void> {
+    if (typeof keyName === 'string') {
+      const key = await this.keychain.exportKey(keyName, options)
+      keyName = key.publicKey.toMultihash()
+    }
+
+    const routingKey = multihashToIPNSRoutingKey(keyName)
+
+    if (options?.removeRecord === true) {
+      // delete the record and its metadata so this node stops serving it
+      await this.localStore.delete(routingKey, options)
+      return
+    }
+
+    // remove only the metadata so the record is still served but no longer
+    // automatically republished; it expires naturally at its validity
+    await this.localStore.deleteMetadata(routingKey, options)
   }
 }

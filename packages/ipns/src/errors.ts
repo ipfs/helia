@@ -1,3 +1,5 @@
+import type { IPNSEntry } from './pb/ipns.ts'
+
 export class RecordsFailedValidationError extends Error {
   static name = 'RecordsFailedValidationError'
   name = 'RecordsFailedValidationError'
@@ -16,6 +18,22 @@ export class InvalidTopicError extends Error {
 export class RecordNotFoundError extends Error {
   static name = 'RecordNotFoundError'
   name = 'RecordNotFoundError'
+}
+
+export class RecordObsoleteError extends Error {
+  static name = 'RecordObsoleteError'
+  name = 'RecordObsoleteError'
+  /**
+   * The more suitable record that made the one being imported or republished
+   * obsolete.
+   */
+  readonly record: IPNSEntry
+
+  constructor (message: string, record: IPNSEntry) {
+    super(message)
+
+    this.record = record
+  }
 }
 
 export class SignatureCreationError extends Error {

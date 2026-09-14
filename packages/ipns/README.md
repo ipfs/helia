@@ -165,6 +165,46 @@ for await (const result of name.resolve(publicKey)) {
 }
 ```
 
+## Example - Republishing an existing IPNS record
+
+It is sometimes useful to be able to republish an existing IPNS record
+without needing the private key. This allows you to extend the availability
+of a record that was created elsewhere: use `import` to store the record
+locally, then `republish` to broadcast it and keep it alive.
+
+> **There should be only one republisher per IPNS key.** Multiple machines
+> republishing the same key flood the routers with redundant writes.
+
+```TypeScript
+import { createHelia } from 'helia'
+import { ipns } from '@helia/ipns'
+import { delegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
+import { defaultLogger } from 'birnam'
+import { CID } from 'multiformats/cid'
+
+const helia = await createHelia()
+const name = ipns(helia)
+
+const ipnsName = 'k51qzi5uqu5dktsyfv7xz8h631pri4ct7osmb43nibxiojpttxzoft6hdyyzg4'
+const parsedCid: CID<unknown, 114, 0 | 18, 1> = CID.parse(ipnsName)
+const delegatedClient = delegatedRoutingV1HttpApiClient({
+  url: 'https://delegated-ipfs.dev'
+})({
+  logger: defaultLogger()
+})
+const record = await delegatedClient.getIPNS(parsedCid)
+
+// bring the record fetched from elsewhere into the local store
+await name.import(parsedCid, record)
+
+// republish the imported record and keep it alive. Throws
+// RecordObsoleteError if the routing already has a newer record
+await name.republish(parsedCid)
+
+// stop republishing a key
+await name.unpublish(parsedCid)
+```
+
 # Install
 
 ```console

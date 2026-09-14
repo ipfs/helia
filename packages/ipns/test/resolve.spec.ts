@@ -113,6 +113,9 @@ describe('resolve', () => {
 
     heliaRouting.get.resolves(IPNSEntry.encode(record))
 
+    // @ts-ignore cannot access private localStore property
+    const storeGetSpy = Sinon.spy(name.localStore, 'get')
+
     const result = await last(name.resolve(publicKey, {
       nocache: true
     }))
@@ -123,11 +126,14 @@ describe('resolve', () => {
 
     expect(result.value).to.equal(`/ipfs/${cid.toV1()}`)
 
+    // check that localStore.get not called
+    expect(storeGetSpy.called).to.be.false()
+
     expect(heliaRouting.get.called).to.be.true()
     expect(customRouting.get.called).to.be.true()
 
     // we call `.get` during `.put`
-    cachePutSpy.calledBefore(cacheGetSpy)
+    expect(cachePutSpy.calledBefore(cacheGetSpy)).to.be.true()
   })
 
   it('should retrieve from local cache when resolving a record', async () => {
@@ -352,6 +358,56 @@ describe('resolve', () => {
 
     // should have searched the routing
     expect(customRouting.get.called).to.be.true()
+  })
+
+  it('should return the network record without validating it when validate is false', async () => {
+    const key = await keychain.generateKey('test-key')
+
+    // the routing serves a record the validator would reject (expired lifetime)
+    const expiredRecord = await createIPNSRecord(key, `/ipfs/${cid.toV1()}`, 1, -Math.pow(2, 10), {
+      ttlNs: 10_000_000n
+    })
+    customRouting.get.resolves(IPNSEntry.encode(expiredRecord))
+    heliaRouting.get.resolves(IPNSEntry.encode(expiredRecord))
+
+    // with validate: false the expired record is returned as-is instead of throwing
+    const result = await last(name.resolve(key.publicKey, { validate: false }))
+    expect(result).to.have.deep.property('record', expiredRecord)
+  })
+
+  it('should return an expired cached record without validating or deleting it when validate is false', async () => {
+    const key = await keychain.generateKey('test-key')
+    const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+    const dhtKey = new Key('/dht/record/' + uint8ArrayToString(routingKey, 'base32'), false)
+
+    // an expired-lifetime record (validation would reject it) with a valid TTL,
+    // stored fresh so it is served from the cache within its TTL window
+    const expiredRecord = await createIPNSRecord(key, `/ipfs/${cid.toV1()}`, 1, -Math.pow(2, 10), {
+      ttlNs: 60n * 60n * 1_000_000_000n
+    })
+    const dhtRecord = new Record(routingKey, IPNSEntry.encode(expiredRecord), new Date())
+    await datastore.put(dhtKey, dhtRecord.serialize())
+
+    const result = await last(name.resolve(key.publicKey, { validate: false }))
+    expect(result).to.have.deep.property('record', expiredRecord)
+
+    // served from cache: the routing was not queried and the record was kept
+    expect(customRouting.get.called).to.be.false('queried the routing')
+    expect(await datastore.has(dhtKey)).to.be.true('deleted the cached record')
+  })
+
+  it('should throw when the routing has only records that fail validation', async () => {
+    const key = await keychain.generateKey('test-key')
+
+    // the routing serves a record that fails validation (expired lifetime)
+    const invalidRecord = await createIPNSRecord(key, `/ipfs/${cid.toV1()}`, 1, -Math.pow(2, 10), {
+      ttlNs: 10_000_000n
+    })
+    customRouting.get.resolves(IPNSEntry.encode(invalidRecord))
+    heliaRouting.get.resolves(IPNSEntry.encode(invalidRecord))
+
+    await expect(last(name.resolve(key.publicKey))).to.eventually.be.rejected
+      .with.property('name', 'RecordsFailedValidationError')
   })
 
   it('should resolve a legacy record with CID bytes as the value', async () => {

@@ -3,7 +3,7 @@ import { CustomProgressEvent } from 'progress-events'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
-import { IPNSPublishMetadata } from './pb/metadata.ts'
+import { IPNSPublishMetadata, Upkeep } from './pb/metadata.ts'
 import { dhtRoutingKey, DHT_RECORD_PREFIX, ipnsMetadataKey } from './utils.ts'
 import type { DatastoreProgressEvents, IPNSRoutingGetOptions, IPNSRoutingPutOptions } from './routing/index.ts'
 import type { AbortOptions, Logger } from '@libp2p/interface'
@@ -38,9 +38,64 @@ export interface LocalStore {
   has(routingKey: Uint8Array, options?: AbortOptions): Promise<boolean>
   delete(routingKey: Uint8Array, options?: AbortOptions): Promise<void>
   /**
+   * Delete only the IPNS metadata for a record, leaving the record itself in
+   * place so it is still served but no longer automatically republished
+   */
+  deleteMetadata(routingKey: Uint8Array, options?: AbortOptions): Promise<void>
+  /**
    * List all IPNS records in the datastore
    */
   list(options?: ListOptions): AsyncIterable<ListResult>
+}
+
+/**
+ * Merge a (possibly partial) metadata update into any metadata already stored
+ * for the routing key, so fields that are not being changed are preserved.
+ *
+ * Throws if the existing metadata cannot be read (rather than silently
+ * overwriting it and dropping keyName/lifetime), or if the resulting policy
+ * needs a keyName it does not have.
+ */
+async function mergeMetadata (datastore: Datastore, routingKey: Uint8Array, incoming: Partial<IPNSPublishMetadata>, options?: AbortOptions): Promise<Partial<IPNSPublishMetadata>> {
+  let metadata = incoming
+
+  try {
+    // merge into any existing metadata so a partial update (e.g. republish
+    // setting only `upkeep`) preserves keyName/lifetime instead of wiping them
+    const existing = IPNSPublishMetadata.decode(await datastore.get(ipnsMetadataKey(routingKey), options))
+    metadata = { ...existing, ...incoming }
+  } catch (err: any) {
+    if (err.name !== 'NotFoundError') {
+      // the stored metadata is unreadable, surface it rather than silently
+      // overwriting and dropping keyName/lifetime
+      throw err
+    }
+  }
+
+  // the reissue upkeep policy re-signs the record, which needs the key, so
+  // refuse to persist that policy without a keyName
+  if (metadata.upkeep === Upkeep.reissue && (metadata.keyName == null || metadata.keyName === '')) {
+    throw new Error('a keyName is required to reissue a record')
+  }
+
+  return metadata
+}
+
+/**
+ * Read the stored upkeep metadata for a routing key, if any. A record with no
+ * metadata is normal (imported, or unpublished), so that is not an error; only
+ * an actual decode/corruption failure is logged.
+ */
+async function readMetadata (datastore: Datastore, routingKey: Uint8Array, log: Logger, options?: AbortOptions): Promise<IPNSPublishMetadata | undefined> {
+  try {
+    return IPNSPublishMetadata.decode(await datastore.get(ipnsMetadataKey(routingKey), options))
+  } catch (err: any) {
+    if (err.name !== 'NotFoundError') {
+      log.error('error deserializing metadata for %b - %e', routingKey, err)
+    }
+
+    return undefined
+  }
 }
 
 /**
@@ -55,18 +110,20 @@ export function localStore (datastore: Datastore, log: Logger): LocalStore {
       try {
         const key = dhtRoutingKey(routingKey)
 
-        // don't overwrite existing, identical records as this will affect the
-        // TTL
-        try {
-          const existingBuf = await datastore.get(key)
-          const existingRecord = Record.deserialize(existingBuf)
+        if (options.overwrite !== true) {
+          // don't overwrite existing, identical records as this will affect the
+          // TTL
+          try {
+            const existingBuf = await datastore.get(key)
+            const existingRecord = Record.deserialize(existingBuf)
 
-          if (uint8ArrayEquals(existingRecord.value, marshalledRecord)) {
-            return
-          }
-        } catch (err: any) {
-          if (err.name !== 'NotFoundError') {
-            throw err
+            if (uint8ArrayEquals(existingRecord.value, marshalledRecord)) {
+              return
+            }
+          } catch (err: any) {
+            if (err.name !== 'NotFoundError') {
+              throw err
+            }
           }
         }
 
@@ -78,8 +135,10 @@ export function localStore (datastore: Datastore, log: Logger): LocalStore {
         batch.put(key, record.serialize())
 
         if (options.metadata != null) {
-          // derive the datastore key for the IPNS metadata from the same routing key
-          batch.put(ipnsMetadataKey(routingKey), IPNSPublishMetadata.encode(options.metadata))
+          // merge into any existing metadata (preserving keyName/lifetime on a
+          // partial update) and validate the result before writing it
+          const metadata = await mergeMetadata(datastore, routingKey, options.metadata, options)
+          batch.put(ipnsMetadataKey(routingKey), IPNSPublishMetadata.encode(metadata))
         }
         await batch.commit(options)
       } catch (err: any) {
@@ -117,6 +176,9 @@ export function localStore (datastore: Datastore, log: Logger): LocalStore {
       batch.delete(ipnsMetadataKey(routingKey))
       await batch.commit(options)
     },
+    async deleteMetadata (routingKey, options): Promise<void> {
+      await datastore.delete(ipnsMetadataKey(routingKey), options)
+    },
     async * list (options: ListOptions = {}): AsyncIterable<ListResult> {
       try {
         options.onProgress?.(new CustomProgressEvent('ipns:routing:datastore:list'))
@@ -134,14 +196,7 @@ export function localStore (datastore: Datastore, log: Logger): LocalStore {
             const routingKeyBase32 = keyString.substring(DHT_RECORD_PREFIX.length)
             const routingKey = uint8ArrayFromString(routingKeyBase32, 'base32')
 
-            const metadataKey = ipnsMetadataKey(routingKey)
-            let metadata: IPNSPublishMetadata | undefined
-            try {
-              const metadataBuf = await datastore.get(metadataKey, options)
-              metadata = IPNSPublishMetadata.decode(metadataBuf)
-            } catch (err: any) {
-              log.error('Error deserializing metadata for %s - %e', routingKeyBase32, err)
-            }
+            const metadata = await readMetadata(datastore, routingKey, log, options)
 
             yield {
               routingKey,

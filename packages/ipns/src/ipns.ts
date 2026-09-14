@@ -7,9 +7,9 @@ import { localStore } from './local-store.ts'
 import { heliaIPNSRouting } from './routing/helia.ts'
 import { localStoreIPNSRouting } from './routing/local-store.ts'
 import { ipnsSelector } from './selector.ts'
-import { normalizeKey, normalizeValue } from './utils.ts'
+import { normalizeKey, normalizeKeyName, normalizeValue } from './utils.ts'
 import { ipnsValidator } from './validator.ts'
-import type { IPNSComponents, IPNS as IPNSInterface, IPNSOptions, IPNSPublishResult, PublishOptions, IPNSResolveOptions, IPNSResolveResult } from './index.ts'
+import type { IPNSComponents, IPNS as IPNSInterface, IPNSOptions, IPNSPublishResult, PublishOptions, RepublishOptions, RepublishResult, IPNSResolveOptions, IPNSResolveResult, UnpublishOptions } from './index.ts'
 import type { LocalStore } from './local-store.ts'
 import type { IPNSRouting } from './routing/index.ts'
 import type { PublicKey } from '@helia/interface'
@@ -42,12 +42,12 @@ export class IPNS implements IPNSInterface, Startable {
       routers: this.routers,
       localStore: this.localStore
     })
-    this.republisher = new IPNSRepublisher(components, {
+    this.resolver = new IPNSResolver(components, {
       ...init,
       routers: this.routers,
       localStore: this.localStore
     })
-    this.resolver = new IPNSResolver(components, {
+    this.republisher = new IPNSRepublisher(components, {
       ...init,
       routers: this.routers,
       localStore: this.localStore
@@ -103,14 +103,28 @@ export class IPNS implements IPNSInterface, Startable {
     return this.publisher.publish(keyName, normalizeValue(value), options)
   }
 
-  async * resolve (key: PublicKey | CID | MultihashDigest | string, options: IPNSResolveOptions = {}): AsyncGenerator<IPNSResolveResult> {
+  async * resolve (key: CID<unknown, 0x72> | PublicKey | MultihashDigest | string, options: IPNSResolveOptions = {}): AsyncGenerator<IPNSResolveResult> {
     const { digest } = normalizeKey(key)
 
     yield * this.resolver.resolve(digest, options)
   }
 
-  async unpublish (keyName: string, options?: AbortOptions): Promise<void> {
+  async unpublish (keyName: CID<unknown, 0x72> | PublicKey | MultihashDigest | string, options?: UnpublishOptions): Promise<void> {
+    keyName = normalizeKeyName(keyName)
+
     return this.publisher.unpublish(keyName, options)
+  }
+
+  async republish (keyName: CID<unknown, 0x72> | PublicKey | MultihashDigest | string, options: RepublishOptions = {}): Promise<RepublishResult> {
+    const { digest } = normalizeKey(keyName)
+
+    return this.republisher.republish(digest, options)
+  }
+
+  async import (key: CID<unknown, 0x72> | PublicKey | MultihashDigest | string, record: IPNSEntry | Uint8Array, options?: AbortOptions): Promise<void> {
+    const { digest } = normalizeKey(key)
+
+    return this.republisher.import(digest, record, options)
   }
 }
 

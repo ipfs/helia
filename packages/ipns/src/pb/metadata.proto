@@ -1,9 +1,19 @@
 syntax = "proto3";
 
+enum Upkeep {
+  reissue = 0; // Re-sign the record with a new validity (key must be in keychain)
+  rebroadcast = 1; // Re-publish the record as is (while it is still valid)
+  none = 2; // Disables automated republishing for the record
+}
+
 message IPNSPublishMetadata {
   // The name of the key that was used to publish the record
   string keyName = 1;
 
   // Lifetime is the duration of the signature validity in milliseconds
+  // Relevant for Upkeep.reissue
   uint32 lifetime = 2;
+
+  // Republishing policy
+  Upkeep upkeep = 3;
 }

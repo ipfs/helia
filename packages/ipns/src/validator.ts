@@ -1,4 +1,5 @@
 import NanoDate from 'timestamp-nano'
+import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { InvalidEmbeddedPublicKeyError, RecordExpiredError, RecordTooLargeError, SignatureVerificationError, UnsupportedValidityError } from './errors.ts'
 import { IPNSEntry } from './pb/ipns.ts'
@@ -40,24 +41,7 @@ export async function ipnsValidator (routingKey: Uint8Array, marshalledRecord: U
   const data = decodeExtensibleData(record.data)
   const validity = uint8ArrayToString(data.Validity)
 
-  let publicKey: PublicKey | undefined
-
-  // try to extract public key from routing key
-  const routingMultihash = multihashFromIPNSRoutingKey(routingKey)
-
-  // identity hash
-  if (isCodec(routingMultihash, 0x0)) {
-    publicKey = await keychain.loadPublicKeyFromProtobuf(routingMultihash.digest, options)
-  }
-
-  // otherwise try to load key from message
-  if (publicKey == null && record.publicKey != null) {
-    publicKey = await keychain.loadPublicKeyFromProtobuf(record.publicKey, options)
-  }
-
-  if (publicKey == null) {
-    throw new InvalidEmbeddedPublicKeyError('Could not extract public key from IPNS record or routing key')
-  }
+  const publicKey = await extractPublicKey(routingKey, record, keychain, options)
 
   // Validate Signature V2
   let isValid
@@ -93,6 +77,34 @@ export async function ipnsValidator (routingKey: Uint8Array, marshalledRecord: U
   }
 
   return record
+}
+
+/**
+ * Extract the public key that signed an IPNS record, either from an
+ * identity-hashed routing key or from the key embedded in the record.
+ */
+export async function extractPublicKey (routingKey: Uint8Array, record: IPNSEntry, keychain: Keychain, options?: AbortOptions): Promise<PublicKey> {
+  const routingMultihash = multihashFromIPNSRoutingKey(routingKey)
+
+  // identity hash, the routing key is the public key
+  if (isCodec(routingMultihash, 0x0)) {
+    return keychain.loadPublicKeyFromProtobuf(routingMultihash.digest, options)
+  }
+
+  // otherwise the record must embed the public key, and that key must correspond
+  // to the routing key, otherwise the record was paired with a routing key it was
+  // not signed for
+  if (record.publicKey != null) {
+    const publicKey = await keychain.loadPublicKeyFromProtobuf(record.publicKey, options)
+
+    if (!uint8ArrayEquals(publicKey.toMultihash().bytes, routingMultihash.bytes)) {
+      throw new InvalidEmbeddedPublicKeyError('Embedded public key does not match the routing key')
+    }
+
+    return publicKey
+  }
+
+  throw new InvalidEmbeddedPublicKeyError('Could not extract public key from IPNS record or routing key')
 }
 
 /**

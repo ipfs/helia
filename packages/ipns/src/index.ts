@@ -135,6 +135,46 @@
  *   console.info(result.record.value)
  * }
  * ```
+ *
+ * @example Republishing an existing IPNS record
+ *
+ * It is sometimes useful to be able to republish an existing IPNS record
+ * without needing the private key. This allows you to extend the availability
+ * of a record that was created elsewhere.
+ *
+ * There should be only one republisher per IPNS key. Multiple machines
+ * republishing the same key flood the routers with redundant writes.
+ *
+ * ```TypeScript
+ * import { createHelia } from 'helia'
+ * import { ipns } from '@helia/ipns'
+ * import { delegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
+ * import { defaultLogger } from 'birnam'
+ * import { CID } from 'multiformats/cid'
+ *
+ * const helia = await createHelia()
+ * const name = ipns(helia)
+ *
+ * const ipnsName = 'k51qzi5uqu5dktsyfv7xz8h631pri4ct7osmb43nibxiojpttxzoft6hdyyzg4'
+ * const parsedCid: CID<unknown, 114, 0 | 18, 1> = CID.parse(ipnsName)
+ * const delegatedClient = delegatedRoutingV1HttpApiClient({
+ *   url: 'https://delegated-ipfs.dev'
+ * })({
+ *   logger: defaultLogger()
+ * })
+ * const record = await delegatedClient.getIPNS(parsedCid)
+ *
+ * // import the record into the local store (validates and stores it locally,
+ * // but does not publish it to the routers)
+ * await name.import(parsedCid, record)
+ *
+ * // start republishing it; throws RecordObsoleteError if the routers
+ * // already have a newer record for this key
+ * const { record: latestRecord } = await name.republish(parsedCid)
+ *
+ * // stop republishing a key
+ * await name.unpublish(parsedCid)
+ * ```
  */
 
 import { CID } from 'multiformats/cid'
@@ -155,6 +195,7 @@ import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
 export * from './routing/index.ts'
 export * from './pb/ipns.ts'
+export * from './errors.ts'
 
 export {
   multihashFromIPNSRoutingKey,
@@ -183,6 +224,14 @@ export type DatastoreProgressEvents =
   ProgressEvent<'ipns:routing:datastore:get'> |
   ProgressEvent<'ipns:routing:datastore:list'> |
   ProgressEvent<'ipns:routing:datastore:error', Error>
+
+/**
+ * The automated upkeep policy for a stored IPNS record. `republish()` accepts
+ * every policy except `reissue`, which needs the private key to re-sign.
+ *
+ * These strings must match the `Upkeep` enum values in `pb/metadata.proto`.
+ */
+export type UpkeepPolicy = 'reissue' | 'rebroadcast' | 'none'
 
 export interface PublishOptions extends AbortOptions, ProgressOptions<PublishProgressEvents | IPNSRoutingProgressEvents> {
   /**
@@ -218,6 +267,17 @@ export interface PublishOptions extends AbortOptions, ProgressOptions<PublishPro
    * @default 300_000
    */
   ttl?: number
+
+  /**
+   * Automated record upkeep policy.
+   *
+   * - `reissue`: re-sign the record with a new validity
+   * - `rebroadcast`: re-publish the existing record until it expires
+   * - `none`: disable automated publishing
+   *
+   * @default 'reissue'
+   */
+  upkeep?: UpkeepPolicy
 
   /**
    * Extensible data that will be added to the IPNS record data and signed to
@@ -273,6 +333,43 @@ export interface IPNSResolveOptions extends AbortOptions, ProgressOptions<Resolv
   validate?: boolean
 }
 
+export interface RepublishOptions extends AbortOptions, ProgressOptions<IPNSRoutingProgressEvents> {
+  /**
+   * Skip resolution of latest record before republishing.
+   *
+   * It's important to resolve the latest record before republishing to routers
+   *
+   * Resolution should only be skipped when confident the latest record is
+   * already known.
+   *
+   * @default false
+   */
+  skipResolution?: boolean
+
+  /**
+   * Automated record upkeep policy.
+   *
+   * Defaults to `rebroadcast` since `republish()` cannot sign new records
+   * without the private key.
+   *
+   * - `rebroadcast`: re-publish the existing record until it expires
+   * - `none`: disable automated publishing
+   *
+   * @default 'rebroadcast'
+   */
+  upkeep?: Exclude<UpkeepPolicy, 'reissue'>
+}
+
+export interface UnpublishOptions extends AbortOptions {
+  /**
+   * Also delete the record from the local store, so the node stops serving it
+   * immediately instead of keeping it until it expires.
+   *
+   * @default false
+   */
+  removeRecord?: boolean
+}
+
 export interface IPNSResolveResult {
   /**
    * The resolved record
@@ -298,6 +395,18 @@ export interface IPNSPublishResult {
 
   /**
    * The public key that was used to sign and publish the record
+   */
+  publicKey: PublicKey
+}
+
+export interface RepublishResult {
+  /**
+   * The published record
+   */
+  record: IPNSEntry
+
+  /**
+   * The public key that the record is published under
    */
   publicKey: PublicKey
 }
@@ -345,7 +454,7 @@ export interface IPNS {
    *   signal: AbortSignal.timeout(5_000)
    * })
    *
-   * console.info(result) // { answer: ... }
+   * console.info(result) // { record, name, publicKey }
    * ```
    */
   publish(keyName: string, value: CID | PublicKey | MultihashDigest | string, options?: PublishOptions): Promise<IPNSPublishResult>
@@ -357,17 +466,46 @@ export interface IPNS {
    * (e.g. the value can be parsed as a string that does not start with
    * `/ipns/`).
    */
-  resolve(name: CID | PublicKey | MultihashDigest | string, options?: IPNSResolveOptions): AsyncGenerator<IPNSResolveResult>
+  resolve(name: CID<unknown, 0x72> | PublicKey | MultihashDigest | string, options?: IPNSResolveOptions): AsyncGenerator<IPNSResolveResult>
 
   /**
-   * Stop republishing of an IPNS record.
+   * Stop automatically republishing an IPNS record
    *
-   * This will delete the last signed IPNS record from the datastore.
-   *
-   * Note that the record may still be resolved by other peers until it expires
-   * or is otherwise no longer valid.
+   * By default this removes only the republishing metadata, keeping the record
+   * in the datastore so it is still served until it expires. Pass
+   * `removeRecord: true` to also delete the record so the node stops serving it.
+   * If a key name is passed, the key remains in the keychain.
    */
-  unpublish(keyName: string, options?: AbortOptions): Promise<void>
+  unpublish(key: CID<unknown, 0x72> | PublicKey | MultihashDigest | string, options?: UnpublishOptions): Promise<void>
+
+  /**
+   * Republish the record already in the local store, setting its upkeep policy.
+   *
+   * Sets the record's upkeep policy to `options.upkeep` (default `rebroadcast`)
+   * so the background republisher keeps it available on the routers.
+   *
+   * @throws {NotFoundError} when there is no local record to republish
+   * @throws {RecordObsoleteError} when the routers already have a newer record
+   */
+  republish(key: CID<unknown, 0x72> | PublicKey | MultihashDigest | string, options?: RepublishOptions): Promise<RepublishResult>
+
+  /**
+   * Import an existing IPNS record into the local store without publishing it.
+   *
+   * The record is validated and stored so this node serves it on a GET, but it
+   * is not broadcast to the routers. A newly imported record (for a key with no
+   * existing upkeep policy) is not automatically republished; call `republish`
+   * with an upkeep policy to start keeping it alive.
+   *
+   * Overwrites an older record already stored under this key, or rejects with
+   * `RecordObsoleteError` if the stored record is newer. Importing never changes
+   * the key's upkeep metadata, so a key that already has an upkeep policy keeps
+   * it and continues to be republished automatically.
+   *
+   * @throws {RecordExpiredError} (or another validation error) when the record fails validation
+   * @throws {RecordObsoleteError} when the stored record is more suitable than the one being imported
+   */
+  import(key: CID<unknown, 0x72> | PublicKey | MultihashDigest | string, record: IPNSEntry | Uint8Array, options?: AbortOptions): Promise<void>
 }
 
 export interface IPNSComponents {

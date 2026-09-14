@@ -91,8 +91,10 @@ describe('validator', function () {
 
     const marshalledRecord = IPNSEntry.encode(record)
 
+    // the embedded key no longer matches the routing key, so it is rejected
+    // before signature verification is even attempted
     await expect(ipnsValidator(routingKey, marshalledRecord, kc)).to.eventually.be.rejected()
-      .with.property('name', SignatureVerificationError.name)
+      .with.property('name', InvalidEmbeddedPublicKeyError.name)
   })
 
   it('should limit the size of incoming records', async () => {

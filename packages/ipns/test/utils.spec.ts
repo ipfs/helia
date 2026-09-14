@@ -4,8 +4,20 @@ import { CID } from 'multiformats/cid'
 import * as Digest from 'multiformats/hashes/digest'
 import { InvalidValueError } from '../src/errors.ts'
 import { shouldRepublish } from '../src/utils.ts'
-import { normalizeValue, multihashFromIPNSRoutingKey, multihashToIPNSRoutingKey } from '../src/utils.ts'
+import { normalizeKeyName, normalizeValue, multihashFromIPNSRoutingKey, multihashToIPNSRoutingKey } from '../src/utils.ts'
 import type { MultihashDigest } from 'multiformats/cid'
+
+describe('normalizeKeyName', () => {
+  it('treats a plain string as a keychain key name', () => {
+    expect(normalizeKeyName('test-key')).to.equal('test-key')
+  })
+
+  it('throws for a non-libp2p CID instead of stringifying it to a bogus key name', () => {
+    const cid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
+    // @ts-expect-error a dag-pb CID is not a valid libp2p-key CID
+    expect(() => normalizeKeyName(cid)).to.throw(InvalidValueError)
+  })
+})
 
 describe('shouldRepublish', () => {
   it('should return true when DHT expiry is within threshold', () => {

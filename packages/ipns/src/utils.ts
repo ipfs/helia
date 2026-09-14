@@ -281,6 +281,25 @@ export function normalizeKey (key?: PublicKey | CID | MultihashDigest | string):
   throw new InvalidValueError('Value must be a valid IPNS path starting with /')
 }
 
+/**
+ * Normalize a key identifier for unpublish: CID/PublicKey/multihash become a
+ * MultihashDigest, a keychain key name stays a string.
+ */
+export function normalizeKeyName (keyName: CID<unknown, 0x72> | PublicKey | MultihashDigest | string): MultihashDigest | string {
+  // a CID/PublicKey/MultihashDigest is always an IPNS name, let it throw if invalid
+  if (typeof keyName !== 'string') {
+    return normalizeKey(keyName).digest
+  }
+
+  try {
+    // a string may be an IPNS name...
+    return normalizeKey(keyName).digest
+  } catch {
+    // ...otherwise treat it as a keychain key name
+    return keyName
+  }
+}
+
 export function validateCborDataMatchesPbData (entry: IPNSEntry, data: IPNSRecordData): void {
   if (!uint8ArrayEquals(data.Value, entry.value ?? new Uint8Array(0))) {
     throw new SignatureVerificationError('Field "value" did not match between protobuf and CBOR')
