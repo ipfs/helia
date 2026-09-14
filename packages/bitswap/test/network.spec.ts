@@ -447,4 +447,74 @@ describe('network', () => {
       }]
     })
   })
+
+  // `runOnLimitedConnections` has to reach two places, and each one alone is
+  // enough to keep bitswap off a limited connection: the registrar only tells
+  // a topology about a limited connection when the topology asked to be told,
+  // and libp2p refuses to open a protocol stream on one unless the dial opted
+  // in - https://github.com/ipfs/helia/issues/1124
+
+  it('should not ask to be notified of limited connections by default', () => {
+    const topologies = components.libp2p.register.getCalls().map(call => call.args[1])
+
+    expect(topologies).to.not.be.empty()
+
+    for (const topology of topologies) {
+      expect(topology.notifyOnLimitedConnection).to.not.be.true()
+    }
+  })
+
+  it('should ask to be notified of limited connections when running on limited connections', async () => {
+    await network.stop()
+    components.libp2p.register.resetHistory()
+
+    network = new Network({
+      ...components,
+      logger: defaultLogger()
+    }, {
+      runOnLimitedConnections: true
+    })
+    await network.start()
+
+    const topologies = components.libp2p.register.getCalls().map(call => call.args[1])
+
+    expect(topologies).to.not.be.empty()
+
+    for (const topology of topologies) {
+      expect(topology.notifyOnLimitedConnection).to.be.true()
+    }
+  })
+
+  it('should not open a stream on a limited connection by default', async () => {
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const [outboundStream, inboundStream] = await streamPair()
+
+    components.libp2p.dialProtocol.withArgs(peerId, BITSWAP_120).resolves(outboundStream)
+
+    void network.sendMessage(peerId, new QueuedBitswapMessage(true))
+    await pbStream(inboundStream).pb(BitswapMessage).read()
+
+    expect(components.libp2p.dialProtocol.getCall(0).args[2]?.runOnLimitedConnection).to.not.be.true()
+  })
+
+  it('should open a stream on a limited connection when running on limited connections', async () => {
+    await network.stop()
+    network = new Network({
+      ...components,
+      logger: defaultLogger()
+    }, {
+      runOnLimitedConnections: true
+    })
+    await network.start()
+
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const [outboundStream, inboundStream] = await streamPair()
+
+    components.libp2p.dialProtocol.withArgs(peerId, BITSWAP_120).resolves(outboundStream)
+
+    void network.sendMessage(peerId, new QueuedBitswapMessage(true))
+    await pbStream(inboundStream).pb(BitswapMessage).read()
+
+    expect(components.libp2p.dialProtocol.getCall(0).args[2]?.runOnLimitedConnection).to.be.true()
+  })
 })
