@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.16](https://github.com/ipfs/helia/compare/bitswap-v4.0.15...bitswap-v4.0.16) (2026-09-14)
+
+
+### Bug Fixes
+
+* update protons and regenerate messages ([#1127](https://github.com/ipfs/helia/issues/1127)) ([b34bc7c](https://github.com/ipfs/helia/commit/b34bc7c76d8ab1f1eeba9893af792299b05de111))
+
 ## [4.0.15](https://github.com/ipfs/helia/compare/bitswap-v4.0.14...bitswap-v4.0.15) (2026-09-10)
 
 

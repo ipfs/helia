@@ -1,5 +1,14 @@
 # Changelog
 
+## [7.1.12](https://github.com/ipfs/helia/compare/helia-v7.1.11...helia-v7.1.12) (2026-09-14)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^4.0.15 to ^4.0.16
+
 ## [7.1.11](https://github.com/ipfs/helia/compare/helia-v7.1.10...helia-v7.1.11) (2026-09-10)
 
 

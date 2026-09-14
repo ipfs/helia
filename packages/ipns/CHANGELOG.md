@@ -1,5 +1,17 @@
 # Changelog
 
+## [10.2.0](https://github.com/ipfs/helia/compare/ipns-v10.1.1...ipns-v10.2.0) (2026-09-14)
+
+
+### Features
+
+* republish third-party ipns record ([#891](https://github.com/ipfs/helia/issues/891)) ([2ab3bfc](https://github.com/ipfs/helia/commit/2ab3bfc6905c9128f89059b67a8a1986f211c73a))
+
+
+### Bug Fixes
+
+* update protons and regenerate messages ([#1127](https://github.com/ipfs/helia/issues/1127)) ([b34bc7c](https://github.com/ipfs/helia/commit/b34bc7c76d8ab1f1eeba9893af792299b05de111))
+
 ## [10.1.1](https://github.com/ipfs/helia/compare/ipns-v10.1.0...ipns-v10.1.1) (2026-09-10)
 
 
