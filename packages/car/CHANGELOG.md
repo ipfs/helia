@@ -1,5 +1,20 @@
 # Changelog
 
+## [6.0.7](https://github.com/ipfs/helia/compare/car-v6.0.6...car-v6.0.7) (2026-09-14)
+
+
+### Bug Fixes
+
+* update protons and regenerate messages ([#1127](https://github.com/ipfs/helia/issues/1127)) ([b34bc7c](https://github.com/ipfs/helia/commit/b34bc7c76d8ab1f1eeba9893af792299b05de111))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @helia/mfs bumped from ^8.0.6 to ^8.0.7
+    * @helia/unixfs bumped from ^8.0.6 to ^8.0.7
+
 ## [6.0.6](https://github.com/ipfs/helia/compare/car-v6.0.5...car-v6.0.6) (2026-09-10)
 
 
