@@ -105,7 +105,7 @@ export namespace WantlistEntry {
         }
 
         return obj
-      }, function * (reader, prefix, length, opts = {}) {
+      }, function * (reader, length, prefix, opts = {}) {
         const end = length == null ? reader.len : reader.pos + length
 
         if (prefix !== '.') {
@@ -276,7 +276,7 @@ export namespace Wantlist {
         }
 
         return obj
-      }, function * (reader, prefix, length, opts = {}) {
+      }, function * (reader, length, prefix, opts = {}) {
         const obj = {
           entries: 0
         }
@@ -300,7 +300,7 @@ export namespace Wantlist {
                 throw new MaxLengthError('Streaming decode error - repeated field "entries" had too many elements')
               }
 
-              for (const evt of WantlistEntry.codec().stream(reader, `${prefix}entries[].`, reader.uint32(), {
+              for (const evt of WantlistEntry.codec().stream(reader, reader.uint32(), `${prefix}entries[].`, {
                 limits: opts.limits?.entries$
               })) {
                 yield {
@@ -458,7 +458,7 @@ export namespace Block {
         }
 
         return obj
-      }, function * (reader, prefix, length, opts = {}) {
+      }, function * (reader, length, prefix, opts = {}) {
         const end = length == null ? reader.len : reader.pos + length
 
         if (prefix !== '.') {
@@ -602,7 +602,7 @@ export namespace BlockPresence {
         }
 
         return obj
-      }, function * (reader, prefix, length, opts = {}) {
+      }, function * (reader, length, prefix, opts = {}) {
         const end = length == null ? reader.len : reader.pos + length
 
         if (prefix !== '.') {
@@ -769,7 +769,7 @@ export namespace BitswapMessage {
         }
 
         return obj
-      }, function * (reader, prefix, length, opts = {}) {
+      }, function * (reader, length, prefix, opts = {}) {
         const obj = {
           blocks: 0,
           blockPresences: 0
@@ -790,7 +790,7 @@ export namespace BitswapMessage {
 
           switch (tag >>> 3) {
             case 1: {
-              yield * Wantlist.codec().stream(reader, `${prefix}wantlist.`, reader.uint32(), {
+              yield * Wantlist.codec().stream(reader, reader.uint32(), `${prefix}wantlist.`, {
                 limits: opts.limits?.wantlist
               })
 
@@ -801,7 +801,7 @@ export namespace BitswapMessage {
                 throw new MaxLengthError('Streaming decode error - repeated field "blocks" had too many elements')
               }
 
-              for (const evt of Block.codec().stream(reader, `${prefix}blocks[].`, reader.uint32(), {
+              for (const evt of Block.codec().stream(reader, reader.uint32(), `${prefix}blocks[].`, {
                 limits: opts.limits?.blocks$
               })) {
                 yield {
@@ -819,7 +819,7 @@ export namespace BitswapMessage {
                 throw new MaxLengthError('Streaming decode error - repeated field "blockPresences" had too many elements')
               }
 
-              for (const evt of BlockPresence.codec().stream(reader, `${prefix}blockPresences[].`, reader.uint32(), {
+              for (const evt of BlockPresence.codec().stream(reader, reader.uint32(), `${prefix}blockPresences[].`, {
                 limits: opts.limits?.blockPresences$
               })) {
                 yield {
