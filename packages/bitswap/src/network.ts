@@ -183,6 +183,9 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
 
     // register protocol with topology
     const topology: Topology = {
+      // the registrar does not report limited connections to topologies that
+      // have not asked for them
+      notifyOnLimitedConnection: this.runOnLimitedConnections,
       onConnect: (peerId: PeerId) => {
         this.safeDispatchEvent('peer:connected', {
           detail: peerId
@@ -383,7 +386,10 @@ export class Network extends TypedEventEmitter<NetworkEvents> {
 
       options.onProgress?.(new CustomProgressEvent<PeerId>('bitswap:send-wantlist', peerId))
 
-      const stream = await this.libp2p.dialProtocol(peerId, BITSWAP_120, options)
+      const stream = await this.libp2p.dialProtocol(peerId, BITSWAP_120, {
+        ...options,
+        runOnLimitedConnection: this.runOnLimitedConnections
+      })
       await stream.closeRead(options)
 
       try {
