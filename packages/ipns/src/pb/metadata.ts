@@ -15,7 +15,7 @@ enum __UpkeepValues {
 }
 
 export namespace Upkeep {
-  export const codec = (): Codec<Upkeep> => {
+  export const codec = (): Codec<Upkeep, Upkeep> => {
     return enumeration<Upkeep>(__UpkeepValues)
   }
 }
@@ -26,12 +26,18 @@ export interface IPNSPublishMetadata {
   upkeep: Upkeep
 }
 
-export namespace IPNSPublishMetadata {
-  let _codec: Codec<IPNSPublishMetadata>
+export interface IPNSPublishMetadataInput {
+  keyName?: string
+  lifetime?: number
+  upkeep?: Upkeep
+}
 
-  export const codec = (): Codec<IPNSPublishMetadata> => {
+export namespace IPNSPublishMetadata {
+  let _codec: Codec<IPNSPublishMetadata, IPNSPublishMetadataInput>
+
+  export const codec = (): Codec<IPNSPublishMetadata, IPNSPublishMetadataInput> => {
     if (_codec == null) {
-      _codec = message<IPNSPublishMetadata>((obj, w, opts = {}) => {
+      _codec = message<IPNSPublishMetadata, IPNSPublishMetadataInput>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
           w.fork()
         }
@@ -54,41 +60,41 @@ export namespace IPNSPublishMetadata {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length, opts = {}) => {
+      }, (r, length) => {
         const obj: any = {
           keyName: '',
           lifetime: 0,
           upkeep: Upkeep.reissue
         }
 
-        const end = length == null ? reader.len : reader.pos + length
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
-              obj.keyName = reader.string()
+              obj.keyName = r.string()
               break
             }
             case 2: {
-              obj.lifetime = reader.uint32()
+              obj.lifetime = r.uint32()
               break
             }
             case 3: {
-              obj.upkeep = Upkeep.codec().decode(reader)
+              obj.upkeep = Upkeep.codec().decode(r)
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
           }
         }
 
         return obj
-      }, function * (reader, length, prefix, opts = {}) {
-        const end = length == null ? reader.len : reader.pos + length
+      }, function * (r, length, prefix) {
+        const end = length == null ? r.len : r.pos + length
 
         if (prefix !== '.') {
           yield {
@@ -98,33 +104,33 @@ export namespace IPNSPublishMetadata {
           }
         }
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
               yield {
                 field: `${prefix}keyName`,
-                value: reader.string()
+                value: r.string()
               }
               break
             }
             case 2: {
               yield {
                 field: `${prefix}lifetime`,
-                value: reader.uint32()
+                value: r.uint32()
               }
               break
             }
             case 3: {
               yield {
                 field: `${prefix}upkeep`,
-                value: Upkeep.codec().decode(reader)
+                value: Upkeep.codec().decode(r)
               }
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
           }
@@ -158,7 +164,7 @@ export namespace IPNSPublishMetadata {
     value: Upkeep
   }
 
-  export function encode (obj: Partial<IPNSPublishMetadata>): Uint8Array<ArrayBuffer> {
+  export function encode (obj: IPNSPublishMetadataInput): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, IPNSPublishMetadata.codec())
   }
 

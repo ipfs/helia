@@ -14,6 +14,18 @@ export interface IPNSEntry {
   data?: Uint8Array<ArrayBuffer>
 }
 
+export interface IPNSEntryInput {
+  value?: Uint8Array
+  signatureV1?: Uint8Array
+  validityType?: IPNSEntry.ValidityType
+  validity?: Uint8Array
+  sequence?: bigint
+  ttl?: bigint
+  publicKey?: Uint8Array
+  signatureV2?: Uint8Array
+  data?: Uint8Array
+}
+
 export namespace IPNSEntry {
   export enum ValidityType {
     EOL = 'EOL'
@@ -24,16 +36,16 @@ export namespace IPNSEntry {
   }
 
   export namespace ValidityType {
-    export const codec = (): Codec<ValidityType> => {
+    export const codec = (): Codec<ValidityType, ValidityType> => {
       return enumeration<ValidityType>(__ValidityTypeValues)
     }
   }
 
-  let _codec: Codec<IPNSEntry>
+  let _codec: Codec<IPNSEntry, IPNSEntryInput>
 
-  export const codec = (): Codec<IPNSEntry> => {
+  export const codec = (): Codec<IPNSEntry, IPNSEntryInput> => {
     if (_codec == null) {
-      _codec = message<IPNSEntry>((obj, w, opts = {}) => {
+      _codec = message<IPNSEntry, IPNSEntryInput>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
           w.fork()
         }
@@ -86,61 +98,61 @@ export namespace IPNSEntry {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length, opts = {}) => {
+      }, (r, length) => {
         const obj: any = {}
 
-        const end = length == null ? reader.len : reader.pos + length
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
-              obj.value = reader.bytes()
+              obj.value = r.bytes()
               break
             }
             case 2: {
-              obj.signatureV1 = reader.bytes()
+              obj.signatureV1 = r.bytes()
               break
             }
             case 3: {
-              obj.validityType = IPNSEntry.ValidityType.codec().decode(reader)
+              obj.validityType = IPNSEntry.ValidityType.codec().decode(r)
               break
             }
             case 4: {
-              obj.validity = reader.bytes()
+              obj.validity = r.bytes()
               break
             }
             case 5: {
-              obj.sequence = reader.uint64()
+              obj.sequence = r.uint64()
               break
             }
             case 6: {
-              obj.ttl = reader.uint64()
+              obj.ttl = r.uint64()
               break
             }
             case 7: {
-              obj.publicKey = reader.bytes()
+              obj.publicKey = r.bytes()
               break
             }
             case 8: {
-              obj.signatureV2 = reader.bytes()
+              obj.signatureV2 = r.bytes()
               break
             }
             case 9: {
-              obj.data = reader.bytes()
+              obj.data = r.bytes()
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
           }
         }
 
         return obj
-      }, function * (reader, length, prefix, opts = {}) {
-        const end = length == null ? reader.len : reader.pos + length
+      }, function * (r, length, prefix) {
+        const end = length == null ? r.len : r.pos + length
 
         if (prefix !== '.') {
           yield {
@@ -150,75 +162,75 @@ export namespace IPNSEntry {
           }
         }
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
               yield {
                 field: `${prefix}value`,
-                value: reader.bytes()
+                value: r.bytes()
               }
               break
             }
             case 2: {
               yield {
                 field: `${prefix}signatureV1`,
-                value: reader.bytes()
+                value: r.bytes()
               }
               break
             }
             case 3: {
               yield {
                 field: `${prefix}validityType`,
-                value: IPNSEntry.ValidityType.codec().decode(reader)
+                value: IPNSEntry.ValidityType.codec().decode(r)
               }
               break
             }
             case 4: {
               yield {
                 field: `${prefix}validity`,
-                value: reader.bytes()
+                value: r.bytes()
               }
               break
             }
             case 5: {
               yield {
                 field: `${prefix}sequence`,
-                value: reader.uint64()
+                value: r.uint64()
               }
               break
             }
             case 6: {
               yield {
                 field: `${prefix}ttl`,
-                value: reader.uint64()
+                value: r.uint64()
               }
               break
             }
             case 7: {
               yield {
                 field: `${prefix}publicKey`,
-                value: reader.bytes()
+                value: r.bytes()
               }
               break
             }
             case 8: {
               yield {
                 field: `${prefix}signatureV2`,
-                value: reader.bytes()
+                value: r.bytes()
               }
               break
             }
             case 9: {
               yield {
                 field: `${prefix}data`,
-                value: reader.bytes()
+                value: r.bytes()
               }
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
           }
@@ -282,7 +294,7 @@ export namespace IPNSEntry {
     value: Uint8Array<ArrayBuffer>
   }
 
-  export function encode (obj: Partial<IPNSEntry>): Uint8Array<ArrayBuffer> {
+  export function encode (obj: IPNSEntryInput): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, IPNSEntry.codec())
   }
 
