@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.17](https://github.com/ipfs/helia/compare/bitswap-v4.0.16...bitswap-v4.0.17) (2026-09-21)
+
+
+### Bug Fixes
+
+* pass runOnLimitedConnections to the topology and the dial ([#1129](https://github.com/ipfs/helia/issues/1129)) ([bbf05cb](https://github.com/ipfs/helia/commit/bbf05cb7b862cc1a02f5a0fc62412bb141c903cd)), closes [#1124](https://github.com/ipfs/helia/issues/1124)
+
 ## [4.0.16](https://github.com/ipfs/helia/compare/bitswap-v4.0.15...bitswap-v4.0.16) (2026-09-14)
 
 
