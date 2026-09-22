@@ -150,7 +150,9 @@ export class TrustlessGateway {
           signal: innerController.signal,
           headers: {
             Accept: 'application/vnd.ipld.raw'
-          }
+          },
+          referrerPolicy: 'no-referrer',
+          credentials: 'omit'
         }
 
         const reqInit: RequestInit = this.transformRequestInit != null ? await this.transformRequestInit(defaultReqInit) : defaultReqInit
