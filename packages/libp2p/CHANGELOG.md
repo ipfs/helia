@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.4](https://github.com/ipfs/helia/compare/libp2p-v2.1.3...libp2p-v2.1.4) (2026-09-22)
+
+
+### Bug Fixes
+
+* switch to @libp2p/noise and @libp2p/yamux ([#1140](https://github.com/ipfs/helia/issues/1140)) ([7a206db](https://github.com/ipfs/helia/commit/7a206db71ba3d1b127639b6c604d738ec591777d))
+
 ## [2.1.3](https://github.com/ipfs/helia/compare/libp2p-v2.1.2...libp2p-v2.1.3) (2026-08-22)
 
 

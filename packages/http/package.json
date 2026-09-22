@@ -1,6 +1,6 @@
 {
   "name": "@helia/http",
-  "version": "4.0.6",
+  "version": "4.0.7",
   "description": "A lightweight implementation of IPFS over HTTP in JavaScript",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/http#readme",
@@ -51,7 +51,7 @@
     "@helia/delegated-routing-client": "^1.0.6",
     "@helia/fallback-router": "^1.1.1",
     "@helia/interface": "^7.1.1",
-    "@helia/trustless-gateway-client": "^1.0.5"
+    "@helia/trustless-gateway-client": "^1.0.6"
   },
   "devDependencies": {
     "aegir": "^48.0.11",

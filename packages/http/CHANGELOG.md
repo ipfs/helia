@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.0.7](https://github.com/ipfs/helia/compare/http-v4.0.6...http-v4.0.7) (2026-09-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/trustless-gateway-client bumped from ^1.0.5 to ^1.0.6
+
 ## [4.0.6](https://github.com/ipfs/helia/compare/http-v4.0.5...http-v4.0.6) (2026-07-28)
 
 
