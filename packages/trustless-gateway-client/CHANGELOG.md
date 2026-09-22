@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.6](https://github.com/ipfs/helia/compare/trustless-gateway-client-v1.0.5...trustless-gateway-client-v1.0.6) (2026-09-22)
+
+
+### Bug Fixes
+
+* make trustless gateway requests stateless ([#1139](https://github.com/ipfs/helia/issues/1139)) ([654052a](https://github.com/ipfs/helia/commit/654052a62ce68950f95d46adaa414992037caf17))
+* use default caching strategy for trustless gateways ([#1137](https://github.com/ipfs/helia/issues/1137)) ([47363dd](https://github.com/ipfs/helia/commit/47363dd2da06a93c24ea9006a938835ce73e82cb))
+
 ## [1.0.5](https://github.com/ipfs/helia/compare/trustless-gateway-client-v1.0.4...trustless-gateway-client-v1.0.5) (2026-07-28)
 
 
