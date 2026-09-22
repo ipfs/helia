@@ -13,12 +13,12 @@
     "start": "npm run build && node dist/src/index.js"
   },
   "devDependencies": {
-    "@chainsafe/libp2p-noise": "^17.0.0",
-    "@chainsafe/libp2p-yamux": "^8.0.0",
     "@helia/unixfs": "^8.0.0",
     "@ipld/dag-pb": "^4.0.2",
     "@libp2p/identify": "^4.0.5",
+    "@libp2p/noise": "^17.0.2",
     "@libp2p/tcp": "^11.0.5",
+    "@libp2p/yamux": "^8.0.3",
     "@multiformats/multiaddr": "^13.0.1",
     "aegir": "^48.0.4",
     "blockstore-fs": "^4.0.1",
