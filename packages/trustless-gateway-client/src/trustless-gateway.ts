@@ -150,8 +150,7 @@ export class TrustlessGateway {
           signal: innerController.signal,
           headers: {
             Accept: 'application/vnd.ipld.raw'
-          },
-          cache: 'force-cache'
+          }
         }
 
         const reqInit: RequestInit = this.transformRequestInit != null ? await this.transformRequestInit(defaultReqInit) : defaultReqInit
