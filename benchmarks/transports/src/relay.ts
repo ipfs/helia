@@ -1,11 +1,11 @@
-import { noise } from '@chainsafe/libp2p-noise'
-import { yamux } from '@chainsafe/libp2p-yamux'
 import { withBitswap } from '@helia/bitswap'
 import { withLibp2p } from '@helia/libp2p'
 import { circuitRelayServer } from '@libp2p/circuit-relay-v2'
 import { identify } from '@libp2p/identify'
 import { prefixLogger } from '@libp2p/logger'
+import { noise } from '@libp2p/noise'
 import { webSockets } from '@libp2p/websockets'
+import { yamux } from '@libp2p/yamux'
 import { createHeliaLight } from 'helia'
 import type { HeliaWithLibp2p } from '@helia/libp2p'
 
