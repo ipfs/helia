@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.19](https://github.com/ipfs/helia/compare/bitswap-v4.0.18...bitswap-v4.0.19) (2026-09-23)
+
+
+### Dependencies
+
+* update protons ([#1131](https://github.com/ipfs/helia/issues/1131)) ([d496208](https://github.com/ipfs/helia/commit/d49620874dc67a5cb8a4b70fb568b73de66584fc))
+
 ## [4.0.18](https://github.com/ipfs/helia/compare/bitswap-v4.0.17...bitswap-v4.0.18) (2026-09-22)
 
 

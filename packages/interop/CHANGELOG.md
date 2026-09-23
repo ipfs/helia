@@ -1,5 +1,16 @@
 # Changelog
 
+## [12.1.9](https://github.com/ipfs/helia/compare/interop-v12.1.8...interop-v12.1.9) (2026-09-23)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^4.0.18 to ^4.0.19
+    * @helia/ipns bumped from ^10.2.0 to ^10.2.1
+    * helia bumped from ^7.1.14 to ^7.1.15
+
 ## [12.1.8](https://github.com/ipfs/helia/compare/interop-v12.1.7...interop-v12.1.8) (2026-09-22)
 
 
