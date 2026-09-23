@@ -1,5 +1,12 @@
 # Changelog
 
+## [10.2.1](https://github.com/ipfs/helia/compare/ipns-v10.2.0...ipns-v10.2.1) (2026-09-23)
+
+
+### Dependencies
+
+* update protons ([#1131](https://github.com/ipfs/helia/issues/1131)) ([d496208](https://github.com/ipfs/helia/commit/d49620874dc67a5cb8a4b70fb568b73de66584fc))
+
 ## [10.2.0](https://github.com/ipfs/helia/compare/ipns-v10.1.1...ipns-v10.2.0) (2026-09-14)
 
 
