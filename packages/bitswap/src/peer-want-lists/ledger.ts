@@ -274,8 +274,20 @@ export class Ledger {
 
   public hasWant (cid: CID): boolean {
     const cidStr = uint8ArrayToString(cid.multihash.bytes, 'base64')
+    const want = this.wants.get(cidStr)
 
-    return this.wants.has(cidStr)
+    if (want == null) {
+      return false
+    }
+
+    // if `haveBlock` is `false` then we previously searched the blockstore for
+    // this block and did not find it - hasWant is called when a new block has
+    // been added to the blockstore so it should now be present - reset the
+    // `haveBlock` field so we attempt to pull it from the blockstore while
+    // sending blocks to the peer
+    delete want.haveBlock
+
+    return true
   }
 
   public queueSendOperation (message?: BitswapMessage, options?: ProgressOptions<BitswapNotifyProgressEvents> & AbortOptions): void {
@@ -318,6 +330,12 @@ export class Ledger {
     // pick unsent wants
     const unsent = [...this.wants.entries()]
       .filter(([key, value]) => {
+        // we have previously searched the blockstore for this block and it was
+        // not present so don't check again
+        if (value.haveBlock === false) {
+          return false
+        }
+
         // don't process the same want more than once per send iteration
         return value.status === 'want'
       })

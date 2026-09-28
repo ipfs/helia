@@ -55,4 +55,66 @@ describe('ledger', () => {
     expect(blockstoreGetSpy.called).to.be.false('Got a block from the block store when we should not have')
     expect(components.network.sendMessage.called).to.be.false('Sent a message when we should not have')
   })
+
+  it('should not repeat queries for blocks that are not in the blockstore', async () => {
+    const blockstoreHasSpy = spy(components.blockstore, 'has')
+
+    const ledger = new Ledger(components, {
+
+    })
+
+    const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
+
+    ledger.addWants({
+      entries: [{
+        cid: cid.multihash.bytes,
+        priority: 1
+      }]
+    })
+
+    for (let i = 0; i < 5; i++) {
+      ledger.queueSendOperation()
+      await ledger.sendQueue.onIdle()
+    }
+
+    expect(blockstoreHasSpy.calledOnce).to.be.true('Tested for block availability too many times')
+
+    ledger.hasWant(cid)
+
+    ledger.queueSendOperation()
+    await ledger.sendQueue.onIdle()
+
+    expect(blockstoreHasSpy.calledTwice).to.be.true('Did not re-test for block availability after testing if a ledger has the block CID')
+  })
+
+  it('should only repeat queries for blocks that have been added to the blockstore', async () => {
+    const blockstoreHasSpy = spy(components.blockstore, 'has')
+
+    const ledger = new Ledger(components, {
+
+    })
+
+    const cid1 = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
+    const cid2 = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3A')
+
+    ledger.addWants({
+      entries: [{
+        cid: cid1.multihash.bytes,
+        priority: 1
+      }]
+    })
+
+    ledger.queueSendOperation()
+    await ledger.sendQueue.onIdle()
+
+    expect(blockstoreHasSpy.calledOnce).to.be.true('Tested for block availability too many times')
+
+    // this CID is not in the wantlist so `blockstore.has` should not be called
+    ledger.hasWant(cid2)
+
+    ledger.queueSendOperation()
+    await ledger.sendQueue.onIdle()
+
+    expect(blockstoreHasSpy.calledOnce).to.be.true('Rested for the wrong block CID')
+  })
 })
