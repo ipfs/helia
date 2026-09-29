@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.0.9](https://github.com/ipfs/helia/compare/unixfs-v8.0.8...unixfs-v8.0.9) (2026-09-29)
+
+
+### Bug Fixes
+
+* when removing links from a shard, only hoist non-sub-shards ([#1147](https://github.com/ipfs/helia/issues/1147)) ([135f19b](https://github.com/ipfs/helia/commit/135f19b001888974a86861fddefa51682f2143d1)), closes [#1143](https://github.com/ipfs/helia/issues/1143)
+
 ## [8.0.8](https://github.com/ipfs/helia/compare/unixfs-v8.0.7...unixfs-v8.0.8) (2026-09-29)
 
 
