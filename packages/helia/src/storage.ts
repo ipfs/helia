@@ -57,15 +57,17 @@ export class Storage <Broker extends BlockBroker<ProgressEvent<any, any>, Progre
       return cid
     }
 
+    options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:blockstore:put', cid))
+
+    await this.child.put(cid, block, options)
+
     options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:providers:notify', cid))
 
     await Promise.all(
       this.blockBrokers.map(async broker => broker.announce?.(cid, options))
     )
 
-    options.onProgress?.(new CustomProgressEvent<CID>('blocks:put:blockstore:put', cid))
-
-    return this.child.put(cid, block, options)
+    return cid
   }
 
   /**
@@ -82,15 +84,25 @@ export class Storage <Broker extends BlockBroker<ProgressEvent<any, any>, Progre
       return !has
     })
 
-    const notifyEach = forEach(missingBlocks, async ({ cid }): Promise<void> => {
-      options.onProgress?.(new CustomProgressEvent<CID>('blocks:put-many:providers:notify', cid))
-      await Promise.all(
-        this.blockBrokers.map(async broker => broker.announce?.(cid, options))
-      )
-    })
-
     options.onProgress?.(new CustomProgressEvent('blocks:put-many:blockstore:put-many'))
-    yield * this.child.putMany(notifyEach, options)
+
+    const self = this
+
+    const putAndNotify = async function * (blocks: AsyncIterable<InputPair>): AsyncGenerator<InputPair> {
+      for await (const pair of blocks) {
+        options.onProgress?.(new CustomProgressEvent('blocks:put-many:blockstore:put', pair.cid))
+
+        yield pair
+
+        options.onProgress?.(new CustomProgressEvent<CID>('blocks:put-many:providers:notify', pair.cid))
+
+        await Promise.all(
+          self.blockBrokers.map(async broker => broker.announce?.(pair.cid, options))
+        )
+      }
+    }
+
+    yield * this.child.putMany(putAndNotify(missingBlocks), options)
   }
 
   /**

@@ -78,7 +78,8 @@ export type PutBlockProgressEvents =
 export type PutManyBlocksProgressEvents =
   ProgressEvent<'blocks:put-many:duplicate', CID> |
   ProgressEvent<'blocks:put-many:providers:notify', CID> |
-  ProgressEvent<'blocks:put-many:blockstore:put-many'>
+  ProgressEvent<'blocks:put-many:blockstore:put-many'> |
+  ProgressEvent<'blocks:put-many:blockstore:put', CID>
 
 export type GetBlockProgressEvents =
   ProgressEvent<'blocks:get:providers:want', CID> |

@@ -1,4 +1,5 @@
 import { expect } from 'aegir/chai'
+import { defaultLogger } from 'birnam'
 import { MemoryBlockstore } from 'blockstore-core'
 import { MemoryDatastore } from 'datastore-core'
 import delay from 'delay'
@@ -11,13 +12,15 @@ import { stubInterface } from 'sinon-ts'
 import { BlockStorage } from '../src/block-storage.ts'
 import { getCodec } from '../src/get-codec.ts'
 import { PinsImpl } from '../src/pins.ts'
+import { Storage } from '../src/storage.ts'
 import { createBlock } from './fixtures/create-block.ts'
 import type { Blocks, Routing, SessionBlockstore } from '@helia/interface'
 import type { Pins } from '@helia/interface'
 import type { CID } from 'multiformats/cid'
+import type { ProgressEvent } from 'progress-events'
 import type { StubbedInstance } from 'sinon-ts'
 
-class MemoryBlocks extends MemoryBlockstore implements Blocks {
+class TestStorage extends Storage<any> {
   createSession (): SessionBlockstore {
     throw new Error('Not implemented')
   }
@@ -39,7 +42,14 @@ describe('storage', () => {
 
     const datastore = new MemoryDatastore()
 
-    blockstore = new MemoryBlocks()
+    blockstore = new TestStorage({
+      blockstore: new MemoryBlockstore(),
+      logger: defaultLogger(),
+      blockBrokers: [],
+      getHasher: () => {
+        throw new Error('wat')
+      }
+    })
     pins = new PinsImpl(datastore, blockstore, getCodec())
     routing = stubInterface()
     storage = new BlockStorage(blockstore, pins, routing, {
@@ -179,5 +189,47 @@ describe('storage', () => {
 
     expect(routing.cancelReprovide).to.have.property('called', true, 'did not cancel re-providing of CID on block deletion')
     expect(routing.cancelReprovide.getCall(0)?.args[0]).to.equal(cid)
+  })
+
+  it('should put before notify', async () => {
+    const events: ProgressEvent[] = []
+
+    const { cid, block } = blocks[0]
+    await storage.put(cid, block, {
+      onProgress: (evt) => {
+        events.push(evt)
+      }
+    })
+
+    expect(events.map(evt => evt.type))
+      .to.deep.equal([
+        'blocks:put:blockstore:put',
+        'blocks:put:providers:notify'
+      ])
+  })
+
+  it('should put many before notify', async () => {
+    const events: ProgressEvent[] = []
+
+    await drain(storage.putMany([{
+      cid: blocks[0].cid,
+      bytes: blocks[0].block
+    }, {
+      cid: blocks[1].cid,
+      bytes: blocks[1].block
+    }], {
+      onProgress: (evt) => {
+        events.push(evt)
+      }
+    }))
+
+    expect(events.map(evt => evt.type))
+      .to.deep.equal([
+        'blocks:put-many:blockstore:put-many',
+        'blocks:put-many:blockstore:put',
+        'blocks:put-many:providers:notify',
+        'blocks:put-many:blockstore:put',
+        'blocks:put-many:providers:notify'
+      ])
   })
 })
