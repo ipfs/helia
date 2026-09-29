@@ -1,5 +1,16 @@
 # Changelog
 
+## [12.1.11](https://github.com/ipfs/helia/compare/interop-v12.1.10...interop-v12.1.11) (2026-09-29)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/car bumped from ^6.0.8 to ^6.0.9
+    * @helia/mfs bumped from ^8.0.8 to ^8.0.9
+    * @helia/unixfs bumped from ^8.0.8 to ^8.0.9
+
 ## [12.1.10](https://github.com/ipfs/helia/compare/interop-v12.1.9...interop-v12.1.10) (2026-09-29)
 
 

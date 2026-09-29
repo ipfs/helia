@@ -1,6 +1,6 @@
 {
   "name": "@helia/interop",
-  "version": "12.1.10",
+  "version": "12.1.11",
   "description": "Interop tests for Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/interop#readme",
@@ -53,7 +53,7 @@
   },
   "dependencies": {
     "@helia/bitswap": "^4.0.20",
-    "@helia/car": "^6.0.8",
+    "@helia/car": "^6.0.9",
     "@helia/dag-cbor": "^6.0.6",
     "@helia/dag-json": "^6.0.6",
     "@helia/delegated-routing-client": "^1.0.7",
@@ -62,9 +62,9 @@
     "@helia/ipns": "^10.2.2",
     "@helia/json": "^6.0.6",
     "@helia/libp2p": "^2.1.5",
-    "@helia/mfs": "^8.0.8",
+    "@helia/mfs": "^8.0.9",
     "@helia/strings": "^6.0.6",
-    "@helia/unixfs": "^8.0.8",
+    "@helia/unixfs": "^8.0.9",
     "@ipld/car": "^5.4.6",
     "@ipld/dag-cbor": "^10.0.1",
     "@ipld/dag-json": "^11.0.0",
