@@ -217,6 +217,38 @@ describe('rm', () => {
     expect(containingDirCid).to.eql(importerCid)
   })
 
+  it('results in the same hash as the importer when removing a subshard that leaves the only child as a subshard', async () => {
+    const opts: any = {
+      shardSplitThresholdBytes: 1,
+      cidVersion: 1,
+      rawLeaves: true
+    }
+
+    async function importDir (names: string[]): Promise<CID> {
+      const files = names.map(n => ({ path: `dir/${n}`, content: new TextEncoder().encode(`content of ${n}\n`) }))
+      let root: CID | undefined
+
+      for await (const entry of fs.addAll(files, opts)) {
+        if (entry.path === 'dir') {
+          root = entry.cid
+        }
+      }
+
+      if (root == null) {
+        throw new Error('Nothing imported')
+      }
+
+      return root
+    }
+
+    // hash prefixes: other-190.txt 46 B8, file-174.txt 46 63 D5, file-308.txt 46 63 C5
+    const before = await importDir(['other-190.txt', 'file-174.txt', 'file-308.txt'])
+    const after = await fs.rm(before, 'other-190.txt', opts)
+    const expected = await importDir(['file-174.txt', 'file-308.txt'])
+
+    expect(after).to.deep.equal(expected)
+  })
+
   it('refuses to rm missing blocks', async () => {
     const cid = await fs.addBytes(smallFile)
 

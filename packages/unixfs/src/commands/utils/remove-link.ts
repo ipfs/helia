@@ -106,7 +106,13 @@ const removeFromShardedDirectory = async (parent: Directory, name: string, block
 
       const segment = path[path.length - 1]
 
+      // do not hoist when there are multiple children
       if (segment == null || segment.node.Links.length > 1) {
+        break
+      }
+
+      // only hoist when the final child is not a sub-shard
+      if ((segment.node.Links[0].Name ?? '').length === prefixLength) {
         break
       }
 
