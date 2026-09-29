@@ -1,5 +1,14 @@
 # Changelog
 
+## [3.0.6](https://github.com/ipfs/helia/compare/utils-v3.0.5...utils-v3.0.6) (2026-09-29)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^7.1.1 to ^7.1.2
+
 ## [3.0.5](https://github.com/ipfs/helia/compare/utils-v3.0.4...utils-v3.0.5) (2026-07-28)
 
 

@@ -1,5 +1,21 @@
 # Changelog
 
+## [4.0.20](https://github.com/ipfs/helia/compare/bitswap-v4.0.19...bitswap-v4.0.20) (2026-09-29)
+
+
+### Bug Fixes
+
+* filter blocks previously confirmed as not in the blockstore ([#1145](https://github.com/ipfs/helia/issues/1145)) ([bdbda7a](https://github.com/ipfs/helia/commit/bdbda7ae8c9755b039d595c481310c5fc6b890ef)), closes [#1144](https://github.com/ipfs/helia/issues/1144)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/interface bumped from ^7.1.1 to ^7.1.2
+    * @helia/libp2p bumped from ^2.1.4 to ^2.1.5
+    * @helia/utils bumped from ^3.0.5 to ^3.0.6
+
 ## [4.0.19](https://github.com/ipfs/helia/compare/bitswap-v4.0.18...bitswap-v4.0.19) (2026-09-23)
 
 
