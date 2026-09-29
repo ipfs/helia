@@ -5,6 +5,13 @@
 
 * expose .dns property on @helia/interface ([#465](https://github.com/ipfs/helia/issues/465)) ([8c9bb7d](https://github.com/ipfs/helia/commit/8c9bb7d224a1b786cba1fba18bffe07001a3b95d))
 
+## [7.1.2](https://github.com/ipfs/helia/compare/interface-v7.1.1...interface-v7.1.2) (2026-09-29)
+
+
+### Bug Fixes
+
+* filter blocks previously confirmed as not in the blockstore ([#1145](https://github.com/ipfs/helia/issues/1145)) ([bdbda7a](https://github.com/ipfs/helia/commit/bdbda7ae8c9755b039d595c481310c5fc6b890ef)), closes [#1144](https://github.com/ipfs/helia/issues/1144)
+
 ## [7.1.1](https://github.com/ipfs/helia/compare/interface-v7.1.0...interface-v7.1.1) (2026-07-28)
 
 

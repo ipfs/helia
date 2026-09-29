@@ -1,5 +1,23 @@
 # Changelog
 
+## [7.1.16](https://github.com/ipfs/helia/compare/helia-v7.1.15...helia-v7.1.16) (2026-09-29)
+
+
+### Bug Fixes
+
+* filter blocks previously confirmed as not in the blockstore ([#1145](https://github.com/ipfs/helia/issues/1145)) ([bdbda7a](https://github.com/ipfs/helia/commit/bdbda7ae8c9755b039d595c481310c5fc6b890ef)), closes [#1144](https://github.com/ipfs/helia/issues/1144)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^4.0.19 to ^4.0.20
+    * @helia/http bumped from ^4.0.7 to ^4.0.8
+    * @helia/interface bumped from ^7.1.1 to ^7.1.2
+    * @helia/libp2p bumped from ^2.1.4 to ^2.1.5
+    * @helia/utils bumped from ^3.0.5 to ^3.0.6
+
 ## [7.1.15](https://github.com/ipfs/helia/compare/helia-v7.1.14...helia-v7.1.15) (2026-09-23)
 
 

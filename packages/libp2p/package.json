@@ -1,6 +1,6 @@
 {
   "name": "@helia/libp2p",
-  "version": "2.1.4",
+  "version": "2.1.5",
   "description": "libp2p functionality for Helia",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipfs/helia/tree/main/packages/libp2p#readme",
@@ -48,9 +48,9 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@helia/delegated-routing-client": "^1.0.6",
+    "@helia/delegated-routing-client": "^1.0.7",
     "@helia/delegated-routing-v1-http-api-client": "^9.0.0",
-    "@helia/interface": "^7.1.1",
+    "@helia/interface": "^7.1.2",
     "@ipshipyard/libp2p-auto-tls": "^2.0.1",
     "@libp2p/autonat": "^3.0.21",
     "@libp2p/bootstrap": "^12.0.24",
