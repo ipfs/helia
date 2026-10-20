@@ -70,7 +70,7 @@
     "@libp2p/tcp": "^11.0.21",
     "@libp2p/tls": "^3.1.3",
     "@libp2p/upnp-nat": "^4.0.21",
-    "@libp2p/webrtc": "^6.0.24",
+    "@libp2p/webrtc": "^7.0.0",
     "@libp2p/websockets": "^10.1.14",
     "@libp2p/yamux": "^8.0.3",
     "@multiformats/multiaddr": "^13.0.3",
