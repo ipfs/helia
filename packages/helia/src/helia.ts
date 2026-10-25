@@ -49,12 +49,20 @@ export interface HeliaInit {
   keychain?: KeychainInit
 
   /**
-   * The blockstore is where blocks are stored
+   * The blockstore is where blocks are stored.
+   *
+   * Defaults to an in-memory store. Pass a persistent implementation such as
+   * `blockstore-fs` or `blockstore-idb` to keep blocks across restarts.
    */
   blockstore?: Blockstore
 
   /**
-   * The datastore is where data is stored
+   * The datastore is where everything that is not a block is stored - pins,
+   * keys, IPNS records, peer and provider records, etc.
+   *
+   * Defaults to an in-memory store. Pass a persistent implementation such as
+   * `datastore-fs` or `datastore-idb` alongside a persistent blockstore,
+   * otherwise pins (and the node's identity) are lost on restart.
    */
   datastore?: Datastore
 

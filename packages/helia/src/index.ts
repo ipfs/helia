@@ -17,6 +17,31 @@
  * const fs = unixfs(helia)
  * fs.cat(CID.parse('bafyFoo'))
  * ```
+ *
+ * @example Providing content
+ *
+ * Adding blocks to a Helia node does not announce them to the network. To let
+ * other peers discover that this node can supply a CID, provide it explicitly.
+ *
+ * Provided CIDs are re-announced periodically for as long as the node is
+ * running, until `helia.routing.cancelReprovide(cid)` is called or the block is
+ * deleted from the blockstore.
+ *
+ * ```typescript
+ * import { createHelia } from 'helia'
+ * import { unixfs } from '@helia/unixfs'
+ *
+ * const helia = await createHelia().start()
+ * const fs = unixfs(helia)
+ *
+ * const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3]))
+ *
+ * // make the CID discoverable by other peers
+ * await helia.routing.provide(cid)
+ * ```
+ *
+ * Other peers also need to be able to dial this node to fetch the blocks,
+ * which is not always possible for nodes running in web browsers.
  */
 
 import { withBitswap } from '@helia/bitswap'

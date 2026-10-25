@@ -145,6 +145,27 @@ console.log(retrievedObject2)
 // { hello: 'world' }
 ```
 
+## 📡 Providing content
+
+Adding blocks to a Helia node does not announce them to the network. To let
+other peers discover that your node can supply a CID, provide it explicitly:
+
+```js
+import { createHelia } from 'helia'
+import { unixfs } from '@helia/unixfs'
+
+const helia = await createHelia().start()
+const fs = unixfs(helia)
+
+const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3]))
+
+// make the CID discoverable by other peers
+await helia.routing.provide(cid)
+```
+
+Provided CIDs are re-announced periodically while the node is running, until
+`helia.routing.cancelReprovide(cid)` is called or the block is deleted.
+
 # 🐾 Next steps
 
 Check out the [helia-examples](https://github.com/ipfs-examples/helia-examples)
