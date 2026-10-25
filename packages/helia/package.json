@@ -31,6 +31,11 @@
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js",
       "module-sync": "./dist/src/index.js"
+    },
+    "./light": {
+      "types": "./dist/src/light.d.ts",
+      "import": "./dist/src/light.js",
+      "module-sync": "./dist/src/light.js"
     }
   },
   "scripts": {
