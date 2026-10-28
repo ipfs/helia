@@ -5,7 +5,8 @@ import { IPNSEntry } from '../pb/ipns.ts'
 import { Upkeep } from '../pb/metadata.ts'
 import { createIPNSRecord } from '../records.ts'
 import { decodeExtensibleData, multihashToIPNSRoutingKey } from '../utils.ts'
-import type { IPNSPublishResult, PublishOptions, UnpublishOptions } from '../index.ts'
+import type { IPNSPublishResult, IPNSPublishStrategyDetail, PublishOptions, PublishStrategyProgressEvents } from '../index.ts'
+import type { UnpublishOptions } from '../index.ts'
 import type { LocalStore } from '../local-store.ts'
 import type { IPNSRouting } from '../routing/index.ts'
 import type { Keychain, PrivateKey, PublicKey } from '@helia/interface'
@@ -13,6 +14,7 @@ import type { AbortOptions, ComponentLogger } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
+import type { ProgressOptions } from 'progress-events'
 
 export interface IPNSPublisherComponents {
   datastore: Datastore
@@ -38,6 +40,8 @@ export class IPNSPublisher {
 
   async publish (keyName: string, value: PublicKey | CID | MultihashDigest | string, options: PublishOptions = {}): Promise<IPNSPublishResult> {
     try {
+      options.onProgress?.(new CustomProgressEvent('ipns:publish:start'))
+
       const key = await this.#loadOrCreateKey(keyName, options)
       const digest = key.publicKey.toMultihash()
       const routingKey = multihashToIPNSRoutingKey(digest)
@@ -61,14 +65,30 @@ export class IPNSPublisher {
 
       const metadata = { keyName, lifetime, upkeep: Upkeep[options.upkeep ?? 'reissue'] }
       if (options.offline === true) {
-        // only store record locally
-        await this.localStore.put(routingKey, marshaledRecord, { ...options, metadata })
+        await withStrategyProgressEvents({
+          strategy: 'LocalStoreRouting()',
+          keyName,
+          publicKey: key.publicKey,
+          record
+        }, options, async () => {
+          // only store record locally
+          await this.localStore.put(routingKey, marshaledRecord, { ...options, metadata })
+        })
       } else {
         // publish record to routing (including the local store)
         await Promise.all(this.routers.map(async r => {
-          await r.put(routingKey, marshaledRecord, { ...options, metadata })
+          await withStrategyProgressEvents({
+            strategy: strategyName(r),
+            keyName,
+            publicKey: key.publicKey,
+            record
+          }, options, async () => {
+            await r.put(routingKey, marshaledRecord, { ...options, metadata })
+          })
         }))
       }
+
+      options.onProgress?.(new CustomProgressEvent<IPNSEntry>('ipns:publish:success', record))
 
       return {
         record,
@@ -116,4 +136,30 @@ export class IPNSPublisher {
     // automatically republished; it expires naturally at its validity
     await this.localStore.deleteMetadata(routingKey, options)
   }
+}
+
+async function withStrategyProgressEvents (detail: IPNSPublishStrategyDetail, options: ProgressOptions<PublishStrategyProgressEvents>, fn: () => unknown): Promise<void> {
+  options.onProgress?.(new CustomProgressEvent<IPNSPublishStrategyDetail, 'ipns:publish:strategy:start'>('ipns:publish:strategy:start', detail))
+
+  try {
+    await fn()
+    options.onProgress?.(new CustomProgressEvent<IPNSPublishStrategyDetail, 'ipns:publish:strategy:success'>('ipns:publish:strategy:success', detail))
+  } catch (err: any) {
+    options.onProgress?.(new CustomProgressEvent<Error, 'ipns:publish:strategy:error'>('ipns:publish:strategy:error', err))
+    throw err
+  }
+}
+
+function strategyName (router: IPNSRouting): string {
+  if (router.toString === Object.prototype.toString) {
+    return 'CustomRouting()'
+  }
+
+  const strategy = router.toString()
+
+  if (typeof strategy !== 'string' || strategy === '') {
+    return 'CustomRouting()'
+  }
+
+  return strategy
 }
