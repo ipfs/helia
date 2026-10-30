@@ -3,3 +3,5 @@ export * from './errors.ts'
 export * from './graph-walker.ts'
 export * from './is-cid.ts'
 export * from './is-promise.ts'
+export * from './zero-disk-streamer.ts'
+
