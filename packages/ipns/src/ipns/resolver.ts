@@ -156,9 +156,9 @@ export class IPNSResolver {
 
     const record = records[ipnsSelector(routingKey, records)]
 
-    await this.localStore.put(routingKey, IPNSEntry.encode(record), options)
+    const result = await this.localStore.put(routingKey, IPNSEntry.encode(record), options)
 
-    return record
+    return IPNSEntry.decode(result.record)
   }
 }
 
