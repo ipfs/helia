@@ -107,14 +107,41 @@ describe('local-store', () => {
       const cachedRecord = await createIPNSRecord(key, '/cached', 3n, 24 * 60 * 60 * 1000)
       const newerRecord = await createIPNSRecord(key, '/newer', 5n, 24 * 60 * 60 * 1000)
       const olderRecord = await createIPNSRecord(key, '/older', 4n, 24 * 60 * 60 * 1000)
+      const datastoreKey = dhtRoutingKey(routingKey).toString()
       const secondStore = localStore(result.datastore, result.log)
+      const originalGet = result.datastore.get.bind(result.datastore)
+      let releaseGets!: () => void
+      let firstGetStartedResolve!: () => void
+      const release = new Promise<void>(resolve => { releaseGets = resolve })
+      const firstGetStarted = new Promise<void>(resolve => { firstGetStartedResolve = resolve })
 
       await store.put(routingKey, IPNSEntry.encode(cachedRecord))
 
-      await Promise.all([
-        store.put(routingKey, IPNSEntry.encode(newerRecord)),
-        secondStore.put(routingKey, IPNSEntry.encode(olderRecord))
-      ])
+      Sinon.stub(result.datastore, 'get').callsFake(async (key, options) => {
+        const value = await originalGet(key, options)
+
+        if (key.toString() === datastoreKey) {
+          firstGetStartedResolve()
+          await release
+        }
+
+        return value
+      })
+
+      const newerPut = store.put(routingKey, IPNSEntry.encode(newerRecord))
+      await firstGetStarted
+
+      const olderPut = secondStore.put(routingKey, IPNSEntry.encode(olderRecord))
+
+      // Without the lock, the second writer's callback is already queued and
+      // captures sequence 3 before this gate opens. With the lock, its callback
+      // cannot run until the first writer has committed sequence 5.
+      queueMicrotask(releaseGets)
+
+      const [, olderResult] = await Promise.all([newerPut, olderPut])
+
+      expect(olderResult.status).to.equal('rejected')
+      expect(olderResult.record).to.equalBytes(IPNSEntry.encode(newerRecord))
 
       const { record } = await store.get(routingKey)
       const data = decodeExtensibleData(IPNSEntry.decode(record).data)
@@ -145,6 +172,56 @@ describe('local-store', () => {
 
       expect(data.Sequence).to.equal(2n)
       expect(data.Value).to.equalBytes(new TextEncoder().encode('/valid'))
+    })
+
+    it('aborts a queued caller without allowing later writes to bypass the lock', async () => {
+      const key = await result.keychain.generateKey('test-key')
+      const routingKey = multihashToIPNSRoutingKey(key.publicKey.toMultihash())
+      const firstRecord = await createIPNSRecord(key, '/first', 1n, 24 * 60 * 60 * 1000)
+      const abortedRecord = await createIPNSRecord(key, '/aborted', 2n, 24 * 60 * 60 * 1000)
+      const finalRecord = await createIPNSRecord(key, '/final', 3n, 24 * 60 * 60 * 1000)
+      const datastoreKey = dhtRoutingKey(routingKey).toString()
+      const secondStore = localStore(result.datastore, result.log)
+      const originalGet = result.datastore.get.bind(result.datastore)
+      const controller = new AbortController()
+      let getCalls = 0
+      let releaseFirstGet!: () => void
+      let firstGetStartedResolve!: () => void
+      const releaseFirst = new Promise<void>(resolve => { releaseFirstGet = resolve })
+      const firstGetStarted = new Promise<void>(resolve => { firstGetStartedResolve = resolve })
+
+      Sinon.stub(result.datastore, 'get').callsFake(async (key, options) => {
+        if (key.toString() === datastoreKey && getCalls++ === 0) {
+          firstGetStartedResolve()
+          await releaseFirst
+        }
+
+        return originalGet(key, options)
+      })
+
+      const firstPut = store.put(routingKey, IPNSEntry.encode(firstRecord))
+      await firstGetStarted
+
+      const abortedPut = secondStore.put(routingKey, IPNSEntry.encode(abortedRecord), {
+        signal: controller.signal
+      })
+      controller.abort()
+
+      try {
+        await expect(abortedPut).to.eventually.be.rejected
+          .with.property('name', 'AbortError')
+      } finally {
+        releaseFirstGet()
+        await firstPut
+      }
+
+      await secondStore.put(routingKey, IPNSEntry.encode(finalRecord))
+
+      const { record } = await store.get(routingKey)
+      const data = decodeExtensibleData(IPNSEntry.decode(record).data)
+
+      expect(data.Sequence).to.equal(3n)
+      expect(data.Value).to.equalBytes(new TextEncoder().encode('/final'))
     })
 
     it('processes writes for different routing keys concurrently', async () => {

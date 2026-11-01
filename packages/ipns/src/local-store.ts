@@ -1,5 +1,6 @@
 import { Record } from '@libp2p/kad-dht'
 import { CustomProgressEvent } from 'progress-events'
+import { raceSignal } from 'race-signal'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
@@ -11,7 +12,7 @@ import type { DatastoreProgressEvents, IPNSRoutingGetOptions, IPNSRoutingPutOpti
 import type { AbortOptions, Logger } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 
-const putLocks = new Map<string, Promise<void>>()
+const datastorePutLocks = new WeakMap<Datastore, Map<string, Promise<void>>>()
 
 export interface GetResult {
   record: Uint8Array<ArrayBuffer>
@@ -29,6 +30,11 @@ export interface ListOptions extends AbortOptions {
   onProgress?(evt: DatastoreProgressEvents): void
 }
 
+export interface LocalStorePutResult {
+  status: 'stored' | 'duplicate' | 'rejected'
+  record: Uint8Array<ArrayBuffer>
+}
+
 export interface LocalStore {
   /**
    * Put an IPNS record into the datastore
@@ -40,7 +46,7 @@ export interface LocalStore {
    * @param marshaledRecord - The marshaled IPNS record
    * @param options - options for the put operation including metadata
    */
-  put(routingKey: Uint8Array, marshaledRecord: Uint8Array, options?: IPNSRoutingPutOptions): Promise<void>
+  put(routingKey: Uint8Array, marshaledRecord: Uint8Array, options?: IPNSRoutingPutOptions): Promise<LocalStorePutResult>
   get(routingKey: Uint8Array, options?: IPNSRoutingGetOptions): Promise<GetResult>
   has(routingKey: Uint8Array, options?: AbortOptions): Promise<boolean>
   delete(routingKey: Uint8Array, options?: AbortOptions): Promise<void>
@@ -112,12 +118,19 @@ async function readMetadata (datastore: Datastore, routingKey: Uint8Array, log: 
  * later in response to DHT queries.
  */
 export function localStore (datastore: Datastore, log: Logger): LocalStore {
+  let putLocks = datastorePutLocks.get(datastore)
+
+  if (putLocks == null) {
+    putLocks = new Map()
+    datastorePutLocks.set(datastore, putLocks)
+  }
+
   return {
     async put (routingKey: Uint8Array, marshalledRecord: Uint8Array, options: IPNSRoutingPutOptions = {}) {
       try {
         const key = dhtRoutingKey(routingKey)
 
-        await withKeyLock(putLocks, key.toString(), async () => {
+        return await withKeyLock(putLocks, key.toString(), options.signal, async () => {
           options.signal?.throwIfAborted()
 
           try {
@@ -127,14 +140,20 @@ export function localStore (datastore: Datastore, log: Logger): LocalStore {
             if (uint8ArrayEquals(existingRecord.value, marshalledRecord)) {
               // An explicit overwrite re-stamps an identical record's TTL.
               if (options.overwrite !== true) {
-                return
+                return {
+                  status: 'duplicate',
+                  record: withArrayBuffer(existingRecord.value)
+                }
               }
             } else {
               const existingEntry = IPNSEntry.decode(existingRecord.value)
               const incomingEntry = IPNSEntry.decode(marshalledRecord)
 
               if (ipnsSelector(routingKey, [existingEntry, incomingEntry]) === 0) {
-                return
+                return {
+                  status: 'rejected',
+                  record: withArrayBuffer(existingRecord.value)
+                }
               }
             }
           } catch (err: any) {
@@ -156,6 +175,11 @@ export function localStore (datastore: Datastore, log: Logger): LocalStore {
             batch.put(ipnsMetadataKey(routingKey), IPNSPublishMetadata.encode(metadata))
           }
           await batch.commit(options)
+
+          return {
+            status: 'stored',
+            record: withArrayBuffer(marshalledRecord)
+          }
         })
       } catch (err: any) {
         options.onProgress?.(new CustomProgressEvent<Error>('ipns:routing:datastore:error', err))
@@ -233,18 +257,18 @@ export function localStore (datastore: Datastore, log: Logger): LocalStore {
   }
 }
 
-async function withKeyLock <T> (locks: Map<string, Promise<void>>, key: string, fn: () => Promise<T>): Promise<T> {
+async function withKeyLock <T> (locks: Map<string, Promise<void>>, key: string, signal: AbortSignal | undefined, fn: () => Promise<T>): Promise<T> {
   const previous = locks.get(key) ?? Promise.resolve()
   const current = previous.then(fn)
   const tail = current.then(() => {}, () => {})
 
   locks.set(key, tail)
 
-  try {
-    return await current
-  } finally {
+  void tail.then(() => {
     if (locks.get(key) === tail) {
       locks.delete(key)
     }
-  }
+  })
+
+  return raceSignal(current, signal)
 }
