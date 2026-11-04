@@ -210,6 +210,10 @@ export abstract class AbstractSession<Provider extends SessionProvider, Retrieve
           this.log('failed to find initial session peers for %c - %e', cid, err)
         }
 
+        // the search failed or was aborted so let the next retrieve start a new
+        // one, otherwise it would wait for providers that will never arrive
+        this.initialPeerSearchComplete = undefined
+
         this.requests.delete(cidStr)
 
         if (request.observers > 1) {
