@@ -250,6 +250,54 @@ describe('abstract-session', () => {
       .with.property('name', 'TimeoutError')
   })
 
+  it('should search for providers again if the initial search found none', async () => {
+    const session = new Session()
+
+    const cid = CID.parse('bafybeifaymukvfkyw6xgh4th7tsctiifr4ea2btoznf46y6b2fnvikdczi')
+    const block = Uint8Array.from([0, 1, 2, 3])
+
+    session.findNewProviders.onFirstCall().callsFake(async function * () {})
+    session.findNewProviders.onSecondCall().callsFake(async function * () {
+      yield {
+        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      }
+    })
+    session.queryProvider.withArgs(cid).resolves(block)
+
+    await expect(session.retrieve(cid)).to.eventually.be.rejected
+      .with.property('name', 'InsufficientProvidersError')
+
+    await expect(session.retrieve(cid, {
+      signal: AbortSignal.timeout(1000)
+    })).to.eventually.deep.equal(block)
+  })
+
+  it('should search for providers again if the initial search was aborted', async () => {
+    const session = new Session()
+
+    const cid = CID.parse('bafybeifaymukvfkyw6xgh4th7tsctiifr4ea2btoznf46y6b2fnvikdczi')
+    const block = Uint8Array.from([0, 1, 2, 3])
+
+    session.findNewProviders.onFirstCall().callsFake(async function * (cid, options) {
+      yield raceSignal(delay(100), options.signal)
+    })
+    session.findNewProviders.onSecondCall().callsFake(async function * () {
+      yield {
+        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      }
+    })
+    session.queryProvider.withArgs(cid).resolves(block)
+
+    await expect(session.retrieve(cid, {
+      signal: AbortSignal.timeout(10)
+    })).to.eventually.be.rejected
+      .with.property('name', 'TimeoutError')
+
+    await expect(session.retrieve(cid, {
+      signal: AbortSignal.timeout(1000)
+    })).to.eventually.deep.equal(block)
+  })
+
   it('should search for more session providers if the current ones cannot provide the block', async () => {
     const session = new Session()
 
