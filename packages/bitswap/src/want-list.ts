@@ -282,7 +282,7 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
             sentWants.add(key)
           }
         } catch (err: any) {
-          this.log.error('error sending full wantlist to new peer - %e', err)
+          this.log.error('error sending wantlist to %p - %e', peerId, err)
         }
       })
     ).catch(err => {
@@ -521,6 +521,11 @@ export class WantList extends TypedEventEmitter<WantListEvents> implements Start
       this.peers.set(peerId, sentWants)
     } catch (err) {
       this.log.error('error sending full wantlist to new peer %p - %e', peerId, err)
+
+      // track the peer anyway so the wants are retried on the next send,
+      // otherwise it is ignored until it disconnects and reconnects
+      this.peers.set(peerId, new Set())
+      void this.sendMessagesDebounced()
     }
   }
 
