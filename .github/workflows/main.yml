@@ -60,7 +60,7 @@ jobs:
 
   test-chrome:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # playwright-test 14 (used by aegir) does not support ubuntu 26.04, see ipfs/aegir#1990
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -76,7 +76,7 @@ jobs:
 
   test-chrome-webworker:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # playwright-test 14 (used by aegir) does not support ubuntu 26.04, see ipfs/aegir#1990
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -92,7 +92,7 @@ jobs:
 
   test-firefox:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # playwright-test 14 (used by aegir) does not support ubuntu 26.04, see ipfs/aegir#1990
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -108,7 +108,7 @@ jobs:
 
   test-firefox-webworker:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # playwright-test 14 (used by aegir) does not support ubuntu 26.04, see ipfs/aegir#1990
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
