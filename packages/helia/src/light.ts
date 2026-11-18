@@ -8,6 +8,9 @@
  * `@helia/libp2p` or `@helia/bitswap`, so use it when you want a node without
  * libp2p (or with your own libp2p config) and the smallest possible bundle.
  *
+ * To add your own libp2p config without loading the default transports, pair
+ * it with `withLibp2pLight` from `@helia/libp2p/light`.
+ *
  * @example Creating a Helia node
  *
  * ```ts
