@@ -53,7 +53,7 @@
     "@multiformats/dns": "^1.0.13",
     "multiformats": "^14.0.0",
     "progress-events": "^1.1.0",
-    "quick-lru": "^7.3.0"
+    "quick-lru": "^8.0.0"
   },
   "devDependencies": {
     "@libp2p/logger": "^6.2.8",
