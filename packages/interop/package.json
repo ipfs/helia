@@ -67,7 +67,7 @@
     "@helia/unixfs": "^8.0.9",
     "@ipld/car": "^5.4.6",
     "@ipld/dag-cbor": "^10.0.1",
-    "@ipld/dag-json": "^11.0.0",
+    "@ipld/dag-json": "^12.0.0",
     "@ipld/dag-pb": "^4.1.7",
     "@libp2p/floodsub": "^11.0.23",
     "@libp2p/identify": "^4.1.12",
