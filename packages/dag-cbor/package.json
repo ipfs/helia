@@ -50,7 +50,7 @@
   },
   "dependencies": {
     "@helia/interface": "^7.1.2",
-    "@ipld/dag-cbor": "^10.0.1",
+    "@ipld/dag-cbor": "^11.0.0",
     "@libp2p/interface": "^3.2.3",
     "interface-blockstore": "^7.0.1",
     "it-to-buffer": "^5.0.0",
