@@ -65,7 +65,7 @@
     "@helia/mfs": "^8.0.9",
     "@helia/strings": "^6.0.6",
     "@helia/unixfs": "^8.0.9",
-    "@ipld/car": "^5.4.6",
+    "@ipld/car": "^6.2.0",
     "@ipld/dag-cbor": "^10.0.1",
     "@ipld/dag-json": "^11.0.0",
     "@ipld/dag-pb": "^4.1.7",

@@ -50,7 +50,7 @@
   "dependencies": {
     "@helia/interface": "^7.1.2",
     "@helia/utils": "^3.0.6",
-    "@ipld/car": "^5.4.6",
+    "@ipld/car": "^6.2.0",
     "@ipld/dag-pb": "^4.1.7",
     "@libp2p/interface": "^3.2.3",
     "@libp2p/utils": "^7.2.2",
