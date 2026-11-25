@@ -64,6 +64,27 @@ describe('wantlist', () => {
     expect(wantList.peers.has(peerId)).to.be.false()
   })
 
+  it('should retry wants to a peer when the full wantlist send fails', async () => {
+    const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+
+    const want = wantList.wantBlock(cid, {
+      signal: AbortSignal.timeout(500)
+    })
+
+    components.network.sendMessage.onFirstCall().rejects(new Error('stream reset'))
+    await wantList.peerConnected(peerId)
+
+    expect(wantList.peers.has(peerId)).to.be.true()
+
+    await expect(want).to.eventually.be.rejected
+      .with.property('name', 'AbortError')
+
+    expect(components.network.sendMessage.callCount).to.equal(2)
+    expect(components.network.sendMessage.getCall(1).args[0].toString()).to.equal(peerId.toString())
+    expect([...components.network.sendMessage.getCall(1).args[1].wantlist.values()]).to.have.deep.nested.property('[0].cid', cid.bytes)
+  })
+
   it('should want blocks', async () => {
     const cid = CID.parse('QmaQwYWpchozXhFv8nvxprECWBSCEppN9dfd2VQiJfRo3F')
     const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
