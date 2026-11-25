@@ -1,9 +1,11 @@
 import { base36 } from 'multiformats/bases/base36'
 import { CustomProgressEvent } from 'progress-events'
 import { DEFAULT_LIFETIME_MS } from '../constants.ts'
+import { RecordObsoleteError } from '../errors.ts'
 import { IPNSEntry } from '../pb/ipns.ts'
 import { Upkeep } from '../pb/metadata.ts'
 import { createIPNSRecord } from '../records.ts'
+import { isLocalStoreRouting } from '../routing/index.ts'
 import { decodeExtensibleData, multihashToIPNSRoutingKey } from '../utils.ts'
 import type { IPNSPublishResult, PublishOptions, UnpublishOptions } from '../index.ts'
 import type { LocalStore } from '../local-store.ts'
@@ -60,12 +62,15 @@ export class IPNSPublisher {
       const marshaledRecord = IPNSEntry.encode(record)
 
       const metadata = { keyName, lifetime, upkeep: Upkeep[options.upkeep ?? 'reissue'] }
-      if (options.offline === true) {
-        // only store record locally
-        await this.localStore.put(routingKey, marshaledRecord, { ...options, metadata })
-      } else {
-        // publish record to routing (including the local store)
-        await Promise.all(this.routers.map(async r => {
+      const result = await this.localStore.put(routingKey, marshaledRecord, { ...options, metadata })
+
+      if (result.status === 'rejected') {
+        throw new RecordObsoleteError('A newer record is already stored for this key', IPNSEntry.decode(result.record))
+      }
+
+      if (options.offline !== true) {
+        // The record has been accepted locally, publish it to network routers.
+        await Promise.all(this.routers.filter(router => !isLocalStoreRouting(router)).map(async r => {
           await r.put(routingKey, marshaledRecord, { ...options, metadata })
         }))
       }

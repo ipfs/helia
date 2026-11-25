@@ -9,7 +9,6 @@ import { raceSignal } from 'race-signal'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { InvalidTopicError } from '../errors.ts'
 import { localStore } from '../local-store.ts'
 import { ipnsSelector } from '../selector.ts'
@@ -261,21 +260,21 @@ export class PubSubIPNSRouting implements IPNSRouting, Startable {
     }
 
     log('found new record for %m', routingKey)
-    await this.localStore.put(routingKey, marshalledRecord, options)
+    const result = await this.localStore.put(routingKey, marshalledRecord, options)
 
     // if the record was received via fetch, republish it
-    if (publish) {
+    if (publish && result.status === 'stored') {
       log('publish value for topic %s', topic)
 
       try {
-        const result = await this.libp2p.services.pubsub.publish(topic, marshalledRecord)
-        log('published record on topic %s to %d recipients', topic, result.recipients)
+        const publishResult = await this.libp2p.services.pubsub.publish(topic, result.record)
+        log('published record on topic %s to %d recipients', topic, publishResult.recipients)
       } catch (err) {
         log.error('could not publish record on topic %s - %e', err)
       }
     }
 
-    return withArrayBuffer(marshalledRecord)
+    return result.record
   }
 
   /**

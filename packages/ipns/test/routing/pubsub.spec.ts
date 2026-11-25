@@ -13,7 +13,7 @@ import { localStore } from '../../src/local-store.ts'
 import { IPNSEntry } from '../../src/pb/ipns.ts'
 import { createIPNSRecord } from '../../src/records.ts'
 import { PubSubIPNSRouting } from '../../src/routing/pubsub.ts'
-import { decodeExtensibleData, multihashToIPNSRoutingKey } from '../../src/utils.ts'
+import { decodeExtensibleData, dhtRoutingKey, multihashToIPNSRoutingKey } from '../../src/utils.ts'
 import { ipnsValidator } from '../../src/validator.ts'
 import { getCrypto } from '../fixtures/get-crypto.ts'
 import type { LocalStore } from '../../src/local-store.ts'
@@ -166,6 +166,45 @@ describe('pubsub routing', () => {
         await delay(100)
 
         expect(batchSpy.called).to.be.false()
+      })
+
+      it('returns the stored record when a concurrent write rejects the fetched record', async () => {
+        const fetchedRecord = await createIPNSRecord(privateKey, '/fetched', 2n, DEFAULT_LIFETIME_MS)
+        const storedRecord = await createIPNSRecord(privateKey, '/stored', 3n, DEFAULT_LIFETIME_MS)
+        const datastoreKey = dhtRoutingKey(routingKey).toString()
+        const originalGet = datastore.get.bind(datastore)
+        let getCalls = 0
+        let releaseGet!: () => void
+        let firstGetStartedResolve!: () => void
+        const release = new Promise<void>(resolve => { releaseGet = resolve })
+        const firstGetStarted = new Promise<void>(resolve => { firstGetStartedResolve = resolve })
+
+        await store.put(routingKey, IPNSEntry.encode(record))
+
+        Sinon.stub(datastore, 'get').callsFake(async (key, options) => {
+          const value = await originalGet(key, options)
+
+          if (key.toString() === datastoreKey && getCalls++ === 0) {
+            firstGetStartedResolve()
+            await release
+          }
+
+          return value
+        })
+
+        libp2p.register.getCall(0).args[1]?.onConnect?.(peerId, stubInterface())
+        libp2p.services.pubsub.getSubscribers.returns([peerId])
+        fetch.fetch.withArgs(peerId).resolves(IPNSEntry.encode(fetchedRecord))
+
+        const getRecord = pubsubRouter.get(routingKey)
+        await firstGetStarted
+        await store.put(routingKey, IPNSEntry.encode(storedRecord))
+        releaseGet()
+
+        const result = await getRecord
+
+        expect(result).to.equalBytes(IPNSEntry.encode(storedRecord))
+        expect(libp2p.services.pubsub.publish.called).to.be.false()
       })
     })
 

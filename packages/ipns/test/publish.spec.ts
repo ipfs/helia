@@ -1,17 +1,24 @@
 import { start, stop } from '@libp2p/interface'
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import last from 'it-last'
 import { base36 } from 'multiformats/bases/base36'
 import { CID } from 'multiformats/cid'
 import Sinon from 'sinon'
+import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { IPNSPublisher } from '../src/ipns/publisher.ts'
 import { localStore } from '../src/local-store.ts'
+import { IPNSEntry } from '../src/pb/ipns.ts'
 import { IPNSPublishMetadata, Upkeep } from '../src/pb/metadata.ts'
+import { createIPNSRecord } from '../src/records.ts'
 import { decodeExtensibleData, dhtRoutingKey, ipnsMetadataKey, multihashToIPNSRoutingKey } from '../src/utils.ts'
 import { createIPNS } from './fixtures/create-ipns.ts'
 import type { CreateIPNSResult } from './fixtures/create-ipns.ts'
 import type { IPNS } from '../src/ipns.ts'
+import type { LocalStore } from '../src/local-store.ts'
+import type { IPNSRouting } from '../src/routing/index.ts'
 
 const cid = CID.parse('QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn')
 
@@ -87,6 +94,33 @@ describe('publish', () => {
 
     expect(heliaRouting.put.called).to.be.false()
     expect(customRouting.put.called).to.be.false()
+  })
+
+  it('does not publish a record rejected by the local store', async () => {
+    const keyName = 'test-key-rejected'
+    const key = await result.keychain.generateKey(keyName)
+    const newerRecord = await createIPNSRecord(key, '/newer', 2n, 24 * 60 * 60 * 1000)
+    const store = stubInterface<LocalStore>()
+    const router = stubInterface<IPNSRouting>()
+
+    store.has.resolves(false)
+    store.put.resolves({
+      status: 'rejected',
+      record: IPNSEntry.encode(newerRecord)
+    })
+
+    const publisher = new IPNSPublisher({
+      datastore: result.datastore,
+      logger: defaultLogger(),
+      keychain: result.keychain
+    }, {
+      localStore: store,
+      routers: [router]
+    })
+
+    await expect(publisher.publish(keyName, cid)).to.eventually.be.rejected
+      .with.property('name', 'RecordObsoleteError')
+    expect(router.put.called).to.be.false()
   })
 
   it('should emit progress events', async function () {
