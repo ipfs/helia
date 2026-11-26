@@ -209,6 +209,11 @@ export type {
   CreateIPNSRecordOptions
 } from './records.ts'
 
+export type PublishStrategyProgressEvents =
+  ProgressEvent<'ipns:publish:strategy:start', IPNSPublishStrategyDetail> |
+  ProgressEvent<'ipns:publish:strategy:success', IPNSPublishStrategyDetail> |
+  ProgressEvent<'ipns:publish:strategy:error', Error>
+
 export type PublishProgressEvents =
   ProgressEvent<'ipns:publish:start'> |
   ProgressEvent<'ipns:publish:success', IPNSEntry> |
@@ -233,7 +238,7 @@ export type DatastoreProgressEvents =
  */
 export type UpkeepPolicy = 'reissue' | 'rebroadcast' | 'none'
 
-export interface PublishOptions extends AbortOptions, ProgressOptions<PublishProgressEvents | IPNSRoutingProgressEvents> {
+export interface PublishOptions extends AbortOptions, ProgressOptions<PublishProgressEvents | PublishStrategyProgressEvents | IPNSRoutingProgressEvents> {
   /**
    * Time duration of the signature validity in ms - after this many ms have
    * expired the record will be invalidated.
@@ -409,6 +414,28 @@ export interface RepublishResult {
    * The public key that the record is published under
    */
   publicKey: PublicKey
+}
+
+export interface IPNSPublishStrategyDetail {
+  /**
+   * The name of the publishing strategy.
+   */
+  strategy: string
+
+  /**
+   * The key name used to publish the record.
+   */
+  keyName: string
+
+  /**
+   * The public key that was used to sign and publish the record.
+   */
+  publicKey: PublicKey
+
+  /**
+   * The published record.
+   */
+  record: IPNSEntry
 }
 
 export interface IPNSResolver {
