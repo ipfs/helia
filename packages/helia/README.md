@@ -34,6 +34,10 @@ Exports a `createHelia` function that returns an object that implements the Heli
 
 Pass it to other modules like @helia/unixfs to make files available on the distributed web.
 
+To create a node without `@helia/libp2p` or `@helia/bitswap`, and without
+loading them, import `createHeliaLight` from `helia/light` instead. To add
+your own libp2p node to it, use `withLibp2pLight` from `@helia/libp2p/light`.
+
 ## Example
 
 ```typescript

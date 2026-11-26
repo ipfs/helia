@@ -41,7 +41,7 @@ Pass it to other modules like @helia/unixfs to fetch files from the distributed 
 ```typescript
 import { withHTTP } from '@helia/http'
 import { unixfs } from '@helia/unixfs'
-import { createHeliaLight } from 'helia'
+import { createHeliaLight } from 'helia/light'
 import { CID } from 'multiformats/cid'
 
 const helia = await withHTTP(createHeliaLight(), {
@@ -63,7 +63,7 @@ fs.cat(CID.parse('bafyFoo'))
 It's possible to manually configure your node without using this module.
 
 ```typescript
-import { createHeliaLight } from 'helia'
+import { createHeliaLight } from 'helia/light'
 import { trustlessGatewayBlockBroker } from '@helia/trustless-gateway-client'
 import { fallbackRouter } from '@helia/fallback-router'
 import { delegatedHTTPRouter } from '@helia/delegated-http-routing-client'

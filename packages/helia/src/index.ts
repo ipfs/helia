@@ -5,6 +5,10 @@
  *
  * Pass it to other modules like {@link https://www.npmjs.com/package/@helia/unixfs | @helia/unixfs} to make files available on the distributed web.
  *
+ * To create a node without `@helia/libp2p` or `@helia/bitswap`, and without
+ * loading them, import `createHeliaLight` from `helia/light` instead. To add
+ * your own libp2p node to it, use `withLibp2pLight` from `@helia/libp2p/light`.
+ *
  * @example
  *
  * ```typescript
@@ -26,12 +30,10 @@ import * as dagCbor from '@ipld/dag-cbor'
 import * as dagJson from '@ipld/dag-json'
 import * as json from 'multiformats/codecs/json'
 import { sha512 } from 'multiformats/hashes/sha2'
-import { Helia as HeliaClass } from './helia.ts'
-import { name, version } from './version.ts'
-import type { HeliaInit } from './helia.ts'
+import { createHeliaLight } from './light.ts'
+import type { HeliaInit } from './light.ts'
 import type { BitswapOptions } from '@helia/bitswap'
 import type { HTTPOptions } from '@helia/http'
-import type { Helia } from '@helia/interface'
 import type { CreateLibp2pOptions, DefaultLibp2pServices, HeliaWithLibp2p } from '@helia/libp2p'
 import type { ServiceMap } from '@libp2p/interface'
 
@@ -40,12 +42,14 @@ import type { ServiceMap } from '@libp2p/interface'
 export * from '@helia/interface'
 
 export type { HeliaInit }
+export { createHeliaLight }
 
 /**
  * Create and return a Helia node using the default configuration including
  * libp2p and HTTP routing.
  *
- * For full control, and smaller bundle sizes use `createHeliaLight`.
+ * For full control and smaller bundle sizes, use `createHeliaLight` from
+ * `helia/light`.
  *
  * @example Creating a Helia node
  *
@@ -79,41 +83,4 @@ export function createHelia <M extends ServiceMap> (init: HeliaInit & { libp2p?:
       ...(init.hashers ?? [])
     ]
   }), init.http), init.libp2p), init.bitswap)
-}
-
-/**
- * Create and return a Helia node without and routing or block broker config.
- *
- * The only supported codecs are `dag-pb` and `raw`, and the only supported
- * hashes are `sha2-256` and `identity`.
- *
- * This allows more flexible customization and the smallest possible bundle size
- * in web browsers.
- *
- * @example Creating a Helia node
- *
- * ```ts
- * import { createHeliaLight } from 'helia'
- * import { unixfs } from '@helia/unixfs'
- * import { CID } from 'multiformats/cid'
- *
- * const helia = await createHeliaLight()
- * const fs = unixfs(helia)
- * const cid = CID.parse('QmFoo...')
- *
- * for await (const buf of fs.cat(cid, {
- *   signal: AbortSignal.timeout(5_000)
- * })) {
- *   console.info(buf)
- * }
- * ```
- */
-export function createHeliaLight (init: HeliaInit = {}): Helia {
-  const helia = new HeliaClass({
-    name,
-    version,
-    ...init
-  })
-
-  return helia
 }

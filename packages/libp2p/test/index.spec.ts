@@ -53,4 +53,10 @@ describe('@helia/libp2p', () => {
     expect(helia.libp2p.services.identify.host.agentVersion).to.include('helia/1.0.0')
     expect(helia.libp2p.services.identifyPush.host.agentVersion).to.include('helia/1.0.0')
   })
+
+  it('should require options for withLibp2pLight', () => {
+    // @ts-expect-error options are required
+    expect(() => withLibp2pLight(stubInterface<any>())).to.throw()
+      .with.property('name', 'InvalidParametersError')
+  })
 })

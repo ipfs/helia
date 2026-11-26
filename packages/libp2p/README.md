@@ -47,15 +47,18 @@ console.info(node.libp2p.peerId) // 12D3Koo...
 
 By default `withLibp2p` configures a libp2p node for the current environment.
 
-Any options passed will be merged with the default config.
+Each option passed replaces the default for that key. Pass `config: 'merge'`
+to merge the options into the default config instead.
 
-For full control over your node (and the bundle size), use `withLibp2pLight`:
+For full control over your node (and the bundle size), use `withLibp2pLight`
+from `@helia/libp2p/light`. That entry point does not load the default
+config or any of its dependencies:
 
 ```ts
-import { createHelia } from 'helia'
-import { withLibp2pLight } from '@helia/libp2p'
+import { createHeliaLight } from 'helia/light'
+import { withLibp2pLight } from '@helia/libp2p/light'
 
-const node = await withLibp2pLight(createHelia(), {
+const node = await withLibp2pLight(createHeliaLight(), {
   //... libp2p config here
 }).start()
 
