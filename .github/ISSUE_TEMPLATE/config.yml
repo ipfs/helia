@@ -7,7 +7,7 @@ contact_links:
    url: https://github.com/ipfs/helia/wiki
    about: Documentation, FAQ, and Manifesto for Helia.
  - name: Helia Examples
-   url: https://github.com/ipfs-examples/helia-examples
+   url: https://github.com/ipfs/helia-examples
    about: Code examples for using Helia.
  - name: IPFS Official Discussion Forum
    url: https://discuss.ipfs.tech
