@@ -1,14 +1,13 @@
 /**
  * @packageDocumentation
  *
- * Exports `withLibp2pLight`, which adds a libp2p instance to a Helia node using
- * exactly the configuration you pass and nothing else.
+ * Exports `withLibp2pLight`, which adds a libp2p node to Helia using only the
+ * config you pass to it.
  *
- * Unlike the main `@helia/libp2p` entry point, importing `@helia/libp2p/light`
- * does not load the default transports, so it never pulls in `@libp2p/webrtc`
- * or its native `node-datachannel` dependency. Use it together with
- * `helia/light` when you bring your own libp2p config and want the smallest
- * possible install and bundle.
+ * Unlike the main `@helia/libp2p` entry point, importing
+ * `@helia/libp2p/light` does not load the default libp2p config, so none of
+ * the default transports, services or their dependencies (including the native
+ * `node-datachannel` module used by `@libp2p/webrtc`) are loaded.
  *
  * @example Bring your own libp2p config
  *
@@ -30,7 +29,7 @@
  */
 
 import { loadOrCreateSelfKey } from '@libp2p/config'
-import { NotStartedError } from '@libp2p/interface'
+import { InvalidParametersError, NotStartedError } from '@libp2p/interface'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import forEach from 'it-foreach'
 import { createLibp2p, isLibp2p } from 'libp2p'
@@ -44,10 +43,14 @@ import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Libp2pOptions } from 'libp2p'
 import type { CID } from 'multiformats'
 
+export { libp2pRouting }
+
 export interface CreateLibp2pOptions<T extends ServiceMap = ServiceMap> extends Libp2pOptions<T> {
   /**
-   * If 'merge', any passed config will be merged into the default set. If
-   * 'replace' any passed config keys will replace those in the default set.
+   * How `withLibp2p` combines these options with its default config. With
+   * 'merge' they are merged into the defaults, with 'replace' each key that is
+   * passed replaces the default for that key. `withLibp2pLight` has no default
+   * config, so it ignores this option.
    *
    * @default 'replace'
    */
@@ -66,9 +69,16 @@ export interface HeliaWithLibp2p<M extends ServiceMap = DefaultLibp2pServices> e
  * Return a Helia node augmented with a libp2p instance. The passed
  * configuration is passed to `createLibp2p` without adding any default config.
  *
- * Use this if you do not wish to have any extra config added.
+ * Use this if you do not wish to have any extra config added. To use the
+ * default config, call `withLibp2p` from `@helia/libp2p` instead.
+ *
+ * Import it from `@helia/libp2p/light` to avoid loading the default config.
  */
 export function withLibp2pLight <H extends Helia, M extends ServiceMap = ServiceMap> (helia: H, opts: CreateLibp2pOptions<M>): H & HeliaWithLibp2p<M> {
+  if (opts == null) {
+    throw new InvalidParametersError('withLibp2pLight requires libp2p options. Use withLibp2p from @helia/libp2p for the default config')
+  }
+
   let libp2p: Libp2p
 
   // add a getter that informs the user they need to start Helia

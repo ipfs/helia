@@ -5,8 +5,9 @@
  *
  * Pass it to other modules like {@link https://www.npmjs.com/package/@helia/unixfs | @helia/unixfs} to make files available on the distributed web.
  *
- * To create a node without libp2p or bitswap, and without loading them, import
- * `createHeliaLight` from `helia/light` instead.
+ * To create a node without `@helia/libp2p` or `@helia/bitswap`, and without
+ * loading them, import `createHeliaLight` from `helia/light` instead. To add
+ * your own libp2p node to it, use `withLibp2pLight` from `@helia/libp2p/light`.
  *
  * @example
  *
@@ -47,7 +48,8 @@ export { createHeliaLight }
  * Create and return a Helia node using the default configuration including
  * libp2p and HTTP routing.
  *
- * For full control, and smaller bundle sizes use `createHeliaLight`.
+ * For full control and smaller bundle sizes, use `createHeliaLight` from
+ * `helia/light`.
  *
  * @example Creating a Helia node
  *

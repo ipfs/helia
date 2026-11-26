@@ -18,16 +18,18 @@
  *
  * By default `withLibp2p` configures a libp2p node for the current environment.
  *
- * Any options passed will be merged with the default config.
+ * Each option passed replaces the default for that key. Pass `config: 'merge'`
+ * to merge the options into the default config instead.
  *
  * For full control over your node (and the bundle size), use `withLibp2pLight`
- * from `@helia/libp2p/light`, which does not load the default transports:
+ * from `@helia/libp2p/light`. That entry point does not load the default
+ * config or any of its dependencies:
  *
  * ```ts
- * import { createHelia } from 'helia'
+ * import { createHeliaLight } from 'helia/light'
  * import { withLibp2pLight } from '@helia/libp2p/light'
  *
- * const node = await withLibp2pLight(createHelia(), {
+ * const node = await withLibp2pLight(createHeliaLight(), {
  *   //... libp2p config here
  * }).start()
  *
@@ -35,17 +37,17 @@
  * ```
  */
 
-import { withLibp2pLight } from './light.ts'
+import { libp2pRouting, withLibp2pLight } from './light.ts'
 import { libp2pDefaults } from './utils/libp2p-defaults.ts'
 import type { CreateLibp2pOptions, HeliaWithLibp2p } from './light.ts'
 import type { DefaultLibp2pServices } from './utils/libp2p-defaults.ts'
 import type { Helia } from '@helia/interface'
 import type { ServiceMap } from '@libp2p/interface'
 
+export { libp2pRouting, withLibp2pLight }
+export type { CreateLibp2pOptions, HeliaWithLibp2p }
 export { libp2pDefaults } from './utils/libp2p-defaults.ts'
 export type { DefaultLibp2pServices } from './utils/libp2p-defaults.ts'
-export { withLibp2pLight } from './light.ts'
-export type { CreateLibp2pOptions, HeliaWithLibp2p } from './light.ts'
 
 /**
  * Return a Helia node augmented with a libp2p instance

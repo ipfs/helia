@@ -65,6 +65,35 @@ class Libp2pRouter implements Router {
   }
 }
 
+/**
+ * Return a Helia router that uses the passed libp2p node to find providers,
+ * peers and records.
+ *
+ * `withLibp2pLight` and `withLibp2p` add this for you. Use it directly when you
+ * create the libp2p node yourself, and do not combine it with either of them,
+ * otherwise Helia routes through your node while `helia.libp2p` is a second,
+ * separate node.
+ *
+ * A node you create yourself is not started or stopped by Helia and does not
+ * use Helia's datastore or identity. This only adds routing, so add a block
+ * broker (for example bitswap) to fetch blocks over libp2p.
+ *
+ * @example
+ *
+ * ```ts
+ * import { createHeliaLight } from 'helia/light'
+ * import { libp2pRouting } from '@helia/libp2p/light'
+ * import { createLibp2p } from 'libp2p'
+ *
+ * const libp2p = await createLibp2p({
+ *   //... libp2p config here
+ * })
+ *
+ * const helia = await createHeliaLight({
+ *   routers: [libp2pRouting(libp2p)]
+ * }).start()
+ * ```
+ */
 export function libp2pRouting (libp2p: Libp2p): Router {
   return new Libp2pRouter(libp2p)
 }

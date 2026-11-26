@@ -41,26 +41,27 @@ export type { HeliaInit }
 /**
  * Create and return a Helia node without any routing or block broker config.
  *
- * The only supported codecs are `dag-pb` and `raw`, and the only supported
- * hashes are `sha2-256` and `identity`.
+ * By default the only supported codecs are `dag-pb` and `raw`, and the only
+ * supported hashes are `sha2-256` and `identity`. Pass `codecs` and `hashers`
+ * (or `loadCodec` and `loadHasher`) to support more.
  *
  * This allows more flexible customization and the smallest possible bundle size
  * in web browsers.
  *
- * @example Creating a Helia node
+ * @example Creating an offline Helia node
+ *
+ * With no routers or block brokers the node can only read blocks that are
+ * already in its blockstore.
  *
  * ```ts
  * import { createHeliaLight } from 'helia/light'
  * import { unixfs } from '@helia/unixfs'
- * import { CID } from 'multiformats/cid'
  *
- * const helia = await createHeliaLight()
+ * const helia = await createHeliaLight().start()
  * const fs = unixfs(helia)
- * const cid = CID.parse('QmFoo...')
+ * const cid = await fs.addBytes(Uint8Array.from([0, 1, 2, 3]))
  *
- * for await (const buf of fs.cat(cid, {
- *   signal: AbortSignal.timeout(5_000)
- * })) {
+ * for await (const buf of fs.cat(cid)) {
  *   console.info(buf)
  * }
  * ```
