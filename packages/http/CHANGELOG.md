@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.1.0](https://github.com/ipfs/helia/compare/http-v4.0.8...http-v4.1.0) (2026-11-27)
+
+
+### Features
+
+* add helia/light and @helia/libp2p/light entry points ([#1155](https://github.com/ipfs/helia/issues/1155)) ([05d3e4c](https://github.com/ipfs/helia/commit/05d3e4cc71afad3b002adb36e5145dfb4ef079c0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/trustless-gateway-client bumped from ^1.0.7 to ^1.0.8
+
 ## [4.0.8](https://github.com/ipfs/helia/compare/http-v4.0.7...http-v4.0.8) (2026-09-29)
 
 
