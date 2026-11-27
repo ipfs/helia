@@ -51,7 +51,7 @@
   },
   "dependencies": {
     "@helia/interface": "^7.1.2",
-    "@ipld/dag-cbor": "^10.0.1",
+    "@ipld/dag-cbor": "^11.0.0",
     "@ipshipyard/crypto": "^1.1.0",
     "@ipshipyard/keychain": "^1.0.2",
     "@libp2p/fetch": "^4.1.6",
@@ -66,7 +66,7 @@
     "interface-datastore": "^10.0.1",
     "multiformats": "^14.0.0",
     "progress-events": "^1.1.0",
-    "protons-runtime": "^8.0.1",
+    "protons-runtime": "^8.0.2",
     "race-signal": "^2.0.0",
     "timestamp-nano": "^1.0.1",
     "uint8arraylist": "^3.0.2",
@@ -74,11 +74,11 @@
   },
   "devDependencies": {
     "aegir": "^48.0.11",
-    "cborg": "^6.1.1",
+    "cborg": "^7.0.0",
     "datastore-core": "^12.0.1",
     "it-drain": "^3.0.12",
     "it-last": "^3.0.11",
-    "protons": "^10.0.5",
+    "protons": "^10.0.6",
     "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0"
   },
