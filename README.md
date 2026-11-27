@@ -168,12 +168,12 @@ Provided CIDs are re-announced periodically while the node is running, until
 
 # 🐾 Next steps
 
-Check out the [helia-examples](https://github.com/ipfs-examples/helia-examples)
+Check out the [helia-examples](https://github.com/ipfs/helia-examples)
 repo for how to do mostly anything with your Helia node.
 
 # 🏃‍♀️ Getting Started
 
-Check out the [Helia examples repo](https://github.com/ipfs-examples/helia-examples#examples), which covers a wide variety of use cases. If you feel something has been missed, follow the [contribution guide](https://github.com/ipfs-examples/helia-examples#contributing) and create a PR to the examples repo.
+Check out the [Helia examples repo](https://github.com/ipfs/helia-examples#examples), which covers a wide variety of use cases. If you feel something has been missed, follow the [contribution guide](https://github.com/ipfs/helia-examples#contributing) and create a PR to the examples repo.
 
 # 📗 Project Docs
 

@@ -187,7 +187,7 @@ jobs:
       # - uses: google-github-actions/release-please-action@v4
         id: release
         with:
-          token: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}
+          token: ${{ secrets.RELEASE_PLEASE }}
           manifest-file: .release-please-manifest.json
           config-file: .release-please.json
       - uses: actions/checkout@v7
@@ -208,13 +208,11 @@ jobs:
           git update-index --assume-unchanged packages/helia/src/version.ts
           npm run --if-present release
         env:
-          GITHUB_TOKEN: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
       - if: ${{ steps.release.outputs.releases_created != 'true' }}
         name: Run release rc
         run: |
             git update-index --assume-unchanged packages/helia/src/version.ts
             npm run --if-present release:rc
         env:
-          GITHUB_TOKEN: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
