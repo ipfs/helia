@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.0.7](https://github.com/ipfs/helia/compare/dag-cbor-v6.0.6...dag-cbor-v6.0.7) (2026-11-27)
+
+
+### Dependencies
+
+* bump @ipld/*, cborg, protons, @libp2p/webrtc and other majors ([#1164](https://github.com/ipfs/helia/issues/1164)) ([87a42bd](https://github.com/ipfs/helia/commit/87a42bd5ed705f356f74a45de3a3fcc6465c68bb))
+
 ## [6.0.6](https://github.com/ipfs/helia/compare/dag-cbor-v6.0.5...dag-cbor-v6.0.6) (2026-09-29)
 
 

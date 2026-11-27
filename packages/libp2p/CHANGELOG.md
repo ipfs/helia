@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.2.0](https://github.com/ipfs/helia/compare/libp2p-v2.1.5...libp2p-v2.2.0) (2026-11-27)
+
+
+### Features
+
+* add helia/light and @helia/libp2p/light entry points ([#1155](https://github.com/ipfs/helia/issues/1155)) ([05d3e4c](https://github.com/ipfs/helia/commit/05d3e4cc71afad3b002adb36e5145dfb4ef079c0))
+
+
+### Dependencies
+
+* bump @ipld/*, cborg, protons, @libp2p/webrtc and other majors ([#1164](https://github.com/ipfs/helia/issues/1164)) ([87a42bd](https://github.com/ipfs/helia/commit/87a42bd5ed705f356f74a45de3a3fcc6465c68bb))
+
 ## [2.1.5](https://github.com/ipfs/helia/compare/libp2p-v2.1.4...libp2p-v2.1.5) (2026-09-29)
 
 

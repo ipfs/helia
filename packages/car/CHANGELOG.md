@@ -1,5 +1,15 @@
 # Changelog
 
+## [6.0.10](https://github.com/ipfs/helia/compare/car-v6.0.9...car-v6.0.10) (2026-11-27)
+
+
+### Dependencies
+
+* bump @ipld/*, cborg, protons, @libp2p/webrtc and other majors ([#1164](https://github.com/ipfs/helia/issues/1164)) ([87a42bd](https://github.com/ipfs/helia/commit/87a42bd5ed705f356f74a45de3a3fcc6465c68bb))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^3.0.6 to ^3.0.7
+
 ## [6.0.9](https://github.com/ipfs/helia/compare/car-v6.0.8...car-v6.0.9) (2026-09-29)
 
 

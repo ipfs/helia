@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.8](https://github.com/ipfs/helia/compare/trustless-gateway-client-v1.0.7...trustless-gateway-client-v1.0.8) (2026-11-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/utils bumped from ^3.0.6 to ^3.0.7
+
 ## [1.0.7](https://github.com/ipfs/helia/compare/trustless-gateway-client-v1.0.6...trustless-gateway-client-v1.0.7) (2026-09-29)
 
 

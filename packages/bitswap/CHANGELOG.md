@@ -1,5 +1,16 @@
 # Changelog
 
+## [4.0.21](https://github.com/ipfs/helia/compare/bitswap-v4.0.20...bitswap-v4.0.21) (2026-11-27)
+
+
+### Dependencies
+
+* bump @ipld/*, cborg, protons, @libp2p/webrtc and other majors ([#1164](https://github.com/ipfs/helia/issues/1164)) ([87a42bd](https://github.com/ipfs/helia/commit/87a42bd5ed705f356f74a45de3a3fcc6465c68bb))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/libp2p bumped from ^2.1.5 to ^2.2.0
+    * @helia/utils bumped from ^3.0.6 to ^3.0.7
+
 ## [4.0.20](https://github.com/ipfs/helia/compare/bitswap-v4.0.19...bitswap-v4.0.20) (2026-09-29)
 
 

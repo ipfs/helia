@@ -1,5 +1,23 @@
 # Changelog
 
+## [7.2.0](https://github.com/ipfs/helia/compare/helia-v7.1.16...helia-v7.2.0) (2026-11-27)
+
+
+### Features
+
+* add helia/light and @helia/libp2p/light entry points ([#1155](https://github.com/ipfs/helia/issues/1155)) ([05d3e4c](https://github.com/ipfs/helia/commit/05d3e4cc71afad3b002adb36e5145dfb4ef079c0))
+
+
+### Dependencies
+
+* bump @ipld/*, cborg, protons, @libp2p/webrtc and other majors ([#1164](https://github.com/ipfs/helia/issues/1164)) ([87a42bd](https://github.com/ipfs/helia/commit/87a42bd5ed705f356f74a45de3a3fcc6465c68bb))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^4.0.20 to ^4.0.21
+    * @helia/http bumped from ^4.0.8 to ^4.1.0
+    * @helia/libp2p bumped from ^2.1.5 to ^2.2.0
+    * @helia/utils bumped from ^3.0.6 to ^3.0.7
+
 ## [7.1.16](https://github.com/ipfs/helia/compare/helia-v7.1.15...helia-v7.1.16) (2026-09-29)
 
 

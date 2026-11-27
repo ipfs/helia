@@ -1,5 +1,22 @@
 # Changelog
 
+## [12.1.12](https://github.com/ipfs/helia/compare/interop-v12.1.11...interop-v12.1.12) (2026-11-27)
+
+
+### Dependencies
+
+* bump @ipld/*, cborg, protons, @libp2p/webrtc and other majors ([#1164](https://github.com/ipfs/helia/issues/1164)) ([87a42bd](https://github.com/ipfs/helia/commit/87a42bd5ed705f356f74a45de3a3fcc6465c68bb))
+* The following workspace dependencies were updated
+  * dependencies
+    * @helia/bitswap bumped from ^4.0.20 to ^4.0.21
+    * @helia/car bumped from ^6.0.9 to ^6.0.10
+    * @helia/dag-cbor bumped from ^6.0.6 to ^6.0.7
+    * @helia/dag-json bumped from ^6.0.6 to ^6.0.7
+    * @helia/dnslink bumped from ^2.0.2 to ^2.0.3
+    * @helia/ipns bumped from ^10.2.2 to ^10.2.3
+    * @helia/libp2p bumped from ^2.1.5 to ^2.2.0
+    * helia bumped from ^7.1.16 to ^7.2.0
+
 ## [12.1.11](https://github.com/ipfs/helia/compare/interop-v12.1.10...interop-v12.1.11) (2026-09-29)
 
 
